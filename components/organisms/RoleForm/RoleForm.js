@@ -5,14 +5,14 @@ import Card from "@/components/molecules/Card/Card";
 import Button from "@/components/atoms/Button/Button";
 import Input from "@/components/atoms/Input/Input";
 import Icon from "@/components/atoms/Icon/Icon";
-import Checkbox from "@/components/atoms/Checkbox/Checkbox";
 import FormField from "@/components/molecules/FormField/FormField";
 import Alert from "@/components/molecules/Alert/Alert";
-import { groupPermissions, actionLabel, permissionActionKey } from "@/lib/rbac/permissionLabels";
+import { groupPermissions, actionLabel, permissionActionKey, groupDescription } from "@/lib/rbac/permissionLabels";
 import styles from "./RoleForm.module.css";
 
 // Formulário de papel (RBAC) reaproveitado por /painel/papeis/novo e /painel/papeis/[id] —
-// tela cheia (não modal), pra caber confortavelmente as permissões de todos os módulos.
+// tela cheia (não modal). Matriz de permissões em chips, um grupo por módulo, seguindo o
+// mesmo layout de referência usado nos outros produtos da casa.
 export default function RoleForm({ mode, role, catalog, onSubmit, onCancel, submitError }) {
   const isSystem = Boolean(role?.isSystem);
   const [name, setName] = useState(role?.name || "");
@@ -44,15 +44,12 @@ export default function RoleForm({ mode, role, catalog, onSubmit, onCancel, subm
     });
   }
 
-  function toggleGroup(groupPermissionsList, checked) {
-    setPermissionIds((prev) => {
-      const next = new Set(prev);
-      for (const p of groupPermissionsList) {
-        if (checked) next.add(p.id);
-        else next.delete(p.id);
-      }
-      return next;
-    });
+  function markAll() {
+    setPermissionIds(new Set(catalog.map((p) => p.id)));
+  }
+
+  function clearAll() {
+    setPermissionIds(new Set());
   }
 
   async function handleSubmit(event) {
@@ -127,49 +124,65 @@ export default function RoleForm({ mode, role, catalog, onSubmit, onCancel, subm
       </Card>
 
       <Card title="Permissões por tela" className={styles.card}>
-        <div className={styles.permissionsWrap}>
+        {!isSystem ? (
+          <div className={styles.quickRow}>
+            <button type="button" className={styles.quickBtn} onClick={markAll}>Marcar tudo</button>
+            <button type="button" className={styles.quickBtn} onClick={clearAll}>Limpar tudo</button>
+            <span className={styles.quickHint}>
+              "Ver" precisa estar marcado para liberar as demais ações do módulo.
+            </span>
+          </div>
+        ) : null}
+
+        <div className={styles.matrix}>
           {groupedCatalog.map((group) => {
-            const allChecked = group.permissions.every((p) => permissionIds.has(p.id));
-            const someChecked = !allChecked && group.permissions.some((p) => permissionIds.has(p.id));
             const readPermission = group.permissions.find((p) => permissionActionKey(p.code) === "read");
             const otherPermissions = group.permissions.filter((p) => p !== readPermission);
             const readChecked = readPermission ? permissionIds.has(readPermission.id) : true;
 
             return (
-              <div className={styles.permissionGroup} key={group.groupKey}>
-                <div className={styles.permissionGroupHeader}>
-                  <span className={styles.permissionGroupTitle}>{group.label}</span>
-                  <Checkbox
-                    label={`Marcar todas (${group.permissions.length})`}
-                    checked={allChecked}
-                    ref={(el) => {
-                      if (el) el.indeterminate = someChecked;
-                    }}
-                    disabled={isSystem}
-                    onChange={(e) => toggleGroup(group.permissions, e.target.checked)}
-                  />
+              <div className={styles.matrixGroup} key={group.groupKey}>
+                <div className={styles.resourceRow}>
+                  <span className={styles.resourceName}>{group.label}</span>
+                  <span className={styles.resourceDesc}>{groupDescription(group.groupKey)}</span>
                 </div>
-                <div className={styles.permissionBody}>
+                <div className={styles.actionsWrap}>
                   {readPermission ? (
-                    <Checkbox
-                      className={styles.readCheckbox}
-                      label={actionLabel(permissionActionKey(readPermission.code))}
-                      checked={permissionIds.has(readPermission.id)}
-                      disabled={isSystem}
-                      onChange={() => togglePermission(readPermission.id, group)}
-                    />
+                    <label
+                      key={readPermission.id}
+                      className={[styles.actionChip, permissionIds.has(readPermission.id) ? styles.actionOn : ""]
+                        .filter(Boolean)
+                        .join(" ")}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={permissionIds.has(readPermission.id)}
+                        disabled={isSystem}
+                        onChange={() => togglePermission(readPermission.id, group)}
+                      />
+                      {actionLabel(permissionActionKey(readPermission.code))}
+                    </label>
                   ) : null}
-                  <div className={styles.permissionList}>
-                    {otherPermissions.map((permission) => (
-                      <Checkbox
-                        key={permission.id}
-                        label={actionLabel(permissionActionKey(permission.code))}
+                  {otherPermissions.map((permission) => (
+                    <label
+                      key={permission.id}
+                      className={[
+                        styles.actionChip,
+                        permissionIds.has(permission.id) ? styles.actionOn : "",
+                        !readChecked ? styles.actionDisabled : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                    >
+                      <input
+                        type="checkbox"
                         checked={permissionIds.has(permission.id)}
                         disabled={isSystem || !readChecked}
                         onChange={() => togglePermission(permission.id, group)}
                       />
-                    ))}
-                  </div>
+                      {actionLabel(permissionActionKey(permission.code))}
+                    </label>
+                  ))}
                 </div>
               </div>
             );

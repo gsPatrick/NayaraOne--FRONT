@@ -11,59 +11,6 @@
 
 .span2 { grid-column: span 2; }
 
-.permissionsWrap {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-
-.permissionGroup {
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-4);
-  background: var(--color-canvas-raised);
-}
-
-.permissionGroupHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  padding-bottom: var(--space-3);
-  margin-bottom: var(--space-3);
-  border-bottom: 1px solid var(--color-border);
-}
-
-.permissionGroupTitle {
-  font-weight: 700;
-  font-size: var(--text-h5, 1.125rem);
-  color: var(--color-ink);
-  text-align: left;
-}
-
-.permissionBody {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-  flex-wrap: wrap;
-}
-
-.readCheckbox {
-  flex-shrink: 0;
-  font-weight: 700;
-  font-size: var(--text-body);
-}
-
-.permissionList {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-  gap: var(--space-2) var(--space-5);
-  flex: 1;
-}
-
 .systemNote {
   display: flex;
   align-items: center;
@@ -75,6 +22,103 @@
   padding: var(--space-3) var(--space-4);
   margin-bottom: var(--space-4);
 }
+
+.quickRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.quickBtn {
+  font-size: var(--text-caption);
+  font-weight: 600;
+  color: var(--color-brand-active);
+  background: var(--color-brand-soft);
+  border: 1px solid var(--color-brand-border);
+  border-radius: var(--radius-full);
+  padding: 6px 14px;
+  cursor: pointer;
+}
+.quickBtn:hover { background: var(--color-brand-border); }
+
+.quickHint {
+  font-size: var(--text-caption);
+  color: var(--color-ink-muted);
+}
+
+.matrix {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.matrixGroup { border-top: 1px solid var(--color-border); }
+.matrixGroup:first-child { border-top: none; }
+
+.resourceRow {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  padding: var(--space-3) var(--space-4) var(--space-2);
+  background: var(--color-brand-soft);
+}
+
+.resourceName {
+  font-size: var(--text-h5, 1.125rem);
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.resourceDesc {
+  font-size: var(--text-caption);
+  color: var(--color-ink-muted);
+}
+
+.actionsWrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4) var(--space-4);
+}
+
+.actionChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-canvas-raised);
+  font-size: var(--text-body-sm);
+  font-weight: 500;
+  color: var(--color-ink);
+  cursor: pointer;
+  user-select: none;
+}
+
+.actionChip input {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--color-brand);
+  cursor: pointer;
+}
+
+.actionOn {
+  border-color: var(--color-brand);
+  background: var(--color-brand-soft);
+  color: var(--color-brand-active);
+}
+
+.actionDisabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.actionDisabled input { cursor: not-allowed; }
 
 .formActions {
   display: flex;
