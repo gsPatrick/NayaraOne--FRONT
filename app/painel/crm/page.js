@@ -13,27 +13,62 @@ import Modal from "@/components/organisms/Modal/Modal";
 import KanbanBoard from "@/components/organisms/KanbanBoard/KanbanBoard";
 import OpportunityCard from "@/components/molecules/OpportunityCard/OpportunityCard";
 import PersonPicker from "@/components/molecules/PersonPicker/PersonPicker";
-import { PROPERTIES } from "@/lib/mock/properties";
-import { STAGES, OPPORTUNITIES as SEED_OPPORTUNITIES } from "@/lib/mock/opportunities";
+import Spinner from "@/components/atoms/Spinner/Spinner";
+import Alert from "@/components/molecules/Alert/Alert";
+import { STAGES } from "@/lib/mock/opportunities";
+import { listOpportunities, createOpportunity, updateOpportunity, listVisits, listMessages } from "@/lib/api/crm";
+import { listProperties } from "@/lib/api/properties";
+import { listPeople } from "@/lib/api/people";
+import { apiFetch } from "@/lib/api/client";
 import { formatDateTime, isOverdue } from "@/lib/format";
 import styles from "./page.module.css";
 
 const CLOSED_STAGES = ["ganho", "perdido"];
-const VISIT_TONE = { Realizada: "success", Agendada: "info", Cancelada: "danger" };
+const VISIT_TONE = { DONE: "success", SCHEDULED: "info", CONFIRMED: "info", CANCELED: "danger", NO_SHOW: "danger" };
 
 export default function CrmPage() {
-  const [opportunities, setOpportunities] = useState(SEED_OPPORTUNITIES);
+  const [opportunities, setOpportunities] = useState([]);
+  const [people, setPeople] = useState([]);
+  const [properties, setProperties] = useState([]);
+  const [users, setUsers] = useState([]);
   const [stages, setStages] = useState(STAGES);
   const [selected, setSelected] = useState(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [createStageKey, setCreateStageKey] = useState(null);
   const [addStageOpen, setAddStageOpen] = useState(false);
   const [newStageName, setNewStageName] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [actionError, setActionError] = useState("");
 
-  function openCreateForStage(stageKey) {
-    setCreateStageKey(stageKey);
-    setCreateOpen(true);
+  const personName = (id) => people.find((p) => p.id === id)?.legalName || "—";
+  const propertyName = (id) => properties.find((p) => p.id === id)?.name || "—";
+  const repName = (id) => users.find((u) => u.id === id)?.name || "—";
+
+  function loadOpportunities() {
+    setLoading(true);
+    setLoadError("");
+    return Promise.all([listOpportunities(), listPeople(), listProperties(), apiFetch("/users")])
+      .then(([opps, apiPeople, apiProperties, apiUsers]) => {
+        setOpportunities(opps);
+        setPeople(apiPeople || []);
+        setProperties(apiProperties);
+        setUsers(apiUsers || []);
+      })
+      .catch((err) => setLoadError(err?.message || "Não foi possível carregar o funil de oportunidades."))
+      .finally(() => setLoading(false));
   }
+
+  useEffect(() => {
+    let cancelled = false;
+    loadOpportunities().then(() => {
+      if (cancelled) return;
+    });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const getItems = (stageKey) => opportunities.filter((o) => o.stage === stageKey);
 
@@ -42,13 +77,26 @@ export default function CrmPage() {
     [opportunities]
   );
 
-  function handleCreate(newOpportunity) {
-    setOpportunities((prev) => [newOpportunity, ...prev]);
-    setCreateOpen(false);
+  async function handleCreate(payload) {
+    setActionError("");
+    try {
+      const created = await createOpportunity(payload);
+      setOpportunities((prev) => [created, ...prev]);
+      setCreateOpen(false);
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível criar a oportunidade.");
+    }
   }
 
-  function handleMoveItem(itemId, newStageKey) {
+  async function handleMoveItem(itemId, newStageKey) {
+    const previous = opportunities;
     setOpportunities((prev) => prev.map((o) => (o.id === itemId ? { ...o, stage: newStageKey } : o)));
+    try {
+      await updateOpportunity(itemId, { stage: newStageKey });
+    } catch (err) {
+      setOpportunities(previous);
+      setActionError(err?.message || "Não foi possível mover a oportunidade de etapa.");
+    }
   }
 
   function handleAddColumn(label) {
@@ -117,34 +165,89 @@ export default function CrmPage() {
         </div>
       </div>
 
-      <KanbanBoard
-        columns={stages}
-        getItems={getItems}
-        emptyLabel="Nenhuma oportunidade nesta etapa"
-        renderItem={(item) => (
-          <OpportunityCard key={item.id} opportunity={item} onClick={setSelected} />
-        )}
-        onMoveItem={handleMoveItem}
-        onAddColumn={handleAddColumn}
-        onRenameColumn={handleRenameColumn}
-        onReorderColumns={handleReorderColumns}
-        onAddItem={openCreateForStage}
-        addItemLabel="Nova oportunidade"
-      />
+      {loadError ? <Alert tone="danger" title="Não foi possível carregar o funil">{loadError}</Alert> : null}
+      {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
 
-      <OpportunityDetailModal opportunity={selected} stages={stages} onClose={() => setSelected(null)} />
+      {loading ? (
+        <div className={styles.toolbar}>
+          <Spinner size="lg" />
+        </div>
+      ) : (
+        <KanbanBoard
+          columns={stages}
+          getItems={getItems}
+          emptyLabel="Nenhuma oportunidade nesta etapa"
+          renderItem={(item) => (
+            <OpportunityCard
+              key={item.id}
+              opportunity={{
+                ...item,
+                personName: personName(item.personId),
+                propertyName: propertyName(item.propertyId),
+                repName: repName(item.ownerUserId),
+              }}
+              onClick={setSelected}
+            />
+          )}
+          onMoveItem={handleMoveItem}
+          onAddColumn={handleAddColumn}
+          onRenameColumn={handleRenameColumn}
+          onReorderColumns={handleReorderColumns}
+          onAddItem={openCreateForStage}
+          addItemLabel="Nova oportunidade"
+        />
+      )}
+
+      <OpportunityDetailModal
+        opportunity={
+          selected
+            ? {
+                ...selected,
+                personName: personName(selected.personId),
+                propertyName: propertyName(selected.propertyId),
+                repName: repName(selected.ownerUserId),
+              }
+            : null
+        }
+        stages={stages}
+        onClose={() => setSelected(null)}
+      />
       <CreateOpportunityModal
         open={createOpen}
         onClose={() => setCreateOpen(false)}
         onCreate={handleCreate}
         stages={stages}
         initialStageKey={createStageKey}
+        properties={properties}
+        users={users}
       />
     </AppShell>
   );
 }
 
 function OpportunityDetailModal({ opportunity, stages, onClose }) {
+  const [visits, setVisits] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
+  useEffect(() => {
+    if (!opportunity) return;
+    let cancelled = false;
+    setLoadingHistory(true);
+    Promise.all([
+      listVisits({ opportunityId: opportunity.id }).catch(() => []),
+      listMessages({ opportunityId: opportunity.id }).catch(() => []),
+    ]).then(([v, m]) => {
+      if (cancelled) return;
+      setVisits(v);
+      setMessages(m);
+      setLoadingHistory(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [opportunity]);
+
   const isClosed = opportunity ? CLOSED_STAGES.includes(opportunity.stage) : false;
   const overdue = opportunity && !isClosed && isOverdue(opportunity.nextActionDueAt);
   const stageLabel = opportunity ? stages.find((s) => s.key === opportunity.stage)?.label : "";
@@ -173,12 +276,14 @@ function OpportunityDetailModal({ opportunity, stages, onClose }) {
 
           <div className={styles.detailSection}>
             <p className={styles.detailSectionTitle}>Histórico de visitas</p>
-            {opportunity.visits.length === 0 ? (
+            {loadingHistory ? (
+              <Spinner size="sm" />
+            ) : visits.length === 0 ? (
               <p className={styles.mutedNote}>Nenhuma visita registrada.</p>
             ) : (
-              opportunity.visits.map((visit) => (
+              visits.map((visit) => (
                 <div className={styles.visitRow} key={visit.id}>
-                  <span>{visit.propertyName} · {formatDateTime(visit.scheduledAt)}</span>
+                  <span>{formatDateTime(visit.scheduledAt)}</span>
                   <Badge tone={VISIT_TONE[visit.status] || "neutral"}>{visit.status}</Badge>
                 </div>
               ))
@@ -188,15 +293,21 @@ function OpportunityDetailModal({ opportunity, stages, onClose }) {
           <div className={styles.detailSection}>
             <p className={styles.detailSectionTitle}>Histórico de mensagens</p>
             <div className={styles.thread}>
-              {opportunity.messages.map((msg) => (
-                <div className={styles.messageBubble} key={msg.id}>
-                  <span className={styles.messageFrom}>
-                    {msg.from}
-                    <span className={styles.messageTime}>{formatDateTime(msg.sentAt)}</span>
-                  </span>
-                  <p className={styles.messageText}>{msg.text}</p>
-                </div>
-              ))}
+              {loadingHistory ? (
+                <Spinner size="sm" />
+              ) : messages.length === 0 ? (
+                <p className={styles.mutedNote}>Nenhuma mensagem registrada.</p>
+              ) : (
+                messages.map((msg) => (
+                  <div className={styles.messageBubble} key={msg.id}>
+                    <span className={styles.messageFrom}>
+                      {msg.direction === "INBOUND" ? "Cliente" : "Equipe"}
+                      <span className={styles.messageTime}>{formatDateTime(msg.createdAt)}</span>
+                    </span>
+                    <p className={styles.messageText}>{msg.body}</p>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </>
@@ -205,18 +316,23 @@ function OpportunityDetailModal({ opportunity, stages, onClose }) {
   );
 }
 
-function CreateOpportunityModal({ open, onClose, onCreate, stages, initialStageKey }) {
+function CreateOpportunityModal({ open, onClose, onCreate, stages, initialStageKey, properties, users }) {
   const [personName, setPersonName] = useState("");
   const [personId, setPersonId] = useState(null);
   const [stageKey, setStageKey] = useState(initialStageKey || stages[0]?.key || "");
-  const [propertyId, setPropertyId] = useState(PROPERTIES[0]?.id || "");
-  const [repName, setRepName] = useState("Renata Souza");
+  const [propertyId, setPropertyId] = useState(properties[0]?.id || "");
+  const [ownerUserId, setOwnerUserId] = useState(users[0]?.id || "");
   const [nextAction, setNextAction] = useState("");
   const [nextActionDueAt, setNextActionDueAt] = useState("");
   const [errors, setErrors] = useState({});
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (open) setStageKey(initialStageKey || stages[0]?.key || "");
+    if (open) {
+      setStageKey(initialStageKey || stages[0]?.key || "");
+      setPropertyId(properties[0]?.id || "");
+      setOwnerUserId(users[0]?.id || "");
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, initialStageKey]);
 
@@ -224,11 +340,12 @@ function CreateOpportunityModal({ open, onClose, onCreate, stages, initialStageK
     setPersonName("");
     setPersonId(null);
     setStageKey(initialStageKey || stages[0]?.key || "");
-    setPropertyId(PROPERTIES[0]?.id || "");
-    setRepName("Renata Souza");
+    setPropertyId(properties[0]?.id || "");
+    setOwnerUserId(users[0]?.id || "");
     setNextAction("");
     setNextActionDueAt("");
     setErrors({});
+    setSubmitting(false);
   }
 
   function handleClose() {
@@ -236,9 +353,9 @@ function CreateOpportunityModal({ open, onClose, onCreate, stages, initialStageK
     onClose();
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     const nextErrors = {};
-    if (!personName.trim()) nextErrors.personName = "Selecione o contato (cliente/lead).";
+    if (!personId) nextErrors.personName = "Selecione o contato (cliente/lead).";
     if (!CLOSED_STAGES.includes(stageKey)) {
       if (!nextAction.trim()) nextErrors.nextAction = "Toda oportunidade ativa precisa de uma próxima ação.";
       if (!nextActionDueAt) nextErrors.nextActionDueAt = "Informe o prazo da próxima ação.";
@@ -246,19 +363,14 @@ function CreateOpportunityModal({ open, onClose, onCreate, stages, initialStageK
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
-    const property = PROPERTIES.find((p) => p.id === propertyId);
-    onCreate({
-      id: `opp-${Date.now()}`,
+    setSubmitting(true);
+    await onCreate({
       stage: stageKey,
-      personName: personName.trim(),
       personId,
-      propertyName: property?.name || "—",
-      repName,
+      propertyId: propertyId || undefined,
+      ownerUserId: ownerUserId || undefined,
       nextAction: nextAction.trim(),
-      nextActionDueAt: new Date(nextActionDueAt).toISOString(),
-      createdAt: new Date().toISOString(),
-      visits: [],
-      messages: [],
+      nextActionDueAt: nextActionDueAt ? new Date(nextActionDueAt).toISOString() : undefined,
     });
     reset();
   }
@@ -271,7 +383,7 @@ function CreateOpportunityModal({ open, onClose, onCreate, stages, initialStageK
       footer={
         <>
           <Button variant="secondary" onClick={handleClose}>Cancelar</Button>
-          <Button onClick={handleSubmit}>Criar oportunidade</Button>
+          <Button onClick={handleSubmit} loading={submitting}>Criar oportunidade</Button>
         </>
       }
     >
@@ -299,16 +411,17 @@ function CreateOpportunityModal({ open, onClose, onCreate, stages, initialStageK
         </FormField>
         <FormField label="Imóvel de interesse" htmlFor="o-property">
           <Select id="o-property" value={propertyId} onChange={(e) => setPropertyId(e.target.value)}>
-            {PROPERTIES.map((p) => (
+            {properties.map((p) => (
               <option key={p.id} value={p.id}>{p.name}</option>
             ))}
           </Select>
         </FormField>
         <div className={styles.span2}>
           <FormField label="Vendedor responsável" htmlFor="o-rep">
-            <Select id="o-rep" value={repName} onChange={(e) => setRepName(e.target.value)}>
-              <option>Renata Souza</option>
-              <option>João Pereira</option>
+            <Select id="o-rep" value={ownerUserId} onChange={(e) => setOwnerUserId(e.target.value)}>
+              {users.map((u) => (
+                <option key={u.id} value={u.id}>{u.name}</option>
+              ))}
             </Select>
           </FormField>
         </div>

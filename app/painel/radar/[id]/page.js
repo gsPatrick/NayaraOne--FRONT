@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, notFound } from "next/navigation";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Button from "@/components/atoms/Button/Button";
 import Icon from "@/components/atoms/Icon/Icon";
@@ -12,11 +12,15 @@ import Card from "@/components/molecules/Card/Card";
 import Modal from "@/components/organisms/Modal/Modal";
 import PropertyCard from "@/components/molecules/PropertyCard/PropertyCard";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
-import { RADARS } from "@/lib/mock/radars";
-import { PEOPLE, CONTACT_TYPE_LABELS, CONTACT_TYPE_ICON } from "@/lib/mock/people";
-import { PROPERTIES } from "@/lib/mock/properties";
-import { OPPORTUNITIES } from "@/lib/mock/opportunities";
-import { matchRadarToProperties, PROPERTY_TYPE_LABELS, OFFER_TYPE_LABELS } from "@/lib/radarMatching";
+import Spinner from "@/components/atoms/Spinner/Spinner";
+import Alert from "@/components/molecules/Alert/Alert";
+import { CONTACT_TYPE_LABELS, CONTACT_TYPE_ICON } from "@/lib/mock/people";
+import { getRadar, deleteRadar } from "@/lib/api/radar";
+import { getPerson } from "@/lib/api/people";
+import { getOpportunity } from "@/lib/api/crm";
+import { getProperty, mapProperty } from "@/lib/api/properties";
+import { apiFetch } from "@/lib/api/client";
+import { PROPERTY_TYPE_LABELS, OFFER_TYPE_LABELS } from "@/lib/radarMatching";
 import { formatBRL, formatDate } from "@/lib/format";
 import styles from "./page.module.css";
 
@@ -29,20 +33,87 @@ function buildContactHref(contact) {
 
 export default function RadarDetailPage({ params }) {
   const router = useRouter();
-  const radar = RADARS.find((r) => r.id === params.id);
+  const [radar, setRadar] = useState(null);
+  const [person, setPerson] = useState(null);
+  const [opportunity, setOpportunity] = useState(null);
+  const [matches, setMatches] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [actionError, setActionError] = useState("");
 
-  if (!radar) return notFound();
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError("");
+    getRadar(params.id)
+      .then(async (apiRadar) => {
+        if (cancelled || !apiRadar) return;
+        setRadar(apiRadar);
+        setMatches((apiRadar.matches || []).map(mapProperty));
+        const [apiPerson, apiOpportunity] = await Promise.all([
+          apiRadar.personId ? getPerson(apiRadar.personId).catch(() => null) : Promise.resolve(null),
+          apiRadar.opportunityId ? getOpportunity(apiRadar.opportunityId).catch(() => null) : Promise.resolve(null),
+        ]);
+        if (cancelled) return;
+        setPerson(apiPerson);
+        if (apiOpportunity) {
+          const [property, users] = await Promise.all([
+            apiOpportunity.propertyId ? getProperty(apiOpportunity.propertyId).catch(() => null) : Promise.resolve(null),
+            apiFetch("/users").catch(() => []),
+          ]);
+          if (cancelled) return;
+          setOpportunity({
+            ...apiOpportunity,
+            propertyName: property?.name || "—",
+            repName: (users || []).find((u) => u.id === apiOpportunity.ownerUserId)?.name || "—",
+          });
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar o radar.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [params.id]);
 
-  const person = PEOPLE.find((p) => p.id === radar.personId);
-  const opportunity = radar.opportunityId ? OPPORTUNITIES.find((o) => o.id === radar.opportunityId) : null;
-  const matches = matchRadarToProperties(radar, PROPERTIES);
+  if (loading) {
+    return (
+      <AppShell title="Carregando radar..." backHref="/painel/radar">
+        <div className={styles.wrap}>
+          <Spinner size="lg" />
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (loadError || !radar) {
+    return (
+      <AppShell title="Radar" backHref="/painel/radar">
+        <div className={styles.wrap}>
+          <Alert tone="danger" title="Não foi possível carregar o radar">{loadError || "Radar não encontrado."}</Alert>
+        </div>
+      </AppShell>
+    );
+  }
+
   const c = radar.criteriaJson;
 
-  function handleDelete() {
+  async function handleDelete() {
     setDeleting(true);
-    window.setTimeout(() => router.push("/painel/radar"), 500);
+    setActionError("");
+    try {
+      await deleteRadar(radar.id);
+      router.push("/painel/radar");
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível excluir o radar.");
+      setDeleting(false);
+    }
   }
 
   return (
@@ -167,6 +238,7 @@ export default function RadarDetailPage({ params }) {
           </>
         }
       >
+        {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
         <p className={styles.description}>
           Tem certeza que deseja excluir o radar de <strong>{person?.legalName || "este contato"}</strong>? Esta ação não pode ser desfeita.
         </p>

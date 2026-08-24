@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Button from "@/components/atoms/Button/Button";
@@ -12,37 +12,87 @@ import Modal from "@/components/organisms/Modal/Modal";
 import RowActions from "@/components/molecules/RowActions/RowActions";
 import Pagination from "@/components/molecules/Pagination/Pagination";
 import Select from "@/components/atoms/Select/Select";
-import { RADARS } from "@/lib/mock/radars";
-import { PEOPLE } from "@/lib/mock/people";
-import { PROPERTIES } from "@/lib/mock/properties";
+import Spinner from "@/components/atoms/Spinner/Spinner";
+import Alert from "@/components/molecules/Alert/Alert";
+import { listRadars, deleteRadar, getRadarMatches } from "@/lib/api/radar";
+import { listPeople } from "@/lib/api/people";
 import { matchRadarToProperties, PROPERTY_TYPE_LABELS, OFFER_TYPE_LABELS } from "@/lib/radarMatching";
 import { formatBRL } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function RadarPage() {
   const router = useRouter();
-  const [radars, setRadars] = useState(RADARS);
+  const [radars, setRadars] = useState([]);
+  const [people, setPeople] = useState([]);
+  const [matchCounts, setMatchCounts] = useState({});
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [actionError, setActionError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError("");
+    Promise.all([listRadars(), listPeople()])
+      .then(async ([apiRadars, apiPeople]) => {
+        if (cancelled) return;
+        setRadars(apiRadars);
+        setPeople(apiPeople);
+        const counts = {};
+        await Promise.all(
+          apiRadars.map((r) =>
+            getRadarMatches(r.id)
+              .then((matches) => {
+                counts[r.id] = (matches || []).length;
+              })
+              .catch(() => {
+                counts[r.id] = 0;
+              })
+          )
+        );
+        if (!cancelled) setMatchCounts(counts);
+      })
+      .catch((err) => {
+        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar os radares.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const rows = useMemo(
     () =>
       radars.map((radar) => ({
         radar,
-        person: PEOPLE.find((p) => p.id === radar.personId),
-        matches: matchRadarToProperties(radar, PROPERTIES),
+        person: people.find((p) => p.id === radar.personId),
+        matches: new Array(matchCounts[radar.id] || 0),
       })),
-    [radars]
+    [radars, people, matchCounts]
   );
 
   const tableRows = rows.map((r) => ({ ...r, id: r.radar.id }));
   const totalPages = Math.max(1, Math.ceil(tableRows.length / pageSize));
   const pageItems = tableRows.slice((page - 1) * pageSize, page * pageSize);
 
-  function handleDelete() {
-    setRadars((prev) => prev.filter((r) => r.id !== deleteTarget.radar.id));
-    setDeleteTarget(null);
+  async function handleDelete() {
+    setDeleting(true);
+    setActionError("");
+    try {
+      await deleteRadar(deleteTarget.radar.id);
+      setRadars((prev) => prev.filter((r) => r.id !== deleteTarget.radar.id));
+      setDeleteTarget(null);
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível excluir o radar.");
+    } finally {
+      setDeleting(false);
+    }
   }
 
   const columns = [
@@ -137,7 +187,15 @@ export default function RadarPage() {
         </Button>
       </div>
 
-      <Table columns={columns} rows={pageItems} emptyMessage="Nenhum radar cadastrado." />
+      {loadError ? <Alert tone="danger" title="Não foi possível carregar os radares">{loadError}</Alert> : null}
+
+      {loading ? (
+        <div className={styles.toolbar}>
+          <Spinner size="lg" />
+        </div>
+      ) : (
+        <Table columns={columns} rows={pageItems} emptyMessage="Nenhum radar cadastrado." />
+      )}
       <div className={styles.paginationRow}>
         <Pagination page={page} totalPages={totalPages} onChange={setPage} />
         <label className={styles.pageSizeLabel}>
@@ -161,10 +219,11 @@ export default function RadarPage() {
         footer={
           <>
             <Button variant="secondary" onClick={() => setDeleteTarget(null)}>Cancelar</Button>
-            <Button variant="danger" onClick={handleDelete}>Excluir</Button>
+            <Button variant="danger" onClick={handleDelete} loading={deleting}>Excluir</Button>
           </>
         }
       >
+        {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
         <p>Tem certeza que deseja excluir este radar de <strong>{deleteTarget?.person?.legalName || "contato removido"}</strong>? Esta ação não pode ser desfeita.</p>
       </Modal>
     </AppShell>

@@ -10,8 +10,10 @@ import Select from "@/components/atoms/Select/Select";
 import Spinner from "@/components/atoms/Spinner/Spinner";
 import FormField from "@/components/molecules/FormField/FormField";
 import PersonPicker from "@/components/molecules/PersonPicker/PersonPicker";
+import Alert from "@/components/molecules/Alert/Alert";
 import { fetchAddressByCep } from "@/lib/cep";
 import { PROPERTY_TYPE_LABELS, OFFER_TYPE_LABELS } from "@/lib/radarMatching";
+import { createRadar } from "@/lib/api/radar";
 import styles from "./page.module.css";
 
 function formatCep(value) {
@@ -38,6 +40,7 @@ export default function NovoRadarPage() {
     maxAreaM2: "",
   });
 
+  const [submitError, setSubmitError] = useState("");
   const [cepLoading, setCepLoading] = useState(false);
   const [cepMessage, setCepMessage] = useState("");
   const cepRequestIdRef = useRef(0);
@@ -94,7 +97,7 @@ export default function NovoRadarPage() {
     runCepLookup(value);
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
     const nextErrors = {};
     if (!personId) nextErrors.person = "Selecione um contato já cadastrado.";
@@ -102,30 +105,33 @@ export default function NovoRadarPage() {
     if (Object.keys(nextErrors).length > 0) return;
 
     setSubmitting(true);
-    // Shape mockado do payload — nomenclatura alinhada a crm.property_radars.criteria_json.
-    const payload = {
-      personId,
-      opportunityId: null,
-      status: "ACTIVE",
-      criteriaJson: {
-        propertyType: criteria.propertyType,
-        offerType: criteria.offerType,
-        minPrice: criteria.minPrice ? Number(criteria.minPrice) : null,
-        maxPrice: criteria.maxPrice ? Number(criteria.maxPrice) : null,
-        city: criteria.city || null,
-        state: criteria.state || null,
-        minAreaM2: criteria.minAreaM2 ? Number(criteria.minAreaM2) : null,
-        maxAreaM2: criteria.maxAreaM2 ? Number(criteria.maxAreaM2) : null,
-      },
-    };
-    // eslint-disable-next-line no-console
-    console.log("[mock] novo radar", payload);
-    window.setTimeout(() => router.push("/painel/radar"), 500);
+    setSubmitError("");
+    try {
+      await createRadar({
+        personId,
+        status: "ACTIVE",
+        criteriaJson: {
+          propertyType: criteria.propertyType,
+          offerType: criteria.offerType,
+          minPrice: criteria.minPrice ? Number(criteria.minPrice) : null,
+          maxPrice: criteria.maxPrice ? Number(criteria.maxPrice) : null,
+          city: criteria.city || null,
+          state: criteria.state || null,
+          minAreaM2: criteria.minAreaM2 ? Number(criteria.minAreaM2) : null,
+          maxAreaM2: criteria.maxAreaM2 ? Number(criteria.maxAreaM2) : null,
+        },
+      });
+      router.push("/painel/radar");
+    } catch (err) {
+      setSubmitError(err?.message || "Não foi possível salvar o radar.");
+      setSubmitting(false);
+    }
   }
 
   return (
     <AppShell title="Novo radar" backHref="/painel/radar">
       <div className={styles.wrap}>
+        {submitError ? <Alert tone="danger" title="Não foi possível salvar o radar">{submitError}</Alert> : null}
         <form onSubmit={handleSubmit}>
           <Card title="Cliente" className={styles.section}>
             <FormField label="Contato (comprador/locatário)" htmlFor="rd-person" required error={errors.person}>
