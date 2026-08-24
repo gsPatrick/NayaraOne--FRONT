@@ -8,7 +8,9 @@ Cada módulo só é considerado integrado depois de testado contra a API de homo
 verdade (não só `npm run build` limpo).
 
 ## Fase 0 — Base (feita primeiro, sem tocar em módulo nenhum)
-- `lib/api/client.js`: wrapper de fetch com `NEXT_PUBLIC_API_URL`, injeta `Authorization: Bearer`,
+- `lib/api/client.js`: wrapper de fetch com a URL da API de homologação fixa no código (sem env
+  var — evita precisar configurar `NEXT_PUBLIC_API_URL` em cada domínio de front que subir),
+  injeta `Authorization: Bearer`,
   entende o envelope `{success, data}` / `{success:false, error:{code,message}}`, trata 401
   tentando `POST /auth/refresh` uma vez antes de deslogar.
 - `lib/api/auth.js`: `login(email, password, companyId?)`, `refresh()`, `logout()` — contrato
