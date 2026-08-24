@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import AuthTransition from "@/components/organisms/AuthTransition/AuthTransition";
+import { logoutRequest } from "@/lib/api/auth";
+import { clearSession } from "@/lib/auth/session";
 
 export default function LogoutButton({ as: Component = "button", className, children, onClick, ...rest }) {
   const router = useRouter();
@@ -13,7 +15,12 @@ export default function LogoutButton({ as: Component = "button", className, chil
     onClick?.();
     if (leaving) return;
     setLeaving(true);
-    window.setTimeout(() => router.push("/entrar"), 1300);
+    logoutRequest()
+      .catch(() => {})
+      .finally(() => {
+        clearSession();
+        window.setTimeout(() => router.push("/entrar"), 1300);
+      });
   };
 
   return (

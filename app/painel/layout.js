@@ -1,5 +1,6 @@
 import { CompanyProvider } from "@/lib/context/CompanyContext";
 import CompanySwitchOverlay from "@/components/molecules/CompanySwitchOverlay/CompanySwitchOverlay";
+import AuthGuard from "@/components/organisms/AuthGuard/AuthGuard";
 
 export const metadata = {
   title: "Painel — Nayara One",
@@ -8,9 +9,11 @@ export const metadata = {
 
 export default function PainelLayout({ children }) {
   return (
-    <CompanyProvider>
-      {children}
-      <CompanySwitchOverlay />
-    </CompanyProvider>
+    <AuthGuard>
+      <CompanyProvider>
+        {children}
+        <CompanySwitchOverlay />
+      </CompanyProvider>
+    </AuthGuard>
   );
 }
