@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -10,15 +10,16 @@ import SearchInput from "@/components/molecules/SearchInput/SearchInput";
 import Select from "@/components/atoms/Select/Select";
 import StatTile from "@/components/molecules/StatTile/StatTile";
 import Icon from "@/components/atoms/Icon/Icon";
+import Spinner from "@/components/atoms/Spinner/Spinner";
+import Alert from "@/components/molecules/Alert/Alert";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import ContractsNavMenu from "@/components/molecules/ContractsNavMenu/ContractsNavMenu";
 import RowActions from "@/components/molecules/RowActions/RowActions";
 import Modal from "@/components/organisms/Modal/Modal";
 import Pagination from "@/components/molecules/Pagination/Pagination";
-import { PEOPLE } from "@/lib/mock/people";
+import { listPeople } from "@/lib/api/people";
+import { listContracts, listGuarantees, deleteGuarantee } from "@/lib/api/legal";
 import {
-  CONTRACTS,
-  GUARANTEES,
   GUARANTEE_TYPE_LABELS,
   GUARANTEE_TYPE_ICON,
   GUARANTEE_STATUS_LABELS,
@@ -27,22 +28,43 @@ import {
 import { formatBRL, formatDate } from "@/lib/format";
 import styles from "./page.module.css";
 
-function contractOf(id) {
-  return CONTRACTS.find((c) => c.id === id) || null;
-}
-
-function personOf(id) {
-  return PEOPLE.find((p) => p.id === id) || null;
-}
-
 export default function GarantiasPage() {
   const router = useRouter();
-  const [guarantees, setGuarantees] = useState(GUARANTEES);
+  const [guarantees, setGuarantees] = useState([]);
+  const [contracts, setContracts] = useState([]);
+  const [people, setPeople] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [actionError, setActionError] = useState("");
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError("");
+    Promise.all([listGuarantees(), listContracts(), listPeople()])
+      .then(([guaranteesRes, contractsRes, peopleRes]) => {
+        if (cancelled) return;
+        setGuarantees(guaranteesRes || []);
+        setContracts(contractsRes || []);
+        setPeople(peopleRes || []);
+      })
+      .catch((err) => { if (!cancelled) setLoadError(err.message || "Erro ao carregar garantias."); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
+
+  function contractOf(id) {
+    return contracts.find((c) => c.id === id) || null;
+  }
+
+  function personOf(id) {
+    return people.find((p) => p.id === id) || null;
+  }
 
   const filtered = useMemo(() => {
     return guarantees.filter((g) => {
@@ -51,21 +73,39 @@ export default function GarantiasPage() {
       if (typeFilter && g.guaranteeType !== typeFilter) return false;
       return true;
     });
-  }, [guarantees, query, typeFilter]);
+  }, [guarantees, contracts, query, typeFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const pageItems = filtered.slice((page - 1) * pageSize, page * pageSize);
 
-  function handleDelete() {
-    setGuarantees((prev) => prev.filter((g) => g.id !== deleteTarget.id));
-    setDeleteTarget(null);
+  async function handleDelete() {
+    setActionError("");
+    try {
+      await deleteGuarantee(deleteTarget.id);
+      setGuarantees((prev) => prev.filter((g) => g.id !== deleteTarget.id));
+    } catch (err) {
+      setActionError(err.message || "Erro ao excluir garantia.");
+    } finally {
+      setDeleteTarget(null);
+    }
   }
 
   const activeCount = guarantees.filter((g) => g.status === "ACTIVE").length;
   const totalValue = guarantees.reduce((s, g) => s + Number(g.value || 0), 0);
 
+  if (loading) {
+    return (
+      <AppShell title="Garantias" backHref="/painel/contratos">
+        <Spinner size="lg" />
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell title="Garantias" backHref="/painel/contratos">
+      {loadError ? <Alert tone="danger">{loadError}</Alert> : null}
+      {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
+
       <div className={styles.grid}>
         <StatTile label="Total de garantias" value={guarantees.length} tone="neutral" icon="shield" />
         <StatTile label="Ativas" value={activeCount} tone="success" icon="check" />
@@ -103,7 +143,7 @@ export default function GarantiasPage() {
                       <span className={styles.guaranteeTitle}>{GUARANTEE_TYPE_LABELS[g.guaranteeType]}</span>
                       <span className={styles.guaranteeSub}>{contract?.contractNumber || "—"}</span>
                     </div>
-                    <Badge tone={GUARANTEE_STATUS_TONE[g.status]}>{GUARANTEE_STATUS_LABELS[g.status]}</Badge>
+                    <Badge tone={GUARANTEE_STATUS_TONE[g.status] || "neutral"}>{GUARANTEE_STATUS_LABELS[g.status] || g.status}</Badge>
                   </div>
                   <div className={styles.guaranteeMeta}>
                     {guarantor ? (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -9,21 +9,48 @@ import Input from "@/components/atoms/Input/Input";
 import Select from "@/components/atoms/Select/Select";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
-import { CONTRACTS, GUARANTEE_TYPE_LABELS } from "@/lib/mock/legal";
-import { PEOPLE } from "@/lib/mock/people";
+import Spinner from "@/components/atoms/Spinner/Spinner";
+import { listPeople } from "@/lib/api/people";
+import { listContracts, createGuarantee } from "@/lib/api/legal";
+import { GUARANTEE_TYPE_LABELS } from "@/lib/mock/legal";
 import styles from "./page.module.css";
 
 export default function NovaGarantiaPage() {
   const router = useRouter();
+  const [contracts, setContracts] = useState([]);
+  const [people, setPeople] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [actionError, setActionError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
-    contractId: CONTRACTS[0]?.id || "",
+    contractId: "",
     guaranteeType: "GUARANTOR",
-    guarantorPersonId: PEOPLE[0]?.id || "",
+    guarantorPersonId: "",
     value: "",
     startsAt: "",
     endsAt: "",
   });
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError("");
+    Promise.all([listContracts(), listPeople()])
+      .then(([contractsRes, peopleRes]) => {
+        if (cancelled) return;
+        setContracts(contractsRes || []);
+        setPeople(peopleRes || []);
+        setForm((prev) => ({
+          ...prev,
+          contractId: prev.contractId || contractsRes?.[0]?.id || "",
+          guarantorPersonId: prev.guarantorPersonId || peopleRes?.[0]?.id || "",
+        }));
+      })
+      .catch((err) => { if (!cancelled) setLoadError(err.message || "Erro ao carregar dados."); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
 
   const isGuarantor = form.guaranteeType === "GUARANTOR";
   const isValid = form.contractId && form.guaranteeType && (!isGuarantor || form.guarantorPersonId);
@@ -32,16 +59,40 @@ export default function NovaGarantiaPage() {
     return (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!isValid) return;
+    setActionError("");
     setSubmitting(true);
-    // Mock: em produção isto chamaria POST /v1/legal/guarantees (guarantees.service.js)
-    window.setTimeout(() => router.push("/painel/contratos/garantias"), 500);
+    try {
+      await createGuarantee(form.contractId, {
+        guaranteeType: form.guaranteeType,
+        guarantorPersonId: isGuarantor ? form.guarantorPersonId : undefined,
+        value: form.value ? Number(form.value) : undefined,
+        startsAt: form.startsAt || undefined,
+        endsAt: form.endsAt || undefined,
+      });
+      router.push("/painel/contratos/garantias");
+    } catch (err) {
+      setActionError(err.message || "Erro ao criar garantia.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <AppShell title="Nova garantia" backHref="/painel/contratos/garantias">
+        <Spinner size="lg" />
+      </AppShell>
+    );
   }
 
   return (
     <AppShell title="Nova garantia" backHref="/painel/contratos/garantias">
       <div className={styles.wrap}>
+        {loadError ? <Alert tone="danger">{loadError}</Alert> : null}
+        {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
+
         <Alert tone="info" title="Fiador exige pessoa vinculada">
           Quando o tipo de garantia for "Fiador", é necessário indicar a pessoa que responde como fiadora do contrato.
         </Alert>
@@ -50,7 +101,7 @@ export default function NovaGarantiaPage() {
           <div className={styles.formGrid}>
             <FormField label="Contrato" htmlFor="f-contract" required>
               <Select id="f-contract" value={form.contractId} onChange={update("contractId")}>
-                {CONTRACTS.map((c) => (
+                {contracts.map((c) => (
                   <option key={c.id} value={c.id}>{c.contractNumber}</option>
                 ))}
               </Select>
@@ -67,7 +118,7 @@ export default function NovaGarantiaPage() {
             {isGuarantor ? (
               <FormField label="Fiador" htmlFor="f-guarantor" required helper="Pessoa que responde como fiadora">
                 <Select id="f-guarantor" value={form.guarantorPersonId} onChange={update("guarantorPersonId")}>
-                  {PEOPLE.map((p) => (
+                  {people.map((p) => (
                     <option key={p.id} value={p.id}>{p.legalName}</option>
                   ))}
                 </Select>
