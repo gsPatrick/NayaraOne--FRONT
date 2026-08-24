@@ -15,6 +15,7 @@ import OpportunityCard from "@/components/molecules/OpportunityCard/OpportunityC
 import PersonPicker from "@/components/molecules/PersonPicker/PersonPicker";
 import Spinner from "@/components/atoms/Spinner/Spinner";
 import Alert from "@/components/molecules/Alert/Alert";
+import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import { SkeletonKanban } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import { STAGES } from "@/lib/mock/opportunities";
 import { listOpportunities, createOpportunity, updateOpportunity, listVisits, listMessages } from "@/lib/api/crm";
@@ -283,7 +284,7 @@ function OpportunityDetailModal({ opportunity, stages, onClose }) {
             {loadingHistory ? (
               <Spinner size="sm" />
             ) : visits.length === 0 ? (
-              <p className={styles.mutedNote}>Nenhuma visita registrada.</p>
+              <EmptyState icon="calendar" title="Sem visitas" description="Nenhuma visita registrada." />
             ) : (
               visits.map((visit) => (
                 <div className={styles.visitRow} key={visit.id}>
@@ -300,7 +301,7 @@ function OpportunityDetailModal({ opportunity, stages, onClose }) {
               {loadingHistory ? (
                 <Spinner size="sm" />
               ) : messages.length === 0 ? (
-                <p className={styles.mutedNote}>Nenhuma mensagem registrada.</p>
+                <EmptyState icon="mail" title="Sem mensagens" description="Nenhuma mensagem registrada." />
               ) : (
                 messages.map((msg) => (
                   <div className={styles.messageBubble} key={msg.id}>

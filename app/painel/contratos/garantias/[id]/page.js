@@ -7,6 +7,7 @@ import Card from "@/components/molecules/Card/Card";
 import Badge from "@/components/atoms/Badge/Badge";
 import Icon from "@/components/atoms/Icon/Icon";
 import Alert from "@/components/molecules/Alert/Alert";
+import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import RowActions from "@/components/molecules/RowActions/RowActions";
 import Modal from "@/components/organisms/Modal/Modal";
@@ -160,7 +161,7 @@ export default function GarantiaDetailPage({ params }) {
                   <Icon name="chevronRight" size={16} />
                 </div>
               ) : (
-                <p className={styles.emptyText}>Sem contrato vinculado.</p>
+                <EmptyState icon="document" title="Sem contrato vinculado" description="Nenhum contrato vinculado a esta garantia." />
               )}
             </Card>
           </div>

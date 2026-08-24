@@ -8,6 +8,7 @@ import Badge from "@/components/atoms/Badge/Badge";
 import Icon from "@/components/atoms/Icon/Icon";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
+import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
@@ -189,7 +190,7 @@ export default function ContaBancariaDetailPage({ params }) {
 
               <Card title="Lançamentos vinculados" subtitle={`${relatedEntries.length} lançamento(s) nesta conta`}>
                 {relatedEntries.length === 0 ? (
-                  <p className={styles.emptyText}>Nenhum lançamento nesta conta.</p>
+                  <EmptyState icon="document" title="Sem lançamentos" description="Nenhum lançamento nesta conta." />
                 ) : (
                   <ul className={styles.list}>
                     {relatedEntries.map((e) => (
@@ -211,7 +212,7 @@ export default function ContaBancariaDetailPage({ params }) {
             <div className={styles.sideCol}>
               <Card title="Repasses vinculados">
                 {relatedRepasses.length === 0 ? (
-                  <p className={styles.emptyText}>Nenhum repasse nesta conta.</p>
+                  <EmptyState icon="money" title="Sem repasses" description="Nenhum repasse nesta conta." />
                 ) : (
                   <ul className={styles.list}>
                     {relatedRepasses.map((r) => (

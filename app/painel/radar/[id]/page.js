@@ -155,8 +155,10 @@ export default function RadarDetailPage({ params }) {
           </div>
 
           <div className={styles.sideCol}>
-            {person?.contacts?.length ? (
+            {person ? (
               <Card title="Contatos">
+                {person.contacts?.length ? (
+                <>
                 <p className={styles.contactHint}>Deu match? Ligue ou chame no WhatsApp direto por aqui.</p>
                 <div className={styles.contactList}>
                   {person.contacts.map((contact) => {
@@ -181,6 +183,10 @@ export default function RadarDetailPage({ params }) {
                     );
                   })}
                 </div>
+                </>
+                ) : (
+                  <EmptyState icon="phone" title="Sem contatos" description="Nenhum contato cadastrado para este contato ainda." />
+                )}
               </Card>
             ) : null}
 

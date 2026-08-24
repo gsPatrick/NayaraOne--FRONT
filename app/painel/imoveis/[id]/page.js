@@ -12,6 +12,7 @@ import Select from "@/components/atoms/Select/Select";
 import Card from "@/components/molecules/Card/Card";
 import Modal from "@/components/organisms/Modal/Modal";
 import Alert from "@/components/molecules/Alert/Alert";
+import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import PriceHistoryTimeline from "@/components/molecules/PriceHistoryTimeline/PriceHistoryTimeline";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import {
@@ -296,6 +297,9 @@ export default function PropertyDetailPage({ params }) {
             </Card>
 
             <Card title="Proprietários">
+              {property.owners.length === 0 ? (
+                <EmptyState icon="user" title="Sem proprietários" description="Nenhum proprietário cadastrado para este imóvel ainda." />
+              ) : (
               <div className={styles.ownerProfileList}>
                 {property.owners.map((owner) => {
                   const linkedCount = owner.personId ? ownedByCount[owner.personId] || 0 : 0;
@@ -323,6 +327,7 @@ export default function PropertyDetailPage({ params }) {
                   );
                 })}
               </div>
+              )}
             </Card>
 
             <Card title="Localização">
@@ -387,7 +392,7 @@ export default function PropertyDetailPage({ params }) {
                   </p>
                 </>
               ) : (
-                <p className={styles.description}>Sem características cadastradas.</p>
+                <EmptyState icon="layers" title="Sem características" description="Nenhuma característica cadastrada para este imóvel." />
               )}
             </Card>
 
@@ -418,7 +423,7 @@ export default function PropertyDetailPage({ params }) {
                   </div>
                 </div>
               ) : (
-                <p className={styles.description}>Sem documentação cadastrada.</p>
+                <EmptyState icon="document" title="Sem documentação" description="Nenhuma documentação cadastrada para este imóvel." />
               )}
             </Card>
 
@@ -446,7 +451,7 @@ export default function PropertyDetailPage({ params }) {
                   ))}
                 </div>
               ) : (
-                <p className={styles.description}>Nenhuma ocorrência interna registrada.</p>
+                <EmptyState icon="document" title="Sem ocorrências internas" description="Nenhuma ocorrência interna registrada." />
               )}
 
               <form className={styles.occurrenceForm} onSubmit={handleAddOccurrence}>
@@ -543,7 +548,7 @@ export default function PropertyDetailPage({ params }) {
                   );
                 })()
               ) : (
-                <p className={styles.description}>Nenhuma mídia cadastrada.</p>
+                <EmptyState icon="image" title="Sem mídia" description="Nenhuma mídia cadastrada para este imóvel." />
               )}
             </Card>
           </div>
@@ -580,7 +585,7 @@ export default function PropertyDetailPage({ params }) {
                   ) : null}
                 </div>
               ) : (
-                <p className={styles.description}>Sem oferta ativa no momento.</p>
+                <EmptyState icon="money" title="Sem oferta ativa" description="Nenhuma oferta ativa cadastrada para este imóvel no momento." />
               )}
             </Card>
 

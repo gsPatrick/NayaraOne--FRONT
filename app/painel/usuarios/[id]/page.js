@@ -9,6 +9,7 @@ import Button from "@/components/atoms/Button/Button";
 import Badge from "@/components/atoms/Badge/Badge";
 import Avatar from "@/components/atoms/Avatar/Avatar";
 import Icon from "@/components/atoms/Icon/Icon";
+import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import { USERS, ROLE_TONE } from "@/lib/mock/users";
 import { PROPERTIES } from "@/lib/mock/properties";
 import { getUserAuditLog, ACTION_LABELS, ENTITY_TYPE_LABELS } from "@/lib/mock/auditLog";
@@ -74,7 +75,7 @@ export default function UserDetailPage({ params }) {
           <div className={styles.mainCol}>
             <Card title="Imóveis cadastrados" subtitle={`${properties.length} imóve${properties.length === 1 ? "l" : "is"} criado${properties.length === 1 ? "" : "s"} por este usuário`} className={styles.section}>
               {properties.length === 0 ? (
-                <p className={styles.emptyText}>Nenhum imóvel cadastrado por este usuário ainda.</p>
+                <EmptyState icon="building" title="Sem imóveis" description="Nenhum imóvel cadastrado por este usuário ainda." />
               ) : (
                 <div className={styles.propertyList}>
                   {properties.map((p) => (
@@ -101,7 +102,7 @@ export default function UserDetailPage({ params }) {
 
             <Card title="Atividade & log" subtitle="Histórico de ações deste usuário no sistema" className={styles.section}>
               {auditLog.length === 0 ? (
-                <p className={styles.emptyText}>Nenhuma atividade registrada.</p>
+                <EmptyState icon="document" title="Sem atividade" description="Nenhuma atividade registrada." />
               ) : (
                 <div className={styles.timeline}>
                   {auditLog.map((entry) => {
@@ -158,6 +159,9 @@ export default function UserDetailPage({ params }) {
             </Card>
 
             <Card title="Empresas, unidades & papéis">
+              {user.memberships.length === 0 ? (
+                <EmptyState icon="layers" title="Sem vínculos" description="Este usuário não está vinculado a nenhuma empresa." />
+              ) : (
               <div className={styles.list}>
                 {user.memberships.map((m) => (
                   <div className={styles.listRow} key={m.company}>
@@ -172,6 +176,7 @@ export default function UserDetailPage({ params }) {
                   </div>
                 ))}
               </div>
+              )}
             </Card>
           </div>
         </div>

@@ -14,6 +14,7 @@ import FormField from "@/components/molecules/FormField/FormField";
 import Modal from "@/components/organisms/Modal/Modal";
 import Table from "@/components/organisms/Table/Table";
 import Tabs from "@/components/molecules/Tabs/Tabs";
+import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import { COMPANIES, COMPANY_STATUS_LABELS, UNIT_STATUS_LABELS } from "@/lib/mock/companies";
 import { USERS, ROLE_TONE } from "@/lib/mock/users";
 import { PROPERTIES, AVAILABILITY_STATUS_LABELS } from "@/lib/mock/properties";
@@ -249,7 +250,7 @@ export default function CompanyDetailPage({ params }) {
                   {isOpen ? (
                     <div className={styles.unitUsers}>
                       {unitUsers.length === 0 ? (
-                        <p className={styles.unitUsersEmpty}>Nenhum usuário vinculado a esta unidade.</p>
+                        <EmptyState icon="users" title="Sem usuários" description="Nenhum usuário vinculado a esta unidade." />
                       ) : (
                         unitUsers.map((u) => {
                           const membership = u.memberships.find((m) => m.company === company.legalName && m.unit === unit.name);
@@ -297,7 +298,7 @@ export default function CompanyDetailPage({ params }) {
 
         <Card title="Imóveis da empresa" subtitle={`${companyProperties.length} imóve${companyProperties.length === 1 ? "l" : "is"} vinculados a ${company.name}`} className={styles.section}>
           {companyProperties.length === 0 ? (
-            <p className={styles.emptyText}>Nenhum imóvel vinculado a esta empresa ainda.</p>
+            <EmptyState icon="building" title="Sem imóveis" description="Nenhum imóvel vinculado a esta empresa ainda." />
           ) : (
             <div className={styles.carouselWrap}>
               {companyProperties.length > 4 ? (

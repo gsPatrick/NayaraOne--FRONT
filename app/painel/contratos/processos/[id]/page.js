@@ -10,6 +10,7 @@ import Select from "@/components/atoms/Select/Select";
 import Input from "@/components/atoms/Input/Input";
 import FormField from "@/components/molecules/FormField/FormField";
 import Alert from "@/components/molecules/Alert/Alert";
+import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import { listProperties, getProperty } from "@/lib/api/properties";
 import { apiFetch } from "@/lib/api/client";
@@ -185,7 +186,7 @@ export default function ProcessoDetailPage({ params }) {
 
             <Card title="Prazos" subtitle="Severidade calculada pela API a partir do vencimento (OVERDUE/DUE_SOON/NORMAL/DONE)">
               {deadlines.length === 0 ? (
-                <p className={styles.emptyText}>Nenhum prazo cadastrado.</p>
+                <EmptyState icon="calendar" title="Sem prazos" description="Nenhum prazo cadastrado." />
               ) : (
                 deadlines.map((d) => (
                   <div key={d.id} className={styles.deadlineRow}>
@@ -206,7 +207,7 @@ export default function ProcessoDetailPage({ params }) {
           <div className={styles.sideCol}>
             <Card title="Pacotes de evidência" subtitle="Append-only — cada pacote é imutável após criado">
               {evidencePackages.length === 0 ? (
-                <p className={styles.emptyText}>Nenhum pacote de evidência gerado para este processo.</p>
+                <EmptyState icon="document" title="Sem pacotes de evidência" description="Nenhum pacote de evidência gerado para este processo." />
               ) : (
                 evidencePackages.map((pkg) => (
                   <div key={pkg.id} className={styles.evidencePackage}>

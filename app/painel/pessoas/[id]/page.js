@@ -11,6 +11,7 @@ import Avatar from "@/components/atoms/Avatar/Avatar";
 import Card from "@/components/molecules/Card/Card";
 import Modal from "@/components/organisms/Modal/Modal";
 import Alert from "@/components/molecules/Alert/Alert";
+import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import {
   ROLE_TONE,
@@ -238,6 +239,9 @@ export default function PersonDetailPage({ params }) {
             </Card>
 
             <Card title="Contatos">
+              {person.contacts.length === 0 ? (
+                <EmptyState icon="phone" title="Sem contatos" description="Nenhum contato cadastrado para esta pessoa ainda." />
+              ) : (
               <div className={styles.list}>
                 {person.contacts.map((c) => {
                   const href = buildContactHref(c);
@@ -273,6 +277,7 @@ export default function PersonDetailPage({ params }) {
                   );
                 })}
               </div>
+              )}
             </Card>
 
             <Card title="Documentos">
@@ -291,7 +296,7 @@ export default function PersonDetailPage({ params }) {
                   ))}
                 </div>
               ) : (
-                <p className={styles.description}>Nenhum documento adicional cadastrado.</p>
+                <EmptyState icon="document" title="Sem documentos" description="Nenhum documento adicional cadastrado." />
               )}
             </Card>
 
@@ -324,7 +329,7 @@ export default function PersonDetailPage({ params }) {
                   </a>
                 </>
               ) : (
-                <p className={styles.description}>Sem endereço cadastrado.</p>
+                <EmptyState icon="mapPin" title="Sem endereço" description="Nenhum endereço cadastrado para este contato." />
               )}
             </Card>
           </div>
@@ -343,9 +348,13 @@ export default function PersonDetailPage({ params }) {
                 <div className={styles.summaryRow}>
                   <span className={styles.summaryLabel}>Papéis</span>
                   <div className={styles.summaryRoles}>
-                    {person.roles.map((role) => (
-                      <Badge key={role} tone={ROLE_TONE[role] || "neutral"}>{ROLE_LABELS[role] || role}</Badge>
-                    ))}
+                    {person.roles.length === 0 ? (
+                      <span className={styles.summaryValue}>—</span>
+                    ) : (
+                      person.roles.map((role) => (
+                        <Badge key={role} tone={ROLE_TONE[role] || "neutral"}>{ROLE_LABELS[role] || role}</Badge>
+                      ))
+                    )}
                   </div>
                 </div>
                 <div className={styles.summaryRow}>
@@ -381,7 +390,7 @@ export default function PersonDetailPage({ params }) {
                   })}
                 </div>
               ) : (
-                <p className={styles.description}>Nenhum imóvel vinculado a este contato ainda.</p>
+                <EmptyState icon="building" title="Sem imóveis vinculados" description="Nenhum imóvel vinculado a este contato ainda." />
               )}
             </Card>
           </div>

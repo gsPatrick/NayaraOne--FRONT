@@ -8,6 +8,7 @@ import Badge from "@/components/atoms/Badge/Badge";
 import Icon from "@/components/atoms/Icon/Icon";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
+import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import { getProperty } from "@/lib/api/properties";
 import { apiFetch } from "@/lib/api/client";
@@ -178,7 +179,7 @@ export default function VistoriaDetailPage({ params }) {
 
         <Card title="Itens vistoriados" subtitle={`${items.length} item(ns) registrado(s)`}>
           {items.length === 0 ? (
-            <p className={styles.emptyText}>Nenhum item registrado — vistoria ainda não concluída.</p>
+            <EmptyState icon="document" title="Sem itens" description="Nenhum item registrado — vistoria ainda não concluída." />
           ) : (
             items.map((item) => (
               <div key={item.id} className={styles.itemRow}>
@@ -234,7 +235,7 @@ export default function VistoriaDetailPage({ params }) {
                 <Icon name="filter" size={14} /> Itens destacados mudaram de condição entre as duas vistorias.
               </p>
             ) : (
-              <p className={styles.emptyText}>Nenhuma divergência encontrada entre as duas vistorias.</p>
+              <EmptyState icon="check" title="Sem divergências" description="Nenhuma divergência encontrada entre as duas vistorias." />
             )}
           </Card>
         ) : null}

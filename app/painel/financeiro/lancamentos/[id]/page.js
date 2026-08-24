@@ -8,6 +8,7 @@ import Badge from "@/components/atoms/Badge/Badge";
 import Icon from "@/components/atoms/Icon/Icon";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
+import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import NatureBadge from "@/components/molecules/NatureBadge/NatureBadge";
 import BankLogo from "@/components/atoms/BankLogo/BankLogo";
@@ -198,7 +199,7 @@ export default function LancamentoDetailPage({ params }) {
                     </div>
                   </div>
                 ) : (
-                  <p className={styles.emptyText}>Este lançamento ainda não foi conciliado com nenhuma transação de extrato.</p>
+                  <EmptyState icon="document" title="Sem conciliação" description="Este lançamento ainda não foi conciliado com nenhuma transação de extrato." />
                 )}
               </Card>
             </div>
@@ -222,7 +223,7 @@ export default function LancamentoDetailPage({ params }) {
                     </Button>
                   </div>
                 ) : (
-                  <p className={styles.emptyText}>Sem conta vinculada.</p>
+                  <EmptyState icon="money" title="Sem conta vinculada" description="Nenhuma conta bancária vinculada a este lançamento." />
                 )}
               </Card>
             </div>

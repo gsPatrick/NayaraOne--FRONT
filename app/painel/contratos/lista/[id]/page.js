@@ -8,6 +8,7 @@ import Badge from "@/components/atoms/Badge/Badge";
 import Icon from "@/components/atoms/Icon/Icon";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
+import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import Avatar from "@/components/atoms/Avatar/Avatar";
 import { getProperty } from "@/lib/api/properties";
@@ -220,7 +221,7 @@ export default function ContratoDetailPage({ params }) {
 
             <Card title="Partes do contrato" subtitle="Pessoas vinculadas ao contrato e seus papéis">
               {parties.length === 0 ? (
-                <p className={styles.emptyText}>Nenhuma parte cadastrada.</p>
+                <EmptyState icon="users" title="Sem partes" description="Nenhuma parte cadastrada." />
               ) : (
                 parties.map((party) => {
                   const person = personOf(party.personId);
@@ -243,7 +244,7 @@ export default function ContratoDetailPage({ params }) {
               actions={<Button size="sm" variant="secondary" onClick={handleNewVersion} disabled={busy}><Icon name="document" size={16} /> Nova versão</Button>}
             >
               {versions.length === 0 ? (
-                <p className={styles.emptyText}>Nenhuma versão gerada ainda.</p>
+                <EmptyState icon="document" title="Sem versões" description="Nenhuma versão gerada ainda." />
               ) : (
                 [...versions].reverse().map((version) => (
                   <div key={version.id} className={styles.versionRow}>
@@ -259,7 +260,7 @@ export default function ContratoDetailPage({ params }) {
 
             <Card title="Assinaturas" subtitle={latestVersion ? `Referentes à versão ${latestVersion.versionNumber}` : "Sem versão de documento gerada"}>
               {signatures.length === 0 ? (
-                <p className={styles.emptyText}>Nenhuma assinatura registrada para a versão atual.</p>
+                <EmptyState icon="signature" title="Sem assinaturas" description="Nenhuma assinatura registrada para a versão atual." />
               ) : (
                 signatures.map((sig) => {
                   const person = personOf(sig.personId);
@@ -285,7 +286,7 @@ export default function ContratoDetailPage({ params }) {
               actions={<Button size="sm" variant="secondary" href="/painel/contratos/garantias">Ver todas</Button>}
             >
               {guarantees.length === 0 ? (
-                <p className={styles.emptyText}>Nenhuma garantia cadastrada para este contrato.</p>
+                <EmptyState icon="shield" title="Sem garantias" description="Nenhuma garantia cadastrada para este contrato." />
               ) : (
                 guarantees.map((g) => (
                   <div key={g.id} className={styles.guaranteeCard}>
