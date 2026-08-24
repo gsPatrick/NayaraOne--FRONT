@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -13,6 +13,8 @@ import StatTile from "@/components/molecules/StatTile/StatTile";
 import ColumnChart from "@/components/molecules/ColumnChart/ColumnChart";
 import PieChart from "@/components/molecules/PieChart/PieChart";
 import Icon from "@/components/atoms/Icon/Icon";
+import Spinner from "@/components/atoms/Spinner/Spinner";
+import Alert from "@/components/molecules/Alert/Alert";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu";
 import Pagination from "@/components/molecules/Pagination/Pagination";
@@ -21,22 +23,27 @@ import NatureBadge from "@/components/molecules/NatureBadge/NatureBadge";
 import BankLogo from "@/components/atoms/BankLogo/BankLogo";
 import Avatar from "@/components/atoms/Avatar/Avatar";
 import Modal from "@/components/organisms/Modal/Modal";
-import { PEOPLE } from "@/lib/mock/people";
 import {
-  FINANCIAL_ENTRIES,
-  BANK_ACCOUNTS,
-  COST_CENTERS,
   ENTRY_NATURE_LABELS,
   ENTRY_STATUS_LABELS,
   ENTRY_STATUS_TONE,
   isEntryOverdue,
 } from "@/lib/mock/finance";
+import { listFinancialEntries, listBankAccounts, listCostCenters } from "@/lib/api/finance";
+import { listPeople } from "@/lib/api/people";
+import { bankAccountLabel } from "@/lib/finance/labels";
 import { formatBRL, formatDate } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function LancamentosPage() {
   const router = useRouter();
-  const [entries, setEntries] = useState(FINANCIAL_ENTRIES);
+  const [entries, setEntries] = useState([]);
+  const [bankAccounts, setBankAccounts] = useState([]);
+  const [costCenters, setCostCenters] = useState([]);
+  const [people, setPeople] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [actionError, setActionError] = useState("");
   const [query, setQuery] = useState("");
   const [natureFilter, setNatureFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
@@ -44,26 +51,51 @@ export default function LancamentosPage() {
   const [pageSize, setPageSize] = useState(8);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError("");
+    Promise.all([listFinancialEntries(), listBankAccounts(), listCostCenters(), listPeople()])
+      .then(([e, ba, cc, pp]) => {
+        if (cancelled) return;
+        setEntries(e || []);
+        setBankAccounts(ba || []);
+        setCostCenters(cc || []);
+        setPeople(pp || []);
+      })
+      .catch((err) => {
+        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar os lançamentos.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   function bankAccountOf(id) {
-    return BANK_ACCOUNTS.find((a) => a.id === id) || null;
+    return bankAccounts.find((a) => a.id === id) || null;
   }
 
   function ownerOf(account) {
     if (!account?.ownerPersonId) return null;
-    return PEOPLE.find((p) => p.id === account.ownerPersonId) || null;
+    return people.find((p) => p.id === account.ownerPersonId) || null;
   }
 
   const filtered = useMemo(() => {
     return entries.filter((e) => {
-      if (query && !e.description.toLowerCase().includes(query.toLowerCase())) return false;
+      if (query && !(e.description || "").toLowerCase().includes(query.toLowerCase())) return false;
       if (natureFilter && e.nature !== natureFilter) return false;
       if (statusFilter && e.status !== statusFilter) return false;
       return true;
     });
   }, [entries, query, natureFilter, statusFilter]);
 
+  // Não há endpoint de exclusão de lançamento na API (ledger imutável — FIN-003/FIN-010);
+  // "excluir" aqui só remove da lista local exibida, sem chamar a API.
   function handleDelete() {
-    setEntries((prev) => prev.filter((e) => e.id !== deleteTarget.id));
+    setActionError("Não é possível excluir um lançamento — o ledger é imutável (use estornar no detalhe).");
     setDeleteTarget(null);
   }
 
@@ -89,12 +121,12 @@ export default function LancamentosPage() {
   const byCostCenter = useMemo(() => {
     const counts = {};
     entries.forEach((e) => {
-      const cc = COST_CENTERS.find((c) => c.id === e.costCenterId);
+      const cc = costCenters.find((c) => c.id === e.costCenterId);
       const key = cc ? cc.name : "Sem centro";
       counts[key] = (counts[key] || 0) + Number(e.amount);
     });
     return Object.entries(counts).map(([label, value]) => ({ label, value, displayValue: formatBRL(value) }));
-  }, [entries]);
+  }, [entries, costCenters]);
 
   const columns = [
     {
@@ -109,10 +141,10 @@ export default function LancamentosPage() {
             <span className={styles.iconStack}>
               <BankLogo bankCode={account?.bankCode} size={30} square />
             </span>
-            {owner ? <Avatar name={owner.legalName} src={owner.photoUrl} size="sm" className={styles.ownerAvatar} /> : null}
+            {owner ? <Avatar name={owner.legalName} size="sm" className={styles.ownerAvatar} /> : null}
             <div className={styles.nameCell}>
               <span className={styles.nameMain} title={row.description}>{row.description}</span>
-              <span className={styles.nameSub}>{account?.label || "—"}</span>
+              <span className={styles.nameSub}>{bankAccountLabel(account, owner?.legalName)}</span>
             </div>
           </div>
         );
@@ -148,80 +180,89 @@ export default function LancamentosPage() {
 
   return (
     <AppShell title="Lançamentos" backHref="/painel/financeiro">
-      <div className={styles.grid}>
-        <StatTile label="A pagar (pendente)" value={formatBRL(totalPayable)} tone="warning" icon="document" />
-        <StatTile label="A receber (pendente)" value={formatBRL(totalReceivable)} tone="info" icon="money" />
-        <StatTile label="Vencidas" value={overdueCount} tone={overdueCount > 0 ? "danger" : "success"} icon="calendar" />
-        <StatTile label="Liquidadas" value={settledCount} tone="success" icon="check" />
-      </div>
+      {loadError ? <Alert tone="danger" title="Não foi possível carregar os lançamentos">{loadError}</Alert> : null}
+      {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
 
-      <div className={styles.layout}>
-        <Card
-          title="Contas a pagar e receber"
-          subtitle="Ledger — cada correção gera um lançamento de estorno, nunca edita o original (imutabilidade)"
-          className={styles.tableCard}
-        >
-          <div className={styles.toolbar}>
-            <SearchInput
-              placeholder="Buscar por descrição..."
-              value={query}
-              onChange={(e) => { setQuery(e.target.value); resetPage(); }}
-            />
-            <Select className={styles.filter} value={natureFilter} onChange={(e) => { setNatureFilter(e.target.value); resetPage(); }}>
-              <option value="">Todas as naturezas</option>
-              {Object.entries(ENTRY_NATURE_LABELS).map(([k, v]) => (
-                <option key={k} value={k}>{v}</option>
-              ))}
-            </Select>
-            <Select className={styles.filter} value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); resetPage(); }}>
-              <option value="">Todos os status</option>
-              {Object.entries(ENTRY_STATUS_LABELS).map(([k, v]) => (
-                <option key={k} value={k}>{v}</option>
-              ))}
-            </Select>
+      {loading ? (
+        <Spinner size="lg" />
+      ) : (
+        <>
+          <div className={styles.grid}>
+            <StatTile label="A pagar (pendente)" value={formatBRL(totalPayable)} tone="warning" icon="document" />
+            <StatTile label="A receber (pendente)" value={formatBRL(totalReceivable)} tone="info" icon="money" />
+            <StatTile label="Vencidas" value={overdueCount} tone={overdueCount > 0 ? "danger" : "success"} icon="calendar" />
+            <StatTile label="Liquidadas" value={settledCount} tone="success" icon="check" />
           </div>
-          <Table columns={columns} rows={pageItems} emptyMessage="Nenhum lançamento encontrado." />
-          <div className={styles.paginationRow}>
-            <Pagination page={page} totalPages={totalPages} onChange={setPage} />
-            <label className={styles.pageSizeLabel}>
-              Por página
-              <Select
-                className={styles.pageSizeSelect}
-                value={pageSize}
-                onChange={(e) => { setPageSize(Number(e.target.value)); resetPage(); }}
-              >
-                <option value={8}>8</option>
-                <option value={20}>20</option>
-                <option value={50}>50</option>
-              </Select>
-            </label>
-          </div>
-        </Card>
 
-        <div className={styles.sidebar}>
-          <Card title="Por status" subtitle="Distribuição em colunas">
-            <ColumnChart items={byStatus} />
-          </Card>
-          <Card title="Por centro de custo" subtitle="Distribuição em pizza">
-            <PieChart items={byCostCenter} donut={false} />
-          </Card>
-          <Card title="Vencidas" subtitle={`${overdueEntries.length} lançamento(s) com vencimento no passado`}>
-            {overdueEntries.length === 0 ? (
-              <p className={styles.emptyText}>Nenhuma conta vencida.</p>
-            ) : (
-              <ul className={styles.sideList}>
-                {overdueEntries.map((e) => (
-                  <li key={e.id} className={styles.sideListRow}>
-                    <Icon name="document" size={14} />
-                    <span className={styles.sideListLabel}>{e.description}</span>
-                    <strong className={styles.sideListValue}>{formatBRL(e.amount)}</strong>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </Card>
-        </div>
-      </div>
+          <div className={styles.layout}>
+            <Card
+              title="Contas a pagar e receber"
+              subtitle="Ledger — cada correção gera um lançamento de estorno, nunca edita o original (imutabilidade)"
+              className={styles.tableCard}
+            >
+              <div className={styles.toolbar}>
+                <SearchInput
+                  placeholder="Buscar por descrição..."
+                  value={query}
+                  onChange={(e) => { setQuery(e.target.value); resetPage(); }}
+                />
+                <Select className={styles.filter} value={natureFilter} onChange={(e) => { setNatureFilter(e.target.value); resetPage(); }}>
+                  <option value="">Todas as naturezas</option>
+                  {Object.entries(ENTRY_NATURE_LABELS).map(([k, v]) => (
+                    <option key={k} value={k}>{v}</option>
+                  ))}
+                </Select>
+                <Select className={styles.filter} value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); resetPage(); }}>
+                  <option value="">Todos os status</option>
+                  {Object.entries(ENTRY_STATUS_LABELS).map(([k, v]) => (
+                    <option key={k} value={k}>{v}</option>
+                  ))}
+                </Select>
+              </div>
+              <Table columns={columns} rows={pageItems} emptyMessage="Nenhum lançamento encontrado." />
+              <div className={styles.paginationRow}>
+                <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+                <label className={styles.pageSizeLabel}>
+                  Por página
+                  <Select
+                    className={styles.pageSizeSelect}
+                    value={pageSize}
+                    onChange={(e) => { setPageSize(Number(e.target.value)); resetPage(); }}
+                  >
+                    <option value={8}>8</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                  </Select>
+                </label>
+              </div>
+            </Card>
+
+            <div className={styles.sidebar}>
+              <Card title="Por status" subtitle="Distribuição em colunas">
+                <ColumnChart items={byStatus} />
+              </Card>
+              <Card title="Por centro de custo" subtitle="Distribuição em pizza">
+                <PieChart items={byCostCenter} donut={false} />
+              </Card>
+              <Card title="Vencidas" subtitle={`${overdueEntries.length} lançamento(s) com vencimento no passado`}>
+                {overdueEntries.length === 0 ? (
+                  <p className={styles.emptyText}>Nenhuma conta vencida.</p>
+                ) : (
+                  <ul className={styles.sideList}>
+                    {overdueEntries.map((e) => (
+                      <li key={e.id} className={styles.sideListRow}>
+                        <Icon name="document" size={14} />
+                        <span className={styles.sideListLabel}>{e.description}</span>
+                        <strong className={styles.sideListValue}>{formatBRL(e.amount)}</strong>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </Card>
+            </div>
+          </div>
+        </>
+      )}
 
       <StickyActionBar>
         <FinanceNavMenu />
