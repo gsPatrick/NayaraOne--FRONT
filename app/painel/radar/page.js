@@ -12,7 +12,6 @@ import Modal from "@/components/organisms/Modal/Modal";
 import RowActions from "@/components/molecules/RowActions/RowActions";
 import Pagination from "@/components/molecules/Pagination/Pagination";
 import Select from "@/components/atoms/Select/Select";
-import Spinner from "@/components/atoms/Spinner/Spinner";
 import Alert from "@/components/molecules/Alert/Alert";
 import { listRadars, deleteRadar, getRadarMatches } from "@/lib/api/radar";
 import { listPeople } from "@/lib/api/people";
@@ -189,13 +188,7 @@ export default function RadarPage() {
 
       {loadError ? <Alert tone="danger" title="Não foi possível carregar os radares">{loadError}</Alert> : null}
 
-      {loading ? (
-        <div className={styles.toolbar}>
-          <Spinner size="lg" />
-        </div>
-      ) : (
-        <Table columns={columns} rows={pageItems} emptyMessage="Nenhum radar cadastrado." />
-      )}
+      <Table columns={columns} rows={loading ? [] : pageItems} loading={loading} emptyMessage="Nenhum radar cadastrado." />
       <div className={styles.paginationRow}>
         <Pagination page={page} totalPages={totalPages} onChange={setPage} />
         <label className={styles.pageSizeLabel}>

@@ -6,8 +6,8 @@ import AppShell from "@/components/organisms/AppShell/AppShell";
 import Button from "@/components/atoms/Button/Button";
 import Select from "@/components/atoms/Select/Select";
 import Icon from "@/components/atoms/Icon/Icon";
-import Spinner from "@/components/atoms/Spinner/Spinner";
 import Alert from "@/components/molecules/Alert/Alert";
+import { SkeletonCardGrid } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import SearchInput from "@/components/molecules/SearchInput/SearchInput";
 import Pagination from "@/components/molecules/Pagination/Pagination";
 import PropertyCard from "@/components/molecules/PropertyCard/PropertyCard";
@@ -92,9 +92,7 @@ export default function ImoveisPage() {
       ) : null}
 
       {loading ? (
-        <div className={styles.toolbar}>
-          <Spinner size="lg" />
-        </div>
+        <SkeletonCardGrid />
       ) : pageItems.length === 0 ? (
         <div className={styles.empty}>
           <EmptyState icon="building" title="Nenhum imóvel encontrado" description="Ajuste os filtros ou o termo de busca para ver outros resultados." />

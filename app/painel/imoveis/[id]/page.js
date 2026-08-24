@@ -13,7 +13,7 @@ import Card from "@/components/molecules/Card/Card";
 import Modal from "@/components/organisms/Modal/Modal";
 import Alert from "@/components/molecules/Alert/Alert";
 import PriceHistoryTimeline from "@/components/molecules/PriceHistoryTimeline/PriceHistoryTimeline";
-import Spinner from "@/components/atoms/Spinner/Spinner";
+import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import {
   FEATURE_LABELS,
   PUBLICATION_STATUS_LABELS,
@@ -170,7 +170,7 @@ export default function PropertyDetailPage({ params }) {
     return (
       <AppShell title="Carregando imóvel..." backHref="/painel/imoveis">
         <div className={styles.wrap}>
-          <Spinner size="lg" />
+          <SkeletonDetail sections={9} />
         </div>
       </AppShell>
     );

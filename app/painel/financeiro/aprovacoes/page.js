@@ -8,7 +8,7 @@ import Avatar from "@/components/atoms/Avatar/Avatar";
 import Icon from "@/components/atoms/Icon/Icon";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
-import Spinner from "@/components/atoms/Spinner/Spinner";
+import { SkeletonList } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import SearchInput from "@/components/molecules/SearchInput/SearchInput";
 import Select from "@/components/atoms/Select/Select";
 import StatTile from "@/components/molecules/StatTile/StatTile";
@@ -141,7 +141,7 @@ export default function AprovacoesPage() {
       {notice ? <Alert tone={notice.tone} title={notice.title} className={styles.notice}>{notice.message}</Alert> : null}
 
       {loading ? (
-        <Spinner size="lg" />
+        <SkeletonList rows={5} />
       ) : (
         <>
           <div className={styles.grid}>

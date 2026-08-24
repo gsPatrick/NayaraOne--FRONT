@@ -8,7 +8,7 @@ import Badge from "@/components/atoms/Badge/Badge";
 import Icon from "@/components/atoms/Icon/Icon";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
-import Spinner from "@/components/atoms/Spinner/Spinner";
+import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import { getProperty } from "@/lib/api/properties";
 import { apiFetch } from "@/lib/api/client";
 import {
@@ -92,7 +92,7 @@ export default function VistoriaDetailPage({ params }) {
   if (loading) {
     return (
       <AppShell title="Vistoria" backHref="/painel/contratos/vistorias">
-        <Spinner size="lg" />
+        <SkeletonDetail sections={2} />
       </AppShell>
     );
   }

@@ -8,7 +8,7 @@ import FormField from "@/components/molecules/FormField/FormField";
 import Select from "@/components/atoms/Select/Select";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
-import Spinner from "@/components/atoms/Spinner/Spinner";
+import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import { listContracts, listInspections, createKeyDelivery } from "@/lib/api/legal";
 import { listPeople } from "@/lib/api/people";
 import styles from "./page.module.css";
@@ -78,7 +78,7 @@ export default function NovaEntregaChavesPage() {
   if (loading) {
     return (
       <AppShell title="Nova entrega de chaves" backHref="/painel/contratos/entrega-chaves">
-        <Spinner size="lg" />
+        <SkeletonDetail sections={1} />
       </AppShell>
     );
   }

@@ -10,7 +10,7 @@ import Select from "@/components/atoms/Select/Select";
 import Input from "@/components/atoms/Input/Input";
 import FormField from "@/components/molecules/FormField/FormField";
 import Alert from "@/components/molecules/Alert/Alert";
-import Spinner from "@/components/atoms/Spinner/Spinner";
+import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import { listProperties, getProperty } from "@/lib/api/properties";
 import { apiFetch } from "@/lib/api/client";
 import {
@@ -95,7 +95,7 @@ export default function ProcessoDetailPage({ params }) {
   if (loading) {
     return (
       <AppShell title="Processo" backHref="/painel/contratos/processos">
-        <Spinner size="lg" />
+        <SkeletonDetail sections={2} />
       </AppShell>
     );
   }

@@ -11,7 +11,6 @@ import SearchInput from "@/components/molecules/SearchInput/SearchInput";
 import Select from "@/components/atoms/Select/Select";
 import StatTile from "@/components/molecules/StatTile/StatTile";
 import Icon from "@/components/atoms/Icon/Icon";
-import Spinner from "@/components/atoms/Spinner/Spinner";
 import Alert from "@/components/molecules/Alert/Alert";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import ContractsNavMenu from "@/components/molecules/ContractsNavMenu/ContractsNavMenu";
@@ -125,14 +124,6 @@ export default function ProcessosPage() {
     },
   ];
 
-  if (loading) {
-    return (
-      <AppShell title="Processos jurídicos" backHref="/painel/contratos">
-        <Spinner size="lg" />
-      </AppShell>
-    );
-  }
-
   return (
     <AppShell title="Processos jurídicos" backHref="/painel/contratos">
       {loadError ? <Alert tone="danger">{loadError}</Alert> : null}
@@ -160,7 +151,7 @@ export default function ProcessosPage() {
             ))}
           </Select>
         </div>
-        <Table columns={columns} rows={pageItems} emptyMessage="Nenhum processo encontrado." />
+        <Table columns={columns} rows={loading ? [] : pageItems} loading={loading} emptyMessage="Nenhum processo encontrado." />
         <div className={styles.paginationRow}>
           <Pagination page={page} totalPages={totalPages} onChange={setPage} />
           <label className={styles.pageSizeLabel}>

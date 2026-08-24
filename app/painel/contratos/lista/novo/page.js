@@ -10,7 +10,7 @@ import Select from "@/components/atoms/Select/Select";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
 import Icon from "@/components/atoms/Icon/Icon";
-import Spinner from "@/components/atoms/Spinner/Spinner";
+import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import { listProperties } from "@/lib/api/properties";
 import { listPeople } from "@/lib/api/people";
 import { createContract, addContractParty } from "@/lib/api/legal";
@@ -94,7 +94,7 @@ export default function NovoContratoPage() {
   if (loading) {
     return (
       <AppShell title="Novo contrato" backHref="/painel/contratos/lista">
-        <Spinner size="lg" />
+        <SkeletonDetail sections={2} />
       </AppShell>
     );
   }

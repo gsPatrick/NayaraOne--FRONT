@@ -6,7 +6,7 @@ import Card from "@/components/molecules/Card/Card";
 import Icon from "@/components/atoms/Icon/Icon";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
-import Spinner from "@/components/atoms/Spinner/Spinner";
+import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import Modal from "@/components/organisms/Modal/Modal";
 import Select from "@/components/atoms/Select/Select";
 import SearchInput from "@/components/molecules/SearchInput/SearchInput";
@@ -146,7 +146,7 @@ export default function ConciliacaoPage() {
       {notice ? <Alert tone={notice.tone} title={notice.title} className={styles.notice}>{notice.message}</Alert> : null}
 
       {loading ? (
-        <Spinner size="lg" />
+        <SkeletonDetail sections={3} />
       ) : (
         <>
           <div className={styles.grid}>

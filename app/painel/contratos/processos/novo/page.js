@@ -9,7 +9,7 @@ import Input from "@/components/atoms/Input/Input";
 import Select from "@/components/atoms/Select/Select";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
-import Spinner from "@/components/atoms/Spinner/Spinner";
+import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import { listContracts, createLegalCase } from "@/lib/api/legal";
 import { listProperties } from "@/lib/api/properties";
 import { apiFetch } from "@/lib/api/client";
@@ -81,7 +81,7 @@ export default function NovoProcessoPage() {
   if (loading) {
     return (
       <AppShell title="Novo processo" backHref="/painel/contratos/processos">
-        <Spinner size="lg" />
+        <SkeletonDetail sections={1} />
       </AppShell>
     );
   }

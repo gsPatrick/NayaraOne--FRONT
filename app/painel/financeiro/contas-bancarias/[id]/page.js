@@ -8,7 +8,7 @@ import Badge from "@/components/atoms/Badge/Badge";
 import Icon from "@/components/atoms/Icon/Icon";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
-import Spinner from "@/components/atoms/Spinner/Spinner";
+import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
 import Input from "@/components/atoms/Input/Input";
@@ -124,7 +124,7 @@ export default function ContaBancariaDetailPage({ params }) {
       {loadError ? <Alert tone="danger" title="Não foi possível carregar a conta bancária">{loadError}</Alert> : null}
 
       {loading ? (
-        <Spinner size="lg" />
+        <SkeletonDetail sections={3} />
       ) : !account ? null : (
         <div className={styles.wrap}>
           <div className={styles.headerRow}>

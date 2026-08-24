@@ -12,7 +12,6 @@ import Select from "@/components/atoms/Select/Select";
 import SearchInput from "@/components/molecules/SearchInput/SearchInput";
 import StatTile from "@/components/molecules/StatTile/StatTile";
 import PieChart from "@/components/molecules/PieChart/PieChart";
-import Spinner from "@/components/atoms/Spinner/Spinner";
 import Alert from "@/components/molecules/Alert/Alert";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu";
@@ -149,10 +148,7 @@ export default function ContasBancariasPage() {
       {loadError ? <Alert tone="danger" title="Não foi possível carregar as contas bancárias">{loadError}</Alert> : null}
       {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
 
-      {loading ? (
-        <Spinner size="lg" />
-      ) : (
-        <>
+      <>
           <div className={styles.grid}>
             <StatTile label="Ativas" value={activeCount} tone="success" icon="check" />
             <StatTile label="Em resfriamento" value={cooldownCount} tone="warning" icon="calendar" />
@@ -169,7 +165,7 @@ export default function ContasBancariasPage() {
               <div className={styles.filters}>
                 <SearchInput placeholder="Buscar por nome da conta..." value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} />
               </div>
-              <Table columns={columns} rows={pageItems} emptyMessage="Nenhuma conta encontrada." />
+              <Table columns={columns} rows={loading ? [] : pageItems} loading={loading} emptyMessage="Nenhuma conta encontrada." />
               <div className={styles.paginationRow}>
                 <Pagination page={page} totalPages={totalPages} onChange={setPage} />
                 <label className={styles.pageSizeLabel}>
@@ -209,7 +205,6 @@ export default function ContasBancariasPage() {
             </div>
           </div>
         </>
-      )}
 
       <StickyActionBar>
         <FinanceNavMenu />

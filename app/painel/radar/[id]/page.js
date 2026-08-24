@@ -12,8 +12,8 @@ import Card from "@/components/molecules/Card/Card";
 import Modal from "@/components/organisms/Modal/Modal";
 import PropertyCard from "@/components/molecules/PropertyCard/PropertyCard";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
-import Spinner from "@/components/atoms/Spinner/Spinner";
 import Alert from "@/components/molecules/Alert/Alert";
+import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import { CONTACT_TYPE_LABELS, CONTACT_TYPE_ICON } from "@/lib/mock/people";
 import { getRadar, deleteRadar } from "@/lib/api/radar";
 import { getPerson } from "@/lib/api/people";
@@ -86,7 +86,7 @@ export default function RadarDetailPage({ params }) {
     return (
       <AppShell title="Carregando radar..." backHref="/painel/radar">
         <div className={styles.wrap}>
-          <Spinner size="lg" />
+          <SkeletonDetail sections={4} />
         </div>
       </AppShell>
     );

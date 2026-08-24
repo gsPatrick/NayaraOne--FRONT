@@ -9,7 +9,7 @@ import Input from "@/components/atoms/Input/Input";
 import Select from "@/components/atoms/Select/Select";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
-import Spinner from "@/components/atoms/Spinner/Spinner";
+import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import BankSelect from "@/components/molecules/BankSelect/BankSelect";
 import { listPeople } from "@/lib/api/people";
 import { createBankAccount } from "@/lib/api/finance";
@@ -86,7 +86,7 @@ export default function NovaContaBancariaPage() {
         {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
 
         {loading ? (
-          <Spinner size="lg" />
+          <SkeletonDetail sections={1} />
         ) : (
           <Card title="Dados da conta">
             <div className={styles.formGrid}>

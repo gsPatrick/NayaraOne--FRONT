@@ -8,10 +8,10 @@ import Button from "@/components/atoms/Button/Button";
 import Badge from "@/components/atoms/Badge/Badge";
 import Icon from "@/components/atoms/Icon/Icon";
 import Avatar from "@/components/atoms/Avatar/Avatar";
-import Spinner from "@/components/atoms/Spinner/Spinner";
 import Card from "@/components/molecules/Card/Card";
 import Modal from "@/components/organisms/Modal/Modal";
 import Alert from "@/components/molecules/Alert/Alert";
+import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import {
   ROLE_TONE,
   ROLE_LABELS,
@@ -99,7 +99,7 @@ export default function PersonDetailPage({ params }) {
   if (loading) {
     return (
       <AppShell title="Contato" backHref="/painel/pessoas">
-        <Spinner size="lg" />
+        <SkeletonDetail sections={6} />
       </AppShell>
     );
   }

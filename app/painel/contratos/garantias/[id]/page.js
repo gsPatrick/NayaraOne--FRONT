@@ -7,7 +7,7 @@ import Card from "@/components/molecules/Card/Card";
 import Badge from "@/components/atoms/Badge/Badge";
 import Icon from "@/components/atoms/Icon/Icon";
 import Alert from "@/components/molecules/Alert/Alert";
-import Spinner from "@/components/atoms/Spinner/Spinner";
+import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import RowActions from "@/components/molecules/RowActions/RowActions";
 import Modal from "@/components/organisms/Modal/Modal";
 import Button from "@/components/atoms/Button/Button";
@@ -69,7 +69,7 @@ export default function GarantiaDetailPage({ params }) {
   if (loading) {
     return (
       <AppShell title="Garantia" backHref="/painel/contratos/garantias">
-        <Spinner size="lg" />
+        <SkeletonDetail sections={2} />
       </AppShell>
     );
   }

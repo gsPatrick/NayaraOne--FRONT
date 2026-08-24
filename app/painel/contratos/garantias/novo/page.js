@@ -9,7 +9,7 @@ import Input from "@/components/atoms/Input/Input";
 import Select from "@/components/atoms/Select/Select";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
-import Spinner from "@/components/atoms/Spinner/Spinner";
+import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import { listPeople } from "@/lib/api/people";
 import { listContracts, createGuarantee } from "@/lib/api/legal";
 import { GUARANTEE_TYPE_LABELS } from "@/lib/mock/legal";
@@ -82,7 +82,7 @@ export default function NovaGarantiaPage() {
   if (loading) {
     return (
       <AppShell title="Nova garantia" backHref="/painel/contratos/garantias">
-        <Spinner size="lg" />
+        <SkeletonDetail sections={1} />
       </AppShell>
     );
   }

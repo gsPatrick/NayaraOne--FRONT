@@ -13,7 +13,6 @@ import StatTile from "@/components/molecules/StatTile/StatTile";
 import ColumnChart from "@/components/molecules/ColumnChart/ColumnChart";
 import PieChart from "@/components/molecules/PieChart/PieChart";
 import Icon from "@/components/atoms/Icon/Icon";
-import Spinner from "@/components/atoms/Spinner/Spinner";
 import Alert from "@/components/molecules/Alert/Alert";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu";
@@ -183,10 +182,7 @@ export default function LancamentosPage() {
       {loadError ? <Alert tone="danger" title="Não foi possível carregar os lançamentos">{loadError}</Alert> : null}
       {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
 
-      {loading ? (
-        <Spinner size="lg" />
-      ) : (
-        <>
+      <>
           <div className={styles.grid}>
             <StatTile label="A pagar (pendente)" value={formatBRL(totalPayable)} tone="warning" icon="document" />
             <StatTile label="A receber (pendente)" value={formatBRL(totalReceivable)} tone="info" icon="money" />
@@ -219,7 +215,7 @@ export default function LancamentosPage() {
                   ))}
                 </Select>
               </div>
-              <Table columns={columns} rows={pageItems} emptyMessage="Nenhum lançamento encontrado." />
+              <Table columns={columns} rows={loading ? [] : pageItems} loading={loading} emptyMessage="Nenhum lançamento encontrado." />
               <div className={styles.paginationRow}>
                 <Pagination page={page} totalPages={totalPages} onChange={setPage} />
                 <label className={styles.pageSizeLabel}>
@@ -262,7 +258,6 @@ export default function LancamentosPage() {
             </div>
           </div>
         </>
-      )}
 
       <StickyActionBar>
         <FinanceNavMenu />

@@ -9,7 +9,6 @@ import Select from "@/components/atoms/Select/Select";
 import Badge from "@/components/atoms/Badge/Badge";
 import Avatar from "@/components/atoms/Avatar/Avatar";
 import Icon from "@/components/atoms/Icon/Icon";
-import Spinner from "@/components/atoms/Spinner/Spinner";
 import FormField from "@/components/molecules/FormField/FormField";
 import Alert from "@/components/molecules/Alert/Alert";
 import Table from "@/components/organisms/Table/Table";
@@ -189,13 +188,7 @@ export default function UsuariosPage() {
         <Alert tone="danger" title="Não foi possível carregar os usuários">{loadError}</Alert>
       ) : null}
 
-      {loading ? (
-        <div className={styles.toolbar}>
-          <Spinner size="lg" />
-        </div>
-      ) : (
-        <Table columns={columns} rows={pageItems} emptyMessage="Nenhum usuário cadastrado." />
-      )}
+      <Table columns={columns} rows={loading ? [] : pageItems} loading={loading} emptyMessage="Nenhum usuário cadastrado." />
       <div className={styles.paginationRow}>
         <Pagination page={page} totalPages={totalPages} onChange={setPage} />
         <label className={styles.pageSizeLabel}>

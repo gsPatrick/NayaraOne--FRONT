@@ -11,7 +11,7 @@ import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
 import Icon from "@/components/atoms/Icon/Icon";
 import Badge from "@/components/atoms/Badge/Badge";
-import Spinner from "@/components/atoms/Spinner/Spinner";
+import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import { listProperties } from "@/lib/api/properties";
 import { listContracts, createInspection, addInspectionItem } from "@/lib/api/legal";
 import { INSPECTION_TYPE_LABELS, CONDITION_LABELS, CONDITION_TONE } from "@/lib/mock/legal";
@@ -91,7 +91,7 @@ export default function NovaVistoriaPage() {
   if (loading) {
     return (
       <AppShell title="Nova vistoria" backHref="/painel/contratos/vistorias">
-        <Spinner size="lg" />
+        <SkeletonDetail sections={2} />
       </AppShell>
     );
   }

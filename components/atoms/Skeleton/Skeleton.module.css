@@ -1,0 +1,28 @@
+.skeleton {
+  display: block;
+  background: linear-gradient(
+    100deg,
+    var(--color-canvas-sunken) 30%,
+    var(--color-border) 50%,
+    var(--color-canvas-sunken) 70%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  border-radius: var(--radius-sm);
+}
+
+.circle {
+  border-radius: var(--radius-full);
+}
+
+@keyframes shimmer {
+  0% { background-position: 150% 0; }
+  100% { background-position: -50% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+    background: var(--color-canvas-sunken);
+  }
+}

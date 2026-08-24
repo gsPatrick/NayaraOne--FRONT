@@ -8,7 +8,7 @@ import Badge from "@/components/atoms/Badge/Badge";
 import Icon from "@/components/atoms/Icon/Icon";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
-import Spinner from "@/components/atoms/Spinner/Spinner";
+import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import Avatar from "@/components/atoms/Avatar/Avatar";
 import { getProperty } from "@/lib/api/properties";
 import { listPeople } from "@/lib/api/people";
@@ -98,7 +98,7 @@ export default function ContratoDetailPage({ params }) {
   if (loading) {
     return (
       <AppShell title="Contrato" backHref="/painel/contratos/lista">
-        <Spinner size="lg" />
+        <SkeletonDetail sections={4} />
       </AppShell>
     );
   }

@@ -10,7 +10,7 @@ import SearchInput from "@/components/molecules/SearchInput/SearchInput";
 import Select from "@/components/atoms/Select/Select";
 import StatTile from "@/components/molecules/StatTile/StatTile";
 import Icon from "@/components/atoms/Icon/Icon";
-import Spinner from "@/components/atoms/Spinner/Spinner";
+import { SkeletonList } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import Alert from "@/components/molecules/Alert/Alert";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import ContractsNavMenu from "@/components/molecules/ContractsNavMenu/ContractsNavMenu";
@@ -93,14 +93,6 @@ export default function GarantiasPage() {
   const activeCount = guarantees.filter((g) => g.status === "ACTIVE").length;
   const totalValue = guarantees.reduce((s, g) => s + Number(g.value || 0), 0);
 
-  if (loading) {
-    return (
-      <AppShell title="Garantias" backHref="/painel/contratos">
-        <Spinner size="lg" />
-      </AppShell>
-    );
-  }
-
   return (
     <AppShell title="Garantias" backHref="/painel/contratos">
       {loadError ? <Alert tone="danger">{loadError}</Alert> : null}
@@ -128,7 +120,9 @@ export default function GarantiasPage() {
           </Select>
         </div>
 
-        {filtered.length === 0 ? (
+        {loading ? (
+          <SkeletonList />
+        ) : filtered.length === 0 ? (
           <p className={styles.emptyText}>Nenhuma garantia encontrada.</p>
         ) : (
           <div className={styles.cardsGrid}>

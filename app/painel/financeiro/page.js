@@ -7,7 +7,7 @@ import StatTile from "@/components/molecules/StatTile/StatTile";
 import Card from "@/components/molecules/Card/Card";
 import Badge from "@/components/atoms/Badge/Badge";
 import Icon from "@/components/atoms/Icon/Icon";
-import Spinner from "@/components/atoms/Spinner/Spinner";
+import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import Alert from "@/components/molecules/Alert/Alert";
 import SwitchableChart from "@/components/molecules/SwitchableChart/SwitchableChart";
 import Button from "@/components/atoms/Button/Button";
@@ -121,9 +121,7 @@ export default function FinanceiroPage() {
       {loadError ? <Alert tone="danger" title="Não foi possível carregar o painel financeiro">{loadError}</Alert> : null}
 
       {loading ? (
-        <div className={styles.grid}>
-          <Spinner size="lg" />
-        </div>
+        <SkeletonDetail sections={4} />
       ) : (
         <>
           <div className={styles.grid}>

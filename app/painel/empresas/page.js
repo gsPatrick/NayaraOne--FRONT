@@ -6,7 +6,6 @@ import AppShell from "@/components/organisms/AppShell/AppShell";
 import Button from "@/components/atoms/Button/Button";
 import Badge from "@/components/atoms/Badge/Badge";
 import Icon from "@/components/atoms/Icon/Icon";
-import Spinner from "@/components/atoms/Spinner/Spinner";
 import Alert from "@/components/molecules/Alert/Alert";
 import Table from "@/components/organisms/Table/Table";
 import Modal from "@/components/organisms/Modal/Modal";
@@ -140,13 +139,7 @@ export default function EmpresasPage() {
         <Alert tone="danger" title="Não foi possível carregar as empresas">{loadError}</Alert>
       ) : null}
 
-      {loading ? (
-        <div className={styles.toolbar}>
-          <Spinner size="lg" />
-        </div>
-      ) : (
-        <Table columns={columns} rows={pageItems} emptyMessage="Nenhuma empresa cadastrada." />
-      )}
+      <Table columns={columns} rows={loading ? [] : pageItems} loading={loading} emptyMessage="Nenhuma empresa cadastrada." />
       <div className={styles.paginationRow}>
         <Pagination page={page} totalPages={totalPages} onChange={setPage} />
         <label className={styles.pageSizeLabel}>

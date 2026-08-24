@@ -8,7 +8,7 @@ import Badge from "@/components/atoms/Badge/Badge";
 import Icon from "@/components/atoms/Icon/Icon";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
-import Spinner from "@/components/atoms/Spinner/Spinner";
+import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import NatureBadge from "@/components/molecules/NatureBadge/NatureBadge";
 import BankLogo from "@/components/atoms/BankLogo/BankLogo";
 import { getBankName } from "@/lib/mock/banks";
@@ -134,7 +134,7 @@ export default function LancamentoDetailPage({ params }) {
       {loadError ? <Alert tone="danger" title="Não foi possível carregar o lançamento">{loadError}</Alert> : null}
 
       {loading ? (
-        <Spinner size="lg" />
+        <SkeletonDetail sections={3} />
       ) : !entry ? null : (
         <div className={styles.wrap}>
           <div className={styles.topRow}>

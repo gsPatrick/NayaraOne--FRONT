@@ -7,7 +7,7 @@ import Card from "@/components/molecules/Card/Card";
 import Badge from "@/components/atoms/Badge/Badge";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
-import Spinner from "@/components/atoms/Spinner/Spinner";
+import { SkeletonList } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import StatTile from "@/components/molecules/StatTile/StatTile";
 import Icon from "@/components/atoms/Icon/Icon";
 import Select from "@/components/atoms/Select/Select";
@@ -85,14 +85,6 @@ export default function EntregaChavesPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <AppShell title="Entrega de chaves" backHref="/painel/contratos">
-        <Spinner size="lg" />
-      </AppShell>
-    );
-  }
-
   return (
     <AppShell title="Entrega de chaves" backHref="/painel/contratos">
       {loadError ? <Alert tone="danger">{loadError}</Alert> : null}
@@ -106,7 +98,7 @@ export default function EntregaChavesPage() {
 
       <Card title="Entregas de chave" subtitle="A liberação só é permitida com contrato SIGNED/ACTIVE e vistoria de entrada concluída">
         <div className={styles.list}>
-          {pageItems.map((delivery) => {
+          {loading ? <SkeletonList /> : pageItems.map((delivery) => {
             const contract = contractOf(delivery.contractId);
             const person = personOf(delivery.deliveredToPersonId);
             const reason = releaseError[delivery.id];

@@ -11,7 +11,6 @@ import SearchInput from "@/components/molecules/SearchInput/SearchInput";
 import Select from "@/components/atoms/Select/Select";
 import StatTile from "@/components/molecules/StatTile/StatTile";
 import Icon from "@/components/atoms/Icon/Icon";
-import Spinner from "@/components/atoms/Spinner/Spinner";
 import Alert from "@/components/molecules/Alert/Alert";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import ContractsNavMenu from "@/components/molecules/ContractsNavMenu/ContractsNavMenu";
@@ -112,14 +111,6 @@ export default function VistoriasPage() {
     },
   ];
 
-  if (loading) {
-    return (
-      <AppShell title="Vistorias" backHref="/painel/contratos">
-        <Spinner size="lg" />
-      </AppShell>
-    );
-  }
-
   return (
     <AppShell title="Vistorias" backHref="/painel/contratos">
       {loadError ? <Alert tone="danger">{loadError}</Alert> : null}
@@ -147,7 +138,7 @@ export default function VistoriasPage() {
             ))}
           </Select>
         </div>
-        <Table columns={columns} rows={pageItems} emptyMessage="Nenhuma vistoria encontrada." />
+        <Table columns={columns} rows={loading ? [] : pageItems} loading={loading} emptyMessage="Nenhuma vistoria encontrada." />
         <div className={styles.paginationRow}>
           <Pagination page={page} totalPages={totalPages} onChange={setPage} />
           <label className={styles.pageSizeLabel}>

@@ -15,6 +15,7 @@ import OpportunityCard from "@/components/molecules/OpportunityCard/OpportunityC
 import PersonPicker from "@/components/molecules/PersonPicker/PersonPicker";
 import Spinner from "@/components/atoms/Spinner/Spinner";
 import Alert from "@/components/molecules/Alert/Alert";
+import { SkeletonKanban } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import { STAGES } from "@/lib/mock/opportunities";
 import { listOpportunities, createOpportunity, updateOpportunity, listVisits, listMessages } from "@/lib/api/crm";
 import { listProperties } from "@/lib/api/properties";
@@ -174,9 +175,7 @@ export default function CrmPage() {
       {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
 
       {loading ? (
-        <div className={styles.toolbar}>
-          <Spinner size="lg" />
-        </div>
+        <SkeletonKanban />
       ) : (
         <KanbanBoard
           columns={stages}

@@ -7,7 +7,6 @@ import Button from "@/components/atoms/Button/Button";
 import Badge from "@/components/atoms/Badge/Badge";
 import Avatar from "@/components/atoms/Avatar/Avatar";
 import Icon from "@/components/atoms/Icon/Icon";
-import Spinner from "@/components/atoms/Spinner/Spinner";
 import Alert from "@/components/molecules/Alert/Alert";
 import SearchInput from "@/components/molecules/SearchInput/SearchInput";
 import Table from "@/components/organisms/Table/Table";
@@ -299,13 +298,7 @@ export default function PessoasPage() {
         <Alert tone="danger" title="Ação não concluída">{actionError}</Alert>
       ) : null}
 
-      {loading ? (
-        <div className={styles.toolbar}>
-          <Spinner size="lg" />
-        </div>
-      ) : (
-        <Table columns={columns} rows={pageItems} emptyMessage="Nenhum contato encontrado." />
-      )}
+      <Table columns={columns} rows={loading ? [] : pageItems} loading={loading} emptyMessage="Nenhum contato encontrado." />
 
       <div className={styles.paginationRow}>
         <Pagination page={page} totalPages={totalPages} onChange={setPage} />
