@@ -1,19 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter, notFound } from "next/navigation";
+import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Button from "@/components/atoms/Button/Button";
 import Badge from "@/components/atoms/Badge/Badge";
 import Icon from "@/components/atoms/Icon/Icon";
 import Avatar from "@/components/atoms/Avatar/Avatar";
+import Spinner from "@/components/atoms/Spinner/Spinner";
 import Card from "@/components/molecules/Card/Card";
 import Modal from "@/components/organisms/Modal/Modal";
 import Alert from "@/components/molecules/Alert/Alert";
 import {
-  PEOPLE,
-  DUPLICATE_PAIRS,
   ROLE_TONE,
   ROLE_LABELS,
   STATUS_LABELS,
@@ -25,7 +24,9 @@ import {
   VERIFICATION_LABELS,
   VERIFICATION_TONE,
 } from "@/lib/mock/people";
-import { PROPERTIES, OWNER_ROLE_LABELS, AVAILABILITY_STATUS_LABELS } from "@/lib/mock/properties";
+import { OWNER_ROLE_LABELS, AVAILABILITY_STATUS_LABELS } from "@/lib/mock/properties";
+import { listPeople, getPerson, listDuplicatePairs, deletePerson, mergePeople } from "@/lib/api/people";
+import { listProperties } from "@/lib/api/properties";
 import { formatDate } from "@/lib/format";
 import { buildGoogleMapsUrl, buildGoogleMapsEmbedUrl } from "@/lib/maps";
 import styles from "./page.module.css";
@@ -55,48 +56,108 @@ function hashCode(str = "") {
 
 export default function PersonDetailPage({ params }) {
   const router = useRouter();
-  const sourcePerson = PEOPLE.find((p) => p.id === params.id);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [mergeOpen, setMergeOpen] = useState(false);
   const [merging, setMerging] = useState(false);
 
-  const [person, setPerson] = useState(() => (sourcePerson ? { ...sourcePerson } : null));
+  const [person, setPerson] = useState(null);
+  const [people, setPeople] = useState([]);
+  const [duplicatePairs, setDuplicatePairs] = useState([]);
+  const [properties, setProperties] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [actionError, setActionError] = useState("");
   const [canonicalId, setCanonicalId] = useState(null);
 
-  if (!sourcePerson || !person) return notFound();
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError("");
+    // A ficha precisa da pessoa, dos pares de duplicata, das demais pessoas (para exibir o
+    // nome do par/canônico) e dos imóveis (para o card "Imóveis vinculados", que casa por
+    // property_owners.person_id).
+    Promise.all([getPerson(params.id), listPeople(), listDuplicatePairs(), listProperties()])
+      .then(([apiPerson, apiPeople, pairs, apiProperties]) => {
+        if (cancelled) return;
+        setPerson(apiPerson);
+        setPeople(apiPeople);
+        setDuplicatePairs(pairs);
+        setProperties(apiProperties);
+      })
+      .catch((err) => {
+        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar o contato.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [params.id]);
 
-  const linkedProperties = PROPERTIES.filter((prop) => prop.owners.some((owner) => owner.personId === person.id));
-
-  const duplicatePair = DUPLICATE_PAIRS.find((pair) => pair.includes(person.id));
-  const duplicatePartnerId = duplicatePair ? duplicatePair.find((id) => id !== person.id) : null;
-  const duplicatePartner = duplicatePartnerId ? PEOPLE.find((p) => p.id === duplicatePartnerId) : null;
-  const mergedIntoPerson = person.mergedInto ? PEOPLE.find((p) => p.id === person.mergedInto) : null;
-  const selectedCanonicalId = canonicalId || person.id;
-
-  function handleDelete() {
-    setDeleting(true);
-    window.setTimeout(() => router.push("/painel/pessoas"), 500);
+  if (loading) {
+    return (
+      <AppShell title="Contato" backHref="/painel/pessoas">
+        <Spinner size="lg" />
+      </AppShell>
+    );
   }
 
-  function handleMerge() {
+  if (loadError || !person) {
+    return (
+      <AppShell title="Contato" backHref="/painel/pessoas">
+        <Alert tone="danger" title="Não foi possível carregar o contato">
+          {loadError || "Contato não encontrado."}
+        </Alert>
+      </AppShell>
+    );
+  }
+
+  const linkedProperties = properties.filter((prop) => prop.owners.some((owner) => owner.personId === person.id));
+
+  const duplicatePair = duplicatePairs.find((pair) => pair.includes(person.id));
+  const duplicatePartnerId = duplicatePair ? duplicatePair.find((id) => id !== person.id) : null;
+  const duplicatePartner = duplicatePartnerId ? people.find((p) => p.id === duplicatePartnerId) : null;
+  const mergedIntoPerson = person.mergedInto ? people.find((p) => p.id === person.mergedInto) : null;
+  const selectedCanonicalId = canonicalId || person.id;
+
+  async function handleDelete() {
+    setDeleting(true);
+    setActionError("");
+    try {
+      await deletePerson(person.id);
+      router.push("/painel/pessoas");
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível excluir o contato.");
+      setDeleting(false);
+      setDeleteOpen(false);
+    }
+  }
+
+  async function handleMerge() {
     if (!duplicatePartner) return;
     setMerging(true);
-    // Mock do endpoint POST /people/:id/merge — o operador escolhe qual cadastro fica como
-    // canônico (fluxo confirmado no Caderno: "3. Escolher canonical_person_id" é uma decisão
-    // deliberada, não uma regra automática); documentos e contatos do outro cadastro são
-    // preservados e um evento person.merged é registrado.
+    setActionError("");
+    // POST /people/:canonicalId/merge — o operador escolhe qual cadastro fica como canônico
+    // (decisão deliberada, não automática); a API remapeia as referências do absorvido,
+    // marca-o como MERGED e publica o evento person.merged.
     const absorbedId = selectedCanonicalId === person.id ? duplicatePartner.id : person.id;
-
-    window.setTimeout(() => {
+    try {
+      await mergePeople(selectedCanonicalId, absorbedId);
       if (absorbedId === person.id) {
         setPerson((prev) => ({ ...prev, status: "MERGED", mergedInto: selectedCanonicalId }));
-        setMerging(false);
         setMergeOpen(false);
       } else {
-        router.push(`/painel/pessoas/${selectedCanonicalId}`);
+        setDuplicatePairs((prev) => prev.filter((pair) => !pair.includes(absorbedId)));
+        setMergeOpen(false);
       }
-    }, 500);
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível mesclar os cadastros.");
+      setMergeOpen(false);
+    } finally {
+      setMerging(false);
+    }
   }
 
   return (
@@ -121,6 +182,12 @@ export default function PersonDetailPage({ params }) {
             </Button>
           </div>
         </div>
+
+        {actionError ? (
+          <div className={styles.mergedAlert}>
+            <Alert tone="danger" title="Ação não concluída">{actionError}</Alert>
+          </div>
+        ) : null}
 
         {person.status === "MERGED" && mergedIntoPerson ? (
           <div className={styles.mergedAlert}>
@@ -195,12 +262,12 @@ export default function PersonDetailPage({ params }) {
                       target={c.type === "EMAIL" || c.type === "PHONE" ? undefined : "_blank"}
                       rel={c.type === "WHATSAPP" ? "noopener noreferrer" : undefined}
                       className={[styles.listRow, styles.listRowLink].join(" ")}
-                      key={`${c.type}-${c.value}`}
+                      key={c.id || `${c.type}-${c.value}`}
                     >
                       {rowContent}
                     </a>
                   ) : (
-                    <div className={styles.listRow} key={`${c.type}-${c.value}`}>
+                    <div className={styles.listRow} key={c.id || `${c.type}-${c.value}`}>
                       {rowContent}
                     </div>
                   );

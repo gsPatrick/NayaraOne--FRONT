@@ -1,12 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Button from "@/components/atoms/Button/Button";
 import Badge from "@/components/atoms/Badge/Badge";
 import Avatar from "@/components/atoms/Avatar/Avatar";
 import Icon from "@/components/atoms/Icon/Icon";
+import Spinner from "@/components/atoms/Spinner/Spinner";
+import Alert from "@/components/molecules/Alert/Alert";
 import SearchInput from "@/components/molecules/SearchInput/SearchInput";
 import Table from "@/components/organisms/Table/Table";
 import Modal from "@/components/organisms/Modal/Modal";
@@ -14,14 +16,13 @@ import Pagination from "@/components/molecules/Pagination/Pagination";
 import FabLink from "@/components/molecules/FabLink/FabLink";
 import RowActions from "@/components/molecules/RowActions/RowActions";
 import {
-  PEOPLE,
-  DUPLICATE_PAIRS,
   ROLE_TONE,
   ROLE_LABELS,
   STATUS_LABELS,
   STATUS_TONE,
   CONTACT_TYPE_ICON,
 } from "@/lib/mock/people";
+import { listPeople, listDuplicatePairs, deletePerson, mergePeople } from "@/lib/api/people";
 import { formatDate } from "@/lib/format";
 import styles from "./page.module.css";
 
@@ -48,16 +49,51 @@ export default function PessoasPage() {
   const [kindFilter, setKindFilter] = useState("todos");
   const [roleFilter, setRoleFilter] = useState("todos");
   const [page, setPage] = useState(1);
-  const [people, setPeople] = useState(PEOPLE);
+  const [people, setPeople] = useState([]);
+  const [duplicatePairs, setDuplicatePairs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [actionError, setActionError] = useState("");
   const [reviewPair, setReviewPair] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
-  function handleDelete() {
-    setPeople((prev) => prev.filter((p) => p.id !== deleteTarget.id));
-    setDeleteTarget(null);
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError("");
+    Promise.all([listPeople(), listDuplicatePairs()])
+      .then(([apiPeople, pairs]) => {
+        if (cancelled) return;
+        setPeople(apiPeople);
+        setDuplicatePairs(pairs);
+      })
+      .catch((err) => {
+        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar os contatos.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function handleDelete() {
+    setDeleting(true);
+    setActionError("");
+    try {
+      await deletePerson(deleteTarget.id);
+      setPeople((prev) => prev.filter((p) => p.id !== deleteTarget.id));
+      setDeleteTarget(null);
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível excluir o contato.");
+    } finally {
+      setDeleting(false);
+    }
   }
 
-  const duplicateIds = useMemo(() => new Set(DUPLICATE_PAIRS.flat()), []);
+  const duplicateIds = useMemo(() => new Set(duplicatePairs.flat()), [duplicatePairs]);
 
   const roleCounts = useMemo(() => {
     const counts = {};
@@ -68,7 +104,7 @@ export default function PessoasPage() {
   }, [people]);
 
   function findDuplicatePartner(personId) {
-    const pair = DUPLICATE_PAIRS.find((p) => p.includes(personId));
+    const pair = duplicatePairs.find((p) => p.includes(personId));
     if (!pair) return null;
     const partnerId = pair.find((id) => id !== personId);
     return people.find((p) => p.id === partnerId) || null;
@@ -82,7 +118,7 @@ export default function PessoasPage() {
         name.length === 0 ||
         p.legalName.toLowerCase().includes(name) ||
         (p.preferredName || "").toLowerCase().includes(name);
-      const matchesDoc = doc.length === 0 || p.taxIdNormalized.toLowerCase().includes(doc);
+      const matchesDoc = doc.length === 0 || (p.taxIdNormalized || "").toLowerCase().includes(doc);
       const matchesKind = kindFilter === "todos" || p.personType === kindFilter;
       const matchesRole = roleFilter === "todos" || p.roles.includes(roleFilter);
       return matchesName && matchesDoc && matchesKind && matchesRole;
@@ -92,10 +128,21 @@ export default function PessoasPage() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const pageItems = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  function handleMerge(canonicalId, absorbedId) {
-    setPeople((prev) => prev.map((p) => (p.id === absorbedId ? { ...p, status: "MERGED", mergedInto: canonicalId } : p)));
-    setReviewPair(null);
-    router.push(`/painel/pessoas/${canonicalId}`);
+  async function handleMerge(canonicalId, absorbedId) {
+    setActionError("");
+    try {
+      // POST /people/:canonicalId/merge — a API remapeia todas as referências do absorvido
+      // (papéis, contatos, documentos, oportunidades, visitas, contratos...) e o marca como
+      // MERGED; o par deixa de aparecer em /people/duplicates depois disso.
+      await mergePeople(canonicalId, absorbedId);
+      setPeople((prev) => prev.map((p) => (p.id === absorbedId ? { ...p, status: "MERGED", mergedInto: canonicalId } : p)));
+      setDuplicatePairs((prev) => prev.filter((pair) => !pair.includes(absorbedId)));
+      setReviewPair(null);
+      router.push(`/painel/pessoas/${canonicalId}`);
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível mesclar os cadastros.");
+      setReviewPair(null);
+    }
   }
 
   const columns = [
@@ -170,7 +217,7 @@ export default function PessoasPage() {
       render: (row) => (
         <div className={styles.contactCell}>
           {row.contacts.filter((c) => c.primary).map((c) => (
-            <span key={c.type} className={styles.contactRow}>
+            <span key={c.id || `${c.type}-${c.value}`} className={styles.contactRow}>
               <Icon name={CONTACT_TYPE_ICON[c.type] || "phone"} size={12} />
               {c.value}
             </span>
@@ -244,7 +291,21 @@ export default function PessoasPage() {
         </Button>
       </div>
 
-      <Table columns={columns} rows={pageItems} emptyMessage="Nenhum contato encontrado." />
+      {loadError ? (
+        <Alert tone="danger" title="Não foi possível carregar os contatos">{loadError}</Alert>
+      ) : null}
+
+      {actionError ? (
+        <Alert tone="danger" title="Ação não concluída">{actionError}</Alert>
+      ) : null}
+
+      {loading ? (
+        <div className={styles.toolbar}>
+          <Spinner size="lg" />
+        </div>
+      ) : (
+        <Table columns={columns} rows={pageItems} emptyMessage="Nenhum contato encontrado." />
+      )}
 
       <div className={styles.paginationRow}>
         <Pagination page={page} totalPages={totalPages} onChange={setPage} />
@@ -265,7 +326,7 @@ export default function PessoasPage() {
         footer={
           <>
             <Button variant="secondary" onClick={() => setDeleteTarget(null)}>Cancelar</Button>
-            <Button variant="danger" onClick={handleDelete}>Excluir</Button>
+            <Button variant="danger" onClick={handleDelete} loading={deleting}>Excluir</Button>
           </>
         }
       >

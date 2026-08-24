@@ -17,12 +17,13 @@ import LocationPicker from "@/components/molecules/LocationPicker/LocationPicker
 import PhotoUpload from "@/components/molecules/PhotoUpload/PhotoUpload";
 import Avatar from "@/components/atoms/Avatar/Avatar";
 import {
-  PEOPLE,
   ROLE_LABELS,
   CONTACT_TYPE_LABELS,
   DOCUMENT_TYPE_LABELS,
 } from "@/lib/mock/people";
-import { PROPERTIES, OWNER_ROLE_LABELS } from "@/lib/mock/properties";
+import { OWNER_ROLE_LABELS } from "@/lib/mock/properties";
+import { listPeople, createPerson } from "@/lib/api/people";
+import { listProperties, addPropertyOwner } from "@/lib/api/properties";
 import { fetchAddressByCep } from "@/lib/cep";
 import { formatTaxId } from "@/lib/format";
 import { buildGoogleMapsUrl } from "@/lib/maps";
@@ -47,6 +48,9 @@ export default function NovaPessoaPage() {
   const [stepIndex, setStepIndex] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [duplicateError, setDuplicateError] = useState("");
+  const [submitError, setSubmitError] = useState("");
+  const [existingPeople, setExistingPeople] = useState([]);
+  const [availableProperties, setAvailableProperties] = useState([]);
 
   const [basic, setBasic] = useState({
     personType: "PF", legalName: "", preferredName: "", taxIdNormalized: "", birthOrFoundationDate: "",
@@ -64,6 +68,23 @@ export default function NovaPessoaPage() {
   const cepRequestIdRef = useRef(0);
   const cepDebounceRef = useRef(null);
   const mountedRef = useRef(true);
+
+  // Pessoas já cadastradas (para a checagem de documento duplicado no passo 1) e imóveis
+  // disponíveis (para o vínculo de proprietário). Falha aqui não bloqueia o formulário: a
+  // API ainda valida a duplicidade no POST /people e devolve 409.
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([listPeople(), listProperties()])
+      .then(([apiPeople, apiProperties]) => {
+        if (cancelled) return;
+        setExistingPeople(apiPeople);
+        setAvailableProperties(apiProperties);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -175,10 +196,10 @@ export default function NovaPessoaPage() {
     setDocuments((prev) => prev.filter((_, i) => i !== index));
   }
 
-  function goNext() {
+  async function goNext() {
     if (step.id === "basico") {
       const digits = basic.taxIdNormalized.replace(/\D/g, "");
-      const conflict = PEOPLE.find((p) => p.taxIdNormalized.replace(/\D/g, "") === digits && digits.length > 0);
+      const conflict = existingPeople.find((p) => (p.taxIdRaw || "").replace(/\D/g, "") === digits && digits.length > 0);
       if (conflict) {
         setDuplicateError(
           `Já existe um cadastro com este documento (${conflict.legalName}). Corrija o CPF/CNPJ informado ou revise o cadastro existente.`
@@ -190,23 +211,51 @@ export default function NovaPessoaPage() {
 
     if (isLast) {
       setSubmitting(true);
+      setSubmitError("");
+      // Nomes de campo conforme people.service.js da API: contactType/valueNormalized/isPrimary
+      // em person_contacts e documentType/fileId em person_documents. `roles` e `address` são
+      // aceitos aninhados no POST /people e criados na mesma transação da pessoa.
       const payload = {
         personType: basic.personType,
         legalName: basic.legalName,
         preferredName: basic.preferredName || null,
-        taxIdNormalized: basic.taxIdNormalized,
+        taxIdNormalized: basic.taxIdNormalized.replace(/\D/g, "") || null,
         birthOrFoundationDate: basic.birthOrFoundationDate || null,
-        photoUrl,
         status: "ACTIVE",
         roles,
-        contacts,
-        documents,
-        address,
-        propertyLinks: linkedProperties,
+        contacts: contacts
+          .filter((c) => c.value.trim())
+          .map((c) => ({
+            contactType: c.type,
+            valueNormalized: c.value.trim(),
+            isPrimary: !!c.primary,
+          })),
+        documents: documents
+          .filter((d) => d.value.trim())
+          .map((d) => ({
+            documentType: d.type,
+            fileId: d.value.trim(),
+            verificationStatus: d.verificationStatus,
+          })),
+        address: address.zipCode || address.street ? address : null,
       };
-      // eslint-disable-next-line no-console
-      console.log("[mock] nova pessoa", payload);
-      window.setTimeout(() => router.push("/painel/pessoas"), 500);
+
+      try {
+        const created = await createPerson(payload);
+        // O vínculo com imóveis é um recurso do módulo de Imóveis
+        // (POST /properties/:id/owners), então acontece depois da criação da pessoa.
+        for (const link of linkedProperties) {
+          await addPropertyOwner(link.propertyId, {
+            personId: created.id,
+            roleCode: link.roleCode,
+            ownershipPercent: link.percentage,
+          });
+        }
+        router.push("/painel/pessoas");
+      } catch (err) {
+        setSubmitError(err?.message || "Não foi possível cadastrar o contato.");
+        setSubmitting(false);
+      }
       return;
     }
     setStepIndex((i) => Math.min(i + 1, STEPS.length - 1));
@@ -320,7 +369,7 @@ export default function NovaPessoaPage() {
                         className={styles.propertySearchInput}
                       />
                       <div className={styles.propertyLinkList}>
-                        {PROPERTIES.filter((prop) =>
+                        {availableProperties.filter((prop) =>
                           prop.name.toLowerCase().includes(propertySearch.trim().toLowerCase())
                         ).map((prop) => {
                           const link = linkedProperties.find((p) => p.propertyId === prop.id);
@@ -360,7 +409,7 @@ export default function NovaPessoaPage() {
                             </div>
                           );
                         })}
-                        {PROPERTIES.filter((prop) => prop.name.toLowerCase().includes(propertySearch.trim().toLowerCase())).length === 0 ? (
+                        {availableProperties.filter((prop) => prop.name.toLowerCase().includes(propertySearch.trim().toLowerCase())).length === 0 ? (
                           <p className={styles.propertyLinkEmpty}>Nenhum imóvel encontrado.</p>
                         ) : null}
                       </div>
@@ -514,6 +563,11 @@ export default function NovaPessoaPage() {
 
             {step.id === "revisao" ? (
               <div className={styles.reviewWrap}>
+                {submitError ? (
+                  <div className={styles.reviewSection}>
+                    <Alert tone="danger" title="Não foi possível cadastrar o contato">{submitError}</Alert>
+                  </div>
+                ) : null}
                 <div className={styles.reviewSection}>
                   <p className={styles.reviewTitle}>Dados básicos</p>
                   <div className={styles.reviewNameRow}>
@@ -560,7 +614,7 @@ export default function NovaPessoaPage() {
                   <div className={styles.reviewSection}>
                     <p className={styles.reviewTitle}>Imóveis vinculados</p>
                     {linkedProperties.map((link) => {
-                      const prop = PROPERTIES.find((p) => p.id === link.propertyId);
+                      const prop = availableProperties.find((p) => p.id === link.propertyId);
                       return (
                         <p className={styles.reviewMeta} key={link.propertyId}>
                           {prop?.name || "—"} · {OWNER_ROLE_LABELS[link.roleCode] || link.roleCode} · {link.percentage}%
