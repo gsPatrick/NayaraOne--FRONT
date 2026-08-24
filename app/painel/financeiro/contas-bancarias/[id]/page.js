@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter, notFound } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -8,15 +8,13 @@ import Badge from "@/components/atoms/Badge/Badge";
 import Icon from "@/components/atoms/Icon/Icon";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
+import Spinner from "@/components/atoms/Spinner/Spinner";
 import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
 import Input from "@/components/atoms/Input/Input";
 import BankLogo from "@/components/atoms/BankLogo/BankLogo";
 import BankSelect from "@/components/molecules/BankSelect/BankSelect";
 import {
-  BANK_ACCOUNTS,
-  FINANCIAL_ENTRIES,
-  OWNER_REPASSES,
   BANK_ACCOUNT_STATUS_LABELS,
   BANK_ACCOUNT_STATUS_TONE,
   ENTRY_STATUS_LABELS,
@@ -25,149 +23,213 @@ import {
 } from "@/lib/mock/finance";
 import { getBankName } from "@/lib/mock/banks";
 import { maskAccountNumber, maskAgency, maskPixKey } from "@/lib/mask";
-import { PEOPLE } from "@/lib/mock/people";
+import { listPeople, getPerson } from "@/lib/api/people";
+import {
+  getBankAccount,
+  listFinancialEntries,
+  listOwnerRepasses,
+  updateBankAccount,
+  blockBankAccount,
+} from "@/lib/api/finance";
 import { formatBRL, formatDate, formatDateTime } from "@/lib/format";
 import styles from "./page.module.css";
 
-function personName(id) {
-  return PEOPLE.find((p) => p.id === id)?.legalName || "Conta operacional";
-}
-
 export default function ContaBancariaDetailPage({ params }) {
   const router = useRouter();
-  const source = BANK_ACCOUNTS.find((a) => a.id === params.id);
-  const [account, setAccount] = useState(() => (source ? { ...source } : null));
+  const [account, setAccount] = useState(null);
+  const [owner, setOwner] = useState(null);
+  const [relatedEntries, setRelatedEntries] = useState([]);
+  const [relatedRepasses, setRelatedRepasses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [notFoundFlag, setNotFoundFlag] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
-  const [editForm, setEditForm] = useState(() => (source ? { bankCode: source.bankCode || "", agency: source.agency || "", accountNumber: source.accountNumber || "", pixKey: source.pixKey || "" } : {}));
+  const [editForm, setEditForm] = useState({ bankCode: "", agency: "", accountNumber: "", pixKey: "" });
   const [notice, setNotice] = useState(null);
   const [revealed, setRevealed] = useState(false);
+  const [busy, setBusy] = useState(false);
 
-  const relatedEntries = useMemo(() => FINANCIAL_ENTRIES.filter((e) => e.bankAccountId === params.id), [params.id]);
-  const relatedRepasses = useMemo(() => OWNER_REPASSES.filter((r) => r.bankAccountId === params.id), [params.id]);
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError("");
+    getBankAccount(params.id)
+      .then((acc) => {
+        if (cancelled) return;
+        setAccount(acc);
+        setEditForm({ bankCode: acc.bankCode || "", agency: acc.agency || "", accountNumber: acc.accountNumber || "", pixKey: acc.pixKey || "" });
+        return Promise.all([
+          acc.ownerPersonId ? getPerson(acc.ownerPersonId).catch(() => null) : Promise.resolve(null),
+          listFinancialEntries({ bankAccountId: params.id }),
+          listOwnerRepasses(),
+        ]);
+      })
+      .then((result) => {
+        if (cancelled || !result) return;
+        const [ownerData, entries, repasses] = result;
+        setOwner(ownerData);
+        setRelatedEntries(entries || []);
+        setRelatedRepasses((repasses || []).filter((r) => r.bankAccountId === params.id));
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        if (err?.status === 404) setNotFoundFlag(true);
+        else setLoadError(err?.message || "Não foi possível carregar a conta bancária.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [params.id]);
 
-  if (!source || !account) return notFound();
+  if (notFoundFlag) return notFound();
 
-  const remaining = bankAccountCooldownRemainingHours(account);
+  const remaining = account ? bankAccountCooldownRemainingHours({ ...account, updatedAt: account.updatedAt || account.updated_at }) : 0;
 
-  function handleBlock() {
-    setAccount((prev) => ({ ...prev, status: "BLOCKED" }));
-    setNotice({ tone: "danger", text: "Conta bloqueada para pagamentos (antifraude)." });
+  async function handleBlock() {
+    setBusy(true);
+    setNotice(null);
+    try {
+      const updated = await blockBankAccount(account.id);
+      setAccount(updated);
+      setNotice({ tone: "danger", text: "Conta bloqueada para pagamentos (antifraude)." });
+    } catch (err) {
+      setNotice({ tone: "danger", text: err?.message || "Não foi possível bloquear a conta." });
+    } finally {
+      setBusy(false);
+    }
   }
 
-  function handleSaveSensitive() {
-    // Alterar qualquer dado sensível reabre o resfriamento de 48h — mesma regra do backend
-    // (bankAccounts.service.js SENSITIVE_FIELDS), pois esses dados definem para onde o dinheiro vai.
-    setAccount((prev) => ({ ...prev, ...editForm, status: "PENDING_COOLDOWN", updatedAt: new Date().toISOString() }));
-    setEditOpen(false);
-    setNotice({ tone: "warning", text: "Dados sensíveis alterados — a conta voltou para resfriamento de 48h antes de poder receber pagamentos novamente." });
+  async function handleSaveSensitive() {
+    setBusy(true);
+    setNotice(null);
+    try {
+      // Alterar qualquer dado sensível reabre o resfriamento de 48h automaticamente no
+      // backend (bankAccounts.service.js SENSITIVE_FIELDS) — não simulamos isso no front.
+      const updated = await updateBankAccount(account.id, editForm);
+      setAccount(updated);
+      setEditOpen(false);
+      setNotice({ tone: "warning", text: "Dados sensíveis alterados — a conta voltou para resfriamento de 48h antes de poder receber pagamentos novamente." });
+    } catch (err) {
+      setNotice({ tone: "danger", text: err?.message || "Não foi possível salvar os dados sensíveis." });
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
-    <AppShell title={account.label} backHref="/painel/financeiro/contas-bancarias">
-      <div className={styles.wrap}>
-        <div className={styles.headerRow}>
-          <BankLogo bankCode={account.bankCode} size={48} />
-          <div className={styles.headerText}>
-            <h2 className={styles.headerTitle}>{account.label}</h2>
-            <p className={styles.headerSubtitle}>{account.bankCode ? getBankName(account.bankCode) : "Conta via chave PIX"}</p>
-          </div>
-        </div>
+    <AppShell title={account?.bankCode ? getBankName(account.bankCode) : "Conta bancária"} backHref="/painel/financeiro/contas-bancarias">
+      {loadError ? <Alert tone="danger" title="Não foi possível carregar a conta bancária">{loadError}</Alert> : null}
 
-        <div className={styles.topRow}>
-          <div className={styles.badges}>
-            <Badge tone={BANK_ACCOUNT_STATUS_TONE[account.status]}>{BANK_ACCOUNT_STATUS_LABELS[account.status]}</Badge>
-            {account.status === "PENDING_COOLDOWN" ? <Badge tone="warning">{remaining}h restantes</Badge> : null}
+      {loading ? (
+        <Spinner size="lg" />
+      ) : !account ? null : (
+        <div className={styles.wrap}>
+          <div className={styles.headerRow}>
+            <BankLogo bankCode={account.bankCode} size={48} />
+            <div className={styles.headerText}>
+              <h2 className={styles.headerTitle}>{account.bankCode ? getBankName(account.bankCode) : "Conta via chave PIX"}</h2>
+              <p className={styles.headerSubtitle}>{owner?.legalName || "Conta operacional"}</p>
+            </div>
           </div>
-          <div className={styles.actions}>
-            {account.status !== "BLOCKED" ? (
-              <Button variant="secondary" onClick={() => setEditOpen(true)}>
-                <Icon name="settings" size={16} /> Editar dados sensíveis
-              </Button>
-            ) : null}
-            {account.status !== "BLOCKED" ? (
-              <Button variant="danger" onClick={handleBlock}>
-                <Icon name="shield" size={16} /> Bloquear
-              </Button>
-            ) : null}
-          </div>
-        </div>
 
-        {notice ? <Alert tone={notice.tone} className={styles.notice}>{notice.text}</Alert> : null}
-
-        <div className={styles.grid}>
-          <div className={styles.mainCol}>
-            <Card
-              title="Dados da conta"
-              subtitle="Dados sensíveis exibidos mascarados por padrão"
-              actions={
-                <Button size="sm" variant="secondary" onClick={() => setRevealed((v) => !v)}>
-                  <Icon name={revealed ? "ban" : "eye"} size={16} /> {revealed ? "Ocultar" : "Revelar"}
+          <div className={styles.topRow}>
+            <div className={styles.badges}>
+              <Badge tone={BANK_ACCOUNT_STATUS_TONE[account.status]}>{BANK_ACCOUNT_STATUS_LABELS[account.status]}</Badge>
+              {account.status === "PENDING_COOLDOWN" ? <Badge tone="warning">{remaining}h restantes</Badge> : null}
+            </div>
+            <div className={styles.actions}>
+              {account.status !== "BLOCKED" ? (
+                <Button variant="secondary" onClick={() => setEditOpen(true)}>
+                  <Icon name="settings" size={16} /> Editar dados sensíveis
                 </Button>
-              }
-            >
-              <dl className={styles.detailList}>
-                <div className={styles.detailRow}><dt>Proprietário</dt><dd>{personName(account.ownerPersonId)}</dd></div>
-                <div className={styles.detailRow}><dt>Banco</dt><dd>{account.bankCode ? `${getBankName(account.bankCode)} (${account.bankCode})` : "—"}</dd></div>
-                <div className={styles.detailRow}>
-                  <dt>Agência</dt>
-                  <dd className={styles.mono}>{account.agency ? (revealed ? account.agency : maskAgency(account.agency)) : "—"}</dd>
-                </div>
-                <div className={styles.detailRow}>
-                  <dt>Conta</dt>
-                  <dd className={styles.mono}>{account.accountNumber ? (revealed ? account.accountNumber : maskAccountNumber(account.accountNumber)) : "—"}</dd>
-                </div>
-                <div className={styles.detailRow}>
-                  <dt>Chave PIX</dt>
-                  <dd className={styles.mono}>{account.pixKey ? (revealed ? account.pixKey : maskPixKey(account.pixKey)) : "—"}</dd>
-                </div>
-                <div className={styles.detailRow}><dt>Última alteração</dt><dd>{formatDateTime(account.updatedAt)}</dd></div>
-                <div className={styles.detailRow}><dt>ID</dt><dd className={styles.mono}>{account.id}</dd></div>
-              </dl>
-            </Card>
-
-            <Card title="Lançamentos vinculados" subtitle={`${relatedEntries.length} lançamento(s) nesta conta`}>
-              {relatedEntries.length === 0 ? (
-                <p className={styles.emptyText}>Nenhum lançamento nesta conta.</p>
-              ) : (
-                <ul className={styles.list}>
-                  {relatedEntries.map((e) => (
-                    <li key={e.id} className={styles.listRow} onClick={() => router.push(`/painel/financeiro/lancamentos/${e.id}`)}>
-                      <Icon name="document" size={16} />
-                      <div className={styles.listRowInfo}>
-                        <span className={styles.listRowTitle}>{e.description}</span>
-                        <span className={styles.listRowSubtitle}>{e.dueAt ? formatDate(e.dueAt) : "Sem vencimento"}</span>
-                      </div>
-                      <Badge tone={ENTRY_STATUS_TONE[e.status]}>{ENTRY_STATUS_LABELS[e.status]}</Badge>
-                      <strong className={styles.listRowRight}>{formatBRL(e.amount)}</strong>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </Card>
+              ) : null}
+              {account.status !== "BLOCKED" ? (
+                <Button variant="danger" onClick={handleBlock} loading={busy}>
+                  <Icon name="shield" size={16} /> Bloquear
+                </Button>
+              ) : null}
+            </div>
           </div>
 
-          <div className={styles.sideCol}>
-            <Card title="Repasses vinculados">
-              {relatedRepasses.length === 0 ? (
-                <p className={styles.emptyText}>Nenhum repasse nesta conta.</p>
-              ) : (
-                <ul className={styles.list}>
-                  {relatedRepasses.map((r) => (
-                    <li key={r.id} className={styles.listRow}>
-                      <Icon name="money" size={16} />
-                      <div className={styles.listRowInfo}>
-                        <span className={styles.listRowTitle}>{personName(r.ownerPersonId)}</span>
-                        <span className={styles.listRowSubtitle}>Ref. {r.referenceMonth}</span>
-                      </div>
-                      <strong className={styles.listRowRight}>{formatBRL(r.netAmount)}</strong>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </Card>
+          {notice ? <Alert tone={notice.tone} className={styles.notice}>{notice.text}</Alert> : null}
+
+          <div className={styles.grid}>
+            <div className={styles.mainCol}>
+              <Card
+                title="Dados da conta"
+                subtitle="Dados sensíveis exibidos mascarados por padrão"
+                actions={
+                  <Button size="sm" variant="secondary" onClick={() => setRevealed((v) => !v)}>
+                    <Icon name={revealed ? "ban" : "eye"} size={16} /> {revealed ? "Ocultar" : "Revelar"}
+                  </Button>
+                }
+              >
+                <dl className={styles.detailList}>
+                  <div className={styles.detailRow}><dt>Proprietário</dt><dd>{owner?.legalName || "Conta operacional"}</dd></div>
+                  <div className={styles.detailRow}><dt>Banco</dt><dd>{account.bankCode ? `${getBankName(account.bankCode)} (${account.bankCode})` : "—"}</dd></div>
+                  <div className={styles.detailRow}>
+                    <dt>Agência</dt>
+                    <dd className={styles.mono}>{account.agency ? (revealed ? account.agency : maskAgency(account.agency)) : "—"}</dd>
+                  </div>
+                  <div className={styles.detailRow}>
+                    <dt>Conta</dt>
+                    <dd className={styles.mono}>{account.accountNumber ? (revealed ? account.accountNumber : maskAccountNumber(account.accountNumber)) : "—"}</dd>
+                  </div>
+                  <div className={styles.detailRow}>
+                    <dt>Chave PIX</dt>
+                    <dd className={styles.mono}>{account.pixKey ? (revealed ? account.pixKey : maskPixKey(account.pixKey)) : "—"}</dd>
+                  </div>
+                  <div className={styles.detailRow}><dt>Última alteração</dt><dd>{formatDateTime(account.updatedAt || account.updated_at)}</dd></div>
+                  <div className={styles.detailRow}><dt>ID</dt><dd className={styles.mono}>{account.id}</dd></div>
+                </dl>
+              </Card>
+
+              <Card title="Lançamentos vinculados" subtitle={`${relatedEntries.length} lançamento(s) nesta conta`}>
+                {relatedEntries.length === 0 ? (
+                  <p className={styles.emptyText}>Nenhum lançamento nesta conta.</p>
+                ) : (
+                  <ul className={styles.list}>
+                    {relatedEntries.map((e) => (
+                      <li key={e.id} className={styles.listRow} onClick={() => router.push(`/painel/financeiro/lancamentos/${e.id}`)}>
+                        <Icon name="document" size={16} />
+                        <div className={styles.listRowInfo}>
+                          <span className={styles.listRowTitle}>{e.description}</span>
+                          <span className={styles.listRowSubtitle}>{e.dueAt ? formatDate(e.dueAt) : "Sem vencimento"}</span>
+                        </div>
+                        <Badge tone={ENTRY_STATUS_TONE[e.status]}>{ENTRY_STATUS_LABELS[e.status]}</Badge>
+                        <strong className={styles.listRowRight}>{formatBRL(e.amount)}</strong>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </Card>
+            </div>
+
+            <div className={styles.sideCol}>
+              <Card title="Repasses vinculados">
+                {relatedRepasses.length === 0 ? (
+                  <p className={styles.emptyText}>Nenhum repasse nesta conta.</p>
+                ) : (
+                  <ul className={styles.list}>
+                    {relatedRepasses.map((r) => (
+                      <li key={r.id} className={styles.listRow}>
+                        <Icon name="money" size={16} />
+                        <div className={styles.listRowInfo}>
+                          <span className={styles.listRowTitle}>Ref. {r.referenceMonth}</span>
+                        </div>
+                        <strong className={styles.listRowRight}>{formatBRL(r.netAmount)}</strong>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </Card>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <Modal
         open={editOpen}
@@ -176,7 +238,7 @@ export default function ContaBancariaDetailPage({ params }) {
         footer={
           <>
             <Button variant="secondary" onClick={() => setEditOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSaveSensitive}>Salvar (reabre resfriamento)</Button>
+            <Button onClick={handleSaveSensitive} loading={busy}>Salvar (reabre resfriamento)</Button>
           </>
         }
       >
