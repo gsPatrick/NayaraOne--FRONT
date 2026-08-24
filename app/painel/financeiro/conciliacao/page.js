@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Icon from "@/components/atoms/Icon/Icon";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
+import Spinner from "@/components/atoms/Spinner/Spinner";
 import Modal from "@/components/organisms/Modal/Modal";
 import Select from "@/components/atoms/Select/Select";
 import SearchInput from "@/components/molecules/SearchInput/SearchInput";
@@ -16,24 +17,33 @@ import StickyActionBar from "@/components/organisms/StickyActionBar/StickyAction
 import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu";
 import NatureBadge from "@/components/molecules/NatureBadge/NatureBadge";
 import Pagination from "@/components/molecules/Pagination/Pagination";
-import { FINANCIAL_ENTRIES, BANK_TRANSACTIONS, BANK_ACCOUNTS, RECONCILIATIONS } from "@/lib/mock/finance";
-import { USERS } from "@/lib/mock/users";
-import { getCurrentUser } from "@/lib/mock/session";
+import { listFinancialEntries, listBankTransactions, listBankAccounts, listReconciliations, matchReconciliation } from "@/lib/api/finance";
+import { apiFetch } from "@/lib/api/client";
+import { getCurrentUser } from "@/lib/auth/session";
 import { formatBRL, formatDate, formatDateTime } from "@/lib/format";
 import styles from "./page.module.css";
 
-function userName(id) {
-  return USERS.find((u) => u.id === id)?.name || "—";
+// Gap conhecido: não existe endpoint de importação de extrato em lote na API
+// (bankTransactions.service.js só expõe createBankTransaction, uma linha por vez). Esta tela
+// não tem — e não deveria ganhar — um botão de "importar extrato" até esse endpoint existir.
+
+function userName(users, id) {
+  return users.find((u) => u.id === id)?.name || "—";
 }
 
-function bankAccountOf(id) {
-  return BANK_ACCOUNTS.find((a) => a.id === id) || null;
+function bankAccountOf(bankAccounts, id) {
+  return bankAccounts.find((a) => a.id === id) || null;
 }
 
 export default function ConciliacaoPage() {
   const currentUser = getCurrentUser();
-  const [entries] = useState(FINANCIAL_ENTRIES);
-  const [reconciliations, setReconciliations] = useState(RECONCILIATIONS);
+  const [entries, setEntries] = useState([]);
+  const [transactions, setTransactions] = useState([]);
+  const [bankAccounts, setBankAccounts] = useState([]);
+  const [reconciliations, setReconciliations] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [query, setQuery] = useState("");
   const [notice, setNotice] = useState(null);
   const [reconcileModal, setReconcileModal] = useState(null);
@@ -44,35 +54,53 @@ export default function ConciliacaoPage() {
   const [page3, setPage3] = useState(1);
   const [pageSize3, setPageSize3] = useState(8);
 
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError("");
+    Promise.all([listFinancialEntries(), listBankTransactions(), listBankAccounts(), listReconciliations(), apiFetch("/users")])
+      .then(([e, t, ba, r, u]) => {
+        if (cancelled) return;
+        setEntries(e || []);
+        setTransactions(t || []);
+        setBankAccounts(ba || []);
+        setReconciliations(r || []);
+        setUsers(u || []);
+      })
+      .catch((err) => {
+        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar a conciliação bancária.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   function showNotice(tone, title, message) {
     setNotice({ tone, title, message });
     window.clearTimeout(showNotice._t);
     showNotice._t = window.setTimeout(() => setNotice(null), 6000);
   }
 
-  function handleReconcile(entryId, transactionId) {
-    const entry = entries.find((e) => e.id === entryId);
-    const transaction = BANK_TRANSACTIONS.find((t) => t.id === transactionId);
-    if (!entry || !transaction) return;
-    if (Number(entry.amount) !== Math.abs(Number(transaction.amount))) {
-      showNotice("danger", "Valores não batem", "A conciliação foi bloqueada — o valor do lançamento é diferente do valor da transação.");
-      return;
+  async function handleReconcile(entryId, transactionId) {
+    try {
+      const created = await matchReconciliation({ financialEntryId: entryId, bankTransactionId: transactionId });
+      setReconciliations((prev) => [...prev, created]);
+      setReconcileModal(null);
+      showNotice("success", "Conciliado", "Lançamento conciliado com a transação de extrato.");
+    } catch (err) {
+      showNotice("danger", "Não foi possível conciliar", err?.message || "Verifique se os valores batem e se nenhum dos dois já está conciliado.");
     }
-    if (reconciliations.some((r) => r.financialEntryId === entryId || r.bankTransactionId === transactionId)) {
-      showNotice("danger", "Já conciliado", "Este lançamento ou esta transação já estão conciliados com outro registro.");
-      return;
-    }
-    setReconciliations((prev) => [...prev, { id: `rec-${Date.now()}`, financialEntryId: entryId, bankTransactionId: transactionId, matchedAt: new Date().toISOString(), matchedByUserId: currentUser.id }]);
-    setReconcileModal(null);
-    showNotice("success", "Conciliado", "Lançamento conciliado com a transação de extrato.");
   }
 
   const unreconciledTransactions = useMemo(
     () =>
-      BANK_TRANSACTIONS.filter((t) => !reconciliations.some((r) => r.bankTransactionId === t.id)).filter((t) =>
-        t.description.toLowerCase().includes(query.toLowerCase())
-      ),
-    [reconciliations, query]
+      transactions
+        .filter((t) => !reconciliations.some((r) => r.bankTransactionId === t.id))
+        .filter((t) => (t.description || "").toLowerCase().includes(query.toLowerCase())),
+    [transactions, reconciliations, query]
   );
   const unreconciledEntries = useMemo(
     () => entries.filter((e) => e.status !== "REVERSED" && !reconciliations.some((r) => r.financialEntryId === e.id)),
@@ -93,15 +121,15 @@ export default function ConciliacaoPage() {
 
   const byBankAccount = useMemo(() => {
     const counts = {};
-    BANK_TRANSACTIONS.forEach((t) => {
-      const label = bankAccountOf(t.bankAccountId)?.label || "—";
+    transactions.forEach((t) => {
+      const label = bankAccountOf(bankAccounts, t.bankAccountId)?.bankCode || "—";
       counts[label] = (counts[label] || 0) + Number(t.amount);
     });
     return Object.entries(counts).map(([label, value]) => ({ label, value, displayValue: formatBRL(value) }));
-  }, []);
+  }, [transactions, bankAccounts]);
 
   const totalUnreconciledValue = unreconciledTransactions.reduce((s, t) => s + Math.abs(Number(t.amount)), 0);
-  const matchRate = BANK_TRANSACTIONS.length === 0 ? 0 : Math.round((reconciliations.length / BANK_TRANSACTIONS.length) * 100);
+  const matchRate = transactions.length === 0 ? 0 : Math.round((reconciliations.length / transactions.length) * 100);
 
   const totalPages = Math.max(1, Math.ceil(unreconciledTransactions.length / pageSize));
   const pageItems = unreconciledTransactions.slice((page - 1) * pageSize, page * pageSize);
@@ -114,164 +142,171 @@ export default function ConciliacaoPage() {
 
   return (
     <AppShell title="Conciliação bancária" backHref="/painel/financeiro">
+      {loadError ? <Alert tone="danger" title="Não foi possível carregar a conciliação bancária">{loadError}</Alert> : null}
       {notice ? <Alert tone={notice.tone} title={notice.title} className={styles.notice}>{notice.message}</Alert> : null}
 
-      <div className={styles.grid}>
-        <StatTile label="Não conciliadas" value={unreconciledTransactions.length} tone={unreconciledTransactions.length > 0 ? "warning" : "success"} icon="document" />
-        <StatTile label="Valor pendente" value={formatBRL(totalUnreconciledValue)} tone="warning" icon="money" />
-        <StatTile label="Conciliações feitas" value={reconciliations.length} tone="success" icon="check" />
-        <StatTile label="Taxa de conciliação" value={`${matchRate}%`} tone={matchRate === 100 ? "success" : "neutral"} icon="chart" />
-      </div>
+      {loading ? (
+        <Spinner size="lg" />
+      ) : (
+        <>
+          <div className={styles.grid}>
+            <StatTile label="Não conciliadas" value={unreconciledTransactions.length} tone={unreconciledTransactions.length > 0 ? "warning" : "success"} icon="document" />
+            <StatTile label="Valor pendente" value={formatBRL(totalUnreconciledValue)} tone="warning" icon="money" />
+            <StatTile label="Conciliações feitas" value={reconciliations.length} tone="success" icon="check" />
+            <StatTile label="Taxa de conciliação" value={`${matchRate}%`} tone={matchRate === 100 ? "success" : "neutral"} icon="chart" />
+          </div>
 
-      <div className={styles.layout}>
-        <div className={styles.mainCol}>
-          <Card
-            title="Transações não conciliadas"
-            subtitle="Linhas de extrato ainda sem lançamento correspondente"
-            actions={
-              <div className={styles.cardSearch}>
-                <SearchInput placeholder="Buscar transação..." value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} />
-              </div>
-            }
-          >
-            {unreconciledTransactions.length === 0 ? (
-              <p className={styles.emptyText}>Tudo conciliado.</p>
-            ) : (
-              <ul className={styles.list}>
-                {pageItems.map((t) => {
-                  const account = bankAccountOf(t.bankAccountId);
-                  const candidates = candidatesFor(t);
-                  return (
-                    <li key={t.id} className={styles.listRow}>
-                      <span className={styles.bankIconSlot}>
-                        <BankLogo bankCode={account?.bankCode} size={30} square />
-                      </span>
-                      <div className={styles.listRowInfo}>
-                        <span className={styles.listRowTitle}>{t.description}</span>
-                        <span className={styles.listRowSubtitle}>{formatDate(t.transactionDate)} · {t.externalTransactionId} · {account?.label || "—"}</span>
-                      </div>
-                      <span className={styles.listRowRight}>{formatBRL(t.amount)}</span>
-                      {candidates.length === 1 ? (
-                        <Button size="sm" onClick={() => handleReconcile(candidates[0].id, t.id)}>
-                          <Icon name="check" size={14} /> Match automático
-                        </Button>
-                      ) : (
-                        <Button size="sm" variant="secondary" onClick={() => setReconcileModal(t)} disabled={candidates.length === 0}>
-                          {candidates.length === 0 ? "Sem candidato" : `Conciliar (${candidates.length})`}
-                        </Button>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-            <div className={styles.paginationRow}>
-              <Pagination page={page} totalPages={totalPages} onChange={setPage} />
-              <label className={styles.pageSizeLabel}>
-                Por página
-                <Select
-                  className={styles.pageSizeSelect}
-                  value={pageSize}
-                  onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
-                >
-                  <option value={8}>8</option>
-                  <option value={20}>20</option>
-                  <option value={50}>50</option>
-                </Select>
-              </label>
+          <div className={styles.layout}>
+            <div className={styles.mainCol}>
+              <Card
+                title="Transações não conciliadas"
+                subtitle="Linhas de extrato ainda sem lançamento correspondente"
+                actions={
+                  <div className={styles.cardSearch}>
+                    <SearchInput placeholder="Buscar transação..." value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} />
+                  </div>
+                }
+              >
+                {unreconciledTransactions.length === 0 ? (
+                  <p className={styles.emptyText}>Tudo conciliado.</p>
+                ) : (
+                  <ul className={styles.list}>
+                    {pageItems.map((t) => {
+                      const account = bankAccountOf(bankAccounts, t.bankAccountId);
+                      const candidates = candidatesFor(t);
+                      return (
+                        <li key={t.id} className={styles.listRow}>
+                          <span className={styles.bankIconSlot}>
+                            <BankLogo bankCode={account?.bankCode} size={30} square />
+                          </span>
+                          <div className={styles.listRowInfo}>
+                            <span className={styles.listRowTitle}>{t.description}</span>
+                            <span className={styles.listRowSubtitle}>{formatDate(t.transactionDate)} · {t.externalTransactionId} · {account?.bankCode || "—"}</span>
+                          </div>
+                          <span className={styles.listRowRight}>{formatBRL(t.amount)}</span>
+                          {candidates.length === 1 ? (
+                            <Button size="sm" onClick={() => handleReconcile(candidates[0].id, t.id)}>
+                              <Icon name="check" size={14} /> Match automático
+                            </Button>
+                          ) : (
+                            <Button size="sm" variant="secondary" onClick={() => setReconcileModal(t)} disabled={candidates.length === 0}>
+                              {candidates.length === 0 ? "Sem candidato" : `Conciliar (${candidates.length})`}
+                            </Button>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+                <div className={styles.paginationRow}>
+                  <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+                  <label className={styles.pageSizeLabel}>
+                    Por página
+                    <Select
+                      className={styles.pageSizeSelect}
+                      value={pageSize}
+                      onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
+                    >
+                      <option value={8}>8</option>
+                      <option value={20}>20</option>
+                      <option value={50}>50</option>
+                    </Select>
+                  </label>
+                </div>
+              </Card>
+
+              <Card title="Lançamentos aguardando conciliação" subtitle={`${unreconciledEntries.length} lançamento(s) elegível(is)`}>
+                {unreconciledEntries.length === 0 ? (
+                  <p className={styles.emptyText}>Nenhum lançamento pendente de conciliação.</p>
+                ) : (
+                  <ul className={styles.list}>
+                    {pageItems2.map((e) => {
+                      const account = bankAccountOf(bankAccounts, e.bankAccountId);
+                      return (
+                        <li key={e.id} className={styles.listRow}>
+                          <span className={styles.bankIconSlot}>
+                            <BankLogo bankCode={account?.bankCode} size={30} square />
+                          </span>
+                          <div className={styles.listRowInfo}>
+                            <span className={styles.listRowTitle}>{e.description}</span>
+                            <span className={styles.listRowSubtitle}>{e.dueAt ? formatDate(e.dueAt) : "Sem vencimento"}</span>
+                          </div>
+                          <NatureBadge nature={e.nature} />
+                          <span className={styles.listRowRight}>{formatBRL(e.amount)}</span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+                <div className={styles.paginationRow}>
+                  <Pagination page={page2} totalPages={totalPages2} onChange={setPage2} />
+                  <label className={styles.pageSizeLabel}>
+                    Por página
+                    <Select
+                      className={styles.pageSizeSelect}
+                      value={pageSize2}
+                      onChange={(e) => { setPageSize2(Number(e.target.value)); setPage2(1); }}
+                    >
+                      <option value={8}>8</option>
+                      <option value={20}>20</option>
+                      <option value={50}>50</option>
+                    </Select>
+                  </label>
+                </div>
+              </Card>
+
+              <Card title="Conciliações feitas" subtitle="Histórico de casamentos lançamento ↔ extrato">
+                {reconciliations.length === 0 ? (
+                  <p className={styles.emptyText}>Nenhuma conciliação ainda.</p>
+                ) : (
+                  <ul className={styles.list}>
+                    {pageItems3.map((r) => {
+                      const entry = entries.find((e) => e.id === r.financialEntryId);
+                      const account = bankAccountOf(bankAccounts, entry?.bankAccountId);
+                      return (
+                        <li key={r.id} className={styles.listRow}>
+                          <span className={styles.bankIconSlot}>
+                            <BankLogo bankCode={account?.bankCode} size={30} square />
+                          </span>
+                          <div className={styles.listRowInfo}>
+                            <span className={styles.listRowTitle}>{entry?.description || r.financialEntryId}</span>
+                            <span className={styles.listRowSubtitle}>Conciliado em {formatDateTime(r.matchedAt)} por {userName(users, r.matchedByUserId)}</span>
+                          </div>
+                          <Icon name="check" size={16} className={styles.checkIcon} />
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+                <div className={styles.paginationRow}>
+                  <Pagination page={page3} totalPages={totalPages3} onChange={setPage3} />
+                  <label className={styles.pageSizeLabel}>
+                    Por página
+                    <Select
+                      className={styles.pageSizeSelect}
+                      value={pageSize3}
+                      onChange={(e) => { setPageSize3(Number(e.target.value)); setPage3(1); }}
+                    >
+                      <option value={8}>8</option>
+                      <option value={20}>20</option>
+                      <option value={50}>50</option>
+                    </Select>
+                  </label>
+                </div>
+              </Card>
             </div>
-          </Card>
 
-          <Card title="Lançamentos aguardando conciliação" subtitle={`${unreconciledEntries.length} lançamento(s) elegível(is)`}>
-            {unreconciledEntries.length === 0 ? (
-              <p className={styles.emptyText}>Nenhum lançamento pendente de conciliação.</p>
-            ) : (
-              <ul className={styles.list}>
-                {pageItems2.map((e) => {
-                  const account = bankAccountOf(e.bankAccountId);
-                  return (
-                    <li key={e.id} className={styles.listRow}>
-                      <span className={styles.bankIconSlot}>
-                        <BankLogo bankCode={account?.bankCode} size={30} square />
-                      </span>
-                      <div className={styles.listRowInfo}>
-                        <span className={styles.listRowTitle}>{e.description}</span>
-                        <span className={styles.listRowSubtitle}>{e.dueAt ? formatDate(e.dueAt) : "Sem vencimento"}</span>
-                      </div>
-                      <NatureBadge nature={e.nature} />
-                      <span className={styles.listRowRight}>{formatBRL(e.amount)}</span>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-            <div className={styles.paginationRow}>
-              <Pagination page={page2} totalPages={totalPages2} onChange={setPage2} />
-              <label className={styles.pageSizeLabel}>
-                Por página
-                <Select
-                  className={styles.pageSizeSelect}
-                  value={pageSize2}
-                  onChange={(e) => { setPageSize2(Number(e.target.value)); setPage2(1); }}
-                >
-                  <option value={8}>8</option>
-                  <option value={20}>20</option>
-                  <option value={50}>50</option>
-                </Select>
-              </label>
+            <div className={styles.sidebar}>
+              <Card title="Status de conciliação" subtitle="Troque o tipo de gráfico">
+                <SwitchableChart items={byStatus} defaultType="donut" />
+              </Card>
+              <Card title="Por conta bancária" subtitle="Volume de transações do extrato">
+                <SwitchableChart items={byBankAccount} defaultType="column" />
+              </Card>
             </div>
-          </Card>
-
-          <Card title="Conciliações feitas" subtitle="Histórico de casamentos lançamento ↔ extrato">
-            {reconciliations.length === 0 ? (
-              <p className={styles.emptyText}>Nenhuma conciliação ainda.</p>
-            ) : (
-              <ul className={styles.list}>
-                {pageItems3.map((r) => {
-                  const entry = entries.find((e) => e.id === r.financialEntryId);
-                  const account = bankAccountOf(entry?.bankAccountId);
-                  return (
-                    <li key={r.id} className={styles.listRow}>
-                      <span className={styles.bankIconSlot}>
-                        <BankLogo bankCode={account?.bankCode} size={30} square />
-                      </span>
-                      <div className={styles.listRowInfo}>
-                        <span className={styles.listRowTitle}>{entry?.description || r.financialEntryId}</span>
-                        <span className={styles.listRowSubtitle}>Conciliado em {formatDateTime(r.matchedAt)} por {userName(r.matchedByUserId)}</span>
-                      </div>
-                      <Icon name="check" size={16} className={styles.checkIcon} />
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-            <div className={styles.paginationRow}>
-              <Pagination page={page3} totalPages={totalPages3} onChange={setPage3} />
-              <label className={styles.pageSizeLabel}>
-                Por página
-                <Select
-                  className={styles.pageSizeSelect}
-                  value={pageSize3}
-                  onChange={(e) => { setPageSize3(Number(e.target.value)); setPage3(1); }}
-                >
-                  <option value={8}>8</option>
-                  <option value={20}>20</option>
-                  <option value={50}>50</option>
-                </Select>
-              </label>
-            </div>
-          </Card>
-        </div>
-
-        <div className={styles.sidebar}>
-          <Card title="Status de conciliação" subtitle="Troque o tipo de gráfico">
-            <SwitchableChart items={byStatus} defaultType="donut" />
-          </Card>
-          <Card title="Por conta bancária" subtitle="Volume de transações do extrato">
-            <SwitchableChart items={byBankAccount} defaultType="column" />
-          </Card>
-        </div>
-      </div>
+          </div>
+        </>
+      )}
 
       <StickyActionBar>
         <FinanceNavMenu />
