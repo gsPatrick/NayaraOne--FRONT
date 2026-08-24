@@ -146,3 +146,37 @@
 .listRowText { display: flex; flex-direction: column; gap: 1px; }
 .listRowCompany { color: var(--color-ink); font-weight: 600; }
 .listRowUnit { font-size: var(--text-caption); color: var(--color-ink-muted); }
+
+.revokeBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--color-ink-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.revokeBtn:hover { background: var(--color-danger-soft); color: var(--color-danger); }
+.revokeBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.assignRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+.assignRow > :first-child { flex: 1; }
+
+.noRolesNote {
+  font-size: var(--text-caption);
+  color: var(--color-ink-muted);
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
