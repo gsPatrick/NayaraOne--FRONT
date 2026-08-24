@@ -1,26 +1,65 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Button from "@/components/atoms/Button/Button";
 import Badge from "@/components/atoms/Badge/Badge";
 import Icon from "@/components/atoms/Icon/Icon";
+import Spinner from "@/components/atoms/Spinner/Spinner";
+import Alert from "@/components/molecules/Alert/Alert";
 import Table from "@/components/organisms/Table/Table";
 import Modal from "@/components/organisms/Modal/Modal";
 import RowActions from "@/components/molecules/RowActions/RowActions";
 import Pagination from "@/components/molecules/Pagination/Pagination";
 import Select from "@/components/atoms/Select/Select";
-import { COMPANIES, COMPANY_STATUS_LABELS } from "@/lib/mock/companies";
+import { COMPANY_STATUS_LABELS } from "@/lib/mock/companies";
+import { apiFetch } from "@/lib/api/client";
 import { formatDate } from "@/lib/format";
 import styles from "./page.module.css";
 
+// A API real não devolve as unidades dentro de GET /companies (Company não tem esse campo —
+// ver NayaraOne--API/src/features/companies/companies.service.js). Unidades vêm de GET /units
+// (NayaraOne--API/src/features/units/units.service.js), agrupadas por companyId aqui pra manter
+// a coluna "Unidades" que a tela já tinha.
+// Observação: o serializador da API devolve created_at/updated_at em snake_case (mesmo com os
+// demais campos em camelCase) — normalizamos aqui pra manter a coluna "Cadastro" funcionando.
+function attachUnits(companies, units) {
+  return companies.map((c) => ({
+    ...c,
+    createdAt: c.createdAt || c.created_at,
+    units: units.filter((u) => u.companyId === c.id),
+  }));
+}
+
 export default function EmpresasPage() {
   const router = useRouter();
-  const [companies, setCompanies] = useState(COMPANIES);
+  const [companies, setCompanies] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError("");
+    Promise.all([apiFetch("/companies"), apiFetch("/units")])
+      .then(([apiCompanies, apiUnits]) => {
+        if (cancelled) return;
+        setCompanies(attachUnits(apiCompanies || [], apiUnits || []));
+      })
+      .catch((err) => {
+        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar as empresas.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   function handleDelete() {
     setCompanies((prev) => prev.filter((c) => c.id !== deleteTarget.id));
@@ -97,7 +136,17 @@ export default function EmpresasPage() {
         </Button>
       </div>
 
-      <Table columns={columns} rows={pageItems} emptyMessage="Nenhuma empresa cadastrada." />
+      {loadError ? (
+        <Alert tone="danger" title="Não foi possível carregar as empresas">{loadError}</Alert>
+      ) : null}
+
+      {loading ? (
+        <div className={styles.toolbar}>
+          <Spinner size="lg" />
+        </div>
+      ) : (
+        <Table columns={columns} rows={pageItems} emptyMessage="Nenhuma empresa cadastrada." />
+      )}
       <div className={styles.paginationRow}>
         <Pagination page={page} totalPages={totalPages} onChange={setPage} />
         <label className={styles.pageSizeLabel}>

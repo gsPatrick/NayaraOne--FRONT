@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Button from "@/components/atoms/Button/Button";
@@ -9,26 +9,77 @@ import Select from "@/components/atoms/Select/Select";
 import Badge from "@/components/atoms/Badge/Badge";
 import Avatar from "@/components/atoms/Avatar/Avatar";
 import Icon from "@/components/atoms/Icon/Icon";
+import Spinner from "@/components/atoms/Spinner/Spinner";
 import FormField from "@/components/molecules/FormField/FormField";
 import Alert from "@/components/molecules/Alert/Alert";
 import Table from "@/components/organisms/Table/Table";
 import Modal from "@/components/organisms/Modal/Modal";
 import RowActions from "@/components/molecules/RowActions/RowActions";
 import Pagination from "@/components/molecules/Pagination/Pagination";
-import { USERS, ROLES, ROLE_TONE } from "@/lib/mock/users";
+import { ROLES, ROLE_TONE } from "@/lib/mock/users";
 import { COMPANIES } from "@/lib/mock/companies";
+import { apiFetch } from "@/lib/api/client";
 import { formatDateTime } from "@/lib/format";
 import styles from "./page.module.css";
 
 const STATUS_TONE = { Ativo: "success", Suspenso: "danger" };
 
+// A API real não devolve "Ativo"/"Suspenso" — devolve status.status = "ACTIVE" (ver
+// NayaraOne--API/src/models/User.js). Mapeamos aqui pra manter os badges já existentes na tela.
+function toDisplayStatus(apiStatus) {
+  return apiStatus === "ACTIVE" ? "Ativo" : "Suspenso";
+}
+
+// GET /users não devolve os vínculos (empresa/unidade/papel) do usuário — isso vem de
+// GET /memberships (ver NayaraOne--API/src/features/memberships/membership.service.js,
+// que inclui role/unit/company). Junta os dois pra manter a coluna existente na tabela.
+function buildMemberships(userId, memberships) {
+  return memberships
+    .filter((m) => m.userId === userId)
+    .map((m) => ({
+      company: m.company?.name || "—",
+      role: m.role?.name || "Sem papel",
+      unit: m.unit?.name || null,
+    }));
+}
+
 export default function UsuariosPage() {
   const router = useRouter();
-  const [users, setUsers] = useState(USERS);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [inviteOpen, setInviteOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError("");
+    Promise.all([apiFetch("/users"), apiFetch("/memberships")])
+      .then(([apiUsers, apiMemberships]) => {
+        if (cancelled) return;
+        const mapped = (apiUsers || []).map((u) => ({
+          id: u.id,
+          name: u.name,
+          email: u.email,
+          status: toDisplayStatus(u.status),
+          lastAccessAt: u.lastLoginAt,
+          memberships: buildMemberships(u.id, apiMemberships || []),
+        }));
+        setUsers(mapped);
+      })
+      .catch((err) => {
+        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar os usuários.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const totalPages = Math.max(1, Math.ceil(users.length / pageSize));
   const pageItems = users.slice((page - 1) * pageSize, page * pageSize);
@@ -134,7 +185,17 @@ export default function UsuariosPage() {
         </Button>
       </div>
 
-      <Table columns={columns} rows={pageItems} emptyMessage="Nenhum usuário cadastrado." />
+      {loadError ? (
+        <Alert tone="danger" title="Não foi possível carregar os usuários">{loadError}</Alert>
+      ) : null}
+
+      {loading ? (
+        <div className={styles.toolbar}>
+          <Spinner size="lg" />
+        </div>
+      ) : (
+        <Table columns={columns} rows={pageItems} emptyMessage="Nenhum usuário cadastrado." />
+      )}
       <div className={styles.paginationRow}>
         <Pagination page={page} totalPages={totalPages} onChange={setPage} />
         <label className={styles.pageSizeLabel}>
