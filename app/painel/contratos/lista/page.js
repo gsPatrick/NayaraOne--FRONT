@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -11,14 +11,16 @@ import SearchInput from "@/components/molecules/SearchInput/SearchInput";
 import Select from "@/components/atoms/Select/Select";
 import StatTile from "@/components/molecules/StatTile/StatTile";
 import Icon from "@/components/atoms/Icon/Icon";
+import Spinner from "@/components/atoms/Spinner/Spinner";
+import Alert from "@/components/molecules/Alert/Alert";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import ContractsNavMenu from "@/components/molecules/ContractsNavMenu/ContractsNavMenu";
 import Pagination from "@/components/molecules/Pagination/Pagination";
 import RowActions from "@/components/molecules/RowActions/RowActions";
 import Modal from "@/components/organisms/Modal/Modal";
-import { PROPERTIES } from "@/lib/mock/properties";
+import { listProperties } from "@/lib/api/properties";
+import { listContracts } from "@/lib/api/legal";
 import {
-  CONTRACTS,
   CONTRACT_TYPE_LABELS,
   CONTRACT_TYPE_TONE,
   CONTRACT_STATUS_LABELS,
@@ -27,19 +29,38 @@ import {
 import { formatBRL } from "@/lib/format";
 import styles from "./page.module.css";
 
-function propertyOf(id) {
-  return PROPERTIES.find((p) => p.id === id) || null;
-}
-
 export default function ContratosListaPage() {
   const router = useRouter();
-  const [contracts, setContracts] = useState(CONTRACTS);
+  const [contracts, setContracts] = useState([]);
+  const [properties, setProperties] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [actionError, setActionError] = useState("");
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
   const [deleteTarget, setDeleteTarget] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError("");
+    Promise.all([listContracts(), listProperties()])
+      .then(([contractsRes, propertiesRes]) => {
+        if (cancelled) return;
+        setContracts(contractsRes || []);
+        setProperties(propertiesRes || []);
+      })
+      .catch((err) => { if (!cancelled) setLoadError(err.message || "Erro ao carregar contratos."); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
+
+  function propertyOf(id) {
+    return properties.find((p) => p.id === id) || null;
+  }
 
   const filtered = useMemo(() => {
     return contracts.filter((c) => {
@@ -52,10 +73,11 @@ export default function ContratosListaPage() {
       if (statusFilter && c.status !== statusFilter) return false;
       return true;
     });
-  }, [contracts, query, typeFilter, statusFilter]);
+  }, [contracts, properties, query, typeFilter, statusFilter]);
 
   function handleDelete() {
-    setContracts((prev) => prev.filter((c) => c.id !== deleteTarget.id));
+    // Não há endpoint de exclusão de contrato na API — cancelamento é feito via transitionContract.
+    setActionError("Contratos não podem ser excluídos — use a transição de status para CANCELLED na página de detalhe.");
     setDeleteTarget(null);
   }
 
@@ -113,8 +135,19 @@ export default function ContratosListaPage() {
     },
   ];
 
+  if (loading) {
+    return (
+      <AppShell title="Contratos" backHref="/painel/contratos">
+        <Spinner size="lg" />
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell title="Contratos" backHref="/painel/contratos">
+      {loadError ? <Alert tone="danger">{loadError}</Alert> : null}
+      {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
+
       <div className={styles.grid}>
         <StatTile label="Total de contratos" value={contracts.length} tone="neutral" icon="signature" />
         <StatTile label="Ativos" value={activeCount} tone="success" icon="check" />

@@ -1,41 +1,63 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import StatTile from "@/components/molecules/StatTile/StatTile";
 import Card from "@/components/molecules/Card/Card";
 import Badge from "@/components/atoms/Badge/Badge";
 import Icon from "@/components/atoms/Icon/Icon";
+import Spinner from "@/components/atoms/Spinner/Spinner";
+import Alert from "@/components/molecules/Alert/Alert";
 import SwitchableChart from "@/components/molecules/SwitchableChart/SwitchableChart";
 import Button from "@/components/atoms/Button/Button";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import ContractsNavMenu from "@/components/molecules/ContractsNavMenu/ContractsNavMenu";
 import {
-  CONTRACTS,
-  INSPECTIONS,
-  KEY_DELIVERIES,
-  LEGAL_CASES,
   CONTRACT_TYPE_LABELS,
   CONTRACT_STATUS_LABELS,
-  CONTRACT_STATUS_TONE,
 } from "@/lib/mock/legal";
-import { PROPERTIES } from "@/lib/mock/properties";
+import { listContracts, listInspections, listKeyDeliveries, listLegalCases } from "@/lib/api/legal";
+import { listProperties } from "@/lib/api/properties";
 import { formatBRL, formatDate } from "@/lib/format";
 import styles from "./page.module.css";
 
-function propertyOf(id) {
-  return PROPERTIES.find((p) => p.id === id) || null;
-}
-
 export default function ContratosHubPage() {
-  const contracts = CONTRACTS;
+  const [contracts, setContracts] = useState([]);
+  const [inspections, setInspections] = useState([]);
+  const [keyDeliveries, setKeyDeliveries] = useState([]);
+  const [legalCases, setLegalCases] = useState([]);
+  const [properties, setProperties] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError("");
+    Promise.all([listContracts(), listInspections(), listKeyDeliveries(), listLegalCases(), listProperties()])
+      .then(([contractsRes, inspectionsRes, keyDeliveriesRes, legalCasesRes, propertiesRes]) => {
+        if (cancelled) return;
+        setContracts(contractsRes || []);
+        setInspections(inspectionsRes || []);
+        setKeyDeliveries(keyDeliveriesRes || []);
+        setLegalCases(legalCasesRes || []);
+        setProperties(propertiesRes || []);
+      })
+      .catch((err) => { if (!cancelled) setLoadError(err.message || "Erro ao carregar dados."); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
+
+  function propertyOf(id) {
+    return properties.find((p) => p.id === id) || null;
+  }
 
   const activeContracts = useMemo(() => contracts.filter((c) => c.status === "ACTIVE"), [contracts]);
   const signingContracts = useMemo(() => contracts.filter((c) => c.status === "SIGNING"), [contracts]);
-  const pendingInspections = useMemo(() => INSPECTIONS.filter((i) => i.status === "SCHEDULED"), []);
-  const pendingKeyDeliveries = useMemo(() => KEY_DELIVERIES.filter((k) => k.status === "PENDING"), []);
-  const openCases = useMemo(() => LEGAL_CASES.filter((c) => c.status === "OPEN"), []);
+  const pendingInspections = useMemo(() => inspections.filter((i) => i.status === "SCHEDULED"), [inspections]);
+  const pendingKeyDeliveries = useMemo(() => keyDeliveries.filter((k) => k.status === "PENDING"), [keyDeliveries]);
+  const openCases = useMemo(() => legalCases.filter((c) => c.status === "OPEN"), [legalCases]);
 
   const byStatus = useMemo(() => {
     const counts = {};
@@ -51,8 +73,18 @@ export default function ContratosHubPage() {
 
   const totalActiveValue = activeContracts.reduce((s, c) => s + Number(c.totalValue || 0), 0);
 
+  if (loading) {
+    return (
+      <AppShell title="Contratos e Locação">
+        <Spinner size="lg" />
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell title="Contratos e Locação">
+      {loadError ? <Alert tone="danger">{loadError}</Alert> : null}
+
       <div className={styles.grid}>
         <StatTile label="Contratos ativos" value={activeContracts.length} tone="success" icon="signature" />
         <StatTile label="Em assinatura" value={signingContracts.length} tone="info" icon="pencil" />

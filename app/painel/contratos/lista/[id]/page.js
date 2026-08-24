@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, notFound } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -8,14 +8,20 @@ import Badge from "@/components/atoms/Badge/Badge";
 import Icon from "@/components/atoms/Icon/Icon";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
+import Spinner from "@/components/atoms/Spinner/Spinner";
 import Avatar from "@/components/atoms/Avatar/Avatar";
-import { PROPERTIES } from "@/lib/mock/properties";
-import { PEOPLE } from "@/lib/mock/people";
+import { getProperty } from "@/lib/api/properties";
+import { listPeople } from "@/lib/api/people";
 import {
-  CONTRACTS,
-  CONTRACT_VERSIONS,
-  SIGNATURES,
-  GUARANTEES,
+  getContract,
+  listContractParties,
+  listContractVersions,
+  createContractVersion,
+  listSignatures,
+  listGuarantees,
+  transitionContract,
+} from "@/lib/api/legal";
+import {
   CONTRACT_TYPE_LABELS,
   CONTRACT_TYPE_TONE,
   CONTRACT_STATUS_FLOW,
@@ -28,62 +34,132 @@ import {
   GUARANTEE_TYPE_ICON,
   GUARANTEE_STATUS_LABELS,
   GUARANTEE_STATUS_TONE,
-  partiesOf,
-  versionsOf,
-  signaturesOf,
-  guaranteesOf,
   nextContractStatus,
-  fakeContentHash,
 } from "@/lib/mock/legal";
 import { formatBRL, formatDate, formatDateTime } from "@/lib/format";
 import styles from "./page.module.css";
 
-function personOf(id) {
-  return PEOPLE.find((p) => p.id === id) || null;
-}
-
 export default function ContratoDetailPage({ params }) {
   const router = useRouter();
-  const source = CONTRACTS.find((c) => c.id === params.id);
-  const [contract, setContract] = useState(() => (source ? { ...source } : null));
-  const [versions, setVersions] = useState(() => versionsOf(params.id));
+  const [contract, setContract] = useState(null);
+  const [property, setProperty] = useState(null);
+  const [people, setPeople] = useState([]);
+  const [parties, setParties] = useState([]);
+  const [versions, setVersions] = useState([]);
+  const [signatures, setSignatures] = useState([]);
+  const [guarantees, setGuarantees] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [actionError, setActionError] = useState("");
   const [notice, setNotice] = useState(null);
+  const [busy, setBusy] = useState(false);
 
-  if (!source || !contract) return notFound();
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError("");
+    Promise.all([
+      getContract(params.id),
+      listContractParties(params.id),
+      listContractVersions(params.id),
+      listGuarantees({ contractId: params.id }),
+      listPeople(),
+    ])
+      .then(async ([contractRes, partiesRes, versionsRes, guaranteesRes, peopleRes]) => {
+        if (cancelled) return;
+        setContract(contractRes);
+        setParties(partiesRes || []);
+        setVersions(versionsRes || []);
+        setGuarantees(guaranteesRes || []);
+        setPeople(peopleRes || []);
+        if (contractRes?.propertyId) {
+          try {
+            const prop = await getProperty(contractRes.propertyId);
+            if (!cancelled) setProperty(prop);
+          } catch {
+            // Imóvel pode não estar disponível — mantém property nulo, tela continua.
+          }
+        }
+        const latestVersion = (versionsRes || [])[versionsRes.length - 1] || null;
+        if (latestVersion) {
+          const sigs = await listSignatures(latestVersion.id);
+          if (!cancelled) setSignatures(sigs || []);
+        }
+      })
+      .catch((err) => { if (!cancelled) setLoadError(err.message || "Erro ao carregar contrato."); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [params.id]);
 
-  const property = PROPERTIES.find((p) => p.id === contract.propertyId) || null;
-  const parties = partiesOf(contract.id);
-  const guarantees = guaranteesOf(contract.id);
+  function personOf(id) {
+    return people.find((p) => p.id === id) || null;
+  }
+
+  if (loading) {
+    return (
+      <AppShell title="Contrato" backHref="/painel/contratos/lista">
+        <Spinner size="lg" />
+      </AppShell>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <AppShell title="Contrato" backHref="/painel/contratos/lista">
+        <Alert tone="danger">{loadError}</Alert>
+      </AppShell>
+    );
+  }
+
+  if (!contract) return notFound();
+
   const latestVersion = versions[versions.length - 1] || null;
-  const signatures = latestVersion ? signaturesOf(latestVersion.id) : [];
-
   const next = nextContractStatus(contract.status);
 
-  function handleAdvance() {
+  async function handleAdvance() {
     if (!next) return;
-    setContract((prev) => ({ ...prev, status: next, lockVersion: prev.lockVersion + 1 }));
-    setNotice({ tone: "success", text: `Contrato avançou para "${CONTRACT_STATUS_LABELS[next]}".` });
+    setActionError("");
+    setBusy(true);
+    try {
+      const updated = await transitionContract(contract.id, next);
+      setContract(updated);
+      setNotice({ tone: "success", text: `Contrato avançou para "${CONTRACT_STATUS_LABELS[next]}".` });
+    } catch (err) {
+      setActionError(err.message || "Erro ao avançar status do contrato.");
+    } finally {
+      setBusy(false);
+    }
   }
 
-  function handleCancel() {
-    setContract((prev) => ({ ...prev, status: "CANCELLED", lockVersion: prev.lockVersion + 1 }));
-    setNotice({ tone: "danger", text: "Contrato cancelado." });
+  async function handleCancel() {
+    setActionError("");
+    setBusy(true);
+    try {
+      const updated = await transitionContract(contract.id, "CANCELLED");
+      setContract(updated);
+      setNotice({ tone: "danger", text: "Contrato cancelado." });
+    } catch (err) {
+      setActionError(err.message || "Erro ao cancelar contrato.");
+    } finally {
+      setBusy(false);
+    }
   }
 
-  function handleNewVersion() {
-    // Ilustrativo: em produção o backend calcula um SHA-256 real do documento (content_hash).
-    const versionNumber = versions.length + 1;
-    const newVersion = {
-      id: `cv-mock-${Date.now()}`,
-      contractId: contract.id,
-      versionNumber,
-      documentFileId: `file-${contract.id}-v${versionNumber}`,
-      contentHash: fakeContentHash(),
-      effectiveFrom: new Date().toISOString(),
-      createdAt: new Date().toISOString(),
-    };
-    setVersions((prev) => [...prev, newVersion]);
-    setNotice({ tone: "info", text: `Versão ${versionNumber} criada — versões são imutáveis, nunca editadas.` });
+  async function handleNewVersion() {
+    setActionError("");
+    setBusy(true);
+    try {
+      const versionNumber = versions.length + 1;
+      const newVersion = await createContractVersion(contract.id, {
+        content: `Versão ${versionNumber} do contrato ${contract.contractNumber}`,
+      });
+      setVersions((prev) => [...prev, newVersion]);
+      setNotice({ tone: "info", text: `Versão ${versionNumber} criada — versões são imutáveis, nunca editadas.` });
+    } catch (err) {
+      setActionError(err.message || "Erro ao criar nova versão do contrato.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -96,14 +172,15 @@ export default function ContratoDetailPage({ params }) {
           </div>
           <div className={styles.actions}>
             {contract.status !== "CANCELLED" && contract.status !== "ACTIVE" ? (
-              <Button variant="secondary" onClick={handleCancel}><Icon name="ban" size={16} /> Cancelar</Button>
+              <Button variant="secondary" onClick={handleCancel} disabled={busy}><Icon name="ban" size={16} /> Cancelar</Button>
             ) : null}
             {next ? (
-              <Button onClick={handleAdvance}><Icon name="check" size={16} /> Avançar etapa ({CONTRACT_STATUS_LABELS[next]})</Button>
+              <Button onClick={handleAdvance} disabled={busy}><Icon name="check" size={16} /> Avançar etapa ({CONTRACT_STATUS_LABELS[next]})</Button>
             ) : null}
           </div>
         </div>
 
+        {actionError ? <Alert tone="danger" className={styles.notice}>{actionError}</Alert> : null}
         {notice ? <Alert tone={notice.tone} className={styles.notice}>{notice.text}</Alert> : null}
 
         <Card title="Máquina de estados" subtitle="Fluxo linear do contrato — cancelamento é um estado alternativo, fora da sequência">
@@ -137,7 +214,6 @@ export default function ContratoDetailPage({ params }) {
                 <div className={styles.detailRow}><dt>Imóvel</dt><dd>{property?.name || "Sem imóvel vinculado"}</dd></div>
                 <div className={styles.detailRow}><dt>Início de vigência</dt><dd>{contract.startsAt ? formatDate(contract.startsAt) : "—"}</dd></div>
                 <div className={styles.detailRow}><dt>Fim de vigência</dt><dd>{contract.endsAt ? formatDate(contract.endsAt) : "—"}</dd></div>
-                <div className={styles.detailRow}><dt>Versão de bloqueio (lock_version)</dt><dd>{contract.lockVersion}</dd></div>
                 <div className={styles.detailRow}><dt>ID</dt><dd className={styles.mono}>{contract.id}</dd></div>
               </dl>
             </Card>
@@ -164,7 +240,7 @@ export default function ContratoDetailPage({ params }) {
             <Card
               title="Versões do documento"
               subtitle="Imutáveis — cada alteração cria uma nova versão, nunca edita a anterior"
-              actions={<Button size="sm" variant="secondary" onClick={handleNewVersion}><Icon name="document" size={16} /> Nova versão</Button>}
+              actions={<Button size="sm" variant="secondary" onClick={handleNewVersion} disabled={busy}><Icon name="document" size={16} /> Nova versão</Button>}
             >
               {versions.length === 0 ? (
                 <p className={styles.emptyText}>Nenhuma versão gerada ainda.</p>
@@ -220,7 +296,7 @@ export default function ContratoDetailPage({ params }) {
                         {g.guarantorPersonId ? personOf(g.guarantorPersonId)?.legalName : g.value != null ? formatBRL(g.value) : "—"}
                       </span>
                     </div>
-                    <Badge tone={GUARANTEE_STATUS_TONE[g.status]}>{GUARANTEE_STATUS_LABELS[g.status]}</Badge>
+                    <Badge tone={GUARANTEE_STATUS_TONE[g.status] || "neutral"}>{GUARANTEE_STATUS_LABELS[g.status] || g.status}</Badge>
                   </div>
                 ))
               )}

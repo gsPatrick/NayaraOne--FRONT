@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -10,23 +10,47 @@ import Select from "@/components/atoms/Select/Select";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
 import Icon from "@/components/atoms/Icon/Icon";
-import { PROPERTIES } from "@/lib/mock/properties";
-import { PEOPLE } from "@/lib/mock/people";
+import Spinner from "@/components/atoms/Spinner/Spinner";
+import { listProperties } from "@/lib/api/properties";
+import { listPeople } from "@/lib/api/people";
+import { createContract, addContractParty } from "@/lib/api/legal";
 import { CONTRACT_TYPE_LABELS, PARTY_ROLE_LABELS } from "@/lib/mock/legal";
 import styles from "./page.module.css";
 
 export default function NovoContratoPage() {
   const router = useRouter();
+  const [properties, setProperties] = useState([]);
+  const [people, setPeople] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [actionError, setActionError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
     contractType: "LEASE",
-    propertyId: PROPERTIES[0]?.id || "",
+    propertyId: "",
     totalValue: "",
     startsAt: "",
     endsAt: "",
   });
   const [parties, setParties] = useState([]);
-  const [newParty, setNewParty] = useState({ personId: PEOPLE[0]?.id || "", partyRole: "LANDLORD" });
+  const [newParty, setNewParty] = useState({ personId: "", partyRole: "LANDLORD" });
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError("");
+    Promise.all([listProperties(), listPeople()])
+      .then(([propertiesRes, peopleRes]) => {
+        if (cancelled) return;
+        setProperties(propertiesRes || []);
+        setPeople(peopleRes || []);
+        setForm((prev) => ({ ...prev, propertyId: prev.propertyId || propertiesRes?.[0]?.id || "" }));
+        setNewParty((prev) => ({ ...prev, personId: prev.personId || peopleRes?.[0]?.id || "" }));
+      })
+      .catch((err) => { if (!cancelled) setLoadError(err.message || "Erro ao carregar dados."); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
 
   const isValid = form.propertyId && Number(form.totalValue) > 0 && parties.length > 0;
 
@@ -35,7 +59,7 @@ export default function NovoContratoPage() {
   }
 
   function addParty() {
-    const person = PEOPLE.find((p) => p.id === newParty.personId);
+    const person = people.find((p) => p.id === newParty.personId);
     if (!person) return;
     setParties((prev) => [...prev, { id: `tmp-${Date.now()}`, personId: newParty.personId, partyRole: newParty.partyRole }]);
   }
@@ -44,16 +68,43 @@ export default function NovoContratoPage() {
     setParties((prev) => prev.filter((p) => p.id !== id));
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!isValid) return;
+    setActionError("");
     setSubmitting(true);
-    // Mock: em produção isto chamaria POST /v1/legal/contracts (contracts.service.js)
-    window.setTimeout(() => router.push("/painel/contratos/lista"), 500);
+    try {
+      const contract = await createContract({
+        propertyId: form.propertyId,
+        contractType: form.contractType,
+        totalValue: Number(form.totalValue),
+        startsAt: form.startsAt || undefined,
+        endsAt: form.endsAt || undefined,
+      });
+      for (const party of parties) {
+        await addContractParty(contract.id, { personId: party.personId, partyRole: party.partyRole });
+      }
+      router.push(`/painel/contratos/lista/${contract.id}`);
+    } catch (err) {
+      setActionError(err.message || "Erro ao criar contrato.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <AppShell title="Novo contrato" backHref="/painel/contratos/lista">
+        <Spinner size="lg" />
+      </AppShell>
+    );
   }
 
   return (
     <AppShell title="Novo contrato" backHref="/painel/contratos/lista">
       <div className={styles.wrap}>
+        {loadError ? <Alert tone="danger">{loadError}</Alert> : null}
+        {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
+
         <Alert tone="info" title="Máquina de estados">
           O contrato nasce em DRAFT e avança etapa por etapa (Documentos pendentes → Análise jurídica → Aprovado → Em assinatura → Assinado → Ativo) — a transição é feita na página de detalhe.
         </Alert>
@@ -70,7 +121,7 @@ export default function NovoContratoPage() {
 
             <FormField label="Imóvel" htmlFor="f-property" required>
               <Select id="f-property" value={form.propertyId} onChange={update("propertyId")}>
-                {PROPERTIES.map((p) => (
+                {properties.map((p) => (
                   <option key={p.id} value={p.id}>{p.name}</option>
                 ))}
               </Select>
@@ -96,7 +147,7 @@ export default function NovoContratoPage() {
               <p className={styles.emptyText}>Nenhuma parte adicionada ainda.</p>
             ) : (
               parties.map((party) => {
-                const person = PEOPLE.find((p) => p.id === party.personId);
+                const person = people.find((p) => p.id === party.personId);
                 return (
                   <div key={party.id} className={styles.partyRow}>
                     <div className={styles.partyInfo}>
@@ -115,7 +166,7 @@ export default function NovoContratoPage() {
           <div className={styles.addPartyRow}>
             <FormField label="Pessoa" htmlFor="f-party-person">
               <Select id="f-party-person" value={newParty.personId} onChange={(e) => setNewParty((prev) => ({ ...prev, personId: e.target.value }))}>
-                {PEOPLE.map((p) => (
+                {people.map((p) => (
                   <option key={p.id} value={p.id}>{p.legalName}</option>
                 ))}
               </Select>
