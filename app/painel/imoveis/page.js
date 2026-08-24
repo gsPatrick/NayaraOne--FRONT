@@ -1,17 +1,20 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Button from "@/components/atoms/Button/Button";
 import Select from "@/components/atoms/Select/Select";
 import Icon from "@/components/atoms/Icon/Icon";
+import Spinner from "@/components/atoms/Spinner/Spinner";
+import Alert from "@/components/molecules/Alert/Alert";
 import SearchInput from "@/components/molecules/SearchInput/SearchInput";
 import Pagination from "@/components/molecules/Pagination/Pagination";
 import PropertyCard from "@/components/molecules/PropertyCard/PropertyCard";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import FabLink from "@/components/molecules/FabLink/FabLink";
-import { PROPERTIES, AVAILABILITY_STATUS_LABELS } from "@/lib/mock/properties";
+import { AVAILABILITY_STATUS_LABELS } from "@/lib/mock/properties";
+import { listProperties } from "@/lib/api/properties";
 import styles from "./page.module.css";
 
 const PAGE_SIZE = 8;
@@ -22,16 +25,38 @@ export default function ImoveisPage() {
   const [typeFilter, setTypeFilter] = useState("todos");
   const [statusFilter, setStatusFilter] = useState("todos");
   const [page, setPage] = useState(1);
+  const [properties, setProperties] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError("");
+    listProperties()
+      .then((data) => {
+        if (!cancelled) setProperties(data);
+      })
+      .catch((err) => {
+        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar os imóveis.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const filtered = useMemo(() => {
-    return PROPERTIES.filter((p) => {
+    return properties.filter((p) => {
       const matchesQuery = query.trim().length === 0 ||
         `${p.name} ${p.neighborhood} ${p.city}`.toLowerCase().includes(query.trim().toLowerCase());
       const matchesType = typeFilter === "todos" || p.type === typeFilter;
       const matchesStatus = statusFilter === "todos" || p.availabilityStatus === statusFilter;
       return matchesQuery && matchesType && matchesStatus;
     });
-  }, [query, typeFilter, statusFilter]);
+  }, [properties, query, typeFilter, statusFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const pageItems = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -62,7 +87,15 @@ export default function ImoveisPage() {
         </Button>
       </div>
 
-      {pageItems.length === 0 ? (
+      {loadError ? (
+        <Alert tone="danger" title="Não foi possível carregar os imóveis">{loadError}</Alert>
+      ) : null}
+
+      {loading ? (
+        <div className={styles.toolbar}>
+          <Spinner size="lg" />
+        </div>
+      ) : pageItems.length === 0 ? (
         <div className={styles.empty}>
           <EmptyState icon="building" title="Nenhum imóvel encontrado" description="Ajuste os filtros ou o termo de busca para ver outros resultados." />
         </div>

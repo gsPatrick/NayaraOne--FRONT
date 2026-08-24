@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter, notFound } from "next/navigation";
+import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Button from "@/components/atoms/Button/Button";
 import Badge from "@/components/atoms/Badge/Badge";
@@ -13,8 +13,8 @@ import Card from "@/components/molecules/Card/Card";
 import Modal from "@/components/organisms/Modal/Modal";
 import Alert from "@/components/molecules/Alert/Alert";
 import PriceHistoryTimeline from "@/components/molecules/PriceHistoryTimeline/PriceHistoryTimeline";
+import Spinner from "@/components/atoms/Spinner/Spinner";
 import {
-  PROPERTIES,
   FEATURE_LABELS,
   PUBLICATION_STATUS_LABELS,
   AVAILABILITY_STATUS_LABELS,
@@ -24,6 +24,16 @@ import {
   INTERNAL_OCCURRENCE_TYPE_LABELS,
   REG_IMO_001,
 } from "@/lib/mock/properties";
+import {
+  getProperty,
+  deleteProperty,
+  publishOffer,
+  listOccurrences,
+  createOccurrence,
+  listPriceHistory,
+  listProperties,
+} from "@/lib/api/properties";
+import { getPerson } from "@/lib/api/people";
 import { formatBRL } from "@/lib/format";
 import { buildGoogleMapsUrl, buildGoogleMapsEmbedUrl, buildGoogleMapsDirectionsUrl, buildAddressLine } from "@/lib/maps";
 import styles from "./page.module.css";
@@ -48,18 +58,18 @@ function hashCode(str = "") {
   return hash;
 }
 
-let mockOccurrenceIdSeq = 0;
-
 export default function PropertyDetailPage({ params }) {
   const router = useRouter();
-  const sourceProperty = PROPERTIES.find((p) => p.id === params.id);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [editOpen, setEditOpen] = useState(false);
 
-  // Copiamos o mock para estado local — nunca mutamos o array importado diretamente.
-  const [property, setProperty] = useState(() => (sourceProperty ? { ...sourceProperty } : null));
+  const [property, setProperty] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [actionError, setActionError] = useState("");
+  const [ownedByCount, setOwnedByCount] = useState({});
   const [publishBlockedMessage, setPublishBlockedMessage] = useState("");
 
   const [occurrenceForm, setOccurrenceForm] = useState({ type: "OWNER_NOTE", description: "" });
@@ -67,6 +77,63 @@ export default function PropertyDetailPage({ params }) {
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [addressCopied, setAddressCopied] = useState(false);
   const [galleryPage, setGalleryPage] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError("");
+    Promise.all([
+      getProperty(params.id),
+      listOccurrences(params.id).catch(() => []),
+      listPriceHistory(params.id).catch(() => []),
+      listProperties().catch(() => []),
+    ])
+      .then(async ([apiProperty, occurrences, priceHistory, allProperties]) => {
+        if (cancelled || !apiProperty) return;
+
+        const ownerNames = await Promise.all(
+          (apiProperty.owners || []).map((owner) =>
+            owner.personId
+              ? getPerson(owner.personId)
+                  .then((person) => person?.name || "")
+                  .catch(() => "")
+              : Promise.resolve("")
+          )
+        );
+
+        if (cancelled) return;
+
+        const counts = {};
+        for (const p of allProperties) {
+          for (const o of p.owners || []) {
+            if (!o.personId) continue;
+            counts[o.personId] = (counts[o.personId] || 0) + 1;
+          }
+        }
+        setOwnedByCount(counts);
+
+        setProperty({
+          ...apiProperty,
+          owners: apiProperty.owners.map((owner, i) => ({ ...owner, name: ownerNames[i] })),
+          internalOccurrences: occurrences.map((occ) => ({
+            id: occ.id,
+            type: occ.occurrenceType,
+            description: occ.description,
+            date: occ.createdAt,
+          })),
+          priceHistory,
+        });
+      })
+      .catch((err) => {
+        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar o imóvel.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [params.id]);
 
   function handleCopyAddress() {
     const line = buildAddressLine(property.address);
@@ -76,7 +143,7 @@ export default function PropertyDetailPage({ params }) {
     });
   }
 
-  const mediaCount = sourceProperty?.media?.length || 0;
+  const mediaCount = property?.media?.length || 0;
 
   function prevMedia(event) {
     event?.stopPropagation();
@@ -99,41 +166,79 @@ export default function PropertyDetailPage({ params }) {
     return () => document.removeEventListener("keydown", onKey);
   }); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (!sourceProperty || !property) return notFound();
+  if (loading) {
+    return (
+      <AppShell title="Carregando imóvel..." backHref="/painel/imoveis">
+        <div className={styles.wrap}>
+          <Spinner size="lg" />
+        </div>
+      </AppShell>
+    );
+  }
 
-  function handleDelete() {
+  if (loadError || !property) {
+    return (
+      <AppShell title="Imóvel" backHref="/painel/imoveis">
+        <div className={styles.wrap}>
+          <Alert tone="danger" title="Não foi possível carregar o imóvel">
+            {loadError || "Imóvel não encontrado."}
+          </Alert>
+        </div>
+      </AppShell>
+    );
+  }
+
+  async function handleDelete() {
     setDeleting(true);
-    window.setTimeout(() => router.push("/painel/imoveis"), 500);
+    setActionError("");
+    try {
+      await deleteProperty(property.id);
+      router.push("/painel/imoveis");
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível excluir o imóvel.");
+      setDeleting(false);
+    }
   }
 
   function handleConfirmEdit() {
     router.push(`/painel/imoveis/${property.id}/editar`);
   }
 
-  function handlePublish() {
-    const hasVideo = property.media?.some((m) => m.type === "video");
-    if (!hasVideo) {
-      setPublishBlockedMessage(
-        `Publicação bloqueada pela regra ${REG_IMO_001.code}: é necessário pelo menos 1 vídeo para publicar este imóvel.`
-      );
+  async function handlePublish() {
+    if (!property.activeOffer) {
+      setPublishBlockedMessage("É necessário ter uma oferta ativa para publicar este imóvel.");
       return;
     }
-    setPublishBlockedMessage("");
-    setProperty((prev) => ({ ...prev, publicationStatus: "PUBLISHED" }));
+    try {
+      await publishOffer(property.activeOffer.id);
+      setPublishBlockedMessage("");
+      setProperty((prev) => ({ ...prev, publicationStatus: "PUBLISHED" }));
+    } catch (err) {
+      setPublishBlockedMessage(
+        err?.message || `Publicação bloqueada pela regra ${REG_IMO_001.code}.`
+      );
+    }
   }
 
-  function handleAddOccurrence(event) {
+  async function handleAddOccurrence(event) {
     event.preventDefault();
     if (!occurrenceForm.description.trim()) return;
-    mockOccurrenceIdSeq += 1;
-    const newOccurrence = {
-      id: `occ-local-${mockOccurrenceIdSeq}`,
-      type: occurrenceForm.type,
-      description: occurrenceForm.description.trim(),
-      date: new Date().toISOString(),
-    };
-    setProperty((prev) => ({ ...prev, internalOccurrences: [newOccurrence, ...(prev.internalOccurrences || [])] }));
-    setOccurrenceForm({ type: "OWNER_NOTE", description: "" });
+    try {
+      const created = await createOccurrence(property.id, {
+        occurrenceType: occurrenceForm.type,
+        description: occurrenceForm.description.trim(),
+      });
+      setProperty((prev) => ({
+        ...prev,
+        internalOccurrences: [
+          { id: created.id, type: created.occurrenceType, description: created.description, date: created.createdAt },
+          ...(prev.internalOccurrences || []),
+        ],
+      }));
+      setOccurrenceForm({ type: "OWNER_NOTE", description: "" });
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível registrar a ocorrência.");
+    }
   }
 
   const offer = property.activeOffer;
@@ -173,6 +278,12 @@ export default function PropertyDetailPage({ params }) {
           </div>
         ) : null}
 
+        {actionError ? (
+          <div className={styles.publishAlert}>
+            <Alert tone="danger">{actionError}</Alert>
+          </div>
+        ) : null}
+
         <div className={styles.grid}>
           <div className={styles.mainCol}>
             <Card title="Sobre o imóvel">
@@ -187,11 +298,9 @@ export default function PropertyDetailPage({ params }) {
             <Card title="Proprietários">
               <div className={styles.ownerProfileList}>
                 {property.owners.map((owner) => {
-                  const linkedCount = owner.personId
-                    ? PROPERTIES.filter((p) => p.owners.some((o) => o.personId === owner.personId)).length
-                    : 0;
+                  const linkedCount = owner.personId ? ownedByCount[owner.personId] || 0 : 0;
                   return (
-                    <div className={styles.ownerProfile} key={owner.name}>
+                    <div className={styles.ownerProfile} key={owner.id}>
                       <Avatar name={owner.name} size="xl" />
                       <div className={styles.ownerProfileInfo}>
                         <span className={styles.ownerProfileName}>{owner.name}</span>
