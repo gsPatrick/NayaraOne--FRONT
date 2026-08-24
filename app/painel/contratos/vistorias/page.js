@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -11,13 +11,15 @@ import SearchInput from "@/components/molecules/SearchInput/SearchInput";
 import Select from "@/components/atoms/Select/Select";
 import StatTile from "@/components/molecules/StatTile/StatTile";
 import Icon from "@/components/atoms/Icon/Icon";
+import Spinner from "@/components/atoms/Spinner/Spinner";
+import Alert from "@/components/molecules/Alert/Alert";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import ContractsNavMenu from "@/components/molecules/ContractsNavMenu/ContractsNavMenu";
 import RowActions from "@/components/molecules/RowActions/RowActions";
 import Pagination from "@/components/molecules/Pagination/Pagination";
-import { PROPERTIES } from "@/lib/mock/properties";
+import { listProperties } from "@/lib/api/properties";
+import { listInspections } from "@/lib/api/legal";
 import {
-  INSPECTIONS,
   INSPECTION_TYPE_LABELS,
   INSPECTION_TYPE_TONE,
   INSPECTION_STATUS_LABELS,
@@ -26,33 +28,52 @@ import {
 import { formatDate } from "@/lib/format";
 import styles from "./page.module.css";
 
-function propertyOf(id) {
-  return PROPERTIES.find((p) => p.id === id) || null;
-}
-
 export default function VistoriasPage() {
   const router = useRouter();
+  const [inspections, setInspections] = useState([]);
+  const [properties, setProperties] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
 
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError("");
+    Promise.all([listInspections(), listProperties()])
+      .then(([inspectionsRes, propertiesRes]) => {
+        if (cancelled) return;
+        setInspections(inspectionsRes || []);
+        setProperties(propertiesRes || []);
+      })
+      .catch((err) => { if (!cancelled) setLoadError(err.message || "Erro ao carregar vistorias."); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
+
+  function propertyOf(id) {
+    return properties.find((p) => p.id === id) || null;
+  }
+
   const filtered = useMemo(() => {
-    return INSPECTIONS.filter((i) => {
+    return inspections.filter((i) => {
       const property = propertyOf(i.propertyId);
       if (query && !(property?.name || "").toLowerCase().includes(query.toLowerCase())) return false;
       if (typeFilter && i.inspectionType !== typeFilter) return false;
       if (statusFilter && i.status !== statusFilter) return false;
       return true;
     });
-  }, [query, typeFilter, statusFilter]);
+  }, [inspections, properties, query, typeFilter, statusFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const pageItems = filtered.slice((page - 1) * pageSize, page * pageSize);
 
-  const scheduledCount = INSPECTIONS.filter((i) => i.status === "SCHEDULED").length;
-  const completedCount = INSPECTIONS.filter((i) => i.status === "COMPLETED").length;
+  const scheduledCount = inspections.filter((i) => i.status === "SCHEDULED").length;
+  const completedCount = inspections.filter((i) => i.status === "COMPLETED").length;
 
   const columns = [
     {
@@ -91,10 +112,20 @@ export default function VistoriasPage() {
     },
   ];
 
+  if (loading) {
+    return (
+      <AppShell title="Vistorias" backHref="/painel/contratos">
+        <Spinner size="lg" />
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell title="Vistorias" backHref="/painel/contratos">
+      {loadError ? <Alert tone="danger">{loadError}</Alert> : null}
+
       <div className={styles.grid}>
-        <StatTile label="Total de vistorias" value={INSPECTIONS.length} tone="neutral" icon="eye" />
+        <StatTile label="Total de vistorias" value={inspections.length} tone="neutral" icon="eye" />
         <StatTile label="Agendadas" value={scheduledCount} tone={scheduledCount > 0 ? "warning" : "success"} icon="calendar" />
         <StatTile label="Concluídas" value={completedCount} tone="success" icon="check" />
         <StatTile label="Itens com danos" value="—" tone="neutral" icon="filter" />

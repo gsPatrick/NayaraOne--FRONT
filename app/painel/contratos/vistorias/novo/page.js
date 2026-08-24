@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -11,21 +11,44 @@ import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
 import Icon from "@/components/atoms/Icon/Icon";
 import Badge from "@/components/atoms/Badge/Badge";
-import { PROPERTIES } from "@/lib/mock/properties";
-import { CONTRACTS, INSPECTION_TYPE_LABELS, CONDITION_LABELS, CONDITION_TONE } from "@/lib/mock/legal";
+import Spinner from "@/components/atoms/Spinner/Spinner";
+import { listProperties } from "@/lib/api/properties";
+import { listContracts, createInspection, addInspectionItem } from "@/lib/api/legal";
+import { INSPECTION_TYPE_LABELS, CONDITION_LABELS, CONDITION_TONE } from "@/lib/mock/legal";
 import styles from "./page.module.css";
 
 export default function NovaVistoriaPage() {
   const router = useRouter();
+  const [properties, setProperties] = useState([]);
+  const [contracts, setContracts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [actionError, setActionError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
-    propertyId: PROPERTIES[0]?.id || "",
+    propertyId: "",
     contractId: "",
     inspectionType: "CHECK_IN",
     scheduledAt: "",
   });
   const [items, setItems] = useState([]);
   const [newItem, setNewItem] = useState({ itemName: "", condition: "GOOD", notes: "" });
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError("");
+    Promise.all([listProperties(), listContracts()])
+      .then(([propertiesRes, contractsRes]) => {
+        if (cancelled) return;
+        setProperties(propertiesRes || []);
+        setContracts(contractsRes || []);
+        setForm((prev) => ({ ...prev, propertyId: prev.propertyId || propertiesRes?.[0]?.id || "" }));
+      })
+      .catch((err) => { if (!cancelled) setLoadError(err.message || "Erro ao carregar dados."); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
 
   const isValid = form.propertyId && form.inspectionType && form.scheduledAt;
 
@@ -43,16 +66,42 @@ export default function NovaVistoriaPage() {
     setItems((prev) => prev.filter((i) => i.id !== id));
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!isValid) return;
+    setActionError("");
     setSubmitting(true);
-    // Mock: em produção isto chamaria POST /v1/legal/inspections (inspections.service.js)
-    window.setTimeout(() => router.push("/painel/contratos/vistorias"), 500);
+    try {
+      const inspection = await createInspection({
+        propertyId: form.propertyId,
+        contractId: form.contractId || undefined,
+        inspectionType: form.inspectionType,
+        scheduledAt: new Date(form.scheduledAt).toISOString(),
+      });
+      for (const item of items) {
+        await addInspectionItem(inspection.id, { itemName: item.itemName, condition: item.condition, notes: item.notes || undefined });
+      }
+      router.push(`/painel/contratos/vistorias/${inspection.id}`);
+    } catch (err) {
+      setActionError(err.message || "Erro ao criar vistoria.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <AppShell title="Nova vistoria" backHref="/painel/contratos/vistorias">
+        <Spinner size="lg" />
+      </AppShell>
+    );
   }
 
   return (
     <AppShell title="Nova vistoria" backHref="/painel/contratos/vistorias">
       <div className={styles.wrap}>
+        {loadError ? <Alert tone="danger">{loadError}</Alert> : null}
+        {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
+
         <Alert tone="info" title="Itens da vistoria">
           Adicione os itens vistoriados (opcional na criação) — eles ficam registrados na página de detalhe, junto ao laudo comparativo entrada/saída.
         </Alert>
@@ -61,7 +110,7 @@ export default function NovaVistoriaPage() {
           <div className={styles.formGrid}>
             <FormField label="Imóvel" htmlFor="f-property" required>
               <Select id="f-property" value={form.propertyId} onChange={update("propertyId")}>
-                {PROPERTIES.map((p) => (
+                {properties.map((p) => (
                   <option key={p.id} value={p.id}>{p.name}</option>
                 ))}
               </Select>
@@ -70,7 +119,7 @@ export default function NovaVistoriaPage() {
             <FormField label="Contrato" htmlFor="f-contract" helper="Opcional">
               <Select id="f-contract" value={form.contractId} onChange={update("contractId")}>
                 <option value="">Nenhum</option>
-                {CONTRACTS.map((c) => (
+                {contracts.map((c) => (
                   <option key={c.id} value={c.id}>{c.contractNumber}</option>
                 ))}
               </Select>
