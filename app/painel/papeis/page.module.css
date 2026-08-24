@@ -1,0 +1,85 @@
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-5);
+}
+
+.toolbarInfo {
+  font-size: var(--text-body-sm);
+  color: var(--color-ink-muted);
+}
+
+.nameCell { display: flex; flex-direction: column; gap: 2px; }
+.roleName { font-weight: 600; color: var(--color-ink); display: flex; align-items: center; gap: var(--space-2); }
+.roleDescription { font-size: var(--text-caption); color: var(--color-ink-muted); }
+
+.actionsCell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.span2 { grid-column: span 2; }
+
+.permissionsWrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: var(--space-2);
+}
+
+.permissionGroup {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+
+.permissionGroupHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-bottom: var(--space-2);
+  margin-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.permissionGroupTitle {
+  font-weight: 600;
+  font-size: var(--text-body-sm);
+  color: var(--color-ink);
+}
+
+.permissionGroupCount {
+  font-size: var(--text-caption);
+  color: var(--color-ink-muted);
+}
+
+.permissionList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--space-2) var(--space-3);
+}
+
+.systemNote {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-caption);
+  color: var(--color-ink-muted);
+  background: var(--color-canvas-sunken);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+}

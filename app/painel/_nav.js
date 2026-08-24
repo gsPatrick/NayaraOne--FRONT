@@ -40,6 +40,7 @@ export const NAV_SECTIONS = [
     items: [
       { label: "Empresas & Unidades", href: "/painel/empresas", icon: "layers" },
       { label: "Usuários & Acessos", href: "/painel/usuarios", icon: "shield" },
+      { label: "Papéis & Permissões", href: "/painel/papeis", icon: "shield" },
     ],
   },
   {
