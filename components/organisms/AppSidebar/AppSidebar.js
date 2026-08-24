@@ -8,12 +8,24 @@ import BrandMark from "@/components/atoms/BrandMark/BrandMark";
 import Icon from "@/components/atoms/Icon/Icon";
 import Tooltip from "@/components/atoms/Tooltip/Tooltip";
 import { NAV_SECTIONS } from "@/app/painel/_nav";
+import { hasPermission } from "@/lib/rbac/permissions";
 import styles from "./AppSidebar.module.css";
+
+// Esconde do menu qualquer item (ou seção inteira, se ficar vazia) cuja permissão de leitura
+// o usuário logado não tem — a API já recusaria a chamada de qualquer forma, isso só evita
+// mostrar um link morto. Item sem `permission` (Painel, "Em breve") sempre aparece.
+function visibleSections() {
+  return NAV_SECTIONS.map((section) => ({
+    ...section,
+    items: section.items.filter((item) => hasPermission(item.permission)),
+  })).filter((section) => section.items.length > 0);
+}
 
 export default function AppSidebar({ collapsed, onToggle }) {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
   const [hoveredItem, setHoveredItem] = useState(null);
+  const [sections, setSections] = useState(NAV_SECTIONS);
   const [openMenus, setOpenMenus] = useState(() =>
     new Set(
       NAV_SECTIONS.flatMap((section) => section.items)
@@ -21,6 +33,8 @@ export default function AppSidebar({ collapsed, onToggle }) {
         .map((item) => item.label)
     )
   );
+
+  useEffect(() => setSections(visibleSections()), []);
 
   useEffect(() => setMounted(true), []);
   useEffect(() => setHoveredItem(null), [collapsed]);
@@ -82,7 +96,7 @@ export default function AppSidebar({ collapsed, onToggle }) {
         : null}
 
       <nav className={styles.nav}>
-        {NAV_SECTIONS.map((section) => (
+        {sections.map((section) => (
           <div key={section.label} className={styles.section}>
             {!collapsed ? <span className={styles.sectionLabel}>{section.label}</span> : null}
             <ul className={styles.list}>

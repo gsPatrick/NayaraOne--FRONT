@@ -3,14 +3,15 @@ export const NAV_SECTIONS = [
     label: "Operação",
     items: [
       { label: "Painel", href: "/painel", icon: "home" },
-      { label: "Imóveis", href: "/painel/imoveis", icon: "building" },
-      { label: "Contatos", href: "/painel/pessoas", icon: "users" },
-      { label: "CRM", href: "/painel/crm", icon: "chart" },
-      { label: "Radar", href: "/painel/radar", icon: "radar" },
+      { label: "Imóveis", href: "/painel/imoveis", icon: "building", permission: "properties:read" },
+      { label: "Contatos", href: "/painel/pessoas", icon: "users", permission: "people:read" },
+      { label: "CRM", href: "/painel/crm", icon: "chart", permission: "crm:opportunities:read" },
+      { label: "Radar", href: "/painel/radar", icon: "radar", permission: "radar:read" },
       {
         label: "Financeiro",
         href: "/painel/financeiro",
         icon: "money",
+        permission: "finance:read",
         children: [
           { label: "Visão geral", href: "/painel/financeiro" },
           { label: "Lançamentos", href: "/painel/financeiro/lancamentos" },
@@ -24,6 +25,7 @@ export const NAV_SECTIONS = [
         label: "Contratos",
         href: "/painel/contratos",
         icon: "document",
+        permission: "legal:read",
         children: [
           { label: "Visão geral", href: "/painel/contratos" },
           { label: "Contratos", href: "/painel/contratos/lista" },
@@ -38,9 +40,9 @@ export const NAV_SECTIONS = [
   {
     label: "Administração",
     items: [
-      { label: "Empresas & Unidades", href: "/painel/empresas", icon: "layers" },
-      { label: "Usuários & Acessos", href: "/painel/usuarios", icon: "shield" },
-      { label: "Papéis & Permissões", href: "/painel/papeis", icon: "shield" },
+      { label: "Empresas & Unidades", href: "/painel/empresas", icon: "layers", permission: "companies:read" },
+      { label: "Usuários & Acessos", href: "/painel/usuarios", icon: "shield", permission: "users:read" },
+      { label: "Papéis & Permissões", href: "/painel/papeis", icon: "shield", permission: "roles:read" },
     ],
   },
   {
@@ -54,8 +56,8 @@ export const NAV_SECTIONS = [
 
 export const MOBILE_TABS = [
   { label: "Painel", href: "/painel", icon: "home" },
-  { label: "Imóveis", href: "/painel/imoveis", icon: "building" },
-  { label: "CRM", href: "/painel/crm", icon: "chart" },
-  { label: "Financeiro", href: "/painel/financeiro", icon: "money" },
+  { label: "Imóveis", href: "/painel/imoveis", icon: "building", permission: "properties:read" },
+  { label: "CRM", href: "/painel/crm", icon: "chart", permission: "crm:opportunities:read" },
+  { label: "Financeiro", href: "/painel/financeiro", icon: "money", permission: "finance:read" },
   { label: "Mais", href: "/painel/mais", icon: "dots" },
 ];
