@@ -114,7 +114,16 @@
 
 .section { display: flex; flex-direction: column; gap: var(--space-2); }
 
+.sectionDivider {
+  padding-top: var(--space-5);
+  margin-top: var(--space-1);
+  border-top: 1px solid var(--color-sidebar-border);
+}
+
 .sectionLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: var(--text-micro);
   font-weight: 700;
   text-transform: uppercase;
@@ -122,6 +131,19 @@
   color: var(--color-sidebar-ink-muted);
   padding: 0 var(--space-2);
 }
+
+.sectionAdmin {
+  background: var(--color-brand-soft);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) 0;
+  margin-left: calc(var(--space-3) * -1);
+  margin-right: calc(var(--space-3) * -1);
+  padding-left: var(--space-3);
+  padding-right: var(--space-3);
+}
+
+.sectionLabelAdmin { color: var(--color-brand-active); }
+.sectionLabelIcon { flex-shrink: 0; }
 
 .list { display: flex; flex-direction: column; gap: var(--space-1); }
 

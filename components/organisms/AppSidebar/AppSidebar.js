@@ -97,8 +97,22 @@ export default function AppSidebar({ collapsed, onToggle }) {
 
       <nav className={styles.nav}>
         {sections.map((section) => (
-          <div key={section.label} className={styles.section}>
-            {!collapsed ? <span className={styles.sectionLabel}>{section.label}</span> : null}
+          <div
+            key={section.label}
+            className={[
+              styles.section,
+              section.divider ? styles.sectionDivider : "",
+              section.admin ? styles.sectionAdmin : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+          >
+            {!collapsed ? (
+              <span className={[styles.sectionLabel, section.admin ? styles.sectionLabelAdmin : ""].filter(Boolean).join(" ")}>
+                {section.admin ? <Icon name="shield" size={12} className={styles.sectionLabelIcon} /> : null}
+                {section.label}
+              </span>
+            ) : null}
             <ul className={styles.list}>
               {section.items.map((item) => {
                 const hasChildren = Boolean(item.children?.length);
