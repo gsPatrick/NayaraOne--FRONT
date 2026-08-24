@@ -25,11 +25,21 @@ export default function RoleForm({ mode, role, catalog, onSubmit, onCancel, subm
 
   const groupedCatalog = groupPermissions(catalog);
 
-  function togglePermission(id) {
+  // "Ver" é a permissão base de cada módulo — sem ela, nenhuma das outras (criar/editar/
+  // apagar/ações especiais) faz sentido nem pode ficar marcada. Desmarcar "Ver" desmarca o
+  // resto do grupo junto; as outras só ficam clicáveis com "Ver" já marcada.
+  function togglePermission(id, group) {
+    const readPermission = group.permissions.find((p) => permissionActionKey(p.code) === "read");
     setPermissionIds((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+        if (readPermission && id === readPermission.id) {
+          for (const p of group.permissions) next.delete(p.id);
+        }
+      } else {
+        next.add(id);
+      }
       return next;
     });
   }
@@ -52,12 +62,22 @@ export default function RoleForm({ mode, role, catalog, onSubmit, onCancel, subm
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
+    // Higiene final: nenhuma permissão de criar/editar/apagar/etc. sobrevive sem o "Ver" do
+    // mesmo grupo marcado, mesmo que o papel carregado (edição) já viesse assim de antes.
+    const cleaned = new Set(permissionIds);
+    for (const group of groupedCatalog) {
+      const readPermission = group.permissions.find((p) => permissionActionKey(p.code) === "read");
+      if (readPermission && !cleaned.has(readPermission.id)) {
+        for (const p of group.permissions) cleaned.delete(p.id);
+      }
+    }
+
     setSaving(true);
     try {
       await onSubmit({
         name: name.trim(),
         description: description.trim(),
-        permissionIds: Array.from(permissionIds),
+        permissionIds: Array.from(cleaned),
       });
     } finally {
       setSaving(false);
@@ -111,6 +131,10 @@ export default function RoleForm({ mode, role, catalog, onSubmit, onCancel, subm
           {groupedCatalog.map((group) => {
             const allChecked = group.permissions.every((p) => permissionIds.has(p.id));
             const someChecked = !allChecked && group.permissions.some((p) => permissionIds.has(p.id));
+            const readPermission = group.permissions.find((p) => permissionActionKey(p.code) === "read");
+            const otherPermissions = group.permissions.filter((p) => p !== readPermission);
+            const readChecked = readPermission ? permissionIds.has(readPermission.id) : true;
+
             return (
               <div className={styles.permissionGroup} key={group.groupKey}>
                 <div className={styles.permissionGroupHeader}>
@@ -125,16 +149,27 @@ export default function RoleForm({ mode, role, catalog, onSubmit, onCancel, subm
                     onChange={(e) => toggleGroup(group.permissions, e.target.checked)}
                   />
                 </div>
-                <div className={styles.permissionList}>
-                  {group.permissions.map((permission) => (
+                <div className={styles.permissionBody}>
+                  {readPermission ? (
                     <Checkbox
-                      key={permission.id}
-                      label={actionLabel(permissionActionKey(permission.code))}
-                      checked={permissionIds.has(permission.id)}
+                      className={styles.readCheckbox}
+                      label={actionLabel(permissionActionKey(readPermission.code))}
+                      checked={permissionIds.has(readPermission.id)}
                       disabled={isSystem}
-                      onChange={() => togglePermission(permission.id)}
+                      onChange={() => togglePermission(readPermission.id, group)}
                     />
-                  ))}
+                  ) : null}
+                  <div className={styles.permissionList}>
+                    {otherPermissions.map((permission) => (
+                      <Checkbox
+                        key={permission.id}
+                        label={actionLabel(permissionActionKey(permission.code))}
+                        checked={permissionIds.has(permission.id)}
+                        disabled={isSystem || !readChecked}
+                        onChange={() => togglePermission(permission.id, group)}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
             );
