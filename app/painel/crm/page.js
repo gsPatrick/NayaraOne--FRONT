@@ -70,6 +70,11 @@ export default function CrmPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  function openCreateForStage(stageKey) {
+    setCreateStageKey(stageKey);
+    setCreateOpen(true);
+  }
+
   const getItems = (stageKey) => opportunities.filter((o) => o.stage === stageKey);
 
   const overdueCount = useMemo(
