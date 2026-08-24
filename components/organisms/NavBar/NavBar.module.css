@@ -1,0 +1,91 @@
+.wrap {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+.topbar {
+  height: var(--topbar-height);
+  background: var(--color-brand-active);
+  color: rgba(253, 252, 250, 0.85);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-6);
+  font-size: var(--text-micro);
+  letter-spacing: var(--tracking-wide);
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.nav {
+  height: var(--navbar-height);
+  background: var(--color-brand);
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  padding: 0 var(--space-6);
+  box-shadow: var(--shadow-md);
+}
+
+.links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  flex: 1;
+  overflow-x: auto;
+}
+
+.link {
+  position: relative;
+  color: rgba(253, 252, 250, 0.82);
+  font-weight: 600;
+  font-size: var(--text-body-sm);
+  padding: var(--space-2) 0;
+  white-space: nowrap;
+  transition: color var(--duration-base) var(--ease-out-expo);
+}
+
+.link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--color-text-inverse);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--duration-base) var(--ease-out-expo);
+}
+
+.link:hover { color: var(--color-text-inverse); }
+
+.link.active {
+  color: var(--color-text-inverse);
+}
+
+.link.active::after { transform: scaleX(1); }
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.iconBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-inverse);
+  cursor: pointer;
+  transition: background-color var(--duration-base) var(--ease-out-expo);
+}
+
+.iconBtn:hover { background: rgba(253, 252, 250, 0.14); }
+
+@media (max-width: 640px) {
+  .links { display: none; }
+}

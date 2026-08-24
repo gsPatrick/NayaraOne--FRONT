@@ -1,0 +1,36 @@
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-5);
+}
+
+.toolbar > :first-child { flex: 1 1 240px; min-width: 200px; }
+
+.filter { width: 180px; }
+
+.createBtn { margin-left: auto; }
+
+@media (max-width: 640px) {
+  .toolbar { flex-direction: column; align-items: stretch; }
+  .toolbar > :first-child { flex: none; width: 100%; min-width: 0; max-width: none; }
+  .filter { width: 100%; }
+  .createBtn { display: none; }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.empty {
+  padding: var(--space-10) 0;
+}
+
+.paginationRow {
+  display: flex;
+  justify-content: center;
+}

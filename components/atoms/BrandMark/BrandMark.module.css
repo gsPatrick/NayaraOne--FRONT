@@ -1,0 +1,70 @@
+.link {
+  display: inline-flex;
+  text-decoration: none;
+}
+
+.root {
+  display: block;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.size-sm { width: 26px; height: 26px; }
+.size-md { width: 36px; height: 36px; }
+.size-lg { width: 56px; height: 56px; }
+
+.frame {
+  transition: fill var(--duration-base) var(--ease-out-expo), stroke var(--duration-base) var(--ease-out-expo);
+}
+
+/* tone dark (default) — for use on light/canvas backgrounds */
+
+.tone-dark.shape-none .roof,
+.tone-dark.shape-none .body {
+  fill: var(--color-brand, #BE9130);
+}
+.tone-dark.shape-none .door {
+  fill: var(--color-canvas, #fdfcfa);
+}
+
+.tone-dark.shape-square .frame,
+.tone-dark.shape-circle .frame {
+  fill: var(--color-brand, #BE9130);
+}
+.tone-dark.shape-square .roof,
+.tone-dark.shape-square .body,
+.tone-dark.shape-circle .roof,
+.tone-dark.shape-circle .body {
+  fill: #ffffff;
+}
+.tone-dark.shape-square .door,
+.tone-dark.shape-circle .door {
+  fill: var(--color-accent, #A97D28);
+}
+
+/* tone light — for use on brand/dark backgrounds (e.g. NavBar) */
+
+.tone-light.shape-none .roof,
+.tone-light.shape-none .body {
+  fill: #ffffff;
+}
+.tone-light.shape-none .door {
+  fill: var(--color-brand-active, #8A6620);
+}
+
+.tone-light.shape-square .frame,
+.tone-light.shape-circle .frame {
+  fill: rgba(253, 252, 250, 0.14);
+  stroke: rgba(253, 252, 250, 0.55);
+  stroke-width: 1.5;
+}
+.tone-light.shape-square .roof,
+.tone-light.shape-square .body,
+.tone-light.shape-circle .roof,
+.tone-light.shape-circle .body {
+  fill: #ffffff;
+}
+.tone-light.shape-square .door,
+.tone-light.shape-circle .door {
+  fill: var(--color-accent, #A97D28);
+}

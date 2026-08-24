@@ -1,0 +1,186 @@
+.board {
+  display: flex;
+  gap: var(--space-4);
+  align-items: flex-start;
+  overflow-x: auto;
+  padding-bottom: var(--space-2);
+}
+
+.column {
+  flex: 0 0 280px;
+  background: var(--color-canvas-sunken);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid transparent;
+  transition: background-color var(--duration-base) var(--ease-out-expo), border-color var(--duration-base) var(--ease-out-expo);
+}
+
+.columnDragOver {
+  background: var(--color-brand-soft);
+  border-color: var(--color-brand);
+}
+
+.columnBeingDragged {
+  opacity: 0.5;
+}
+
+.columnHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-3) var(--space-2);
+}
+
+.columnGrip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: var(--color-ink-muted);
+  cursor: grab;
+  border-radius: var(--radius-sm);
+  user-select: none;
+  -webkit-user-drag: element;
+}
+
+.columnGrip:hover { background: var(--color-canvas-raised); color: var(--color-brand); }
+.columnGrip:active { cursor: grabbing; }
+
+.columnTitle {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--text-body-sm);
+  font-weight: 700;
+  color: var(--color-ink);
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.columnTitle:hover { color: var(--color-brand); }
+
+.columnTitleInput {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--text-body-sm);
+  font-weight: 700;
+  color: var(--color-ink);
+  background: var(--color-canvas-raised);
+  border: 1px solid var(--color-brand);
+  border-radius: var(--radius-sm);
+  padding: 2px var(--space-2);
+  margin-right: var(--space-2);
+}
+
+.columnCount {
+  font-size: var(--text-caption);
+  font-weight: 700;
+  color: var(--color-ink-muted);
+  background: var(--color-canvas-raised);
+  border-radius: var(--radius-full);
+  padding: 1px var(--space-2);
+  flex-shrink: 0;
+}
+
+.columnBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: 0 var(--space-3) var(--space-3);
+  min-height: 60px;
+}
+
+.columnEmpty {
+  font-size: var(--text-caption);
+  color: var(--color-ink-muted);
+  padding: var(--space-3);
+  text-align: center;
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+}
+
+.dragHandle {
+  position: relative;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-drag: element;
+}
+
+.dragHandle:active {
+  cursor: grabbing;
+}
+
+.dragGrip {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  color: var(--color-ink-muted);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.addColumn {
+  flex: 0 0 220px;
+}
+
+.columnAddItemBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: calc(100% - var(--space-3) * 2);
+  margin: 0 var(--space-3) var(--space-3);
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  border: 1.5px dashed var(--color-border-strong);
+  color: var(--color-ink-muted);
+  font-size: var(--text-caption);
+  font-weight: 600;
+  flex-shrink: 0;
+  transition: border-color var(--duration-base) var(--ease-out-expo), color var(--duration-base) var(--ease-out-expo), background-color var(--duration-base) var(--ease-out-expo);
+}
+
+.columnAddItemBtn:hover {
+  border-color: var(--color-brand);
+  color: var(--color-brand);
+  background: var(--color-brand-soft);
+}
+
+.addColumnBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  border: 1.5px dashed var(--color-border-strong);
+  color: var(--color-ink-muted);
+  font-size: var(--text-body-sm);
+  font-weight: 600;
+  transition: border-color var(--duration-base) var(--ease-out-expo), color var(--duration-base) var(--ease-out-expo), background-color var(--duration-base) var(--ease-out-expo);
+}
+
+.addColumnBtn:hover {
+  border-color: var(--color-brand);
+  color: var(--color-brand);
+  background: var(--color-brand-soft);
+}
+
+.addColumnInput {
+  width: 100%;
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-brand);
+  background: var(--color-canvas-raised);
+  font-size: var(--text-body-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .column, .addColumnBtn, .columnAddItemBtn { transition: none; }
+}

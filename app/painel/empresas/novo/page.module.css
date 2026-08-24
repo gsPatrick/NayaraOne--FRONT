@@ -1,0 +1,39 @@
+.wrap {
+  max-width: 780px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.section {
+  margin-bottom: var(--space-5);
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.span2 { grid-column: 1 / -1; }
+
+@media (max-width: 560px) {
+  .formGrid { grid-template-columns: 1fr; }
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding-top: var(--space-2);
+}
+
+.cnpjField {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.cnpjSpinner {
+  position: absolute;
+  right: var(--space-3);
+}

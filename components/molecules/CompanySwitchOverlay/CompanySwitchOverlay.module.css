@@ -1,0 +1,79 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  background: linear-gradient(160deg, var(--color-brand-active) 0%, var(--color-brand) 100%);
+  opacity: 0;
+  animation: overlayIn 500ms var(--ease-out-expo) forwards;
+}
+
+.closing {
+  animation: overlayOut 500ms var(--ease-out-expo) forwards;
+}
+
+@keyframes overlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes overlayOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.mark {
+  width: 76px;
+  height: 76px;
+  border-radius: var(--radius-xl);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(253, 252, 250, 0.14);
+  border: 1px solid rgba(253, 252, 250, 0.28);
+  color: #fdfcfa;
+  opacity: 0;
+  animation: markEnter 1200ms var(--ease-spring) forwards;
+}
+
+@keyframes markEnter {
+  0% { opacity: 0; transform: scale(0.68) rotate(-8deg); }
+  45% { opacity: 1; transform: scale(1.08) rotate(3deg); }
+  70% { transform: scale(0.97) rotate(-1deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+.label {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-body-sm);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: rgba(253, 252, 250, 0.75);
+  opacity: 0;
+  animation: labelIn 600ms var(--ease-out-expo) 500ms forwards;
+}
+
+.companyName {
+  font-size: var(--text-h3);
+  font-weight: 800;
+  color: #fdfcfa;
+  text-align: center;
+  padding: 0 var(--space-6);
+  opacity: 0;
+  animation: labelIn 600ms var(--ease-out-expo) 680ms forwards;
+}
+
+@keyframes labelIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay, .closing { animation: none; opacity: 1; }
+  .mark, .label, .companyName { animation: none; opacity: 1; transform: none; }
+}

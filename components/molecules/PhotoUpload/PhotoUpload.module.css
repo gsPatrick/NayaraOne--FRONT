@@ -1,0 +1,57 @@
+.wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.preview {
+  position: relative;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(24, 21, 19, 0.45);
+  color: #fff;
+  opacity: 0;
+  transition: opacity var(--duration-base) var(--ease-out-expo);
+}
+
+.preview:hover .overlay { opacity: 1; }
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  align-items: flex-start;
+}
+
+.link {
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: var(--text-body-sm);
+  font-weight: 600;
+  color: var(--color-brand-active);
+  cursor: pointer;
+}
+
+.linkDanger {
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: var(--text-caption);
+  color: var(--color-danger);
+  cursor: pointer;
+}
+
+.hiddenInput { display: none; }

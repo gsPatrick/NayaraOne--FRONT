@@ -1,0 +1,275 @@
+.page {
+  flex: 1;
+  min-width: 0;
+}
+
+.wrap {
+  max-width: 780px;
+  min-width: 0;
+  margin: 0 auto;
+}
+
+.actionBar {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  margin: 0 calc(-1 * var(--space-6)) calc(-1 * var(--space-6));
+  background: var(--color-canvas-raised);
+  border-top: 1px solid var(--color-border);
+}
+
+.actionBarInner {
+  max-width: 780px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-6);
+}
+
+@media (max-width: 900px) {
+  .actionBar {
+    bottom: calc(60px + env(safe-area-inset-bottom));
+    margin: 0 calc(-1 * var(--space-4)) calc(-1 * var(--space-4));
+  }
+  .actionBarInner { padding: var(--space-2) var(--space-4); }
+}
+
+.stepHeaderWrap {
+  margin-bottom: var(--space-6);
+}
+
+.card {
+  margin-bottom: var(--space-6);
+  min-height: 460px;
+  display: flex;
+  flex-direction: column;
+}
+
+.card > div {
+  flex: 1;
+  padding: var(--space-8);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6) var(--space-5);
+}
+
+.span2 { grid-column: 1 / -1; }
+
+@media (max-width: 560px) {
+  .card { min-height: 0; }
+  .card > div { padding: var(--space-6) var(--space-5); }
+  .formGrid { grid-template-columns: 1fr; }
+}
+
+.textarea {
+  width: 100%;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: var(--text-body);
+  resize: vertical;
+}
+
+/* Proprietários */
+.ownersWrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.ownerCard {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+
+.ownerCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.ownerCardTitle {
+  font-size: var(--text-caption);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--color-ink-muted);
+}
+
+.ownerRow {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-3) var(--space-4);
+}
+
+.ownerSubRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3) var(--space-4);
+  margin-top: var(--space-3);
+}
+
+@media (max-width: 560px) {
+  .ownerRow, .ownerSubRow { grid-template-columns: 1fr; }
+}
+
+.removeOwner {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-ink-muted);
+  flex-shrink: 0;
+  transition: background-color var(--duration-base) var(--ease-out-expo), color var(--duration-base) var(--ease-out-expo);
+}
+
+.removeOwner:hover { background: var(--color-danger-soft); color: var(--color-danger); }
+
+.addOwnerBtn { align-self: flex-start; }
+
+/* Revisão */
+.reviewWrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.reviewSection { border-bottom: 1px solid var(--color-border); padding-bottom: var(--space-5); }
+.reviewSection:last-child { border-bottom: none; padding-bottom: 0; }
+
+.reviewTitle {
+  font-size: var(--text-caption);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--color-ink-muted);
+  margin-bottom: var(--space-2);
+}
+
+.reviewName { font-size: var(--text-body); font-weight: 700; color: var(--color-ink); }
+.reviewMeta { font-size: var(--text-body-sm); color: var(--color-ink-soft); }
+
+.reviewOfferRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: 2px;
+}
+
+.reviewPrice { font-size: var(--text-h5); font-weight: 800; color: var(--color-brand); }
+.reviewPriceSuffix { font-size: var(--text-caption); font-weight: 500; color: var(--color-ink-muted); margin-left: 2px; }
+
+.reviewChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+/* Localização */
+.mapEmbed {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  background: var(--color-canvas-sunken);
+}
+
+.mapEmbed iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.mapLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  font-size: var(--text-body-sm);
+  font-weight: 600;
+  color: var(--color-brand);
+}
+
+.mapLink:hover { text-decoration: underline; }
+
+/* CEP / preço confidencial */
+.cepField {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.cepSpinner {
+  position: absolute;
+  right: var(--space-3);
+}
+
+.confidentialField {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.confidentialIcon {
+  position: absolute;
+  left: var(--space-3);
+  color: var(--color-ink-muted);
+  pointer-events: none;
+}
+
+.confidentialField input {
+  padding-left: var(--space-8, 32px);
+}
+
+/* Características */
+.featuresWrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.checkboxGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3) var(--space-5);
+}
+
+@media (max-width: 700px) {
+  .checkboxGrid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .checkboxGrid { grid-template-columns: 1fr; }
+}
+
+.featuresExtraGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4) var(--space-5);
+}
+
+@media (max-width: 700px) {
+  .featuresExtraGrid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 480px) {
+  .featuresExtraGrid { grid-template-columns: 1fr; }
+}

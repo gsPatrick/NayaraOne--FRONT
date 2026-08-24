@@ -1,0 +1,94 @@
+.card {
+  background: var(--color-canvas-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  transition: box-shadow var(--duration-base) var(--ease-out-expo),
+    transform var(--duration-base) var(--ease-out-expo);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
+.top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.person {
+  font-size: var(--text-body-sm);
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.property {
+  font-size: var(--text-caption);
+  color: var(--color-ink-muted);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.nextAction {
+  background: var(--color-canvas-sunken);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nextAction.overdue {
+  background: var(--color-danger-soft);
+}
+
+.nextActionLabel {
+  font-size: var(--text-micro);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--color-ink-muted);
+  font-weight: 700;
+}
+
+.nextActionText {
+  font-size: var(--text-body-sm);
+  color: var(--color-ink);
+  font-weight: 500;
+}
+
+.nextActionDue {
+  font-size: var(--text-caption);
+  color: var(--color-ink-soft);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.overdue .nextActionDue {
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rep {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-caption);
+  color: var(--color-ink-muted);
+}

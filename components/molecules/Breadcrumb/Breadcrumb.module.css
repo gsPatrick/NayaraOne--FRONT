@@ -1,0 +1,13 @@
+.list {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-body-sm);
+  flex-wrap: wrap;
+}
+
+.item { display: flex; align-items: center; gap: var(--space-1); }
+.sep { color: var(--color-ink-muted); }
+.link { color: var(--color-ink-muted); transition: color var(--duration-base) var(--ease-out-expo); }
+.link:hover { color: var(--color-brand); }
+.current { color: var(--color-ink); font-weight: 600; }

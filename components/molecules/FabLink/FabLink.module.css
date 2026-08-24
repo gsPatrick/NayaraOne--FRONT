@@ -1,0 +1,30 @@
+.fab {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .fab {
+    position: fixed;
+    right: var(--space-4);
+    bottom: calc(60px + env(safe-area-inset-bottom) + var(--space-4));
+    z-index: 35;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-brand);
+    color: #ffffff;
+    box-shadow: var(--shadow-lg);
+    transition: background-color var(--duration-base) var(--ease-out-expo), transform var(--duration-fast) var(--ease-out-expo);
+  }
+
+  .fab:hover { background: var(--color-brand-hover); }
+  .fab:active { transform: scale(0.94); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fab { transition: none; }
+  .fab:active { transform: none; }
+}

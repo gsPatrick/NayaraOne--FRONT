@@ -1,0 +1,100 @@
+.wrap {
+  position: relative;
+}
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1);
+  border-radius: var(--radius-full);
+  transition: background-color var(--duration-base) var(--ease-out-expo);
+}
+
+.trigger:hover { background: var(--color-canvas-sunken); }
+
+.chevron {
+  color: var(--color-ink-muted);
+  transition: transform var(--duration-base) var(--ease-out-expo);
+}
+
+.trigger[aria-expanded="true"] .chevron {
+  transform: rotate(180deg);
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 240px;
+  background: var(--color-canvas-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-2);
+  z-index: 60;
+  animation: dropIn var(--duration-base) var(--ease-out-expo);
+}
+
+@keyframes dropIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.identity {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2);
+}
+
+.identityText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.identityName {
+  font-weight: 700;
+  font-size: var(--text-body-sm);
+  color: var(--color-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.identityRole {
+  font-size: var(--text-caption);
+  color: var(--color-ink-muted);
+}
+
+.divider {
+  height: 1px;
+  background: var(--color-border);
+  margin: var(--space-2) 0;
+}
+
+.list { display: flex; flex-direction: column; gap: var(--space-1); }
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-body-sm);
+  font-weight: 600;
+  color: var(--color-ink-soft);
+  transition: background-color var(--duration-base) var(--ease-out-expo), color var(--duration-base) var(--ease-out-expo);
+}
+
+.item:hover { background: var(--color-canvas-sunken); color: var(--color-ink); }
+
+.logout { color: var(--color-danger); }
+.logout:hover { background: var(--color-danger-soft); color: var(--color-danger); }
+
+@media (prefers-reduced-motion: reduce) {
+  .menu { animation: none; }
+  .chevron { transition: none; }
+}

@@ -1,0 +1,214 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+@media (max-width: 1100px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 520px) {
+  .grid { grid-template-columns: 1fr; }
+}
+
+.cardLink {
+  font-size: var(--text-caption);
+  font-weight: 600;
+  color: var(--color-brand-active);
+}
+
+.quickLinks {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-5);
+}
+
+.quickLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-canvas-raised);
+  color: var(--color-ink-soft);
+  font-weight: 600;
+  font-size: var(--text-body-sm);
+  transition: background-color var(--duration-base) var(--ease-out-expo), border-color var(--duration-base) var(--ease-out-expo), color var(--duration-base) var(--ease-out-expo);
+}
+
+.quickLink:hover {
+  background: var(--color-brand-soft);
+  border-color: var(--color-brand-border);
+  color: var(--color-brand-active);
+}
+
+.mainGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-5);
+  align-items: start;
+  margin-bottom: var(--space-5);
+}
+
+.heroCard { margin-bottom: var(--space-5); }
+
+.triGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+  margin-bottom: var(--space-5);
+}
+
+@media (max-width: 1100px) {
+  .triGrid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 700px) {
+  .triGrid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 860px) {
+  .mainGrid { grid-template-columns: 1fr; }
+}
+
+.emptyText {
+  font-size: var(--text-body-sm);
+  color: var(--color-ink-muted);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.listRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-canvas-sunken);
+}
+
+.listRowIcon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-canvas-raised);
+  color: var(--color-brand-active);
+}
+
+.listRowInfo { flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.listRowTitle { font-size: var(--text-body-sm); font-weight: 600; color: var(--color-ink); }
+.listRowSubtitle { font-size: var(--text-caption); color: var(--color-ink-muted); }
+.listRowRight {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-body-sm);
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+/* Table cells */
+.nameCell { display: flex; flex-direction: column; gap: 1px; }
+.nameMain { font-weight: 600; color: var(--color-ink); font-size: var(--text-body-sm); }
+.nameSub { font-size: var(--text-caption); color: var(--color-ink-muted); }
+.statusCell { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+.rowActions { display: flex; gap: var(--space-2); justify-content: flex-end; }
+
+/* Contas bancárias */
+.bankAccountRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-canvas-sunken);
+}
+
+.bankAccountRight {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.cooldownText {
+  font-size: var(--text-caption);
+  color: var(--color-warning);
+  font-weight: 600;
+}
+
+/* Aprovações */
+.approvalRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-canvas-sunken);
+  flex-wrap: wrap;
+}
+
+.approvalRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.selfBlockNote {
+  font-size: var(--text-caption);
+  color: var(--color-ink-muted);
+  font-style: italic;
+}
+
+/* Comissões */
+.commissionBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-canvas-sunken);
+}
+
+.commissionBlock .listRow { background: transparent; padding: 0; }
+.commissionTotal { font-size: var(--text-body); }
+
+.installmentsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-left: calc(32px + var(--space-3));
+}
+
+.installmentRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: var(--text-caption);
+  color: var(--color-ink-soft);
+  padding: var(--space-2) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.modalIntro {
+  font-size: var(--text-body-sm);
+  color: var(--color-ink-soft);
+  margin-bottom: var(--space-4);
+}

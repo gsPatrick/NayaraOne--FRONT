@@ -1,0 +1,84 @@
+.wrap {
+  max-width: 1080px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.topRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-5);
+}
+
+.badges { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+
+.grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: var(--space-5);
+  align-items: start;
+}
+
+@media (max-width: 860px) {
+  .grid { grid-template-columns: 1fr; }
+}
+
+.mainCol { display: flex; flex-direction: column; gap: var(--space-5); }
+.sideCol { display: flex; flex-direction: column; gap: var(--space-5); }
+
+.detailList { display: flex; flex-direction: column; gap: var(--space-3); }
+.detailRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  font-size: var(--text-body-sm);
+}
+.detailRow:last-child { border-bottom: none; padding-bottom: 0; }
+.detailRow dt { color: var(--color-ink-muted); }
+.detailRow dd { color: var(--color-ink); font-weight: 600; text-align: right; }
+.emptyText { font-size: var(--text-body-sm); color: var(--color-ink-muted); }
+
+.deadlineRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-canvas-sunken);
+}
+.deadlineRow + .deadlineRow { margin-top: var(--space-2); }
+.deadlineInfo { flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.deadlineDesc { font-size: var(--text-body-sm); font-weight: 600; color: var(--color-ink); }
+.deadlineDue { font-size: var(--text-caption); color: var(--color-ink-muted); }
+
+.evidencePackage {
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-canvas-sunken);
+  border: 1px solid var(--color-border);
+}
+.evidencePackage + .evidencePackage { margin-top: var(--space-3); }
+.evidenceHead { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-2); }
+.evidenceHash { font-family: var(--font-mono, monospace); font-size: var(--text-caption); color: var(--color-ink-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.evidenceDate { font-size: var(--text-caption); color: var(--color-ink-muted); flex-shrink: 0; }
+
+.manifestList { display: flex; flex-direction: column; gap: var(--space-2); }
+.manifestItem {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-canvas-raised);
+  font-size: var(--text-caption);
+}
+.manifestType { flex-shrink: 0; font-weight: 700; color: var(--color-brand-active); text-transform: uppercase; letter-spacing: 0.03em; font-size: 10px; padding-top: 2px; }
+.manifestBody { flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.manifestDesc { color: var(--color-ink); }
+.manifestHash { color: var(--color-ink-muted); font-family: var(--font-mono, monospace); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

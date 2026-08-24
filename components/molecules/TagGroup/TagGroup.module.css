@@ -1,0 +1,33 @@
+.group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2) var(--space-1) var(--space-3);
+  background: var(--color-canvas-sunken);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  font-size: var(--text-caption);
+  font-weight: 600;
+  color: var(--color-ink-soft);
+}
+
+.remove {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--color-ink-muted);
+  font-size: 14px;
+  line-height: 1;
+}
+
+.remove:hover { background: var(--color-border); color: var(--color-ink); }

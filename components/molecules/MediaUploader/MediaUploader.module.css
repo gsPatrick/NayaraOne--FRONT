@@ -1,0 +1,264 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.bannerLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-caption);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--color-ink-muted);
+}
+
+/* Banner — pré-visualização estilo hero de e-commerce */
+.banner {
+  position: relative;
+  width: 100%;
+  height: 320px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--color-canvas-sunken);
+  border: 1px solid var(--color-border);
+  transition: border-color var(--duration-base) var(--ease-out-expo), background-color var(--duration-base) var(--ease-out-expo);
+}
+
+.bannerDragOver {
+  border-color: var(--color-brand);
+  background: var(--color-brand-soft);
+}
+
+.bannerMedia {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  background: #000;
+}
+
+.bannerPlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-inverse);
+}
+
+.bannerEmpty {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  color: var(--color-ink-muted);
+  font-size: var(--text-body-sm);
+  font-weight: 600;
+  text-align: center;
+  padding: var(--space-5);
+  cursor: pointer;
+}
+
+.bannerVideoBadge {
+  position: absolute;
+  top: var(--space-3);
+  left: var(--space-3);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: var(--text-caption);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  pointer-events: none;
+}
+
+.bannerNav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  transition: background-color var(--duration-base) var(--ease-out-expo);
+}
+
+.bannerNav:hover { background: rgba(0, 0, 0, 0.7); }
+
+.bannerNavPrev { left: var(--space-3); }
+.bannerNavNext { right: var(--space-3); }
+.bannerNavIconPrev { transform: rotate(180deg); }
+
+.bannerDots {
+  position: absolute;
+  bottom: var(--space-3);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.bannerDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  transition: width var(--duration-base) var(--ease-out-expo), background-color var(--duration-base) var(--ease-out-expo);
+}
+
+.bannerDotActive {
+  width: 16px;
+  border-radius: var(--radius-full);
+  background: #fff;
+}
+
+@media (max-width: 560px) {
+  .banner { height: 220px; }
+}
+
+/* Faixa de miniaturas — seleção do item exibido no banner + botão compacto de adicionar */
+.thumbRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.thumb {
+  position: relative;
+  flex: 0 0 auto;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-canvas-sunken);
+  cursor: pointer;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  transition: outline-color var(--duration-base) var(--ease-out-expo);
+}
+
+.thumbActive { outline-color: var(--color-brand); }
+
+.thumbImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.thumbPlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-inverse);
+}
+
+.thumbVideoBadge {
+  position: absolute;
+  bottom: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+}
+
+.thumbRemove {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  opacity: 0;
+  transition: opacity var(--duration-base) var(--ease-out-expo), background-color var(--duration-base) var(--ease-out-expo);
+}
+
+.thumb:hover .thumbRemove,
+.thumb:focus-within .thumbRemove {
+  opacity: 1;
+}
+
+.thumbRemove:hover { background: var(--color-danger); }
+
+.thumbAdd {
+  flex: 0 0 auto;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-md);
+  border: 1.5px dashed var(--color-border-strong);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  color: var(--color-ink-muted);
+  background: var(--color-canvas-sunken);
+  transition: border-color var(--duration-base) var(--ease-out-expo), color var(--duration-base) var(--ease-out-expo), background-color var(--duration-base) var(--ease-out-expo);
+}
+
+.thumbAdd span {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+}
+
+.thumbAdd:hover {
+  border-color: var(--color-brand);
+  color: var(--color-brand);
+  background: var(--color-brand-soft);
+}
+
+.hiddenInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.counter {
+  font-size: var(--text-caption);
+  color: var(--color-ink-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .banner,
+  .thumb,
+  .thumbRemove,
+  .thumbAdd,
+  .bannerNav,
+  .bannerDot {
+    transition: none;
+  }
+}

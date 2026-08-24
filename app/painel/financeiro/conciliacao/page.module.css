@@ -1,0 +1,130 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+@media (max-width: 700px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.notice { margin-bottom: var(--space-5); }
+
+.layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-5);
+  align-items: start;
+}
+
+@media (max-width: 960px) {
+  .layout { grid-template-columns: 1fr; }
+}
+
+.mainCol {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  position: sticky;
+  top: calc(64px + var(--space-6));
+}
+
+@media (max-width: 960px) {
+  .sidebar { position: static; }
+}
+
+.emptyText { font-size: var(--text-body-sm); color: var(--color-ink-muted); }
+
+.list { display: flex; flex-direction: column; gap: var(--space-2); }
+
+.listRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-canvas-sunken);
+}
+
+.listRowIcon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-canvas-raised);
+  color: var(--color-brand-active);
+}
+
+.bankIconSlot {
+  flex-shrink: 0;
+  width: 36px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkIcon { flex-shrink: 0; color: var(--color-success); }
+
+.listRowInfo { flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.listRowTitle {
+  font-size: var(--text-body-sm);
+  font-weight: 600;
+  color: var(--color-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.listRowSubtitle {
+  font-size: var(--text-caption);
+  color: var(--color-ink-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.listRowRight {
+  flex-shrink: 0;
+  font-size: var(--text-body-sm);
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.cardSearch { width: 220px; }
+.iconFlip { display: inline-flex; transform: rotate(180deg); }
+
+.modalIntro {
+  font-size: var(--text-body-sm);
+  color: var(--color-ink-soft);
+  margin-bottom: var(--space-4);
+}
+
+.paginationRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-top: var(--space-4);
+}
+
+.pageSizeLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-caption);
+  color: var(--color-ink-muted);
+  white-space: nowrap;
+}
+
+.pageSizeSelect { width: 76px; }

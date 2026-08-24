@@ -1,0 +1,32 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--text-caption);
+  font-weight: 600;
+  letter-spacing: var(--tracking-normal);
+  white-space: nowrap;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--badge-dot, currentColor);
+}
+
+.success { background: var(--color-success-soft); color: var(--color-success); --badge-dot: var(--color-success); }
+.warning { background: var(--color-warning-soft); color: var(--color-warning); --badge-dot: var(--color-warning); }
+.danger  { background: var(--color-danger-soft); color: var(--color-danger); --badge-dot: var(--color-danger); }
+.info    { background: var(--color-info-soft); color: var(--color-info); --badge-dot: var(--color-info); }
+.brand   { background: var(--color-brand-soft); color: var(--color-brand); --badge-dot: var(--color-brand); }
+.neutral { background: var(--color-canvas-sunken); color: var(--color-ink-soft); --badge-dot: var(--color-ink-soft); }
+
+.onMedia {
+  background: rgba(24, 21, 19, 0.45);
+  color: #ffffff;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}

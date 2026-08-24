@@ -1,0 +1,63 @@
+.wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+}
+
+.pie {
+  flex-shrink: 0;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  position: relative;
+}
+
+.hole {
+  position: absolute;
+  inset: 22px;
+  border-radius: 50%;
+  background: var(--color-canvas-raised);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.holeValue {
+  font-size: var(--text-body-sm);
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.legend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  flex: 1;
+  min-width: 160px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-body-sm);
+}
+
+.legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legendLabel {
+  flex: 1;
+  color: var(--color-ink-soft);
+  min-width: 0;
+}
+
+.legendValue {
+  font-weight: 700;
+  color: var(--color-ink);
+}

@@ -1,0 +1,285 @@
+.page {
+  flex: 1;
+  min-width: 0;
+}
+
+.wrap {
+  max-width: 780px;
+  min-width: 0;
+  margin: 0 auto;
+}
+
+.actionBar {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  margin: 0 calc(-1 * var(--space-6)) calc(-1 * var(--space-6));
+  background: var(--color-canvas-raised);
+  border-top: 1px solid var(--color-border);
+}
+
+.actionBarInner {
+  max-width: 780px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-6);
+}
+
+@media (max-width: 900px) {
+  .actionBar {
+    bottom: calc(60px + env(safe-area-inset-bottom));
+    margin: 0 calc(-1 * var(--space-4)) calc(-1 * var(--space-4));
+  }
+  .actionBarInner { padding: var(--space-2) var(--space-4); }
+}
+
+.stepHeaderWrap {
+  margin-bottom: var(--space-6);
+}
+
+.card {
+  margin-bottom: var(--space-6);
+  min-height: 420px;
+  display: flex;
+  flex-direction: column;
+}
+
+.card > div {
+  flex: 1;
+  padding: var(--space-8);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+@media (max-width: 560px) {
+  .card { min-height: 0; }
+  .card > div { padding: var(--space-6) var(--space-5); }
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6) var(--space-5);
+}
+
+.span2 { grid-column: 1 / -1; }
+
+@media (max-width: 560px) {
+  .formGrid { grid-template-columns: 1fr; }
+}
+
+/* Papéis — seleção múltipla via chips */
+.roleGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.roleChip {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-canvas-raised);
+  color: var(--color-ink-soft);
+  font-size: var(--text-body-sm);
+  font-weight: 600;
+  transition: background-color var(--duration-base) var(--ease-out-expo), color var(--duration-base) var(--ease-out-expo), border-color var(--duration-base) var(--ease-out-expo);
+}
+
+.roleChipActive {
+  background: var(--color-brand-soft);
+  border-color: var(--color-brand);
+  color: var(--color-brand-active);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .roleChip { transition: none; }
+}
+
+/* Imóveis vinculados */
+.propertySearchInput { margin-bottom: var(--space-3); }
+
+.propertyLinkEmpty {
+  font-size: var(--text-body-sm);
+  color: var(--color-ink-muted);
+  padding: var(--space-3);
+  text-align: center;
+}
+
+.propertyLinkList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-height: 320px;
+  overflow-y: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+}
+
+.propertyLinkRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-2);
+  border-radius: var(--radius-md);
+}
+
+.propertyLinkRow:hover { background: var(--color-canvas-sunken); }
+
+.propertyLinkCheckbox {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-body-sm);
+  font-weight: 600;
+  color: var(--color-ink);
+  cursor: pointer;
+}
+
+.propertyLinkCode {
+  font-weight: 400;
+  color: var(--color-ink-muted);
+}
+
+.propertyLinkFields {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-2);
+  padding-left: var(--space-6);
+}
+
+/* Contatos / Documentos */
+.subSectionsWrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+}
+
+.sectionTitle {
+  font-size: var(--text-caption);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--color-ink-muted);
+  margin-bottom: var(--space-4);
+}
+
+.rowsWrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.contactRow {
+  display: grid;
+  grid-template-columns: 1fr 2fr auto auto;
+  gap: var(--space-3);
+  align-items: end;
+}
+
+.documentRow {
+  display: grid;
+  grid-template-columns: 1fr 2fr auto;
+  gap: var(--space-3);
+  align-items: end;
+}
+
+@media (max-width: 640px) {
+  .contactRow, .documentRow { grid-template-columns: 1fr; }
+}
+
+.primaryToggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-caption);
+  font-weight: 600;
+  color: var(--color-ink-soft);
+  white-space: nowrap;
+  padding-bottom: var(--space-3);
+}
+
+.removeRow {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-ink-muted);
+  transition: background-color var(--duration-base) var(--ease-out-expo), color var(--duration-base) var(--ease-out-expo);
+}
+
+.removeRow:hover { background: var(--color-danger-soft); color: var(--color-danger); }
+
+@media (prefers-reduced-motion: reduce) {
+  .removeRow { transition: none; }
+}
+
+.addRowBtn { margin-top: var(--space-4); align-self: flex-start; }
+
+.emptyRows { font-size: var(--text-body-sm); color: var(--color-ink-muted); margin-bottom: var(--space-4); }
+
+.documentsSection {
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-border);
+}
+
+.mapLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  font-size: var(--text-body-sm);
+  font-weight: 600;
+  color: var(--color-brand);
+}
+
+.mapLink:hover { text-decoration: underline; }
+
+/* CEP */
+.cepField {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.cepSpinner {
+  position: absolute;
+  right: var(--space-3);
+}
+
+/* Revisão */
+.reviewWrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.reviewSection { border-bottom: 1px solid var(--color-border); padding-bottom: var(--space-5); }
+.reviewSection:last-child { border-bottom: none; padding-bottom: 0; }
+
+.reviewTitle {
+  font-size: var(--text-caption);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--color-ink-muted);
+  margin-bottom: var(--space-2);
+}
+
+.reviewNameRow { display: flex; align-items: center; gap: var(--space-3); }
+.reviewName { font-size: var(--text-body); font-weight: 700; color: var(--color-ink); }
+.reviewMeta { font-size: var(--text-body-sm); color: var(--color-ink-soft); }
+
+.reviewChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}

@@ -1,0 +1,90 @@
+.visual {
+  position: relative;
+  height: 100%;
+  min-height: 100%;
+  overflow: hidden;
+  background: linear-gradient(160deg, #FBF6E8 0%, #F8EFD9 55%, #F3E4C4 100%);
+}
+
+.glow {
+  position: absolute;
+  top: -18%;
+  right: -12%;
+  width: 60%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(190, 145, 48, 0.28) 0%, rgba(190, 145, 48, 0) 68%);
+  pointer-events: none;
+}
+
+.grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(23, 19, 15, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(23, 19, 15, 0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.6), transparent 70%);
+  pointer-events: none;
+}
+
+.skyline {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.layer3 { fill: rgba(190, 145, 48, 0.14); }
+.layer2 { fill: rgba(190, 145, 48, 0.24); }
+.layer1 { fill: rgba(190, 145, 48, 0.4); }
+
+.content {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: var(--space-8) var(--space-10);
+}
+
+.brandRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.wordmark {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: var(--tracking-tight);
+  font-size: 22px;
+  color: var(--color-ink);
+}
+
+.tagline {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: var(--tracking-tight);
+  line-height: 1.15;
+  font-size: clamp(28px, 3.4vw, 48px);
+  margin-top: 8vh;
+  background: linear-gradient(100deg, var(--color-ink) 0%, var(--color-ink) 35%, var(--color-brand) 75%, var(--color-brand-hover) 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+.tagline span {
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .content { padding: var(--space-6); }
+  .tagline { margin-top: var(--space-8); }
+  .tagline span { white-space: normal; }
+}

@@ -1,0 +1,148 @@
+.wrap {
+  max-width: 1080px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.topRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-6);
+}
+
+.headerBlock {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.userName { font-size: var(--text-h4); font-weight: 800; color: var(--color-ink); }
+.userEmail { font-size: var(--text-body-sm); color: var(--color-ink-muted); margin-top: 2px; }
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: var(--space-5);
+  align-items: start;
+}
+
+@media (max-width: 860px) {
+  .grid { grid-template-columns: 1fr; }
+}
+
+.mainCol { display: flex; flex-direction: column; gap: var(--space-5); }
+.sideCol {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  position: sticky;
+  top: calc(64px + var(--space-6));
+}
+
+@media (max-width: 860px) {
+  .sideCol { position: static; }
+}
+
+.section { margin-bottom: 0; }
+
+.emptyText { font-size: var(--text-body-sm); color: var(--color-ink-muted); }
+
+/* imóveis cadastrados */
+.propertyList { display: flex; flex-direction: column; gap: var(--space-2); }
+
+.propertyRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-canvas-sunken);
+  transition: background-color var(--duration-base) var(--ease-out-expo);
+}
+
+.propertyRow:hover { background: var(--color-brand-soft); }
+
+.propertyIcon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-canvas-raised);
+  color: var(--color-brand-active);
+}
+
+.propertyInfo { flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.propertyName { font-weight: 600; font-size: var(--text-body-sm); color: var(--color-ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.propertyMeta { font-size: var(--text-caption); color: var(--color-ink-muted); }
+
+.propertyPrice { flex-shrink: 0; font-weight: 700; font-size: var(--text-body-sm); color: var(--color-ink); white-space: nowrap; }
+.propertyPriceSuffix { font-weight: 400; color: var(--color-ink-muted); }
+
+.propertyArrow { flex-shrink: 0; color: var(--color-ink-muted); }
+
+/* timeline / log */
+.timeline { display: flex; flex-direction: column; gap: var(--space-4); }
+
+.timelineRow { display: flex; gap: var(--space-3); }
+
+.timelineIcon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-brand-soft);
+  color: var(--color-brand-active);
+}
+
+.timelineContent { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.timelineText { font-size: var(--text-body-sm); color: var(--color-ink); }
+.timelineLink { color: var(--color-brand); font-weight: 600; }
+.timelineLink:hover { text-decoration: underline; }
+.timelineReason { font-size: var(--text-caption); color: var(--color-ink-soft); }
+.timelineDate { font-size: var(--text-caption); color: var(--color-ink-muted); }
+
+/* resumo */
+.summaryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.summaryRow:last-child { border-bottom: none; }
+.summaryLabel { font-size: var(--text-body-sm); color: var(--color-ink-muted); }
+.summaryValue { font-size: var(--text-body-sm); font-weight: 600; color: var(--color-ink); }
+
+/* memberships list (reaproveitado do padrão da listagem) */
+.list { display: flex; flex-direction: column; gap: var(--space-2); }
+.listRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  background: var(--color-canvas-sunken);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-body-sm);
+}
+.listRowLeft { display: flex; align-items: center; gap: var(--space-2); }
+.listRowText { display: flex; flex-direction: column; gap: 1px; }
+.listRowCompany { color: var(--color-ink); font-weight: 600; }
+.listRowUnit { font-size: var(--text-caption); color: var(--color-ink-muted); }

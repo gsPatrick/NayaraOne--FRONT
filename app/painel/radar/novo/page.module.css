@@ -1,0 +1,39 @@
+.wrap {
+  max-width: 780px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.section {
+  margin-bottom: var(--space-5);
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+@media (max-width: 560px) {
+  .formGrid { grid-template-columns: 1fr; }
+}
+
+.span2 { grid-column: 1 / -1; }
+
+.cepField {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.cepSpinner {
+  position: absolute;
+  right: var(--space-3);
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding-top: var(--space-2);
+}

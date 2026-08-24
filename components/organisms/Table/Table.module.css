@@ -1,0 +1,72 @@
+.scroll {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+
+.scroll::-webkit-scrollbar { height: 6px; }
+.scroll::-webkit-scrollbar-track { background: transparent; }
+.scroll::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: var(--radius-full); }
+.scroll::-webkit-scrollbar-thumb:hover { background: var(--color-ink-muted); }
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-body-sm);
+  min-width: 560px;
+  table-layout: auto;
+}
+
+.table.fixed { table-layout: fixed; }
+
+.table thead th {
+  text-align: left;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-canvas-sunken);
+  color: var(--color-ink-muted);
+  font-weight: 700;
+  font-size: var(--text-micro);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  white-space: nowrap;
+}
+
+.table tbody td {
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--color-border);
+  color: var(--color-ink);
+}
+
+.table tbody tr {
+  transition: background-color var(--duration-base) var(--ease-out-expo);
+}
+
+.table tbody tr:hover { background: var(--color-canvas-sunken); }
+
+.empty {
+  text-align: center;
+  padding: var(--space-12) var(--space-4);
+  color: var(--color-ink-muted);
+}
+
+.skeleton {
+  display: block;
+  height: 14px;
+  width: 100%;
+  max-width: 140px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, var(--color-canvas-sunken) 25%, var(--color-border) 50%, var(--color-canvas-sunken) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton { animation-duration: 2.8s; }
+}
