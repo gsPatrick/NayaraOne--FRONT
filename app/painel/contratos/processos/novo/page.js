@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -9,22 +9,47 @@ import Input from "@/components/atoms/Input/Input";
 import Select from "@/components/atoms/Select/Select";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
-import { CONTRACTS, CASE_TYPE_LABELS } from "@/lib/mock/legal";
-import { PROPERTIES } from "@/lib/mock/properties";
-import { USERS } from "@/lib/mock/users";
+import Spinner from "@/components/atoms/Spinner/Spinner";
+import { listContracts, createLegalCase } from "@/lib/api/legal";
+import { listProperties } from "@/lib/api/properties";
+import { apiFetch } from "@/lib/api/client";
+import { CASE_TYPE_LABELS } from "@/lib/mock/legal";
 import styles from "./page.module.css";
 
 export default function NovoProcessoPage() {
   const router = useRouter();
+  const [contracts, setContracts] = useState([]);
+  const [properties, setProperties] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [actionError, setActionError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
     caseNumber: "",
     caseType: "CONSULTATIVE",
     contractId: "",
     propertyId: "",
-    responsibleUserId: USERS[0]?.id || "",
+    responsibleUserId: "",
     summary: "",
   });
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError("");
+    Promise.all([listContracts(), listProperties(), apiFetch("/users")])
+      .then(([contractsRes, propertiesRes, usersRes]) => {
+        if (cancelled) return;
+        setContracts(contractsRes || []);
+        setProperties(propertiesRes || []);
+        setUsers(usersRes || []);
+        setForm((prev) => ({ ...prev, responsibleUserId: prev.responsibleUserId || usersRes?.[0]?.id || "" }));
+      })
+      .catch((err) => { if (!cancelled) setLoadError(err.message || "Erro ao carregar dados."); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
 
   const isValid = form.caseNumber.trim() && form.caseType && form.summary.trim();
 
@@ -32,16 +57,41 @@ export default function NovoProcessoPage() {
     return (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!isValid) return;
+    setActionError("");
     setSubmitting(true);
-    // Mock: em produção isto chamaria POST /v1/legal/cases (legalCases.service.js)
-    window.setTimeout(() => router.push("/painel/contratos/processos"), 500);
+    try {
+      const legalCase = await createLegalCase({
+        caseNumber: form.caseNumber,
+        caseType: form.caseType,
+        contractId: form.contractId || undefined,
+        propertyId: form.propertyId || undefined,
+        responsibleUserId: form.responsibleUserId || undefined,
+        summary: form.summary,
+      });
+      router.push(`/painel/contratos/processos/${legalCase.id}`);
+    } catch (err) {
+      setActionError(err.message || "Erro ao criar processo.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <AppShell title="Novo processo" backHref="/painel/contratos/processos">
+        <Spinner size="lg" />
+      </AppShell>
+    );
   }
 
   return (
     <AppShell title="Novo processo" backHref="/painel/contratos/processos">
       <div className={styles.wrap}>
+        {loadError ? <Alert tone="danger">{loadError}</Alert> : null}
+        {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
+
         <Alert tone="info" title="Contencioso, consultivo ou cobrança">
           Vincule o processo a um contrato e/ou imóvel quando aplicável — ambos são opcionais.
         </Alert>
@@ -63,7 +113,7 @@ export default function NovoProcessoPage() {
             <FormField label="Contrato" htmlFor="f-contract" helper="Opcional">
               <Select id="f-contract" value={form.contractId} onChange={update("contractId")}>
                 <option value="">Nenhum</option>
-                {CONTRACTS.map((c) => (
+                {contracts.map((c) => (
                   <option key={c.id} value={c.id}>{c.contractNumber}</option>
                 ))}
               </Select>
@@ -72,7 +122,7 @@ export default function NovoProcessoPage() {
             <FormField label="Imóvel" htmlFor="f-property" helper="Opcional">
               <Select id="f-property" value={form.propertyId} onChange={update("propertyId")}>
                 <option value="">Nenhum</option>
-                {PROPERTIES.map((p) => (
+                {properties.map((p) => (
                   <option key={p.id} value={p.id}>{p.name}</option>
                 ))}
               </Select>
@@ -80,7 +130,7 @@ export default function NovoProcessoPage() {
 
             <FormField label="Responsável" htmlFor="f-responsible">
               <Select id="f-responsible" value={form.responsibleUserId} onChange={update("responsibleUserId")}>
-                {USERS.map((u) => (
+                {users.map((u) => (
                   <option key={u.id} value={u.id}>{u.name}</option>
                 ))}
               </Select>

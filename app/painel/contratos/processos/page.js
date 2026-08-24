@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -11,14 +11,15 @@ import SearchInput from "@/components/molecules/SearchInput/SearchInput";
 import Select from "@/components/atoms/Select/Select";
 import StatTile from "@/components/molecules/StatTile/StatTile";
 import Icon from "@/components/atoms/Icon/Icon";
+import Spinner from "@/components/atoms/Spinner/Spinner";
+import Alert from "@/components/molecules/Alert/Alert";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import ContractsNavMenu from "@/components/molecules/ContractsNavMenu/ContractsNavMenu";
 import RowActions from "@/components/molecules/RowActions/RowActions";
 import Pagination from "@/components/molecules/Pagination/Pagination";
-import { PROPERTIES } from "@/lib/mock/properties";
+import { listProperties } from "@/lib/api/properties";
+import { listLegalCases, listContracts } from "@/lib/api/legal";
 import {
-  LEGAL_CASES,
-  CONTRACTS,
   CASE_TYPE_LABELS,
   CASE_TYPE_TONE,
   CASE_STATUS_LABELS,
@@ -26,35 +27,56 @@ import {
 } from "@/lib/mock/legal";
 import styles from "./page.module.css";
 
-function propertyOf(id) {
-  return PROPERTIES.find((p) => p.id === id) || null;
-}
-
-function contractOf(id) {
-  return CONTRACTS.find((c) => c.id === id) || null;
-}
-
 export default function ProcessosPage() {
   const router = useRouter();
+  const [legalCases, setLegalCases] = useState([]);
+  const [contracts, setContracts] = useState([]);
+  const [properties, setProperties] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
 
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError("");
+    Promise.all([listLegalCases(), listContracts(), listProperties()])
+      .then(([casesRes, contractsRes, propertiesRes]) => {
+        if (cancelled) return;
+        setLegalCases(casesRes || []);
+        setContracts(contractsRes || []);
+        setProperties(propertiesRes || []);
+      })
+      .catch((err) => { if (!cancelled) setLoadError(err.message || "Erro ao carregar processos."); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
+
+  function propertyOf(id) {
+    return properties.find((p) => p.id === id) || null;
+  }
+
+  function contractOf(id) {
+    return contracts.find((c) => c.id === id) || null;
+  }
+
   const filtered = useMemo(() => {
-    return LEGAL_CASES.filter((c) => {
+    return legalCases.filter((c) => {
       if (query && !`${c.caseNumber} ${c.summary}`.toLowerCase().includes(query.toLowerCase())) return false;
       if (typeFilter && c.caseType !== typeFilter) return false;
       if (statusFilter && c.status !== statusFilter) return false;
       return true;
     });
-  }, [query, typeFilter, statusFilter]);
+  }, [legalCases, query, typeFilter, statusFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const pageItems = filtered.slice((page - 1) * pageSize, page * pageSize);
 
-  const openCount = LEGAL_CASES.filter((c) => c.status === "OPEN").length;
+  const openCount = legalCases.filter((c) => c.status === "OPEN").length;
 
   const columns = [
     {
@@ -78,7 +100,7 @@ export default function ProcessosPage() {
       key: "status",
       label: "Status",
       width: "14%",
-      render: (row) => <Badge tone={CASE_STATUS_TONE[row.status]}>{CASE_STATUS_LABELS[row.status]}</Badge>,
+      render: (row) => <Badge tone={CASE_STATUS_TONE[row.status] || "neutral"}>{CASE_STATUS_LABELS[row.status] || row.status}</Badge>,
     },
     {
       key: "related",
@@ -103,13 +125,23 @@ export default function ProcessosPage() {
     },
   ];
 
+  if (loading) {
+    return (
+      <AppShell title="Processos jurídicos" backHref="/painel/contratos">
+        <Spinner size="lg" />
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell title="Processos jurídicos" backHref="/painel/contratos">
+      {loadError ? <Alert tone="danger">{loadError}</Alert> : null}
+
       <div className={styles.grid}>
-        <StatTile label="Total de processos" value={LEGAL_CASES.length} tone="neutral" icon="scale" />
+        <StatTile label="Total de processos" value={legalCases.length} tone="neutral" icon="scale" />
         <StatTile label="Abertos" value={openCount} tone={openCount > 0 ? "danger" : "success"} icon="filter" />
-        <StatTile label="Contencioso" value={LEGAL_CASES.filter((c) => c.caseType === "LITIGATION").length} tone="danger" icon="scale" />
-        <StatTile label="Cobrança" value={LEGAL_CASES.filter((c) => c.caseType === "COLLECTION").length} tone="warning" icon="money" />
+        <StatTile label="Contencioso" value={legalCases.filter((c) => c.caseType === "LITIGATION").length} tone="danger" icon="scale" />
+        <StatTile label="Cobrança" value={legalCases.filter((c) => c.caseType === "COLLECTION").length} tone="warning" icon="money" />
       </div>
 
       <Card title="Processos jurídicos" subtitle="Contencioso, consultivo e cobrança">
