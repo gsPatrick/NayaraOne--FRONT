@@ -1,62 +1,113 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, notFound } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Badge from "@/components/atoms/Badge/Badge";
 import Icon from "@/components/atoms/Icon/Icon";
 import Alert from "@/components/molecules/Alert/Alert";
+import Spinner from "@/components/atoms/Spinner/Spinner";
 import RowActions from "@/components/molecules/RowActions/RowActions";
 import Modal from "@/components/organisms/Modal/Modal";
 import Button from "@/components/atoms/Button/Button";
-import { PEOPLE } from "@/lib/mock/people";
+import { listPeople } from "@/lib/api/people";
+import { getKeyDelivery, getContract, getInspection, releaseKeyDelivery } from "@/lib/api/legal";
 import {
-  KEY_DELIVERIES,
-  CONTRACTS,
-  INSPECTIONS,
   KEY_DELIVERY_STATUS_LABELS,
   KEY_DELIVERY_STATUS_TONE,
   CONTRACT_STATUS_LABELS,
   CONTRACT_STATUS_TONE,
   INSPECTION_STATUS_LABELS,
   INSPECTION_STATUS_TONE,
-  keyDeliveryBlockReason,
 } from "@/lib/mock/legal";
 import { formatDateTime } from "@/lib/format";
 import styles from "./page.module.css";
 
-function personOf(id) {
-  return PEOPLE.find((p) => p.id === id) || null;
-}
-
 export default function EntregaChavesDetailPage({ params }) {
   const router = useRouter();
-  const source = KEY_DELIVERIES.find((d) => d.id === params.id);
-  const [delivery, setDelivery] = useState(() => (source ? { ...source } : null));
+  const [delivery, setDelivery] = useState(null);
+  const [contract, setContract] = useState(null);
+  const [inspection, setInspection] = useState(null);
+  const [people, setPeople] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [actionError, setActionError] = useState("");
   const [notice, setNotice] = useState(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
 
-  if (!source || !delivery) return notFound();
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError("");
+    Promise.all([getKeyDelivery(params.id), listPeople()])
+      .then(async ([deliveryRes, peopleRes]) => {
+        if (cancelled) return;
+        setDelivery(deliveryRes);
+        setPeople(peopleRes || []);
+        if (deliveryRes?.contractId) {
+          try {
+            const c = await getContract(deliveryRes.contractId);
+            if (!cancelled) setContract(c);
+          } catch {
+            // Contrato pode não estar disponível.
+          }
+        }
+        if (deliveryRes?.inspectionId) {
+          try {
+            const i = await getInspection(deliveryRes.inspectionId);
+            if (!cancelled) setInspection(i);
+          } catch {
+            // Vistoria pode não estar disponível.
+          }
+        }
+      })
+      .catch((err) => { if (!cancelled) setLoadError(err.message || "Erro ao carregar entrega de chaves."); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [params.id]);
 
-  const contract = CONTRACTS.find((c) => c.id === delivery.contractId) || null;
-  const inspection = delivery.inspectionId ? INSPECTIONS.find((i) => i.id === delivery.inspectionId) || null : null;
+  function personOf(id) {
+    return people.find((p) => p.id === id) || null;
+  }
+
+  if (loading) {
+    return (
+      <AppShell title="Entrega de chaves" backHref="/painel/contratos/entrega-chaves">
+        <Spinner size="lg" />
+      </AppShell>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <AppShell title="Entrega de chaves" backHref="/painel/contratos/entrega-chaves">
+        <Alert tone="danger">{loadError}</Alert>
+      </AppShell>
+    );
+  }
+
+  if (!delivery) return notFound();
+
   const deliveredTo = personOf(delivery.deliveredToPersonId);
-  const blockReason = keyDeliveryBlockReason(delivery, contract, inspection);
 
-  function handleRelease() {
-    if (blockReason) {
-      setNotice({ tone: "danger", text: blockReason });
-      return;
+  async function handleRelease() {
+    setActionError("");
+    setBusy(true);
+    try {
+      const updated = await releaseKeyDelivery(delivery.id);
+      setDelivery(updated);
+      setNotice({ tone: "success", text: "Chaves liberadas com sucesso." });
+    } catch (err) {
+      setActionError(err.message || "Erro ao liberar chaves.");
+    } finally {
+      setBusy(false);
     }
-    setDelivery((prev) => ({ ...prev, status: "RELEASED", deliveredAt: new Date().toISOString() }));
-    setNotice({ tone: "success", text: "Chaves liberadas com sucesso." });
   }
 
   function handleDelete() {
     setDeleteOpen(false);
-    // Mock: em produção isto chamaria DELETE /v1/legal/key-deliveries/:id (keyDeliveries.service.js)
-    router.push("/painel/contratos/entrega-chaves");
   }
 
   return (
@@ -70,7 +121,7 @@ export default function EntregaChavesDetailPage({ params }) {
           </div>
           <div className={styles.actionsWrap}>
             {delivery.status === "PENDING" ? (
-              <Button onClick={handleRelease} disabled={Boolean(blockReason)}>
+              <Button onClick={handleRelease} disabled={busy}>
                 <Icon name="key" size={16} /> Liberar chaves
               </Button>
             ) : null}
@@ -82,9 +133,7 @@ export default function EntregaChavesDetailPage({ params }) {
           </div>
         </div>
 
-        {blockReason && delivery.status === "PENDING" ? (
-          <Alert tone="danger" title="Liberação bloqueada" className={styles.notice}>{blockReason}</Alert>
-        ) : null}
+        {actionError ? <Alert tone="danger" title="Liberação bloqueada" className={styles.notice}>{actionError}</Alert> : null}
         {notice ? <Alert tone={notice.tone} className={styles.notice}>{notice.text}</Alert> : null}
 
         <div className={styles.grid}>
@@ -142,7 +191,7 @@ export default function EntregaChavesDetailPage({ params }) {
           </>
         }
       >
-        <p>Tem certeza que deseja excluir esta entrega de chaves do contrato <strong>{contract?.contractNumber || "—"}</strong>? Esta ação não pode ser desfeita.</p>
+        <p>Não há endpoint de exclusão de entrega de chaves na API — esta ação apenas fecha esta janela.</p>
       </Modal>
     </AppShell>
   );

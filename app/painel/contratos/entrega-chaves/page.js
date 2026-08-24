@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Badge from "@/components/atoms/Badge/Badge";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
+import Spinner from "@/components/atoms/Spinner/Spinner";
 import StatTile from "@/components/molecules/StatTile/StatTile";
 import Icon from "@/components/atoms/Icon/Icon";
 import Select from "@/components/atoms/Select/Select";
@@ -15,40 +16,53 @@ import ContractsNavMenu from "@/components/molecules/ContractsNavMenu/ContractsN
 import RowActions from "@/components/molecules/RowActions/RowActions";
 import Modal from "@/components/organisms/Modal/Modal";
 import Pagination from "@/components/molecules/Pagination/Pagination";
-import { PEOPLE } from "@/lib/mock/people";
+import { listPeople } from "@/lib/api/people";
+import { listKeyDeliveries, listContracts, releaseKeyDelivery } from "@/lib/api/legal";
 import {
-  KEY_DELIVERIES,
-  CONTRACTS,
-  INSPECTIONS,
   KEY_DELIVERY_STATUS_LABELS,
   KEY_DELIVERY_STATUS_TONE,
-  keyDeliveryBlockReason,
 } from "@/lib/mock/legal";
 import { formatDateTime } from "@/lib/format";
 import styles from "./page.module.css";
 
-function personOf(id) {
-  return PEOPLE.find((p) => p.id === id) || null;
-}
-
-function contractOf(id) {
-  return CONTRACTS.find((c) => c.id === id) || null;
-}
-
-function inspectionOf(id) {
-  return INSPECTIONS.find((i) => i.id === id) || null;
-}
-
 export default function EntregaChavesPage() {
   const router = useRouter();
-  const [deliveries, setDeliveries] = useState(KEY_DELIVERIES);
-  const [blocked, setBlocked] = useState({});
+  const [deliveries, setDeliveries] = useState([]);
+  const [contracts, setContracts] = useState([]);
+  const [people, setPeople] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [releaseError, setReleaseError] = useState({});
+  const [busyId, setBusyId] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
 
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError("");
+    Promise.all([listKeyDeliveries(), listContracts(), listPeople()])
+      .then(([deliveriesRes, contractsRes, peopleRes]) => {
+        if (cancelled) return;
+        setDeliveries(deliveriesRes || []);
+        setContracts(contractsRes || []);
+        setPeople(peopleRes || []);
+      })
+      .catch((err) => { if (!cancelled) setLoadError(err.message || "Erro ao carregar entregas de chave."); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
+
+  function personOf(id) {
+    return people.find((p) => p.id === id) || null;
+  }
+
+  function contractOf(id) {
+    return contracts.find((c) => c.id === id) || null;
+  }
+
   function handleDelete() {
-    setDeliveries((prev) => prev.filter((d) => d.id !== deleteTarget.id));
     setDeleteTarget(null);
   }
 
@@ -58,36 +72,44 @@ export default function EntregaChavesPage() {
   const pendingCount = deliveries.filter((d) => d.status === "PENDING").length;
   const releasedCount = deliveries.filter((d) => d.status === "RELEASED").length;
 
-  function handleRelease(delivery) {
-    const contract = contractOf(delivery.contractId);
-    const inspection = delivery.inspectionId ? inspectionOf(delivery.inspectionId) : null;
-    const reason = keyDeliveryBlockReason(delivery, contract, inspection);
-    if (reason) {
-      setBlocked((prev) => ({ ...prev, [delivery.id]: reason }));
-      return;
+  async function handleRelease(delivery) {
+    setReleaseError((prev) => ({ ...prev, [delivery.id]: null }));
+    setBusyId(delivery.id);
+    try {
+      const updated = await releaseKeyDelivery(delivery.id);
+      setDeliveries((prev) => prev.map((d) => (d.id === delivery.id ? updated : d)));
+    } catch (err) {
+      setReleaseError((prev) => ({ ...prev, [delivery.id]: err.message || "Erro ao liberar chaves." }));
+    } finally {
+      setBusyId(null);
     }
-    setBlocked((prev) => ({ ...prev, [delivery.id]: null }));
-    setDeliveries((prev) =>
-      prev.map((d) => (d.id === delivery.id ? { ...d, status: "RELEASED", deliveredAt: new Date().toISOString() } : d))
+  }
+
+  if (loading) {
+    return (
+      <AppShell title="Entrega de chaves" backHref="/painel/contratos">
+        <Spinner size="lg" />
+      </AppShell>
     );
   }
 
   return (
     <AppShell title="Entrega de chaves" backHref="/painel/contratos">
+      {loadError ? <Alert tone="danger">{loadError}</Alert> : null}
+
       <div className={styles.grid}>
         <StatTile label="Entregas registradas" value={deliveries.length} tone="neutral" icon="key" />
         <StatTile label="Pendentes" value={pendingCount} tone={pendingCount > 0 ? "warning" : "success"} icon="calendar" />
         <StatTile label="Liberadas" value={releasedCount} tone="success" icon="check" />
-        <StatTile label="Travas ativas" value={deliveries.filter((d) => keyDeliveryBlockReason(d, contractOf(d.contractId), d.inspectionId ? inspectionOf(d.inspectionId) : null) && d.status === "PENDING").length} tone="danger" icon="shield" />
+        <StatTile label="Travas ativas" value={Object.values(releaseError).filter(Boolean).length} tone="danger" icon="shield" />
       </div>
 
       <Card title="Entregas de chave" subtitle="A liberação só é permitida com contrato SIGNED/ACTIVE e vistoria de entrada concluída">
         <div className={styles.list}>
           {pageItems.map((delivery) => {
             const contract = contractOf(delivery.contractId);
-            const inspection = delivery.inspectionId ? inspectionOf(delivery.inspectionId) : null;
             const person = personOf(delivery.deliveredToPersonId);
-            const reason = blocked[delivery.id];
+            const reason = releaseError[delivery.id];
             return (
               <div key={delivery.id} className={styles.row}>
                 <div className={styles.rowInfo}>
@@ -97,7 +119,7 @@ export default function EntregaChavesPage() {
                 <div className={styles.rowRight}>
                   <Badge tone={KEY_DELIVERY_STATUS_TONE[delivery.status]}>{KEY_DELIVERY_STATUS_LABELS[delivery.status]}</Badge>
                   {delivery.status === "PENDING" ? (
-                    <Button size="sm" onClick={() => handleRelease(delivery)}>
+                    <Button size="sm" onClick={() => handleRelease(delivery)} disabled={busyId === delivery.id}>
                       <Icon name="key" size={16} /> Liberar chaves
                     </Button>
                   ) : null}
@@ -151,7 +173,7 @@ export default function EntregaChavesPage() {
           </>
         }
       >
-        <p>Tem certeza que deseja excluir esta entrega de chaves do contrato <strong>{contractOf(deleteTarget?.contractId)?.contractNumber || "—"}</strong>? Esta ação não pode ser desfeita.</p>
+        <p>Não há endpoint de exclusão de entrega de chaves na API — esta ação apenas fecha esta janela.</p>
       </Modal>
     </AppShell>
   );
