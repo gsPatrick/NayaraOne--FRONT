@@ -44,6 +44,9 @@ export default function ObraDetalhePage({ params }) {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [actionError, setActionError] = useState("");
 
+  const [editOpen, setEditOpen] = useState(false);
+  const [editForm, setEditForm] = useState({ name: "", propertyId: "", responsibleUserId: "", budgetAmount: "", startsAt: "", endsAtPlanned: "" });
+
   const [stageOpen, setStageOpen] = useState(false);
   const [stageForm, setStageForm] = useState({ name: "", sequence: "1", plannedPct: "" });
 
@@ -90,6 +93,30 @@ export default function ObraDetalhePage({ params }) {
     const idx = PROJECTS.findIndex((p) => p.id === project.id);
     if (idx >= 0) PROJECTS.splice(idx, 1);
     router.push("/painel/obras/lista");
+  }
+
+  function openEditModal() {
+    setEditForm({
+      name: project.name,
+      propertyId: project.propertyId || "",
+      responsibleUserId: project.responsibleUserId || "",
+      budgetAmount: project.budgetAmount != null ? String(project.budgetAmount) : "",
+      startsAt: project.startsAt ? project.startsAt.slice(0, 10) : "",
+      endsAtPlanned: project.endsAtPlanned ? project.endsAtPlanned.slice(0, 10) : "",
+    });
+    setEditOpen(true);
+  }
+
+  function handleSaveEdit() {
+    if (!editForm.name.trim()) return;
+    project.name = editForm.name.trim();
+    project.propertyId = editForm.propertyId || null;
+    project.responsibleUserId = editForm.responsibleUserId || null;
+    project.budgetAmount = editForm.budgetAmount !== "" ? Number(editForm.budgetAmount) : null;
+    project.startsAt = editForm.startsAt || null;
+    project.endsAtPlanned = editForm.endsAtPlanned || null;
+    setEditOpen(false);
+    rerender();
   }
 
   function handleQualityQuickAction(item, status) {
@@ -205,6 +232,9 @@ export default function ObraDetalhePage({ params }) {
                 </Button>
               ))
             ) : null}
+            <Button variant="secondary" onClick={openEditModal}>
+              <Icon name="pencil" size={16} /> Editar
+            </Button>
             <Button variant="danger" onClick={() => setDeleteOpen(true)}>
               <Icon name="trash" size={16} /> Excluir
             </Button>
@@ -370,6 +400,51 @@ export default function ObraDetalhePage({ params }) {
           )}
         </Card>
       </div>
+
+      <Modal
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        title="Editar obra"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setEditOpen(false)}>Cancelar</Button>
+            <Button onClick={handleSaveEdit} disabled={!editForm.name.trim()}>Salvar alterações</Button>
+          </>
+        }
+      >
+        <div className={styles.formGrid}>
+          <div className={styles.span2}>
+            <FormField label="Nome da obra" htmlFor="e-name" required>
+              <Input id="e-name" value={editForm.name} onChange={(e) => setEditForm((p) => ({ ...p, name: e.target.value }))} />
+            </FormField>
+          </div>
+          <FormField label="Imóvel vinculado" htmlFor="e-property" helper="Opcional">
+            <Select id="e-property" value={editForm.propertyId} onChange={(e) => setEditForm((p) => ({ ...p, propertyId: e.target.value }))}>
+              <option value="">Nenhum</option>
+              {PROPERTIES.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </Select>
+          </FormField>
+          <FormField label="Responsável" htmlFor="e-responsible" helper="Opcional">
+            <Select id="e-responsible" value={editForm.responsibleUserId} onChange={(e) => setEditForm((p) => ({ ...p, responsibleUserId: e.target.value }))}>
+              <option value="">Sem responsável</option>
+              {USERS.map((u) => (
+                <option key={u.id} value={u.id}>{u.name}</option>
+              ))}
+            </Select>
+          </FormField>
+          <FormField label="Orçamento (R$)" htmlFor="e-budget" helper="Opcional">
+            <Input id="e-budget" type="number" min="0" step="0.01" value={editForm.budgetAmount} onChange={(e) => setEditForm((p) => ({ ...p, budgetAmount: e.target.value }))} />
+          </FormField>
+          <FormField label="Início" htmlFor="e-starts" helper="Opcional">
+            <Input id="e-starts" type="date" value={editForm.startsAt} onChange={(e) => setEditForm((p) => ({ ...p, startsAt: e.target.value }))} />
+          </FormField>
+          <FormField label="Previsão de término" htmlFor="e-ends" helper="Opcional">
+            <Input id="e-ends" type="date" value={editForm.endsAtPlanned} onChange={(e) => setEditForm((p) => ({ ...p, endsAtPlanned: e.target.value }))} />
+          </FormField>
+        </div>
+      </Modal>
 
       <Modal
         open={deleteOpen}

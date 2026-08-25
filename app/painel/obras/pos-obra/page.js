@@ -77,49 +77,49 @@ export default function PosObraListaPage() {
     {
       key: "description",
       label: "Descrição",
-      width: "22%",
+      width: "19%",
       render: (row) => <span className={styles.nameMain}>{row.description}</span>,
     },
     {
       key: "property",
       label: "Imóvel",
-      width: "14%",
+      width: "13%",
       render: (row) => propertyOf(row.propertyId)?.name || "—",
     },
     {
       key: "project",
       label: "Obra vinculada",
-      width: "14%",
+      width: "13%",
       render: (row) => projectOf(row.projectId)?.name || "—",
     },
     {
       key: "openedBy",
       label: "Aberto por",
-      width: "12%",
+      width: "11%",
       render: (row) => (row.openedByPersonId ? personOf(row.openedByPersonId)?.legalName || "—" : "Equipe interna"),
     },
     {
       key: "responsible",
       label: "Responsável",
-      width: "12%",
+      width: "11%",
       render: (row) => userOf(row.responsibleUserId)?.name || "—",
     },
     {
       key: "status",
       label: "Status",
-      width: "14%",
+      width: "13%",
       render: (row) => <Badge tone={MAINTENANCE_STATUS_TONE[row.status]}>{MAINTENANCE_STATUS_LABELS[row.status]}</Badge>,
     },
     {
       key: "warranty",
       label: "Prazo de garantia",
-      width: "8%",
+      width: "9%",
       render: (row) => formatDate(row.warrantyDeadlineAt),
     },
     {
       key: "actions",
       label: "",
-      width: "4%",
+      width: "11%",
       render: (row) => (
         <RowActions
           onView={() => router.push(`/painel/obras/pos-obra/${row.id}`)}

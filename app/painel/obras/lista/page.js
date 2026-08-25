@@ -14,6 +14,7 @@ import Icon from "@/components/atoms/Icon/Icon";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import Pagination from "@/components/molecules/Pagination/Pagination";
 import RowActions from "@/components/molecules/RowActions/RowActions";
+import Modal from "@/components/organisms/Modal/Modal";
 import { PROJECTS, PROJECT_STATUS_LABELS, PROJECT_STATUS_TONE } from "@/lib/mock/construction";
 import { PROPERTIES } from "@/lib/mock/properties";
 import { USERS } from "@/lib/mock/users";
@@ -26,6 +27,15 @@ export default function ObrasListaPage() {
   const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [version, setVersion] = useState(0);
+
+  function handleDelete() {
+    const idx = PROJECTS.findIndex((p) => p.id === deleteTarget.id);
+    if (idx >= 0) PROJECTS.splice(idx, 1);
+    setDeleteTarget(null);
+    setVersion((n) => n + 1);
+  }
 
   function propertyOf(id) {
     return PROPERTIES.find((p) => p.id === id) || null;
@@ -43,7 +53,7 @@ export default function ObrasListaPage() {
       if (statusFilter && p.status !== statusFilter) return false;
       return true;
     });
-  }, [query, statusFilter]);
+  }, [query, statusFilter, version]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const pageItems = filtered.slice((page - 1) * pageSize, page * pageSize);
@@ -60,39 +70,45 @@ export default function ObrasListaPage() {
     {
       key: "name",
       label: "Nome",
-      width: "22%",
+      width: "19%",
       render: (row) => <span className={styles.nameMain}>{row.name}</span>,
     },
     {
       key: "property",
       label: "Imóvel vinculado",
-      width: "18%",
+      width: "15%",
       render: (row) => propertyOf(row.propertyId)?.name || "—",
     },
     {
       key: "responsible",
       label: "Responsável",
-      width: "16%",
+      width: "13%",
       render: (row) => userOf(row.responsibleUserId)?.name || "—",
     },
     {
       key: "status",
       label: "Status",
-      width: "14%",
+      width: "13%",
       render: (row) => <Badge tone={PROJECT_STATUS_TONE[row.status]}>{PROJECT_STATUS_LABELS[row.status]}</Badge>,
     },
-    { key: "budgetAmount", label: "Orçamento", width: "12%", render: (row) => formatBRL(row.budgetAmount) },
+    { key: "budgetAmount", label: "Orçamento", width: "11%", render: (row) => formatBRL(row.budgetAmount) },
     {
       key: "dates",
       label: "Início / Previsão",
-      width: "12%",
+      width: "18%",
       render: (row) => `${formatDate(row.startsAt)} — ${formatDate(row.endsAtPlanned)}`,
     },
     {
       key: "actions",
       label: "",
-      width: "6%",
-      render: (row) => <RowActions onView={() => router.push(`/painel/obras/lista/${row.id}`)} />,
+      width: "11%",
+      render: (row) => (
+        <RowActions
+          onView={() => router.push(`/painel/obras/lista/${row.id}`)}
+          onEdit={() => router.push(`/painel/obras/lista/${row.id}`)}
+          onDelete={() => setDeleteTarget(row)}
+        />
+      ),
     },
   ];
 
@@ -146,6 +162,20 @@ export default function ObrasListaPage() {
           <Icon name="plus" size={18} /> Nova obra
         </Button>
       </StickyActionBar>
+
+      <Modal
+        open={Boolean(deleteTarget)}
+        onClose={() => setDeleteTarget(null)}
+        title="Excluir obra"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setDeleteTarget(null)}>Cancelar</Button>
+            <Button variant="danger" onClick={handleDelete}>Excluir</Button>
+          </>
+        }
+      >
+        <p>Tem certeza que deseja excluir a obra <strong>{deleteTarget?.name}</strong>? Esta ação não pode ser desfeita.</p>
+      </Modal>
     </AppShell>
   );
 }
