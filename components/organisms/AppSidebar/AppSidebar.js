@@ -101,7 +101,6 @@ export default function AppSidebar({ collapsed, onToggle }) {
             key={section.label}
             className={[
               styles.section,
-              section.divider ? styles.sectionDivider : "",
               section.admin ? styles.sectionAdmin : "",
             ]
               .filter(Boolean)

@@ -39,7 +39,6 @@ export const NAV_SECTIONS = [
   },
   {
     label: "Administração",
-    divider: true,
     admin: true,
     items: [
       { label: "Empresas & Unidades", href: "/painel/empresas", icon: "layers", permission: "companies:read" },
