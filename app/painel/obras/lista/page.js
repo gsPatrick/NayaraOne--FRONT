@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -11,41 +11,78 @@ import SearchInput from "@/components/molecules/SearchInput/SearchInput";
 import Select from "@/components/atoms/Select/Select";
 import StatTile from "@/components/molecules/StatTile/StatTile";
 import Icon from "@/components/atoms/Icon/Icon";
+import Alert from "@/components/molecules/Alert/Alert";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import Pagination from "@/components/molecules/Pagination/Pagination";
 import RowActions from "@/components/molecules/RowActions/RowActions";
 import Modal from "@/components/organisms/Modal/Modal";
-import { PROJECTS, PROJECT_STATUS_LABELS, PROJECT_STATUS_TONE } from "@/lib/mock/construction";
-import { PROPERTIES } from "@/lib/mock/properties";
-import { USERS } from "@/lib/mock/users";
+import { PROJECT_STATUS_LABELS, PROJECT_STATUS_TONE } from "@/lib/mock/construction";
+import { listProjects, removeProject } from "@/lib/api/construction";
+import { listProperties } from "@/lib/api/properties";
+import { apiFetch } from "@/lib/api/client";
 import { formatBRL, formatDate } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function ObrasListaPage() {
   const router = useRouter();
+  const [projects, setProjects] = useState([]);
+  const [properties, setProperties] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [actionError, setActionError] = useState("");
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [version, setVersion] = useState(0);
+  const [deleting, setDeleting] = useState(false);
 
-  function handleDelete() {
-    const idx = PROJECTS.findIndex((p) => p.id === deleteTarget.id);
-    if (idx >= 0) PROJECTS.splice(idx, 1);
-    setDeleteTarget(null);
-    setVersion((n) => n + 1);
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError("");
+    Promise.all([listProjects(), listProperties(), apiFetch("/users")])
+      .then(([p, props, u]) => {
+        if (cancelled) return;
+        setProjects(p || []);
+        setProperties(props || []);
+        setUsers(u || []);
+      })
+      .catch((err) => {
+        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar as obras.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function handleDelete() {
+    setDeleting(true);
+    setActionError("");
+    try {
+      await removeProject(deleteTarget.id);
+      setProjects((prev) => prev.filter((p) => p.id !== deleteTarget.id));
+      setDeleteTarget(null);
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível excluir a obra.");
+    } finally {
+      setDeleting(false);
+    }
   }
 
   function propertyOf(id) {
-    return PROPERTIES.find((p) => p.id === id) || null;
+    return properties.find((p) => p.id === id) || null;
   }
   function userOf(id) {
-    return USERS.find((u) => u.id === id) || null;
+    return users.find((u) => u.id === id) || null;
   }
 
   const filtered = useMemo(() => {
-    return PROJECTS.filter((p) => {
+    return projects.filter((p) => {
       if (query) {
         const haystack = `${p.name} ${propertyOf(p.propertyId)?.name || ""}`.toLowerCase();
         if (!haystack.includes(query.toLowerCase())) return false;
@@ -53,7 +90,7 @@ export default function ObrasListaPage() {
       if (statusFilter && p.status !== statusFilter) return false;
       return true;
     });
-  }, [query, statusFilter, version]);
+  }, [projects, properties, query, statusFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const pageItems = filtered.slice((page - 1) * pageSize, page * pageSize);
@@ -62,9 +99,9 @@ export default function ObrasListaPage() {
     setPage(1);
   }
 
-  const inProgressCount = PROJECTS.filter((p) => p.status === "IN_PROGRESS").length;
-  const completedCount = PROJECTS.filter((p) => p.status === "COMPLETED").length;
-  const totalBudget = PROJECTS.reduce((s, p) => s + Number(p.budgetAmount || 0), 0);
+  const inProgressCount = projects.filter((p) => p.status === "IN_PROGRESS").length;
+  const completedCount = projects.filter((p) => p.status === "COMPLETED").length;
+  const totalBudget = projects.reduce((s, p) => s + Number(p.budgetAmount || 0), 0);
 
   const columns = [
     {
@@ -114,8 +151,11 @@ export default function ObrasListaPage() {
 
   return (
     <AppShell title="Obras" backHref="/painel/obras">
+      {loadError ? <Alert tone="danger" title="Não foi possível carregar as obras">{loadError}</Alert> : null}
+      {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
+
       <div className={styles.grid}>
-        <StatTile label="Total de obras" value={PROJECTS.length} tone="neutral" icon="building" />
+        <StatTile label="Total de obras" value={projects.length} tone="neutral" icon="building" />
         <StatTile label="Em andamento" value={inProgressCount} tone="info" icon="chart" />
         <StatTile label="Concluídas" value={completedCount} tone="success" icon="check" />
         <StatTile label="Orçamento total" value={formatBRL(totalBudget)} tone="neutral" icon="money" />
@@ -137,7 +177,8 @@ export default function ObrasListaPage() {
         </div>
         <Table
           columns={columns}
-          rows={pageItems}
+          rows={loading ? [] : pageItems}
+          loading={loading}
           emptyMessage="Nenhuma obra encontrada."
         />
         <div className={styles.paginationRow}>
@@ -170,7 +211,7 @@ export default function ObrasListaPage() {
         footer={
           <>
             <Button variant="secondary" onClick={() => setDeleteTarget(null)}>Cancelar</Button>
-            <Button variant="danger" onClick={handleDelete}>Excluir</Button>
+            <Button variant="danger" onClick={handleDelete} loading={deleting}>Excluir</Button>
           </>
         }
       >

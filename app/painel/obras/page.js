@@ -1,72 +1,75 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import StatTile from "@/components/molecules/StatTile/StatTile";
 import Card from "@/components/molecules/Card/Card";
 import Icon from "@/components/atoms/Icon/Icon";
 import Button from "@/components/atoms/Button/Button";
+import Alert from "@/components/molecules/Alert/Alert";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
-import {
-  PROJECTS,
-  STAGE_MEASUREMENTS,
-  DAILY_REPORTS,
-  MAINTENANCE_CASES,
-  PROJECT_STATUS_LABELS,
-} from "@/lib/mock/construction";
+import { SkeletonCardGrid } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import { PROJECT_STATUS_LABELS } from "@/lib/mock/construction";
+import { listProjects, listMaintenanceCases } from "@/lib/api/construction";
 import { formatDate } from "@/lib/format";
 import styles from "./page.module.css";
 
-function startOfWeek() {
-  const now = new Date();
-  const day = now.getDay();
-  const diff = now.getDate() - day + (day === 0 ? -6 : 1);
-  const d = new Date(now.setDate(diff));
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
 export default function ObrasHubPage() {
-  const inProgress = useMemo(() => PROJECTS.filter((p) => p.status === "IN_PROGRESS"), []);
-  const pendingMeasurements = useMemo(
-    () => STAGE_MEASUREMENTS.filter((m) => m.status === "PENDING_APPROVAL"),
-    []
-  );
-  const openMaintenance = useMemo(
-    () => MAINTENANCE_CASES.filter((c) => c.status === "OPEN" || c.status === "IN_PROGRESS"),
-    []
-  );
-  const weekStart = useMemo(() => startOfWeek(), []);
-  const reportsThisWeek = useMemo(
-    () => DAILY_REPORTS.filter((r) => new Date(r.reportDate) >= weekStart),
-    [weekStart]
-  );
+  const [projects, setProjects] = useState([]);
+  const [maintenanceCases, setMaintenanceCases] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
 
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError("");
+    Promise.all([listProjects(), listMaintenanceCases()])
+      .then(([p, m]) => {
+        if (cancelled) return;
+        setProjects(p || []);
+        setMaintenanceCases(m || []);
+      })
+      .catch((err) => {
+        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar as obras.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const inProgress = useMemo(() => projects.filter((p) => p.status === "IN_PROGRESS"), [projects]);
+  const openMaintenance = useMemo(
+    () => maintenanceCases.filter((c) => c.status === "OPEN" || c.status === "IN_PROGRESS"),
+    [maintenanceCases]
+  );
   const recentProjects = useMemo(
-    () => [...PROJECTS].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5),
-    []
+    () => [...projects].sort((a, b) => new Date(b.createdAt || b.created_at) - new Date(a.createdAt || a.created_at)).slice(0, 5),
+    [projects]
   );
 
   return (
     <AppShell title="Obras">
-      <div className={styles.grid}>
-        <StatTile label="Total de obras" value={PROJECTS.length} tone="neutral" icon="building" />
-        <StatTile label="Obras em andamento" value={inProgress.length} tone="info" icon="chart" />
-        <StatTile label="RDOs desta semana" value={reportsThisWeek.length} tone="neutral" icon="document" />
-        <StatTile
-          label="Medições pendentes"
-          value={pendingMeasurements.length}
-          tone={pendingMeasurements.length > 0 ? "warning" : "success"}
-          icon="filter"
-        />
-        <StatTile
-          label="Chamados de pós-obra abertos"
-          value={openMaintenance.length}
-          tone={openMaintenance.length > 0 ? "danger" : "success"}
-          icon="key"
-        />
-      </div>
+      {loadError ? <Alert tone="danger" title="Não foi possível carregar as obras">{loadError}</Alert> : null}
+
+      {loading ? (
+        <SkeletonCardGrid count={5} />
+      ) : (
+        <div className={styles.grid}>
+          <StatTile label="Total de obras" value={projects.length} tone="neutral" icon="building" />
+          <StatTile label="Obras em andamento" value={inProgress.length} tone="info" icon="chart" />
+          <StatTile
+            label="Chamados de pós-obra abertos"
+            value={openMaintenance.length}
+            tone={openMaintenance.length > 0 ? "danger" : "success"}
+            icon="key"
+          />
+        </div>
+      )}
 
       <div className={styles.mainGrid}>
         <Card
@@ -74,7 +77,9 @@ export default function ObrasHubPage() {
           subtitle="Últimas obras cadastradas"
           actions={<Link href="/painel/obras/lista" className={styles.cardLink}>Ver todas</Link>}
         >
-          {recentProjects.length === 0 ? (
+          {loading ? (
+            <SkeletonCardGrid count={3} />
+          ) : recentProjects.length === 0 ? (
             <p className={styles.emptyText}>Nenhuma obra cadastrada.</p>
           ) : (
             <ul className={styles.list}>
@@ -100,7 +105,9 @@ export default function ObrasHubPage() {
           subtitle="Aguardando atendimento"
           actions={<Link href="/painel/obras/pos-obra" className={styles.cardLink}>Ver todos</Link>}
         >
-          {openMaintenance.length === 0 ? (
+          {loading ? (
+            <SkeletonCardGrid count={3} />
+          ) : openMaintenance.length === 0 ? (
             <p className={styles.emptyText}>Nenhum chamado aberto.</p>
           ) : (
             <ul className={styles.list}>
@@ -110,7 +117,7 @@ export default function ObrasHubPage() {
                     <span className={styles.listRowIcon}><Icon name="key" size={16} /></span>
                     <div className={styles.listRowInfo}>
                       <span className={styles.listRowTitle}>{c.description}</span>
-                      <span className={styles.listRowSubtitle}>Aberto em {formatDate(c.createdAt)}</span>
+                      <span className={styles.listRowSubtitle}>Aberto em {formatDate(c.createdAt || c.created_at)}</span>
                     </div>
                   </Link>
                 </li>

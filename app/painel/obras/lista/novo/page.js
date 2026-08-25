@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -9,15 +9,20 @@ import Input from "@/components/atoms/Input/Input";
 import Select from "@/components/atoms/Select/Select";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
-import { PROJECTS } from "@/lib/mock/construction";
-import { PROPERTIES } from "@/lib/mock/properties";
-import { USERS } from "@/lib/mock/users";
+import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import { createProject } from "@/lib/api/construction";
+import { listProperties } from "@/lib/api/properties";
+import { apiFetch } from "@/lib/api/client";
 import styles from "./page.module.css";
 
 export default function NovaObraPage() {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
+  const [properties, setProperties] = useState([]);
+  const [users, setUsers] = useState([]);
   const [form, setForm] = useState({
     name: "",
     propertyId: "",
@@ -27,32 +32,46 @@ export default function NovaObraPage() {
     endsAtPlanned: "",
   });
 
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError("");
+    Promise.all([listProperties(), apiFetch("/users")])
+      .then(([props, u]) => {
+        if (cancelled) return;
+        setProperties(props || []);
+        setUsers(u || []);
+      })
+      .catch((err) => {
+        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar os dados do formulário.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   function update(field) {
     return (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
   }
 
   const isValid = form.name.trim().length > 0;
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!isValid) return;
     setActionError("");
     setSubmitting(true);
     try {
-      const newProject = {
-        id: `project-${Date.now()}`,
-        groupId: "group-1",
-        companyId: "company-1",
-        propertyId: form.propertyId || null,
+      const newProject = await createProject({
+        propertyId: form.propertyId || undefined,
         name: form.name.trim(),
-        responsibleUserId: form.responsibleUserId || null,
-        budgetAmount: form.budgetAmount ? Number(form.budgetAmount) : null,
-        startsAt: form.startsAt || null,
-        endsAtPlanned: form.endsAtPlanned || null,
-        status: "PLANNED",
-        lockVersion: 0,
-        createdAt: new Date().toISOString(),
-      };
-      PROJECTS.push(newProject);
+        responsibleUserId: form.responsibleUserId || undefined,
+        budgetAmount: form.budgetAmount ? Number(form.budgetAmount) : undefined,
+        startsAt: form.startsAt ? new Date(form.startsAt).toISOString() : undefined,
+        endsAtPlanned: form.endsAtPlanned ? new Date(form.endsAtPlanned).toISOString() : undefined,
+      });
       router.push(`/painel/obras/lista/${newProject.id}`);
     } catch (err) {
       setActionError(err?.message || "Erro ao criar obra.");
@@ -63,8 +82,12 @@ export default function NovaObraPage() {
   return (
     <AppShell title="Nova obra" backHref="/painel/obras/lista">
       <div className={styles.wrap}>
+        {loadError ? <Alert tone="danger" title="Não foi possível carregar os dados do formulário">{loadError}</Alert> : null}
         {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
 
+        {loading ? (
+          <SkeletonDetail sections={1} />
+        ) : (
         <Card title="Dados da obra">
           <div className={styles.formGrid}>
             <div className={styles.span2}>
@@ -76,7 +99,7 @@ export default function NovaObraPage() {
             <FormField label="Imóvel vinculado" htmlFor="f-property" helper="Opcional">
               <Select id="f-property" value={form.propertyId} onChange={update("propertyId")}>
                 <option value="">Nenhum</option>
-                {PROPERTIES.map((p) => (
+                {properties.map((p) => (
                   <option key={p.id} value={p.id}>{p.name}</option>
                 ))}
               </Select>
@@ -85,7 +108,7 @@ export default function NovaObraPage() {
             <FormField label="Responsável" htmlFor="f-responsible" helper="Opcional">
               <Select id="f-responsible" value={form.responsibleUserId} onChange={update("responsibleUserId")}>
                 <option value="">Nenhum</option>
-                {USERS.map((u) => (
+                {users.map((u) => (
                   <option key={u.id} value={u.id}>{u.name}</option>
                 ))}
               </Select>
@@ -104,10 +127,11 @@ export default function NovaObraPage() {
             </FormField>
           </div>
         </Card>
+        )}
 
         <div className={styles.actionBar}>
           <Button variant="secondary" onClick={() => router.push("/painel/obras/lista")}>Cancelar</Button>
-          <Button onClick={handleSubmit} loading={submitting} disabled={!isValid}>Criar obra</Button>
+          <Button onClick={handleSubmit} loading={submitting} disabled={!isValid || loading}>Criar obra</Button>
         </div>
       </div>
     </AppShell>
