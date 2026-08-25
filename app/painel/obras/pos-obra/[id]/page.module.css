@@ -1,0 +1,30 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.topRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.statusUpdate { width: 220px; }
+
+.description { font-size: var(--text-body-sm); color: var(--color-ink); line-height: 1.6; }
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+}
+
+@media (max-width: 760px) {
+  .infoGrid { grid-template-columns: 1fr 1fr; }
+}
+
+.infoLabel { font-size: var(--text-caption); color: var(--color-ink-muted); margin-bottom: 2px; }
+.infoValue { font-size: var(--text-body-sm); font-weight: 600; color: var(--color-ink); }
+.infoLink { color: var(--color-brand-active); }
