@@ -13,6 +13,40 @@
 
 .statusUpdate { width: 220px; }
 
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.span2 { grid-column: span 2; }
+
+@media (max-width: 600px) {
+  .formGrid { grid-template-columns: 1fr; }
+  .span2 { grid-column: span 1; }
+}
+
+.textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: inherit;
+  font-size: var(--text-body-sm);
+  resize: vertical;
+}
+
 .description { font-size: var(--text-body-sm); color: var(--color-ink); line-height: 1.6; }
 
 .infoGrid {

@@ -14,6 +14,7 @@ import Icon from "@/components/atoms/Icon/Icon";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import Pagination from "@/components/molecules/Pagination/Pagination";
 import RowActions from "@/components/molecules/RowActions/RowActions";
+import Modal from "@/components/organisms/Modal/Modal";
 import { MAINTENANCE_CASES, MAINTENANCE_STATUS_LABELS, MAINTENANCE_STATUS_TONE, PROJECTS } from "@/lib/mock/construction";
 import { PROPERTIES } from "@/lib/mock/properties";
 import { PEOPLE } from "@/lib/mock/people";
@@ -27,6 +28,15 @@ export default function PosObraListaPage() {
   const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [version, setVersion] = useState(0);
+
+  function handleDelete() {
+    const idx = MAINTENANCE_CASES.findIndex((c) => c.id === deleteTarget.id);
+    if (idx >= 0) MAINTENANCE_CASES.splice(idx, 1);
+    setDeleteTarget(null);
+    setVersion((n) => n + 1);
+  }
 
   function propertyOf(id) {
     return PROPERTIES.find((p) => p.id === id) || null;
@@ -50,7 +60,7 @@ export default function PosObraListaPage() {
       if (statusFilter && c.status !== statusFilter) return false;
       return true;
     });
-  }, [query, statusFilter]);
+  }, [query, statusFilter, version]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const pageItems = filtered.slice((page - 1) * pageSize, page * pageSize);
@@ -67,25 +77,25 @@ export default function PosObraListaPage() {
     {
       key: "description",
       label: "Descrição",
-      width: "24%",
+      width: "22%",
       render: (row) => <span className={styles.nameMain}>{row.description}</span>,
     },
     {
       key: "property",
       label: "Imóvel",
-      width: "16%",
+      width: "14%",
       render: (row) => propertyOf(row.propertyId)?.name || "—",
     },
     {
       key: "project",
       label: "Obra vinculada",
-      width: "16%",
+      width: "14%",
       render: (row) => projectOf(row.projectId)?.name || "—",
     },
     {
       key: "openedBy",
       label: "Aberto por",
-      width: "14%",
+      width: "12%",
       render: (row) => (row.openedByPersonId ? personOf(row.openedByPersonId)?.legalName || "—" : "Equipe interna"),
     },
     {
@@ -97,20 +107,26 @@ export default function PosObraListaPage() {
     {
       key: "status",
       label: "Status",
-      width: "10%",
+      width: "14%",
       render: (row) => <Badge tone={MAINTENANCE_STATUS_TONE[row.status]}>{MAINTENANCE_STATUS_LABELS[row.status]}</Badge>,
     },
     {
       key: "warranty",
       label: "Prazo de garantia",
-      width: "10%",
+      width: "8%",
       render: (row) => formatDate(row.warrantyDeadlineAt),
     },
     {
       key: "actions",
       label: "",
-      width: "6%",
-      render: (row) => <RowActions onView={() => router.push(`/painel/obras/pos-obra/${row.id}`)} />,
+      width: "4%",
+      render: (row) => (
+        <RowActions
+          onView={() => router.push(`/painel/obras/pos-obra/${row.id}`)}
+          onEdit={() => router.push(`/painel/obras/pos-obra/${row.id}`)}
+          onDelete={() => setDeleteTarget(row)}
+        />
+      ),
     },
   ];
 
@@ -160,6 +176,20 @@ export default function PosObraListaPage() {
           <Icon name="plus" size={18} /> Novo chamado
         </Button>
       </StickyActionBar>
+
+      <Modal
+        open={Boolean(deleteTarget)}
+        onClose={() => setDeleteTarget(null)}
+        title="Excluir chamado"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setDeleteTarget(null)}>Cancelar</Button>
+            <Button variant="danger" onClick={handleDelete}>Excluir</Button>
+          </>
+        }
+      >
+        <p>Tem certeza que deseja excluir o chamado <strong>{deleteTarget?.description}</strong>? Esta ação não pode ser desfeita.</p>
+      </Modal>
     </AppShell>
   );
 }

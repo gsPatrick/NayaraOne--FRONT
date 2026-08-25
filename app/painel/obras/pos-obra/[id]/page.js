@@ -1,10 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Badge from "@/components/atoms/Badge/Badge";
+import Button from "@/components/atoms/Button/Button";
+import Icon from "@/components/atoms/Icon/Icon";
 import Select from "@/components/atoms/Select/Select";
+import Input from "@/components/atoms/Input/Input";
+import FormField from "@/components/molecules/FormField/FormField";
+import Modal from "@/components/organisms/Modal/Modal";
 import Alert from "@/components/molecules/Alert/Alert";
 import { MAINTENANCE_CASES, MAINTENANCE_STATUS_LABELS, MAINTENANCE_STATUS_TONE, PROJECTS } from "@/lib/mock/construction";
 import { PROPERTIES } from "@/lib/mock/properties";
@@ -21,7 +27,12 @@ const NEXT_STATUS_OPTIONS = {
 };
 
 export default function PosObraDetalhePage({ params }) {
+  const router = useRouter();
   const [, forceUpdate] = useState(0);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editForm, setEditForm] = useState({ description: "", responsibleUserId: "", warrantyDeadlineAt: "" });
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
   const maintenanceCase = MAINTENANCE_CASES.find((c) => c.id === params.id);
 
   if (!maintenanceCase) {
@@ -50,6 +61,30 @@ export default function PosObraDetalhePage({ params }) {
     rerender();
   }
 
+  function openEditModal() {
+    setEditForm({
+      description: maintenanceCase.description,
+      responsibleUserId: maintenanceCase.responsibleUserId || "",
+      warrantyDeadlineAt: maintenanceCase.warrantyDeadlineAt ? maintenanceCase.warrantyDeadlineAt.slice(0, 10) : "",
+    });
+    setEditOpen(true);
+  }
+
+  function handleSaveEdit() {
+    if (!editForm.description.trim()) return;
+    maintenanceCase.description = editForm.description.trim();
+    maintenanceCase.responsibleUserId = editForm.responsibleUserId || null;
+    maintenanceCase.warrantyDeadlineAt = editForm.warrantyDeadlineAt || null;
+    setEditOpen(false);
+    rerender();
+  }
+
+  function handleDelete() {
+    const idx = MAINTENANCE_CASES.findIndex((c) => c.id === maintenanceCase.id);
+    if (idx >= 0) MAINTENANCE_CASES.splice(idx, 1);
+    router.push("/painel/obras/pos-obra");
+  }
+
   return (
     <AppShell title="Chamado de pós-obra" backHref="/painel/obras/pos-obra">
       <div className={styles.wrap}>
@@ -65,6 +100,14 @@ export default function PosObraDetalhePage({ params }) {
               </Select>
             </div>
           ) : null}
+          <div className={styles.actions}>
+            <Button variant="secondary" onClick={openEditModal}>
+              <Icon name="pencil" size={16} /> Editar
+            </Button>
+            <Button variant="danger" onClick={() => setDeleteOpen(true)}>
+              <Icon name="trash" size={16} /> Excluir
+            </Button>
+          </div>
         </div>
 
         <Card title="Descrição">
@@ -104,6 +147,57 @@ export default function PosObraDetalhePage({ params }) {
           </div>
         </Card>
       </div>
+
+      <Modal
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        title="Editar chamado"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setEditOpen(false)}>Cancelar</Button>
+            <Button onClick={handleSaveEdit} disabled={!editForm.description.trim()}>Salvar alterações</Button>
+          </>
+        }
+      >
+        <div className={styles.formGrid}>
+          <div className={styles.span2}>
+            <FormField label="Descrição" htmlFor="e-description" required>
+              <textarea
+                id="e-description"
+                className={styles.textarea}
+                rows={3}
+                value={editForm.description}
+                onChange={(e) => setEditForm((p) => ({ ...p, description: e.target.value }))}
+              />
+            </FormField>
+          </div>
+          <FormField label="Responsável" htmlFor="e-responsible" helper="Opcional">
+            <Select id="e-responsible" value={editForm.responsibleUserId} onChange={(e) => setEditForm((p) => ({ ...p, responsibleUserId: e.target.value }))}>
+              <option value="">Sem responsável</option>
+              {USERS.map((u) => (
+                <option key={u.id} value={u.id}>{u.name}</option>
+              ))}
+            </Select>
+          </FormField>
+          <FormField label="Prazo de garantia" htmlFor="e-warranty" helper="Opcional">
+            <Input id="e-warranty" type="date" value={editForm.warrantyDeadlineAt} onChange={(e) => setEditForm((p) => ({ ...p, warrantyDeadlineAt: e.target.value }))} />
+          </FormField>
+        </div>
+      </Modal>
+
+      <Modal
+        open={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        title="Excluir chamado"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setDeleteOpen(false)}>Cancelar</Button>
+            <Button variant="danger" onClick={handleDelete}>Excluir</Button>
+          </>
+        }
+      >
+        <p>Tem certeza que deseja excluir este chamado? Esta ação não pode ser desfeita.</p>
+      </Modal>
     </AppShell>
   );
 }
