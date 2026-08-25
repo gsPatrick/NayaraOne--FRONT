@@ -49,7 +49,7 @@
    (position: sticky também cria containing block pra descendente absoluto). */
 .toggleWrap {
   position: absolute;
-  top: 50%;
+  top: var(--space-4);
   right: 0;
   transform: translate(50%, -50%);
   z-index: 6;
