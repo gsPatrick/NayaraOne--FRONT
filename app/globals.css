@@ -157,8 +157,8 @@
   --color-sidebar-ink-soft:        rgba(253, 252, 250, 0.72);
   --color-sidebar-ink-muted:       rgba(253, 252, 250, 0.48);
   --color-sidebar-item-hover:      rgba(255, 255, 255, 0.06);
-  --color-sidebar-item-active-bg:  rgba(255, 255, 255, 0.08);
-  --color-sidebar-item-active-ink: #FFFFFF;
+  --color-sidebar-item-active-bg:  #FFFFFF;
+  --color-sidebar-item-active-ink: #0D0D0D;
   --color-sidebar-badge-bg:        rgba(255, 255, 255, 0.08);
   --color-sidebar-scrollbar:       rgba(255, 255, 255, 0.18);
   --color-sidebar-scrollbar-hover: rgba(255, 255, 255, 0.32);

@@ -12,9 +12,8 @@
   box-shadow: var(--shadow-lg);
   position: sticky;
   top: var(--space-4);
-  margin: var(--space-4) 0 var(--space-4) var(--space-4);
+  margin: var(--space-4);
   z-index: 5;
-  overflow: hidden;
   transition: width var(--duration-slow) var(--ease-out-expo), background-color var(--duration-base) var(--ease-out-expo);
 }
 
@@ -44,26 +43,30 @@
   white-space: nowrap;
 }
 
-/* Botão de recolher/expandir — ancorado no próprio card da sidebar (não mais um portal
-   flutuante sobre a borda), sempre contido dentro dos cantos arredondados. */
+/* Botão de recolher/expandir — "meio pra dentro, meio pra fora": fica embutido na borda
+   direita da sidebar (metade sobre o card, metade fora dele), pra nunca tomar espaço do
+   conteúdo quando a sidebar está minimizada. Não usa mais portal — ancorado no próprio card
+   (position: sticky também cria containing block pra descendente absoluto). */
 .toggleWrap {
   position: absolute;
-  top: var(--space-3);
-  right: var(--space-3);
-  z-index: 1;
+  top: 50%;
+  right: 0;
+  transform: translate(50%, -50%);
+  z-index: 6;
 }
 
 .toggle {
   flex-shrink: 0;
   width: 26px;
   height: 26px;
-  border-radius: var(--radius-md);
-  background: transparent;
+  border-radius: var(--radius-full);
+  background: var(--color-sidebar-bg);
   border: 1px solid var(--color-sidebar-border);
   color: var(--color-sidebar-ink-muted);
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  box-shadow: var(--shadow-md);
   transition: color var(--duration-base) var(--ease-out-expo),
     background-color var(--duration-base) var(--ease-out-expo),
     border-color var(--duration-base) var(--ease-out-expo);
@@ -71,7 +74,6 @@
 
 .toggle:hover {
   color: var(--color-sidebar-ink);
-  background: var(--color-sidebar-item-hover);
   border-color: var(--color-sidebar-ink-muted);
 }
 
@@ -163,32 +165,32 @@
 
 .list { display: flex; flex-direction: column; gap: 2px; }
 
-/* Item de menu: sem preenchimento — o estado ativo é uma barra de destaque à esquerda,
-   como em painéis de referência tipo Linear/Vercel, em vez do "chip" preenchido de antes. */
+/* Item de menu: o estado ativo é uma pílula preenchida com fundo branco vivo e letra preta —
+   bem contrastante com o fundo escuro da sidebar. */
 .item {
   position: relative;
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-2) var(--space-3) var(--space-2) calc(var(--space-3) + 3px);
-  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-full);
   color: var(--color-sidebar-ink-soft);
   font-weight: 500;
   font-size: var(--text-body-sm);
   white-space: nowrap;
-  border-left: 3px solid transparent;
-  transition: color var(--duration-base) var(--ease-out-expo),
-    border-color var(--duration-base) var(--ease-out-expo);
+  transition: background-color var(--duration-base) var(--ease-out-expo),
+    color var(--duration-base) var(--ease-out-expo);
 }
 
 .item:hover {
   color: var(--color-sidebar-ink);
+  background: var(--color-sidebar-item-hover);
 }
 
 .item.active {
+  background: var(--color-sidebar-item-active-bg);
   color: var(--color-sidebar-item-active-ink);
   font-weight: 700;
-  border-left-color: var(--color-sidebar-item-active-ink);
 }
 
 .itemIcon {
@@ -237,12 +239,13 @@
   display: flex;
   align-items: center;
   padding: 6px var(--space-3);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-full);
   color: var(--color-sidebar-ink-muted);
   font-weight: 500;
   font-size: var(--text-caption);
   white-space: nowrap;
-  transition: color var(--duration-base) var(--ease-out-expo);
+  transition: background-color var(--duration-base) var(--ease-out-expo),
+    color var(--duration-base) var(--ease-out-expo);
 }
 
 .subItem::before {
@@ -258,10 +261,14 @@
   transition: background-color var(--duration-base) var(--ease-out-expo);
 }
 
-.subItem:hover { color: var(--color-sidebar-ink-soft); }
+.subItem:hover {
+  color: var(--color-sidebar-ink-soft);
+  background: var(--color-sidebar-item-hover);
+}
 .subItem:hover::before { background: var(--color-sidebar-ink-soft); }
 
 .subItem.active {
+  background: var(--color-sidebar-item-active-bg);
   color: var(--color-sidebar-item-active-ink);
   font-weight: 700;
 }
@@ -283,11 +290,9 @@
   justify-content: center;
   padding: var(--space-2);
   gap: 0;
-  border-left: none;
 }
 
 .collapsed .item.active {
-  background: var(--color-sidebar-item-active-bg);
   border-radius: var(--radius-md);
 }
 
