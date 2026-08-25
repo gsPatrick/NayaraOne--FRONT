@@ -7,19 +7,184 @@
 .topRow {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: var(--space-4);
   flex-wrap: wrap;
 }
 
-.statusUpdate { width: 220px; }
+.badges {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
 
 .actions {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  margin-left: auto;
   flex-wrap: wrap;
 }
+
+.statusUpdate { width: 220px; }
+
+.description { font-size: var(--text-body-sm); color: var(--color-ink); line-height: 1.6; }
+
+.grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-5);
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .grid { grid-template-columns: 1fr; }
+}
+
+.mainCol, .sideCol {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+}
+
+@media (max-width: 760px) {
+  .infoGrid { grid-template-columns: 1fr 1fr; }
+}
+
+.infoLabel { font-size: var(--text-caption); color: var(--color-ink-muted); margin-bottom: 2px; }
+.infoValue { font-size: var(--text-body-sm); font-weight: 600; color: var(--color-ink); }
+.infoLink { color: var(--color-brand-active); }
+
+/* Stepper de progresso */
+.stepper {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.stepperItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  flex: 1;
+}
+
+.stepperDot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background: var(--color-canvas-sunken);
+  border: 2px solid var(--color-border);
+  color: var(--color-ink-muted);
+  font-size: var(--text-caption);
+  font-weight: 700;
+  z-index: 1;
+}
+
+.stepperDotDone {
+  background: var(--color-success);
+  border-color: var(--color-success);
+  color: var(--color-text-inverse);
+}
+
+.stepperDotCurrent {
+  background: var(--color-brand);
+  border-color: var(--color-brand);
+  color: var(--color-text-inverse);
+}
+
+.stepperLabel {
+  margin-top: var(--space-2);
+  font-size: var(--text-caption);
+  color: var(--color-ink-muted);
+  text-align: center;
+}
+
+.stepperLabelCurrent { color: var(--color-ink); font-weight: 700; }
+
+.stepperLine {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  background: var(--color-border);
+  z-index: 0;
+}
+
+.stepperLineDone { background: var(--color-success); }
+
+/* Chamados relacionados */
+.relatedList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.relatedRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  background: var(--color-canvas-sunken);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  color: inherit;
+  text-decoration: none;
+  transition: background-color var(--duration-base) var(--ease-out-expo);
+}
+
+.relatedRow:hover { background: var(--color-brand-soft); }
+
+.relatedInfo { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.relatedTitle { font-size: var(--text-body-sm); font-weight: 600; color: var(--color-ink); }
+.relatedSubtitle { font-size: var(--text-caption); color: var(--color-ink-muted); }
+
+/* Contatos (mesmo padrão de app/painel/radar/[id]) */
+.contactList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.contactRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  background: var(--color-canvas-sunken);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  font-size: var(--text-body-sm);
+  color: inherit;
+  text-decoration: none;
+}
+
+.contactLeft { display: flex; align-items: center; gap: var(--space-2); }
+
+.contactPrimary {
+  font-size: var(--text-micro);
+  color: var(--color-brand);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.contactRowLink {
+  cursor: pointer;
+  transition: background-color var(--duration-base) var(--ease-out-expo);
+}
+
+.contactRowLink:hover { background: var(--color-brand-soft); }
 
 .formGrid {
   display: grid;
@@ -47,18 +212,6 @@
   resize: vertical;
 }
 
-.description { font-size: var(--text-body-sm); color: var(--color-ink); line-height: 1.6; }
-
-.infoGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-4);
+@media (prefers-reduced-motion: reduce) {
+  .contactRowLink, .relatedRow { transition: none; }
 }
-
-@media (max-width: 760px) {
-  .infoGrid { grid-template-columns: 1fr 1fr; }
-}
-
-.infoLabel { font-size: var(--text-caption); color: var(--color-ink-muted); margin-bottom: 2px; }
-.infoValue { font-size: var(--text-body-sm); font-weight: 600; color: var(--color-ink); }
-.infoLink { color: var(--color-brand-active); }
