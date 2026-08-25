@@ -10,8 +10,15 @@ import Icon from "@/components/atoms/Icon/Icon";
 import Modal from "@/components/organisms/Modal/Modal";
 import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
+import FormField from "@/components/molecules/FormField/FormField";
+import Input from "@/components/atoms/Input/Input";
+import Select from "@/components/atoms/Select/Select";
 import {
   PROJECTS,
+  PROJECT_STAGES,
+  DAILY_REPORTS,
+  BUDGET_LINES,
+  QUALITY_CHECKLIST_ITEMS,
   PROJECT_STATUS_LABELS,
   PROJECT_STATUS_TONE,
   PROJECT_STATUS_FLOW,
@@ -29,11 +36,25 @@ import { USERS } from "@/lib/mock/users";
 import { formatBRL, formatDate } from "@/lib/format";
 import styles from "./page.module.css";
 
+const WEATHER_OPTIONS = ["Ensolarado", "Nublado", "Chuvoso", "Ventania"];
+
 export default function ObraDetalhePage({ params }) {
   const router = useRouter();
   const [, forceUpdate] = useState(0);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [actionError, setActionError] = useState("");
+
+  const [stageOpen, setStageOpen] = useState(false);
+  const [stageForm, setStageForm] = useState({ name: "", sequence: "1", plannedPct: "" });
+
+  const [rdoOpen, setRdoOpen] = useState(false);
+  const [rdoForm, setRdoForm] = useState({ reportDate: new Date().toISOString().slice(0, 10), weather: WEATHER_OPTIONS[0], workforceCount: "", occurrences: "" });
+
+  const [budgetOpen, setBudgetOpen] = useState(false);
+  const [budgetForm, setBudgetForm] = useState({ category: "", description: "", plannedAmount: "" });
+
+  const [qualityOpen, setQualityOpen] = useState(false);
+  const [qualityForm, setQualityForm] = useState({ item: "", projectStageId: "" });
 
   const project = PROJECTS.find((p) => p.id === params.id);
 
@@ -74,6 +95,93 @@ export default function ObraDetalhePage({ params }) {
   function handleQualityQuickAction(item, status) {
     item.status = status;
     item.checkedAt = new Date().toISOString();
+    rerender();
+  }
+
+  function openStageModal() {
+    setStageForm({ name: "", sequence: String(stages.length + 1), plannedPct: "" });
+    setStageOpen(true);
+  }
+  function handleCreateStage() {
+    if (!stageForm.name.trim() || stageForm.sequence === "") return;
+    PROJECT_STAGES.push({
+      id: `stage-${Date.now()}`,
+      groupId: project.groupId,
+      companyId: project.companyId,
+      projectId: project.id,
+      name: stageForm.name.trim(),
+      sequence: Number(stageForm.sequence),
+      plannedPct: stageForm.plannedPct ? Number(stageForm.plannedPct) : 0,
+      measuredPct: null,
+      status: "PENDING",
+      startsAt: null,
+      endsAt: null,
+    });
+    setStageOpen(false);
+    rerender();
+  }
+
+  function openRdoModal() {
+    setRdoForm({ reportDate: new Date().toISOString().slice(0, 10), weather: WEATHER_OPTIONS[0], workforceCount: "", occurrences: "" });
+    setRdoOpen(true);
+  }
+  function handleCreateRdo() {
+    if (!rdoForm.reportDate || !rdoForm.weather || rdoForm.workforceCount === "") return;
+    DAILY_REPORTS.push({
+      id: `rdo-${Date.now()}`,
+      groupId: project.groupId,
+      companyId: project.companyId,
+      projectId: project.id,
+      reportDate: rdoForm.reportDate,
+      weather: rdoForm.weather,
+      workforceCount: Number(rdoForm.workforceCount),
+      occurrences: rdoForm.occurrences.trim() || null,
+      reportedByUserId: "user-1",
+    });
+    setRdoOpen(false);
+    rerender();
+  }
+
+  function openBudgetModal() {
+    setBudgetForm({ category: "", description: "", plannedAmount: "" });
+    setBudgetOpen(true);
+  }
+  function handleCreateBudgetLine() {
+    if (!budgetForm.category.trim() || budgetForm.plannedAmount === "" || Number(budgetForm.plannedAmount) < 0) return;
+    BUDGET_LINES.push({
+      id: `budget-${Date.now()}`,
+      groupId: project.groupId,
+      companyId: project.companyId,
+      projectId: project.id,
+      costCenterId: null,
+      category: budgetForm.category.trim(),
+      description: budgetForm.description.trim() || null,
+      plannedAmount: Number(budgetForm.plannedAmount),
+      actualAmount: null,
+    });
+    setBudgetOpen(false);
+    rerender();
+  }
+
+  function openQualityModal() {
+    setQualityForm({ item: "", projectStageId: "" });
+    setQualityOpen(true);
+  }
+  function handleCreateQualityItem() {
+    if (!qualityForm.item.trim()) return;
+    QUALITY_CHECKLIST_ITEMS.push({
+      id: `qc-${Date.now()}`,
+      groupId: project.groupId,
+      companyId: project.companyId,
+      projectId: project.id,
+      projectStageId: qualityForm.projectStageId || null,
+      item: qualityForm.item.trim(),
+      status: "PENDING",
+      checkedByUserId: null,
+      checkedAt: null,
+      notes: null,
+    });
+    setQualityOpen(false);
     rerender();
   }
 
@@ -135,7 +243,7 @@ export default function ObraDetalhePage({ params }) {
         <Card
           title="Etapas"
           subtitle="Cronograma físico da obra"
-          actions={<Button size="sm" variant="secondary" href={`/painel/obras/lista/${project.id}/etapas/nova`}>
+          actions={<Button size="sm" variant="secondary" onClick={openStageModal}>
             <Icon name="plus" size={14} /> Nova etapa
           </Button>}
         >
@@ -161,7 +269,7 @@ export default function ObraDetalhePage({ params }) {
         <Card
           title="RDO — Relatório Diário de Obra"
           subtitle="Últimos registros"
-          actions={<Button size="sm" variant="secondary" href={`/painel/obras/lista/${project.id}/rdo/novo`}>
+          actions={<Button size="sm" variant="secondary" onClick={openRdoModal}>
             <Icon name="plus" size={14} /> Novo RDO
           </Button>}
         >
@@ -186,7 +294,7 @@ export default function ObraDetalhePage({ params }) {
         <Card
           title="Orçamento"
           subtitle="Linhas de orçamento por categoria"
-          actions={<Button size="sm" variant="secondary" href={`/painel/obras/lista/${project.id}/orcamento/novo`}>
+          actions={<Button size="sm" variant="secondary" onClick={openBudgetModal}>
             <Icon name="plus" size={14} /> Nova linha de orçamento
           </Button>}
         >
@@ -228,7 +336,7 @@ export default function ObraDetalhePage({ params }) {
         <Card
           title="Qualidade"
           subtitle="Checklist de qualidade"
-          actions={<Button size="sm" variant="secondary" href={`/painel/obras/lista/${project.id}/qualidade/novo`}>
+          actions={<Button size="sm" variant="secondary" onClick={openQualityModal}>
             <Icon name="plus" size={14} /> Novo item de checklist
           </Button>}
         >
@@ -275,6 +383,125 @@ export default function ObraDetalhePage({ params }) {
         }
       >
         <p>Tem certeza que deseja excluir a obra <strong>{project.name}</strong>? Esta ação não pode ser desfeita.</p>
+      </Modal>
+
+      <Modal
+        open={stageOpen}
+        onClose={() => setStageOpen(false)}
+        title="Nova etapa"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setStageOpen(false)}>Cancelar</Button>
+            <Button onClick={handleCreateStage} disabled={!stageForm.name.trim() || stageForm.sequence === ""}>Criar etapa</Button>
+          </>
+        }
+      >
+        <div className={styles.formGrid}>
+          <div className={styles.span2}>
+            <FormField label="Nome da etapa" htmlFor="m-stage-name" required>
+              <Input id="m-stage-name" value={stageForm.name} onChange={(e) => setStageForm((p) => ({ ...p, name: e.target.value }))} placeholder="Ex: Fundação e estrutura" />
+            </FormField>
+          </div>
+          <FormField label="Sequência" htmlFor="m-stage-seq" required>
+            <Input id="m-stage-seq" type="number" min="1" value={stageForm.sequence} onChange={(e) => setStageForm((p) => ({ ...p, sequence: e.target.value }))} />
+          </FormField>
+          <FormField label="Percentual planejado (%)" htmlFor="m-stage-pct" helper="Opcional">
+            <Input id="m-stage-pct" type="number" min="0" max="100" value={stageForm.plannedPct} onChange={(e) => setStageForm((p) => ({ ...p, plannedPct: e.target.value }))} />
+          </FormField>
+        </div>
+      </Modal>
+
+      <Modal
+        open={rdoOpen}
+        onClose={() => setRdoOpen(false)}
+        title="Novo RDO"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setRdoOpen(false)}>Cancelar</Button>
+            <Button onClick={handleCreateRdo} disabled={!rdoForm.reportDate || !rdoForm.weather || rdoForm.workforceCount === ""}>Registrar RDO</Button>
+          </>
+        }
+      >
+        <div className={styles.formGrid}>
+          <FormField label="Data" htmlFor="m-rdo-date" required>
+            <Input id="m-rdo-date" type="date" value={rdoForm.reportDate} onChange={(e) => setRdoForm((p) => ({ ...p, reportDate: e.target.value }))} />
+          </FormField>
+          <FormField label="Clima" htmlFor="m-rdo-weather" required>
+            <Select id="m-rdo-weather" value={rdoForm.weather} onChange={(e) => setRdoForm((p) => ({ ...p, weather: e.target.value }))}>
+              {WEATHER_OPTIONS.map((w) => (
+                <option key={w} value={w}>{w}</option>
+              ))}
+            </Select>
+          </FormField>
+          <FormField label="Efetivo (nº de trabalhadores)" htmlFor="m-rdo-workforce" required>
+            <Input id="m-rdo-workforce" type="number" min="0" value={rdoForm.workforceCount} onChange={(e) => setRdoForm((p) => ({ ...p, workforceCount: e.target.value }))} />
+          </FormField>
+          <div className={styles.span2}>
+            <FormField label="Ocorrências" htmlFor="m-rdo-occurrences" helper="Opcional">
+              <textarea
+                id="m-rdo-occurrences"
+                className={styles.textarea}
+                rows={3}
+                value={rdoForm.occurrences}
+                onChange={(e) => setRdoForm((p) => ({ ...p, occurrences: e.target.value }))}
+              />
+            </FormField>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        open={budgetOpen}
+        onClose={() => setBudgetOpen(false)}
+        title="Nova linha de orçamento"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setBudgetOpen(false)}>Cancelar</Button>
+            <Button onClick={handleCreateBudgetLine} disabled={!budgetForm.category.trim() || budgetForm.plannedAmount === ""}>Criar linha</Button>
+          </>
+        }
+      >
+        <div className={styles.formGrid}>
+          <FormField label="Categoria" htmlFor="m-budget-category" required>
+            <Input id="m-budget-category" value={budgetForm.category} onChange={(e) => setBudgetForm((p) => ({ ...p, category: e.target.value }))} placeholder="Ex: Fundação e estrutura" />
+          </FormField>
+          <FormField label="Valor planejado (R$)" htmlFor="m-budget-planned" required>
+            <Input id="m-budget-planned" type="number" min="0" step="0.01" value={budgetForm.plannedAmount} onChange={(e) => setBudgetForm((p) => ({ ...p, plannedAmount: e.target.value }))} placeholder="0,00" />
+          </FormField>
+          <div className={styles.span2}>
+            <FormField label="Descrição" htmlFor="m-budget-description" helper="Opcional">
+              <Input id="m-budget-description" value={budgetForm.description} onChange={(e) => setBudgetForm((p) => ({ ...p, description: e.target.value }))} placeholder="Detalhes da linha de orçamento" />
+            </FormField>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        open={qualityOpen}
+        onClose={() => setQualityOpen(false)}
+        title="Novo item de checklist"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setQualityOpen(false)}>Cancelar</Button>
+            <Button onClick={handleCreateQualityItem} disabled={!qualityForm.item.trim()}>Criar item</Button>
+          </>
+        }
+      >
+        <div className={styles.formGrid}>
+          <div className={styles.span2}>
+            <FormField label="Descrição do item" htmlFor="m-quality-item" required>
+              <Input id="m-quality-item" value={qualityForm.item} onChange={(e) => setQualityForm((p) => ({ ...p, item: e.target.value }))} placeholder="Ex: Verificar prumo e nível da fundação" />
+            </FormField>
+          </div>
+          <FormField label="Etapa vinculada" htmlFor="m-quality-stage" helper="Opcional">
+            <Select id="m-quality-stage" value={qualityForm.projectStageId} onChange={(e) => setQualityForm((p) => ({ ...p, projectStageId: e.target.value }))}>
+              <option value="">Obra toda</option>
+              {stages.map((s) => (
+                <option key={s.id} value={s.id}>{s.sequence}. {s.name}</option>
+              ))}
+            </Select>
+          </FormField>
+        </div>
       </Modal>
     </AppShell>
   );

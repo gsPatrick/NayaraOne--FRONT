@@ -10,9 +10,11 @@ import Modal from "@/components/organisms/Modal/Modal";
 import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import FormField from "@/components/molecules/FormField/FormField";
+import Input from "@/components/atoms/Input/Input";
 import {
   PROJECTS,
   PROJECT_STAGES,
+  STAGE_MEASUREMENTS,
   STAGE_STATUS_LABELS,
   STAGE_STATUS_TONE,
   MEASUREMENT_STATUS_LABELS,
@@ -27,6 +29,12 @@ export default function EtapaDetalhePage({ params }) {
   const [, forceUpdate] = useState(0);
   const [rejectTarget, setRejectTarget] = useState(null);
   const [rejectReason, setRejectReason] = useState("");
+  const [measurementOpen, setMeasurementOpen] = useState(false);
+  const [measurementForm, setMeasurementForm] = useState({
+    measuredPct: "",
+    measuredAt: new Date().toISOString().slice(0, 10),
+    notes: "",
+  });
 
   const project = PROJECTS.find((p) => p.id === params.id);
   const stage = PROJECT_STAGES.find((s) => s.id === params.stageId);
@@ -73,6 +81,37 @@ export default function EtapaDetalhePage({ params }) {
     rerender();
   }
 
+  function openMeasurementModal() {
+    setMeasurementForm({ measuredPct: "", measuredAt: new Date().toISOString().slice(0, 10), notes: "" });
+    setMeasurementOpen(true);
+  }
+
+  const isMeasurementValid =
+    measurementForm.measuredPct !== "" &&
+    Number(measurementForm.measuredPct) >= 0 &&
+    Number(measurementForm.measuredPct) <= 100 &&
+    measurementForm.measuredAt;
+
+  function handleCreateMeasurement() {
+    if (!isMeasurementValid) return;
+    STAGE_MEASUREMENTS.push({
+      id: `meas-${Date.now()}`,
+      groupId: project.groupId,
+      companyId: project.companyId,
+      projectStageId: stage.id,
+      measuredPct: Number(measurementForm.measuredPct),
+      measuredAt: measurementForm.measuredAt,
+      measuredByUserId: "user-1",
+      notes: measurementForm.notes.trim() || null,
+      status: "PENDING_APPROVAL",
+      approvedByUserId: null,
+      decidedAt: null,
+      rejectionReason: null,
+    });
+    setMeasurementOpen(false);
+    rerender();
+  }
+
   return (
     <AppShell title={stage.name} backHref={`/painel/obras/lista/${project.id}`}>
       <div className={styles.wrap}>
@@ -81,7 +120,7 @@ export default function EtapaDetalhePage({ params }) {
             <Badge tone={STAGE_STATUS_TONE[stage.status]}>{STAGE_STATUS_LABELS[stage.status]}</Badge>
           </div>
           <div className={styles.actions}>
-            <Button href={`/painel/obras/lista/${project.id}/etapas/${stage.id}/medicao/nova`}>
+            <Button onClick={openMeasurementModal}>
               <Icon name="plus" size={16} /> Registrar medição
             </Button>
           </div>
@@ -174,6 +213,38 @@ export default function EtapaDetalhePage({ params }) {
             onChange={(e) => setRejectReason(e.target.value)}
           />
         </FormField>
+      </Modal>
+
+      <Modal
+        open={measurementOpen}
+        onClose={() => setMeasurementOpen(false)}
+        title="Registrar medição"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setMeasurementOpen(false)}>Cancelar</Button>
+            <Button onClick={handleCreateMeasurement} disabled={!isMeasurementValid}>Registrar medição</Button>
+          </>
+        }
+      >
+        <div className={styles.formGrid}>
+          <FormField label="Percentual medido (%)" htmlFor="m-meas-pct" required>
+            <Input id="m-meas-pct" type="number" min="0" max="100" value={measurementForm.measuredPct} onChange={(e) => setMeasurementForm((p) => ({ ...p, measuredPct: e.target.value }))} />
+          </FormField>
+          <FormField label="Data da medição" htmlFor="m-meas-date" required>
+            <Input id="m-meas-date" type="date" value={measurementForm.measuredAt} onChange={(e) => setMeasurementForm((p) => ({ ...p, measuredAt: e.target.value }))} />
+          </FormField>
+          <div className={styles.span2}>
+            <FormField label="Observações" htmlFor="m-meas-notes" helper="Opcional">
+              <textarea
+                id="m-meas-notes"
+                className={styles.textarea}
+                rows={3}
+                value={measurementForm.notes}
+                onChange={(e) => setMeasurementForm((p) => ({ ...p, notes: e.target.value }))}
+              />
+            </FormField>
+          </div>
+        </div>
       </Modal>
     </AppShell>
   );

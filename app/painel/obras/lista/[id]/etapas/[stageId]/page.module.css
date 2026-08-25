@@ -59,6 +59,19 @@
 
 .quickActions { display: flex; align-items: center; gap: var(--space-2); }
 
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.span2 { grid-column: span 2; }
+
+@media (max-width: 600px) {
+  .formGrid { grid-template-columns: 1fr; }
+  .span2 { grid-column: span 1; }
+}
+
 .textarea {
   width: 100%;
   min-height: 80px;
