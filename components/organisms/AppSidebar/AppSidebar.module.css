@@ -12,7 +12,7 @@
   box-shadow: var(--shadow-lg);
   position: sticky;
   top: var(--space-4);
-  margin: var(--space-4);
+  margin: var(--space-4) var(--space-4) var(--space-4) var(--space-2);
   z-index: 5;
   transition: width var(--duration-slow) var(--ease-out-expo), background-color var(--duration-base) var(--ease-out-expo);
 }
@@ -49,7 +49,7 @@
    (position: sticky também cria containing block pra descendente absoluto). */
 .toggleWrap {
   position: absolute;
-  top: var(--space-4);
+  top: 30px; /* metade da altura de .brandRow (60px) — alinhado com a logo */
   right: 0;
   transform: translate(50%, -50%);
   z-index: 6;
@@ -60,21 +60,20 @@
   width: 26px;
   height: 26px;
   border-radius: var(--radius-full);
-  background: var(--color-sidebar-bg);
-  border: 1px solid var(--color-sidebar-border);
-  color: var(--color-sidebar-ink-muted);
+  background: var(--color-canvas);
+  border: 1px solid var(--color-border);
+  color: var(--color-ink-muted);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   box-shadow: var(--shadow-md);
   transition: color var(--duration-base) var(--ease-out-expo),
-    background-color var(--duration-base) var(--ease-out-expo),
     border-color var(--duration-base) var(--ease-out-expo);
 }
 
 .toggle:hover {
-  color: var(--color-sidebar-ink);
-  border-color: var(--color-sidebar-ink-muted);
+  color: var(--color-ink);
+  border-color: var(--color-ink-muted);
 }
 
 .floatingTooltip {
