@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Button from "@/components/atoms/Button/Button";
@@ -11,74 +11,139 @@ import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import FormField from "@/components/molecules/FormField/FormField";
 import Input from "@/components/atoms/Input/Input";
+import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import {
-  PROJECTS,
-  PROJECT_STAGES,
-  STAGE_MEASUREMENTS,
   STAGE_STATUS_LABELS,
   STAGE_STATUS_TONE,
   MEASUREMENT_STATUS_LABELS,
   MEASUREMENT_STATUS_TONE,
-  measurementsOf,
 } from "@/lib/mock/construction";
-import { USERS } from "@/lib/mock/users";
+import {
+  getProject,
+  getProjectStage,
+  listStageMeasurements,
+  createStageMeasurement,
+  decideStageMeasurement,
+} from "@/lib/api/construction";
+import { apiFetch } from "@/lib/api/client";
 import { formatDate, formatDateTime } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function EtapaDetalhePage({ params }) {
-  const [, forceUpdate] = useState(0);
+  const [project, setProject] = useState(null);
+  const [stage, setStage] = useState(null);
+  const [measurements, setMeasurements] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [actionError, setActionError] = useState("");
+  const [busyId, setBusyId] = useState(null);
+
   const [rejectTarget, setRejectTarget] = useState(null);
   const [rejectReason, setRejectReason] = useState("");
+  const [rejecting, setRejecting] = useState(false);
+
   const [measurementOpen, setMeasurementOpen] = useState(false);
   const [measurementForm, setMeasurementForm] = useState({
     measuredPct: "",
     measuredAt: new Date().toISOString().slice(0, 10),
     notes: "",
   });
+  const [savingMeasurement, setSavingMeasurement] = useState(false);
 
-  const project = PROJECTS.find((p) => p.id === params.id);
-  const stage = PROJECT_STAGES.find((s) => s.id === params.stageId);
-  const measurements = useMemo(() => (stage ? measurementsOf(stage.id) : []), [stage, forceUpdate]);
+  function load() {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError("");
+    Promise.all([getProject(params.id), getProjectStage(params.stageId), apiFetch("/users")])
+      .then(([p, s, u]) => {
+        if (cancelled) return;
+        setProject(p);
+        setStage(s);
+        setUsers(u || []);
+        return listStageMeasurements(s.id).then((m) => {
+          if (cancelled) return;
+          setMeasurements(m || []);
+        });
+      })
+      .catch((err) => {
+        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar a etapa.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }
+
+  useEffect(() => {
+    const cancel = load();
+    return cancel;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.id, params.stageId]);
+
+  function reloadStageAndMeasurements() {
+    Promise.all([getProjectStage(params.stageId), listStageMeasurements(params.stageId)]).then(([s, m]) => {
+      setStage(s);
+      setMeasurements(m || []);
+    });
+  }
+
+  if (loading) {
+    return (
+      <AppShell title="Etapa" backHref={`/painel/obras/lista/${params.id}`}>
+        <SkeletonDetail sections={2} />
+      </AppShell>
+    );
+  }
+
+  if (loadError && (!project || !stage)) {
+    return (
+      <AppShell title="Etapa" backHref={`/painel/obras/lista/${params.id}`}>
+        <Alert tone="danger" title="Não foi possível carregar a etapa">{loadError}</Alert>
+      </AppShell>
+    );
+  }
 
   if (!project || !stage) {
     return (
-      <AppShell title="Etapa" backHref={project ? `/painel/obras/lista/${project.id}` : "/painel/obras/lista"}>
+      <AppShell title="Etapa" backHref="/painel/obras/lista">
         <Alert tone="danger" title="Etapa não encontrada">Não existe nenhuma etapa com este identificador.</Alert>
       </AppShell>
     );
   }
 
-  function rerender() {
-    forceUpdate((n) => n + 1);
-  }
-
-  function recomputeStageStatus() {
-    const approved = measurementsOf(stage.id).filter((m) => m.status === "APPROVED");
-    if (approved.length > 0) {
-      const latest = approved.reduce((a, b) => (new Date(a.measuredAt) > new Date(b.measuredAt) ? a : b));
-      stage.measuredPct = latest.measuredPct;
-      stage.status = latest.measuredPct >= stage.plannedPct ? "DONE" : "IN_PROGRESS";
+  async function handleApprove(measurement) {
+    setBusyId(measurement.id);
+    setActionError("");
+    try {
+      await decideStageMeasurement(measurement.id, { decision: "APPROVED" });
+      reloadStageAndMeasurements();
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível aprovar a medição.");
+    } finally {
+      setBusyId(null);
     }
   }
 
-  function handleApprove(measurement) {
-    measurement.status = "APPROVED";
-    measurement.approvedByUserId = "user-1";
-    measurement.decidedAt = new Date().toISOString();
-    measurement.rejectionReason = null;
-    recomputeStageStatus();
-    rerender();
-  }
-
-  function handleRejectConfirm() {
+  async function handleRejectConfirm() {
     if (!rejectTarget) return;
-    rejectTarget.status = "REJECTED";
-    rejectTarget.approvedByUserId = "user-1";
-    rejectTarget.decidedAt = new Date().toISOString();
-    rejectTarget.rejectionReason = rejectReason.trim() || "Sem motivo informado.";
-    setRejectTarget(null);
-    setRejectReason("");
-    rerender();
+    setRejecting(true);
+    setActionError("");
+    try {
+      await decideStageMeasurement(rejectTarget.id, {
+        decision: "REJECTED",
+        rejectionReason: rejectReason.trim() || undefined,
+      });
+      setRejectTarget(null);
+      setRejectReason("");
+      reloadStageAndMeasurements();
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível rejeitar a medição.");
+    } finally {
+      setRejecting(false);
+    }
   }
 
   function openMeasurementModal() {
@@ -92,29 +157,30 @@ export default function EtapaDetalhePage({ params }) {
     Number(measurementForm.measuredPct) <= 100 &&
     measurementForm.measuredAt;
 
-  function handleCreateMeasurement() {
+  async function handleCreateMeasurement() {
     if (!isMeasurementValid) return;
-    STAGE_MEASUREMENTS.push({
-      id: `meas-${Date.now()}`,
-      groupId: project.groupId,
-      companyId: project.companyId,
-      projectStageId: stage.id,
-      measuredPct: Number(measurementForm.measuredPct),
-      measuredAt: measurementForm.measuredAt,
-      measuredByUserId: "user-1",
-      notes: measurementForm.notes.trim() || null,
-      status: "PENDING_APPROVAL",
-      approvedByUserId: null,
-      decidedAt: null,
-      rejectionReason: null,
-    });
-    setMeasurementOpen(false);
-    rerender();
+    setSavingMeasurement(true);
+    setActionError("");
+    try {
+      await createStageMeasurement(stage.id, {
+        measuredPct: Number(measurementForm.measuredPct),
+        measuredAt: measurementForm.measuredAt,
+        notes: measurementForm.notes.trim() || undefined,
+      });
+      setMeasurementOpen(false);
+      reloadStageAndMeasurements();
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível registrar a medição.");
+    } finally {
+      setSavingMeasurement(false);
+    }
   }
 
   return (
     <AppShell title={stage.name} backHref={`/painel/obras/lista/${project.id}`}>
       <div className={styles.wrap}>
+        {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
+
         <div className={styles.topRow}>
           <div className={styles.badges}>
             <Badge tone={STAGE_STATUS_TONE[stage.status]}>{STAGE_STATUS_LABELS[stage.status]}</Badge>
@@ -157,8 +223,8 @@ export default function EtapaDetalhePage({ params }) {
           ) : (
             <div className={styles.rowList}>
               {measurements.map((m) => {
-                const measuredBy = m.measuredByUserId ? USERS.find((u) => u.id === m.measuredByUserId) : null;
-                const decidedBy = m.approvedByUserId ? USERS.find((u) => u.id === m.approvedByUserId) : null;
+                const measuredBy = m.measuredByUserId ? users.find((u) => u.id === m.measuredByUserId) : null;
+                const decidedBy = m.approvedByUserId ? users.find((u) => u.id === m.approvedByUserId) : null;
                 return (
                   <div key={m.id} className={styles.measurementRow}>
                     <div className={styles.rowInfo}>
@@ -180,7 +246,7 @@ export default function EtapaDetalhePage({ params }) {
                       <Badge tone={MEASUREMENT_STATUS_TONE[m.status]}>{MEASUREMENT_STATUS_LABELS[m.status]}</Badge>
                       {m.status === "PENDING_APPROVAL" ? (
                         <div className={styles.quickActions}>
-                          <Button size="sm" variant="secondary" onClick={() => handleApprove(m)}>Aprovar</Button>
+                          <Button size="sm" variant="secondary" onClick={() => handleApprove(m)} loading={busyId === m.id}>Aprovar</Button>
                           <Button size="sm" variant="danger" onClick={() => { setRejectTarget(m); setRejectReason(""); }}>Rejeitar</Button>
                         </div>
                       ) : null}
@@ -200,7 +266,7 @@ export default function EtapaDetalhePage({ params }) {
         footer={
           <>
             <Button variant="secondary" onClick={() => { setRejectTarget(null); setRejectReason(""); }}>Cancelar</Button>
-            <Button variant="danger" onClick={handleRejectConfirm}>Rejeitar medição</Button>
+            <Button variant="danger" onClick={handleRejectConfirm} loading={rejecting}>Rejeitar medição</Button>
           </>
         }
       >
@@ -222,7 +288,7 @@ export default function EtapaDetalhePage({ params }) {
         footer={
           <>
             <Button variant="secondary" onClick={() => setMeasurementOpen(false)}>Cancelar</Button>
-            <Button onClick={handleCreateMeasurement} disabled={!isMeasurementValid}>Registrar medição</Button>
+            <Button onClick={handleCreateMeasurement} loading={savingMeasurement} disabled={!isMeasurementValid}>Registrar medição</Button>
           </>
         }
       >

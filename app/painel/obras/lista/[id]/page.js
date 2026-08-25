@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, notFound } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Button from "@/components/atoms/Button/Button";
@@ -13,12 +13,8 @@ import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import FormField from "@/components/molecules/FormField/FormField";
 import Input from "@/components/atoms/Input/Input";
 import Select from "@/components/atoms/Select/Select";
+import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import {
-  PROJECTS,
-  PROJECT_STAGES,
-  DAILY_REPORTS,
-  BUDGET_LINES,
-  QUALITY_CHECKLIST_ITEMS,
   PROJECT_STATUS_LABELS,
   PROJECT_STATUS_TONE,
   PROJECT_STATUS_FLOW,
@@ -26,13 +22,24 @@ import {
   STAGE_STATUS_TONE,
   QUALITY_STATUS_LABELS,
   QUALITY_STATUS_TONE,
-  stagesOf,
-  reportsOf,
-  budgetLinesOf,
-  qualityItemsOf,
 } from "@/lib/mock/construction";
-import { PROPERTIES } from "@/lib/mock/properties";
-import { USERS } from "@/lib/mock/users";
+import {
+  getProject,
+  updateProject,
+  transitionProject,
+  removeProject,
+  listProjectStages,
+  createProjectStage,
+  listDailyReports,
+  createDailyReport,
+  listBudgetLines,
+  createBudgetLine,
+  listQualityItems,
+  createQualityItem,
+  checkQualityItem,
+} from "@/lib/api/construction";
+import { listProperties } from "@/lib/api/properties";
+import { apiFetch } from "@/lib/api/client";
 import { formatBRL, formatDate } from "@/lib/format";
 import styles from "./page.module.css";
 
@@ -40,59 +47,144 @@ const WEATHER_OPTIONS = ["Ensolarado", "Nublado", "Chuvoso", "Ventania"];
 
 export default function ObraDetalhePage({ params }) {
   const router = useRouter();
-  const [, forceUpdate] = useState(0);
-  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [project, setProject] = useState(null);
+  const [properties, setProperties] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [stages, setStages] = useState([]);
+  const [reports, setReports] = useState([]);
+  const [budgetLines, setBudgetLines] = useState([]);
+  const [qualityItems, setQualityItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [notFoundFlag, setNotFoundFlag] = useState(false);
   const [actionError, setActionError] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const [editOpen, setEditOpen] = useState(false);
   const [editForm, setEditForm] = useState({ name: "", propertyId: "", responsibleUserId: "", budgetAmount: "", startsAt: "", endsAtPlanned: "" });
+  const [savingEdit, setSavingEdit] = useState(false);
 
   const [stageOpen, setStageOpen] = useState(false);
   const [stageForm, setStageForm] = useState({ name: "", sequence: "1", plannedPct: "" });
+  const [savingStage, setSavingStage] = useState(false);
 
   const [rdoOpen, setRdoOpen] = useState(false);
   const [rdoForm, setRdoForm] = useState({ reportDate: new Date().toISOString().slice(0, 10), weather: WEATHER_OPTIONS[0], workforceCount: "", occurrences: "" });
+  const [savingRdo, setSavingRdo] = useState(false);
 
   const [budgetOpen, setBudgetOpen] = useState(false);
   const [budgetForm, setBudgetForm] = useState({ category: "", description: "", plannedAmount: "" });
+  const [savingBudget, setSavingBudget] = useState(false);
 
   const [qualityOpen, setQualityOpen] = useState(false);
   const [qualityForm, setQualityForm] = useState({ item: "", projectStageId: "" });
+  const [savingQuality, setSavingQuality] = useState(false);
 
-  const project = PROJECTS.find((p) => p.id === params.id);
+  function load() {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError("");
+    Promise.all([
+      getProject(params.id).catch((err) => {
+        if (err?.status === 404) {
+          setNotFoundFlag(true);
+          return null;
+        }
+        throw err;
+      }),
+      listProperties(),
+      apiFetch("/users"),
+    ])
+      .then(([p, props, u]) => {
+        if (cancelled || !p) return;
+        setProject(p);
+        setProperties(props || []);
+        setUsers(u || []);
+        return Promise.all([
+          listProjectStages(p.id),
+          listDailyReports(p.id),
+          listBudgetLines(p.id),
+          listQualityItems(p.id),
+        ]).then(([st, rd, bl, qi]) => {
+          if (cancelled) return;
+          setStages(st || []);
+          setReports((rd || []).slice(0, 5));
+          setBudgetLines(bl || []);
+          setQualityItems(qi || []);
+        });
+      })
+      .catch((err) => {
+        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar a obra.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }
 
-  const stages = useMemo(() => (project ? stagesOf(project.id) : []), [project, forceUpdate]);
-  const reports = useMemo(() => (project ? reportsOf(project.id).slice(0, 5) : []), [project, forceUpdate]);
-  const budgetLines = useMemo(() => (project ? budgetLinesOf(project.id) : []), [project, forceUpdate]);
-  const qualityItems = useMemo(() => (project ? qualityItemsOf(project.id) : []), [project, forceUpdate]);
+  useEffect(() => {
+    const cancel = load();
+    return cancel;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.id]);
 
-  if (!project) {
+  if (notFoundFlag) return notFound();
+
+  if (loading) {
     return (
       <AppShell title="Obra" backHref="/painel/obras/lista">
-        <Alert tone="danger" title="Obra não encontrada">
-          Não existe nenhuma obra com este identificador.
-        </Alert>
+        <SkeletonDetail sections={4} />
       </AppShell>
     );
   }
 
-  const property = project.propertyId ? PROPERTIES.find((p) => p.id === project.propertyId) : null;
-  const responsible = project.responsibleUserId ? USERS.find((u) => u.id === project.responsibleUserId) : null;
+  if (loadError && !project) {
+    return (
+      <AppShell title="Obra" backHref="/painel/obras/lista">
+        <Alert tone="danger" title="Não foi possível carregar a obra">{loadError}</Alert>
+      </AppShell>
+    );
+  }
+
+  if (!project) {
+    return (
+      <AppShell title="Obra" backHref="/painel/obras/lista">
+        <Alert tone="danger" title="Obra não encontrada">Não existe nenhuma obra com este identificador.</Alert>
+      </AppShell>
+    );
+  }
+
+  const property = project.propertyId ? properties.find((p) => p.id === project.propertyId) : null;
+  const responsible = project.responsibleUserId ? users.find((u) => u.id === project.responsibleUserId) : null;
   const nextStatuses = PROJECT_STATUS_FLOW[project.status] || [];
 
-  function rerender() {
-    forceUpdate((n) => n + 1);
+  async function handleAdvanceStatus(nextStatus) {
+    setBusy(true);
+    setActionError("");
+    try {
+      const updated = await transitionProject(project.id, nextStatus);
+      setProject(updated);
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível atualizar o status da obra.");
+    } finally {
+      setBusy(false);
+    }
   }
 
-  function handleAdvanceStatus(nextStatus) {
-    project.status = nextStatus;
-    rerender();
-  }
-
-  function handleDelete() {
-    const idx = PROJECTS.findIndex((p) => p.id === project.id);
-    if (idx >= 0) PROJECTS.splice(idx, 1);
-    router.push("/painel/obras/lista");
+  async function handleDelete() {
+    setBusy(true);
+    setActionError("");
+    try {
+      await removeProject(project.id);
+      router.push("/painel/obras/lista");
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível excluir a obra.");
+      setBusy(false);
+    }
   }
 
   function openEditModal() {
@@ -107,109 +199,128 @@ export default function ObraDetalhePage({ params }) {
     setEditOpen(true);
   }
 
-  function handleSaveEdit() {
+  async function handleSaveEdit() {
     if (!editForm.name.trim()) return;
-    project.name = editForm.name.trim();
-    project.propertyId = editForm.propertyId || null;
-    project.responsibleUserId = editForm.responsibleUserId || null;
-    project.budgetAmount = editForm.budgetAmount !== "" ? Number(editForm.budgetAmount) : null;
-    project.startsAt = editForm.startsAt || null;
-    project.endsAtPlanned = editForm.endsAtPlanned || null;
-    setEditOpen(false);
-    rerender();
+    setSavingEdit(true);
+    setActionError("");
+    try {
+      const updated = await updateProject(project.id, {
+        name: editForm.name.trim(),
+        propertyId: editForm.propertyId || null,
+        responsibleUserId: editForm.responsibleUserId || null,
+        budgetAmount: editForm.budgetAmount !== "" ? Number(editForm.budgetAmount) : null,
+        startsAt: editForm.startsAt ? new Date(editForm.startsAt).toISOString() : null,
+        endsAtPlanned: editForm.endsAtPlanned ? new Date(editForm.endsAtPlanned).toISOString() : null,
+      });
+      setProject(updated);
+      setEditOpen(false);
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível salvar as alterações.");
+    } finally {
+      setSavingEdit(false);
+    }
   }
 
-  function handleQualityQuickAction(item, status) {
-    item.status = status;
-    item.checkedAt = new Date().toISOString();
-    rerender();
+  async function handleQualityQuickAction(item, status) {
+    setActionError("");
+    try {
+      const updated = await checkQualityItem(item.id, { status });
+      setQualityItems((prev) => prev.map((q) => (q.id === updated.id ? updated : q)));
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível atualizar o item de qualidade.");
+    }
   }
 
   function openStageModal() {
     setStageForm({ name: "", sequence: String(stages.length + 1), plannedPct: "" });
     setStageOpen(true);
   }
-  function handleCreateStage() {
+  async function handleCreateStage() {
     if (!stageForm.name.trim() || stageForm.sequence === "") return;
-    PROJECT_STAGES.push({
-      id: `stage-${Date.now()}`,
-      groupId: project.groupId,
-      companyId: project.companyId,
-      projectId: project.id,
-      name: stageForm.name.trim(),
-      sequence: Number(stageForm.sequence),
-      plannedPct: stageForm.plannedPct ? Number(stageForm.plannedPct) : 0,
-      measuredPct: null,
-      status: "PENDING",
-      startsAt: null,
-      endsAt: null,
-    });
-    setStageOpen(false);
-    rerender();
+    setSavingStage(true);
+    setActionError("");
+    try {
+      const created = await createProjectStage(project.id, {
+        name: stageForm.name.trim(),
+        sequence: Number(stageForm.sequence),
+        plannedPct: stageForm.plannedPct ? Number(stageForm.plannedPct) : undefined,
+      });
+      setStages((prev) => [...prev, created]);
+      setStageOpen(false);
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível criar a etapa.");
+    } finally {
+      setSavingStage(false);
+    }
   }
 
   function openRdoModal() {
     setRdoForm({ reportDate: new Date().toISOString().slice(0, 10), weather: WEATHER_OPTIONS[0], workforceCount: "", occurrences: "" });
     setRdoOpen(true);
   }
-  function handleCreateRdo() {
+  async function handleCreateRdo() {
     if (!rdoForm.reportDate || !rdoForm.weather || rdoForm.workforceCount === "") return;
-    DAILY_REPORTS.push({
-      id: `rdo-${Date.now()}`,
-      groupId: project.groupId,
-      companyId: project.companyId,
-      projectId: project.id,
-      reportDate: rdoForm.reportDate,
-      weather: rdoForm.weather,
-      workforceCount: Number(rdoForm.workforceCount),
-      occurrences: rdoForm.occurrences.trim() || null,
-      reportedByUserId: "user-1",
-    });
-    setRdoOpen(false);
-    rerender();
+    setSavingRdo(true);
+    setActionError("");
+    try {
+      const created = await createDailyReport(project.id, {
+        reportDate: rdoForm.reportDate,
+        weather: rdoForm.weather,
+        workforceCount: Number(rdoForm.workforceCount),
+        occurrences: rdoForm.occurrences.trim() || undefined,
+      });
+      setReports((prev) => [created, ...prev].slice(0, 5));
+      setRdoOpen(false);
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível registrar o RDO.");
+    } finally {
+      setSavingRdo(false);
+    }
   }
 
   function openBudgetModal() {
     setBudgetForm({ category: "", description: "", plannedAmount: "" });
     setBudgetOpen(true);
   }
-  function handleCreateBudgetLine() {
+  async function handleCreateBudgetLine() {
     if (!budgetForm.category.trim() || budgetForm.plannedAmount === "" || Number(budgetForm.plannedAmount) < 0) return;
-    BUDGET_LINES.push({
-      id: `budget-${Date.now()}`,
-      groupId: project.groupId,
-      companyId: project.companyId,
-      projectId: project.id,
-      costCenterId: null,
-      category: budgetForm.category.trim(),
-      description: budgetForm.description.trim() || null,
-      plannedAmount: Number(budgetForm.plannedAmount),
-      actualAmount: null,
-    });
-    setBudgetOpen(false);
-    rerender();
+    setSavingBudget(true);
+    setActionError("");
+    try {
+      const created = await createBudgetLine(project.id, {
+        category: budgetForm.category.trim(),
+        description: budgetForm.description.trim() || undefined,
+        plannedAmount: Number(budgetForm.plannedAmount),
+      });
+      setBudgetLines((prev) => [...prev, created]);
+      setBudgetOpen(false);
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível criar a linha de orçamento.");
+    } finally {
+      setSavingBudget(false);
+    }
   }
 
   function openQualityModal() {
     setQualityForm({ item: "", projectStageId: "" });
     setQualityOpen(true);
   }
-  function handleCreateQualityItem() {
+  async function handleCreateQualityItem() {
     if (!qualityForm.item.trim()) return;
-    QUALITY_CHECKLIST_ITEMS.push({
-      id: `qc-${Date.now()}`,
-      groupId: project.groupId,
-      companyId: project.companyId,
-      projectId: project.id,
-      projectStageId: qualityForm.projectStageId || null,
-      item: qualityForm.item.trim(),
-      status: "PENDING",
-      checkedByUserId: null,
-      checkedAt: null,
-      notes: null,
-    });
-    setQualityOpen(false);
-    rerender();
+    setSavingQuality(true);
+    setActionError("");
+    try {
+      const created = await createQualityItem(project.id, {
+        item: qualityForm.item.trim(),
+        projectStageId: qualityForm.projectStageId || undefined,
+      });
+      setQualityItems((prev) => [...prev, created]);
+      setQualityOpen(false);
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível criar o item de checklist.");
+    } finally {
+      setSavingQuality(false);
+    }
   }
 
   const totalPlanned = budgetLines.reduce((s, b) => s + Number(b.plannedAmount || 0), 0);
@@ -227,7 +338,7 @@ export default function ObraDetalhePage({ params }) {
           <div className={styles.actions}>
             {nextStatuses.length > 0 ? (
               nextStatuses.map((status) => (
-                <Button key={status} variant="secondary" onClick={() => handleAdvanceStatus(status)}>
+                <Button key={status} variant="secondary" onClick={() => handleAdvanceStatus(status)} loading={busy}>
                   <Icon name="arrowUpCircle" size={16} /> {PROJECT_STATUS_LABELS[status]}
                 </Button>
               ))
@@ -375,7 +486,7 @@ export default function ObraDetalhePage({ params }) {
           ) : (
             <div className={styles.rowList}>
               {qualityItems.map((q) => {
-                const checkedBy = q.checkedByUserId ? USERS.find((u) => u.id === q.checkedByUserId) : null;
+                const checkedBy = q.checkedByUserId ? users.find((u) => u.id === q.checkedByUserId) : null;
                 return (
                   <div key={q.id} className={styles.rowStatic}>
                     <div className={styles.rowInfo}>
@@ -408,7 +519,7 @@ export default function ObraDetalhePage({ params }) {
         footer={
           <>
             <Button variant="secondary" onClick={() => setEditOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSaveEdit} disabled={!editForm.name.trim()}>Salvar alterações</Button>
+            <Button onClick={handleSaveEdit} loading={savingEdit} disabled={!editForm.name.trim()}>Salvar alterações</Button>
           </>
         }
       >
@@ -421,7 +532,7 @@ export default function ObraDetalhePage({ params }) {
           <FormField label="Imóvel vinculado" htmlFor="e-property" helper="Opcional">
             <Select id="e-property" value={editForm.propertyId} onChange={(e) => setEditForm((p) => ({ ...p, propertyId: e.target.value }))}>
               <option value="">Nenhum</option>
-              {PROPERTIES.map((p) => (
+              {properties.map((p) => (
                 <option key={p.id} value={p.id}>{p.name}</option>
               ))}
             </Select>
@@ -429,7 +540,7 @@ export default function ObraDetalhePage({ params }) {
           <FormField label="Responsável" htmlFor="e-responsible" helper="Opcional">
             <Select id="e-responsible" value={editForm.responsibleUserId} onChange={(e) => setEditForm((p) => ({ ...p, responsibleUserId: e.target.value }))}>
               <option value="">Sem responsável</option>
-              {USERS.map((u) => (
+              {users.map((u) => (
                 <option key={u.id} value={u.id}>{u.name}</option>
               ))}
             </Select>
@@ -453,7 +564,7 @@ export default function ObraDetalhePage({ params }) {
         footer={
           <>
             <Button variant="secondary" onClick={() => setDeleteOpen(false)}>Cancelar</Button>
-            <Button variant="danger" onClick={handleDelete}>Excluir</Button>
+            <Button variant="danger" onClick={handleDelete} loading={busy}>Excluir</Button>
           </>
         }
       >
@@ -467,7 +578,7 @@ export default function ObraDetalhePage({ params }) {
         footer={
           <>
             <Button variant="secondary" onClick={() => setStageOpen(false)}>Cancelar</Button>
-            <Button onClick={handleCreateStage} disabled={!stageForm.name.trim() || stageForm.sequence === ""}>Criar etapa</Button>
+            <Button onClick={handleCreateStage} loading={savingStage} disabled={!stageForm.name.trim() || stageForm.sequence === ""}>Criar etapa</Button>
           </>
         }
       >
@@ -493,7 +604,7 @@ export default function ObraDetalhePage({ params }) {
         footer={
           <>
             <Button variant="secondary" onClick={() => setRdoOpen(false)}>Cancelar</Button>
-            <Button onClick={handleCreateRdo} disabled={!rdoForm.reportDate || !rdoForm.weather || rdoForm.workforceCount === ""}>Registrar RDO</Button>
+            <Button onClick={handleCreateRdo} loading={savingRdo} disabled={!rdoForm.reportDate || !rdoForm.weather || rdoForm.workforceCount === ""}>Registrar RDO</Button>
           </>
         }
       >
@@ -532,7 +643,7 @@ export default function ObraDetalhePage({ params }) {
         footer={
           <>
             <Button variant="secondary" onClick={() => setBudgetOpen(false)}>Cancelar</Button>
-            <Button onClick={handleCreateBudgetLine} disabled={!budgetForm.category.trim() || budgetForm.plannedAmount === ""}>Criar linha</Button>
+            <Button onClick={handleCreateBudgetLine} loading={savingBudget} disabled={!budgetForm.category.trim() || budgetForm.plannedAmount === ""}>Criar linha</Button>
           </>
         }
       >
@@ -558,7 +669,7 @@ export default function ObraDetalhePage({ params }) {
         footer={
           <>
             <Button variant="secondary" onClick={() => setQualityOpen(false)}>Cancelar</Button>
-            <Button onClick={handleCreateQualityItem} disabled={!qualityForm.item.trim()}>Criar item</Button>
+            <Button onClick={handleCreateQualityItem} loading={savingQuality} disabled={!qualityForm.item.trim()}>Criar item</Button>
           </>
         }
       >
