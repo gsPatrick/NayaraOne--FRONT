@@ -10,25 +10,25 @@ const THEME_STORAGE_KEY = "nayara-one:theme";
 
 const THEMES = [
   {
-    id: "default",
-    name: "Atual",
-    description: "Dourado como cor de destaque principal (CTAs, marca).",
-    preview: { bg: "#F7F5F1", accent: "#BE9130", panel: "#17130F" },
+    id: "onyx",
+    name: "Onyx (padrão)",
+    description: "Botões, sidebar e destaques em preto, título em fonte serifada — visual padrão do sistema.",
+    preview: { bg: "#F7F5F1", accent: "#0D0D0D", panel: "#0D0D0D" },
   },
   {
-    id: "onyx",
-    name: "Onyx — referência da cliente",
-    description: "Botões e destaques em preto, título em fonte serifada — baseado nos mockups enviados.",
-    preview: { bg: "#F7F5F1", accent: "#0D0D0D", panel: "#0D0D0D" },
+    id: "default",
+    name: "Clássico",
+    description: "Dourado como cor de destaque principal (CTAs, marca) — visual anterior ao padrão atual.",
+    preview: { bg: "#F7F5F1", accent: "#BE9130", panel: "#17130F" },
   },
 ];
 
 export default function ConfiguracoesPage() {
-  const [theme, setTheme] = useState("default");
+  const [theme, setTheme] = useState("onyx");
 
   useEffect(() => {
     const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
-    setTheme(stored === "onyx" ? "onyx" : "default");
+    setTheme(stored === "default" ? "default" : "onyx");
   }, []);
 
   function applyTheme(id) {
