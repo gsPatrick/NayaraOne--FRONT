@@ -35,6 +35,17 @@ export const NAV_SECTIONS = [
           { label: "Processos jurídicos", href: "/painel/contratos/processos" },
         ],
       },
+      {
+        label: "Obras",
+        href: "/painel/obras",
+        icon: "building",
+        permission: "construction:read",
+        children: [
+          { label: "Visão geral", href: "/painel/obras" },
+          { label: "Obras", href: "/painel/obras/lista" },
+          { label: "Pós-obra", href: "/painel/obras/pos-obra" },
+        ],
+      },
     ],
   },
   {
@@ -49,7 +60,6 @@ export const NAV_SECTIONS = [
   {
     label: "Em breve",
     items: [
-      { label: "Obras", href: "/painel/mais", icon: "settings", soon: true },
       { label: "NAY · IA", href: "/painel/mais", icon: "bell", soon: true },
     ],
   },
