@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -11,48 +11,89 @@ import SearchInput from "@/components/molecules/SearchInput/SearchInput";
 import Select from "@/components/atoms/Select/Select";
 import StatTile from "@/components/molecules/StatTile/StatTile";
 import Icon from "@/components/atoms/Icon/Icon";
+import Alert from "@/components/molecules/Alert/Alert";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import Pagination from "@/components/molecules/Pagination/Pagination";
 import RowActions from "@/components/molecules/RowActions/RowActions";
 import Modal from "@/components/organisms/Modal/Modal";
-import { MAINTENANCE_CASES, MAINTENANCE_STATUS_LABELS, MAINTENANCE_STATUS_TONE, PROJECTS } from "@/lib/mock/construction";
-import { PROPERTIES } from "@/lib/mock/properties";
-import { PEOPLE } from "@/lib/mock/people";
-import { USERS } from "@/lib/mock/users";
+import { MAINTENANCE_STATUS_LABELS, MAINTENANCE_STATUS_TONE } from "@/lib/mock/construction";
+import { listMaintenanceCases, removeMaintenanceCase, listProjects } from "@/lib/api/construction";
+import { listProperties } from "@/lib/api/properties";
+import { listPeople } from "@/lib/api/people";
+import { apiFetch } from "@/lib/api/client";
 import { formatDate } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function PosObraListaPage() {
   const router = useRouter();
+  const [cases, setCases] = useState([]);
+  const [properties, setProperties] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [people, setPeople] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [actionError, setActionError] = useState("");
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [version, setVersion] = useState(0);
+  const [deleting, setDeleting] = useState(false);
 
-  function handleDelete() {
-    const idx = MAINTENANCE_CASES.findIndex((c) => c.id === deleteTarget.id);
-    if (idx >= 0) MAINTENANCE_CASES.splice(idx, 1);
-    setDeleteTarget(null);
-    setVersion((n) => n + 1);
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError("");
+    Promise.all([listMaintenanceCases(), listProperties(), listProjects(), listPeople(), apiFetch("/users")])
+      .then(([c, props, proj, pp, u]) => {
+        if (cancelled) return;
+        setCases(c || []);
+        setProperties(props || []);
+        setProjects(proj || []);
+        setPeople(pp || []);
+        setUsers(u || []);
+      })
+      .catch((err) => {
+        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar os chamados.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function handleDelete() {
+    setDeleting(true);
+    setActionError("");
+    try {
+      await removeMaintenanceCase(deleteTarget.id);
+      setCases((prev) => prev.filter((c) => c.id !== deleteTarget.id));
+      setDeleteTarget(null);
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível excluir o chamado.");
+    } finally {
+      setDeleting(false);
+    }
   }
 
   function propertyOf(id) {
-    return PROPERTIES.find((p) => p.id === id) || null;
+    return properties.find((p) => p.id === id) || null;
   }
   function projectOf(id) {
-    return id ? PROJECTS.find((p) => p.id === id) || null : null;
+    return id ? projects.find((p) => p.id === id) || null : null;
   }
   function personOf(id) {
-    return id ? PEOPLE.find((p) => p.id === id) || null : null;
+    return id ? people.find((p) => p.id === id) || null : null;
   }
   function userOf(id) {
-    return id ? USERS.find((u) => u.id === id) || null : null;
+    return id ? users.find((u) => u.id === id) || null : null;
   }
 
   const filtered = useMemo(() => {
-    return MAINTENANCE_CASES.filter((c) => {
+    return cases.filter((c) => {
       if (query) {
         const haystack = `${c.description} ${propertyOf(c.propertyId)?.name || ""}`.toLowerCase();
         if (!haystack.includes(query.toLowerCase())) return false;
@@ -60,7 +101,7 @@ export default function PosObraListaPage() {
       if (statusFilter && c.status !== statusFilter) return false;
       return true;
     });
-  }, [query, statusFilter, version]);
+  }, [cases, properties, query, statusFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const pageItems = filtered.slice((page - 1) * pageSize, page * pageSize);
@@ -69,9 +110,9 @@ export default function PosObraListaPage() {
     setPage(1);
   }
 
-  const openCount = MAINTENANCE_CASES.filter((c) => c.status === "OPEN").length;
-  const inProgressCount = MAINTENANCE_CASES.filter((c) => c.status === "IN_PROGRESS").length;
-  const resolvedCount = MAINTENANCE_CASES.filter((c) => c.status === "RESOLVED" || c.status === "CLOSED").length;
+  const openCount = cases.filter((c) => c.status === "OPEN").length;
+  const inProgressCount = cases.filter((c) => c.status === "IN_PROGRESS").length;
+  const resolvedCount = cases.filter((c) => c.status === "RESOLVED" || c.status === "CLOSED").length;
 
   const columns = [
     {
@@ -132,8 +173,11 @@ export default function PosObraListaPage() {
 
   return (
     <AppShell title="Pós-obra" backHref="/painel/obras">
+      {loadError ? <Alert tone="danger" title="Não foi possível carregar os chamados">{loadError}</Alert> : null}
+      {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
+
       <div className={styles.grid}>
-        <StatTile label="Total de chamados" value={MAINTENANCE_CASES.length} tone="neutral" icon="key" />
+        <StatTile label="Total de chamados" value={cases.length} tone="neutral" icon="key" />
         <StatTile label="Abertos" value={openCount} tone={openCount > 0 ? "danger" : "success"} icon="bell" />
         <StatTile label="Em andamento" value={inProgressCount} tone="warning" icon="chart" />
         <StatTile label="Resolvidos/Fechados" value={resolvedCount} tone="success" icon="check" />
@@ -153,7 +197,7 @@ export default function PosObraListaPage() {
             ))}
           </Select>
         </div>
-        <Table columns={columns} rows={pageItems} emptyMessage="Nenhum chamado encontrado." />
+        <Table columns={columns} rows={loading ? [] : pageItems} loading={loading} emptyMessage="Nenhum chamado encontrado." />
         <div className={styles.paginationRow}>
           <Pagination page={page} totalPages={totalPages} onChange={setPage} />
           <label className={styles.pageSizeLabel}>
@@ -184,7 +228,7 @@ export default function PosObraListaPage() {
         footer={
           <>
             <Button variant="secondary" onClick={() => setDeleteTarget(null)}>Cancelar</Button>
-            <Button variant="danger" onClick={handleDelete}>Excluir</Button>
+            <Button variant="danger" onClick={handleDelete} loading={deleting}>Excluir</Button>
           </>
         }
       >

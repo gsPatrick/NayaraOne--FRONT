@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, notFound } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Badge from "@/components/atoms/Badge/Badge";
@@ -13,10 +13,18 @@ import FormField from "@/components/molecules/FormField/FormField";
 import Modal from "@/components/organisms/Modal/Modal";
 import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
-import { MAINTENANCE_CASES, MAINTENANCE_STATUS_LABELS, MAINTENANCE_STATUS_TONE, PROJECTS } from "@/lib/mock/construction";
-import { PROPERTIES } from "@/lib/mock/properties";
-import { PEOPLE, CONTACT_TYPE_LABELS, CONTACT_TYPE_ICON } from "@/lib/mock/people";
-import { USERS } from "@/lib/mock/users";
+import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import { MAINTENANCE_STATUS_LABELS, MAINTENANCE_STATUS_TONE } from "@/lib/mock/construction";
+import {
+  getMaintenanceCase,
+  updateMaintenanceCase,
+  removeMaintenanceCase,
+  listMaintenanceCases,
+  getProject,
+} from "@/lib/api/construction";
+import { getProperty } from "@/lib/api/properties";
+import { getPerson } from "@/lib/api/people";
+import { apiFetch } from "@/lib/api/client";
 import { formatDate, formatDateTime } from "@/lib/format";
 import styles from "./page.module.css";
 
@@ -28,6 +36,9 @@ const NEXT_STATUS_OPTIONS = {
   RESOLVED: ["CLOSED"],
   CLOSED: [],
 };
+
+const CONTACT_TYPE_LABELS = { PHONE: "Telefone", WHATSAPP: "WhatsApp", EMAIL: "E-mail" };
+const CONTACT_TYPE_ICON = { PHONE: "phone", WHATSAPP: "phone", EMAIL: "mail" };
 
 function buildContactHref(contact) {
   if (contact.type === "WHATSAPP") return `https://wa.me/${contact.value.replace(/\D/g, "")}`;
@@ -46,12 +57,87 @@ function warrantyInfo(deadline) {
 
 export default function PosObraDetalhePage({ params }) {
   const router = useRouter();
-  const [, forceUpdate] = useState(0);
+  const [maintenanceCase, setMaintenanceCase] = useState(null);
+  const [property, setProperty] = useState(null);
+  const [project, setProject] = useState(null);
+  const [openedByPerson, setOpenedByPerson] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [relatedCases, setRelatedCases] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [notFoundFlag, setNotFoundFlag] = useState(false);
+  const [actionError, setActionError] = useState("");
+  const [busy, setBusy] = useState(false);
+
   const [editOpen, setEditOpen] = useState(false);
   const [editForm, setEditForm] = useState({ description: "", responsibleUserId: "", warrantyDeadlineAt: "" });
+  const [savingEdit, setSavingEdit] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
-  const maintenanceCase = MAINTENANCE_CASES.find((c) => c.id === params.id);
+  function load() {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError("");
+    getMaintenanceCase(params.id)
+      .catch((err) => {
+        if (err?.status === 404) {
+          setNotFoundFlag(true);
+          return null;
+        }
+        throw err;
+      })
+      .then((c) => {
+        if (cancelled || !c) return;
+        setMaintenanceCase(c);
+        return Promise.all([
+          apiFetch("/users"),
+          c.propertyId ? getProperty(c.propertyId).catch(() => null) : Promise.resolve(null),
+          c.projectId ? getProject(c.projectId).catch(() => null) : Promise.resolve(null),
+          c.openedByPersonId ? getPerson(c.openedByPersonId).catch(() => null) : Promise.resolve(null),
+          c.propertyId ? listMaintenanceCases({ propertyId: c.propertyId }).catch(() => []) : Promise.resolve([]),
+        ]).then(([u, prop, proj, person, related]) => {
+          if (cancelled) return;
+          setUsers(u || []);
+          setProperty(prop);
+          setProject(proj);
+          setOpenedByPerson(person);
+          setRelatedCases((related || []).filter((r) => r.id !== c.id));
+        });
+      })
+      .catch((err) => {
+        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar o chamado.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }
+
+  useEffect(() => {
+    const cancel = load();
+    return cancel;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.id]);
+
+  if (notFoundFlag) return notFound();
+
+  if (loading) {
+    return (
+      <AppShell title="Chamado" backHref="/painel/obras/pos-obra">
+        <SkeletonDetail sections={3} />
+      </AppShell>
+    );
+  }
+
+  if (loadError && !maintenanceCase) {
+    return (
+      <AppShell title="Chamado" backHref="/painel/obras/pos-obra">
+        <Alert tone="danger" title="Não foi possível carregar o chamado">{loadError}</Alert>
+      </AppShell>
+    );
+  }
 
   if (!maintenanceCase) {
     return (
@@ -61,28 +147,24 @@ export default function PosObraDetalhePage({ params }) {
     );
   }
 
-  const property = PROPERTIES.find((p) => p.id === maintenanceCase.propertyId) || null;
-  const project = maintenanceCase.projectId ? PROJECTS.find((p) => p.id === maintenanceCase.projectId) : null;
-  const openedByPerson = maintenanceCase.openedByPersonId ? PEOPLE.find((p) => p.id === maintenanceCase.openedByPersonId) : null;
-  const responsible = maintenanceCase.responsibleUserId ? USERS.find((u) => u.id === maintenanceCase.responsibleUserId) : null;
-
-  const relatedCases = MAINTENANCE_CASES.filter(
-    (c) => c.propertyId === maintenanceCase.propertyId && c.id !== maintenanceCase.id
-  );
-
+  const responsible = maintenanceCase.responsibleUserId ? users.find((u) => u.id === maintenanceCase.responsibleUserId) : null;
   const nextOptions = NEXT_STATUS_OPTIONS[maintenanceCase.status] || [];
   const currentStepIndex = STATUS_STEPS.indexOf(maintenanceCase.status);
   const warranty = warrantyInfo(maintenanceCase.warrantyDeadlineAt);
 
-  function rerender() {
-    forceUpdate((n) => n + 1);
-  }
-
-  function handleStatusChange(e) {
+  async function handleStatusChange(e) {
     const value = e.target.value;
     if (!value) return;
-    maintenanceCase.status = value;
-    rerender();
+    setBusy(true);
+    setActionError("");
+    try {
+      const updated = await updateMaintenanceCase(maintenanceCase.id, { status: value });
+      setMaintenanceCase(updated);
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível atualizar o status do chamado.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   function openEditModal() {
@@ -94,24 +176,42 @@ export default function PosObraDetalhePage({ params }) {
     setEditOpen(true);
   }
 
-  function handleSaveEdit() {
+  async function handleSaveEdit() {
     if (!editForm.description.trim()) return;
-    maintenanceCase.description = editForm.description.trim();
-    maintenanceCase.responsibleUserId = editForm.responsibleUserId || null;
-    maintenanceCase.warrantyDeadlineAt = editForm.warrantyDeadlineAt || null;
-    setEditOpen(false);
-    rerender();
+    setSavingEdit(true);
+    setActionError("");
+    try {
+      const updated = await updateMaintenanceCase(maintenanceCase.id, {
+        description: editForm.description.trim(),
+        responsibleUserId: editForm.responsibleUserId || null,
+        warrantyDeadlineAt: editForm.warrantyDeadlineAt ? new Date(editForm.warrantyDeadlineAt).toISOString() : null,
+      });
+      setMaintenanceCase(updated);
+      setEditOpen(false);
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível salvar as alterações.");
+    } finally {
+      setSavingEdit(false);
+    }
   }
 
-  function handleDelete() {
-    const idx = MAINTENANCE_CASES.findIndex((c) => c.id === maintenanceCase.id);
-    if (idx >= 0) MAINTENANCE_CASES.splice(idx, 1);
-    router.push("/painel/obras/pos-obra");
+  async function handleDelete() {
+    setBusy(true);
+    setActionError("");
+    try {
+      await removeMaintenanceCase(maintenanceCase.id);
+      router.push("/painel/obras/pos-obra");
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível excluir o chamado.");
+      setBusy(false);
+    }
   }
 
   return (
     <AppShell title="Chamado de pós-obra" backHref="/painel/obras/pos-obra">
       <div className={styles.wrap}>
+        {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
+
         <div className={styles.topRow}>
           <div className={styles.badges}>
             <Badge tone={MAINTENANCE_STATUS_TONE[maintenanceCase.status]}>{MAINTENANCE_STATUS_LABELS[maintenanceCase.status]}</Badge>
@@ -120,7 +220,7 @@ export default function PosObraDetalhePage({ params }) {
           <div className={styles.actions}>
             {nextOptions.length > 0 ? (
               <div className={styles.statusUpdate}>
-                <Select value="" onChange={handleStatusChange} aria-label="Atualizar status">
+                <Select value="" onChange={handleStatusChange} aria-label="Atualizar status" disabled={busy}>
                   <option value="">Atualizar status...</option>
                   {nextOptions.map((s) => (
                     <option key={s} value={s}>{MAINTENANCE_STATUS_LABELS[s]}</option>
@@ -195,7 +295,7 @@ export default function PosObraDetalhePage({ params }) {
                 </div>
                 <div>
                   <p className={styles.infoLabel}>Aberto em</p>
-                  <p className={styles.infoValue}>{formatDateTime(maintenanceCase.createdAt)}</p>
+                  <p className={styles.infoValue}>{formatDateTime(maintenanceCase.createdAt || maintenanceCase.created_at)}</p>
                 </div>
               </div>
             </Card>
@@ -209,7 +309,7 @@ export default function PosObraDetalhePage({ params }) {
                     <a key={c.id} href={`/painel/obras/pos-obra/${c.id}`} className={styles.relatedRow}>
                       <div className={styles.relatedInfo}>
                         <span className={styles.relatedTitle}>{c.description}</span>
-                        <span className={styles.relatedSubtitle}>Aberto em {formatDate(c.createdAt)}</span>
+                        <span className={styles.relatedSubtitle}>Aberto em {formatDate(c.createdAt || c.created_at)}</span>
                       </div>
                       <Badge tone={MAINTENANCE_STATUS_TONE[c.status]}>{MAINTENANCE_STATUS_LABELS[c.status]}</Badge>
                     </a>
@@ -262,7 +362,7 @@ export default function PosObraDetalhePage({ params }) {
         footer={
           <>
             <Button variant="secondary" onClick={() => setEditOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSaveEdit} disabled={!editForm.description.trim()}>Salvar alterações</Button>
+            <Button onClick={handleSaveEdit} loading={savingEdit} disabled={!editForm.description.trim()}>Salvar alterações</Button>
           </>
         }
       >
@@ -281,7 +381,7 @@ export default function PosObraDetalhePage({ params }) {
           <FormField label="Responsável" htmlFor="e-responsible" helper="Opcional">
             <Select id="e-responsible" value={editForm.responsibleUserId} onChange={(e) => setEditForm((p) => ({ ...p, responsibleUserId: e.target.value }))}>
               <option value="">Sem responsável</option>
-              {USERS.map((u) => (
+              {users.map((u) => (
                 <option key={u.id} value={u.id}>{u.name}</option>
               ))}
             </Select>
@@ -299,7 +399,7 @@ export default function PosObraDetalhePage({ params }) {
         footer={
           <>
             <Button variant="secondary" onClick={() => setDeleteOpen(false)}>Cancelar</Button>
-            <Button variant="danger" onClick={handleDelete}>Excluir</Button>
+            <Button variant="danger" onClick={handleDelete} loading={busy}>Excluir</Button>
           </>
         }
       >
