@@ -12,6 +12,7 @@
 }
 
 .panel {
+  position: relative;
   width: 30%;
   flex-shrink: 0;
   display: flex;
@@ -20,6 +21,23 @@
   padding: var(--space-6);
   transition: width var(--duration-slow) var(--ease-out-expo);
 }
+
+.backBtn {
+  position: absolute;
+  top: var(--space-6);
+  left: var(--space-6);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-caption);
+  font-weight: 600;
+  color: var(--color-ink-muted);
+  transition: color var(--duration-base) var(--ease-out-expo);
+}
+
+.backBtn:hover { color: var(--color-ink); }
+
+.backBtnIcon { transform: rotate(180deg); }
 
 .shell.formStage .visualPane { width: 50%; }
 .shell.formStage .panel { width: 50%; }

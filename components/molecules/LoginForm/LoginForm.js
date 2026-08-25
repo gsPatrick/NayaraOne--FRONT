@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Icon from "@/components/atoms/Icon/Icon";
 import Input from "@/components/atoms/Input/Input";
 import Checkbox from "@/components/atoms/Checkbox/Checkbox";
 import Button from "@/components/atoms/Button/Button";
@@ -14,7 +13,7 @@ import { loginRequest } from "@/lib/api/auth";
 import { saveSession } from "@/lib/auth/session";
 import styles from "./LoginForm.module.css";
 
-export default function LoginForm({ onBack }) {
+export default function LoginForm() {
   const router = useRouter();
   const [stage, setStage] = useState("form"); // form | entering
   const [error, setError] = useState("");
@@ -43,11 +42,6 @@ export default function LoginForm({ onBack }) {
 
   return (
     <div className={styles.wrap}>
-      <button type="button" className={styles.back} onClick={onBack}>
-        <Icon name="chevronRight" size={16} className={styles.backIcon} />
-        Voltar
-      </button>
-
       <div className={styles.heading}>
         <h1 className={styles.title}>Entrar</h1>
         <p className={styles.subtitle}>Acesse o painel com seu e-mail e senha corporativos.</p>

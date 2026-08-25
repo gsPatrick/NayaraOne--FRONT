@@ -7,7 +7,7 @@ import Button from "@/components/atoms/Button/Button";
 import FormField from "@/components/molecules/FormField/FormField";
 import styles from "./ClientAccessForm.module.css";
 
-export default function ClientAccessForm({ onBack }) {
+export default function ClientAccessForm() {
   const [sent, setSent] = useState(false);
 
   const handleSubmit = (event) => {
@@ -17,11 +17,6 @@ export default function ClientAccessForm({ onBack }) {
 
   return (
     <div className={styles.wrap}>
-      <button type="button" className={styles.back} onClick={onBack}>
-        <Icon name="chevronRight" size={16} className={styles.backIcon} />
-        Voltar
-      </button>
-
       <div className={styles.heading}>
         <h1 className={styles.title}>Acessar meu contrato</h1>
         <p className={styles.subtitle}>

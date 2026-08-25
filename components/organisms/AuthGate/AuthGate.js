@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Icon from "@/components/atoms/Icon/Icon";
 import AuthVisual from "@/components/molecules/AuthVisual/AuthVisual";
 import GateChoice from "@/components/molecules/GateChoice/GateChoice";
 import LoginForm from "@/components/molecules/LoginForm/LoginForm";
@@ -29,13 +30,19 @@ export default function AuthGate() {
         <AuthVisual />
       </div>
       <div className={styles.panel}>
+        {isForm ? (
+          <button type="button" className={styles.backBtn} onClick={backToGate}>
+            <Icon name="chevronRight" size={16} className={styles.backBtnIcon} />
+            Voltar
+          </button>
+        ) : null}
         <div className={styles.panelInner}>
           {stage === "gate" ? (
             <GateChoice onSelectStaff={openStaff} onSelectClient={openClient} />
           ) : mode === "staff" ? (
-            <LoginForm onBack={backToGate} />
+            <LoginForm />
           ) : (
-            <ClientAccessForm onBack={backToGate} />
+            <ClientAccessForm />
           )}
         </div>
       </div>
