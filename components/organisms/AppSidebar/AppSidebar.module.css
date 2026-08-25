@@ -44,28 +44,35 @@
   white-space: nowrap;
 }
 
+/* Botão de recolher/expandir — ancorado no próprio card da sidebar (não mais um portal
+   flutuante sobre a borda), sempre contido dentro dos cantos arredondados. */
+.toggleWrap {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  z-index: 1;
+}
+
 .toggle {
+  flex-shrink: 0;
   width: 26px;
   height: 26px;
-  border-radius: 50%;
-  background: var(--color-canvas-raised);
-  border: 1px solid var(--color-border);
-  color: var(--color-ink-muted);
+  border-radius: var(--radius-md);
+  background: transparent;
+  border: 1px solid var(--color-sidebar-border);
+  color: var(--color-sidebar-ink-muted);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--shadow-md);
-  transition: color var(--duration-base) var(--ease-out-expo);
+  transition: color var(--duration-base) var(--ease-out-expo),
+    background-color var(--duration-base) var(--ease-out-expo),
+    border-color var(--duration-base) var(--ease-out-expo);
 }
 
-.toggle:hover { color: var(--color-brand); }
-
-.toggleTooltip {
-  position: fixed;
-  top: 20px;
-  z-index: 60;
-  display: inline-flex;
-  transition: left var(--duration-slow) var(--ease-out-expo);
+.toggle:hover {
+  color: var(--color-sidebar-ink);
+  background: var(--color-sidebar-item-hover);
+  border-color: var(--color-sidebar-ink-muted);
 }
 
 .floatingTooltip {

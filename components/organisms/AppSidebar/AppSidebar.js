@@ -59,28 +59,19 @@ export default function AppSidebar({ collapsed, onToggle }) {
           <BrandMark size="md" tone="dark" />
           {!collapsed ? <span className={styles.brandWord}>Nayara One</span> : null}
         </Link>
-      </div>
-
-      {mounted
-        ? createPortal(
-            <Tooltip
-              label={collapsed ? "Expandir menu" : "Recolher menu"}
-              side="right"
-              className={styles.toggleTooltip}
-              style={{ left: collapsed ? "63px" : "247px" }}
+        <div className={styles.toggleWrap}>
+          <Tooltip label={collapsed ? "Expandir menu" : "Recolher menu"} side="right">
+            <button
+              type="button"
+              className={styles.toggle}
+              onClick={onToggle}
+              aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
             >
-              <button
-                type="button"
-                className={styles.toggle}
-                onClick={onToggle}
-                aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
-              >
-                <Icon name="chevronRight" size={14} className={collapsed ? undefined : styles.toggleIconFlipped} />
-              </button>
-            </Tooltip>,
-            document.body
-          )
-        : null}
+              <Icon name="chevronRight" size={14} className={collapsed ? undefined : styles.toggleIconFlipped} />
+            </button>
+          </Tooltip>
+        </div>
+      </div>
 
       {mounted && collapsed && hoveredItem
         ? createPortal(
