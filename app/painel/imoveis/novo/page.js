@@ -20,6 +20,8 @@ import { FEATURE_LABELS, REGULARIZATION_OPTIONS, OFFER_TYPE_LABELS, OWNER_ROLE_L
 import { fetchAddressByCep } from "@/lib/cep";
 import { formatBRL } from "@/lib/format";
 import { buildGoogleMapsUrl } from "@/lib/maps";
+import { createProperty, addPropertyOwner, createOffer, savePropertyDocumentation, toApiPropertyType } from "@/lib/api/properties";
+import Alert from "@/components/molecules/Alert/Alert";
 import styles from "./page.module.css";
 
 const STEPS = [
@@ -68,6 +70,7 @@ export default function NovoImovelPage() {
     acceptsTrade: false, status: "ACTIVE", validFrom: "", validUntil: "",
   });
   const [owners, setOwners] = useState([{ ...EMPTY_OWNER }]);
+  const [submitError, setSubmitError] = useState("");
 
   // Autocomplete de endereço via CEP (BrasilAPI) — debounce a 8 dígitos + trigger no blur.
   const [cepLoading, setCepLoading] = useState(false);
@@ -143,48 +146,66 @@ export default function NovoImovelPage() {
     setOwners((prev) => prev.filter((_, i) => i !== index));
   }
 
-  function goNext() {
+  async function goNext() {
     if (isLast) {
       setSubmitting(true);
-      // Shape mockado do payload final (nomenclatura alinhada ao schema confirmado).
-      const payload = {
-        internalCode: basic.internalCode,
-        name: basic.name,
-        type: basic.type,
-        publicationStatus: "DRAFT",
-        availabilityStatus: "AVAILABLE",
-        areaM2: basic.areaM2,
-        bedrooms: basic.bedrooms,
-        parkingSpots: basic.parkingSpots,
-        neighborhood: address.neighborhood,
-        city: address.city,
-        description: basic.description,
-        address,
-        features,
-        documentation: docs,
-        media,
-        activeOffer: {
-          offerType: offer.offerType,
-          askingPrice: offer.askingPrice,
-          confidentialMinPrice: offer.confidentialMinPrice,
-          acceptsFinancing: offer.acceptsFinancing,
-          acceptsTrade: offer.acceptsTrade,
-          status: offer.status,
-          validFrom: offer.validFrom || null,
-          validUntil: offer.validUntil || null,
-        },
-        owners: owners.map((o) => ({
-          name: o.name,
-          personId: o.personId || null,
-          percentage: o.percentage,
-          roleCode: o.roleCode,
-          validFrom: o.validFrom || null,
-          validUntil: o.validUntil || null,
-        })),
-      };
-      // eslint-disable-next-line no-console
-      console.log("[mock] novo imóvel", payload);
-      window.setTimeout(() => router.push("/painel/imoveis"), 500);
+      setSubmitError("");
+      try {
+        const created = await createProperty({
+          title: basic.name,
+          internalCode: basic.internalCode,
+          propertyType: toApiPropertyType(basic.type),
+          publicationStatus: "DRAFT",
+          availabilityStatus: "AVAILABLE",
+          areaTotalM2: basic.areaM2 || null,
+          bedrooms: basic.bedrooms || null,
+          parkingSpots: basic.parkingSpots || null,
+          description: basic.description || null,
+          registryNumber: docs.registryNumber || null,
+          registryOffice: docs.registryOffice || null,
+          latitude: address.latitude || null,
+          longitude: address.longitude || null,
+          address: {
+            zipCode: address.zipCode,
+            street: address.street,
+            number: address.number || null,
+            complement: address.complement || null,
+            neighborhood: address.neighborhood,
+            city: address.city,
+            state: address.state,
+          },
+          attributesJson: features,
+        });
+
+        await savePropertyDocumentation(created.id, docs);
+
+        if (offer.askingPrice) {
+          await createOffer(created.id, {
+            offerType: offer.offerType,
+            askingPrice: offer.askingPrice,
+            confidentialMinPrice: offer.confidentialMinPrice || null,
+            acceptsFinancing: offer.acceptsFinancing,
+            acceptsTrade: offer.acceptsTrade,
+            status: offer.status,
+            startsAt: offer.validFrom || null,
+            endsAt: offer.validUntil || null,
+          });
+        }
+
+        for (const o of owners) {
+          if (!o.personId) continue;
+          await addPropertyOwner(created.id, {
+            personId: o.personId,
+            roleCode: o.roleCode,
+            ownershipPercent: o.percentage || undefined,
+          });
+        }
+
+        router.push(`/painel/imoveis/${created.id}`);
+      } catch (err) {
+        setSubmitting(false);
+        setSubmitError(err?.message || "Não foi possível criar o imóvel.");
+      }
       return;
     }
     setStepIndex((i) => Math.min(i + 1, STEPS.length - 1));
@@ -613,6 +634,7 @@ export default function NovoImovelPage() {
 
       <div className={styles.actionBar}>
         <div className={styles.actionBarInner}>
+          {submitError ? <Alert tone="danger" title="Não foi possível salvar">{submitError}</Alert> : null}
           <Button variant="secondary" size="sm" onClick={goBack}>
             {isFirst ? "Cancelar" : "Voltar"}
           </Button>

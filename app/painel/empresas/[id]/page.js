@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, notFound } from "next/navigation";
 import Link from "next/link";
 import AppShell from "@/components/organisms/AppShell/AppShell";
@@ -14,11 +14,15 @@ import FormField from "@/components/molecules/FormField/FormField";
 import Modal from "@/components/organisms/Modal/Modal";
 import Table from "@/components/organisms/Table/Table";
 import Tabs from "@/components/molecules/Tabs/Tabs";
+import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
-import { COMPANIES, COMPANY_STATUS_LABELS, UNIT_STATUS_LABELS } from "@/lib/mock/companies";
-import { USERS, ROLE_TONE } from "@/lib/mock/users";
-import { PROPERTIES, AVAILABILITY_STATUS_LABELS } from "@/lib/mock/properties";
-import { formatDate, formatDateTime, formatBRL } from "@/lib/format";
+import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import { COMPANY_STATUS_LABELS, UNIT_STATUS_LABELS } from "@/lib/mock/companies";
+import { ROLE_TONE } from "@/lib/mock/users";
+import { AVAILABILITY_STATUS_LABELS } from "@/lib/mock/properties";
+import { apiFetch } from "@/lib/api/client";
+import { listProperties } from "@/lib/api/properties";
+import { formatDate, formatBRL } from "@/lib/format";
 import styles from "./page.module.css";
 
 const GRADIENTS = [
@@ -36,38 +40,118 @@ function hashCode(str = "") {
 
 const STATUS_TONE = { Ativo: "success", Suspenso: "danger" };
 
+function toDisplayStatus(apiStatus) {
+  return apiStatus === "ACTIVE" ? "Ativo" : "Suspenso";
+}
+
 export default function CompanyDetailPage({ params }) {
   const router = useRouter();
-  const sourceCompany = COMPANIES.find((c) => c.id === params.id);
-  const [company, setCompany] = useState(() => (sourceCompany ? { ...sourceCompany, units: [...sourceCompany.units] } : null));
+  const [company, setCompany] = useState(null);
+  const [units, setUnits] = useState([]);
+  const [companyUsers, setCompanyUsers] = useState([]);
+  const [companyProperties, setCompanyProperties] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [notFoundFlag, setNotFoundFlag] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [addingUnit, setAddingUnit] = useState(false);
+  const [savingUnit, setSavingUnit] = useState(false);
   const [newUnit, setNewUnit] = useState({ name: "", code: "" });
   const [expandedUnitId, setExpandedUnitId] = useState(null);
   const carouselRef = useRef(null);
 
-  if (!sourceCompany || !company) return notFound();
+  function loadAll() {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError("");
+    Promise.all([
+      apiFetch(`/companies/${params.id}`),
+      apiFetch("/units"),
+      apiFetch("/users"),
+      apiFetch("/memberships"),
+      listProperties(),
+    ])
+      .then(([apiCompany, apiUnits, apiUsers, apiMemberships, properties]) => {
+        if (cancelled) return;
+        setCompany({
+          ...apiCompany,
+          createdAt: apiCompany.createdAt || apiCompany.created_at,
+        });
+        setUnits((apiUnits || []).filter((u) => u.companyId === params.id));
 
-  function scrollCarousel(direction) {
-    const el = carouselRef.current;
-    if (!el) return;
-    el.scrollBy({ left: direction * 460, behavior: "smooth" });
+        const usersForThisCompany = (apiUsers || [])
+          .map((u) => ({
+            id: u.id,
+            name: u.name,
+            email: u.email,
+            status: toDisplayStatus(u.status),
+            memberships: (apiMemberships || [])
+              .filter((m) => m.userId === u.id)
+              .map((m) => ({
+                companyId: m.companyId,
+                unitId: m.unitId,
+                unit: m.unit?.name || null,
+                role: m.role?.name || "Sem papel",
+              })),
+          }))
+          .filter((u) => u.memberships.some((m) => m.companyId === params.id));
+        setCompanyUsers(usersForThisCompany);
+
+        setCompanyProperties((properties || []).filter((p) => p.companyId === params.id));
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        if (err?.status === 404) {
+          setNotFoundFlag(true);
+        } else {
+          setLoadError(err?.message || "Não foi possível carregar a empresa.");
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }
 
-  function usersForUnit(unitName) {
-    return USERS.filter((u) =>
-      u.memberships.some((m) => m.company === company.legalName && m.unit === unitName)
+  useEffect(loadAll, [params.id]);
+
+  if (notFoundFlag) return notFound();
+
+  if (loading) {
+    return (
+      <AppShell title="Empresa" backHref="/painel/empresas">
+        <SkeletonDetail />
+      </AppShell>
     );
   }
 
-  const companyUsers = USERS.filter((u) => u.memberships.some((m) => m.company === company.legalName));
-  const companyProperties = PROPERTIES.filter((p) => p.companyId === company.id);
-  const activeUnits = company.units.filter((u) => u.status === "ACTIVE").length;
+  if (loadError || !company) {
+    return (
+      <AppShell title="Empresa" backHref="/painel/empresas">
+        <Alert tone="danger" title="Não foi possível carregar a empresa">{loadError}</Alert>
+      </AppShell>
+    );
+  }
 
-  function handleDelete() {
+  function usersForUnit(unitId) {
+    return companyUsers.filter((u) => u.memberships.some((m) => m.unitId === unitId));
+  }
+
+  const activeUnits = units.filter((u) => u.status === "ACTIVE").length;
+
+  async function handleDelete() {
     setDeleting(true);
-    window.setTimeout(() => router.push("/painel/empresas"), 500);
+    try {
+      await apiFetch(`/companies/${params.id}`, { method: "DELETE" });
+      router.push("/painel/empresas");
+    } catch (err) {
+      setDeleting(false);
+      setDeleteOpen(false);
+      setLoadError(err?.message || "Não foi possível excluir a empresa.");
+    }
   }
 
   const propertyColumns = [
@@ -112,16 +196,13 @@ export default function CompanyDetailPage({ params }) {
     {
       key: "unit",
       label: "Unidade",
-      render: (row) => {
-        const membership = row.memberships.find((m) => m.company === company.legalName);
-        return membership?.unit || "Sem unidade";
-      },
+      render: (row) => row.memberships.find((m) => m.companyId === params.id)?.unit || "Sem unidade",
     },
     {
       key: "role",
       label: "Papel",
       render: (row) => {
-        const membership = row.memberships.find((m) => m.company === company.legalName);
+        const membership = row.memberships.find((m) => m.companyId === params.id);
         return <Badge tone={ROLE_TONE[membership?.role] || "neutral"}>{membership?.role}</Badge>;
       },
     },
@@ -132,20 +213,35 @@ export default function CompanyDetailPage({ params }) {
     },
   ];
 
-  function handleAddUnit(event) {
+  async function handleAddUnit(event) {
     event.preventDefault();
     if (!newUnit.name.trim()) return;
-    setCompany((prev) => ({
-      ...prev,
-      units: [...prev.units, { id: `unit-local-${Date.now()}`, name: newUnit.name.trim(), code: newUnit.code.trim(), status: "ACTIVE" }],
-    }));
-    setNewUnit({ name: "", code: "" });
-    setAddingUnit(false);
+    setSavingUnit(true);
+    try {
+      await apiFetch("/units", {
+        method: "POST",
+        body: { companyId: params.id, name: newUnit.name.trim(), code: newUnit.code.trim() || undefined },
+      });
+      setNewUnit({ name: "", code: "" });
+      setAddingUnit(false);
+      loadAll();
+    } catch (err) {
+      setLoadError(err?.message || "Não foi possível adicionar a unidade.");
+    } finally {
+      setSavingUnit(false);
+    }
+  }
+
+  function scrollCarousel(direction) {
+    const el = carouselRef.current;
+    if (!el) return;
+    el.scrollBy({ left: direction * 460, behavior: "smooth" });
   }
 
   return (
     <AppShell title={company.name} backHref="/painel/empresas">
       <div className={styles.wrap}>
+        {loadError ? <Alert tone="danger" title="Ocorreu um erro">{loadError}</Alert> : null}
         <div className={styles.topRow}>
           <div className={styles.headerBlock}>
             <span className={styles.companyIcon}>
@@ -177,7 +273,7 @@ export default function CompanyDetailPage({ params }) {
             </div>
             <div>
               <p className={styles.infoLabel}>CNPJ</p>
-              <p className={styles.infoValue}>{company.taxId}</p>
+              <p className={styles.infoValue}>{company.taxId || "—"}</p>
             </div>
             <div>
               <p className={styles.infoLabel}>Status</p>
@@ -213,7 +309,7 @@ export default function CompanyDetailPage({ params }) {
             <div className={styles.statCard}>
               <Icon name="layers" size={18} />
               <div>
-                <p className={styles.statValue}>{activeUnits}/{company.units.length}</p>
+                <p className={styles.statValue}>{activeUnits}/{units.length}</p>
                 <p className={styles.statLabel}>Unidades ativas</p>
               </div>
             </div>
@@ -222,8 +318,8 @@ export default function CompanyDetailPage({ params }) {
 
         <Card title="Unidades" className={styles.section}>
           <div className={styles.unitsList}>
-            {company.units.map((unit) => {
-              const unitUsers = usersForUnit(unit.name);
+            {units.map((unit) => {
+              const unitUsers = usersForUnit(unit.id);
               const isOpen = expandedUnitId === unit.id;
               return (
                 <div className={styles.unitBlock} key={unit.id}>
@@ -253,7 +349,7 @@ export default function CompanyDetailPage({ params }) {
                         <EmptyState icon="users" title="Sem usuários" description="Nenhum usuário vinculado a esta unidade." />
                       ) : (
                         unitUsers.map((u) => {
-                          const membership = u.memberships.find((m) => m.company === company.legalName && m.unit === unit.name);
+                          const membership = u.memberships.find((m) => m.unitId === unit.id);
                           return (
                             <Link href={`/painel/usuarios/${u.id}`} className={styles.unitUserRow} key={u.id}>
                               <Avatar name={u.name} size="sm" />
@@ -285,7 +381,7 @@ export default function CompanyDetailPage({ params }) {
               </div>
               <div className={styles.addUnitActions}>
                 <Button type="button" variant="secondary" size="sm" onClick={() => setAddingUnit(false)}>Cancelar</Button>
-                <Button type="submit" size="sm">Adicionar unidade</Button>
+                <Button type="submit" size="sm" loading={savingUnit}>Adicionar unidade</Button>
               </div>
             </form>
           ) : (
@@ -359,7 +455,7 @@ export default function CompanyDetailPage({ params }) {
         }
       >
         <p className={styles.description}>
-          Tem certeza que deseja excluir <strong>{company.name}</strong> e suas {company.units.length} unidade(s)? Esta ação não pode ser desfeita.
+          Tem certeza que deseja excluir <strong>{company.name}</strong> e suas {units.length} unidade(s)? Esta ação não pode ser desfeita.
         </p>
       </Modal>
     </AppShell>

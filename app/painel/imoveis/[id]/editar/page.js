@@ -17,7 +17,6 @@ import MediaUploader from "@/components/molecules/MediaUploader/MediaUploader";
 import LocationPicker from "@/components/molecules/LocationPicker/LocationPicker";
 import PersonPicker from "@/components/molecules/PersonPicker/PersonPicker";
 import {
-  PROPERTIES,
   FEATURE_LABELS,
   REGULARIZATION_OPTIONS,
   OFFER_TYPE_LABELS,
@@ -26,6 +25,17 @@ import {
 import { fetchAddressByCep } from "@/lib/cep";
 import { formatBRL } from "@/lib/format";
 import { buildGoogleMapsUrl } from "@/lib/maps";
+import {
+  getProperty,
+  updateProperty,
+  addPropertyOwner,
+  createOffer,
+  updateOffer,
+  savePropertyDocumentation,
+  toApiPropertyType,
+} from "@/lib/api/properties";
+import Alert from "@/components/molecules/Alert/Alert";
+import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import styles from "./page.module.css";
 
 const STEPS = [
@@ -47,34 +57,26 @@ function toMockMediaItem(entry) {
   return { id: `media-${entry.type}-${mockMediaIdSeq}`, type: entry.type, label: entry.label, previewUrl: null };
 }
 
-export default function EditPropertyPage({ params }) {
-  const router = useRouter();
-  const property = PROPERTIES.find((p) => p.id === params.id);
-  const [stepIndex, setStepIndex] = useState(0);
-  const [submitting, setSubmitting] = useState(false);
-
-  const [basic, setBasic] = useState(() =>
-    property
+function toEditableProperty(property) {
+  return {
+    basic: {
+      internalCode: property.internalCode,
+      name: property.name,
+      type: property.type,
+      publicationStatus: property.publicationStatus,
+      availabilityStatus: property.availabilityStatus,
+      areaM2: property.areaM2,
+      bedrooms: property.bedrooms,
+      parkingSpots: property.parkingSpots,
+      description: property.description,
+    },
+    address: { ...property.address },
+    features: { ...property.features },
+    docs: { ...property.documentation },
+    media: (property.media || []).map(toMockMediaItem),
+    offer: property.activeOffer
       ? {
-          internalCode: property.internalCode,
-          name: property.name,
-          type: property.type,
-          publicationStatus: property.publicationStatus,
-          availabilityStatus: property.availabilityStatus,
-          areaM2: property.areaM2,
-          bedrooms: property.bedrooms,
-          parkingSpots: property.parkingSpots,
-          description: property.description,
-        }
-      : null
-  );
-  const [address, setAddress] = useState(() => (property ? { ...property.address } : null));
-  const [features, setFeatures] = useState(() => (property ? { ...property.features } : null));
-  const [docs, setDocs] = useState(() => (property ? { ...property.documentation } : null));
-  const [media, setMedia] = useState(() => (property ? property.media.map(toMockMediaItem) : []));
-  const [offer, setOffer] = useState(() =>
-    property?.activeOffer
-      ? {
+          id: property.activeOffer.id,
           offerType: property.activeOffer.offerType,
           askingPrice: property.activeOffer.askingPrice,
           confidentialMinPrice: property.activeOffer.confidentialMinPrice ?? "",
@@ -84,20 +86,64 @@ export default function EditPropertyPage({ params }) {
           validFrom: property.activeOffer.validFrom ? property.activeOffer.validFrom.slice(0, 10) : "",
           validUntil: property.activeOffer.validUntil ? property.activeOffer.validUntil.slice(0, 10) : "",
         }
-      : null
-  );
-  const [owners, setOwners] = useState(() =>
-    property
-      ? property.owners.map((o) => ({
-          name: o.name,
-          personId: o.personId || null,
-          percentage: o.percentage,
-          roleCode: o.roleCode || "OWNER",
-          validFrom: o.validFrom ? o.validFrom.slice(0, 10) : "",
-          validUntil: o.validUntil ? o.validUntil.slice(0, 10) : "",
-        }))
-      : []
-  );
+      : null,
+    owners: (property.owners || []).map((o) => ({
+      id: o.id,
+      name: o.name,
+      personId: o.personId || null,
+      percentage: o.percentage,
+      roleCode: o.roleCode || "OWNER",
+      validFrom: o.validFrom ? o.validFrom.slice(0, 10) : "",
+      validUntil: o.validUntil ? o.validUntil.slice(0, 10) : "",
+    })),
+  };
+}
+
+export default function EditPropertyPage({ params }) {
+  const router = useRouter();
+  const [property, setProperty] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [notFoundFlag, setNotFoundFlag] = useState(false);
+  const [stepIndex, setStepIndex] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+
+  const [basic, setBasic] = useState(null);
+  const [address, setAddress] = useState(null);
+  const [features, setFeatures] = useState(null);
+  const [docs, setDocs] = useState(null);
+  const [media, setMedia] = useState([]);
+  const [offer, setOffer] = useState(null);
+  const [owners, setOwners] = useState([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    getProperty(params.id)
+      .then((data) => {
+        if (cancelled) return;
+        setProperty(data);
+        const editable = toEditableProperty(data);
+        setBasic(editable.basic);
+        setAddress(editable.address);
+        setFeatures(editable.features);
+        setDocs(editable.docs);
+        setMedia(editable.media);
+        setOffer(editable.offer);
+        setOwners(editable.owners);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        if (err?.status === 404) setNotFoundFlag(true);
+        else setLoadError(err?.message || "Não foi possível carregar o imóvel.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [params.id]);
 
   // Autocomplete de endereço via CEP (BrasilAPI) — debounce a 8 dígitos + trigger no blur.
   const [cepLoading, setCepLoading] = useState(false);
@@ -169,7 +215,23 @@ export default function EditPropertyPage({ params }) {
     setOwners((prev) => prev.filter((_, i) => i !== index));
   }
 
-  if (!property || !basic || !address || !features || !docs) return notFound();
+  if (notFoundFlag) return notFound();
+
+  if (loading) {
+    return (
+      <AppShell title="Editar imóvel" backHref="/painel/imoveis">
+        <SkeletonDetail />
+      </AppShell>
+    );
+  }
+
+  if (loadError || !property || !basic || !address || !features || !docs) {
+    return (
+      <AppShell title="Editar imóvel" backHref="/painel/imoveis">
+        <Alert tone="danger" title="Não foi possível carregar o imóvel">{loadError}</Alert>
+      </AppShell>
+    );
+  }
 
   const step = STEPS[stepIndex];
   const isLast = stepIndex === STEPS.length - 1;
@@ -191,28 +253,60 @@ export default function EditPropertyPage({ params }) {
     return 100;
   });
 
-  function goNext() {
+  async function goNext() {
     if (isLast) {
       setSubmitting(true);
-      // Shape mockado do payload de atualização (nomenclatura alinhada ao schema confirmado).
-      const payload = {
-        ...basic,
-        address,
-        features,
-        documentation: docs,
-        media,
-        activeOffer: offer
-          ? {
-              ...offer,
-              validFrom: offer.validFrom || null,
-              validUntil: offer.validUntil || null,
-            }
-          : null,
-        owners: owners.map((o) => ({ ...o, validFrom: o.validFrom || null, validUntil: o.validUntil || null })),
-      };
-      // eslint-disable-next-line no-console
-      console.log("[mock] editar imóvel", property.id, payload);
-      window.setTimeout(() => router.push(`/painel/imoveis/${property.id}`), 500);
+      setSubmitError("");
+      try {
+        await updateProperty(property.id, {
+          title: basic.name,
+          internalCode: basic.internalCode,
+          propertyType: toApiPropertyType(basic.type),
+          publicationStatus: basic.publicationStatus,
+          availabilityStatus: basic.availabilityStatus,
+          areaTotalM2: basic.areaM2 || null,
+          bedrooms: basic.bedrooms || null,
+          parkingSpots: basic.parkingSpots || null,
+          description: basic.description || null,
+          registryNumber: docs.registryNumber || null,
+          registryOffice: docs.registryOffice || null,
+          latitude: address.latitude || null,
+          longitude: address.longitude || null,
+          attributesJson: features,
+        });
+
+        await savePropertyDocumentation(property.id, docs);
+
+        if (offer?.askingPrice) {
+          const offerPayload = {
+            offerType: offer.offerType,
+            askingPrice: offer.askingPrice,
+            confidentialMinPrice: offer.confidentialMinPrice || null,
+            acceptsFinancing: offer.acceptsFinancing,
+            acceptsTrade: offer.acceptsTrade,
+            status: offer.status,
+            startsAt: offer.validFrom || null,
+            endsAt: offer.validUntil || null,
+          };
+          if (offer.id) await updateOffer(property.id, offer.id, offerPayload);
+          else await createOffer(property.id, offerPayload);
+        }
+
+        for (const o of owners) {
+          if (!o.id && o.personId) {
+            await addPropertyOwner(property.id, {
+              personId: o.personId,
+              roleCode: o.roleCode,
+              ownershipPercent: o.percentage || undefined,
+            });
+          }
+        }
+
+        router.push(`/painel/imoveis/${property.id}`);
+      } catch (err) {
+        setSubmitting(false);
+        setSubmitError(err?.message || "Não foi possível salvar as alterações.");
+      }
       return;
     }
     setStepIndex((i) => Math.min(i + 1, STEPS.length - 1));
@@ -607,6 +701,7 @@ export default function EditPropertyPage({ params }) {
 
       <div className={styles.actionBar}>
         <div className={styles.actionBarInner}>
+          {submitError ? <Alert tone="danger" title="Não foi possível salvar">{submitError}</Alert> : null}
           <Button variant="secondary" size="sm" onClick={goBack}>
             {isFirst ? "Cancelar" : "Voltar"}
           </Button>

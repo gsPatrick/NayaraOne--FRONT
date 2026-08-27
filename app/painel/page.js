@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import StatTile from "@/components/molecules/StatTile/StatTile";
@@ -10,13 +10,18 @@ import Icon from "@/components/atoms/Icon/Icon";
 import Avatar from "@/components/atoms/Avatar/Avatar";
 import Tabs from "@/components/molecules/Tabs/Tabs";
 import BarList from "@/components/molecules/BarList/BarList";
-import { PROPERTIES, AVAILABILITY_STATUS_LABELS } from "@/lib/mock/properties";
-import { OPPORTUNITIES, STAGES } from "@/lib/mock/opportunities";
-import { RADARS } from "@/lib/mock/radars";
-import { USERS, ROLES, ROLE_TONE as USER_ROLE_TONE } from "@/lib/mock/users";
-import { COMPANIES, COMPANY_STATUS_LABELS } from "@/lib/mock/companies";
-import { PEOPLE, DUPLICATE_PAIRS, ROLE_LABELS, ROLE_TONE, STATUS_TONE, STATUS_LABELS } from "@/lib/mock/people";
+import Alert from "@/components/molecules/Alert/Alert";
+import { SkeletonCardGrid } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import { AVAILABILITY_STATUS_LABELS } from "@/lib/mock/properties";
+import { STAGES } from "@/lib/mock/opportunities";
 import { AUDIT_LOG, ACTION_LABELS, ENTITY_TYPE_LABELS } from "@/lib/mock/auditLog";
+import { COMPANY_STATUS_LABELS } from "@/lib/mock/companies";
+import { ROLE_LABELS, STATUS_TONE, STATUS_LABELS } from "@/lib/mock/people";
+import { listProperties } from "@/lib/api/properties";
+import { listOpportunities } from "@/lib/api/crm";
+import { listRadars } from "@/lib/api/radar";
+import { listPeople, listDuplicatePairs } from "@/lib/api/people";
+import { apiFetch } from "@/lib/api/client";
 import { matchRadarToProperties, PROPERTY_TYPE_LABELS } from "@/lib/radarMatching";
 import { formatDateTime, formatBRL, isOverdue } from "@/lib/format";
 import styles from "./page.module.css";
@@ -59,6 +64,10 @@ function hashCode(str = "") {
   return hash;
 }
 
+function toDisplayUserStatus(apiStatus) {
+  return apiStatus === "ACTIVE" ? "Ativo" : "Suspenso";
+}
+
 function ListRow({ href, icon, avatarName, title, subtitle, right }) {
   return (
     <Link href={href} className={styles.listRow}>
@@ -79,14 +88,77 @@ function ListRow({ href, icon, avatarName, title, subtitle, right }) {
 }
 
 export default function PainelPage() {
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [properties, setProperties] = useState([]);
+  const [people, setPeople] = useState([]);
+  const [duplicatePairs, setDuplicatePairs] = useState([]);
+  const [opportunities, setOpportunities] = useState([]);
+  const [radars, setRadars] = useState([]);
+  const [companies, setCompanies] = useState([]);
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError("");
+    Promise.all([
+      listProperties(),
+      listPeople(),
+      listDuplicatePairs(),
+      listOpportunities(),
+      listRadars(),
+      apiFetch("/companies"),
+      apiFetch("/units"),
+      apiFetch("/users"),
+      apiFetch("/memberships"),
+    ])
+      .then(([apiProperties, apiPeople, apiDuplicates, apiOpportunities, apiRadars, apiCompanies, apiUnits, apiUsers, apiMemberships]) => {
+        if (cancelled) return;
+        setProperties(apiProperties || []);
+        setPeople(apiPeople || []);
+        setDuplicatePairs(apiDuplicates || []);
+        setOpportunities(apiOpportunities || []);
+        setRadars(apiRadars || []);
+        setCompanies(
+          (apiCompanies || []).map((c) => ({
+            ...c,
+            units: (apiUnits || []).filter((u) => u.companyId === c.id),
+          }))
+        );
+        setUsers(
+          (apiUsers || []).map((u) => ({
+            id: u.id,
+            name: u.name,
+            email: u.email,
+            status: toDisplayUserStatus(u.status),
+            memberships: (apiMemberships || [])
+              .filter((m) => m.userId === u.id)
+              .map((m) => ({ company: m.company?.name || "—", role: m.role?.name || "Sem papel", unit: m.unit?.name || null })),
+          }))
+        );
+      })
+      .catch((err) => {
+        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar o painel.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const personName = (id) => people.find((p) => p.id === id)?.legalName || "—";
+
   // ---- Overview ----
-  const activeProperties = useMemo(() => PROPERTIES.filter((p) => p.availabilityStatus === "AVAILABLE"), []);
-  const openOpportunities = useMemo(() => OPPORTUNITIES.filter((o) => !CLOSED_STAGES.includes(o.stage)), []);
+  const activeProperties = useMemo(() => properties.filter((p) => p.availabilityStatus === "AVAILABLE"), [properties]);
+  const openOpportunities = useMemo(() => opportunities.filter((o) => !CLOSED_STAGES.includes(o.stage)), [opportunities]);
   const overdueOpportunities = useMemo(
     () => openOpportunities.filter((o) => isOverdue(o.nextActionDueAt)).sort((a, b) => new Date(a.nextActionDueAt) - new Date(b.nextActionDueAt)),
     [openOpportunities]
   );
-  const radarsWithMatch = useMemo(() => RADARS.filter((r) => matchRadarToProperties(r, PROPERTIES).length > 0), []);
+  const radarsWithMatch = useMemo(() => radars.filter((r) => matchRadarToProperties(r, properties).length > 0), [radars, properties]);
   const recentActivity = useMemo(
     () => [...AUDIT_LOG].sort((a, b) => new Date(b.occurredAt) - new Date(a.occurredAt)).slice(0, 6),
     []
@@ -95,72 +167,85 @@ export default function PainelPage() {
   // ---- Imóveis ----
   const propertiesByType = useMemo(() => {
     const counts = {};
-    PROPERTIES.forEach((p) => { counts[p.type] = (counts[p.type] || 0) + 1; });
+    properties.forEach((p) => { counts[p.type] = (counts[p.type] || 0) + 1; });
     return Object.entries(counts).map(([label, value]) => ({ label, value }));
-  }, []);
+  }, [properties]);
   const propertiesByStatus = useMemo(() => {
     const counts = {};
-    PROPERTIES.forEach((p) => { counts[p.availabilityStatus] = (counts[p.availabilityStatus] || 0) + 1; });
+    properties.forEach((p) => { counts[p.availabilityStatus] = (counts[p.availabilityStatus] || 0) + 1; });
     return counts;
-  }, []);
+  }, [properties]);
   const totalPortfolioValue = useMemo(
-    () => PROPERTIES.reduce((sum, p) => sum + (p.activeOffer?.askingPrice || 0), 0),
-    []
+    () => properties.reduce((sum, p) => sum + (p.activeOffer?.askingPrice || 0), 0),
+    [properties]
   );
-  const recentProperties = useMemo(() => [...PROPERTIES].slice(-6).reverse(), []);
+  const recentProperties = useMemo(() => [...properties].slice(-6).reverse(), [properties]);
 
   // ---- Contatos ----
-  const peoplePF = useMemo(() => PEOPLE.filter((p) => p.personType === "PF").length, []);
-  const peoplePJ = useMemo(() => PEOPLE.filter((p) => p.personType === "PJ").length, []);
+  const peoplePF = useMemo(() => people.filter((p) => p.personType === "PF").length, [people]);
+  const peoplePJ = useMemo(() => people.filter((p) => p.personType === "PJ").length, [people]);
   const peopleByRole = useMemo(() => {
     const counts = {};
-    PEOPLE.forEach((p) => (p.roles || []).forEach((r) => { counts[r] = (counts[r] || 0) + 1; }));
+    people.forEach((p) => (p.roles || []).forEach((r) => { counts[r] = (counts[r] || 0) + 1; }));
     return Object.entries(counts).map(([code, value]) => ({ label: ROLE_LABELS[code] || code, value, code }));
-  }, []);
-  const duplicatesCount = DUPLICATE_PAIRS.length;
-  const recentPeople = useMemo(() => [...PEOPLE].slice(-5).reverse(), []);
+  }, [people]);
+  const duplicatesCount = duplicatePairs.length;
+  const recentPeople = useMemo(() => [...people].slice(-5).reverse(), [people]);
 
   // ---- CRM ----
   const oppByStage = useMemo(() => {
     const counts = {};
-    OPPORTUNITIES.forEach((o) => { counts[o.stage] = (counts[o.stage] || 0) + 1; });
+    opportunities.forEach((o) => { counts[o.stage] = (counts[o.stage] || 0) + 1; });
     return STAGES.map((s) => ({ label: s.label, value: counts[s.key] || 0, key: s.key }));
-  }, []);
-  const wonOpportunities = useMemo(() => OPPORTUNITIES.filter((o) => o.stage === "ganho"), []);
-  const lostOpportunities = useMemo(() => OPPORTUNITIES.filter((o) => o.stage === "perdido"), []);
+  }, [opportunities]);
+  const wonOpportunities = useMemo(() => opportunities.filter((o) => o.stage === "ganho"), [opportunities]);
+  const lostOpportunities = useMemo(() => opportunities.filter((o) => o.stage === "perdido"), [opportunities]);
   const winRate = wonOpportunities.length + lostOpportunities.length > 0
     ? Math.round((wonOpportunities.length / (wonOpportunities.length + lostOpportunities.length)) * 100)
     : 0;
 
   // ---- Radar ----
-  const radarsWithoutMatch = RADARS.length - radarsWithMatch.length;
-  const totalMatches = useMemo(() => RADARS.reduce((sum, r) => sum + matchRadarToProperties(r, PROPERTIES).length, 0), []);
-  const recentRadars = useMemo(() => [...RADARS].slice(-5).reverse(), []);
+  const radarsWithoutMatch = radars.length - radarsWithMatch.length;
+  const totalMatches = useMemo(() => radars.reduce((sum, r) => sum + matchRadarToProperties(r, properties).length, 0), [radars, properties]);
+  const recentRadars = useMemo(() => [...radars].slice(-5).reverse(), [radars]);
 
   // ---- Empresas & Unidades ----
-  const activeCompanies = useMemo(() => COMPANIES.filter((c) => c.status === "ACTIVE"), []);
-  const totalUnits = useMemo(() => COMPANIES.reduce((sum, c) => sum + c.units.length, 0), []);
+  const activeCompanies = useMemo(() => companies.filter((c) => c.status === "ACTIVE"), [companies]);
+  const totalUnits = useMemo(() => companies.reduce((sum, c) => sum + c.units.length, 0), [companies]);
   const usersByCompany = useMemo(
-    () => COMPANIES.map((c) => ({ label: c.name, value: USERS.filter((u) => u.memberships.some((m) => m.company === c.legalName)).length })),
-    []
+    () => companies.map((c) => ({ label: c.name, value: users.filter((u) => u.memberships.some((m) => m.company === c.name)).length })),
+    [companies, users]
   );
-  const unitsByCompany = useMemo(() => COMPANIES.map((c) => ({ label: c.name, value: c.units.length })), []);
+  const unitsByCompany = useMemo(() => companies.map((c) => ({ label: c.name, value: c.units.length })), [companies]);
 
   // ---- Usuários ----
-  const activeUsers = useMemo(() => USERS.filter((u) => u.status === "Ativo"), []);
-  const usersByRole = useMemo(
-    () => {
-      const counts = {};
-      USERS.forEach((u) => u.memberships.forEach((m) => { counts[m.role] = (counts[m.role] || 0) + 1; }));
-      return ROLES.map((role) => ({ label: role, value: counts[role] || 0 }));
-    },
-    []
-  );
+  const activeUsers = useMemo(() => users.filter((u) => u.status === "Ativo"), [users]);
+  const usersByRole = useMemo(() => {
+    const counts = {};
+    users.forEach((u) => u.memberships.forEach((m) => { counts[m.role] = (counts[m.role] || 0) + 1; }));
+    return Object.entries(counts).map(([label, value]) => ({ label, value }));
+  }, [users]);
+
+  if (loading) {
+    return (
+      <AppShell title="Painel">
+        <SkeletonCardGrid count={4} />
+      </AppShell>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <AppShell title="Painel">
+        <Alert tone="danger" title="Não foi possível carregar o painel">{loadError}</Alert>
+      </AppShell>
+    );
+  }
 
   const overviewTab = (
     <>
       <div className={styles.grid}>
-        <StatTile label="Imóveis ativos" value={activeProperties.length} delta={`${PROPERTIES.length} no total`} tone="success" icon="building" />
+        <StatTile label="Imóveis ativos" value={activeProperties.length} delta={`${properties.length} no total`} tone="success" icon="building" />
         <StatTile
           label="Oportunidades abertas"
           value={openOpportunities.length}
@@ -168,7 +253,7 @@ export default function PainelPage() {
           tone={overdueOpportunities.length > 0 ? "warning" : "success"}
           icon="chart"
         />
-        <StatTile label="Radares com match" value={radarsWithMatch.length} delta={`de ${RADARS.length} radares ativos`} tone="info" icon="radar" />
+        <StatTile label="Radares com match" value={radarsWithMatch.length} delta={`de ${radars.length} radares ativos`} tone="info" icon="radar" />
         <StatTile
           label="Ações vencidas"
           value={overdueOpportunities.length}
@@ -196,9 +281,9 @@ export default function PainelPage() {
               {overdueOpportunities.slice(0, 5).map((o) => (
                 <li key={o.id}>
                   <Link href="/painel/crm" className={styles.overdueRow}>
-                    <Avatar name={o.personName} size="sm" />
+                    <Avatar name={personName(o.personId)} size="sm" />
                     <div className={styles.overdueInfo}>
-                      <span className={styles.overdueName}>{o.personName}</span>
+                      <span className={styles.overdueName}>{personName(o.personId)}</span>
                       <span className={styles.overdueAction}>{o.nextAction}</span>
                     </div>
                     <span className={styles.overdueDue}>{formatDateTime(o.nextActionDueAt)}</span>
@@ -215,7 +300,7 @@ export default function PainelPage() {
           ) : (
             <ul className={styles.activityList}>
               {recentActivity.map((entry) => {
-                const actor = USERS.find((u) => u.id === entry.userId);
+                const actor = users.find((u) => u.id === entry.userId);
                 const href = ENTITY_HREF[entry.entityType]?.(entry.entityId);
                 const entityLabel = ENTITY_TYPE_LABELS[entry.entityType] || entry.entityType;
                 return (
@@ -249,30 +334,34 @@ export default function PainelPage() {
   const imoveisTab = (
     <>
       <div className={styles.grid}>
-        <StatTile label="Total de imóveis" value={PROPERTIES.length} icon="building" />
+        <StatTile label="Total de imóveis" value={properties.length} icon="building" />
         <StatTile label="Disponíveis" value={propertiesByStatus.AVAILABLE || 0} tone="success" icon="check" />
         <StatTile label="Alugados" value={propertiesByStatus.RENTED || 0} tone="info" icon="document" />
         <StatTile label="Valor em portfólio" value={formatBRL(totalPortfolioValue)} icon="money" />
       </div>
 
       <Card title="Cadastrados recentemente" subtitle="Últimos imóveis adicionados ao portfólio" className={styles.section}>
-        <div className={styles.carousel}>
-          {recentProperties.map((p) => (
-            <Link href={`/painel/imoveis/${p.id}`} className={styles.carouselCard} key={p.id}>
-              <div className={styles.carouselThumb} style={{ background: GRADIENTS[Math.abs(hashCode(p.id)) % GRADIENTS.length] }}>
-                <Icon name="building" size={22} />
-              </div>
-              <div className={styles.carouselInfo}>
-                <span className={styles.carouselName}>{p.name}</span>
-                <span className={styles.carouselMeta}>{p.internalCode} · {p.city}</span>
-                <span className={styles.carouselPrice}>
-                  {p.activeOffer ? formatBRL(p.activeOffer.askingPrice) : "—"}
-                  {p.activeOffer?.offerType === "RENT" ? <span className={styles.carouselPriceSuffix}>/mês</span> : null}
-                </span>
-              </div>
-            </Link>
-          ))}
-        </div>
+        {recentProperties.length === 0 ? (
+          <p className={styles.emptyText}>Nenhum imóvel cadastrado ainda.</p>
+        ) : (
+          <div className={styles.carousel}>
+            {recentProperties.map((p) => (
+              <Link href={`/painel/imoveis/${p.id}`} className={styles.carouselCard} key={p.id}>
+                <div className={styles.carouselThumb} style={{ background: GRADIENTS[Math.abs(hashCode(p.id)) % GRADIENTS.length] }}>
+                  <Icon name="building" size={22} />
+                </div>
+                <div className={styles.carouselInfo}>
+                  <span className={styles.carouselName}>{p.name}</span>
+                  <span className={styles.carouselMeta}>{p.internalCode} · {p.city}</span>
+                  <span className={styles.carouselPrice}>
+                    {p.activeOffer ? formatBRL(p.activeOffer.askingPrice) : "—"}
+                    {p.activeOffer?.offerType === "RENT" ? <span className={styles.carouselPriceSuffix}>/mês</span> : null}
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </Card>
 
       <div className={styles.mainGrid}>
@@ -294,7 +383,7 @@ export default function PainelPage() {
   const contatosTab = (
     <>
       <div className={styles.grid}>
-        <StatTile label="Total de contatos" value={PEOPLE.length} icon="users" />
+        <StatTile label="Total de contatos" value={people.length} icon="users" />
         <StatTile label="Pessoas físicas" value={peoplePF} icon="users" />
         <StatTile label="Pessoas jurídicas" value={peoplePJ} icon="layers" />
         <StatTile label="Possíveis duplicatas" value={duplicatesCount} tone={duplicatesCount > 0 ? "warning" : "success"} icon="shield" />
@@ -325,7 +414,7 @@ export default function PainelPage() {
   const crmTab = (
     <>
       <div className={styles.grid}>
-        <StatTile label="Oportunidades no funil" value={OPPORTUNITIES.length} icon="chart" />
+        <StatTile label="Oportunidades no funil" value={opportunities.length} icon="chart" />
         <StatTile label="Abertas" value={openOpportunities.length} tone="info" icon="chart" />
         <StatTile label="Taxa de conversão" value={`${winRate}%`} delta={`${wonOpportunities.length} ganhas · ${lostOpportunities.length} perdidas`} tone={winRate >= 50 ? "success" : "warning"} icon="check" />
         <StatTile label="Ações vencidas" value={overdueOpportunities.length} tone={overdueOpportunities.length > 0 ? "danger" : "success"} icon="document" />
@@ -342,9 +431,9 @@ export default function PainelPage() {
               {overdueOpportunities.slice(0, 5).map((o) => (
                 <li key={o.id}>
                   <Link href="/painel/crm" className={styles.overdueRow}>
-                    <Avatar name={o.personName} size="sm" />
+                    <Avatar name={personName(o.personId)} size="sm" />
                     <div className={styles.overdueInfo}>
-                      <span className={styles.overdueName}>{o.personName}</span>
+                      <span className={styles.overdueName}>{personName(o.personId)}</span>
                       <span className={styles.overdueAction}>{o.nextAction}</span>
                     </div>
                     <span className={styles.overdueDue}>{formatDateTime(o.nextActionDueAt)}</span>
@@ -361,7 +450,7 @@ export default function PainelPage() {
   const radarTab = (
     <>
       <div className={styles.grid}>
-        <StatTile label="Radares ativos" value={RADARS.length} icon="radar" />
+        <StatTile label="Radares ativos" value={radars.length} icon="radar" />
         <StatTile label="Com match" value={radarsWithMatch.length} tone="success" icon="check" />
         <StatTile label="Sem match no momento" value={radarsWithoutMatch} tone="neutral" icon="radar" />
         <StatTile label="Total de matches" value={totalMatches} tone="info" icon="chart" />
@@ -369,14 +458,13 @@ export default function PainelPage() {
       <Card title="Radares" subtitle="Perfis de busca e resultados">
         <ul className={styles.list}>
           {recentRadars.map((r) => {
-            const person = PEOPLE.find((p) => p.id === r.personId);
-            const matches = matchRadarToProperties(r, PROPERTIES);
+            const matches = matchRadarToProperties(r, properties);
             return (
               <li key={r.id}>
                 <ListRow
                   href={`/painel/radar/${r.id}`}
-                  avatarName={person?.legalName || "?"}
-                  title={person?.legalName || "Contato"}
+                  avatarName={personName(r.personId)}
+                  title={personName(r.personId)}
                   subtitle={`${r.criteriaJson.city || "Qualquer local"} · ${PROPERTY_TYPE_LABELS[r.criteriaJson.propertyType] || r.criteriaJson.propertyType || ""}`}
                   right={<Badge tone={matches.length > 0 ? "success" : "neutral"}>{matches.length} match{matches.length === 1 ? "" : "es"}</Badge>}
                 />
@@ -391,15 +479,15 @@ export default function PainelPage() {
   const empresasTab = (
     <>
       <div className={styles.grid}>
-        <StatTile label="Empresas" value={COMPANIES.length} icon="layers" />
+        <StatTile label="Empresas" value={companies.length} icon="layers" />
         <StatTile label="Ativas" value={activeCompanies.length} tone="success" icon="check" />
         <StatTile label="Unidades" value={totalUnits} icon="layers" />
-        <StatTile label="Usuários vinculados" value={USERS.length} icon="users" />
+        <StatTile label="Usuários vinculados" value={users.length} icon="users" />
       </div>
 
       <Card title="Empresas do grupo" subtitle="Nayara Imóveis, Construções e Administração" className={styles.section}>
         <ul className={styles.list}>
-          {COMPANIES.map((c) => (
+          {companies.map((c) => (
             <li key={c.id}>
               <ListRow
                 href={`/painel/empresas/${c.id}`}
@@ -427,10 +515,10 @@ export default function PainelPage() {
   const usuariosTab = (
     <>
       <div className={styles.grid}>
-        <StatTile label="Usuários" value={USERS.length} icon="users" />
+        <StatTile label="Usuários" value={users.length} icon="users" />
         <StatTile label="Ativos" value={activeUsers.length} tone="success" icon="check" />
-        <StatTile label="Suspensos" value={USERS.length - activeUsers.length} tone={USERS.length - activeUsers.length > 0 ? "danger" : "success"} icon="ban" />
-        <StatTile label="Papéis distintos" value={Object.values(usersByRole).filter((r) => r.value > 0).length} icon="shield" />
+        <StatTile label="Suspensos" value={users.length - activeUsers.length} tone={users.length - activeUsers.length > 0 ? "danger" : "success"} icon="ban" />
+        <StatTile label="Papéis distintos" value={usersByRole.length} icon="shield" />
       </div>
       <div className={styles.mainGrid}>
         <Card title="Por papel" subtitle="Distribuição de acessos">
@@ -438,7 +526,7 @@ export default function PainelPage() {
         </Card>
         <Card title="Usuários" subtitle="Equipe com acesso ao sistema">
           <ul className={styles.list}>
-            {USERS.map((u) => (
+            {users.map((u) => (
               <li key={u.id}>
                 <ListRow
                   href={`/painel/usuarios/${u.id}`}
