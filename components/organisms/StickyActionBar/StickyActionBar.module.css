@@ -1,8 +1,15 @@
+/* AppShell .content é um flex column esticado até a altura da viewport (min-height: 100dvh
+   herdado da .shell). position:sticky sozinho só gruda no fim quando o conteúdo já enche a
+   tela — em página curta (poucos resultados na tabela, por exemplo) a barra ficava logo depois
+   do conteúdo, flutuando no meio da página. margin-top:auto força ela pro fim de verdade do
+   flex container em qualquer altura de conteúdo; position:sticky continua garantindo que,
+   quando o conteúdo é mais alto que a viewport, ela acompanhe o scroll grudada embaixo. */
 .bar {
   position: sticky;
   bottom: 0;
   z-index: 10;
   margin: var(--space-6) calc(-1 * var(--space-6)) calc(-1 * var(--space-6));
+  margin-top: auto;
   padding: var(--space-4) var(--space-6);
   background: var(--color-canvas-raised);
   border-top: 1px solid var(--color-border);
