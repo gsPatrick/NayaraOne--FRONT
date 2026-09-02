@@ -225,14 +225,11 @@
 
 .chevronOpen { transform: rotate(270deg); }
 
-/* Submenu compacto: itens com muitos filhos (ex.: Financeiro com 6 sub-rotas) não podem
-   esticar a altura total da sidebar — linha mais baixa (line-height 1, padding vertical
-   menor) e menos respiro entre itens. */
 .subList {
   display: flex;
   flex-direction: column;
-  gap: 1px;
-  margin: 1px 0 var(--space-1);
+  gap: 2px;
+  margin: 2px 0 var(--space-2);
   padding-left: calc(20px + var(--space-3) + 3px);
 }
 
@@ -240,12 +237,11 @@
   position: relative;
   display: flex;
   align-items: center;
-  padding: 5px var(--space-3);
+  padding: 6px var(--space-3);
   border-radius: var(--radius-full);
   color: var(--color-sidebar-ink-muted);
   font-weight: 500;
   font-size: var(--text-caption);
-  line-height: 1.2;
   white-space: nowrap;
   transition: background-color var(--duration-base) var(--ease-out-expo),
     color var(--duration-base) var(--ease-out-expo);
