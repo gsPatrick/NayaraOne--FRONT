@@ -164,7 +164,10 @@ export default function ContratoDetailPage({ params }) {
   }
 
   return (
-    <AppShell title={contract.contractNumber} backHref="/painel/contratos/lista">
+    <AppShell
+      title={contract.contractNumber || `Contrato ${CONTRACT_TYPE_LABELS[contract.contractType] || ""}`.trim() || "Contrato"}
+      backHref="/painel/contratos/lista"
+    >
       <div className={styles.wrap}>
         <div className={styles.topRow}>
           <div className={styles.badges}>
@@ -211,7 +214,7 @@ export default function ContratoDetailPage({ params }) {
           <div className={styles.mainCol}>
             <Card title="Detalhes do contrato">
               <dl className={styles.detailList}>
-                <div className={styles.detailRow}><dt>Valor total</dt><dd className={styles.amount}>{formatBRL(contract.totalValue)}</dd></div>
+                <div className={styles.detailRow}><dt>Valor total</dt><dd className={styles.amount}>{formatBRL(contract.totalValue, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</dd></div>
                 <div className={styles.detailRow}><dt>Imóvel</dt><dd>{property?.name || "Sem imóvel vinculado"}</dd></div>
                 <div className={styles.detailRow}><dt>Início de vigência</dt><dd>{contract.startsAt ? formatDate(contract.startsAt) : "—"}</dd></div>
                 <div className={styles.detailRow}><dt>Fim de vigência</dt><dd>{contract.endsAt ? formatDate(contract.endsAt) : "—"}</dd></div>

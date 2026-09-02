@@ -1,6 +1,7 @@
 .page {
   flex: 1;
   min-width: 0;
+  overflow-x: hidden;
 }
 
 .wrap {
@@ -65,6 +66,12 @@
   grid-template-columns: 1fr 1fr;
   gap: var(--space-6) var(--space-5);
 }
+
+/* FIX HOM-004 (homologação 28/08/2026): item de grid tem min-width:auto por padrão — ele se
+   recusa a encolher abaixo da largura intrínseca do conteúdo (ex.: um <input> ou <select>),
+   mesmo estando numa coluna 1fr. Em telas estreitas (390px) isso empurrava o grid além do
+   viewport e gerava rolagem horizontal. min-width:0 permite o encolhimento normal. */
+.formGrid > * { min-width: 0; }
 
 .span2 { grid-column: 1 / -1; }
 
@@ -153,6 +160,12 @@
   padding-left: var(--space-6);
 }
 
+.propertyLinkFields > * { min-width: 0; }
+
+@media (max-width: 480px) {
+  .propertyLinkFields { grid-template-columns: 1fr; padding-left: var(--space-3); }
+}
+
 /* Contatos / Documentos */
 .subSectionsWrap {
   display: flex;
@@ -188,6 +201,8 @@
   gap: var(--space-3);
   align-items: end;
 }
+
+.contactRow > *, .documentRow > * { min-width: 0; }
 
 @media (max-width: 640px) {
   .contactRow, .documentRow { grid-template-columns: 1fr; }
