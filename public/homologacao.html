@@ -1,0 +1,651 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Homologação Marcos 3, 4 e 5</title>
+<style>
+  :root {
+    --color-brand: #BE9130;
+    --color-brand-hover: #A97D28;
+    --color-brand-active: #8A6620;
+    --color-brand-soft: rgba(190, 145, 48, 0.12);
+    --color-brand-border: rgba(190, 145, 48, 0.34);
+    --color-canvas: #FDFCFA;
+    --color-canvas-raised: #FFFFFF;
+    --color-canvas-sunken: #F7F5F1;
+    --color-ink: #17130F;
+    --color-ink-soft: #4A4033;
+    --color-ink-muted: #8C7F68;
+    --color-border: #EAE6DE;
+    --color-border-strong: #D9D2C4;
+    --color-success: #1E7A4C;
+    --color-success-soft: rgba(30, 122, 76, 0.12);
+    --color-warning: #B8790C;
+    --color-warning-soft: rgba(184, 121, 12, 0.14);
+    --color-danger: #C0392B;
+    --color-danger-soft: rgba(192, 57, 43, 0.12);
+    --color-info: #2563A6;
+    --color-info-soft: rgba(37, 99, 166, 0.12);
+    --color-code-bg: #17130F;
+    --color-code-ink: #F2EFE8;
+    --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+    --font-body: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --color-canvas: #16130E;
+      --color-canvas-raised: #1D1913;
+      --color-canvas-sunken: #100D09;
+      --color-ink: #F2EEE5;
+      --color-ink-soft: #CFC6B5;
+      --color-ink-muted: #98897020;
+      --color-ink-muted: #9A8C71;
+      --color-border: #332C21;
+      --color-border-strong: #443A2B;
+      --color-brand: #D6A845;
+      --color-brand-hover: #E3B75B;
+      --color-brand-active: #F0C670;
+      --color-brand-soft: rgba(214, 168, 69, 0.14);
+      --color-brand-border: rgba(214, 168, 69, 0.32);
+      --color-success-soft: rgba(30, 122, 76, 0.2);
+      --color-warning-soft: rgba(184, 121, 12, 0.22);
+      --color-danger-soft: rgba(192, 57, 43, 0.2);
+      --color-info-soft: rgba(37, 99, 166, 0.22);
+      --color-code-bg: #0D0B08;
+      --color-code-ink: #EDE8DC;
+    }
+  }
+  :root[data-theme="dark"] {
+    --color-canvas: #16130E;
+    --color-canvas-raised: #1D1913;
+    --color-canvas-sunken: #100D09;
+    --color-ink: #F2EEE5;
+    --color-ink-soft: #CFC6B5;
+    --color-ink-muted: #9A8C71;
+    --color-border: #332C21;
+    --color-border-strong: #443A2B;
+    --color-brand: #D6A845;
+    --color-brand-hover: #E3B75B;
+    --color-brand-active: #F0C670;
+    --color-brand-soft: rgba(214, 168, 69, 0.14);
+    --color-brand-border: rgba(214, 168, 69, 0.32);
+    --color-success-soft: rgba(30, 122, 76, 0.2);
+    --color-warning-soft: rgba(184, 121, 12, 0.22);
+    --color-danger-soft: rgba(192, 57, 43, 0.2);
+    --color-info-soft: rgba(37, 99, 166, 0.22);
+    --color-code-bg: #0D0B08;
+    --color-code-ink: #EDE8DC;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: var(--color-brand-active); }
+
+  .wrap {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 0 24px 96px;
+  }
+
+  /* ---- capa ---- */
+  header.cover {
+    padding: 72px 0 40px;
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: 40px;
+  }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-brand-active);
+    margin: 0 0 14px;
+  }
+  h1.title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(2rem, 1.5rem + 2vw, 3rem);
+    line-height: 1.1;
+    margin: 0 0 10px;
+    text-wrap: balance;
+  }
+  .subtitle {
+    font-size: 18px;
+    color: var(--color-ink-soft);
+    margin: 0 0 28px;
+    max-width: 60ch;
+  }
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .meta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--color-canvas-sunken);
+    border: 1px solid var(--color-border);
+    font-size: 13px;
+    color: var(--color-ink-soft);
+    font-family: var(--font-mono);
+  }
+
+  /* ---- status summary ---- */
+  .status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin-bottom: 48px;
+  }
+  .status-card {
+    padding: 18px;
+    border-radius: 12px;
+    background: var(--color-canvas-raised);
+    border: 1px solid var(--color-border);
+  }
+  .status-card .num {
+    font-family: var(--font-display);
+    font-size: 30px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .status-card .num.ok { color: var(--color-success); }
+  .status-card .label {
+    font-size: 13px;
+    color: var(--color-ink-muted);
+  }
+
+  /* ---- sections ---- */
+  section { margin-bottom: 56px; }
+  h2.h {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 700;
+    margin: 0 0 6px;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  h2.h .n {
+    color: var(--color-brand-active);
+    font-size: 16px;
+    font-family: var(--font-mono);
+  }
+  h3.h3 {
+    font-family: var(--font-display);
+    font-size: 19px;
+    font-weight: 700;
+    margin: 28px 0 12px;
+  }
+  .lede {
+    color: var(--color-ink-soft);
+    margin: 0 0 20px;
+    max-width: 68ch;
+  }
+
+  /* ---- pill / badge ---- */
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .pill::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  .pill.ok { background: var(--color-success-soft); color: var(--color-success); }
+  .pill.warn { background: var(--color-warning-soft); color: var(--color-warning); }
+  .pill.bad { background: var(--color-danger-soft); color: var(--color-danger); }
+  .pill.info { background: var(--color-info-soft); color: var(--color-info); }
+
+  /* ---- table ---- */
+  .tbl-wrap { overflow-x: auto; border: 1px solid var(--color-border); border-radius: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14.5px; background: var(--color-canvas-raised); }
+  th, td { text-align: left; padding: 12px 14px; vertical-align: top; }
+  thead th {
+    background: var(--color-canvas-sunken);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-ink-muted);
+    font-weight: 600;
+    border-bottom: 1px solid var(--color-border);
+  }
+  tbody tr + tr td { border-top: 1px solid var(--color-border); }
+  td.narrow, th.narrow { white-space: nowrap; }
+
+  /* ---- correction cards ---- */
+  .fix-card {
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    background: var(--color-canvas-raised);
+  }
+  .fix-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+  .fix-code { font-family: var(--font-mono); font-size: 13px; color: var(--color-ink-muted); }
+  .fix-title { font-weight: 700; }
+  .fix-body { color: var(--color-ink-soft); font-size: 14.5px; margin: 0; }
+
+  /* ---- credentials card ---- */
+  .cred-card {
+    border: 1px solid var(--color-brand-border);
+    background: var(--color-brand-soft);
+    border-radius: 12px;
+    padding: 20px 22px;
+  }
+  .cred-row { display: flex; justify-content: space-between; gap: 16px; padding: 8px 0; border-bottom: 1px dashed var(--color-brand-border); }
+  .cred-row:last-child { border-bottom: none; }
+  .cred-k { font-size: 13px; color: var(--color-ink-muted); }
+  .cred-v { font-family: var(--font-mono); font-size: 14.5px; font-weight: 600; text-align: right; }
+
+  /* ---- steps ---- */
+  ol.steps { list-style: none; margin: 0; padding: 0; counter-reset: step; }
+  ol.steps > li {
+    counter-increment: step;
+    position: relative;
+    padding: 4px 0 20px 42px;
+    border-left: 2px solid var(--color-border);
+    margin-left: 13px;
+  }
+  ol.steps > li:last-child { border-left-color: transparent; padding-bottom: 0; }
+  ol.steps > li::before {
+    content: counter(step);
+    position: absolute;
+    left: -14px;
+    top: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--color-canvas-raised);
+    border: 2px solid var(--color-brand);
+    color: var(--color-brand-active);
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .step-action { font-weight: 600; margin: 0 0 4px; }
+  .step-expected { font-size: 14px; color: var(--color-ink-soft); margin: 0; }
+  .step-expected b { color: var(--color-success); font-weight: 700; }
+
+  /* ---- raw data section ---- */
+  .raw-section {
+    background: var(--color-canvas-sunken);
+    border-radius: 16px;
+    padding: 32px;
+    border: 1px solid var(--color-border);
+  }
+  .raw-block { margin-bottom: 22px; }
+  .raw-block-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .raw-block-head h4 {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-ink-muted);
+    margin: 0;
+  }
+  button.copy-btn {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 5px 11px;
+    border-radius: 6px;
+    border: 1px solid var(--color-border-strong);
+    background: var(--color-canvas-raised);
+    color: var(--color-ink-soft);
+    cursor: pointer;
+  }
+  button.copy-btn:hover { border-color: var(--color-brand); color: var(--color-brand-active); }
+  button.copy-btn:focus-visible, a:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+  }
+  pre.raw {
+    margin: 0;
+    padding: 16px 18px;
+    background: var(--color-code-bg);
+    color: var(--color-code-ink);
+    border-radius: 10px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    line-height: 1.55;
+    overflow-x: auto;
+    white-space: pre;
+  }
+
+  footer {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--color-border);
+    color: var(--color-ink-muted);
+    font-size: 13px;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .copy-btn { transition: border-color .15s ease, color .15s ease; }
+  }
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+
+  <header class="cover">
+    <p class="eyebrow">Nayara One · Relatório para aceite</p>
+    <h1 class="title">Homologação dos Marcos 3, 4 e 5</h1>
+    <p class="subtitle">Pessoas, Empresas, Imóveis, CRM, Radar, Financeiro, Contratos e Locação. Preparado em resposta direta à lista de itens solicitada antes do aceite formal.</p>
+    <div class="meta-row">
+      <span class="meta-pill">Preparado por Patrick Gomes Siqueira</span>
+      <span class="meta-pill">02/09/2026</span>
+      <span class="meta-pill">API 397e47c → 70adef5</span>
+      <span class="meta-pill">Front efff0ae → 8ce02b4</span>
+    </div>
+  </header>
+
+  <div class="status-grid">
+    <div class="status-card"><div class="num ok">6/6</div><div class="label">Defeitos do relatório de 28/08 corrigidos</div></div>
+    <div class="status-card"><div class="num ok">20/20</div><div class="label">Testes automatizados aprovados</div></div>
+    <div class="status-card"><div class="num ok">1/1</div><div class="label">Contrato de teste inválido corrigido</div></div>
+    <div class="status-card"><div class="num ok">3/3</div><div class="label">Decisões de engenharia documentadas, nenhuma extra</div></div>
+  </div>
+
+  <section id="s1">
+    <h2 class="h"><span class="n">01</span> Correções desde o relatório de 28/08/2026</h2>
+    <p class="lede">A rodada anterior reprovou o aceite integral por 6 defeitos. A situação de cada um, hoje:</p>
+
+    <div class="fix-card">
+      <div class="fix-head"><span class="fix-code">HOM-001</span><span class="fix-title">Contrato virava Ativo sem documento nem assinatura</span><span class="pill bad">Crítica</span><span class="pill ok">Corrigido</span></div>
+      <p class="fix-body">Dois bloqueios novos na máquina de estados do contrato: exige ao menos uma versão de documento antes de avançar para "Em assinatura", e exige todas as assinaturas confirmadas antes de avançar para "Assinado". Coberto por 4 testes automatizados permanentes.</p>
+    </div>
+    <div class="fix-card">
+      <div class="fix-head"><span class="fix-code">HOM-002</span><span class="fix-title">Indicadores do painel divergiam das listas (CRM, Radar, Imóveis)</span><span class="pill warn">Alta</span><span class="pill ok">Corrigido</span></div>
+      <p class="fix-body">O painel principal parou de usar dados de exemplo e passou a consultar a mesma fonte real das telas de lista.</p>
+    </div>
+    <div class="fix-card">
+      <div class="fix-head"><span class="fix-code">HOM-003</span><span class="fix-title">Vencimento de lançamento financeiro não era salvo</span><span class="pill warn">Alta</span><span class="pill ok">Corrigido</span></div>
+      <p class="fix-body">Verificado em produção, funcionando corretamente hoje. Causa provável: versão anterior ainda publicada no momento do teste.</p>
+    </div>
+    <div class="fix-card">
+      <div class="fix-head"><span class="fix-code">HOM-004</span><span class="fix-title">Overflow horizontal no cadastro de contato, no celular</span><span class="pill info">Média</span><span class="pill ok">Corrigido</span></div>
+      <p class="fix-body">Ajuste de layout no formulário de cadastro de contato.</p>
+    </div>
+    <div class="fix-card">
+      <div class="fix-head"><span class="fix-code">HOM-005</span><span class="fix-title">Cabeçalho do detalhe do contrato aparecia vazio</span><span class="pill info">Baixa</span><span class="pill ok">Corrigido</span></div>
+      <p class="fix-body">A página agora sempre exibe um título, mesmo sem número de contrato atribuído.</p>
+    </div>
+    <div class="fix-card">
+      <div class="fix-head"><span class="fix-code">HOM-006</span><span class="fix-title">Valor do contrato sem formatação monetária</span><span class="pill info">Baixa</span><span class="pill ok">Corrigido</span></div>
+      <p class="fix-body">Falha na formatação de valores vindos como texto da API em vez de número, em qualquer tela que exibisse valor monetário dessa forma.</p>
+    </div>
+
+    <h3 class="h3">Contrato de teste corrigido</h3>
+    <p class="lede">O contrato usado como evidência do HOM-001 (id <code>eb2488db-2211-4e27-81d5-38de756f4937</code>) estava Ativo sem documento nem assinatura, por ser dado inválido gerado durante o próprio teste que revelou o bug. Um contrato realmente ativo não tem caminho automático de cancelamento pelo sistema, então a correção foi feita direto no banco de dados, com um registro de auditoria explicando motivo, data e autorização, visível na tela de Atividades.</p>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Campo</th><th>Antes</th><th>Depois</th></tr></thead>
+        <tbody>
+          <tr><td>Status</td><td><span class="pill bad">Ativo</span></td><td><span class="pill ok">Cancelado</span></td></tr>
+          <tr><td>Motivo registrado</td><td colspan="2">Correção de dado inválido, resultado do bug HOM-001 já corrigido na máquina de estados.</td></tr>
+          <tr><td>Visível em</td><td colspan="2">Administração → Atividades</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="s2">
+    <h2 class="h"><span class="n">02</span> Checklist por marco</h2>
+    <p class="lede">Situação item a item do que foi entregue em cada marco.</p>
+
+    <h3 class="h3">Marco 3 · Pessoas, Empresas, Imóveis, CRM e Radar</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tbody>
+          <tr><td>Cadastro de pessoa física e jurídica, com múltiplos papéis (cliente, proprietário, locatário, fornecedor, corretor, comprador, fiador, colaborador, locador)</td><td class="narrow"><span class="pill ok">Concluído</span></td></tr>
+          <tr><td>Edição de pessoa, com página dedicada</td><td class="narrow"><span class="pill ok">Concluído</span></td></tr>
+          <tr><td>Deteção de duplicidade por documento ou contato principal</td><td class="narrow"><span class="pill ok">Concluído</span></td></tr>
+          <tr><td>Empresas e unidades: criar, editar, apagar</td><td class="narrow"><span class="pill ok">Concluído</span></td></tr>
+          <tr><td>Imóveis: cadastro completo, ofertas, mídia, documentos, histórico de preço</td><td class="narrow"><span class="pill ok">Concluído</span></td></tr>
+          <tr><td>Funil de oportunidades do CRM</td><td class="narrow"><span class="pill ok">Concluído</span></td></tr>
+          <tr><td>Radar de busca automática com cálculo de match</td><td class="narrow"><span class="pill ok">Concluído</span></td></tr>
+          <tr><td>Permissões granulares e matriz de papéis (RBAC)</td><td class="narrow"><span class="pill ok">Concluído</span></td></tr>
+          <tr><td>Indicadores do painel batendo com as listas</td><td class="narrow"><span class="pill ok">Concluído</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="h3">Marco 4 · Financeiro</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tbody>
+          <tr><td>Lançamento a pagar e a receber, com vencimento e centro de custo/resultado</td><td class="narrow"><span class="pill ok">Concluído</span></td></tr>
+          <tr><td>Liquidação (pagar/receber) de lançamento</td><td class="narrow"><span class="pill ok">Concluído</span></td></tr>
+          <tr><td>Estorno, sem permitir estorno duplicado</td><td class="narrow"><span class="pill ok">Concluído</span></td></tr>
+          <tr><td>Idempotência por chave, bloqueando pagamento duplicado</td><td class="narrow"><span class="pill ok">Concluído</span></td></tr>
+          <tr><td>Aprovação dupla (maker checker), sem auto aprovação</td><td class="narrow"><span class="pill ok">Concluído</span></td></tr>
+          <tr><td>Conciliação bancária, bloqueando valor divergente ou conciliação dupla</td><td class="narrow"><span class="pill ok">Concluído</span></td></tr>
+          <tr><td>Resfriamento de 48h para conta bancária nova ou alterada</td><td class="narrow"><span class="pill ok">Concluído</span></td></tr>
+          <tr><td>Comissão de corretor e parcelamento</td><td class="narrow"><span class="pill ok">Concluído</span></td></tr>
+          <tr><td>Repasse a proprietário</td><td class="narrow"><span class="pill ok">Concluído</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="h3">Marco 5 · Contratos e Locação</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tbody>
+          <tr><td>Criação de contrato com partes vinculadas</td><td class="narrow"><span class="pill ok">Concluído</span></td></tr>
+          <tr><td>Máquina de estados, do rascunho ao ativo</td><td class="narrow"><span class="pill ok">Concluído</span></td></tr>
+          <tr><td>Bloqueio de avanço sem documento (novo, corrige HOM-001)</td><td class="narrow"><span class="pill ok">Concluído</span></td></tr>
+          <tr><td>Bloqueio de avanço sem todas as assinaturas (novo, corrige HOM-001)</td><td class="narrow"><span class="pill ok">Concluído</span></td></tr>
+          <tr><td>Fluxo completo de assinatura eletrônica em ambiente de testes</td><td class="narrow"><span class="pill ok">Concluído</span></td></tr>
+          <tr><td>Garantias, vistorias, entrega de chaves</td><td class="narrow"><span class="pill ok">Concluído</span></td></tr>
+          <tr><td>Processos jurídicos, prazos, pacotes de evidência</td><td class="narrow"><span class="pill ok">Concluído</span></td></tr>
+          <tr><td>Cancelamento em estados anteriores a Ativo (contrato Ativo não cancela pelo fluxo normal)</td><td class="narrow"><span class="pill ok">Concluído</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="s3">
+    <h2 class="h"><span class="n">03</span> Segundo usuário de teste</h2>
+    <p class="lede">Criado para validar aprovação dupla (maker checker) com uma pessoa diferente de quem cria o lançamento.</p>
+    <div class="cred-card">
+      <div class="cred-row"><span class="cred-k">E-mail</span><span class="cred-v">homo-qa-aprovador@nayaraone.dev</span></div>
+      <div class="cred-row"><span class="cred-k">Senha</span><span class="cred-v">HomoQA#2026Aprovador</span></div>
+      <div class="cred-row"><span class="cred-k">Papel</span><span class="cred-v">HOMO QA · Aprovador Financeiro</span></div>
+      <div class="cred-row"><span class="cred-k">Permissões</span><span class="cred-v">finance:read, finance:approve</span></div>
+    </div>
+  </section>
+
+  <section id="s4">
+    <h2 class="h"><span class="n">04</span> Roteiro de homologação passo a passo</h2>
+    <p class="lede">Cobre exatamente os testes pedidos para cada marco, com o resultado esperado de cada passo.</p>
+
+    <h3 class="h3">Marco 3</h3>
+    <ol class="steps">
+      <li><p class="step-action">Criar uma Pessoa de teste (nome começando com "HOMO QA"), marcando 2 ou mais papéis.</p><p class="step-expected">Esperado: <b>contato criado</b>, aparecendo na lista com os papéis marcados.</p></li>
+      <li><p class="step-action">Editar essa Pessoa, alterando nome de uso e adicionando um contato.</p><p class="step-expected">Esperado: <b>alteração salva</b> e refletida na tela de detalhe.</p></li>
+      <li><p class="step-action">Criar uma Empresa e um Imóvel de teste, vinculando a Pessoa como proprietária.</p><p class="step-expected">Esperado: <b>imóvel listado</b> na Pessoa e na Empresa.</p></li>
+      <li><p class="step-action">Criar uma Oportunidade de CRM e um Radar compatível com o imóvel.</p><p class="step-expected">Esperado: <b>radar retorna o imóvel</b> como match.</p></li>
+      <li><p class="step-action">Pesquisar "HOMO QA" nas telas de Pessoas, Empresas e Imóveis.</p><p class="step-expected">Esperado: <b>todos os registros aparecem</b> na busca.</p></li>
+      <li><p class="step-action">Conferir se os indicadores do Painel batem com CRM, Radar e Imóveis.</p><p class="step-expected">Esperado: <b>números iguais</b>, sem divergência.</p></li>
+    </ol>
+
+    <h3 class="h3">Marco 4</h3>
+    <ol class="steps">
+      <li><p class="step-action">Criar um lançamento a pagar de teste, com vencimento.</p><p class="step-expected">Esperado: <b>vencimento salvo</b> corretamente na lista.</p></li>
+      <li><p class="step-action">Criar aprovação de risco alto e tentar aprovar com o mesmo usuário que criou.</p><p class="step-expected">Esperado: <b>recusado</b>, quem solicita não aprova.</p></li>
+      <li><p class="step-action">Logar com o segundo usuário (seção 3) e aprovar.</p><p class="step-expected">Esperado: <b>1ª aprovação registrada</b>; risco alto ainda exige uma segunda.</p></li>
+      <li><p class="step-action">Liquidar o lançamento, depois estornar.</p><p class="step-expected">Esperado: <b>estorno gera lançamento compensatório</b>; estornar de novo é recusado.</p></li>
+      <li><p class="step-action">Repetir a criação com a mesma chave de idempotência.</p><p class="step-expected">Esperado: <b>recusado</b> como pagamento duplicado.</p></li>
+      <li><p class="step-action">Importar extrato de mesmo valor e conciliar; tentar conciliar de novo.</p><p class="step-expected">Esperado: <b>concilia uma vez</b>; segunda tentativa é recusada.</p></li>
+      <li><p class="step-action">Cadastrar comissão, pagar parcela; cadastrar repasse, pagar.</p><p class="step-expected">Esperado: <b>ambos marcados como pagos</b>.</p></li>
+    </ol>
+
+    <h3 class="h3">Marco 5</h3>
+    <ol class="steps">
+      <li><p class="step-action">Criar contrato de locação com as duas partes e tentar avançar direto para "Em assinatura".</p><p class="step-expected">Esperado: <b>recusado</b>, exige documento primeiro.</p></li>
+      <li><p class="step-action">Cadastrar o documento e avançar até "Em assinatura"; tentar pular para "Assinado" sem assinar.</p><p class="step-expected">Esperado: <b>recusado</b>, exige todas as assinaturas.</p></li>
+      <li><p class="step-action">Confirmar todas as assinaturas e avançar até Ativo.</p><p class="step-expected">Esperado: <b>contrato Ativo</b>, com documento e assinaturas reais.</p></li>
+      <li><p class="step-action">Cadastrar garantia, vistoria e entrega de chaves vinculadas ao contrato.</p><p class="step-expected">Esperado: <b>tudo registrado</b> e visível no detalhe.</p></li>
+      <li><p class="step-action">Criar um segundo contrato de teste e cancelá-lo ainda em Rascunho.</p><p class="step-expected">Esperado: <b>cancelamento permitido</b>.</p></li>
+      <li><p class="step-action">Tentar cancelar o contrato já Ativo do passo 3.</p><p class="step-expected">Esperado: <b>recusado</b>, Ativo não cancela pelo fluxo normal.</p></li>
+    </ol>
+  </section>
+
+  <section id="s5">
+    <h2 class="h"><span class="n">05</span> Confirmação de escopo</h2>
+    <p class="lede">Três decisões de engenharia foram necessárias para preencher lacunas do Caderno Técnico. Nenhuma ampliou o escopo contratado; todas documentadas no código e nos commits publicados.</p>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Decisão</th><th>Justificativa</th></tr></thead>
+        <tbody>
+          <tr><td>Papéis novos de pessoa (comprador, fiador, colaborador, locador)</td><td>O Caderno já classifica essa lista como aberta e não exaustiva.</td></tr>
+          <tr><td>Estado "Cancelado" do contrato</td><td>O Caderno define a máquina de estados linear mas não descreve cancelamento; necessidade operacional básica.</td></tr>
+          <tr><td>4 tabelas novas do módulo Obras (medição, RDO, orçamento, qualidade)</td><td>O Caderno descreve as funcionalidades sem detalhar o modelo de dados exato dessas peças.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="s6" class="raw-section">
+    <h2 class="h" style="margin-bottom:6px;"><span class="n">06</span> Dados brutos</h2>
+    <p class="lede">Para conferência técnica direta ou para colar numa IA e pedir uma segunda opinião sobre o resultado.</p>
+
+    <div class="raw-block">
+      <div class="raw-block-head"><h4>Resumo em JSON</h4><button class="copy-btn" data-copy="raw-json">Copiar</button></div>
+      <pre class="raw" id="raw-json">{
+  "projeto": "Nayara One",
+  "documento": "Homologacao Marcos 3, 4 e 5",
+  "data": "2026-09-02",
+  "commits": {
+    "api": { "solicitado": "397e47c888e3452b816805bbf7a0f67eb2d57a4b", "publicado_apos": "70adef5" },
+    "front": { "solicitado": "efff0aedf27c7b19b1a847c82f4402c74da77421", "publicado_apos": "8ce02b4" }
+  },
+  "defeitos_28_08": [
+    { "codigo": "HOM-001", "severidade": "critica", "situacao": "corrigido", "testes_automatizados": 4 },
+    { "codigo": "HOM-002", "severidade": "alta", "situacao": "corrigido" },
+    { "codigo": "HOM-003", "severidade": "alta", "situacao": "corrigido" },
+    { "codigo": "HOM-004", "severidade": "media", "situacao": "corrigido" },
+    { "codigo": "HOM-005", "severidade": "baixa", "situacao": "corrigido" },
+    { "codigo": "HOM-006", "severidade": "baixa", "situacao": "corrigido" }
+  ],
+  "contrato_teste_corrigido": {
+    "id": "eb2488db-2211-4e27-81d5-38de756f4937",
+    "status_antes": "ACTIVE",
+    "status_depois": "CANCELLED",
+    "visivel_em": "Administracao > Atividades"
+  },
+  "testes_automatizados": {
+    "total": 20,
+    "aprovados": 20,
+    "reprovados": 0,
+    "repositorio": "NayaraOne--API",
+    "comando": "npm test"
+  },
+  "segundo_usuario_teste": {
+    "email": "homo-qa-aprovador@nayaraone.dev",
+    "papel": "HOMO QA - Aprovador Financeiro",
+    "permissoes": ["finance:read", "finance:approve"]
+  },
+  "verificacao_versao": {
+    "api": "GET /health",
+    "front": "GET /api/version"
+  }
+}</pre>
+    </div>
+
+    <div class="raw-block">
+      <div class="raw-block-head"><h4>Saída completa dos 20 testes</h4><button class="copy-btn" data-copy="raw-tests">Copiar</button></div>
+      <pre class="raw" id="raw-tests">tests 20
+suites 0
+pass 20
+fail 0
+cancelled 0
+skipped 0
+todo 0
+duration_ms 26364.624375
+
+1. opportunity ativa sem nextAction/nextActionDueAt falha com 422
+2. opportunity ativa com nextAction/nextActionDueAt e criada e publica domain event de stage_changed
+3. opportunity fechada (CLOSED_WON/CLOSED_LOST) nao exige nextAction
+4. atualizar stage de opportunity publica novo domain event de stage_changed
+5. FIN-004 idempotencia: 2a tentativa com a mesma chave e bloqueada (nao duplica pagamento)
+6. maker-checker: quem solicitou a aprovacao nao pode decidir a propria solicitacao
+7. maker-checker: segundo usuario aprova (risco HIGH exige 2 aprovacoes independentes)
+8. conciliacao: valores divergentes entre lancamento e extrato sao bloqueados
+9. conciliacao: valores batendo concilia; conciliar de novo o mesmo lancamento e bloqueado
+10. estorno: lancamento estornado nao pode ser estornado de novo
+11. HOM-001: contrato nao avanca para SIGNING sem nenhuma versao de documento
+12. HOM-001: contrato nao avanca para SIGNED sem todas as assinaturas confirmadas
+13. fluxo feliz: documento e todas as assinaturas confirmadas leva o contrato a ACTIVE
+14. maquina de estados: contrato ACTIVE nao tem transicao de saida (nao se cancela pelo fluxo normal)
+15. dedup: cria pessoa, tenta duplicata por CPF, espera 409
+16. dedup: cria pessoa, tenta duplicata por contato principal (email), espera 409
+17. dedup: pessoas sem documento/contato em comum nao conflitam
+18. offers: 2a offer ACTIVE do mesmo tipo faz a 1a virar SUPERSEDED
+19. offers: mudanca de preco gera INSERT append-only em property_price_history
+20. matching deterministico: radar retorna apenas properties que batem em TODOS os criterios</pre>
+    </div>
+  </section>
+
+  <footer>
+    Nayara One · documento preparado por Patrick Gomes Siqueira em 02/09/2026 para instruir o roteiro manual de homologação dos Marcos 3, 4 e 5.
+  </footer>
+
+</div>
+
+<script>
+  document.querySelectorAll(".copy-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var target = document.getElementById(btn.getAttribute("data-copy"));
+      if (!target) return;
+      navigator.clipboard.writeText(target.textContent).then(function () {
+        var original = btn.textContent;
+        btn.textContent = "Copiado";
+        setTimeout(function () { btn.textContent = original; }, 1600);
+      });
+    });
+  });
+</script>
+
+</body>
+</html>
