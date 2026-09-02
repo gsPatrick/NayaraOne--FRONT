@@ -55,6 +55,7 @@ export const NAV_SECTIONS = [
       { label: "Empresas & Unidades", href: "/painel/empresas", icon: "layers", permission: "companies:read" },
       { label: "Usuários & Acessos", href: "/painel/usuarios", icon: "shield", permission: "users:read" },
       { label: "Papéis & Permissões", href: "/painel/papeis", icon: "shield", permission: "roles:read" },
+      { label: "Atividades", href: "/painel/atividades", icon: "clock", permission: "audit:read" },
     ],
   },
   {

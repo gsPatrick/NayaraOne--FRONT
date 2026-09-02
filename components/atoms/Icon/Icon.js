@@ -41,6 +41,7 @@ const PATHS = {
   signature: "M3 17c2-1 3-3 3-5 0-1.5 1-2 2-1s0 3-1 4c2 1 4-1 5-3 1-2 2-2 2 0 0 1.5 1.5 2 3 1M3 21h18",
   key: "M14 8a4 4 0 1 0-4 4l-7 7v3h3l1-1v-2h2v-2h2l3-3a4 4 0 0 0 0-6ZM16 6l1.5 1.5",
   scale: "M12 3v18M6 8l-3 6a3 3 0 0 0 6 0ZM18 8l-3 6a3 3 0 0 0 6 0ZM4 21h16M12 3l-6 5M12 3l6 5",
+  clock: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 7v5l4 2",
 };
 
 export default function Icon({ name, size = 20, className = "" }) {
