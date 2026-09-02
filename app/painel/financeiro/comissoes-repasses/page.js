@@ -215,18 +215,16 @@ export default function ComissoesRepassesPage() {
               <Card
                 title="Comissões"
                 subtitle="Direito de comissão por corretor/oportunidade"
-                actions={
-                  <div className={styles.toolbar}>
-                    <SearchInput placeholder="Buscar por corretor..." value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} />
-                    <Select className={styles.filter} value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}>
-                      <option value="">Todos os status</option>
-                      {Object.entries(COMMISSION_STATUS_LABELS).map(([k, v]) => (
-                        <option key={k} value={k}>{v}</option>
-                      ))}
-                    </Select>
-                  </div>
-                }
               >
+                <div className={styles.toolbar}>
+                  <SearchInput placeholder="Buscar por corretor..." value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} />
+                  <Select className={styles.filter} value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}>
+                    <option value="">Todos os status</option>
+                    {Object.entries(COMMISSION_STATUS_LABELS).map(([k, v]) => (
+                      <option key={k} value={k}>{v}</option>
+                    ))}
+                  </Select>
+                </div>
                 {filteredCommissions.length === 0 ? (
                   <p className={styles.emptyText}>Nenhuma comissão encontrada.</p>
                 ) : (
