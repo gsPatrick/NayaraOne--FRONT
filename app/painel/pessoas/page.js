@@ -202,13 +202,22 @@ export default function PessoasPage() {
     {
       key: "roles",
       label: "Papéis",
-      render: (row) => (
-        <div className={styles.roleTags}>
-          {row.roles.map((role) => (
-            <Badge key={role} tone={ROLE_TONE[role] || "neutral"}>{ROLE_LABELS[role] || role}</Badge>
-          ))}
-        </div>
-      ),
+      render: (row) => {
+        const visibleRoles = row.roles.slice(0, 3);
+        const extraCount = row.roles.length - visibleRoles.length;
+        return (
+          <div className={styles.roleTags}>
+            {visibleRoles.map((role) => (
+              <Badge key={role} tone={ROLE_TONE[role] || "neutral"}>{ROLE_LABELS[role] || role}</Badge>
+            ))}
+            {extraCount > 0 ? (
+              <Badge tone="neutral" title={row.roles.slice(3).map((r) => ROLE_LABELS[r] || r).join(", ")}>
+                +{extraCount}
+              </Badge>
+            ) : null}
+          </div>
+        );
+      },
     },
     {
       key: "contact",
