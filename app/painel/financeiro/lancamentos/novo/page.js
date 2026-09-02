@@ -11,9 +11,9 @@ import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import NatureBadge from "@/components/molecules/NatureBadge/NatureBadge";
+import BankAccountSelect from "@/components/molecules/BankAccountSelect/BankAccountSelect";
 import { ENTRY_NATURE_LABELS } from "@/lib/mock/finance";
 import { listBankAccounts, listCostCenters, listResultCenters, createFinancialEntry } from "@/lib/api/finance";
-import { bankAccountLabel } from "@/lib/finance/labels";
 import styles from "./page.module.css";
 
 export default function NovoLancamentoPage() {
@@ -132,11 +132,11 @@ export default function NovoLancamentoPage() {
               </FormField>
 
               <FormField label="Conta bancária" htmlFor="f-account" required>
-                <Select id="f-account" value={form.bankAccountId} onChange={update("bankAccountId")}>
-                  {bankAccounts.map((a) => (
-                    <option key={a.id} value={a.id}>{bankAccountLabel(a)}</option>
-                  ))}
-                </Select>
+                <BankAccountSelect
+                  accounts={bankAccounts}
+                  value={form.bankAccountId}
+                  onChange={(id) => setForm((prev) => ({ ...prev, bankAccountId: id }))}
+                />
               </FormField>
 
               <FormField label="Vencimento" htmlFor="f-due">
