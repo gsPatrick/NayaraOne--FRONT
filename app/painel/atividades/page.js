@@ -19,6 +19,7 @@ import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/Skeleton
 import { listAuditLog } from "@/lib/api/audit";
 import { apiFetch } from "@/lib/api/client";
 import { entityTypeLabel, actionVerb, ACTION_TONE, ACTION_ICON, ENTITY_TYPE_LABELS } from "@/lib/audit/labels";
+import { summarizeChanges } from "@/lib/audit/humanize";
 import { hasPermission } from "@/lib/rbac/permissions";
 import { formatDateTime } from "@/lib/format";
 import styles from "./page.module.css";
@@ -187,6 +188,7 @@ function ActivityDetailModal({ entry, actor, onClose, onBlocked, onReverted }) {
   const [confirmBlock, setConfirmBlock] = useState(false);
   const [confirmRevert, setConfirmRevert] = useState(false);
 
+  const changes = summarizeChanges(entry.beforeJson, entry.afterJson);
   const reversible = REVERSIBLE_ENTITY_TYPES[entry.entityType];
   const canRevert = reversible && hasPermission(reversible.permission) && entry.entityId;
   const canBlockUser = hasPermission("users:update") && entry.userId && actor?.status !== "SUSPENDED";
@@ -222,24 +224,28 @@ function ActivityDetailModal({ entry, actor, onClose, onBlocked, onReverted }) {
 
         <div className={styles.detailRow}><dt>Quem</dt><dd>{actor?.name || "Sistema (automático)"} {actor?.email ? `— ${actor.email}` : ""}</dd></div>
         <div className={styles.detailRow}><dt>O que</dt><dd>{entry.reason || entry.action}</dd></div>
-        <div className={styles.detailRow}><dt>Ação técnica</dt><dd className={styles.mono}>{entry.action}</dd></div>
-        <div className={styles.detailRow}><dt>Entidade</dt><dd>{entityTypeLabel(entry.entityType)} {entry.entityId ? <span className={styles.mono}>({entry.entityId})</span> : null}</dd></div>
+        <div className={styles.detailRow}><dt>Onde</dt><dd>{entityTypeLabel(entry.entityType)}</dd></div>
         <div className={styles.detailRow}><dt>Quando</dt><dd>{formatDateTime(entry.occurredAt)}</dd></div>
 
-        {entry.beforeJson || entry.afterJson ? (
-          <div className={styles.jsonSection}>
-            {entry.beforeJson ? (
-              <div>
-                <p className={styles.jsonLabel}>Antes</p>
-                <pre className={styles.jsonBlock}>{JSON.stringify(entry.beforeJson, null, 2)}</pre>
-              </div>
-            ) : null}
-            {entry.afterJson ? (
-              <div>
-                <p className={styles.jsonLabel}>Depois</p>
-                <pre className={styles.jsonBlock}>{JSON.stringify(entry.afterJson, null, 2)}</pre>
-              </div>
-            ) : null}
+        {changes.length > 0 ? (
+          <div className={styles.changesSection}>
+            <p className={styles.jsonLabel}>{changes[0]?.isNew ? "Dados cadastrados" : "O que mudou"}</p>
+            <ul className={styles.changesList}>
+              {changes.map((c) => (
+                <li key={c.label} className={styles.changeRow}>
+                  <span className={styles.changeLabel}>{c.label}</span>
+                  {c.isNew ? (
+                    <span className={styles.changeValue}>{c.after}</span>
+                  ) : (
+                    <span className={styles.changeValue}>
+                      <span className={styles.changeBefore}>{c.before}</span>
+                      <Icon name="chevronRight" size={12} />
+                      <span className={styles.changeAfter}>{c.after}</span>
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
           </div>
         ) : null}
 

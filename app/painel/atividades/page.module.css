@@ -51,18 +51,6 @@
 .detailRow dt { color: var(--color-ink-muted); font-weight: 600; }
 .detailRow dd { color: var(--color-ink); word-break: break-word; }
 
-.mono { font-family: var(--font-mono); font-size: var(--text-caption); color: var(--color-ink-muted); }
-
-.jsonSection {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-3);
-}
-
-@media (max-width: 640px) {
-  .jsonSection { grid-template-columns: 1fr; }
-}
-
 .jsonLabel {
   font-size: var(--text-caption);
   font-weight: 700;
@@ -72,17 +60,42 @@
   margin-bottom: var(--space-2);
 }
 
-.jsonBlock {
-  max-height: 240px;
-  overflow: auto;
-  padding: var(--space-3);
+.changesSection {
+  padding-top: var(--space-2);
+}
+
+.changesList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.changeRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
   background: var(--color-canvas-sunken);
-  font-family: var(--font-mono);
-  font-size: var(--text-micro);
-  white-space: pre-wrap;
-  word-break: break-word;
+  font-size: var(--text-body-sm);
 }
+
+.changeLabel { color: var(--color-ink-muted); font-weight: 600; flex-shrink: 0; }
+
+.changeValue {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-ink);
+  text-align: right;
+  min-width: 0;
+}
+
+.changeBefore { color: var(--color-ink-muted); text-decoration: line-through; }
+.changeAfter { color: var(--color-ink); font-weight: 600; }
 
 .actionsSection {
   display: flex;
