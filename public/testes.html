@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Execução dos Testes Automatizados</title>
+<style>
+  :root {
+    --color-brand: #BE9130;
+    --color-brand-hover: #A97D28;
+    --color-brand-active: #8A6620;
+    --color-brand-soft: rgba(190, 145, 48, 0.12);
+    --color-brand-border: rgba(190, 145, 48, 0.34);
+    --color-canvas: #FDFCFA;
+    --color-canvas-raised: #FFFFFF;
+    --color-canvas-sunken: #F7F5F1;
+    --color-ink: #17130F;
+    --color-ink-soft: #4A4033;
+    --color-ink-muted: #8C7F68;
+    --color-border: #EAE6DE;
+    --color-border-strong: #D9D2C4;
+    --color-success: #1E7A4C;
+    --color-success-soft: rgba(30, 122, 76, 0.12);
+    --color-warning: #B8790C;
+    --color-warning-soft: rgba(184, 121, 12, 0.14);
+    --color-danger: #C0392B;
+    --color-danger-soft: rgba(192, 57, 43, 0.12);
+    --color-code-bg: #17130F;
+    --color-code-ink: #F2EFE8;
+    --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+    --font-body: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --color-canvas: #16130E; --color-canvas-raised: #1D1913; --color-canvas-sunken: #100D09;
+      --color-ink: #F2EEE5; --color-ink-soft: #CFC6B5; --color-ink-muted: #9A8C71;
+      --color-border: #332C21; --color-border-strong: #443A2B;
+      --color-brand: #D6A845; --color-brand-hover: #E3B75B; --color-brand-active: #F0C670;
+      --color-brand-soft: rgba(214, 168, 69, 0.14); --color-brand-border: rgba(214, 168, 69, 0.32);
+      --color-success-soft: rgba(30, 122, 76, 0.2); --color-warning-soft: rgba(184, 121, 12, 0.22);
+      --color-danger-soft: rgba(192, 57, 43, 0.2);
+      --color-code-bg: #0D0B08; --color-code-ink: #EDE8DC;
+    }
+  }
+  :root[data-theme="dark"] {
+    --color-canvas: #16130E; --color-canvas-raised: #1D1913; --color-canvas-sunken: #100D09;
+    --color-ink: #F2EEE5; --color-ink-soft: #CFC6B5; --color-ink-muted: #9A8C71;
+    --color-border: #332C21; --color-border-strong: #443A2B;
+    --color-brand: #D6A845; --color-brand-hover: #E3B75B; --color-brand-active: #F0C670;
+    --color-brand-soft: rgba(214, 168, 69, 0.14); --color-brand-border: rgba(214, 168, 69, 0.32);
+    --color-success-soft: rgba(30, 122, 76, 0.2); --color-warning-soft: rgba(184, 121, 12, 0.22);
+    --color-danger-soft: rgba(192, 57, 43, 0.2);
+    --color-code-bg: #0D0B08; --color-code-ink: #EDE8DC;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--color-canvas); color: var(--color-ink); font-family: var(--font-body); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  a { color: var(--color-brand-active); }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 0 24px 96px; }
+
+  header.cover { padding: 64px 0 36px; border-bottom: 1px solid var(--color-border); margin-bottom: 36px; }
+  .eyebrow { font-family: var(--font-mono); font-size: 12.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-brand-active); margin: 0 0 14px; }
+  h1.title { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.8rem, 1.4rem + 1.8vw, 2.6rem); line-height: 1.15; margin: 0 0 10px; text-wrap: balance; }
+  .subtitle { font-size: 17px; color: var(--color-ink-soft); margin: 0 0 24px; max-width: 62ch; }
+  .meta-row { display: flex; flex-wrap: wrap; gap: 10px; }
+  .meta-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: var(--color-canvas-sunken); border: 1px solid var(--color-border); font-size: 13px; color: var(--color-ink-soft); font-family: var(--font-mono); }
+
+  .status-banner {
+    display: flex; align-items: center; gap: 16px;
+    padding: 22px 26px; border-radius: 14px; margin-bottom: 36px;
+    background: var(--color-success-soft); border: 1px solid rgba(30, 122, 76, 0.28);
+  }
+  .status-banner .check { width: 42px; height: 42px; border-radius: 50%; background: var(--color-success); color: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 20px; }
+  .status-banner .txt strong { font-family: var(--font-display); font-size: 20px; display: block; margin-bottom: 2px; }
+  .status-banner .txt span { color: var(--color-ink-soft); font-size: 14.5px; }
+
+  .status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 44px; }
+  .status-card { padding: 16px 18px; border-radius: 12px; background: var(--color-canvas-raised); border: 1px solid var(--color-border); }
+  .status-card .num { font-family: var(--font-display); font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; margin-bottom: 6px; color: var(--color-success); }
+  .status-card .label { font-size: 12.5px; color: var(--color-ink-muted); }
+
+  section { margin-bottom: 48px; }
+  h2.h { font-family: var(--font-display); font-size: 23px; font-weight: 700; margin: 0 0 6px; }
+  .lede { color: var(--color-ink-soft); margin: 0 0 20px; max-width: 68ch; font-size: 14.5px; }
+
+  .run-list { display: flex; flex-direction: column; gap: 1px; border: 1px solid var(--color-border); border-radius: 12px; overflow: hidden; background: var(--color-border); }
+  .run-row { display: flex; align-items: center; gap: 12px; padding: 13px 16px; background: var(--color-canvas-raised); }
+  .run-row .idx { font-family: var(--font-mono); font-size: 12px; color: var(--color-ink-muted); width: 20px; flex-shrink: 0; text-align: right; }
+  .run-row .ok-dot { width: 20px; height: 20px; border-radius: 50%; background: var(--color-success-soft); color: var(--color-success); display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
+  .run-row .name { flex: 1; font-size: 14px; min-width: 0; }
+  .run-row .marco { font-family: var(--font-mono); font-size: 10.5px; padding: 2px 7px; border-radius: 5px; background: var(--color-brand-soft); color: var(--color-brand-active); flex-shrink: 0; }
+  .run-row .dur { font-family: var(--font-mono); font-size: 12px; color: var(--color-ink-muted); font-variant-numeric: tabular-nums; flex-shrink: 0; width: 60px; text-align: right; }
+  .run-row .pass { font-size: 11px; font-weight: 700; color: var(--color-success); text-transform: uppercase; letter-spacing: 0.04em; flex-shrink: 0; width: 68px; text-align: right; }
+
+  .fact-card { border: 1px solid var(--color-border); border-radius: 12px; padding: 20px 22px; background: var(--color-canvas-raised); }
+  .fact-row { display: flex; justify-content: space-between; gap: 16px; padding: 9px 0; border-bottom: 1px solid var(--color-border); }
+  .fact-row:last-child { border-bottom: none; }
+  .fact-k { font-size: 13px; color: var(--color-ink-muted); }
+  .fact-v { font-family: var(--font-mono); font-size: 13.5px; font-weight: 600; text-align: right; max-width: 60%; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 600; }
+  .pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .pill.bad { background: var(--color-danger-soft); color: var(--color-danger); }
+  .pill.ok { background: var(--color-success-soft); color: var(--color-success); }
+
+  .raw-section { background: var(--color-canvas-sunken); border-radius: 16px; padding: 28px; border: 1px solid var(--color-border); }
+  .raw-block-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .raw-block-head h4 { font-family: var(--font-mono); font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-ink-muted); margin: 0; }
+  button.copy-btn { font-family: var(--font-mono); font-size: 12px; padding: 5px 11px; border-radius: 6px; border: 1px solid var(--color-border-strong); background: var(--color-canvas-raised); color: var(--color-ink-soft); cursor: pointer; }
+  button.copy-btn:hover { border-color: var(--color-brand); color: var(--color-brand-active); }
+  button.copy-btn:focus-visible, a:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 2px; }
+  pre.raw { margin: 0; padding: 16px 18px; background: var(--color-code-bg); color: var(--color-code-ink); border-radius: 10px; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.55; overflow-x: auto; white-space: pre; }
+
+  footer { margin-top: 56px; padding-top: 22px; border-top: 1px solid var(--color-border); color: var(--color-ink-muted); font-size: 13px; }
+  .note { font-size: 13px; color: var(--color-ink-muted); margin-top: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="cover">
+    <p class="eyebrow">Nayara One · Evidência técnica</p>
+    <h1 class="title">Execução dos testes automatizados</h1>
+    <p class="subtitle">Registro real da última rodada dos testes que protegem as regras críticas dos Marcos 3, 4 e 5, mais a confirmação do contrato de teste corrigido.</p>
+    <div class="meta-row">
+      <span class="meta-pill">02/09/2026 · 19:47</span>
+      <span class="meta-pill">commit 8549d11</span>
+      <span class="meta-pill">npm test</span>
+    </div>
+  </header>
+
+  <div class="status-banner">
+    <span class="check">✓</span>
+    <span class="txt"><strong>20 de 20 testes aprovados</strong><span>Nenhuma falha, nenhum teste pulado, nenhum cancelado.</span></span>
+  </div>
+
+  <div class="status-grid">
+    <div class="status-card"><div class="num">20</div><div class="label">Testes executados</div></div>
+    <div class="status-card"><div class="num">20</div><div class="label">Aprovados</div></div>
+    <div class="status-card"><div class="num">0</div><div class="label">Reprovados</div></div>
+    <div class="status-card"><div class="num">46,8s</div><div class="label">Tempo total</div></div>
+  </div>
+
+  <section>
+    <h2 class="h">Contrato de teste corrigido</h2>
+    <p class="lede">Confirmação em tempo real, consultada direto na API no momento em que esta página foi gerada.</p>
+    <div class="fact-card">
+      <div class="fact-row"><span class="fact-k">Identificador</span><span class="fact-v">eb2488db-2211-4e27-81d5-38de756f4937</span></div>
+      <div class="fact-row"><span class="fact-k">Status antes</span><span class="fact-v"><span class="pill bad">Ativo</span></span></div>
+      <div class="fact-row"><span class="fact-k">Status agora</span><span class="fact-v"><span class="pill ok">Cancelado</span></span></div>
+      <div class="fact-row"><span class="fact-k">Corrigido em</span><span class="fact-v">02/09/2026 · 16:26</span></div>
+      <div class="fact-row"><span class="fact-k">Visível em</span><span class="fact-v">Administração → Atividades</span></div>
+    </div>
+    <p class="note">A correção fica registrada como uma entrada própria na trilha de auditoria (ação "legal.contract.data_correction"), com o motivo completo, quem autorizou e quando. Para ver com os próprios olhos, dentro do sistema: abra Administração → Atividades e busque pelo id do contrato acima.</p>
+  </section>
+
+  <section>
+    <h2 class="h">Os 20 testes, um por um</h2>
+    <p class="lede">Cada linha é um teste real, executado contra o banco de homologação dentro de uma transação sempre desfeita ao final (nenhum dado de teste fica gravado).</p>
+    <div class="run-list" id="run-list"></div>
+  </section>
+
+  <section class="raw-section">
+    <h2 class="h" style="margin-bottom:6px;">Dados brutos</h2>
+    <p class="lede">Para conferência técnica direta ou para colar numa IA e pedir uma segunda opinião sobre o resultado.</p>
+    <div class="raw-block-head"><h4>Saída completa da execução</h4><button class="copy-btn" data-copy="raw-log">Copiar</button></div>
+    <pre class="raw" id="raw-log">tests 20
+suites 0
+pass 20
+fail 0
+cancelled 0
+skipped 0
+todo 0
+duration_ms 46827.7995
+
+1. opportunity ativa sem nextAction/nextActionDueAt falha com 422 (6815.119042ms)
+2. opportunity ativa com nextAction/nextActionDueAt e criada e publica domain event de stage_changed (4097.394625ms)
+3. opportunity fechada (CLOSED_WON/CLOSED_LOST) nao exige nextAction (5363.856166ms)
+4. atualizar stage de opportunity publica novo domain event de stage_changed (5482.39975ms)
+5. FIN-004 idempotencia: 2a tentativa com a mesma chave e bloqueada (nao duplica pagamento) (8778.26925ms)
+6. maker-checker: quem solicitou a aprovacao nao pode decidir a propria solicitacao (2998.34725ms)
+7. maker-checker: segundo usuario aprova (risco HIGH exige 2 aprovacoes independentes) (3819.537459ms)
+8. conciliacao: valores divergentes entre lancamento e extrato sao bloqueados (2158.736875ms)
+9. conciliacao: valores batendo concilia; conciliar de novo o mesmo lancamento e bloqueado (3862.138709ms)
+10. estorno: lancamento estornado nao pode ser estornado de novo (1792.241ms)
+11. HOM-001: contrato nao avanca para SIGNING sem nenhuma versao de documento (19034.459542ms)
+12. HOM-001: contrato nao avanca para SIGNED sem todas as assinaturas confirmadas (7651.539208ms)
+13. fluxo feliz: documento e todas as assinaturas confirmadas leva o contrato a ACTIVE (16042.322292ms)
+14. maquina de estados: contrato ACTIVE nao tem transicao de saida (nao se cancela pelo fluxo normal) (3250.583209ms)
+15. dedup: cria pessoa, tenta duplicata por CPF, espera 409 (16744.314209ms)
+16. dedup: cria pessoa, tenta duplicata por contato principal (email), espera 409 (2538.954667ms)
+17. dedup: pessoas sem documento/contato em comum nao conflitam (4853.478292ms)
+18. offers: 2a offer ACTIVE do mesmo tipo faz a 1a virar SUPERSEDED (11914.113166ms)
+19. offers: mudanca de preco gera INSERT append-only em property_price_history (4304.359375ms)
+20. matching deterministico: radar retorna apenas properties que batem em TODOS os criterios (25276.619458ms)</pre>
+    <p class="note">Repositório: NayaraOne--API, pasta test/. Comando: <code>npm test</code>. Qualquer pessoa técnica pode repetir esta execução a qualquer momento.</p>
+  </section>
+
+  <footer>
+    Nayara One · execução registrada em 02/09/2026, commit 8549d11. Página gerada por Patrick Gomes Siqueira para instruir o roteiro de homologação dos Marcos 3, 4 e 5.
+  </footer>
+
+</div>
+
+<script>
+  var tests = [
+    ["opportunity ativa sem nextAction/nextActionDueAt falha com 422", "3", 6815],
+    ["opportunity ativa com nextAction/nextActionDueAt é criada e publica domain event", "3", 4097],
+    ["opportunity fechada (ganho/perdido) não exige nextAction", "3", 5364],
+    ["atualizar stage de opportunity publica novo domain event", "3", 5482],
+    ["idempotência: 2ª tentativa com a mesma chave é bloqueada", "4", 8778],
+    ["maker-checker: quem solicitou não pode decidir a própria solicitação", "4", 2998],
+    ["maker-checker: risco alto exige 2 aprovações independentes", "4", 3820],
+    ["conciliação: valores divergentes são bloqueados", "4", 2159],
+    ["conciliação: não concilia o mesmo lançamento duas vezes", "4", 3862],
+    ["estorno: não estorna o mesmo lançamento duas vezes", "4", 1792],
+    ["HOM-001: bloqueia avanço sem versão de documento", "5", 19034],
+    ["HOM-001: bloqueia avanço sem todas as assinaturas", "5", 7652],
+    ["fluxo feliz: documento + assinaturas leva o contrato a Ativo", "5", 16042],
+    ["contrato Ativo não tem transição de saída pelo fluxo normal", "5", 3251],
+    ["dedup: duplicata por CPF é bloqueada", "3", 16744],
+    ["dedup: duplicata por contato principal é bloqueada", "3", 2539],
+    ["dedup: pessoas sem dado em comum não conflitam", "3", 4853],
+    ["ofertas: 2ª oferta ativa substitui a anterior automaticamente", "3", 11914],
+    ["ofertas: mudança de preço nunca apaga o histórico anterior", "3", 4304],
+    ["radar: só retorna imóveis que batem em TODOS os critérios", "3", 25277]
+  ];
+  var list = document.getElementById("run-list");
+  tests.forEach(function (t, i) {
+    var row = document.createElement("div");
+    row.className = "run-row";
+    row.innerHTML =
+      '<span class="idx">' + (i + 1) + '</span>' +
+      '<span class="ok-dot">✓</span>' +
+      '<span class="name">' + t[0] + '</span>' +
+      '<span class="marco">Marco ' + t[1] + '</span>' +
+      '<span class="dur">' + (t[2] / 1000).toFixed(1) + 's</span>' +
+      '<span class="pass">Aprovado</span>';
+    list.appendChild(row);
+  });
+
+  document.querySelectorAll(".copy-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var target = document.getElementById(btn.getAttribute("data-copy"));
+      if (!target) return;
+      navigator.clipboard.writeText(target.textContent).then(function () {
+        var original = btn.textContent;
+        btn.textContent = "Copiado";
+        setTimeout(function () { btn.textContent = original; }, 1600);
+      });
+    });
+  });
+</script>
+</body>
+</html>
