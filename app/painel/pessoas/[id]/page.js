@@ -178,6 +178,11 @@ export default function PersonDetailPage({ params }) {
                 <Icon name="layers" size={16} /> Mesclar cadastros
               </Button>
             ) : null}
+            {person.status !== "MERGED" ? (
+              <Button variant="secondary" onClick={() => router.push(`/painel/pessoas/${person.id}/editar`)}>
+                <Icon name="pencil" size={16} /> Editar
+              </Button>
+            ) : null}
             <Button variant="danger" onClick={() => setDeleteOpen(true)}>
               <Icon name="trash" size={16} /> Excluir
             </Button>
@@ -345,7 +350,7 @@ export default function PersonDetailPage({ params }) {
                   <span className={styles.summaryLabel}>Status</span>
                   <Badge tone={STATUS_TONE[person.status] || "neutral"}>{STATUS_LABELS[person.status] || person.status}</Badge>
                 </div>
-                <div className={styles.summaryRow}>
+                <div className={[styles.summaryRow, styles.summaryRowRoles].join(" ")}>
                   <span className={styles.summaryLabel}>Papéis</span>
                   <div className={styles.summaryRoles}>
                     {person.roles.length === 0 ? (

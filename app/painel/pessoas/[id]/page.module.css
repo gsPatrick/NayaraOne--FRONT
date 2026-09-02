@@ -103,11 +103,23 @@
   color: var(--color-ink);
 }
 
+/* Papéis: linha própria (label em cima, chips embaixo ocupando a largura toda) em vez de
+   dividir espaço com o label num flex row — com vários papéis (até 9 hoje), o
+   justify-content:flex-end dentro de um espaço estreito espremia os chips e criava um efeito
+   de "escada" desalinhado. */
+.summaryRowRoles {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
 .summaryRoles {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: var(--space-2);
+  width: 100%;
 }
 
 .meta {

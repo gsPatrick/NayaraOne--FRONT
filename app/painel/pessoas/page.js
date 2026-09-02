@@ -244,7 +244,7 @@ export default function PessoasPage() {
       render: (row) => (
         <RowActions
           onView={() => router.push(`/painel/pessoas/${row.id}`)}
-          onEdit={() => router.push(`/painel/pessoas/${row.id}`)}
+          onEdit={() => router.push(`/painel/pessoas/${row.id}/editar`)}
           onDelete={() => setDeleteTarget(row)}
         />
       ),

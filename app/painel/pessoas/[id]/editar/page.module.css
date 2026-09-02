@@ -1,0 +1,125 @@
+.wrap {
+  max-width: 780px;
+  min-width: 0;
+  margin: 0 auto;
+  padding-bottom: var(--space-8);
+}
+
+.card { margin-bottom: var(--space-6); }
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6) var(--space-5);
+}
+
+.formGrid > * { min-width: 0; }
+
+.span2 { grid-column: 1 / -1; }
+
+@media (max-width: 560px) {
+  .formGrid { grid-template-columns: 1fr; }
+}
+
+.roleGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.roleChip {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-canvas-raised);
+  color: var(--color-ink-soft);
+  font-size: var(--text-body-sm);
+  font-weight: 600;
+  transition: background-color var(--duration-base) var(--ease-out-expo), color var(--duration-base) var(--ease-out-expo), border-color var(--duration-base) var(--ease-out-expo);
+}
+
+.roleChipActive {
+  background: var(--color-brand-soft);
+  border-color: var(--color-brand);
+  color: var(--color-brand-active);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .roleChip { transition: none; }
+}
+
+.rowsWrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.contactRow {
+  display: grid;
+  grid-template-columns: 1fr 2fr auto auto;
+  gap: var(--space-3);
+  align-items: end;
+}
+
+.documentRow {
+  display: grid;
+  grid-template-columns: 1fr 2fr auto;
+  gap: var(--space-3);
+  align-items: end;
+}
+
+.contactRow > *, .documentRow > * { min-width: 0; }
+
+@media (max-width: 640px) {
+  .contactRow, .documentRow { grid-template-columns: 1fr; }
+}
+
+.primaryToggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-caption);
+  font-weight: 600;
+  color: var(--color-ink-soft);
+  white-space: nowrap;
+  padding-bottom: var(--space-3);
+}
+
+.removeRow {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-ink-muted);
+  transition: background-color var(--duration-base) var(--ease-out-expo), color var(--duration-base) var(--ease-out-expo);
+}
+
+.removeRow:hover { background: var(--color-danger-soft); color: var(--color-danger); }
+
+@media (prefers-reduced-motion: reduce) {
+  .removeRow { transition: none; }
+}
+
+.addRowBtn { margin-top: var(--space-4); align-self: flex-start; }
+
+.emptyRows { font-size: var(--text-body-sm); color: var(--color-ink-muted); margin-bottom: var(--space-4); }
+
+.actionBar {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  background: var(--color-canvas-raised);
+  border-top: 1px solid var(--color-border);
+}
+
+.actionBarInner {
+  max-width: 780px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-6);
+}
