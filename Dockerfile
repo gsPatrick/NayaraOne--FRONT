@@ -12,20 +12,17 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
 
-# Estágio isolado só para capturar o commit real que o build está usando (mesmo padrão do
-# Dockerfile da API) — permite que GET /api/version confirme, sem depender de passo manual,
-# qual versão está de fato publicada num ambiente. .git nunca chega no estágio runner: o
-# runner só copia arquivos pontuais (saída "standalone"), nunca "COPY . .".
-FROM node:20-alpine AS version
-WORKDIR /app
-RUN apk add --no-cache git
-COPY .git ./.git
-RUN git rev-parse HEAD > /VERSION || echo "unknown" > /VERSION
-
 FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
+
+# O Easypanel baixa o repositório como arquivo (não faz "git clone"), então não existe pasta
+# .git no contexto de build — não dá pra rodar "git rev-parse HEAD" aqui. Em compensação, ele
+# já injeta o commit publicado sozinho via --build-arg GIT_SHA (confirmado no log de build).
+# Grava isso num arquivo VERSION, que GET /api/version lê pra responder qual commit está no ar.
+ARG GIT_SHA=unknown
+RUN echo "$GIT_SHA" > /app/VERSION
 
 RUN addgroup --system --gid 1001 nodejs \
   && adduser --system --uid 1001 nextjs
@@ -34,7 +31,6 @@ RUN addgroup --system --gid 1001 nodejs \
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-COPY --from=version --chown=nextjs:nodejs /VERSION ./VERSION
 
 USER nextjs
 EXPOSE 3000
