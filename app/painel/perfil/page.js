@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import QRCode from "qrcode";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
@@ -10,7 +11,7 @@ import Input from "@/components/atoms/Input/Input";
 import Alert from "@/components/molecules/Alert/Alert";
 import Badge from "@/components/atoms/Badge/Badge";
 import Modal from "@/components/organisms/Modal/Modal";
-import { getCurrentUser } from "@/lib/auth/session";
+import { getCurrentUser, isMfaSetupRequired, clearMfaSetupRequired } from "@/lib/auth/session";
 import { setupMfa, confirmMfa, disableMfa } from "@/lib/api/mfa";
 import styles from "./page.module.css";
 
@@ -19,8 +20,15 @@ import styles from "./page.module.css";
 // Fluxo: setup (gera otpauth://) -> confirm (primeiro código, habilita + mostra recovery codes
 // uma única vez) -> disable (exige código atual válido).
 export default function PerfilPage() {
+  const router = useRouter();
   const currentUser = getCurrentUser();
   const [mfaEnabled, setMfaEnabled] = useState(Boolean(currentUser?.mfaEnabled));
+  const [mfaRequired, setMfaRequired] = useState(false);
+  const [completedRequiredSetup, setCompletedRequiredSetup] = useState(false);
+
+  useEffect(() => {
+    setMfaRequired(isMfaSetupRequired());
+  }, []);
 
   const [step, setStep] = useState("idle"); // idle | setup | confirm | recovery
   const [otpauthUri, setOtpauthUri] = useState("");
@@ -74,6 +82,11 @@ export default function PerfilPage() {
       setStep("recovery");
       setMfaEnabled(true);
       setConfirmCode("");
+      if (mfaRequired) {
+        clearMfaSetupRequired();
+        setMfaRequired(false);
+        setCompletedRequiredSetup(true);
+      }
     } catch (err) {
       setError(err?.message || "Código inválido. Tente novamente.");
     } finally {
@@ -86,6 +99,9 @@ export default function PerfilPage() {
     setOtpauthUri("");
     setQrDataUrl("");
     setRecoveryCodes([]);
+    if (completedRequiredSetup) {
+      router.push("/painel");
+    }
   }
 
   async function handleDisable() {
@@ -121,6 +137,13 @@ export default function PerfilPage() {
         subtitle="Aplicativo autenticador (TOTP) — Google Authenticator, Authy, 1Password, etc."
         className={styles.securityCard}
       >
+        {mfaRequired ? (
+          <Alert tone="warning" title="Configuração de MFA obrigatória">
+            Sua empresa exige verificação em duas etapas para o seu perfil de acesso. Configure o
+            MFA abaixo para continuar usando o painel.
+          </Alert>
+        ) : null}
+
         {error ? <Alert tone="danger" title="Erro">{error}</Alert> : null}
 
         {step === "idle" && (

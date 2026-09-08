@@ -11,10 +11,12 @@ import { useRouter, usePathname } from "next/navigation";
 import Spinner from "@/components/atoms/Spinner/Spinner";
 import Button from "@/components/atoms/Button/Button";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
-import { getSession } from "@/lib/auth/session";
+import { getSession, isMfaSetupRequired } from "@/lib/auth/session";
 import { hasPermission } from "@/lib/rbac/permissions";
 import { getRequiredPermission } from "@/lib/rbac/routePermissions";
 import styles from "./AuthGuard.module.css";
+
+const MFA_SETUP_PATH = "/painel/perfil";
 
 export default function AuthGuard({ children }) {
   const router = useRouter();
@@ -25,6 +27,10 @@ export default function AuthGuard({ children }) {
     const session = getSession();
     if (!session?.accessToken) {
       router.replace("/entrar");
+      return;
+    }
+    if (isMfaSetupRequired() && pathname !== MFA_SETUP_PATH) {
+      router.replace(MFA_SETUP_PATH);
       return;
     }
     const requiredPermission = getRequiredPermission(pathname);
