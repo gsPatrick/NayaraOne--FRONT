@@ -1,8 +1,8 @@
 import styles from "./FormField.module.css";
 
-export default function FormField({ label, htmlFor, helper, error, required, children }) {
+export default function FormField({ label, htmlFor, helper, error, required, children, className = "" }) {
   return (
-    <div className={styles.field}>
+    <div className={[styles.field, className].filter(Boolean).join(" ")}>
       {label ? (
         <label htmlFor={htmlFor} className={styles.label}>
           {label}

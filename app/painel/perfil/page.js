@@ -10,10 +10,80 @@ import Button from "@/components/atoms/Button/Button";
 import Input from "@/components/atoms/Input/Input";
 import Alert from "@/components/molecules/Alert/Alert";
 import Badge from "@/components/atoms/Badge/Badge";
+import Icon from "@/components/atoms/Icon/Icon";
 import Modal from "@/components/organisms/Modal/Modal";
 import { getCurrentUser, isMfaSetupRequired, clearMfaSetupRequired } from "@/lib/auth/session";
 import { setupMfa, confirmMfa, disableMfa } from "@/lib/api/mfa";
 import styles from "./page.module.css";
+
+const THEME_STORAGE_KEY = "nayara-one:theme";
+
+const THEMES = [
+  {
+    id: "onyx",
+    name: "Onyx (padrão)",
+    description: "Botões, sidebar e destaques em preto, título em fonte serifada — visual padrão do sistema.",
+    preview: { bg: "#F7F5F1", accent: "#0D0D0D", panel: "#0D0D0D" },
+  },
+  {
+    id: "default",
+    name: "Clássico",
+    description: "Dourado como cor de destaque principal (CTAs, marca) — visual anterior ao padrão atual.",
+    preview: { bg: "#F7F5F1", accent: "#BE9130", panel: "#17130F" },
+  },
+];
+
+// Aparência é preferência pessoal do navegador (localStorage), não uma configuração da
+// empresa — por isso vive aqui no perfil do usuário, não em Configurações (que é só admin).
+function AparenciaCard() {
+  const [theme, setTheme] = useState("onyx");
+
+  useEffect(() => {
+    const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+    setTheme(stored === "default" ? "default" : "onyx");
+  }, []);
+
+  function applyTheme(id) {
+    setTheme(id);
+    window.localStorage.setItem(THEME_STORAGE_KEY, id);
+    if (id === "onyx") {
+      document.documentElement.dataset.theme = "onyx";
+    } else {
+      delete document.documentElement.dataset.theme;
+    }
+  }
+
+  return (
+    <Card
+      title="Aparência"
+      subtitle="Escolha o estilo visual do seu painel. É só uma preferência sua — não afeta outros usuários."
+      className={styles.appearanceCard}
+    >
+      <div className={styles.themeGrid}>
+        {THEMES.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            className={[styles.themeCard, theme === t.id ? styles.themeCardActive : ""].filter(Boolean).join(" ")}
+            onClick={() => applyTheme(t.id)}
+          >
+            <span className={styles.themePreview} style={{ background: t.preview.bg }}>
+              <span className={styles.themePreviewPanel} style={{ background: t.preview.panel }} />
+              <span className={styles.themePreviewAccent} style={{ background: t.preview.accent }} />
+            </span>
+            <span className={styles.themeInfo}>
+              <span className={styles.themeName}>
+                {t.name}
+                {theme === t.id ? <Icon name="check" size={16} className={styles.themeCheck} /> : null}
+              </span>
+              <span className={styles.themeDescription}>{t.description}</span>
+            </span>
+          </button>
+        ))}
+      </div>
+    </Card>
+  );
+}
 
 // Tela de segurança/MFA — Caderno técnico Nayara: "MFA obrigatório para diretoria, financeiro,
 // jurídico, administradores e alterações críticas" (TOTP, RFC 6238; SMS não é preferencial).
@@ -131,6 +201,8 @@ export default function PerfilPage() {
         title="Perfil do usuário"
         description="Dados pessoais, foto e preferências de conta."
       />
+
+      <AparenciaCard />
 
       <Card
         title="Segurança — verificação em duas etapas (MFA)"
