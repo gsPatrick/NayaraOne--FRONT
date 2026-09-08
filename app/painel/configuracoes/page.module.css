@@ -3,6 +3,12 @@
   width: 100%;
 }
 
+.formGrid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
 .themeGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
