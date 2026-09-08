@@ -42,4 +42,45 @@
   width: calc(50% - var(--space-1));
 }
 
-.panel { font-size: var(--text-body); }
+.panel { font-size: var(--text-body); min-width: 0; flex: 1; }
+
+.wrapVertical {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--space-6);
+}
+
+.listVertical {
+  flex-direction: column;
+  width: 220px;
+  flex: 0 0 auto;
+  background: transparent;
+  padding: 0;
+  gap: var(--space-1);
+}
+
+.tabVertical {
+  flex: none;
+  width: 100%;
+  text-align: left;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: transparent;
+}
+
+.tabVertical.active {
+  background: var(--color-canvas-raised);
+  color: var(--color-brand-active);
+  box-shadow: var(--shadow-sm);
+}
+
+@media (max-width: 720px) {
+  .wrapVertical {
+    flex-direction: column;
+  }
+  .listVertical {
+    flex-direction: row;
+    width: 100%;
+    overflow-x: auto;
+  }
+}

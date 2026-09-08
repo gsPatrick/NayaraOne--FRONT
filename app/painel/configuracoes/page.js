@@ -683,6 +683,7 @@ export default function ConfiguracoesPage() {
     <AppShell title="Configurações">
       <div className={styles.wrap}>
         <Tabs
+          orientation="vertical"
           items={[
             { label: "Aparência", content: <AparenciaTab /> },
             { label: "Cobrança", content: <CobrancaTab /> },
