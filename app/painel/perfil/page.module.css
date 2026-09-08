@@ -1,0 +1,75 @@
+.securityCard {
+  margin-top: var(--space-5);
+}
+
+.statusRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.setupBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.instructions {
+  margin: 0;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.qr {
+  align-self: flex-start;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  padding: var(--space-2);
+  background: #fff;
+}
+
+.manualLabel {
+  margin: 0;
+  font-size: var(--text-caption);
+  color: var(--color-ink-muted);
+}
+
+.manualCode {
+  display: block;
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-canvas-sunken);
+  border-radius: var(--radius-md);
+  font-size: var(--text-caption);
+  word-break: break-all;
+}
+
+.codeInput {
+  width: 220px;
+  max-width: 100%;
+  text-align: center;
+  letter-spacing: 0.3em;
+}
+
+.actionsRow {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+.recoveryList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.recoveryCode {
+  font-family: var(--font-mono, monospace);
+  background: var(--color-canvas-sunken);
+  border-radius: var(--radius-md);
+  padding: var(--space-2);
+  text-align: center;
+}

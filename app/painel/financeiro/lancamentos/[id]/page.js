@@ -12,6 +12,7 @@ import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import NatureBadge from "@/components/molecules/NatureBadge/NatureBadge";
 import BankLogo from "@/components/atoms/BankLogo/BankLogo";
+import MfaVerifyModal from "@/components/organisms/MfaVerifyModal/MfaVerifyModal";
 import { getBankName } from "@/lib/mock/banks";
 import { maskAccountNumber } from "@/lib/mask";
 import {
@@ -51,6 +52,7 @@ export default function LancamentoDetailPage({ params }) {
   const [notFoundFlag, setNotFoundFlag] = useState(false);
   const [notice, setNotice] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [mfaOpen, setMfaOpen] = useState(false);
 
   function load() {
     let cancelled = false;
@@ -102,7 +104,13 @@ export default function LancamentoDetailPage({ params }) {
 
   if (notFoundFlag) return notFound();
 
-  async function handleSettle() {
+  // Liquidar é step-up MFA obrigatório (Caderno §3.3/3.4: "aprovação de pagamento") — abre o
+  // modal de verificação; a chamada real de negócio só acontece em runSettle, após confirmar.
+  function handleSettle() {
+    setMfaOpen(true);
+  }
+
+  async function runSettle() {
     setBusy(true);
     setNotice(null);
     try {
@@ -230,6 +238,16 @@ export default function LancamentoDetailPage({ params }) {
           </div>
         </div>
       )}
+
+      <MfaVerifyModal
+        open={mfaOpen}
+        onClose={() => setMfaOpen(false)}
+        actionLabel="liquidar este lançamento"
+        onVerified={async () => {
+          setMfaOpen(false);
+          await runSettle();
+        }}
+      />
     </AppShell>
   );
 }

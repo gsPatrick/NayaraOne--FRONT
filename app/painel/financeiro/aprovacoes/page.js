@@ -16,6 +16,7 @@ import SwitchableChart from "@/components/molecules/SwitchableChart/SwitchableCh
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu";
 import Pagination from "@/components/molecules/Pagination/Pagination";
+import MfaVerifyModal from "@/components/organisms/MfaVerifyModal/MfaVerifyModal";
 import {
   REQUIRED_STEPS_BY_RISK,
   APPROVAL_STATUS_LABELS,
@@ -38,6 +39,10 @@ const ENTITY_ICON = {
   OwnerRepass: "layers",
 };
 
+// Risco cujo doc de negócio exige step-up MFA antes da decisão (Caderno §3.3/3.4) — mesmo
+// critério aplicado no backend (approvals.service.decideApprovalStep).
+const MFA_REQUIRED_RISK_LEVELS = ["HIGH", "CRITICAL"];
+
 function userName(users, id) {
   return users.find((u) => u.id === id)?.name || "—";
 }
@@ -54,6 +59,7 @@ export default function AprovacoesPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
   const [busyId, setBusyId] = useState(null);
+  const [pendingDecision, setPendingDecision] = useState(null); // { request, decision }
 
   useEffect(() => {
     let cancelled = false;
@@ -82,13 +88,7 @@ export default function AprovacoesPage() {
     showNotice._t = window.setTimeout(() => setNotice(null), 6000);
   }
 
-  async function handleDecide(request, decision) {
-    // Trava de maker-checker aplicada no front por UX imediata — a API também recusa
-    // (FINANCE_APPROVAL_SELF_APPROVAL_FORBIDDEN) então o erro real sempre vem dela.
-    if (request.requestedByUserId === currentUser?.id) {
-      showNotice("danger", "Auto-aprovação bloqueada", "Você não pode aprovar/rejeitar uma solicitação que você mesmo criou (segregação de funções).");
-      return;
-    }
+  async function runDecide(request, decision) {
     setBusyId(request.id);
     try {
       const result = await decideApprovalStep(request.id, { decision });
@@ -101,6 +101,23 @@ export default function AprovacoesPage() {
     } finally {
       setBusyId(null);
     }
+  }
+
+  async function handleDecide(request, decision) {
+    // Trava de maker-checker aplicada no front por UX imediata — a API também recusa
+    // (FINANCE_APPROVAL_SELF_APPROVAL_FORBIDDEN) então o erro real sempre vem dela.
+    if (request.requestedByUserId === currentUser?.id) {
+      showNotice("danger", "Auto-aprovação bloqueada", "Você não pode aprovar/rejeitar uma solicitação que você mesmo criou (segregação de funções).");
+      return;
+    }
+    // Step-up MFA obrigatório para decisões de risco HIGH/CRITICAL (Caderno §3.3/3.4) — pede
+    // o código antes de chamar a API; a API também recusa sem step-up recente (fail closed),
+    // este modal é só UX para não deixar o usuário descobrir isso depois de tentar decidir.
+    if (MFA_REQUIRED_RISK_LEVELS.includes(request.riskLevel)) {
+      setPendingDecision({ request, decision });
+      return;
+    }
+    await runDecide(request, decision);
   }
 
   const filtered = useMemo(() => {
@@ -232,6 +249,17 @@ export default function AprovacoesPage() {
           </div>
         </>
       )}
+
+      <MfaVerifyModal
+        open={Boolean(pendingDecision)}
+        onClose={() => setPendingDecision(null)}
+        actionLabel={pendingDecision?.decision === "REJECTED" ? "rejeitar esta solicitação de alto risco" : "aprovar esta solicitação de alto risco"}
+        onVerified={async () => {
+          const { request, decision } = pendingDecision;
+          setPendingDecision(null);
+          await runDecide(request, decision);
+        }}
+      />
 
       <StickyActionBar>
         <FinanceNavMenu />

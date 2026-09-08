@@ -15,6 +15,7 @@ import FormField from "@/components/molecules/FormField/FormField";
 import Input from "@/components/atoms/Input/Input";
 import BankLogo from "@/components/atoms/BankLogo/BankLogo";
 import BankSelect from "@/components/molecules/BankSelect/BankSelect";
+import MfaVerifyModal from "@/components/organisms/MfaVerifyModal/MfaVerifyModal";
 import {
   BANK_ACCOUNT_STATUS_LABELS,
   BANK_ACCOUNT_STATUS_TONE,
@@ -49,6 +50,7 @@ export default function ContaBancariaDetailPage({ params }) {
   const [notice, setNotice] = useState(null);
   const [revealed, setRevealed] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [mfaOpen, setMfaOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -103,7 +105,15 @@ export default function ContaBancariaDetailPage({ params }) {
     }
   }
 
-  async function handleSaveSensitive() {
+  // Alterar dado bancário sensível é step-up MFA obrigatório (Caderno §3.3/3.4): fecha o
+  // modal de edição e pede o código antes de chamar a API — a chamada real (runSaveSensitive)
+  // só acontece depois da verificação confirmada.
+  function handleSaveSensitive() {
+    setEditOpen(false);
+    setMfaOpen(true);
+  }
+
+  async function runSaveSensitive() {
     setBusy(true);
     setNotice(null);
     try {
@@ -111,7 +121,6 @@ export default function ContaBancariaDetailPage({ params }) {
       // backend (bankAccounts.service.js SENSITIVE_FIELDS) — não simulamos isso no front.
       const updated = await updateBankAccount(account.id, editForm);
       setAccount(updated);
-      setEditOpen(false);
       setNotice({ tone: "warning", text: "Dados sensíveis alterados — a conta voltou para resfriamento de 48h antes de poder receber pagamentos novamente." });
     } catch (err) {
       setNotice({ tone: "danger", text: err?.message || "Não foi possível salvar os dados sensíveis." });
@@ -261,6 +270,16 @@ export default function ContaBancariaDetailPage({ params }) {
           </FormField>
         </div>
       </Modal>
+
+      <MfaVerifyModal
+        open={mfaOpen}
+        onClose={() => setMfaOpen(false)}
+        actionLabel="alterar os dados bancários sensíveis desta conta"
+        onVerified={async () => {
+          setMfaOpen(false);
+          await runSaveSensitive();
+        }}
+      />
     </AppShell>
   );
 }
