@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Resposta ao Pedido Único de Homologação</title>
+<style>
+  :root {
+    --color-brand: #BE9130;
+    --color-brand-hover: #A97D28;
+    --color-brand-active: #8A6620;
+    --color-brand-soft: rgba(190, 145, 48, 0.12);
+    --color-brand-border: rgba(190, 145, 48, 0.34);
+    --color-canvas: #FDFCFA;
+    --color-canvas-raised: #FFFFFF;
+    --color-canvas-sunken: #F7F5F1;
+    --color-ink: #17130F;
+    --color-ink-soft: #4A4033;
+    --color-ink-muted: #8C7F68;
+    --color-border: #EAE6DE;
+    --color-border-strong: #D9D2C4;
+    --color-success: #1E7A4C;
+    --color-success-soft: rgba(30, 122, 76, 0.12);
+    --color-warning: #B8790C;
+    --color-warning-soft: rgba(184, 121, 12, 0.14);
+    --color-danger: #C0392B;
+    --color-danger-soft: rgba(192, 57, 43, 0.12);
+    --color-info: #2563A6;
+    --color-info-soft: rgba(37, 99, 166, 0.12);
+    --color-code-bg: #17130F;
+    --color-code-ink: #F2EFE8;
+    --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+    --font-body: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --color-canvas: #16130E; --color-canvas-raised: #1D1913; --color-canvas-sunken: #100D09;
+      --color-ink: #F2EEE5; --color-ink-soft: #CFC6B5; --color-ink-muted: #9A8C71;
+      --color-border: #332C21; --color-border-strong: #443A2B;
+      --color-brand: #D6A845; --color-brand-hover: #E3B75B; --color-brand-active: #F0C670;
+      --color-brand-soft: rgba(214, 168, 69, 0.14); --color-brand-border: rgba(214, 168, 69, 0.32);
+      --color-success-soft: rgba(30, 122, 76, 0.2); --color-warning-soft: rgba(184, 121, 12, 0.22);
+      --color-danger-soft: rgba(192, 57, 43, 0.2); --color-info-soft: rgba(37, 99, 166, 0.22);
+      --color-code-bg: #0D0B08; --color-code-ink: #EDE8DC;
+    }
+  }
+  :root[data-theme="dark"] {
+    --color-canvas: #16130E; --color-canvas-raised: #1D1913; --color-canvas-sunken: #100D09;
+    --color-ink: #F2EEE5; --color-ink-soft: #CFC6B5; --color-ink-muted: #9A8C71;
+    --color-border: #332C21; --color-border-strong: #443A2B;
+    --color-brand: #D6A845; --color-brand-hover: #E3B75B; --color-brand-active: #F0C670;
+    --color-brand-soft: rgba(214, 168, 69, 0.14); --color-brand-border: rgba(214, 168, 69, 0.32);
+    --color-success-soft: rgba(30, 122, 76, 0.2); --color-warning-soft: rgba(184, 121, 12, 0.22);
+    --color-danger-soft: rgba(192, 57, 43, 0.2); --color-info-soft: rgba(37, 99, 166, 0.22);
+    --color-code-bg: #0D0B08; --color-code-ink: #EDE8DC;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--color-canvas); color: var(--color-ink);
+    font-family: var(--font-body); line-height: 1.55;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 48px 24px 96px; }
+  h1 { font-family: var(--font-display); font-size: 30px; margin: 0 0 6px; }
+  h2 { font-family: var(--font-display); font-size: 21px; margin: 40px 0 12px; padding-top: 8px; border-top: 1px solid var(--color-border); }
+  .meta { color: var(--color-ink-muted); font-size: 14px; margin-bottom: 28px; }
+  .meta code { font-family: var(--font-mono); background: var(--color-canvas-sunken); padding: 1px 6px; border-radius: 4px; }
+  .lede { color: var(--color-ink-soft); font-size: 15.5px; max-width: 68ch; }
+  .card { background: var(--color-canvas-raised); border: 1px solid var(--color-border); border-radius: 14px; padding: 20px 22px; margin: 16px 0; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+  .pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .pill.ok { background: var(--color-success-soft); color: var(--color-success); }
+  .pill.warn { background: var(--color-warning-soft); color: var(--color-warning); }
+  .pill.bad { background: var(--color-danger-soft); color: var(--color-danger); }
+  .pill.info { background: var(--color-info-soft); color: var(--color-info); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; background: var(--color-canvas-raised); border: 1px solid var(--color-border); border-radius: 12px; overflow: hidden; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--color-border); vertical-align: top; }
+  th { background: var(--color-canvas-sunken); font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.03em; color: var(--color-ink-muted); }
+  tr:last-child td { border-bottom: none; }
+  .id-cell { font-family: var(--font-mono); font-weight: 700; white-space: nowrap; }
+  .tablewrap { overflow-x: auto; }
+  .commit { font-family: var(--font-mono); font-size: 13px; }
+  a { color: var(--color-brand-active); }
+  .box-warn { background: var(--color-warning-soft); border: 1px solid var(--color-brand-border); border-radius: 12px; padding: 18px 20px; margin: 18px 0; }
+  .box-warn h3 { margin: 0 0 8px; font-size: 15px; }
+  ul.tight { margin: 8px 0; padding-left: 20px; }
+  ul.tight li { margin: 4px 0; }
+  .footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--color-border); color: var(--color-ink-muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Resposta ao Pedido Único de Homologação</h1>
+  <p class="meta">Referente ao documento <em>Pedido_Unico_Entrega_Homologacao_Nayara_One.docx</em> (09/09/2026) · API <code>c44e3aa</code> · Front <code>238c692</code> · Esta página foi publicada e vinculada ao mesmo build citado aqui — não é uma evidência de data anterior.</p>
+
+  <p class="lede">Este documento responde item a item aos defeitos AUD-001 a AUD-009 relatados, com o que foi corrigido, testado e publicado no ambiente de homologação. Ao final, explico por que a segunda parte do pedido (pacote GER/TEC/ADV completo) não pode ser tratada como parte desta rodada dos Marcos 3, 4 e 5.</p>
+
+  <h2>Defeitos relatados (AUD-001 a AUD-009)</h2>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>ID</th><th>Status</th><th>O que foi feito</th></tr></thead>
+    <tbody>
+      <tr><td class="id-cell">AUD-001</td><td><span class="pill warn">Não reproduzido</span></td><td>Testei diretamente contra a API: contato criado com dois papéis (Cliente + Proprietário) — ambos persistidos e retornados corretamente. Não encontrei o defeito no build atual. Peço reteste no commit <span class="commit">c44e3aa</span>.</td></tr>
+      <tr><td class="id-cell">AUD-002</td><td><span class="pill warn">Não reproduzido</span></td><td>Mesmo procedimento: lançamento financeiro criado com vencimento retornou o valor corretamente na consulta. Peço reteste no build atual antes de eu declarar corrigido algo que não vi quebrado.</td></tr>
+      <tr><td class="id-cell">AUD-003</td><td><span class="pill ok">Entregue</span></td><td>Causa raiz real e sistêmica encontrada: a formatação de valores em reais tinha <code>maximumFractionDigits: 0</code> como padrão, truncando os centavos em toda tela monetária do sistema. Corrigido na origem.</td></tr>
+      <tr><td class="id-cell">AUD-004</td><td><span class="pill ok">Entregue</span></td><td>A ação de correção auditada não existia. Implementada: exige motivo obrigatório, bloqueia alteração de status por essa via, exige MFA recente, e grava evento de auditoria completo (antes/depois) — <code>legal.contract.data_correction</code>.</td></tr>
+      <tr><td class="id-cell">AUD-005</td><td><span class="pill ok">Entregue</span></td><td>Credencial removida da página pública e senha da conta trocada imediatamente ao ser identificada.</td></tr>
+      <tr><td class="id-cell">AUD-006</td><td><span class="pill bad">Não entregue</span></td><td>Ainda não existe amarração automática entre a página de evidências e cada deploy. Reconhecido como pendência real — precisa de decisão de como estruturar isso antes de eu construir.</td></tr>
+      <tr><td class="id-cell">AUD-007</td><td><span class="pill ok">Entregue</span></td><td>Causa raiz real: datas de calendário (vigência de contrato, vencimento, garantias, ofertas de imóvel) enviadas como meia-noite UTC apareciam um dia antes para qualquer usuário no fuso do Brasil. Corrigido em todos os formulários que tocam esse tipo de campo.</td></tr>
+      <tr><td class="id-cell">AUD-008</td><td><span class="pill ok">Entregue</span></td><td>Confirmado como real e crítico: era possível criar uma versão de contrato com conteúdo vazio e avançar para "Em assinatura" com um hash de documento vazio. Agora exige conteúdo real.</td></tr>
+      <tr><td class="id-cell">AUD-009</td><td><span class="pill warn">Parcial</span></td><td>Mesma causa raiz de fuso horário do AUD-007 corrigida em todo campo de data editável. A data de criação da versão em si é um timestamp real do servidor exibido no fuso do navegador — isso é o comportamento correto, não um defeito. Preciso de mais detalhe do caso específico para confirmar se resta algo.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>Testes automatizados</h2>
+  <div class="card">
+    <p style="margin:0 0 8px"><span class="pill info">66/66 passando</span> — repositório <code>NayaraOne--API</code>, comando <code>npm test</code>, commit <code>c44e3aa</code>.</p>
+    <p style="margin:0; color:var(--color-ink-muted); font-size:13.5px">Inclui 8 testes escritos especificamente para provar os pontos AUD-004 e AUD-008 (bloqueio de campo proibido, exigência de motivo, rejeição de conteúdo vazio) — não são testes genéricos, testam exatamente o comportamento relatado.</p>
+  </div>
+
+  <h2>Sobre a segunda parte do pedido</h2>
+  <div class="box-warn">
+    <h3>Por que o pacote GER/TEC/ADV completo não entra nesta rodada</h3>
+    <p style="margin:0 0 10px">O documento pede, além dos defeitos pontuais, um pacote equivalente a uma auditoria de segurança/infraestrutura de nível enterprise: pentest independente, PITR com RPO/RTO medidos, teste de carga com p50/p95/p99, chaos engineering, canary deploy com kill switch, SAST/DAST completo, 55 testes adversariais, entre outros.</p>
+    <p style="margin:0 0 10px">Isso não é uma recusa de qualidade — é uma questão de escopo e proporção: esse tipo de pacote normalmente é entregue por uma equipe dedicada, ao longo de semanas, muitas vezes com serviços de terceiros contratados à parte (um pentest independente, por definição, não pode ser feito por quem escreveu o código). Não é compatível com o valor e o estágio atual do contrato dos Marcos 3, 4 e 5.</p>
+    <p style="margin:0">Proposta: tratar isso como uma frente própria, com escopo e prazo definidos separadamente — depois que os Marcos 3, 4 e 5 estiverem homologados com base nos defeitos reais encontrados e corrigidos (essa página).</p>
+  </div>
+
+  <div class="footer">
+    Nayara One · gerado a partir do build efetivamente publicado em homologação, não de um relatório anterior.
+  </div>
+</div>
+</body>
+</html>
