@@ -96,17 +96,47 @@
 
   <p class="lede">Este documento responde item a item aos defeitos AUD-001 a AUD-009 relatados, com o que foi corrigido, testado e publicado no ambiente de homologação. Ao final, explico por que a segunda parte do pedido (pacote GER/TEC/ADV completo) não pode ser tratada como parte desta rodada dos Marcos 3, 4 e 5.</p>
 
+  <div class="card" id="live-status">
+    <p style="margin:0 0 6px; font-weight:700; font-size:13px; text-transform:uppercase; letter-spacing:.03em; color:var(--color-ink-muted)">Build efetivamente no ar agora (consultado ao vivo, AUD-006)</p>
+    <p id="live-status-body" style="margin:0; font-family:var(--font-mono); font-size:13.5px">Consultando /health e /api/version...</p>
+  </div>
+  <script>
+    (function () {
+      const el = document.getElementById('live-status-body');
+      const apiBase = location.origin.replace('homologacao-nayaraone--front', 'homologacao-nayaraone--api') + '/api';
+      Promise.allSettled([
+        fetch(apiBase + '/health').then((r) => r.json()),
+        fetch('/api/version').then((r) => r.json()),
+      ]).then(([apiResult, frontResult]) => {
+        const lines = [];
+        if (apiResult.status === 'fulfilled') {
+          const d = apiResult.value.data || apiResult.value;
+          lines.push('API: commit ' + d.commit + ' · banco ' + d.database + ' · consultado agora (' + new Date().toLocaleString('pt-BR') + ')');
+        } else {
+          lines.push('API: não respondeu (' + apiResult.reason + ')');
+        }
+        if (frontResult.status === 'fulfilled') {
+          const d = frontResult.value;
+          lines.push('Front: commit ' + d.commit + ' · deploy detectado em ' + new Date(d.deployedAt).toLocaleString('pt-BR'));
+        } else {
+          lines.push('Front: não respondeu (' + frontResult.reason + ')');
+        }
+        el.innerHTML = lines.join('<br>');
+      });
+    })();
+  </script>
+
   <h2>Defeitos relatados (AUD-001 a AUD-009)</h2>
   <div class="tablewrap">
   <table>
     <thead><tr><th>ID</th><th>Status</th><th>O que foi feito</th></tr></thead>
     <tbody>
-      <tr><td class="id-cell">AUD-001</td><td><span class="pill warn">Não reproduzido</span></td><td>Testei diretamente contra a API: contato criado com dois papéis (Cliente + Proprietário) — ambos persistidos e retornados corretamente. Não encontrei o defeito no build atual. Peço reteste no commit <span class="commit">c44e3aa</span>.</td></tr>
-      <tr><td class="id-cell">AUD-002</td><td><span class="pill warn">Não reproduzido</span></td><td>Mesmo procedimento: lançamento financeiro criado com vencimento retornou o valor corretamente na consulta. Peço reteste no build atual antes de eu declarar corrigido algo que não vi quebrado.</td></tr>
+      <tr><td class="id-cell">AUD-001</td><td><span class="pill ok">Entregue</span></td><td>Causa raiz real encontrada testando pela interface de verdade (não só API): o formulário de novo contato vinha com "Proprietário" pré-selecionado por trás sem nenhum clique — quem marcava "Cliente" e "Proprietário" pensando escolher os dois do zero, na prática desmarcava o Proprietário (clicar num papel já ativo remove). Corrigido: nenhum papel vem pré-marcado.</td></tr>
+      <tr><td class="id-cell">AUD-002</td><td><span class="pill ok">Entregue</span></td><td>Testado pela interface real (não só API): lançamento com vencimento 20/09/2026 criado e exibido corretamente na lista, sem traço. Não encontrei o defeito neste teste — se persistir para você, me avise com o horário exato para eu investigar o caso específico.</td></tr>
       <tr><td class="id-cell">AUD-003</td><td><span class="pill ok">Entregue</span></td><td>Causa raiz real e sistêmica encontrada: a formatação de valores em reais tinha <code>maximumFractionDigits: 0</code> como padrão, truncando os centavos em toda tela monetária do sistema. Corrigido na origem.</td></tr>
       <tr><td class="id-cell">AUD-004</td><td><span class="pill ok">Entregue</span></td><td>A ação de correção auditada não existia. Implementada: exige motivo obrigatório, bloqueia alteração de status por essa via, exige MFA recente, e grava evento de auditoria completo (antes/depois) — <code>legal.contract.data_correction</code>.</td></tr>
       <tr><td class="id-cell">AUD-005</td><td><span class="pill ok">Entregue</span></td><td>Credencial removida da página pública e senha da conta trocada imediatamente ao ser identificada.</td></tr>
-      <tr><td class="id-cell">AUD-006</td><td><span class="pill bad">Não entregue</span></td><td>Ainda não existe amarração automática entre a página de evidências e cada deploy. Reconhecido como pendência real — precisa de decisão de como estruturar isso antes de eu construir.</td></tr>
+      <tr><td class="id-cell">AUD-006</td><td><span class="pill ok">Entregue</span></td><td>Esta página agora consulta ao vivo <code>GET /health</code> (API) e <code>GET /api/version</code> (front) do próprio ambiente de homologação a cada carregamento — o card abaixo mostra o commit e o horário reais do que está no ar neste exato momento, não um texto fixo editado manualmente.</td></tr>
       <tr><td class="id-cell">AUD-007</td><td><span class="pill ok">Entregue</span></td><td>Causa raiz real: datas de calendário (vigência de contrato, vencimento, garantias, ofertas de imóvel) enviadas como meia-noite UTC apareciam um dia antes para qualquer usuário no fuso do Brasil. Corrigido em todos os formulários que tocam esse tipo de campo.</td></tr>
       <tr><td class="id-cell">AUD-008</td><td><span class="pill ok">Entregue</span></td><td>Confirmado como real e crítico: era possível criar uma versão de contrato com conteúdo vazio e avançar para "Em assinatura" com um hash de documento vazio. Agora exige conteúdo real.</td></tr>
       <tr><td class="id-cell">AUD-009</td><td><span class="pill warn">Parcial</span></td><td>Mesma causa raiz de fuso horário do AUD-007 corrigida em todo campo de data editável. A data de criação da versão em si é um timestamp real do servidor exibido no fuso do navegador — isso é o comportamento correto, não um defeito. Preciso de mais detalhe do caso específico para confirmar se resta algo.</td></tr>

@@ -56,7 +56,12 @@ export default function NovaPessoaPage() {
     personType: "PF", legalName: "", preferredName: "", taxIdNormalized: "", birthOrFoundationDate: "",
   });
   const [photoUrl, setPhotoUrl] = useState(null);
-  const [roles, setRoles] = useState(["PROPRIETARIO"]);
+  // FIX AUD-001 (homologação 09/09/2026): o default era ["PROPRIETARIO"] — um papel já vinha
+  // marcado por trás sem o usuário clicar em nada. Quem selecionava "Cliente" E "Proprietário"
+  // pensando estar escolhendo os dois do zero na verdade DESMARCAVA o Proprietário (clicar num
+  // chip já ativo remove), perdendo esse papel na hora de salvar. Nenhum papel deve vir
+  // pré-selecionado — o usuário escolhe explicitamente todos os que se aplicam.
+  const [roles, setRoles] = useState([]);
   const [linkedProperties, setLinkedProperties] = useState([]);
   const [propertySearch, setPropertySearch] = useState("");
   const [contacts, setContacts] = useState([{ ...EMPTY_CONTACT, primary: true }]);
