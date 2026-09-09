@@ -106,9 +106,11 @@ export default function AtividadesPage() {
       label: "O que executou",
       render: (row) => {
         const verb = actionVerb(row.action);
+        const tone = ACTION_TONE[verb];
+        const toneClass = tone === "danger" ? styles.whatIcon_danger : tone === "warning" ? styles.whatIcon_warning : "";
         return (
           <div className={styles.whatCell}>
-            <span className={styles.whatIcon}>
+            <span className={[styles.whatIcon, toneClass].filter(Boolean).join(" ")}>
               <Icon name={ACTION_ICON[verb] || "pencil"} size={14} />
             </span>
             <div className={styles.whatInfo}>

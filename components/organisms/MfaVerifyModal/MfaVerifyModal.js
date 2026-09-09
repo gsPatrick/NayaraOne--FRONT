@@ -16,14 +16,17 @@ export default function MfaVerifyModal({ open, onClose, onVerified, actionLabel 
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [locked, setLocked] = useState(false);
 
   function handleClose() {
     setCode("");
     setError("");
+    setLocked(false);
     onClose?.();
   }
 
   async function handleConfirm() {
+    if (locked) return;
     if (!code.trim()) {
       setError("Informe o código do seu aplicativo autenticador.");
       return;
@@ -37,6 +40,11 @@ export default function MfaVerifyModal({ open, onClose, onVerified, actionLabel 
     } catch (err) {
       if (err?.code === "MFA_NOT_ENABLED") {
         setError("Você ainda não tem MFA habilitado. Configure em Meu perfil > Segurança antes de continuar.");
+      } else if (err?.code === "MFA_LOCKED") {
+        // Bloqueio por tentativas falhas (política de segurança) — travar o botão evita o
+        // usuário martelar "Confirmar" enquanto o bloqueio ainda está ativo no servidor.
+        setLocked(true);
+        setError(err.message);
       } else {
         setError(err?.message || "Código inválido. Tente novamente.");
       }
@@ -53,7 +61,7 @@ export default function MfaVerifyModal({ open, onClose, onVerified, actionLabel 
       footer={
         <>
           <Button variant="secondary" onClick={handleClose}>Cancelar</Button>
-          <Button onClick={handleConfirm} loading={busy}>Confirmar e continuar</Button>
+          <Button onClick={handleConfirm} loading={busy} disabled={locked}>Confirmar e continuar</Button>
         </>
       }
     >
@@ -61,7 +69,11 @@ export default function MfaVerifyModal({ open, onClose, onVerified, actionLabel 
         Para {actionLabel}, confirme o código do seu aplicativo autenticador (ou um código de
         recuperação).
       </p>
-      {error ? <Alert tone="danger" title="Não foi possível verificar">{error}</Alert> : null}
+      {error ? (
+        <Alert tone={locked ? "warning" : "danger"} title={locked ? "Bloqueado temporariamente" : "Não foi possível verificar"}>
+          {error}
+        </Alert>
+      ) : null}
       <Input
         className={styles.codeInput}
         inputMode="numeric"
@@ -69,6 +81,7 @@ export default function MfaVerifyModal({ open, onClose, onVerified, actionLabel 
         placeholder="000000"
         maxLength={11}
         value={code}
+        disabled={locked}
         onChange={(e) => setCode(e.target.value)}
         onKeyDown={(e) => { if (e.key === "Enter") handleConfirm(); }}
       />

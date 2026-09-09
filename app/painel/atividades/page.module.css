@@ -32,6 +32,11 @@
   color: var(--color-ink-muted);
 }
 
+/* Eventos de segurança do MFA (bloqueio, novo dispositivo) ganham destaque de cor — mesmos
+   tons semânticos usados em Alert/Badge no resto do sistema. */
+.whatIcon_danger { background: var(--color-danger-soft); color: var(--color-danger); }
+.whatIcon_warning { background: var(--color-warning-soft); color: var(--color-warning); }
+
 .whatInfo { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 .whatReason { font-size: var(--text-body-sm); color: var(--color-ink); }
 .whatEntity { font-size: var(--text-caption); color: var(--color-ink-muted); }

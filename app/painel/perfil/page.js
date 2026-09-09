@@ -112,6 +112,7 @@ export default function PerfilPage() {
   const [disableCode, setDisableCode] = useState("");
   const [disableError, setDisableError] = useState("");
   const [disableBusy, setDisableBusy] = useState(false);
+  const [disableLocked, setDisableLocked] = useState(false);
 
   useEffect(() => {
     if (!otpauthUri) {
@@ -175,6 +176,7 @@ export default function PerfilPage() {
   }
 
   async function handleDisable() {
+    if (disableLocked) return;
     if (!disableCode.trim()) {
       setDisableError("Informe o código atual do seu aplicativo autenticador.");
       return;
@@ -188,6 +190,11 @@ export default function PerfilPage() {
       setDisableCode("");
       handleFinish();
     } catch (err) {
+      if (err?.code === "MFA_LOCKED") {
+        // Bloqueio por tentativas falhas (política de segurança) — trava o botão até o
+        // usuário fechar e tentar de novo depois do tempo indicado.
+        setDisableLocked(true);
+      }
       setDisableError(err?.message || "Código inválido — não foi possível desabilitar o MFA.");
     } finally {
       setDisableBusy(false);
@@ -284,22 +291,27 @@ export default function PerfilPage() {
 
       <Modal
         open={disableOpen}
-        onClose={() => { setDisableOpen(false); setDisableCode(""); setDisableError(""); }}
+        onClose={() => { setDisableOpen(false); setDisableCode(""); setDisableError(""); setDisableLocked(false); }}
         title="Desabilitar MFA"
         footer={
           <>
             <Button variant="secondary" onClick={() => setDisableOpen(false)}>Cancelar</Button>
-            <Button variant="danger" onClick={handleDisable} loading={disableBusy}>Desabilitar</Button>
+            <Button variant="danger" onClick={handleDisable} loading={disableBusy} disabled={disableLocked}>Desabilitar</Button>
           </>
         }
       >
-        {disableError ? <Alert tone="danger" title="Não foi possível desabilitar">{disableError}</Alert> : null}
+        {disableError ? (
+          <Alert tone={disableLocked ? "warning" : "danger"} title={disableLocked ? "Bloqueado temporariamente" : "Não foi possível desabilitar"}>
+            {disableError}
+          </Alert>
+        ) : null}
         <p>Para desabilitar o MFA, confirme o código atual do seu aplicativo autenticador.</p>
         <Input
           className={styles.codeInput}
           inputMode="numeric"
           placeholder="000000"
           value={disableCode}
+          disabled={disableLocked}
           onChange={(e) => setDisableCode(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") handleDisable(); }}
         />
