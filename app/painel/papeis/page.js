@@ -10,6 +10,8 @@ import Alert from "@/components/molecules/Alert/Alert";
 import Table from "@/components/organisms/Table/Table";
 import Modal from "@/components/organisms/Modal/Modal";
 import RowActions from "@/components/molecules/RowActions/RowActions";
+import MfaVerifyModal from "@/components/organisms/MfaVerifyModal/MfaVerifyModal";
+import MfaSetupRequiredNotice from "@/components/molecules/MfaSetupRequiredNotice/MfaSetupRequiredNotice";
 import { listRoles, deleteRole } from "@/lib/api/roles";
 import styles from "./page.module.css";
 
@@ -22,6 +24,8 @@ export default function PapeisPage() {
 
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [mfaRetryOpen, setMfaRetryOpen] = useState(false);
+  const [mfaSetupNeeded, setMfaSetupNeeded] = useState(false);
 
   function loadRoles() {
     setLoading(true);
@@ -39,11 +43,20 @@ export default function PapeisPage() {
   async function handleDelete() {
     setDeleting(true);
     setActionError("");
+    setMfaSetupNeeded(false);
     try {
       await deleteRole(deleteTarget.id);
       setDeleteTarget(null);
       await loadRoles();
     } catch (err) {
+      if (err?.code === "MFA_STEP_UP_REQUIRED") {
+        setMfaRetryOpen(true);
+        return;
+      }
+      if (err?.code === "MFA_REQUIRED_NOT_ENABLED") {
+        setMfaSetupNeeded(true);
+        return;
+      }
       setActionError(err?.message || "Não foi possível excluir o papel.");
     } finally {
       setDeleting(false);
@@ -96,6 +109,7 @@ export default function PapeisPage() {
 
       {loadError ? <Alert tone="danger" title="Não foi possível carregar os papéis">{loadError}</Alert> : null}
       {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
+      {mfaSetupNeeded ? <MfaSetupRequiredNotice /> : null}
 
       <Table columns={columns} rows={roles} loading={loading} emptyMessage="Nenhum papel cadastrado ainda." />
 
@@ -115,6 +129,16 @@ export default function PapeisPage() {
           usuário ativo com esse papel, a exclusão será bloqueada até o vínculo ser revogado ou reatribuído.
         </p>
       </Modal>
+
+      <MfaVerifyModal
+        open={mfaRetryOpen}
+        onClose={() => setMfaRetryOpen(false)}
+        actionLabel="excluir este papel"
+        onVerified={async () => {
+          setMfaRetryOpen(false);
+          await handleDelete();
+        }}
+      />
     </AppShell>
   );
 }

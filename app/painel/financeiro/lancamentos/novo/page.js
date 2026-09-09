@@ -14,6 +14,7 @@ import NatureBadge from "@/components/molecules/NatureBadge/NatureBadge";
 import BankAccountSelect from "@/components/molecules/BankAccountSelect/BankAccountSelect";
 import { ENTRY_NATURE_LABELS } from "@/lib/mock/finance";
 import { listBankAccounts, listCostCenters, listResultCenters, createFinancialEntry } from "@/lib/api/finance";
+import { dateOnlyInputToIso } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function NovoLancamentoPage() {
@@ -79,7 +80,7 @@ export default function NovoLancamentoPage() {
         nature: form.nature,
         amount: Number(form.amount),
         description: form.description.trim(),
-        dueAt: form.dueAt ? new Date(form.dueAt).toISOString() : undefined,
+        dueAt: dateOnlyInputToIso(form.dueAt),
         idempotencyKey: form.idempotencyKey.trim() || undefined,
       });
       router.push("/painel/financeiro/lancamentos");

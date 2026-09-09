@@ -40,7 +40,7 @@ import {
 } from "@/lib/api/construction";
 import { listProperties } from "@/lib/api/properties";
 import { apiFetch } from "@/lib/api/client";
-import { formatBRL, formatDate } from "@/lib/format";
+import { formatBRL, formatDate, dateOnlyInputToIso } from "@/lib/format";
 import styles from "./page.module.css";
 
 const WEATHER_OPTIONS = ["Ensolarado", "Nublado", "Chuvoso", "Ventania"];
@@ -209,8 +209,8 @@ export default function ObraDetalhePage({ params }) {
         propertyId: editForm.propertyId || null,
         responsibleUserId: editForm.responsibleUserId || null,
         budgetAmount: editForm.budgetAmount !== "" ? Number(editForm.budgetAmount) : null,
-        startsAt: editForm.startsAt ? new Date(editForm.startsAt).toISOString() : null,
-        endsAtPlanned: editForm.endsAtPlanned ? new Date(editForm.endsAtPlanned).toISOString() : null,
+        startsAt: dateOnlyInputToIso(editForm.startsAt) || null,
+        endsAtPlanned: dateOnlyInputToIso(editForm.endsAtPlanned) || null,
       });
       setProject(updated);
       setEditOpen(false);

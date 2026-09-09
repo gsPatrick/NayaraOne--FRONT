@@ -13,6 +13,7 @@ import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/Skeleton
 import { createProject } from "@/lib/api/construction";
 import { listProperties } from "@/lib/api/properties";
 import { apiFetch } from "@/lib/api/client";
+import { dateOnlyInputToIso } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function NovaObraPage() {
@@ -69,8 +70,8 @@ export default function NovaObraPage() {
         name: form.name.trim(),
         responsibleUserId: form.responsibleUserId || undefined,
         budgetAmount: form.budgetAmount ? Number(form.budgetAmount) : undefined,
-        startsAt: form.startsAt ? new Date(form.startsAt).toISOString() : undefined,
-        endsAtPlanned: form.endsAtPlanned ? new Date(form.endsAtPlanned).toISOString() : undefined,
+        startsAt: dateOnlyInputToIso(form.startsAt),
+        endsAtPlanned: dateOnlyInputToIso(form.endsAtPlanned),
       });
       router.push(`/painel/obras/lista/${newProject.id}`);
     } catch (err) {

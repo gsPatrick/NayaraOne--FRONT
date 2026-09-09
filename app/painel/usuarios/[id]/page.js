@@ -12,6 +12,8 @@ import Select from "@/components/atoms/Select/Select";
 import Spinner from "@/components/atoms/Spinner/Spinner";
 import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
+import MfaVerifyModal from "@/components/organisms/MfaVerifyModal/MfaVerifyModal";
+import MfaSetupRequiredNotice from "@/components/molecules/MfaSetupRequiredNotice/MfaSetupRequiredNotice";
 import { apiFetch } from "@/lib/api/client";
 import { listProperties } from "@/lib/api/properties";
 import { listRoles } from "@/lib/api/roles";
@@ -34,6 +36,10 @@ export default function UserDetailPage({ params }) {
   const [selectedRoleId, setSelectedRoleId] = useState("");
   const [assigning, setAssigning] = useState(false);
   const [revokingId, setRevokingId] = useState(null);
+  // Vincular/revogar papel exige MFA recente — guarda a ação pendente pra reabrir depois que
+  // o usuário confirmar o código, em vez de só mostrar o erro cru da API.
+  const [pendingMfaAction, setPendingMfaAction] = useState(null); // "assign" | { revoke: membershipId }
+  const [mfaSetupNeeded, setMfaSetupNeeded] = useState(false);
 
   function loadAll() {
     setLoading(true);
@@ -83,10 +89,19 @@ export default function UserDetailPage({ params }) {
     if (!selectedRoleId) return;
     setAssigning(true);
     setActionError("");
+    setMfaSetupNeeded(false);
     try {
       await apiFetch("/memberships", { method: "POST", body: { userId: params.id, roleId: selectedRoleId } });
       await loadAll();
     } catch (err) {
+      if (err?.code === "MFA_STEP_UP_REQUIRED") {
+        setPendingMfaAction("assign");
+        return;
+      }
+      if (err?.code === "MFA_REQUIRED_NOT_ENABLED") {
+        setMfaSetupNeeded(true);
+        return;
+      }
       setActionError(err?.message || "Não foi possível vincular o papel.");
     } finally {
       setAssigning(false);
@@ -96,10 +111,19 @@ export default function UserDetailPage({ params }) {
   async function handleRevoke(membershipId) {
     setRevokingId(membershipId);
     setActionError("");
+    setMfaSetupNeeded(false);
     try {
       await apiFetch(`/memberships/${membershipId}`, { method: "DELETE" });
       await loadAll();
     } catch (err) {
+      if (err?.code === "MFA_STEP_UP_REQUIRED") {
+        setPendingMfaAction({ revoke: membershipId });
+        return;
+      }
+      if (err?.code === "MFA_REQUIRED_NOT_ENABLED") {
+        setMfaSetupNeeded(true);
+        return;
+      }
       setActionError(err?.message || "Não foi possível revogar o vínculo.");
     } finally {
       setRevokingId(null);
@@ -147,6 +171,7 @@ export default function UserDetailPage({ params }) {
         </div>
 
         {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
+        {mfaSetupNeeded ? <MfaSetupRequiredNotice /> : null}
 
         <div className={styles.grid}>
           <div className={styles.mainCol}>
@@ -261,6 +286,21 @@ export default function UserDetailPage({ params }) {
           </div>
         </div>
       </div>
+
+      <MfaVerifyModal
+        open={Boolean(pendingMfaAction)}
+        onClose={() => setPendingMfaAction(null)}
+        actionLabel={pendingMfaAction && pendingMfaAction.revoke ? "revogar este vínculo" : "vincular este papel"}
+        onVerified={async () => {
+          const action = pendingMfaAction;
+          setPendingMfaAction(null);
+          if (action && action.revoke) {
+            await handleRevoke(action.revoke);
+          } else {
+            await handleAssignRole();
+          }
+        }}
+      />
     </AppShell>
   );
 }

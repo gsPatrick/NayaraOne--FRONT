@@ -14,6 +14,7 @@ import { createMaintenanceCase, listProjects } from "@/lib/api/construction";
 import { listProperties } from "@/lib/api/properties";
 import { listPeople } from "@/lib/api/people";
 import { apiFetch } from "@/lib/api/client";
+import { dateOnlyInputToIso } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function NovoChamadoPosObraPage() {
@@ -75,7 +76,7 @@ export default function NovoChamadoPosObraPage() {
         openedByPersonId: form.openedByPersonId || undefined,
         responsibleUserId: form.responsibleUserId || undefined,
         description: form.description.trim(),
-        warrantyDeadlineAt: form.warrantyDeadlineAt ? new Date(form.warrantyDeadlineAt).toISOString() : undefined,
+        warrantyDeadlineAt: dateOnlyInputToIso(form.warrantyDeadlineAt),
       });
       router.push(`/painel/obras/pos-obra/${newCase.id}`);
     } catch (err) {

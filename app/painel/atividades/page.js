@@ -190,7 +190,7 @@ function ActivityDetailModal({ entry, actor, onClose, onBlocked, onReverted }) {
   const [confirmBlock, setConfirmBlock] = useState(false);
   const [confirmRevert, setConfirmRevert] = useState(false);
 
-  const changes = summarizeChanges(entry.beforeJson, entry.afterJson);
+  const changes = summarizeChanges(entry.beforeJson, entry.afterJson, entry.entityType);
   const reversible = REVERSIBLE_ENTITY_TYPES[entry.entityType];
   const canRevert = reversible && hasPermission(reversible.permission) && entry.entityId;
   const canBlockUser = hasPermission("users:update") && entry.userId && actor?.status !== "SUSPENDED";

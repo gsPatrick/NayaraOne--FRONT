@@ -15,6 +15,7 @@ import { listProperties } from "@/lib/api/properties";
 import { listPeople } from "@/lib/api/people";
 import { createContract, addContractParty } from "@/lib/api/legal";
 import { CONTRACT_TYPE_LABELS, PARTY_ROLE_LABELS } from "@/lib/mock/legal";
+import { dateOnlyInputToIso } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function NovoContratoPage() {
@@ -77,8 +78,8 @@ export default function NovoContratoPage() {
         propertyId: form.propertyId,
         contractType: form.contractType,
         totalValue: Number(form.totalValue),
-        startsAt: form.startsAt || undefined,
-        endsAt: form.endsAt || undefined,
+        startsAt: dateOnlyInputToIso(form.startsAt),
+        endsAt: dateOnlyInputToIso(form.endsAt),
       });
       for (const party of parties) {
         await addContractParty(contract.id, { personId: party.personId, partyRole: party.partyRole });

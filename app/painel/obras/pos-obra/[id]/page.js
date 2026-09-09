@@ -25,7 +25,7 @@ import {
 import { getProperty } from "@/lib/api/properties";
 import { getPerson } from "@/lib/api/people";
 import { apiFetch } from "@/lib/api/client";
-import { formatDate, formatDateTime } from "@/lib/format";
+import { formatDate, formatDateTime, dateOnlyInputToIso } from "@/lib/format";
 import styles from "./page.module.css";
 
 const STATUS_STEPS = ["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"];
@@ -184,7 +184,7 @@ export default function PosObraDetalhePage({ params }) {
       const updated = await updateMaintenanceCase(maintenanceCase.id, {
         description: editForm.description.trim(),
         responsibleUserId: editForm.responsibleUserId || null,
-        warrantyDeadlineAt: editForm.warrantyDeadlineAt ? new Date(editForm.warrantyDeadlineAt).toISOString() : null,
+        warrantyDeadlineAt: dateOnlyInputToIso(editForm.warrantyDeadlineAt) || null,
       });
       setMaintenanceCase(updated);
       setEditOpen(false);

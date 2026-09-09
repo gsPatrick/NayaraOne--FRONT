@@ -18,7 +18,7 @@ import LocationPicker from "@/components/molecules/LocationPicker/LocationPicker
 import PersonPicker from "@/components/molecules/PersonPicker/PersonPicker";
 import { FEATURE_LABELS, REGULARIZATION_OPTIONS, OFFER_TYPE_LABELS, OWNER_ROLE_LABELS } from "@/lib/mock/properties";
 import { fetchAddressByCep } from "@/lib/cep";
-import { formatBRL } from "@/lib/format";
+import { formatBRL, dateOnlyInputToIso } from "@/lib/format";
 import { buildGoogleMapsUrl } from "@/lib/maps";
 import { createProperty, addPropertyOwner, createOffer, savePropertyDocumentation, toApiPropertyType } from "@/lib/api/properties";
 import Alert from "@/components/molecules/Alert/Alert";
@@ -187,8 +187,8 @@ export default function NovoImovelPage() {
             acceptsFinancing: offer.acceptsFinancing,
             acceptsTrade: offer.acceptsTrade,
             status: offer.status,
-            startsAt: offer.validFrom || null,
-            endsAt: offer.validUntil || null,
+            startsAt: dateOnlyInputToIso(offer.validFrom) || null,
+            endsAt: dateOnlyInputToIso(offer.validUntil) || null,
           });
         }
 

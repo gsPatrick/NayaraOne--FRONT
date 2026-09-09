@@ -23,7 +23,7 @@ import {
   OWNER_ROLE_LABELS,
 } from "@/lib/mock/properties";
 import { fetchAddressByCep } from "@/lib/cep";
-import { formatBRL } from "@/lib/format";
+import { formatBRL, dateOnlyInputToIso } from "@/lib/format";
 import { buildGoogleMapsUrl } from "@/lib/maps";
 import {
   getProperty,
@@ -285,8 +285,8 @@ export default function EditPropertyPage({ params }) {
             acceptsFinancing: offer.acceptsFinancing,
             acceptsTrade: offer.acceptsTrade,
             status: offer.status,
-            startsAt: offer.validFrom || null,
-            endsAt: offer.validUntil || null,
+            startsAt: dateOnlyInputToIso(offer.validFrom) || null,
+            endsAt: dateOnlyInputToIso(offer.validUntil) || null,
           };
           if (offer.id) await updateOffer(property.id, offer.id, offerPayload);
           else await createOffer(property.id, offerPayload);
