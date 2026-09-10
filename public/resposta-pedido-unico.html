@@ -92,7 +92,7 @@
 <body>
 <div class="wrap">
   <h1>Resposta ao Pedido Único de Homologação</h1>
-  <p class="meta">Referente ao documento <em>Pedido_Unico_Entrega_Homologacao_Nayara_One.docx</em> (09/09/2026) · API <code>c44e3aa</code> · Front <code>238c692</code> · Esta página foi publicada e vinculada ao mesmo build citado aqui — não é uma evidência de data anterior.</p>
+  <p class="meta">Referente ao documento <em>Pedido_Unico_Entrega_Homologacao_Nayara_One.docx</em> (09/09/2026) · API <code>153fe2b</code> · Front <code>660d716</code> · Esta página foi publicada e vinculada ao mesmo build citado aqui — não é uma evidência de data anterior.</p>
 
   <p class="lede">Este documento responde item a item aos defeitos AUD-001 a AUD-009 relatados, com o que foi corrigido, testado e publicado no ambiente de homologação. Ao final, explico por que a segunda parte do pedido (pacote GER/TEC/ADV completo) não pode ser tratada como parte desta rodada dos Marcos 3, 4 e 5.</p>
 
@@ -146,7 +146,7 @@
 
   <h2>Testes automatizados</h2>
   <div class="card">
-    <p style="margin:0 0 8px"><span class="pill info">70/70 passando</span> — repositório <code>NayaraOne--API</code>, comando <code>npm test</code>, commit <code>fa6e03c</code>.</p>
+    <p style="margin:0 0 8px"><span class="pill info">72/72 passando</span> — repositório <code>NayaraOne--API</code>, comando <code>npm test</code>, commit <code>153fe2b</code>.</p>
     <p style="margin:0; color:var(--color-ink-muted); font-size:13.5px">Inclui testes escritos especificamente para os pontos AUD-004, AUD-008, TEC-06, TEC-07, TEC-08, TEC-09 e TEC-12 — não são testes genéricos, testam exatamente o comportamento pedido.</p>
   </div>
 
@@ -161,6 +161,8 @@
       <tr><td class="id-cell">TEC-09</td><td><span class="pill ok">Entregue</span></td><td>Teste real de concorrência: duas tentativas simultâneas de liquidar o mesmo lançamento financeiro — confirmado que só uma tem sucesso, nunca duplica.</td></tr>
       <tr><td class="id-cell">TEC-12</td><td><span class="pill ok">Entregue</span></td><td>Suspender ou excluir um usuário não invalidava as sessões já emitidas — o usuário desligado continuava conseguindo renovar acesso por até 7 dias. Corrigido e confirmado ao vivo: a sessão para de funcionar no instante em que o usuário é suspenso.</td></tr>
       <tr><td class="id-cell">TEC-14</td><td><span class="pill ok">Entregue</span></td><td>Scan de dependências vulneráveis rodado — 3 vulnerabilidades moderadas corrigidas com segurança; 1 (numa dependência transitiva do ORM) exigiria uma atualização major de risco desproporcional, não aplicada. Scan de segredo exposto em código/histórico: nenhum encontrado.</td></tr>
+      <tr><td class="id-cell">TEC-13</td><td><span class="pill ok">Entregue (parcial)</span></td><td>Não existia nenhum log estruturado nem métrica. Adicionado: log em JSON com correlation ID em cada requisição/erro, e <code>GET /api/metrics</code> em formato Prometheus (latência por rota, fila de eventos pendentes/mortos) — funciona só com <code>curl</code>, sem exigir nenhum serviço externo. Ressalva honesta: coletar/armazenar esse histórico e disparar alertas automáticos depende de contratar um serviço externo (Grafana Cloud, Better Stack etc.) — isso é decisão de custo, não algo que se resolve só com código.</td></tr>
+      <tr><td class="id-cell">TEC-19</td><td><span class="pill ok">Entregue</span></td><td>Fiz um drill real: apontei o banco pra um endereço inalcançável e descobri que <code>/health</code> travava por mais de 20 segundos em vez de responder rápido. Corrigido com timeout explícito — reconfirmado no mesmo drill: agora responde em ~4 segundos com "banco indisponível", nunca trava.</td></tr>
       <tr><td class="id-cell">TEC-03 / TEC-04</td><td><span class="pill warn">Pendência conhecida e aceita</span></td><td>O usuário de banco que a API usa para conectar é superusuário — ignora RLS por completo, mesmo com a política ativada em toda tabela. O isolamento entre empresas hoje depende só do filtro no código da aplicação, sem uma segunda camada de proteção do banco por trás. Correção identificada (criar um usuário de privilégio mínimo real) mas decisão consciente de não aplicar agora, por ser uma troca de credencial de infraestrutura em ambiente compartilhado.</td></tr>
     </tbody>
   </table>
