@@ -146,8 +146,8 @@
 
   <h2>Testes automatizados</h2>
   <div class="card">
-    <p style="margin:0 0 8px"><span class="pill info">72/72 passando</span> — repositório <code>NayaraOne--API</code>, comando <code>npm test</code>, commit <code>153fe2b</code>.</p>
-    <p style="margin:0; color:var(--color-ink-muted); font-size:13.5px">Inclui testes escritos especificamente para os pontos AUD-004, AUD-008, TEC-06, TEC-07, TEC-08, TEC-09 e TEC-12 — não são testes genéricos, testam exatamente o comportamento pedido.</p>
+    <p style="margin:0 0 8px"><span class="pill info">75/75 passando</span> — repositório <code>NayaraOne--API</code>, comando <code>npm test</code>, commit <code>09c3cf8</code>.</p>
+    <p style="margin:0; color:var(--color-ink-muted); font-size:13.5px">Inclui testes escritos especificamente para os pontos AUD-004, AUD-008, TEC-06, TEC-07, TEC-08, TEC-09, TEC-12, ADV-08, ADV-12 e ADV-18 — não são testes genéricos, testam exatamente o comportamento pedido.</p>
   </div>
 
   <h2>Provas técnicas transversais (TEC) que avançaram</h2>
@@ -163,7 +163,20 @@
       <tr><td class="id-cell">TEC-14</td><td><span class="pill ok">Entregue</span></td><td>Scan de dependências vulneráveis rodado — 3 vulnerabilidades moderadas corrigidas com segurança; 1 (numa dependência transitiva do ORM) exigiria uma atualização major de risco desproporcional, não aplicada. Scan de segredo exposto em código/histórico: nenhum encontrado.</td></tr>
       <tr><td class="id-cell">TEC-13</td><td><span class="pill ok">Entregue (parcial)</span></td><td>Não existia nenhum log estruturado nem métrica. Adicionado: log em JSON com correlation ID em cada requisição/erro, e <code>GET /api/metrics</code> em formato Prometheus (latência por rota, fila de eventos pendentes/mortos) — funciona só com <code>curl</code>, sem exigir nenhum serviço externo. Ressalva honesta: coletar/armazenar esse histórico e disparar alertas automáticos depende de contratar um serviço externo (Grafana Cloud, Better Stack etc.) — isso é decisão de custo, não algo que se resolve só com código.</td></tr>
       <tr><td class="id-cell">TEC-19</td><td><span class="pill ok">Entregue</span></td><td>Fiz um drill real: apontei o banco pra um endereço inalcançável e descobri que <code>/health</code> travava por mais de 20 segundos em vez de responder rápido. Corrigido com timeout explícito — reconfirmado no mesmo drill: agora responde em ~4 segundos com "banco indisponível", nunca trava.</td></tr>
+      <tr><td class="id-cell">TEC-15</td><td><span class="pill ok">Entregue</span></td><td>Teste de carga real contra a própria URL pública do ambiente de homologação (não simulado, não local): 200 requisições com 20 simultâneas contra <code>/api/health</code>. Resultado: 200/200 com sucesso, p50 ≈ 0,46s, p95 ≈ 2,88s, pico máximo ≈ 8,09s sob a concorrência mais alta do teste. Não é um teste de carga de nível enterprise (não simula milhares de usuários nem todas as rotas do sistema) — é uma medição real e honesta da capacidade atual do ambiente compartilhado de homologação.</td></tr>
       <tr><td class="id-cell">TEC-03 / TEC-04</td><td><span class="pill warn">Pendência conhecida e aceita</span></td><td>O usuário de banco que a API usa para conectar é superusuário — ignora RLS por completo, mesmo com a política ativada em toda tabela. O isolamento entre empresas hoje depende só do filtro no código da aplicação, sem uma segunda camada de proteção do banco por trás. Correção identificada (criar um usuário de privilégio mínimo real) mas decisão consciente de não aplicar agora, por ser uma troca de credencial de infraestrutura em ambiente compartilhado.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>Cenários adversariais (ADV) testados</h2>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>ID</th><th>Status</th><th>O que foi feito</th></tr></thead>
+    <tbody>
+      <tr><td class="id-cell">ADV-08</td><td><span class="pill ok">Entregue</span></td><td>Webhook de assinatura repetido, adulterado ou fora de ordem: testado ao vivo que (1) reenviar o mesmo webhook duas vezes não reaplica o efeito nem duplica a linha de auditoria; (2) um webhook "atrasado" que chega depois que o contrato inteiro já virou assinado não corrompe o estado nem tenta retransicionar — responde de forma segura sem lançar erro.</td></tr>
+      <tr><td class="id-cell">ADV-12</td><td><span class="pill ok">Entregue</span></td><td>Sessão revogada (usuário suspenso, logout remoto) só derrubava a RENOVAÇÃO do acesso — um token já emitido continuava funcionando normalmente por até 15 minutos mesmo revogado. Corrigido: toda requisição autenticada agora confere se a sessão daquele token específico ainda está válida. Confirmado ao vivo: acesso é bloqueado no mesmo instante da revogação, sem esperar o token expirar sozinho.</td></tr>
+      <tr><td class="id-cell">ADV-18</td><td><span class="pill ok">Entregue</span></td><td>Rateio de parcelas de comissão: testado com valores que geram dízima (ex.: R$ 1000,00 ÷ 3) e com centavo ímpar — confirmado que a soma das parcelas geradas sempre fecha exatamente com o valor total, centavo a centavo, sem sobra nem falta de R$0,01, e nenhuma parcela fica zerada.</td></tr>
     </tbody>
   </table>
   </div>
