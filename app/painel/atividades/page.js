@@ -78,7 +78,9 @@ export default function AtividadesPage() {
       if (entityFilter && e.entityType !== entityFilter) return false;
       if (!q) return true;
       const actorName = userOf(e.userId)?.name || "";
-      const haystack = `${actorName} ${e.reason || ""} ${e.action} ${entityTypeLabel(e.entityType)}`.toLowerCase();
+      // FIX (reportado pela cliente 18/09/2026, item 12): não dava pra localizar uma auditoria
+      // colando o ID do contrato/imóvel/entidade na busca — entityId não entrava na busca.
+      const haystack = `${actorName} ${e.reason || ""} ${e.action} ${entityTypeLabel(e.entityType)} ${e.entityId || ""}`.toLowerCase();
       return haystack.includes(q);
       // eslint-disable-next-line react-hooks/exhaustive-deps
     });
