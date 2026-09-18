@@ -50,7 +50,9 @@ export default function CrmPage() {
   function loadOpportunities() {
     setLoading(true);
     setLoadError("");
-    return Promise.all([listOpportunities(), listPeople(), listProperties(), apiFetch("/users")])
+    // FIX (reportado pela cliente 18/09/2026): usuário suspenso podia ser pré-selecionado
+    // como vendedor padrão — agora só busca usuários ACTIVE.
+    return Promise.all([listOpportunities(), listPeople(), listProperties(), apiFetch("/users?status=ACTIVE")])
       .then(([opps, apiPeople, apiProperties, apiUsers]) => {
         setOpportunities(opps);
         setPeople(apiPeople || []);

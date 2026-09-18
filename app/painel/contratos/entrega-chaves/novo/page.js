@@ -11,6 +11,7 @@ import Alert from "@/components/molecules/Alert/Alert";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import { listContracts, listInspections, createKeyDelivery } from "@/lib/api/legal";
 import { listPeople } from "@/lib/api/people";
+import { formatContractLabel } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function NovaEntregaChavesPage() {
@@ -98,7 +99,7 @@ export default function NovaEntregaChavesPage() {
             <FormField label="Contrato" htmlFor="f-contract" required>
               <Select id="f-contract" value={form.contractId} onChange={update("contractId")}>
                 {contracts.map((c) => (
-                  <option key={c.id} value={c.id}>{c.contractNumber}</option>
+                  <option key={c.id} value={c.id}>{formatContractLabel(c)}</option>
                 ))}
               </Select>
             </FormField>

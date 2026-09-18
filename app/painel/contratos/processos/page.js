@@ -84,7 +84,13 @@ export default function ProcessosPage() {
       width: "24%",
       render: (row) => (
         <div className={styles.nameCell}>
-          <span className={styles.nameMain}>{row.caseNumber}</span>
+          <span className={styles.nameMain}>
+            {/* FIX (reportado pela cliente 18/09/2026): caseNumber é opcional no cadastro — sem
+                fallback, processos sem número apareciam sem nenhuma identificação na listagem. */}
+            {row.caseNumber && row.caseNumber.trim()
+              ? row.caseNumber
+              : `${CASE_TYPE_LABELS[row.caseType] || row.caseType || "Processo"} — ${String(row.id || "").slice(0, 8)}`}
+          </span>
           <span className={styles.nameSub}>{row.summary}</span>
         </div>
       ),
@@ -171,8 +177,8 @@ export default function ProcessosPage() {
 
       <StickyActionBar>
         <ContractsNavMenu />
-        <Button href="/painel/contratos/lista">
-          <Icon name="signature" size={18} /> Ver contratos
+        <Button href="/painel/contratos/processos/novo">
+          <Icon name="plus" size={18} /> Novo processo
         </Button>
       </StickyActionBar>
     </AppShell>

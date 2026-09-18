@@ -158,8 +158,8 @@ export default function VistoriasPage() {
 
       <StickyActionBar>
         <ContractsNavMenu />
-        <Button href="/painel/contratos/lista">
-          <Icon name="signature" size={18} /> Ver contratos
+        <Button href="/painel/contratos/vistorias/novo">
+          <Icon name="plus" size={18} /> Nova vistoria
         </Button>
       </StickyActionBar>
     </AppShell>

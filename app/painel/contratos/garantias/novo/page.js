@@ -13,6 +13,7 @@ import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/Skeleton
 import { listPeople } from "@/lib/api/people";
 import { listContracts, createGuarantee } from "@/lib/api/legal";
 import { GUARANTEE_TYPE_LABELS } from "@/lib/mock/legal";
+import { formatContractLabel } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function NovaGarantiaPage() {
@@ -102,7 +103,7 @@ export default function NovaGarantiaPage() {
             <FormField label="Contrato" htmlFor="f-contract" required>
               <Select id="f-contract" value={form.contractId} onChange={update("contractId")}>
                 {contracts.map((c) => (
-                  <option key={c.id} value={c.id}>{c.contractNumber}</option>
+                  <option key={c.id} value={c.id}>{formatContractLabel(c)}</option>
                 ))}
               </Select>
             </FormField>

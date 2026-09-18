@@ -14,6 +14,7 @@ import { listContracts, createLegalCase } from "@/lib/api/legal";
 import { listProperties } from "@/lib/api/properties";
 import { apiFetch } from "@/lib/api/client";
 import { CASE_TYPE_LABELS } from "@/lib/mock/legal";
+import { formatContractLabel } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function NovoProcessoPage() {
@@ -38,7 +39,9 @@ export default function NovoProcessoPage() {
     let cancelled = false;
     setLoading(true);
     setLoadError("");
-    Promise.all([listContracts(), listProperties(), apiFetch("/users")])
+    // FIX (reportado pela cliente 18/09/2026): usuário suspenso podia ser pré-selecionado
+    // como responsável padrão — agora só busca usuários ACTIVE.
+    Promise.all([listContracts(), listProperties(), apiFetch("/users?status=ACTIVE")])
       .then(([contractsRes, propertiesRes, usersRes]) => {
         if (cancelled) return;
         setContracts(contractsRes || []);
@@ -114,7 +117,7 @@ export default function NovoProcessoPage() {
               <Select id="f-contract" value={form.contractId} onChange={update("contractId")}>
                 <option value="">Nenhum</option>
                 {contracts.map((c) => (
-                  <option key={c.id} value={c.id}>{c.contractNumber}</option>
+                  <option key={c.id} value={c.id}>{formatContractLabel(c)}</option>
                 ))}
               </Select>
             </FormField>

@@ -3,17 +3,35 @@
 import { useEffect, useRef, useState } from "react";
 import Input from "@/components/atoms/Input/Input";
 import Icon from "@/components/atoms/Icon/Icon";
-import { PEOPLE } from "@/lib/mock/people";
+import { listPeople } from "@/lib/api/people";
 import styles from "./PersonPicker.module.css";
 
 // Campo de busca de contatos já cadastrados — substitui o texto livre de nome do
 // proprietário/locatário por um vínculo real (personId) com o cadastro de Contatos.
+//
+// FIX (reportado pela cliente 18/09/2026, Radar não localizava contato existente): este
+// componente buscava contra `lib/mock/people` (uma lista estática de exemplo), nunca contra a
+// API real — nenhum contato cadastrado de verdade aparecia, o campo sempre caía no fallback de
+// "salvar apenas como texto". Corrigido: busca a lista real de pessoas uma vez (cache em
+// memória do componente) e filtra localmente por nome, já que a API hoje não expõe busca por
+// texto em /people — filtro client-side é o caminho correto sem exigir mudança de contrato da
+// API para este fix.
 export default function PersonPicker({ id, value, personId, onSelect, placeholder = "Buscar contato pelo nome..." }) {
   const [query, setQuery] = useState(value || "");
   const [open, setOpen] = useState(false);
+  const [people, setPeople] = useState([]);
+  const [loadError, setLoadError] = useState("");
   const wrapRef = useRef(null);
 
   useEffect(() => setQuery(value || ""), [value]);
+
+  useEffect(() => {
+    let cancelled = false;
+    listPeople()
+      .then((res) => { if (!cancelled) setPeople(res || []); })
+      .catch((err) => { if (!cancelled) setLoadError(err.message || "Erro ao buscar contatos."); });
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     function onClickOutside(e) {
@@ -25,7 +43,7 @@ export default function PersonPicker({ id, value, personId, onSelect, placeholde
 
   const matches =
     query.trim().length > 0
-      ? PEOPLE.filter((p) => p.status !== "MERGED" && p.legalName.toLowerCase().includes(query.trim().toLowerCase())).slice(0, 6)
+      ? people.filter((p) => p.status !== "MERGED" && (p.legalName || "").toLowerCase().includes(query.trim().toLowerCase())).slice(0, 6)
       : [];
 
   function pick(person) {
@@ -64,7 +82,9 @@ export default function PersonPicker({ id, value, personId, onSelect, placeholde
           ))}
         </ul>
       ) : null}
-      {personId ? (
+      {loadError ? (
+        <span className={styles.unlinkedHint}>Não foi possível carregar os contatos cadastrados: {loadError}</span>
+      ) : personId ? (
         <span className={styles.linkedHint}>Vinculado ao cadastro de Contatos</span>
       ) : query.trim() ? (
         <span className={styles.unlinkedHint}>Nenhum contato selecionado — será salvo apenas como texto.</span>

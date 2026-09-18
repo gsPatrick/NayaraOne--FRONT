@@ -15,6 +15,7 @@ import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/Skeleton
 import { listProperties } from "@/lib/api/properties";
 import { listContracts, createInspection, addInspectionItem } from "@/lib/api/legal";
 import { INSPECTION_TYPE_LABELS, CONDITION_LABELS, CONDITION_TONE } from "@/lib/mock/legal";
+import { formatContractLabel } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function NovaVistoriaPage() {
@@ -101,6 +102,11 @@ export default function NovaVistoriaPage() {
       <div className={styles.wrap}>
         {loadError ? <Alert tone="danger">{loadError}</Alert> : null}
         {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
+        {!loading && !loadError && properties.length === 0 ? (
+          <Alert tone="danger" title="Nenhum imóvel disponível">
+            Não há imóveis cadastrados para vincular a esta vistoria — cadastre um imóvel antes de continuar. Sem isso o botão "Criar vistoria" fica desabilitado, mesmo com os outros campos preenchidos.
+          </Alert>
+        ) : null}
 
         <Alert tone="info" title="Itens da vistoria">
           Adicione os itens vistoriados (opcional na criação) — eles ficam registrados na página de detalhe, junto ao laudo comparativo entrada/saída.
@@ -120,7 +126,7 @@ export default function NovaVistoriaPage() {
               <Select id="f-contract" value={form.contractId} onChange={update("contractId")}>
                 <option value="">Nenhum</option>
                 {contracts.map((c) => (
-                  <option key={c.id} value={c.id}>{c.contractNumber}</option>
+                  <option key={c.id} value={c.id}>{formatContractLabel(c)}</option>
                 ))}
               </Select>
             </FormField>
