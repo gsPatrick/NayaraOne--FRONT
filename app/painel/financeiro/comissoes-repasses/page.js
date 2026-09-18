@@ -26,6 +26,8 @@ import {
   isBankAccountEligibleForPayment,
   bankAccountCooldownRemainingHours,
 } from "@/lib/mock/finance";
+import Input from "@/components/atoms/Input/Input";
+import FormField from "@/components/molecules/FormField/FormField";
 import {
   listCommissions,
   listCommissionInstallments,
@@ -34,6 +36,7 @@ import {
   listFinancialEntries,
   payCommissionInstallment,
   payOwnerRepasse,
+  createCommission,
 } from "@/lib/api/finance";
 import { listPeople } from "@/lib/api/people";
 import { apiFetch } from "@/lib/api/client";
@@ -68,6 +71,7 @@ export default function ComissoesRepassesPage() {
   const [pageSize2, setPageSize2] = useState(8);
   const [payModal, setPayModal] = useState(null);
   const [busyId, setBusyId] = useState(null);
+  const [newCommissionModal, setNewCommissionModal] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -119,6 +123,22 @@ export default function ComissoesRepassesPage() {
       showNotice("success", "Parcela paga", `Parcela ${installment.installmentNumber} marcada como paga.`);
     } catch (err) {
       showNotice("danger", "Não foi possível pagar a parcela", err?.message || "Tente novamente.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function handleCreateCommission(payload) {
+    setBusyId("new-commission");
+    try {
+      const { commission } = await createCommission(payload);
+      setCommissions((prev) => [commission, ...prev]);
+      const its = await listCommissionInstallments(commission.id).catch(() => []);
+      setInstallments((prev) => [...prev, ...its]);
+      setNewCommissionModal(false);
+      showNotice("success", "Comissão criada", `Comissão de ${formatBRL(commission.totalAmount)} registrada para ${userName(users, commission.beneficiaryUserId)}.`);
+    } catch (err) {
+      showNotice("danger", "Não foi possível criar a comissão", err?.message || "Tente novamente.");
     } finally {
       setBusyId(null);
     }
@@ -224,6 +244,12 @@ export default function ComissoesRepassesPage() {
                       <option key={k} value={k}>{v}</option>
                     ))}
                   </Select>
+                  {/* FIX (reportado pela cliente 18/09/2026): não existia nenhuma ação de
+                      criação de comissão na tela nem gatilho automático a partir do contrato —
+                      a API já tinha createCommission pronta e testada, só faltava esta tela. */}
+                  <Button onClick={() => setNewCommissionModal(true)}>
+                    <Icon name="plus" size={16} /> Nova comissão
+                  </Button>
                 </div>
                 {filteredCommissions.length === 0 ? (
                   <p className={styles.emptyText}>Nenhuma comissão encontrada.</p>
@@ -354,7 +380,73 @@ export default function ComissoesRepassesPage() {
         onConfirm={(financialEntryId) => confirmPayInstallment(payModal, financialEntryId)}
         busy={payModal ? busyId === payModal.id : false}
       />
+
+      <NewCommissionModal
+        open={newCommissionModal}
+        users={users.filter((u) => u.status === "ACTIVE")}
+        onClose={() => setNewCommissionModal(false)}
+        onConfirm={handleCreateCommission}
+        busy={busyId === "new-commission"}
+      />
     </AppShell>
+  );
+}
+
+function NewCommissionModal({ open, users, onClose, onConfirm, busy }) {
+  const [form, setForm] = useState({ beneficiaryUserId: "", baseAmount: "", percentage: "", installmentsCount: "1" });
+
+  useEffect(() => {
+    if (open) setForm({ beneficiaryUserId: users[0]?.id || "", baseAmount: "", percentage: "", installmentsCount: "1" });
+  }, [open, users]);
+
+  const isValid = form.beneficiaryUserId && Number(form.baseAmount) > 0 && Number(form.percentage) > 0 && Number(form.percentage) <= 100;
+
+  function update(field) {
+    return (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
+  }
+
+  return (
+    <Modal
+      open={open}
+      onClose={onClose}
+      title="Nova comissão"
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>Cancelar</Button>
+          <Button
+            disabled={!isValid}
+            loading={busy}
+            onClick={() =>
+              onConfirm({
+                beneficiaryUserId: form.beneficiaryUserId,
+                baseAmount: Number(form.baseAmount),
+                percentage: Number(form.percentage),
+                installmentsCount: Number(form.installmentsCount) || 1,
+              })
+            }
+          >
+            Criar comissão
+          </Button>
+        </>
+      }
+    >
+      <FormField label="Corretor/beneficiário" htmlFor="nc-user" required>
+        <Select id="nc-user" value={form.beneficiaryUserId} onChange={update("beneficiaryUserId")}>
+          {users.map((u) => (
+            <option key={u.id} value={u.id}>{u.name}</option>
+          ))}
+        </Select>
+      </FormField>
+      <FormField label="Valor base (R$)" htmlFor="nc-base" required helper="Valor sobre o qual o percentual é calculado (ex.: valor da venda/locação)">
+        <Input id="nc-base" type="number" min="0" step="0.01" value={form.baseAmount} onChange={update("baseAmount")} />
+      </FormField>
+      <FormField label="Percentual (%)" htmlFor="nc-pct" required>
+        <Input id="nc-pct" type="number" min="0" max="100" step="0.01" value={form.percentage} onChange={update("percentage")} />
+      </FormField>
+      <FormField label="Número de parcelas" htmlFor="nc-installments" helper="A última parcela absorve a diferença de arredondamento — a soma sempre fecha com o total">
+        <Input id="nc-installments" type="number" min="1" step="1" value={form.installmentsCount} onChange={update("installmentsCount")} />
+      </FormField>
+    </Modal>
   );
 }
 
