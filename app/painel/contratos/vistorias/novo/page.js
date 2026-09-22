@@ -14,7 +14,7 @@ import Badge from "@/components/atoms/Badge/Badge";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import { listProperties } from "@/lib/api/properties";
 import { listContracts, createInspection, addInspectionItem } from "@/lib/api/legal";
-import { INSPECTION_TYPE_LABELS, CONDITION_LABELS, CONDITION_TONE } from "@/lib/mock/legal";
+import { INSPECTION_TYPE_LABELS, CONDITION_LABELS, CONDITION_TONE, RESPONSIBLE_PARTY_LABELS } from "@/lib/mock/legal";
 import { formatContractLabel } from "@/lib/format";
 import styles from "./page.module.css";
 
@@ -33,7 +33,15 @@ export default function NovaVistoriaPage() {
     scheduledAt: "",
   });
   const [items, setItems] = useState([]);
-  const [newItem, setNewItem] = useState({ itemName: "", condition: "GOOD", notes: "" });
+  const [newItem, setNewItem] = useState({
+    itemName: "",
+    condition: "GOOD",
+    notes: "",
+    damageDescription: "",
+    responsibleParty: "",
+    estimatedBudget: "",
+  });
+  const [newItemError, setNewItemError] = useState("");
   // FIX (reportado pela cliente): reproduzido — ao digitar a data/hora agendada direto pelo
   // teclado (sem usar Tab entre os segmentos do <input type="datetime-local">), um dígito a
   // mais no ano (ex: "202610" em vez de "2026") deixa o campo em estado inválido e o
@@ -104,10 +112,35 @@ export default function NovaVistoriaPage() {
     setForm((prev) => (prev.scheduledAt === e.target.value ? prev : { ...prev, scheduledAt: e.target.value }));
   }
 
+  // FIX (Bug 4, reportado pela cliente): a API rejeita (400) um item com condition="DAMAGED"
+  // sem "damageDescription" (e, na prática, sem "estimatedBudget" numérico >= 0 e
+  // "responsibleParty" também — ver validação real em
+  // NayaraOne--API/src/features/legal/inspections.service.js#addInspectionItem). Antes o
+  // formulário não pedia nenhum desses campos e deixava o usuário "confirmar" o item na tela
+  // (adicionar à lista local) mesmo faltando dado obrigatório — o erro só aparecia depois, ao
+  // submeter TODA a vistoria, quando a vistoria-pai já tinha sido criada mas o item falhava.
+  // Agora validamos aqui, antes de adicionar o item à lista, então o submit nunca chega a
+  // mandar um item DAMAGED inválido pra API.
   function addItem() {
     if (!newItem.itemName.trim()) return;
+    setNewItemError("");
+    if (newItem.condition === "DAMAGED") {
+      if (!newItem.damageDescription.trim()) {
+        setNewItemError('Descreva o dano ("Descrição do dano" é obrigatória para itens com condição "Danificado").');
+        return;
+      }
+      const budgetNumber = Number(newItem.estimatedBudget);
+      if (newItem.estimatedBudget === "" || !Number.isFinite(budgetNumber) || budgetNumber < 0) {
+        setNewItemError('Informe um "Orçamento estimado" numérico (>= 0) para itens com condição "Danificado".');
+        return;
+      }
+      if (!newItem.responsibleParty) {
+        setNewItemError('Selecione o "Responsável pelo dano" para itens com condição "Danificado".');
+        return;
+      }
+    }
     setItems((prev) => [...prev, { id: `tmp-${Date.now()}`, ...newItem }]);
-    setNewItem({ itemName: "", condition: "GOOD", notes: "" });
+    setNewItem({ itemName: "", condition: "GOOD", notes: "", damageDescription: "", responsibleParty: "", estimatedBudget: "" });
   }
 
   function removeItem(id) {
@@ -126,7 +159,14 @@ export default function NovaVistoriaPage() {
         scheduledAt: new Date(form.scheduledAt).toISOString(),
       });
       for (const item of items) {
-        await addInspectionItem(inspection.id, { itemName: item.itemName, condition: item.condition, notes: item.notes || undefined });
+        await addInspectionItem(inspection.id, {
+          itemName: item.itemName,
+          condition: item.condition,
+          notes: item.notes || undefined,
+          damageDescription: item.damageDescription || undefined,
+          responsibleParty: item.responsibleParty || undefined,
+          estimatedBudget: item.estimatedBudget !== "" ? item.estimatedBudget : undefined,
+        });
       }
       router.push(`/painel/contratos/vistorias/${inspection.id}`);
     } catch (err) {
@@ -216,6 +256,13 @@ export default function NovaVistoriaPage() {
                   <div className={styles.itemInfo}>
                     <span className={styles.itemName}>{item.itemName}</span>
                     {item.notes ? <span className={styles.itemNotes}>{item.notes}</span> : null}
+                    {item.condition === "DAMAGED" ? (
+                      <span className={styles.itemNotes}>
+                        Dano: {item.damageDescription}
+                        {item.responsibleParty ? ` — Responsável: ${RESPONSIBLE_PARTY_LABELS[item.responsibleParty] || item.responsibleParty}` : ""}
+                        {item.estimatedBudget !== "" ? ` — Orçamento: R$ ${Number(item.estimatedBudget).toFixed(2)}` : ""}
+                      </span>
+                    ) : null}
                   </div>
                   <Badge tone={CONDITION_TONE[item.condition]}>{CONDITION_LABELS[item.condition]}</Badge>
                   <button type="button" className={styles.removeBtn} onClick={() => removeItem(item.id)} aria-label="Remover item">
@@ -240,6 +287,47 @@ export default function NovaVistoriaPage() {
             <FormField label="Observações" htmlFor="f-item-notes" helper="Opcional">
               <Input id="f-item-notes" value={newItem.notes} onChange={(e) => setNewItem((prev) => ({ ...prev, notes: e.target.value }))} placeholder="Ex: Sem marcas ou manchas" />
             </FormField>
+          </div>
+
+          {newItem.condition === "DAMAGED" ? (
+            <div className={styles.addItemRow}>
+              <FormField label="Descrição do dano" htmlFor="f-item-damage" required helper="Obrigatório para itens danificados">
+                <Input
+                  id="f-item-damage"
+                  value={newItem.damageDescription}
+                  onChange={(e) => setNewItem((prev) => ({ ...prev, damageDescription: e.target.value }))}
+                  placeholder="Ex: Vidro trincado na janela da sala"
+                />
+              </FormField>
+              <FormField label="Responsável pelo dano" htmlFor="f-item-responsible">
+                <Select
+                  id="f-item-responsible"
+                  value={newItem.responsibleParty}
+                  onChange={(e) => setNewItem((prev) => ({ ...prev, responsibleParty: e.target.value }))}
+                >
+                  <option value="">Selecione</option>
+                  {Object.entries(RESPONSIBLE_PARTY_LABELS).map(([k, v]) => (
+                    <option key={k} value={k}>{v}</option>
+                  ))}
+                </Select>
+              </FormField>
+              <FormField label="Orçamento estimado (R$)" htmlFor="f-item-budget">
+                <Input
+                  id="f-item-budget"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={newItem.estimatedBudget}
+                  onChange={(e) => setNewItem((prev) => ({ ...prev, estimatedBudget: e.target.value }))}
+                  placeholder="Ex: 350.00"
+                />
+              </FormField>
+            </div>
+          ) : null}
+
+          {newItemError ? <Alert tone="danger">{newItemError}</Alert> : null}
+
+          <div className={styles.addItemRow}>
             <Button variant="secondary" onClick={addItem}>
               <Icon name="plus" size={16} /> Adicionar item
             </Button>
