@@ -22,7 +22,7 @@ import { listOpportunities, createOpportunity, updateOpportunity, listVisits, li
 import { listProperties } from "@/lib/api/properties";
 import { listPeople } from "@/lib/api/people";
 import { apiFetch } from "@/lib/api/client";
-import { formatDateTime, isOverdue } from "@/lib/format";
+import { formatDateTime, isOverdue, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
 import styles from "./page.module.css";
 
 const CLOSED_STAGES = ["ganho", "perdido"];
@@ -332,6 +332,7 @@ function CreateOpportunityModal({ open, onClose, onCreate, stages, initialStageK
   const [ownerUserId, setOwnerUserId] = useState("");
   const [nextAction, setNextAction] = useState("");
   const [nextActionDueAt, setNextActionDueAt] = useState("");
+  const [nextActionDueAtInvalid, setNextActionDueAtInvalid] = useState(false);
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
 
@@ -352,6 +353,7 @@ function CreateOpportunityModal({ open, onClose, onCreate, stages, initialStageK
     setOwnerUserId("");
     setNextAction("");
     setNextActionDueAt("");
+    setNextActionDueAtInvalid(false);
     setErrors({});
     setSubmitting(false);
   }
@@ -367,6 +369,7 @@ function CreateOpportunityModal({ open, onClose, onCreate, stages, initialStageK
     if (!CLOSED_STAGES.includes(stageKey)) {
       if (!nextAction.trim()) nextErrors.nextAction = "Toda oportunidade ativa precisa de uma próxima ação.";
       if (!nextActionDueAt) nextErrors.nextActionDueAt = "Informe o prazo da próxima ação.";
+      else if (nextActionDueAtInvalid) nextErrors.nextActionDueAt = DATE_INPUT_ERROR_MESSAGE;
     }
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
@@ -444,7 +447,19 @@ function CreateOpportunityModal({ open, onClose, onCreate, stages, initialStageK
           <Input id="o-next-action" value={nextAction} onChange={(e) => setNextAction(e.target.value)} placeholder="Ex.: Ligar para qualificar interesse" />
         </FormField>
         <FormField label="Prazo da próxima ação" htmlFor="o-next-due" required={!CLOSED_STAGES.includes(stageKey)} error={errors.nextActionDueAt}>
-          <Input id="o-next-due" type="datetime-local" value={nextActionDueAt} onChange={(e) => setNextActionDueAt(e.target.value)} />
+          <Input
+            id="o-next-due"
+            type="datetime-local"
+            min="1900-01-01T00:00"
+            max="2100-12-31T23:59"
+            error={nextActionDueAtInvalid}
+            value={nextActionDueAt}
+            onChange={(e) => {
+              setNextActionDueAtInvalid(isDateInputInvalid(e.target.validity));
+              setNextActionDueAt(e.target.value);
+            }}
+            onBlur={(e) => setNextActionDueAtInvalid(isDateInputInvalid(e.target.validity))}
+          />
         </FormField>
       </div>
     </Modal>
