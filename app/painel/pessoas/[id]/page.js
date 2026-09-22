@@ -10,6 +10,7 @@ import Icon from "@/components/atoms/Icon/Icon";
 import Avatar from "@/components/atoms/Avatar/Avatar";
 import Card from "@/components/molecules/Card/Card";
 import Modal from "@/components/organisms/Modal/Modal";
+import FileViewerModal from "@/components/organisms/FileViewerModal/FileViewerModal";
 import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
@@ -70,6 +71,7 @@ export default function PersonDetailPage({ params }) {
   const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [canonicalId, setCanonicalId] = useState(null);
+  const [viewerFileId, setViewerFileId] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -294,9 +296,18 @@ export default function PersonDetailPage({ params }) {
                         <Icon name="document" size={14} />
                         <span>{DOCUMENT_TYPE_LABELS[d.type] || d.type}: {d.value}</span>
                       </span>
-                      <Badge tone={VERIFICATION_TONE[d.verificationStatus] || "neutral"}>
-                        {VERIFICATION_LABELS[d.verificationStatus] || d.verificationStatus}
-                      </Badge>
+                      <span className={styles.listRowLeft}>
+                        <button
+                          type="button"
+                          className={styles.mediaViewBtn}
+                          onClick={() => setViewerFileId(d.value)}
+                        >
+                          <Icon name="eye" size={14} /> Visualizar
+                        </button>
+                        <Badge tone={VERIFICATION_TONE[d.verificationStatus] || "neutral"}>
+                          {VERIFICATION_LABELS[d.verificationStatus] || d.verificationStatus}
+                        </Badge>
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -463,6 +474,12 @@ export default function PersonDetailPage({ params }) {
           </>
         ) : null}
       </Modal>
+
+      <FileViewerModal
+        open={!!viewerFileId}
+        onClose={() => setViewerFileId(null)}
+        fileId={viewerFileId}
+      />
     </AppShell>
   );
 }

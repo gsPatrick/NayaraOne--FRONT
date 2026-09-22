@@ -150,6 +150,19 @@
   text-decoration: none;
 }
 .listRowLeft { display: flex; align-items: center; gap: var(--space-2); }
+
+.mediaViewBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--text-caption);
+  color: var(--color-accent, var(--color-ink-soft));
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.mediaViewBtn:hover { background: var(--color-canvas-sunken); }
 .listRowRight { display: flex; align-items: center; gap: var(--space-3); }
 
 .listRowLink {
