@@ -37,7 +37,9 @@ export default function NovaObraPage() {
     let cancelled = false;
     setLoading(true);
     setLoadError("");
-    Promise.all([listProperties(), apiFetch("/users")])
+    // FIX (padrão do seletor de responsável): filtra apenas usuários ACTIVE, evitando
+    // usuários suspensos/de QA na lista.
+    Promise.all([listProperties(), apiFetch("/users?status=ACTIVE")])
       .then(([props, u]) => {
         if (cancelled) return;
         setProperties(props || []);

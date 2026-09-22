@@ -39,15 +39,15 @@ export default function NovoProcessoPage() {
     let cancelled = false;
     setLoading(true);
     setLoadError("");
-    // FIX (reportado pela cliente 18/09/2026): usuário suspenso podia ser pré-selecionado
-    // como responsável padrão — agora só busca usuários ACTIVE.
+    // FIX (reportado pela cliente): usuário suspenso/de QA aparecia no seletor e, pior, vinha
+    // PRÉ-SELECIONADO por padrão. Além de filtrar por ACTIVE, agora nunca pré-selecionamos
+    // nenhum usuário — o campo começa vazio e obriga escolha explícita.
     Promise.all([listContracts(), listProperties(), apiFetch("/users?status=ACTIVE")])
       .then(([contractsRes, propertiesRes, usersRes]) => {
         if (cancelled) return;
         setContracts(contractsRes || []);
         setProperties(propertiesRes || []);
         setUsers(usersRes || []);
-        setForm((prev) => ({ ...prev, responsibleUserId: prev.responsibleUserId || usersRes?.[0]?.id || "" }));
       })
       .catch((err) => { if (!cancelled) setLoadError(err.message || "Erro ao carregar dados."); })
       .finally(() => { if (!cancelled) setLoading(false); });
@@ -131,8 +131,9 @@ export default function NovoProcessoPage() {
               </Select>
             </FormField>
 
-            <FormField label="Responsável" htmlFor="f-responsible">
+            <FormField label="Responsável" htmlFor="f-responsible" helper="Opcional">
               <Select id="f-responsible" value={form.responsibleUserId} onChange={update("responsibleUserId")}>
+                <option value="">Selecionar…</option>
                 {users.map((u) => (
                   <option key={u.id} value={u.id}>{u.name}</option>
                 ))}

@@ -55,7 +55,7 @@ export default function EtapaDetalhePage({ params }) {
     let cancelled = false;
     setLoading(true);
     setLoadError("");
-    Promise.all([getProject(params.id), getProjectStage(params.stageId), apiFetch("/users")])
+    Promise.all([getProject(params.id), getProjectStage(params.stageId), apiFetch("/users?status=ACTIVE")])
       .then(([p, s, u]) => {
         if (cancelled) return;
         setProject(p);

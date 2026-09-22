@@ -328,7 +328,8 @@ function CreateOpportunityModal({ open, onClose, onCreate, stages, initialStageK
   const [personId, setPersonId] = useState(null);
   const [stageKey, setStageKey] = useState(initialStageKey || stages[0]?.key || "");
   const [propertyId, setPropertyId] = useState(properties[0]?.id || "");
-  const [ownerUserId, setOwnerUserId] = useState(users[0]?.id || "");
+  // FIX (padrão do seletor de responsável): nenhum usuário vem pré-selecionado por padrão.
+  const [ownerUserId, setOwnerUserId] = useState("");
   const [nextAction, setNextAction] = useState("");
   const [nextActionDueAt, setNextActionDueAt] = useState("");
   const [errors, setErrors] = useState({});
@@ -338,7 +339,7 @@ function CreateOpportunityModal({ open, onClose, onCreate, stages, initialStageK
     if (open) {
       setStageKey(initialStageKey || stages[0]?.key || "");
       setPropertyId(properties[0]?.id || "");
-      setOwnerUserId(users[0]?.id || "");
+      setOwnerUserId("");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, initialStageKey]);
@@ -348,7 +349,7 @@ function CreateOpportunityModal({ open, onClose, onCreate, stages, initialStageK
     setPersonId(null);
     setStageKey(initialStageKey || stages[0]?.key || "");
     setPropertyId(properties[0]?.id || "");
-    setOwnerUserId(users[0]?.id || "");
+    setOwnerUserId("");
     setNextAction("");
     setNextActionDueAt("");
     setErrors({});
@@ -426,6 +427,7 @@ function CreateOpportunityModal({ open, onClose, onCreate, stages, initialStageK
         <div className={styles.span2}>
           <FormField label="Vendedor responsável" htmlFor="o-rep">
             <Select id="o-rep" value={ownerUserId} onChange={(e) => setOwnerUserId(e.target.value)}>
+              <option value="">Selecionar…</option>
               {users.map((u) => (
                 <option key={u.id} value={u.id}>{u.name}</option>
               ))}

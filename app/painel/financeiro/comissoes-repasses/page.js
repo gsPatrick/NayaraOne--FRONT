@@ -395,9 +395,12 @@ export default function ComissoesRepassesPage() {
 function NewCommissionModal({ open, users, onClose, onConfirm, busy }) {
   const [form, setForm] = useState({ beneficiaryUserId: "", baseAmount: "", percentage: "", installmentsCount: "1" });
 
+  // FIX (reportado pela cliente): o seletor de beneficiário vinha PRÉ-SELECIONADO com o
+  // primeiro usuário da lista (podendo ser um usuário de teste/QA) sem nenhum clique — agora
+  // o campo sempre abre vazio, forçando escolha explícita.
   useEffect(() => {
-    if (open) setForm({ beneficiaryUserId: users[0]?.id || "", baseAmount: "", percentage: "", installmentsCount: "1" });
-  }, [open, users]);
+    if (open) setForm({ beneficiaryUserId: "", baseAmount: "", percentage: "", installmentsCount: "1" });
+  }, [open]);
 
   const isValid = form.beneficiaryUserId && Number(form.baseAmount) > 0 && Number(form.percentage) > 0 && Number(form.percentage) <= 100;
 
@@ -432,6 +435,7 @@ function NewCommissionModal({ open, users, onClose, onConfirm, busy }) {
     >
       <FormField label="Corretor/beneficiário" htmlFor="nc-user" required>
         <Select id="nc-user" value={form.beneficiaryUserId} onChange={update("beneficiaryUserId")}>
+          <option value="">Selecionar…</option>
           {users.map((u) => (
             <option key={u.id} value={u.id}>{u.name}</option>
           ))}

@@ -95,7 +95,7 @@ export default function ObraDetalhePage({ params }) {
         throw err;
       }),
       listProperties(),
-      apiFetch("/users"),
+      apiFetch("/users?status=ACTIVE"),
     ])
       .then(([p, props, u]) => {
         if (cancelled || !p) return;

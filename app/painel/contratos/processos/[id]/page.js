@@ -59,7 +59,7 @@ export default function ProcessoDetailPage({ params }) {
       getLegalCase(params.id),
       listLegalDeadlines({ legalCaseId: params.id }),
       listEvidencePackages(params.id),
-      apiFetch("/users"),
+      apiFetch("/users?status=ACTIVE"),
     ])
       .then(async ([caseRes, deadlinesRes, evidenceRes, usersRes]) => {
         if (cancelled) return;

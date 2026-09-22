@@ -90,7 +90,7 @@ export default function PosObraDetalhePage({ params }) {
         if (cancelled || !c) return;
         setMaintenanceCase(c);
         return Promise.all([
-          apiFetch("/users"),
+          apiFetch("/users?status=ACTIVE"),
           c.propertyId ? getProperty(c.propertyId).catch(() => null) : Promise.resolve(null),
           c.projectId ? getProject(c.projectId).catch(() => null) : Promise.resolve(null),
           c.openedByPersonId ? getPerson(c.openedByPersonId).catch(() => null) : Promise.resolve(null),

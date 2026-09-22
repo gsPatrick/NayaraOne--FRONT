@@ -40,7 +40,9 @@ export default function NovoChamadoPosObraPage() {
     let cancelled = false;
     setLoading(true);
     setLoadError("");
-    Promise.all([listProperties(), listProjects(), listPeople(), apiFetch("/users")])
+    // FIX (padrão do seletor de responsável): filtra apenas usuários ACTIVE, evitando
+    // usuários suspensos/de QA na lista.
+    Promise.all([listProperties(), listProjects(), listPeople(), apiFetch("/users?status=ACTIVE")])
       .then(([props, proj, pp, u]) => {
         if (cancelled) return;
         setProperties(props || []);
