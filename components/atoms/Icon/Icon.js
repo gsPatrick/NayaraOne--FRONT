@@ -42,6 +42,9 @@ const PATHS = {
   key: "M14 8a4 4 0 1 0-4 4l-7 7v3h3l1-1v-2h2v-2h2l3-3a4 4 0 0 0 0-6ZM16 6l1.5 1.5",
   scale: "M12 3v18M6 8l-3 6a3 3 0 0 0 6 0ZM18 8l-3 6a3 3 0 0 0 6 0ZM4 21h16M12 3l-6 5M12 3l6 5",
   clock: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 7v5l4 2",
+  minus: "M5 12h14",
+  music: "M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM21 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z",
+  fileUnknown: "M7 3h7l5 5v13H7zM14 3v5h5M12 14v.01M12 10a1.5 1.5 0 1 1 1.5 1.5c-.5 0-1 .4-1.5.8",
 };
 
 export default function Icon({ name, size = 20, className = "" }) {

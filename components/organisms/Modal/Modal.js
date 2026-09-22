@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import Icon from "@/components/atoms/Icon/Icon";
 import styles from "./Modal.module.css";
 
-export default function Modal({ open, onClose, title, children, footer }) {
+export default function Modal({ open, onClose, title, children, footer, size = "md" }) {
   const ref = useRef(null);
 
   useEffect(() => {
@@ -26,7 +26,7 @@ export default function Modal({ open, onClose, title, children, footer }) {
   return (
     <div className={styles.overlay} onMouseDown={(e) => { if (e.target === e.currentTarget) onClose?.(); }}>
       <div
-        className={styles.modal}
+        className={[styles.modal, size === "lg" ? styles.modalLg : ""].filter(Boolean).join(" ")}
         role="dialog"
         aria-modal="true"
         aria-label={title}

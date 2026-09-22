@@ -21,6 +21,10 @@
   animation: rise var(--duration-slow) var(--ease-out-expo);
 }
 
+.modalLg {
+  width: min(880px, 100%);
+}
+
 .header {
   display: flex;
   align-items: center;
