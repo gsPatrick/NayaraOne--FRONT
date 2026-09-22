@@ -41,7 +41,19 @@ export default function NovaVistoriaPage() {
   // obrigatória, o botão "Criar vistoria" ficava desabilitado sem NENHUM aviso — exatamente
   // o sintoma relatado ("preenchi tudo e o botão continua desabilitado"). Agora detectamos a
   // invalidez e mostramos um erro explícito no campo.
-  const [scheduledAtInvalid, setScheduledAtInvalid] = useState(false);
+  //
+  // FIX 2 (reteste da cliente): reproduzido em WebKit/Safari — o navegador da cliente. Nesse
+  // motor, os segmentos do <input type="datetime-local"> podem aparecer TODOS preenchidos na
+  // tela (ex: "30/09/2026, 12:30") sem nenhum indício visual de erro, mas
+  // `e.target.value`/`validity` continuam vazios/sem badInput marcado — ou seja, o check
+  // anterior (que só olhava validity.badInput/rangeOverflow/rangeUnderflow) não pega esse
+  // caso. Resultado: campo parece 100% preenchido, mas form.scheduledAt fica "" e o botão
+  // "Criar vistoria" trava desabilitado sem nenhum aviso — exatamente o que a cliente
+  // reportou no reteste. Agora, qualquer vez que o campo foi tocado e o valor efetivo ficar
+  // vazio, tratamos como inválido e mostramos o erro, independente da validity nativa.
+  const [scheduledAtTouched, setScheduledAtTouched] = useState(false);
+  const [scheduledAtBadInput, setScheduledAtBadInput] = useState(false);
+  const scheduledAtInvalid = scheduledAtTouched && (scheduledAtBadInput || !form.scheduledAt);
 
   useEffect(() => {
     let cancelled = false;
@@ -68,8 +80,28 @@ export default function NovaVistoriaPage() {
   function handleScheduledAtChange(e) {
     const validity = e.target.validity;
     const invalid = !!validity && (validity.badInput || validity.rangeOverflow || validity.rangeUnderflow);
-    setScheduledAtInvalid(invalid);
+    setScheduledAtTouched(true);
+    setScheduledAtBadInput(invalid);
     setForm((prev) => ({ ...prev, scheduledAt: e.target.value }));
+  }
+
+  // FIX 3 (reteste da cliente, causa raiz de verdade): em WebKit/Safari, quando os segmentos
+  // digitados no <input type="datetime-local"> nunca chegam a formar uma combinação válida
+  // (ex.: por causa da ordem dd/mm/aaaa do locale do navegador conflitando com a ordem
+  // esperada), o navegador NUNCA dispara o evento "input"/"change" — ou seja, o
+  // handleScheduledAtChange acima nunca é chamado, o estado React nunca fica "touched", e o
+  // campo mostra os dígitos digitados na tela (parecendo preenchido) enquanto
+  // form.scheduledAt continua "" desde o início, sem NENHUM aviso. É exatamente o sintoma da
+  // cliente: "preenchi tudo e o botão continua desabilitado". Como o evento "blur" SEMPRE
+  // dispara ao sair do campo (mesmo quando "change" nunca disparou), usamos onBlur como rede
+  // de segurança: ao perder o foco, lemos o estado real do input (value/validity) direto do
+  // DOM e sincronizamos o estado do formulário e do erro exibido.
+  function handleScheduledAtBlur(e) {
+    const validity = e.target.validity;
+    const invalid = !!validity && (validity.badInput || validity.rangeOverflow || validity.rangeUnderflow);
+    setScheduledAtTouched(true);
+    setScheduledAtBadInput(invalid);
+    setForm((prev) => (prev.scheduledAt === e.target.value ? prev : { ...prev, scheduledAt: e.target.value }));
   }
 
   function addItem() {
@@ -158,7 +190,7 @@ export default function NovaVistoriaPage() {
               label="Data e hora agendada"
               htmlFor="f-scheduled"
               required
-              error={scheduledAtInvalid ? "Data/hora inválida — verifique o ano digitado (use um ano entre 1900 e 2100)." : undefined}
+              error={scheduledAtInvalid ? "Data/hora inválida ou incompleta — preencha dia, mês, ano e horário (use um ano entre 1900 e 2100)." : undefined}
             >
               <Input
                 id="f-scheduled"
@@ -168,6 +200,7 @@ export default function NovaVistoriaPage() {
                 error={scheduledAtInvalid}
                 value={form.scheduledAt}
                 onChange={handleScheduledAtChange}
+                onBlur={handleScheduledAtBlur}
               />
             </FormField>
           </div>
