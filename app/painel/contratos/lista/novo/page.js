@@ -15,7 +15,7 @@ import { listProperties } from "@/lib/api/properties";
 import { listPeople } from "@/lib/api/people";
 import { createContract, addContractParty } from "@/lib/api/legal";
 import { CONTRACT_TYPE_LABELS, PARTY_ROLE_LABELS } from "@/lib/mock/legal";
-import { dateOnlyInputToIso } from "@/lib/format";
+import { dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function NovoContratoPage() {
@@ -53,10 +53,23 @@ export default function NovoContratoPage() {
     return () => { cancelled = true; };
   }, []);
 
-  const isValid = form.propertyId && Number(form.totalValue) > 0 && parties.length > 0;
+  const [dateErrors, setDateErrors] = useState({});
+  const isValid =
+    form.propertyId && Number(form.totalValue) > 0 && parties.length > 0 && !dateErrors.startsAt && !dateErrors.endsAt;
 
   function update(field) {
     return (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
+  }
+
+  function updateDate(field) {
+    return (e) => {
+      setDateErrors((prev) => ({ ...prev, [field]: isDateInputInvalid(e.target.validity) }));
+      setForm((prev) => ({ ...prev, [field]: e.target.value }));
+    };
+  }
+
+  function checkDate(field) {
+    return (e) => setDateErrors((prev) => ({ ...prev, [field]: isDateInputInvalid(e.target.validity) }));
   }
 
   function addParty() {
@@ -132,12 +145,40 @@ export default function NovoContratoPage() {
               <Input id="f-value" type="number" min="0" step="0.01" value={form.totalValue} onChange={update("totalValue")} placeholder="0,00" />
             </FormField>
 
-            <FormField label="Início de vigência" htmlFor="f-starts" helper="Opcional">
-              <Input id="f-starts" type="date" value={form.startsAt} onChange={update("startsAt")} />
+            <FormField
+              label="Início de vigência"
+              htmlFor="f-starts"
+              helper={dateErrors.startsAt ? undefined : "Opcional"}
+              error={dateErrors.startsAt ? DATE_INPUT_ERROR_MESSAGE : undefined}
+            >
+              <Input
+                id="f-starts"
+                type="date"
+                min="1900-01-01"
+                max="2100-12-31"
+                error={dateErrors.startsAt}
+                value={form.startsAt}
+                onChange={updateDate("startsAt")}
+                onBlur={checkDate("startsAt")}
+              />
             </FormField>
 
-            <FormField label="Fim de vigência" htmlFor="f-ends" helper="Opcional — relevante para locação">
-              <Input id="f-ends" type="date" value={form.endsAt} onChange={update("endsAt")} />
+            <FormField
+              label="Fim de vigência"
+              htmlFor="f-ends"
+              helper={dateErrors.endsAt ? undefined : "Opcional — relevante para locação"}
+              error={dateErrors.endsAt ? DATE_INPUT_ERROR_MESSAGE : undefined}
+            >
+              <Input
+                id="f-ends"
+                type="date"
+                min="1900-01-01"
+                max="2100-12-31"
+                error={dateErrors.endsAt}
+                value={form.endsAt}
+                onChange={updateDate("endsAt")}
+                onBlur={checkDate("endsAt")}
+              />
             </FormField>
           </div>
         </Card>
