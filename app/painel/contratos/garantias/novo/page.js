@@ -13,7 +13,7 @@ import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/Skeleton
 import { listPeople } from "@/lib/api/people";
 import { listContracts, createGuarantee } from "@/lib/api/legal";
 import { GUARANTEE_TYPE_LABELS } from "@/lib/mock/legal";
-import { formatContractLabel } from "@/lib/format";
+import { formatContractLabel, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function NovaGarantiaPage() {
@@ -54,10 +54,23 @@ export default function NovaGarantiaPage() {
   }, []);
 
   const isGuarantor = form.guaranteeType === "GUARANTOR";
-  const isValid = form.contractId && form.guaranteeType && (!isGuarantor || form.guarantorPersonId);
+  const [dateErrors, setDateErrors] = useState({});
+  const isValid =
+    form.contractId && form.guaranteeType && (!isGuarantor || form.guarantorPersonId) && !dateErrors.startsAt && !dateErrors.endsAt;
 
   function update(field) {
     return (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
+  }
+
+  function updateDate(field) {
+    return (e) => {
+      setDateErrors((prev) => ({ ...prev, [field]: isDateInputInvalid(e.target.validity) }));
+      setForm((prev) => ({ ...prev, [field]: e.target.value }));
+    };
+  }
+
+  function checkDate(field) {
+    return (e) => setDateErrors((prev) => ({ ...prev, [field]: isDateInputInvalid(e.target.validity) }));
   }
 
   async function handleSubmit() {
@@ -130,12 +143,40 @@ export default function NovaGarantiaPage() {
               </FormField>
             )}
 
-            <FormField label="Início de vigência" htmlFor="f-starts" helper="Opcional">
-              <Input id="f-starts" type="date" value={form.startsAt} onChange={update("startsAt")} />
+            <FormField
+              label="Início de vigência"
+              htmlFor="f-starts"
+              helper={dateErrors.startsAt ? undefined : "Opcional"}
+              error={dateErrors.startsAt ? DATE_INPUT_ERROR_MESSAGE : undefined}
+            >
+              <Input
+                id="f-starts"
+                type="date"
+                min="1900-01-01"
+                max="2100-12-31"
+                error={dateErrors.startsAt}
+                value={form.startsAt}
+                onChange={updateDate("startsAt")}
+                onBlur={checkDate("startsAt")}
+              />
             </FormField>
 
-            <FormField label="Fim de vigência" htmlFor="f-ends" helper="Opcional">
-              <Input id="f-ends" type="date" value={form.endsAt} onChange={update("endsAt")} />
+            <FormField
+              label="Fim de vigência"
+              htmlFor="f-ends"
+              helper={dateErrors.endsAt ? undefined : "Opcional"}
+              error={dateErrors.endsAt ? DATE_INPUT_ERROR_MESSAGE : undefined}
+            >
+              <Input
+                id="f-ends"
+                type="date"
+                min="1900-01-01"
+                max="2100-12-31"
+                error={dateErrors.endsAt}
+                value={form.endsAt}
+                onChange={updateDate("endsAt")}
+                onBlur={checkDate("endsAt")}
+              />
             </FormField>
 
             {isGuarantor ? (
