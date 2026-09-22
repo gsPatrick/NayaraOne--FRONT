@@ -27,6 +27,7 @@ import {
   listInspectionSignatures,
   attachInspectionItemMedia,
   listInspectionItemMedia,
+  uploadFile,
   generateInspectionReport,
   getInspectionReportBlob,
 } from "@/lib/api/legal";
@@ -67,7 +68,7 @@ export default function VistoriaDetailPage({ params }) {
   const [mfaOpen, setMfaOpen] = useState(false);
   const [mediaByItem, setMediaByItem] = useState({});
   const [mediaFormItemId, setMediaFormItemId] = useState(null);
-  const [mediaForm, setMediaForm] = useState({ fileId: "", mediaType: "PHOTO" });
+  const [mediaForm, setMediaForm] = useState({ file: null, mediaType: "PHOTO" });
   const [mediaBusy, setMediaBusy] = useState(false);
   const [mediaError, setMediaError] = useState("");
   const [reportBusy, setReportBusy] = useState(false);
@@ -229,7 +230,7 @@ export default function VistoriaDetailPage({ params }) {
 
   function openMediaForm(itemId) {
     setMediaError("");
-    setMediaForm({ fileId: "", mediaType: "PHOTO" });
+    setMediaForm({ file: null, mediaType: "PHOTO" });
     setMediaFormItemId(itemId);
   }
 
@@ -240,18 +241,19 @@ export default function VistoriaDetailPage({ params }) {
   }
 
   async function handleAttachMedia(itemId) {
-    if (!mediaForm.fileId.trim()) {
-      setMediaError('Informe o "ID do arquivo" (fileId) — o arquivo precisa já existir no sistema antes de ser vinculado.');
+    if (!mediaForm.file) {
+      setMediaError("Selecione um arquivo de foto ou vídeo.");
       return;
     }
     setMediaBusy(true);
     setMediaError("");
     try {
-      await attachInspectionItemMedia(itemId, { fileId: mediaForm.fileId.trim(), mediaType: mediaForm.mediaType });
+      const uploaded = await uploadFile(mediaForm.file);
+      await attachInspectionItemMedia(itemId, { fileId: uploaded.id, mediaType: mediaForm.mediaType });
       const media = await listInspectionItemMedia(itemId);
       setMediaByItem((prev) => ({ ...prev, [itemId]: media || [] }));
       setMediaFormItemId(null);
-      setMediaForm({ fileId: "", mediaType: "PHOTO" });
+      setMediaForm({ file: null, mediaType: "PHOTO" });
     } catch (err) {
       setMediaError(err.message || "Erro ao anexar mídia.");
     } finally {
@@ -391,12 +393,12 @@ export default function VistoriaDetailPage({ params }) {
 
                     {mediaFormItemId === item.id ? (
                       <div className={styles.mediaForm}>
-                        <FormField label="ID do arquivo (fileId)" htmlFor={`f-media-file-${item.id}`} helper="O arquivo precisa já existir no sistema.">
-                          <Input
+                        <FormField label="Arquivo" htmlFor={`f-media-file-${item.id}`} helper="Foto ou vídeo do item (máx. 8MB).">
+                          <input
                             id={`f-media-file-${item.id}`}
-                            value={mediaForm.fileId}
-                            onChange={(e) => setMediaForm((prev) => ({ ...prev, fileId: e.target.value }))}
-                            placeholder="UUID do arquivo"
+                            type="file"
+                            accept="image/*,video/*"
+                            onChange={(e) => setMediaForm((prev) => ({ ...prev, file: e.target.files?.[0] || null }))}
                             autoFocus
                           />
                         </FormField>
