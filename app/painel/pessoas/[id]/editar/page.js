@@ -25,7 +25,7 @@ import {
   updateDocument,
   removeDocument,
 } from "@/lib/api/people";
-import { formatTaxId } from "@/lib/format";
+import { formatTaxId, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
 import styles from "./page.module.css";
 
 const EMPTY_CONTACT = { id: null, type: "PHONE", value: "", primary: false };
@@ -40,6 +40,7 @@ export default function EditarPessoaPage({ params }) {
   const [submitError, setSubmitError] = useState("");
 
   const [basic, setBasic] = useState(null);
+  const [birthDateInvalid, setBirthDateInvalid] = useState(false);
   const [initialRoles, setInitialRoles] = useState([]); // [{id, roleCode}]
   const [roles, setRoles] = useState([]); // roleCodes selecionados agora
   const [initialContacts, setInitialContacts] = useState([]);
@@ -234,8 +235,24 @@ export default function EditarPessoaPage({ params }) {
                 onChange={(e) => setBasic({ ...basic, taxIdNormalized: formatTaxId(e.target.value, basic.personType) })}
               />
             </FormField>
-            <FormField label={basic.personType === "PF" ? "Data de nascimento" : "Data de fundação"} htmlFor="e-birth">
-              <Input id="e-birth" type="date" value={basic.birthOrFoundationDate} onChange={(e) => setBasic({ ...basic, birthOrFoundationDate: e.target.value })} />
+            <FormField
+              label={basic.personType === "PF" ? "Data de nascimento" : "Data de fundação"}
+              htmlFor="e-birth"
+              error={birthDateInvalid ? DATE_INPUT_ERROR_MESSAGE : undefined}
+            >
+              <Input
+                id="e-birth"
+                type="date"
+                min="1900-01-01"
+                max="2100-12-31"
+                error={birthDateInvalid}
+                value={basic.birthOrFoundationDate}
+                onChange={(e) => {
+                  setBirthDateInvalid(isDateInputInvalid(e.target.validity));
+                  setBasic({ ...basic, birthOrFoundationDate: e.target.value });
+                }}
+                onBlur={(e) => setBirthDateInvalid(isDateInputInvalid(e.target.validity))}
+              />
             </FormField>
             <div className={styles.span2}>
               <FormField label="Papéis" helper="Selecione um ou mais papéis para este contato.">

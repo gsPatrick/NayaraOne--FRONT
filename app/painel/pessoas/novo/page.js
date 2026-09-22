@@ -25,7 +25,7 @@ import { OWNER_ROLE_LABELS } from "@/lib/mock/properties";
 import { listPeople, createPerson } from "@/lib/api/people";
 import { listProperties, addPropertyOwner } from "@/lib/api/properties";
 import { fetchAddressByCep } from "@/lib/cep";
-import { formatTaxId } from "@/lib/format";
+import { formatTaxId, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
 import { buildGoogleMapsUrl } from "@/lib/maps";
 import styles from "./page.module.css";
 
@@ -67,6 +67,7 @@ export default function NovaPessoaPage() {
   const [contacts, setContacts] = useState([{ ...EMPTY_CONTACT, primary: true }]);
   const [documents, setDocuments] = useState([]);
   const [address, setAddress] = useState({ ...EMPTY_ADDRESS });
+  const [birthDateInvalid, setBirthDateInvalid] = useState(false);
 
   const [cepLoading, setCepLoading] = useState(false);
   const [cepMessage, setCepMessage] = useState("");
@@ -308,12 +309,20 @@ export default function NovaPessoaPage() {
                 <FormField
                   label={basic.personType === "PF" ? "Data de nascimento" : "Data de fundação"}
                   htmlFor="p-birth"
+                  error={birthDateInvalid ? DATE_INPUT_ERROR_MESSAGE : undefined}
                 >
                   <Input
                     id="p-birth"
                     type="date"
+                    min="1900-01-01"
+                    max="2100-12-31"
+                    error={birthDateInvalid}
                     value={basic.birthOrFoundationDate}
-                    onChange={(e) => setBasic({ ...basic, birthOrFoundationDate: e.target.value })}
+                    onChange={(e) => {
+                      setBirthDateInvalid(isDateInputInvalid(e.target.validity));
+                      setBasic({ ...basic, birthOrFoundationDate: e.target.value });
+                    }}
+                    onBlur={(e) => setBirthDateInvalid(isDateInputInvalid(e.target.validity))}
                   />
                 </FormField>
                 <div className={styles.span2}>
