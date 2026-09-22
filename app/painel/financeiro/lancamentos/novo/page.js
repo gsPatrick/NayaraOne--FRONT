@@ -37,6 +37,12 @@ export default function NovoLancamentoPage() {
     dueAt: "",
     idempotencyKey: "",
   });
+  // FIX (reportado pela cliente): digitar um ano fora do intervalo plausível (ex: "92026")
+  // num <input type="date"> faz o navegador considerar o valor inválido e reportar
+  // e.target.value = "" — sem isso, o form aceitava esse vazio silenciosamente e submetia
+  // o lançamento com dueAt null, sem nenhum aviso. Agora detectamos a invalidez via
+  // validity.badInput/rangeOverflow/rangeUnderflow e bloqueamos o submit com erro visível.
+  const [dueAtInvalid, setDueAtInvalid] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -61,13 +67,24 @@ export default function NovoLancamentoPage() {
     };
   }, []);
 
-  const isValid = form.description.trim() && Number(form.amount) > 0 && form.bankAccountId;
+  const isValid = form.description.trim() && Number(form.amount) > 0 && form.bankAccountId && !dueAtInvalid;
 
   function update(field) {
     return (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
   }
 
+  function handleDueAtChange(e) {
+    const validity = e.target.validity;
+    const invalid = !!validity && (validity.badInput || validity.rangeOverflow || validity.rangeUnderflow);
+    setDueAtInvalid(invalid);
+    setForm((prev) => ({ ...prev, dueAt: e.target.value }));
+  }
+
   async function handleSubmit() {
+    if (dueAtInvalid) {
+      setActionError("Data de vencimento inválida. Use uma data com ano entre 1900 e 2100.");
+      return;
+    }
     if (!isValid) return;
     setSubmitting(true);
     setActionError("");
@@ -140,8 +157,20 @@ export default function NovoLancamentoPage() {
                 />
               </FormField>
 
-              <FormField label="Vencimento" htmlFor="f-due">
-                <Input id="f-due" type="date" value={form.dueAt} onChange={update("dueAt")} />
+              <FormField
+                label="Vencimento"
+                htmlFor="f-due"
+                error={dueAtInvalid ? "Data inválida — verifique o ano digitado (use um ano entre 1900 e 2100)." : undefined}
+              >
+                <Input
+                  id="f-due"
+                  type="date"
+                  min="1900-01-01"
+                  max="2100-12-31"
+                  error={dueAtInvalid}
+                  value={form.dueAt}
+                  onChange={handleDueAtChange}
+                />
               </FormField>
 
               <FormField label="Centro de custo" htmlFor="f-cc" helper="Opcional">
