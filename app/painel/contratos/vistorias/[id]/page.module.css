@@ -30,6 +30,39 @@
 .detailRow dt { color: var(--color-ink-muted); }
 .detailRow dd { color: var(--color-ink); font-weight: 600; text-align: right; }
 
+.itemBlock {
+  border-radius: var(--radius-md);
+  background: var(--color-canvas-sunken);
+  padding: var(--space-3);
+}
+.itemBlock + .itemBlock { margin-top: var(--space-2); }
+.itemBlock .itemRow { background: transparent; padding: 0; }
+
+.mediaSection {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.mediaList { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.mediaForm {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+.mediaTypeSelect {
+  height: 40px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-canvas);
+  padding: 0 var(--space-3);
+  font-size: var(--text-body-sm);
+  color: var(--color-ink);
+}
+
 .itemRow {
   display: flex;
   align-items: center;

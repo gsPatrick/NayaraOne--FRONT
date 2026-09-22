@@ -25,6 +25,10 @@ import {
   compareInspections,
   signInspection,
   listInspectionSignatures,
+  attachInspectionItemMedia,
+  listInspectionItemMedia,
+  generateInspectionReport,
+  getInspectionReportBlob,
 } from "@/lib/api/legal";
 import {
   INSPECTION_TYPE_LABELS,
@@ -34,6 +38,8 @@ import {
   CONDITION_LABELS,
   CONDITION_TONE,
   PARTY_ROLE_LABELS,
+  MEDIA_TYPE_LABELS,
+  MEDIA_TYPE_TONE,
 } from "@/lib/mock/legal";
 
 const SIGNATURE_PARTY_ROLES = ["LANDLORD", "TENANT"];
@@ -59,6 +65,13 @@ export default function VistoriaDetailPage({ params }) {
   const [signing, setSigning] = useState(false);
   const [signError, setSignError] = useState("");
   const [mfaOpen, setMfaOpen] = useState(false);
+  const [mediaByItem, setMediaByItem] = useState({});
+  const [mediaFormItemId, setMediaFormItemId] = useState(null);
+  const [mediaForm, setMediaForm] = useState({ fileId: "", mediaType: "PHOTO" });
+  const [mediaBusy, setMediaBusy] = useState(false);
+  const [mediaError, setMediaError] = useState("");
+  const [reportBusy, setReportBusy] = useState(false);
+  const [reportError, setReportError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -70,6 +83,17 @@ export default function VistoriaDetailPage({ params }) {
         setInspection(inspectionRes);
         setItems(itemsRes || []);
         setUsers(usersRes || []);
+
+        if ((itemsRes || []).length > 0) {
+          try {
+            const mediaEntries = await Promise.all(
+              itemsRes.map((item) => listInspectionItemMedia(item.id).then((media) => [item.id, media || []]).catch(() => [item.id, []]))
+            );
+            if (!cancelled) setMediaByItem(Object.fromEntries(mediaEntries));
+          } catch {
+            // Mídia é auxiliar — não bloqueia a exibição da vistoria se falhar.
+          }
+        }
 
         if (inspectionRes?.propertyId) {
           try {
@@ -203,6 +227,71 @@ export default function VistoriaDetailPage({ params }) {
     return signatures.find((s) => s.partyRole === partyRole) || null;
   }
 
+  function openMediaForm(itemId) {
+    setMediaError("");
+    setMediaForm({ fileId: "", mediaType: "PHOTO" });
+    setMediaFormItemId(itemId);
+  }
+
+  function closeMediaForm() {
+    if (mediaBusy) return;
+    setMediaFormItemId(null);
+    setMediaError("");
+  }
+
+  async function handleAttachMedia(itemId) {
+    if (!mediaForm.fileId.trim()) {
+      setMediaError('Informe o "ID do arquivo" (fileId) — o arquivo precisa já existir no sistema antes de ser vinculado.');
+      return;
+    }
+    setMediaBusy(true);
+    setMediaError("");
+    try {
+      await attachInspectionItemMedia(itemId, { fileId: mediaForm.fileId.trim(), mediaType: mediaForm.mediaType });
+      const media = await listInspectionItemMedia(itemId);
+      setMediaByItem((prev) => ({ ...prev, [itemId]: media || [] }));
+      setMediaFormItemId(null);
+      setMediaForm({ fileId: "", mediaType: "PHOTO" });
+    } catch (err) {
+      setMediaError(err.message || "Erro ao anexar mídia.");
+    } finally {
+      setMediaBusy(false);
+    }
+  }
+
+  async function handleGenerateReport() {
+    setReportError("");
+    setReportBusy(true);
+    try {
+      const result = await generateInspectionReport(inspection.id);
+      setInspection((prev) => ({ ...prev, reportHash: result.reportHash, reportGeneratedAt: result.reportGeneratedAt }));
+    } catch (err) {
+      setReportError(err.message || "Erro ao gerar relatório.");
+    } finally {
+      setReportBusy(false);
+    }
+  }
+
+  async function handleDownloadReport() {
+    setReportError("");
+    setReportBusy(true);
+    try {
+      const blob = await getInspectionReportBlob(inspection.id);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `vistoria-${inspection.id}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      setReportError(err.message || "Erro ao baixar relatório.");
+    } finally {
+      setReportBusy(false);
+    }
+  }
+
   async function handleToggleCompare() {
     if (compareOpen) {
       setCompareOpen(false);
@@ -241,10 +330,21 @@ export default function VistoriaDetailPage({ params }) {
                 {compareOpen ? "Ocultar comparação" : `Comparar com vistoria de ${INSPECTION_TYPE_LABELS[counterpartType].toLowerCase()}`}
               </Button>
             ) : null}
+            {inspection.status === "COMPLETED" && !inspection.reportHash ? (
+              <Button variant="secondary" onClick={handleGenerateReport} loading={reportBusy} disabled={reportBusy}>
+                <Icon name="document" size={16} /> Gerar relatório
+              </Button>
+            ) : null}
+            {inspection.status === "COMPLETED" && inspection.reportHash ? (
+              <Button variant="secondary" onClick={handleDownloadReport} loading={reportBusy} disabled={reportBusy}>
+                <Icon name="arrowDownCircle" size={16} /> Baixar relatório
+              </Button>
+            ) : null}
           </div>
         </div>
 
         {actionError ? <Alert tone="danger" className={styles.notice}>{actionError}</Alert> : null}
+        {reportError ? <Alert tone="danger" className={styles.notice}>{reportError}</Alert> : null}
 
         <Card title="Detalhes da vistoria">
           <dl className={styles.detailList}>
@@ -260,15 +360,72 @@ export default function VistoriaDetailPage({ params }) {
           {items.length === 0 ? (
             <EmptyState icon="document" title="Sem itens" description="Nenhum item registrado — vistoria ainda não concluída." />
           ) : (
-            items.map((item) => (
-              <div key={item.id} className={styles.itemRow}>
-                <div className={styles.itemInfo}>
-                  <span className={styles.itemName}>{item.itemName}</span>
-                  {item.notes ? <span className={styles.itemNotes}>{item.notes}</span> : null}
+            items.map((item) => {
+              const media = mediaByItem[item.id] || [];
+              return (
+                <div key={item.id} className={styles.itemBlock}>
+                  <div className={styles.itemRow}>
+                    <div className={styles.itemInfo}>
+                      <span className={styles.itemName}>{item.itemName}</span>
+                      {item.notes ? <span className={styles.itemNotes}>{item.notes}</span> : null}
+                      {item.condition === "DAMAGED" && item.damageDescription ? (
+                        <span className={styles.itemNotes}>Dano: {item.damageDescription}</span>
+                      ) : null}
+                    </div>
+                    <Badge tone={CONDITION_TONE[item.condition]}>{CONDITION_LABELS[item.condition]}</Badge>
+                  </div>
+
+                  <div className={styles.mediaSection}>
+                    {media.length > 0 ? (
+                      <div className={styles.mediaList}>
+                        {media.map((m) => (
+                          <Badge key={m.id} tone={MEDIA_TYPE_TONE[m.purpose] || "neutral"}>
+                            <Icon name={m.purpose === "VIDEO" ? "video" : "image"} size={14} />
+                            {MEDIA_TYPE_LABELS[m.purpose] || m.purpose} — {String(m.fileId).slice(0, 8)}
+                          </Badge>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className={styles.itemNotes}>Nenhuma foto/vídeo anexado a este item.</span>
+                    )}
+
+                    {mediaFormItemId === item.id ? (
+                      <div className={styles.mediaForm}>
+                        <FormField label="ID do arquivo (fileId)" htmlFor={`f-media-file-${item.id}`} helper="O arquivo precisa já existir no sistema.">
+                          <Input
+                            id={`f-media-file-${item.id}`}
+                            value={mediaForm.fileId}
+                            onChange={(e) => setMediaForm((prev) => ({ ...prev, fileId: e.target.value }))}
+                            placeholder="UUID do arquivo"
+                            autoFocus
+                          />
+                        </FormField>
+                        <select
+                          className={styles.mediaTypeSelect}
+                          value={mediaForm.mediaType}
+                          onChange={(e) => setMediaForm((prev) => ({ ...prev, mediaType: e.target.value }))}
+                        >
+                          {Object.entries(MEDIA_TYPE_LABELS).map(([k, v]) => (
+                            <option key={k} value={k}>{v}</option>
+                          ))}
+                        </select>
+                        <Button size="sm" onClick={() => handleAttachMedia(item.id)} loading={mediaBusy} disabled={mediaBusy}>
+                          Anexar
+                        </Button>
+                        <Button variant="secondary" size="sm" onClick={closeMediaForm} disabled={mediaBusy}>
+                          Cancelar
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button variant="secondary" size="sm" onClick={() => openMediaForm(item.id)}>
+                        <Icon name="upload" size={14} /> Anexar foto/vídeo
+                      </Button>
+                    )}
+                    {mediaFormItemId === item.id && mediaError ? <Alert tone="danger">{mediaError}</Alert> : null}
+                  </div>
                 </div>
-                <Badge tone={CONDITION_TONE[item.condition]}>{CONDITION_LABELS[item.condition]}</Badge>
-              </div>
-            ))
+              );
+            })
           )}
         </Card>
 
