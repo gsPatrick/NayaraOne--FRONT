@@ -34,6 +34,14 @@ export default function NovaVistoriaPage() {
   });
   const [items, setItems] = useState([]);
   const [newItem, setNewItem] = useState({ itemName: "", condition: "GOOD", notes: "" });
+  // FIX (reportado pela cliente): reproduzido — ao digitar a data/hora agendada direto pelo
+  // teclado (sem usar Tab entre os segmentos do <input type="datetime-local">), um dígito a
+  // mais no ano (ex: "202610" em vez de "2026") deixa o campo em estado inválido e o
+  // navegador reporta e.target.value = "" silenciosamente. Como "Data e hora agendada" é
+  // obrigatória, o botão "Criar vistoria" ficava desabilitado sem NENHUM aviso — exatamente
+  // o sintoma relatado ("preenchi tudo e o botão continua desabilitado"). Agora detectamos a
+  // invalidez e mostramos um erro explícito no campo.
+  const [scheduledAtInvalid, setScheduledAtInvalid] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -51,10 +59,17 @@ export default function NovaVistoriaPage() {
     return () => { cancelled = true; };
   }, []);
 
-  const isValid = form.propertyId && form.inspectionType && form.scheduledAt;
+  const isValid = form.propertyId && form.inspectionType && form.scheduledAt && !scheduledAtInvalid;
 
   function update(field) {
     return (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
+  }
+
+  function handleScheduledAtChange(e) {
+    const validity = e.target.validity;
+    const invalid = !!validity && (validity.badInput || validity.rangeOverflow || validity.rangeUnderflow);
+    setScheduledAtInvalid(invalid);
+    setForm((prev) => ({ ...prev, scheduledAt: e.target.value }));
   }
 
   function addItem() {
@@ -139,8 +154,21 @@ export default function NovaVistoriaPage() {
               </Select>
             </FormField>
 
-            <FormField label="Data e hora agendada" htmlFor="f-scheduled" required>
-              <Input id="f-scheduled" type="datetime-local" value={form.scheduledAt} onChange={update("scheduledAt")} />
+            <FormField
+              label="Data e hora agendada"
+              htmlFor="f-scheduled"
+              required
+              error={scheduledAtInvalid ? "Data/hora inválida — verifique o ano digitado (use um ano entre 1900 e 2100)." : undefined}
+            >
+              <Input
+                id="f-scheduled"
+                type="datetime-local"
+                min="1900-01-01T00:00"
+                max="2100-12-31T23:59"
+                error={scheduledAtInvalid}
+                value={form.scheduledAt}
+                onChange={handleScheduledAtChange}
+              />
             </FormField>
           </div>
         </Card>
