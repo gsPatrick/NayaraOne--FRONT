@@ -37,7 +37,7 @@ import {
 } from "@/lib/mock/legal";
 
 const SIGNATURE_PARTY_ROLES = ["LANDLORD", "TENANT"];
-import { formatDate, formatDateTime } from "@/lib/format";
+import { formatDate, formatDateTime, formatContractLabel } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function VistoriaDetailPage({ params }) {
@@ -249,7 +249,7 @@ export default function VistoriaDetailPage({ params }) {
         <Card title="Detalhes da vistoria">
           <dl className={styles.detailList}>
             <div className={styles.detailRow}><dt>Imóvel</dt><dd>{property?.name || "—"}</dd></div>
-            <div className={styles.detailRow}><dt>Contrato vinculado</dt><dd>{contract?.contractNumber || "—"}</dd></div>
+            <div className={styles.detailRow}><dt>Contrato vinculado</dt><dd>{contract ? formatContractLabel(contract) : "—"}</dd></div>
             <div className={styles.detailRow}><dt>Inspetor</dt><dd>{inspection.inspectorUserId ? userName(inspection.inspectorUserId) : "—"}</dd></div>
             <div className={styles.detailRow}><dt>Agendada para</dt><dd>{formatDate(inspection.scheduledAt)}</dd></div>
             <div className={styles.detailRow}><dt>Concluída em</dt><dd>{inspection.completedAt ? formatDateTime(inspection.completedAt) : "—"}</dd></div>
