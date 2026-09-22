@@ -11,6 +11,7 @@ import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import Modal from "@/components/organisms/Modal/Modal";
 import MfaVerifyModal from "@/components/organisms/MfaVerifyModal/MfaVerifyModal";
+import FileViewerModal from "@/components/organisms/FileViewerModal/FileViewerModal";
 import FormField from "@/components/molecules/FormField/FormField";
 import Input from "@/components/atoms/Input/Input";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
@@ -68,6 +69,7 @@ export default function VistoriaDetailPage({ params }) {
   const [mfaOpen, setMfaOpen] = useState(false);
   const [mediaByItem, setMediaByItem] = useState({});
   const [mediaFormItemId, setMediaFormItemId] = useState(null);
+  const [viewerFile, setViewerFile] = useState(null);
   const [mediaForm, setMediaForm] = useState({ file: null, mediaType: "PHOTO" });
   const [mediaBusy, setMediaBusy] = useState(false);
   const [mediaError, setMediaError] = useState("");
@@ -338,9 +340,21 @@ export default function VistoriaDetailPage({ params }) {
               </Button>
             ) : null}
             {inspection.status === "COMPLETED" && inspection.reportHash ? (
-              <Button variant="secondary" onClick={handleDownloadReport} loading={reportBusy} disabled={reportBusy}>
-                <Icon name="arrowDownCircle" size={16} /> Baixar relatório
-              </Button>
+              <>
+                <Button
+                  variant="secondary"
+                  onClick={() => setViewerFile({
+                    fileName: `vistoria-${inspection.id}.pdf`,
+                    mimeType: "application/pdf",
+                    blobLoader: () => getInspectionReportBlob(inspection.id),
+                  })}
+                >
+                  <Icon name="eye" size={16} /> Visualizar relatório
+                </Button>
+                <Button variant="secondary" onClick={handleDownloadReport} loading={reportBusy} disabled={reportBusy}>
+                  <Icon name="arrowDownCircle" size={16} /> Baixar relatório
+                </Button>
+              </>
             ) : null}
           </div>
         </div>
@@ -381,10 +395,19 @@ export default function VistoriaDetailPage({ params }) {
                     {media.length > 0 ? (
                       <div className={styles.mediaList}>
                         {media.map((m) => (
-                          <Badge key={m.id} tone={MEDIA_TYPE_TONE[m.purpose] || "neutral"}>
-                            <Icon name={m.purpose === "VIDEO" ? "video" : "image"} size={14} />
-                            {MEDIA_TYPE_LABELS[m.purpose] || m.purpose} — {String(m.fileId).slice(0, 8)}
-                          </Badge>
+                          <span key={m.id} className={styles.mediaItem}>
+                            <Badge tone={MEDIA_TYPE_TONE[m.purpose] || "neutral"}>
+                              <Icon name={m.purpose === "VIDEO" ? "video" : "image"} size={14} />
+                              {MEDIA_TYPE_LABELS[m.purpose] || m.purpose} — {String(m.fileId).slice(0, 8)}
+                            </Badge>
+                            <button
+                              type="button"
+                              className={styles.mediaViewBtn}
+                              onClick={() => setViewerFile({ id: m.fileId })}
+                            >
+                              <Icon name="eye" size={14} /> Visualizar
+                            </button>
+                          </span>
                         ))}
                       </div>
                     ) : (
@@ -562,6 +585,14 @@ export default function VistoriaDetailPage({ params }) {
           setMfaOpen(false);
           await handleConfirmSign();
         }}
+      />
+
+      <FileViewerModal
+        open={!!viewerFile}
+        onClose={() => setViewerFile(null)}
+        file={viewerFile}
+        fileId={viewerFile?.id}
+        blobLoader={viewerFile?.blobLoader}
       />
     </AppShell>
   );
