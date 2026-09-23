@@ -13,7 +13,7 @@ import Icon from "@/components/atoms/Icon/Icon";
 import Badge from "@/components/atoms/Badge/Badge";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import { listProperties } from "@/lib/api/properties";
-import { listContracts, createInspection, addInspectionItem } from "@/lib/api/legal";
+import { listContracts, createInspectionWithItems } from "@/lib/api/legal";
 import { INSPECTION_TYPE_LABELS, CONDITION_LABELS, CONDITION_TONE, RESPONSIBLE_PARTY_LABELS } from "@/lib/mock/legal";
 import { formatContractLabel } from "@/lib/format";
 import styles from "./page.module.css";
@@ -152,22 +152,22 @@ export default function NovaVistoriaPage() {
     setActionError("");
     setSubmitting(true);
     try {
-      const inspection = await createInspection({
+      // FIX (Bug 4, atomicidade): um único request transacional — se qualquer item for
+      // inválido (ex.: DAMAGED sem dado obrigatório), NADA é gravado, nem a vistoria.
+      const { inspection } = await createInspectionWithItems({
         propertyId: form.propertyId,
         contractId: form.contractId || undefined,
         inspectionType: form.inspectionType,
         scheduledAt: new Date(form.scheduledAt).toISOString(),
-      });
-      for (const item of items) {
-        await addInspectionItem(inspection.id, {
+        items: items.map((item) => ({
           itemName: item.itemName,
           condition: item.condition,
           notes: item.notes || undefined,
           damageDescription: item.damageDescription || undefined,
           responsibleParty: item.responsibleParty || undefined,
           estimatedBudget: item.estimatedBudget !== "" ? item.estimatedBudget : undefined,
-        });
-      }
+        })),
+      });
       router.push(`/painel/contratos/vistorias/${inspection.id}`);
     } catch (err) {
       setActionError(err.message || "Erro ao criar vistoria.");
