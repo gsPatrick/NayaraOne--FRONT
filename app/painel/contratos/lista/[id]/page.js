@@ -11,6 +11,11 @@ import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import Avatar from "@/components/atoms/Avatar/Avatar";
+import Modal from "@/components/organisms/Modal/Modal";
+import FileViewerModal from "@/components/organisms/FileViewerModal/FileViewerModal";
+import FormField from "@/components/molecules/FormField/FormField";
+import Input from "@/components/atoms/Input/Input";
+import Select from "@/components/atoms/Select/Select";
 import { getProperty } from "@/lib/api/properties";
 import { listPeople } from "@/lib/api/people";
 import {
@@ -21,6 +26,9 @@ import {
   listSignatures,
   listGuarantees,
   transitionContract,
+  listContractAmendments,
+  createContractAmendment,
+  uploadFile,
 } from "@/lib/api/legal";
 import {
   CONTRACT_TYPE_LABELS,
@@ -35,6 +43,8 @@ import {
   GUARANTEE_TYPE_ICON,
   GUARANTEE_STATUS_LABELS,
   GUARANTEE_STATUS_TONE,
+  AMENDMENT_STATUS_LABELS,
+  AMENDMENT_STATUS_TONE,
   nextContractStatus,
 } from "@/lib/mock/legal";
 import { formatBRL, formatDate, formatDateTime } from "@/lib/format";
@@ -49,11 +59,24 @@ export default function ContratoDetailPage({ params }) {
   const [versions, setVersions] = useState([]);
   const [signatures, setSignatures] = useState([]);
   const [guarantees, setGuarantees] = useState([]);
+  const [amendments, setAmendments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [notice, setNotice] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [amendmentModalOpen, setAmendmentModalOpen] = useState(false);
+  const [amendmentForm, setAmendmentForm] = useState({
+    reason: "",
+    field: "",
+    oldValue: "",
+    newValue: "",
+    status: "DRAFT",
+    file: null,
+  });
+  const [amendmentError, setAmendmentError] = useState("");
+  const [amendmentBusy, setAmendmentBusy] = useState(false);
+  const [viewerFile, setViewerFile] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -64,14 +87,16 @@ export default function ContratoDetailPage({ params }) {
       listContractParties(params.id),
       listContractVersions(params.id),
       listGuarantees({ contractId: params.id }),
+      listContractAmendments(params.id),
       listPeople(),
     ])
-      .then(async ([contractRes, partiesRes, versionsRes, guaranteesRes, peopleRes]) => {
+      .then(async ([contractRes, partiesRes, versionsRes, guaranteesRes, amendmentsRes, peopleRes]) => {
         if (cancelled) return;
         setContract(contractRes);
         setParties(partiesRes || []);
         setVersions(versionsRes || []);
         setGuarantees(guaranteesRes || []);
+        setAmendments(amendmentsRes || []);
         setPeople(peopleRes || []);
         if (contractRes?.propertyId) {
           try {
@@ -160,6 +185,47 @@ export default function ContratoDetailPage({ params }) {
       setActionError(err.message || "Erro ao criar nova versão do contrato.");
     } finally {
       setBusy(false);
+    }
+  }
+
+  function openAmendmentModal() {
+    setAmendmentError("");
+    setAmendmentForm({ reason: "", field: "", oldValue: "", newValue: "", status: "DRAFT", file: null });
+    setAmendmentModalOpen(true);
+  }
+
+  function updateAmendmentField(field) {
+    return (e) => setAmendmentForm((prev) => ({ ...prev, [field]: e.target.value }));
+  }
+
+  const amendmentIsValid =
+    amendmentForm.reason.trim() &&
+    amendmentForm.field.trim() &&
+    (amendmentForm.status !== "SIGNED" || amendmentForm.file);
+
+  async function handleCreateAmendment() {
+    if (!amendmentIsValid) return;
+    setAmendmentError("");
+    setAmendmentBusy(true);
+    try {
+      let documentFileId;
+      if (amendmentForm.file) {
+        const uploaded = await uploadFile(amendmentForm.file);
+        documentFileId = uploaded.id;
+      }
+      const created = await createContractAmendment(contract.id, {
+        reason: amendmentForm.reason,
+        changes: [{ field: amendmentForm.field, oldValue: amendmentForm.oldValue || null, newValue: amendmentForm.newValue || null }],
+        documentFileId,
+        status: amendmentForm.status,
+      });
+      setAmendments((prev) => [...prev, created]);
+      setAmendmentModalOpen(false);
+      setNotice({ tone: "success", text: `${created.amendmentNumber}º aditivo criado.` });
+    } catch (err) {
+      setAmendmentError(err.message || "Erro ao criar aditivo.");
+    } finally {
+      setAmendmentBusy(false);
     }
   }
 
@@ -261,6 +327,36 @@ export default function ContratoDetailPage({ params }) {
               )}
             </Card>
 
+            <Card
+              title="Aditivos de contrato"
+              subtitle="Numeração sequencial por contrato — append-only, cada aditivo é um fato novo"
+              actions={<Button size="sm" variant="secondary" onClick={openAmendmentModal}><Icon name="document" size={16} /> Novo aditivo</Button>}
+            >
+              {amendments.length === 0 ? (
+                <EmptyState icon="document" title="Sem aditivos" description="Nenhum aditivo registrado para este contrato." />
+              ) : (
+                [...amendments].reverse().map((amendment) => (
+                  <div key={amendment.id} className={styles.versionRow}>
+                    <div className={styles.versionInfo}>
+                      <span className={styles.versionTitle}>{amendment.amendmentNumber}º aditivo — {amendment.reason}</span>
+                      <span className={styles.versionHash}>
+                        {(amendment.changesJson || []).map((c) => c.field).join(", ")}
+                      </span>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      {amendment.documentFileId ? (
+                        <Button size="sm" variant="ghost" onClick={() => setViewerFile({ id: amendment.documentFileId })}>
+                          <Icon name="eye" size={14} /> Documento
+                        </Button>
+                      ) : null}
+                      <Badge tone={AMENDMENT_STATUS_TONE[amendment.status] || "neutral"}>{AMENDMENT_STATUS_LABELS[amendment.status] || amendment.status}</Badge>
+                      <span className={styles.versionDate}>{formatDate(amendment.created_at || amendment.createdAt)}</span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </Card>
+
             <Card title="Assinaturas" subtitle={latestVersion ? `Referentes à versão ${latestVersion.versionNumber}` : "Sem versão de documento gerada"}>
               {signatures.length === 0 ? (
                 <EmptyState icon="signature" title="Sem assinaturas" description="Nenhuma assinatura registrada para a versão atual." />
@@ -320,6 +416,56 @@ export default function ContratoDetailPage({ params }) {
           </div>
         </div>
       </div>
+
+      <Modal
+        open={amendmentModalOpen}
+        onClose={() => setAmendmentModalOpen(false)}
+        title="Novo aditivo de contrato"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setAmendmentModalOpen(false)} disabled={amendmentBusy}>Cancelar</Button>
+            <Button onClick={handleCreateAmendment} loading={amendmentBusy} disabled={!amendmentIsValid || amendmentBusy}>Criar aditivo</Button>
+          </>
+        }
+      >
+        {amendmentError ? <Alert tone="danger" className={styles.notice}>{amendmentError}</Alert> : null}
+        <div className={styles.formGrid}>
+          <FormField label="Motivo do aditivo" htmlFor="f-am-reason" required>
+            <Input id="f-am-reason" value={amendmentForm.reason} onChange={updateAmendmentField("reason")} placeholder="Ex.: Reajuste de valor por acordo entre as partes" />
+          </FormField>
+          <FormField label="Campo alterado" htmlFor="f-am-field" required helper="Ex.: totalValue, endsAt">
+            <Input id="f-am-field" value={amendmentForm.field} onChange={updateAmendmentField("field")} placeholder="totalValue" />
+          </FormField>
+          <FormField label="Valor anterior" htmlFor="f-am-old" helper="Opcional">
+            <Input id="f-am-old" value={amendmentForm.oldValue} onChange={updateAmendmentField("oldValue")} />
+          </FormField>
+          <FormField label="Novo valor" htmlFor="f-am-new" helper="Opcional">
+            <Input id="f-am-new" value={amendmentForm.newValue} onChange={updateAmendmentField("newValue")} />
+          </FormField>
+          <FormField label="Status" htmlFor="f-am-status" required>
+            <Select id="f-am-status" value={amendmentForm.status} onChange={updateAmendmentField("status")}>
+              <option value="DRAFT">Rascunho</option>
+              <option value="SIGNED">Assinado</option>
+            </Select>
+          </FormField>
+          {amendmentForm.status === "SIGNED" ? (
+            <FormField label="Documento assinado" htmlFor="f-am-file" required helper="Obrigatório quando o aditivo já nasce assinado.">
+              <input
+                id="f-am-file"
+                type="file"
+                onChange={(e) => setAmendmentForm((prev) => ({ ...prev, file: e.target.files?.[0] || null }))}
+              />
+            </FormField>
+          ) : null}
+        </div>
+      </Modal>
+
+      <FileViewerModal
+        open={!!viewerFile}
+        onClose={() => setViewerFile(null)}
+        file={viewerFile}
+        fileId={viewerFile?.id}
+      />
     </AppShell>
   );
 }
