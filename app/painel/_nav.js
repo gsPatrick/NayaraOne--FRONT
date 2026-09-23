@@ -5,7 +5,18 @@ export const NAV_SECTIONS = [
       { label: "Painel", href: "/painel", icon: "home" },
       { label: "Imóveis", href: "/painel/imoveis", icon: "building", permission: "properties:read" },
       { label: "Contatos", href: "/painel/pessoas", icon: "users", permission: "people:read" },
-      { label: "CRM", href: "/painel/crm", icon: "chart", permission: "crm:opportunities:read" },
+      {
+        label: "CRM",
+        href: "/painel/crm",
+        icon: "chart",
+        permission: "crm:opportunities:read",
+        children: [
+          { label: "Funil", href: "/painel/crm" },
+          { label: "Propostas", href: "/painel/crm/propostas" },
+          { label: "Painel de indicadores", href: "/painel/crm/dashboard" },
+          { label: "Feedback & Reclamações", href: "/painel/crm/feedback" },
+        ],
+      },
       { label: "Radar", href: "/painel/radar", icon: "radar", permission: "radar:read" },
       {
         label: "Financeiro",

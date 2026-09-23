@@ -18,7 +18,20 @@ import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import { SkeletonKanban } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import { STAGES } from "@/lib/mock/opportunities";
-import { listOpportunities, createOpportunity, updateOpportunity, listVisits, listMessages, listOpportunityTimeline, fromApiStage } from "@/lib/api/crm";
+import {
+  listOpportunities,
+  createOpportunity,
+  updateOpportunity,
+  listVisits,
+  listMessages,
+  listOpportunityTimeline,
+  fromApiStage,
+  listOpportunityTasks,
+  createOpportunityTask,
+  TASK_STATUSES,
+  TASK_PRIORITIES,
+} from "@/lib/api/crm";
+import CrmNavMenu from "@/components/molecules/CrmNavMenu/CrmNavMenu";
 import { listProperties } from "@/lib/api/properties";
 import { listPeople } from "@/lib/api/people";
 import { apiFetch } from "@/lib/api/client";
@@ -27,6 +40,10 @@ import styles from "./page.module.css";
 
 const CLOSED_STAGES = ["ganho", "perdido"];
 const VISIT_TONE = { DONE: "success", SCHEDULED: "info", CONFIRMED: "info", CANCELED: "danger", NO_SHOW: "danger" };
+
+const TASK_STATUS_LABELS = { OPEN: "Aberta", IN_PROGRESS: "Em andamento", DONE: "Concluída", CANCELED: "Cancelada" };
+const TASK_STATUS_TONE = { OPEN: "info", IN_PROGRESS: "warning", DONE: "success", CANCELED: "neutral" };
+const TASK_PRIORITY_LABELS = { LOW: "Baixa", NORMAL: "Normal", HIGH: "Alta", URGENT: "Urgente" };
 
 // A API (opportunityOutcomeReason.validator.js) exige um motivo ESTRUTURADO sempre que a
 // oportunidade entra num estágio de desfecho — sem ele, POST/PATCH volta 422
@@ -208,6 +225,7 @@ export default function CrmPage() {
           {overdueCount > 0 ? ` · ${overdueCount} com próxima ação vencida` : ""}
         </span>
         <div className={styles.toolbarActions}>
+          <CrmNavMenu />
           {addStageOpen ? (
             <input
               className={styles.newStageInput}
@@ -323,11 +341,16 @@ function OpportunityDetailModal({ opportunity, stages, users = [], onSave, onClo
   const [visits, setVisits] = useState([]);
   const [messages, setMessages] = useState([]);
   const [timeline, setTimeline] = useState([]);
+  const [tasks, setTasks] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState(null);
   const [saving, setSaving] = useState(false);
   const [dueInvalid, setDueInvalid] = useState(false);
+  const [taskForm, setTaskForm] = useState({ title: "", dueAt: "", priority: "NORMAL", assignedToUserId: "" });
+  const [taskDueInvalid, setTaskDueInvalid] = useState(false);
+  const [taskError, setTaskError] = useState("");
+  const [taskSaving, setTaskSaving] = useState(false);
 
   useEffect(() => {
     if (!opportunity) return;
@@ -337,17 +360,52 @@ function OpportunityDetailModal({ opportunity, stages, users = [], onSave, onClo
       listVisits({ opportunityId: opportunity.id }).catch(() => []),
       listMessages({ opportunityId: opportunity.id }).catch(() => []),
       listOpportunityTimeline(opportunity.id).catch(() => []),
-    ]).then(([v, m, tl]) => {
+      listOpportunityTasks(opportunity.id).catch(() => []),
+    ]).then(([v, m, tl, tk]) => {
       if (cancelled) return;
       setVisits(v);
       setMessages(m);
       setTimeline(tl);
+      setTasks(tk);
       setLoadingHistory(false);
     });
     return () => {
       cancelled = true;
     };
   }, [opportunity]);
+
+  useEffect(() => {
+    setTaskForm({ title: "", dueAt: "", priority: "NORMAL", assignedToUserId: "" });
+    setTaskDueInvalid(false);
+    setTaskError("");
+  }, [opportunity?.id]);
+
+  async function handleCreateTask() {
+    setTaskError("");
+    if (!taskForm.title.trim()) {
+      setTaskError("Informe o título da tarefa.");
+      return;
+    }
+    if (taskDueInvalid) {
+      setTaskError(DATE_INPUT_ERROR_MESSAGE);
+      return;
+    }
+    setTaskSaving(true);
+    try {
+      const created = await createOpportunityTask(opportunity.id, {
+        title: taskForm.title.trim(),
+        dueAt: dateTimeLocalInputToIso(taskForm.dueAt) || undefined,
+        priority: taskForm.priority,
+        assignedToUserId: taskForm.assignedToUserId || undefined,
+      });
+      setTasks((prev) => [...prev, created]);
+      setTaskForm({ title: "", dueAt: "", priority: "NORMAL", assignedToUserId: "" });
+    } catch (err) {
+      setTaskError(err?.message || "Não foi possível criar a tarefa.");
+    } finally {
+      setTaskSaving(false);
+    }
+  }
 
   // Ao trocar de oportunidade (ou fechar), sai do modo de edição pra não vazar o formulário
   // de um card pro outro.
@@ -506,6 +564,92 @@ function OpportunityDetailModal({ opportunity, stages, users = [], onSave, onClo
                 ))}
               </div>
             )}
+          </div>
+
+          <div className={styles.detailSection}>
+            <p className={styles.detailSectionTitle}>Tarefas</p>
+            {loadingHistory ? (
+              <Spinner size="sm" />
+            ) : tasks.length === 0 ? (
+              <EmptyState icon="clock" title="Sem tarefas" description="Nenhuma tarefa registrada nesta oportunidade." />
+            ) : (
+              <div className={styles.timeline}>
+                {tasks.map((task) => (
+                  <div className={styles.visitRow} key={task.id}>
+                    <div>
+                      <strong>{task.title}</strong>
+                      <div className={styles.nextActionDue}>
+                        {task.dueAt ? `Prazo: ${formatDateTime(task.dueAt)}` : "Sem prazo"}
+                        {task.assignedToUserId ? ` · ${users.find((u) => u.id === task.assignedToUserId)?.name || "—"}` : ""}
+                      </div>
+                    </div>
+                    <div className={styles.detailHeader}>
+                      <Badge tone="neutral">{TASK_PRIORITY_LABELS[task.priority] || task.priority}</Badge>
+                      <Badge tone={TASK_STATUS_TONE[task.status] || "neutral"}>{TASK_STATUS_LABELS[task.status] || task.status}</Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className={styles.detailSection}>
+              <p className={styles.detailSectionTitle}>Nova tarefa</p>
+              {taskError ? <Alert tone="danger">{taskError}</Alert> : null}
+              <FormField label="Título" htmlFor="task-title" required>
+                <Input
+                  id="task-title"
+                  value={taskForm.title}
+                  onChange={(e) => setTaskForm((p) => ({ ...p, title: e.target.value }))}
+                  placeholder="Ex.: Enviar contrato para assinatura"
+                />
+              </FormField>
+              <FormField
+                label="Prazo"
+                htmlFor="task-due"
+                error={taskDueInvalid ? DATE_INPUT_ERROR_MESSAGE : undefined}
+              >
+                <Input
+                  id="task-due"
+                  type="datetime-local"
+                  min="1900-01-01T00:00"
+                  max="2100-12-31T23:59"
+                  error={taskDueInvalid}
+                  value={taskForm.dueAt}
+                  onChange={(e) => {
+                    setTaskDueInvalid(isDateInputInvalid(e.target.validity));
+                    setTaskForm((p) => ({ ...p, dueAt: e.target.value }));
+                  }}
+                  onBlur={(e) => setTaskDueInvalid(isDateInputInvalid(e.target.validity))}
+                />
+              </FormField>
+              <FormField label="Prioridade" htmlFor="task-priority">
+                <Select
+                  id="task-priority"
+                  value={taskForm.priority}
+                  onChange={(e) => setTaskForm((p) => ({ ...p, priority: e.target.value }))}
+                >
+                  {TASK_PRIORITIES.map((p) => (
+                    <option key={p} value={p}>{TASK_PRIORITY_LABELS[p]}</option>
+                  ))}
+                </Select>
+              </FormField>
+              <FormField label="Responsável" htmlFor="task-assignee">
+                <Select
+                  id="task-assignee"
+                  value={taskForm.assignedToUserId}
+                  onChange={(e) => setTaskForm((p) => ({ ...p, assignedToUserId: e.target.value }))}
+                >
+                  <option value="">Sem responsável</option>
+                  {users.map((u) => (
+                    <option key={u.id} value={u.id}>{u.name}</option>
+                  ))}
+                </Select>
+              </FormField>
+              <div className={styles.detailEditActions}>
+                <Button size="sm" onClick={handleCreateTask} loading={taskSaving}>
+                  <Icon name="plus" size={14} /> Criar tarefa
+                </Button>
+              </div>
+            </div>
           </div>
 
           <div className={styles.detailSection}>
