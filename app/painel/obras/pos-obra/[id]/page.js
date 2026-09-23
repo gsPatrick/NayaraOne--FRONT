@@ -25,7 +25,7 @@ import {
 import { getProperty } from "@/lib/api/properties";
 import { getPerson } from "@/lib/api/people";
 import { apiFetch } from "@/lib/api/client";
-import { formatDate, formatDateTime, dateOnlyInputToIso } from "@/lib/format";
+import { formatDate, formatDateTime, dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
 import styles from "./page.module.css";
 
 const STATUS_STEPS = ["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"];
@@ -71,6 +71,7 @@ export default function PosObraDetalhePage({ params }) {
 
   const [editOpen, setEditOpen] = useState(false);
   const [editForm, setEditForm] = useState({ description: "", responsibleUserId: "", warrantyDeadlineAt: "" });
+  const [warrantyDateInvalid, setWarrantyDateInvalid] = useState(false);
   const [savingEdit, setSavingEdit] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
@@ -362,7 +363,7 @@ export default function PosObraDetalhePage({ params }) {
         footer={
           <>
             <Button variant="secondary" onClick={() => setEditOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSaveEdit} loading={savingEdit} disabled={!editForm.description.trim()}>Salvar alterações</Button>
+            <Button onClick={handleSaveEdit} loading={savingEdit} disabled={!editForm.description.trim() || warrantyDateInvalid}>Salvar alterações</Button>
           </>
         }
       >
@@ -386,8 +387,25 @@ export default function PosObraDetalhePage({ params }) {
               ))}
             </Select>
           </FormField>
-          <FormField label="Prazo de garantia" htmlFor="e-warranty" helper="Opcional">
-            <Input id="e-warranty" type="date" value={editForm.warrantyDeadlineAt} onChange={(e) => setEditForm((p) => ({ ...p, warrantyDeadlineAt: e.target.value }))} />
+          <FormField
+            label="Prazo de garantia"
+            htmlFor="e-warranty"
+            helper={warrantyDateInvalid ? undefined : "Opcional"}
+            error={warrantyDateInvalid ? DATE_INPUT_ERROR_MESSAGE : undefined}
+          >
+            <Input
+              id="e-warranty"
+              type="date"
+              min="1900-01-01"
+              max="2100-12-31"
+              error={warrantyDateInvalid}
+              value={editForm.warrantyDeadlineAt}
+              onChange={(e) => {
+                setWarrantyDateInvalid(isDateInputInvalid(e.target.validity));
+                setEditForm((p) => ({ ...p, warrantyDeadlineAt: e.target.value }));
+              }}
+              onBlur={(e) => setWarrantyDateInvalid(isDateInputInvalid(e.target.validity))}
+            />
           </FormField>
         </div>
       </Modal>

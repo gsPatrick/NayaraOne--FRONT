@@ -14,7 +14,7 @@ import { createMaintenanceCase, listProjects } from "@/lib/api/construction";
 import { listProperties } from "@/lib/api/properties";
 import { listPeople } from "@/lib/api/people";
 import { apiFetch } from "@/lib/api/client";
-import { dateOnlyInputToIso } from "@/lib/format";
+import { dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function NovoChamadoPosObraPage() {
@@ -65,7 +65,8 @@ export default function NovoChamadoPosObraPage() {
     return (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
   }
 
-  const isValid = form.propertyId && form.description.trim().length > 0;
+  const [warrantyDateInvalid, setWarrantyDateInvalid] = useState(false);
+  const isValid = form.propertyId && form.description.trim().length > 0 && !warrantyDateInvalid;
 
   async function handleSubmit() {
     if (!isValid) return;
@@ -134,8 +135,25 @@ export default function NovoChamadoPosObraPage() {
               </Select>
             </FormField>
 
-            <FormField label="Prazo de garantia" htmlFor="f-warranty" helper="Opcional">
-              <Input id="f-warranty" type="date" value={form.warrantyDeadlineAt} onChange={update("warrantyDeadlineAt")} />
+            <FormField
+              label="Prazo de garantia"
+              htmlFor="f-warranty"
+              helper={warrantyDateInvalid ? undefined : "Opcional"}
+              error={warrantyDateInvalid ? DATE_INPUT_ERROR_MESSAGE : undefined}
+            >
+              <Input
+                id="f-warranty"
+                type="date"
+                min="1900-01-01"
+                max="2100-12-31"
+                error={warrantyDateInvalid}
+                value={form.warrantyDeadlineAt}
+                onChange={(e) => {
+                  setWarrantyDateInvalid(isDateInputInvalid(e.target.validity));
+                  update("warrantyDeadlineAt")(e);
+                }}
+                onBlur={(e) => setWarrantyDateInvalid(isDateInputInvalid(e.target.validity))}
+              />
             </FormField>
 
             <div className={styles.span2}>
