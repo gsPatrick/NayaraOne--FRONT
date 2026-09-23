@@ -606,11 +606,7 @@ function IntegracoesTab() {
 
   return (
     <Card
-      title={
-        <span className={styles.titleWithLogo}>
-          Integrações <ClicksignLogo size={22} />
-        </span>
-      }
+      title="Integrações"
       subtitle="Provedores externos usados em assinatura eletrônica de contratos e no índice de reajuste IGPM."
       actions={
         <Button onClick={handleSave} loading={saving} disabled={loading}>
@@ -637,87 +633,107 @@ function IntegracoesTab() {
             </Alert>
           </div>
 
-          <FormField
-            className="formGridFull"
-            label={
-              <span className={styles.labelWithBadge}>
-                Provedor de assinatura eletrônica
-                <StatusBadge status={integrationsStatus?.clicksign} testing={statusTesting} />
+          {/* Integrações · Contratos — Clicksign (assinatura eletrônica) */}
+          <div className={styles.integrationSection}>
+            <h3 className={styles.integrationSectionTitle}>
+              <span className={styles.categoryLabel}>Integrações · Contratos</span>
+              <span aria-hidden="true">—</span>
+              <span className={styles.providerLabel}>
+                <ClicksignLogo size={18} />
               </span>
-            }
-            htmlFor="integracoes-signature-provider"
-          >
-            {/* Único provedor suportado na interface é a Clicksign — fixo, sem seletor. O
-                backend continua entendendo "sandbox"/"zapsign" no schema por compatibilidade,
-                mas a UI não expõe mais essa troca. */}
-            <Select id="integracoes-signature-provider" value="clicksign" disabled>
-              <option value="clicksign">Clicksign</option>
-            </Select>
-          </FormField>
+            </h3>
 
-          {isClicksign ? (
-            <>
-              <SecretField
-                id="integracoes-clicksign-token"
-                label="Token da API Clicksign"
-                configured={configuredFlags.clicksignApiToken}
-                editing={Boolean(editingSecrets.clicksignApiToken)}
-                value={values.clicksignApiToken}
-                onChange={(v) => handleChange("clicksignApiToken", v)}
-                onStartEdit={() => startEditSecret("clicksignApiToken")}
-                onCancelEdit={() => cancelEditSecret("clicksignApiToken")}
-                placeholder="Token de acesso da Clicksign"
-              />
-
-              <SecretField
-                id="integracoes-clicksign-webhook"
-                label="Webhook secret da Clicksign"
-                configured={configuredFlags.clicksignWebhookSecret}
-                editing={Boolean(editingSecrets.clicksignWebhookSecret)}
-                value={values.clicksignWebhookSecret}
-                onChange={(v) => handleChange("clicksignWebhookSecret", v)}
-                onStartEdit={() => startEditSecret("clicksignWebhookSecret")}
-                onCancelEdit={() => cancelEditSecret("clicksignWebhookSecret")}
-                placeholder="Segredo usado para validar webhooks da Clicksign"
-              />
-            </>
-          ) : null}
-          {/* ZapSign removido da interface (decisão de produto: só Clicksign) — o backend
-              continua com suporte a "legal.zapsign_*" no schema, só não é mais exposto aqui. */}
-
-          <FormField
-            className="formGridFull"
-            label={
-              <span className={styles.labelWithBadge}>
-                Modo do índice IGPM
-                <StatusBadge status={integrationsStatus?.igpm} testing={statusTesting} />
-              </span>
-            }
-            htmlFor="integracoes-igpm-mode"
-          >
-            <Select
-              id="integracoes-igpm-mode"
-              value={values.igpmMode}
-              onChange={(e) => handleChange("igpmMode", e.target.value)}
+            <FormField
+              className="formGridFull"
+              label={
+                <span className={styles.labelWithBadge}>
+                  Provedor de assinatura eletrônica
+                  <StatusBadge status={integrationsStatus?.clicksign} testing={statusTesting} />
+                </span>
+              }
+              htmlFor="integracoes-signature-provider"
             >
-              <option value="manual">Manual</option>
-              <option value="automatic">Automático</option>
-            </Select>
-          </FormField>
+              {/* Único provedor suportado na interface é a Clicksign — fixo, sem seletor. O
+                  backend continua entendendo "sandbox"/"zapsign" no schema por compatibilidade,
+                  mas a UI não expõe mais essa troca. */}
+              <Select id="integracoes-signature-provider" value="clicksign" disabled>
+                <option value="clicksign">Clicksign</option>
+              </Select>
+            </FormField>
 
-          {isIgpmAutomatic ? (
-            <SecretField
-              id="integracoes-fgv-token"
-              label="Token de acesso da API de dados da FGV"
-              configured={configuredFlags.fgvApiToken}
-              editing={Boolean(editingSecrets.fgvApiToken)}
-              value={values.fgvApiToken}
-              onChange={(v) => handleChange("fgvApiToken", v)}
-              onStartEdit={() => startEditSecret("fgvApiToken")}
-              onCancelEdit={() => cancelEditSecret("fgvApiToken")}
-              placeholder="Token de acesso da API de dados da FGV"
-            />
-          ) : null}
+            {isClicksign ? (
+              <>
+                <SecretField
+                  id="integracoes-clicksign-token"
+                  label="Token da API Clicksign"
+                  configured={configuredFlags.clicksignApiToken}
+                  editing={Boolean(editingSecrets.clicksignApiToken)}
+                  value={values.clicksignApiToken}
+                  onChange={(v) => handleChange("clicksignApiToken", v)}
+                  onStartEdit={() => startEditSecret("clicksignApiToken")}
+                  onCancelEdit={() => cancelEditSecret("clicksignApiToken")}
+                  placeholder="Token de acesso da Clicksign"
+                />
+
+                <SecretField
+                  id="integracoes-clicksign-webhook"
+                  label="Webhook secret da Clicksign"
+                  configured={configuredFlags.clicksignWebhookSecret}
+                  editing={Boolean(editingSecrets.clicksignWebhookSecret)}
+                  value={values.clicksignWebhookSecret}
+                  onChange={(v) => handleChange("clicksignWebhookSecret", v)}
+                  onStartEdit={() => startEditSecret("clicksignWebhookSecret")}
+                  onCancelEdit={() => cancelEditSecret("clicksignWebhookSecret")}
+                  placeholder="Segredo usado para validar webhooks da Clicksign"
+                />
+              </>
+            ) : null}
+            {/* ZapSign removido da interface (decisão de produto: só Clicksign) — o backend
+                continua com suporte a "legal.zapsign_*" no schema, só não é mais exposto aqui. */}
+          </div>
+
+          {/* Integrações · Financeiro — FGV (índice de reajuste IGPM) */}
+          <div className={styles.integrationSection}>
+            <h3 className={styles.integrationSectionTitle}>
+              <span className={styles.categoryLabel}>Integrações · Financeiro</span>
+              <span aria-hidden="true">—</span>
+              <span className={styles.providerLabel}>FGV Dados (IGPM)</span>
+            </h3>
+
+            <FormField
+              className="formGridFull"
+              label={
+                <span className={styles.labelWithBadge}>
+                  Modo do índice IGPM
+                  <StatusBadge status={integrationsStatus?.igpm} testing={statusTesting} />
+                </span>
+              }
+              htmlFor="integracoes-igpm-mode"
+            >
+              <Select
+                id="integracoes-igpm-mode"
+                value={values.igpmMode}
+                onChange={(e) => handleChange("igpmMode", e.target.value)}
+              >
+                <option value="manual">Manual</option>
+                <option value="automatic">Automático</option>
+              </Select>
+            </FormField>
+
+            {isIgpmAutomatic ? (
+              <SecretField
+                id="integracoes-fgv-token"
+                label="Token de acesso da API de dados da FGV"
+                configured={configuredFlags.fgvApiToken}
+                editing={Boolean(editingSecrets.fgvApiToken)}
+                value={values.fgvApiToken}
+                onChange={(v) => handleChange("fgvApiToken", v)}
+                onStartEdit={() => startEditSecret("fgvApiToken")}
+                onCancelEdit={() => cancelEditSecret("fgvApiToken")}
+                placeholder="Token de acesso da API de dados da FGV"
+              />
+            ) : null}
+          </div>
         </div>
       )}
     </Card>

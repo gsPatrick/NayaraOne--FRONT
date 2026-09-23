@@ -37,6 +37,55 @@
   gap: var(--space-2);
 }
 
+.integrationSection {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-5) var(--space-6);
+  align-items: start;
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-border);
+}
+
+.integrationSection:first-of-type {
+  padding-top: 0;
+  border-top: none;
+}
+
+.integrationSection > :global(.formGridFull) {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 640px) {
+  .integrationSection {
+    grid-template-columns: 1fr;
+  }
+}
+
+.integrationSectionTitle {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-size: var(--text-body-sm);
+  font-weight: 700;
+  color: var(--color-ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.integrationSectionTitle .categoryLabel {
+  color: var(--color-ink-muted);
+}
+
+.integrationSectionTitle .providerLabel {
+  color: var(--color-ink);
+  text-transform: none;
+  letter-spacing: normal;
+  font-size: var(--text-body-md);
+}
+
 .labelWithBadge {
   display: inline-flex;
   align-items: center;
