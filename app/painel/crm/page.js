@@ -28,6 +28,27 @@ import styles from "./page.module.css";
 const CLOSED_STAGES = ["ganho", "perdido"];
 const VISIT_TONE = { DONE: "success", SCHEDULED: "info", CONFIRMED: "info", CANCELED: "danger", NO_SHOW: "danger" };
 
+// A API (opportunityOutcomeReason.validator.js) exige um motivo ESTRUTURADO sempre que a
+// oportunidade entra num estágio de desfecho — sem ele, POST/PATCH volta 422
+// (OPPORTUNITY_OUTCOME_REASON_REQUIRED). O funil da tela só expõe "ganho"/"perdido" (não há
+// coluna de desistência), então só precisamos cobrir wonReason/lostReason aqui.
+const OUTCOME_REASON_FIELD = { ganho: "wonReason", perdido: "lostReason" };
+const OUTCOME_REASON_OPTIONS = {
+  ganho: [
+    { value: "PRICE_ACCEPTED", label: "Preço aceito" },
+    { value: "FAST_DECISION", label: "Decisão rápida" },
+    { value: "REFERRAL", label: "Indicação" },
+    { value: "OTHER", label: "Outro" },
+  ],
+  perdido: [
+    { value: "PRICE_TOO_HIGH", label: "Preço muito alto" },
+    { value: "COMPETITOR", label: "Foi para um concorrente" },
+    { value: "FINANCING_DENIED", label: "Financiamento negado" },
+    { value: "LOCATION", label: "Localização não atendeu" },
+    { value: "OTHER", label: "Outro" },
+  ],
+};
+
 export default function CrmPage() {
   const [opportunities, setOpportunities] = useState([]);
   const [people, setPeople] = useState([]);
@@ -42,6 +63,7 @@ export default function CrmPage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
+  const [reasonPrompt, setReasonPrompt] = useState(null); // { itemId, stageKey } | null
 
   const personName = (id) => people.find((p) => p.id === id)?.legalName || "—";
   const propertyName = (id) => properties.find((p) => p.id === id)?.name || "—";
@@ -92,19 +114,37 @@ export default function CrmPage() {
       const created = await createOpportunity(payload);
       setOpportunities((prev) => [created, ...prev]);
       setCreateOpen(false);
+      return true;
     } catch (err) {
       setActionError(err?.message || "Não foi possível criar a oportunidade.");
+      return false;
     }
   }
 
-  async function handleMoveItem(itemId, newStageKey) {
+  function handleMoveItem(itemId, newStageKey) {
+    // FIX: a API exige um motivo estruturado (wonReason/lostReason) para fechar uma
+    // oportunidade como "ganho"/"perdido" (OPPORTUNITY_OUTCOME_REASON_REQUIRED). Antes disso,
+    // o drag-and-drop mandava só {stage}, a API recusava com 422 e o card voltava sozinho pro
+    // lugar sem o usuário ter como saber o que fazer — não existia nenhum campo na tela para
+    // informar esse motivo. Agora, ao soltar numa coluna de desfecho, perguntamos o motivo
+    // antes de mover de verdade.
+    if (OUTCOME_REASON_FIELD[newStageKey]) {
+      setReasonPrompt({ itemId, stageKey: newStageKey });
+      return;
+    }
+    moveItem(itemId, { stage: newStageKey });
+  }
+
+  async function moveItem(itemId, patch) {
     const previous = opportunities;
-    setOpportunities((prev) => prev.map((o) => (o.id === itemId ? { ...o, stage: newStageKey } : o)));
+    setOpportunities((prev) => prev.map((o) => (o.id === itemId ? { ...o, ...patch } : o)));
     try {
-      await updateOpportunity(itemId, { stage: newStageKey });
+      await updateOpportunity(itemId, patch);
+      return true;
     } catch (err) {
       setOpportunities(previous);
       setActionError(err?.message || "Não foi possível mover a oportunidade de etapa.");
+      return false;
     }
   }
 
@@ -228,6 +268,17 @@ export default function CrmPage() {
         properties={properties}
         users={users}
       />
+      <ReasonPromptModal
+        prompt={reasonPrompt}
+        stages={stages}
+        onClose={() => setReasonPrompt(null)}
+        onConfirm={async (reason) => {
+          const { itemId, stageKey } = reasonPrompt;
+          const field = OUTCOME_REASON_FIELD[stageKey];
+          const ok = await moveItem(itemId, { stage: stageKey, [field]: reason });
+          if (ok) setReasonPrompt(null);
+        }}
+      />
     </AppShell>
   );
 }
@@ -323,6 +374,58 @@ function OpportunityDetailModal({ opportunity, stages, onClose }) {
   );
 }
 
+function ReasonPromptModal({ prompt, stages, onClose, onConfirm }) {
+  const [reason, setReason] = useState("");
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    setReason("");
+    setError("");
+    setSubmitting(false);
+  }, [prompt]);
+
+  if (!prompt) return null;
+  const options = OUTCOME_REASON_OPTIONS[prompt.stageKey] || [];
+  const stageLabel = stages.find((s) => s.key === prompt.stageKey)?.label || prompt.stageKey;
+
+  async function handleConfirm() {
+    if (!reason) {
+      setError("Selecione o motivo antes de confirmar.");
+      return;
+    }
+    setSubmitting(true);
+    await onConfirm(reason);
+    setSubmitting(false);
+  }
+
+  return (
+    <Modal
+      open={Boolean(prompt)}
+      onClose={onClose}
+      title={`Motivo — ${stageLabel}`}
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>Cancelar</Button>
+          <Button onClick={handleConfirm} loading={submitting}>Confirmar</Button>
+        </>
+      }
+    >
+      <FormField label="Motivo" htmlFor="reason-select" required error={error}>
+        <Select id="reason-select" value={reason} onChange={(e) => { setReason(e.target.value); setError(""); }}>
+          <option value="">Selecionar…</option>
+          {options.map((o) => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </Select>
+      </FormField>
+      <p className={styles.nextActionDue}>
+        Mover para "{stageLabel}" exige um motivo estruturado (usado nos relatórios de motivos mais comuns).
+      </p>
+    </Modal>
+  );
+}
+
 function CreateOpportunityModal({ open, onClose, onCreate, stages, initialStageKey, properties, users }) {
   const [personName, setPersonName] = useState("");
   const [personId, setPersonId] = useState(null);
@@ -333,6 +436,7 @@ function CreateOpportunityModal({ open, onClose, onCreate, stages, initialStageK
   const [nextAction, setNextAction] = useState("");
   const [nextActionDueAt, setNextActionDueAt] = useState("");
   const [nextActionDueAtInvalid, setNextActionDueAtInvalid] = useState(false);
+  const [outcomeReason, setOutcomeReason] = useState("");
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
 
@@ -345,6 +449,12 @@ function CreateOpportunityModal({ open, onClose, onCreate, stages, initialStageK
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, initialStageKey]);
 
+  // FIX: o motivo escolhido não vale mais quando o usuário troca de etapa (as opções são
+  // diferentes por desfecho — WON_REASONS != LOST_REASONS).
+  useEffect(() => {
+    setOutcomeReason("");
+  }, [stageKey]);
+
   function reset() {
     setPersonName("");
     setPersonId(null);
@@ -354,6 +464,7 @@ function CreateOpportunityModal({ open, onClose, onCreate, stages, initialStageK
     setNextAction("");
     setNextActionDueAt("");
     setNextActionDueAtInvalid(false);
+    setOutcomeReason("");
     setErrors({});
     setSubmitting(false);
   }
@@ -363,6 +474,9 @@ function CreateOpportunityModal({ open, onClose, onCreate, stages, initialStageK
     onClose();
   }
 
+  const reasonField = OUTCOME_REASON_FIELD[stageKey];
+  const reasonOptions = OUTCOME_REASON_OPTIONS[stageKey] || [];
+
   async function handleSubmit() {
     const nextErrors = {};
     if (!personId) nextErrors.personName = "Selecione o contato (cliente/lead).";
@@ -370,20 +484,29 @@ function CreateOpportunityModal({ open, onClose, onCreate, stages, initialStageK
       if (!nextAction.trim()) nextErrors.nextAction = "Toda oportunidade ativa precisa de uma próxima ação.";
       if (!nextActionDueAt) nextErrors.nextActionDueAt = "Informe o prazo da próxima ação.";
       else if (nextActionDueAtInvalid) nextErrors.nextActionDueAt = DATE_INPUT_ERROR_MESSAGE;
+    } else if (reasonField && !outcomeReason) {
+      // FIX: criar já direto como "ganho"/"perdido" exige motivo estruturado
+      // (OPPORTUNITY_OUTCOME_REASON_REQUIRED na API) — sem esse campo a criação sempre voltava
+      // 422 e o modal resetava o formulário inteiro, perdendo tudo que o usuário tinha digitado.
+      nextErrors.outcomeReason = "Selecione o motivo.";
     }
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
     setSubmitting(true);
-    await onCreate({
+    const ok = await onCreate({
       stage: stageKey,
       personId,
       propertyId: propertyId || undefined,
       ownerUserId: ownerUserId || undefined,
       nextAction: nextAction.trim(),
       nextActionDueAt: nextActionDueAt ? new Date(nextActionDueAt).toISOString() : undefined,
+      ...(reasonField && outcomeReason ? { [reasonField]: outcomeReason } : {}),
     });
-    reset();
+    // FIX: só limpa o formulário quando a criação realmente deu certo — antes o reset()
+    // rodava sempre, mesmo com erro 422/400, e o usuário perdia contato/etapa/dados digitados.
+    if (ok) reset();
+    else setSubmitting(false);
   }
 
   return (
@@ -461,6 +584,24 @@ function CreateOpportunityModal({ open, onClose, onCreate, stages, initialStageK
             onBlur={(e) => setNextActionDueAtInvalid(isDateInputInvalid(e.target.validity))}
           />
         </FormField>
+        {reasonField ? (
+          <div className={styles.span2}>
+            <FormField
+              label={stageKey === "ganho" ? "Motivo do ganho" : "Motivo da perda"}
+              htmlFor="o-outcome-reason"
+              required
+              error={errors.outcomeReason}
+              helper="Obrigatório: toda oportunidade fechada precisa de um motivo estruturado."
+            >
+              <Select id="o-outcome-reason" value={outcomeReason} onChange={(e) => setOutcomeReason(e.target.value)}>
+                <option value="">Selecionar…</option>
+                {reasonOptions.map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </Select>
+            </FormField>
+          </div>
+        ) : null}
       </div>
     </Modal>
   );
