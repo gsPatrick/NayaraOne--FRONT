@@ -319,7 +319,10 @@ export default function ContratoDetailPage({ params }) {
                   <div key={version.id} className={styles.versionRow}>
                     <div className={styles.versionInfo}>
                       <span className={styles.versionTitle}>Versão {version.versionNumber}</span>
-                      <span className={styles.versionHash} title={version.contentHash}>{version.contentHash}</span>
+                      <span className={styles.versionTemplate}>{version.template?.name || "Sem template (conteúdo manual)"}</span>
+                      <span className={styles.versionHash} title={`Hash de integridade (SHA-256 do conteúdo): ${version.contentHash}`}>
+                        hash de integridade: {version.contentHash ? `${version.contentHash.slice(0, 12)}…` : "—"}
+                      </span>
                     </div>
                     <span className={styles.versionDate}>{formatDate(version.effectiveFrom)}</span>
                   </div>

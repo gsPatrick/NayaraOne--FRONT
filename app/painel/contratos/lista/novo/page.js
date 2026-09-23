@@ -13,7 +13,7 @@ import Icon from "@/components/atoms/Icon/Icon";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import { listProperties } from "@/lib/api/properties";
 import { listPeople } from "@/lib/api/people";
-import { createContract, addContractParty } from "@/lib/api/legal";
+import { createContract, addContractParty, listContractTemplates, renderContractTemplate, createContractVersion } from "@/lib/api/legal";
 import { CONTRACT_TYPE_LABELS, PARTY_ROLE_LABELS } from "@/lib/mock/legal";
 import { dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
 import styles from "./page.module.css";
@@ -22,6 +22,7 @@ export default function NovoContratoPage() {
   const router = useRouter();
   const [properties, setProperties] = useState([]);
   const [people, setPeople] = useState([]);
+  const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
@@ -32,6 +33,7 @@ export default function NovoContratoPage() {
     totalValue: "",
     startsAt: "",
     endsAt: "",
+    templateId: "",
   });
   const [parties, setParties] = useState([]);
   const [newParty, setNewParty] = useState({ personId: "", partyRole: "LANDLORD" });
@@ -40,11 +42,12 @@ export default function NovoContratoPage() {
     let cancelled = false;
     setLoading(true);
     setLoadError("");
-    Promise.all([listProperties(), listPeople()])
-      .then(([propertiesRes, peopleRes]) => {
+    Promise.all([listProperties(), listPeople(), listContractTemplates()])
+      .then(([propertiesRes, peopleRes, templatesRes]) => {
         if (cancelled) return;
         setProperties(propertiesRes || []);
         setPeople(peopleRes || []);
+        setTemplates(templatesRes || []);
         setForm((prev) => ({ ...prev, propertyId: prev.propertyId || propertiesRes?.[0]?.id || "" }));
         setNewParty((prev) => ({ ...prev, personId: prev.personId || peopleRes?.[0]?.id || "" }));
       })
@@ -52,6 +55,8 @@ export default function NovoContratoPage() {
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, []);
+
+  const templatesForType = templates.filter((t) => t.contractType === form.contractType);
 
   const [dateErrors, setDateErrors] = useState({});
   const isValid =
@@ -97,6 +102,19 @@ export default function NovoContratoPage() {
       for (const party of parties) {
         await addContractParty(contract.id, { personId: party.personId, partyRole: party.partyRole });
       }
+      // Se um template foi escolhido, gera a primeira versão já com o texto renderizado a
+      // partir dele (preview via renderContractTemplate + persistência via createContractVersion,
+      // ver lib/api/legal.js). requireDocument:false porque nesta etapa ainda não existe upload
+      // de arquivo real — é um rascunho textual vinculado ao template, gate de documento real
+      // continua valendo mais adiante (transição para SIGNING, ver contracts.service.js).
+      if (form.templateId) {
+        const rendered = await renderContractTemplate(form.templateId, {});
+        await createContractVersion(contract.id, {
+          content: rendered.content,
+          templateId: form.templateId,
+          requireDocument: false,
+        });
+      }
       router.push(`/painel/contratos/lista/${contract.id}`);
     } catch (err) {
       setActionError(err.message || "Erro ao criar contrato.");
@@ -137,6 +155,15 @@ export default function NovoContratoPage() {
               <Select id="f-property" value={form.propertyId} onChange={update("propertyId")}>
                 {properties.map((p) => (
                   <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </Select>
+            </FormField>
+
+            <FormField label="Template do contrato" htmlFor="f-template" helper="Opcional — gera a primeira versão do documento já preenchida a partir do modelo">
+              <Select id="f-template" value={form.templateId} onChange={update("templateId")}>
+                <option value="">Sem template (conteúdo manual)</option>
+                {templatesForType.map((t) => (
+                  <option key={t.id} value={t.id}>{t.name}</option>
                 ))}
               </Select>
             </FormField>
