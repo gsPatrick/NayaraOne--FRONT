@@ -18,7 +18,7 @@ import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import { SkeletonKanban } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import { STAGES } from "@/lib/mock/opportunities";
-import { listOpportunities, createOpportunity, updateOpportunity, listVisits, listMessages } from "@/lib/api/crm";
+import { listOpportunities, createOpportunity, updateOpportunity, listVisits, listMessages, listOpportunityTimeline, fromApiStage } from "@/lib/api/crm";
 import { listProperties } from "@/lib/api/properties";
 import { listPeople } from "@/lib/api/people";
 import { apiFetch } from "@/lib/api/client";
@@ -303,9 +303,26 @@ export default function CrmPage() {
   );
 }
 
+// Traduz o evento cru da API (STAGE_CHANGE, OPPORTUNITY_CREATED, ...) para uma frase em
+// pt-BR usando os rótulos das colunas do funil, em vez de despejar o enum do backend na tela.
+function timelineEventLabel(event, stages) {
+  const stageLabel = (apiStage) => {
+    const key = fromApiStage(apiStage);
+    return stages.find((s) => s.key === key)?.label || apiStage || "—";
+  };
+  if (event.type === "OPPORTUNITY_CREATED") return "Oportunidade criada";
+  if (event.type === "STAGE_CHANGE") {
+    return `Etapa alterada de "${stageLabel(event.data.fromStage)}" para "${stageLabel(event.data.toStage)}"`;
+  }
+  if (event.type === "VISIT_SCHEDULED") return "Visita agendada";
+  if (event.type === "MESSAGE_SENT") return "Mensagem registrada";
+  return event.type;
+}
+
 function OpportunityDetailModal({ opportunity, stages, users = [], onSave, onClose }) {
   const [visits, setVisits] = useState([]);
   const [messages, setMessages] = useState([]);
+  const [timeline, setTimeline] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState(null);
@@ -319,10 +336,12 @@ function OpportunityDetailModal({ opportunity, stages, users = [], onSave, onClo
     Promise.all([
       listVisits({ opportunityId: opportunity.id }).catch(() => []),
       listMessages({ opportunityId: opportunity.id }).catch(() => []),
-    ]).then(([v, m]) => {
+      listOpportunityTimeline(opportunity.id).catch(() => []),
+    ]).then(([v, m, tl]) => {
       if (cancelled) return;
       setVisits(v);
       setMessages(m);
+      setTimeline(tl);
       setLoadingHistory(false);
     });
     return () => {
@@ -467,6 +486,27 @@ function OpportunityDetailModal({ opportunity, stages, users = [], onSave, onClo
               </div>
             </>
           )}
+
+          <div className={styles.detailSection}>
+            <p className={styles.detailSectionTitle}>Linha do tempo</p>
+            {loadingHistory ? (
+              <Spinner size="sm" />
+            ) : timeline.length === 0 ? (
+              <EmptyState icon="clock" title="Sem eventos" description="Nenhum evento registrado nesta oportunidade." />
+            ) : (
+              <div className={styles.timeline}>
+                {timeline.map((event) => (
+                  <div className={styles.timelineRow} key={event.id}>
+                    <span className={styles.timelineDot} />
+                    <div className={styles.timelineBody}>
+                      <span className={styles.timelineText}>{timelineEventLabel(event, stages)}</span>
+                      <span className={styles.timelineTime}>{formatDateTime(event.occurredAt)}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
           <div className={styles.detailSection}>
             <p className={styles.detailSectionTitle}>Histórico de visitas</p>
