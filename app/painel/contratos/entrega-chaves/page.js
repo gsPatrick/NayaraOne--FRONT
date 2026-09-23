@@ -22,7 +22,7 @@ import {
   KEY_DELIVERY_STATUS_LABELS,
   KEY_DELIVERY_STATUS_TONE,
 } from "@/lib/mock/legal";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTime, formatContractLabel } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function EntregaChavesPage() {
@@ -105,7 +105,7 @@ export default function EntregaChavesPage() {
             return (
               <div key={delivery.id} className={styles.row}>
                 <div className={styles.rowInfo}>
-                  <span className={styles.rowTitle}>{contract?.contractNumber || "—"}</span>
+                  <span className={styles.rowTitle}>{contract ? formatContractLabel(contract) : "—"}</span>
                   <span className={styles.rowSub}>Para {person?.legalName || "—"}{delivery.deliveredAt ? ` · entregue em ${formatDateTime(delivery.deliveredAt)}` : ""}</span>
                 </div>
                 <div className={styles.rowRight}>

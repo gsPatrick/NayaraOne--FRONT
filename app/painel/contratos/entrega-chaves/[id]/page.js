@@ -22,7 +22,7 @@ import {
   INSPECTION_STATUS_LABELS,
   INSPECTION_STATUS_TONE,
 } from "@/lib/mock/legal";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTime, formatContractLabel } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function EntregaChavesDetailPage({ params }) {
@@ -112,7 +112,7 @@ export default function EntregaChavesDetailPage({ params }) {
   }
 
   return (
-    <AppShell title={contract?.contractNumber || "Entrega de chaves"} backHref="/painel/contratos/entrega-chaves">
+    <AppShell title={contract ? formatContractLabel(contract) : "Entrega de chaves"} backHref="/painel/contratos/entrega-chaves">
       <div className={styles.wrap}>
         <div className={styles.topRow}>
           <div className={styles.badges}>
@@ -154,7 +154,7 @@ export default function EntregaChavesDetailPage({ params }) {
               {contract ? (
                 <div className={styles.linkRow} onClick={() => router.push(`/painel/contratos/lista/${contract.id}`)}>
                   <div className={styles.linkInfo}>
-                    <span className={styles.linkTitle}>{contract.contractNumber}</span>
+                    <span className={styles.linkTitle}>{formatContractLabel(contract)}</span>
                     <span className={styles.linkSub}>{CONTRACT_STATUS_LABELS[contract.status]}</span>
                   </div>
                   <Icon name="chevronRight" size={16} />

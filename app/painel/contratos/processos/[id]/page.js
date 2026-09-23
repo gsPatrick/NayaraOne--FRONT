@@ -34,7 +34,7 @@ import {
   DEADLINE_API_SEVERITY_LABELS,
   DEADLINE_API_SEVERITY_TONE,
 } from "@/lib/mock/legal";
-import { formatDate, formatDateTime } from "@/lib/format";
+import { formatDate, formatDateTime, formatContractLabel } from "@/lib/format";
 import styles from "./page.module.css";
 
 const STATUS_OPTIONS = ["OPEN", "CLOSED"];
@@ -218,7 +218,7 @@ export default function ProcessoDetailPage({ params }) {
             <Card title="Detalhes do processo">
               <dl className={styles.detailList}>
                 <div className={styles.detailRow}><dt>Resumo</dt><dd>{legalCase.summary}</dd></div>
-                <div className={styles.detailRow}><dt>Contrato vinculado</dt><dd>{contract?.contractNumber || "—"}</dd></div>
+                <div className={styles.detailRow}><dt>Contrato vinculado</dt><dd>{contract ? formatContractLabel(contract) : "—"}</dd></div>
                 <div className={styles.detailRow}><dt>Imóvel vinculado</dt><dd>{property?.name || "—"}</dd></div>
                 <div className={styles.detailRow}><dt>Responsável</dt><dd>{legalCase.responsibleUserId ? userName(legalCase.responsibleUserId) : "—"}</dd></div>
               </dl>

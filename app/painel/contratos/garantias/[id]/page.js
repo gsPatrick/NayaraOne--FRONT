@@ -23,7 +23,7 @@ import {
   CONTRACT_STATUS_LABELS,
   CONTRACT_STATUS_TONE,
 } from "@/lib/mock/legal";
-import { formatBRL, formatDate } from "@/lib/format";
+import { formatBRL, formatDate, formatContractLabel } from "@/lib/format";
 import styles from "./page.module.css";
 
 // Espelha o enum real de legal_guarantees.status na API (ACTIVE | RELEASED | CANCELLED).
@@ -156,7 +156,7 @@ export default function GarantiaDetailPage({ params }) {
               {contract ? (
                 <div className={styles.linkRow} onClick={() => router.push(`/painel/contratos/lista/${contract.id}`)}>
                   <div className={styles.linkInfo}>
-                    <span className={styles.linkTitle}>{contract.contractNumber}</span>
+                    <span className={styles.linkTitle}>{formatContractLabel(contract)}</span>
                     <span className={styles.linkSub}>{formatBRL(contract.totalValue)}</span>
                   </div>
                   <Icon name="chevronRight" size={16} />
@@ -180,7 +180,7 @@ export default function GarantiaDetailPage({ params }) {
           </>
         }
       >
-        <p>Tem certeza que deseja excluir a garantia <strong>{GUARANTEE_TYPE_LABELS[guarantee.guaranteeType]}</strong> do contrato <strong>{contract?.contractNumber || "—"}</strong>? Esta ação não pode ser desfeita.</p>
+        <p>Tem certeza que deseja excluir a garantia <strong>{GUARANTEE_TYPE_LABELS[guarantee.guaranteeType]}</strong> do contrato <strong>{contract ? formatContractLabel(contract) : "—"}</strong>? Esta ação não pode ser desfeita.</p>
       </Modal>
     </AppShell>
   );

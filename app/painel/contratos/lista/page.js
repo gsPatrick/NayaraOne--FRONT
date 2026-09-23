@@ -25,7 +25,7 @@ import {
   CONTRACT_STATUS_LABELS,
   CONTRACT_STATUS_TONE,
 } from "@/lib/mock/legal";
-import { formatBRL } from "@/lib/format";
+import { formatBRL, formatContractLabel } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function ContratosListaPage() {
@@ -65,7 +65,7 @@ export default function ContratosListaPage() {
     return contracts.filter((c) => {
       const property = propertyOf(c.propertyId);
       if (query) {
-        const haystack = `${c.contractNumber} ${property?.name || ""}`.toLowerCase();
+        const haystack = `${formatContractLabel(c)} ${property?.name || ""}`.toLowerCase();
         if (!haystack.includes(query.toLowerCase())) return false;
       }
       if (typeFilter && c.contractType !== typeFilter) return false;
@@ -98,7 +98,7 @@ export default function ContratosListaPage() {
       width: "26%",
       render: (row) => (
         <div className={styles.nameCell}>
-          <span className={styles.nameMain}>{row.contractNumber}</span>
+          <span className={styles.nameMain}>{formatContractLabel(row)}</span>
           <span className={styles.nameSub}>{propertyOf(row.propertyId)?.name || "Sem imóvel vinculado"}</span>
         </div>
       ),
@@ -202,7 +202,7 @@ export default function ContratosListaPage() {
           </>
         }
       >
-        <p>Tem certeza que deseja excluir o contrato <strong>{deleteTarget?.contractNumber}</strong>? Esta ação não pode ser desfeita.</p>
+        <p>Tem certeza que deseja excluir o contrato <strong>{formatContractLabel(deleteTarget)}</strong>? Esta ação não pode ser desfeita.</p>
       </Modal>
     </AppShell>
   );

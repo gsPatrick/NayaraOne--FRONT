@@ -24,6 +24,7 @@ import {
   CASE_STATUS_LABELS,
   CASE_STATUS_TONE,
 } from "@/lib/mock/legal";
+import { formatContractLabel } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function ProcessosPage() {
@@ -116,7 +117,7 @@ export default function ProcessosPage() {
         const property = row.propertyId ? propertyOf(row.propertyId) : null;
         return (
           <div className={styles.nameCell}>
-            <span className={styles.nameMain}>{contract?.contractNumber || "Sem contrato"}</span>
+            <span className={styles.nameMain}>{contract ? formatContractLabel(contract) : "Sem contrato"}</span>
             <span className={styles.nameSub}>{property?.name || "—"}</span>
           </div>
         );

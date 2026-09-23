@@ -47,7 +47,7 @@ import {
   AMENDMENT_STATUS_TONE,
   nextContractStatus,
 } from "@/lib/mock/legal";
-import { formatBRL, formatDate, formatDateTime } from "@/lib/format";
+import { formatBRL, formatDate, formatDateTime, formatContractLabel } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function ContratoDetailPage({ params }) {
@@ -177,7 +177,7 @@ export default function ContratoDetailPage({ params }) {
     try {
       const versionNumber = versions.length + 1;
       const newVersion = await createContractVersion(contract.id, {
-        content: `Versão ${versionNumber} do contrato ${contract.contractNumber}`,
+        content: `Versão ${versionNumber} do contrato ${formatContractLabel(contract)}`,
       });
       setVersions((prev) => [...prev, newVersion]);
       setNotice({ tone: "info", text: `Versão ${versionNumber} criada — versões são imutáveis, nunca editadas.` });
@@ -231,7 +231,7 @@ export default function ContratoDetailPage({ params }) {
 
   return (
     <AppShell
-      title={contract.contractNumber || `Contrato ${CONTRACT_TYPE_LABELS[contract.contractType] || ""}`.trim() || "Contrato"}
+      title={formatContractLabel(contract) || "Contrato"}
       backHref="/painel/contratos/lista"
     >
       <div className={styles.wrap}>

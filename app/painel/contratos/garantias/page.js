@@ -25,7 +25,7 @@ import {
   GUARANTEE_STATUS_LABELS,
   GUARANTEE_STATUS_TONE,
 } from "@/lib/mock/legal";
-import { formatBRL, formatDate } from "@/lib/format";
+import { formatBRL, formatDate, formatContractLabel } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function GarantiasPage() {
@@ -69,7 +69,7 @@ export default function GarantiasPage() {
   const filtered = useMemo(() => {
     return guarantees.filter((g) => {
       const contract = contractOf(g.contractId);
-      if (query && !`${contract?.contractNumber || ""}`.toLowerCase().includes(query.toLowerCase())) return false;
+      if (query && !formatContractLabel(contract).toLowerCase().includes(query.toLowerCase())) return false;
       if (typeFilter && g.guaranteeType !== typeFilter) return false;
       return true;
     });
@@ -135,7 +135,7 @@ export default function GarantiasPage() {
                     <span className={styles.guaranteeIcon}><Icon name={GUARANTEE_TYPE_ICON[g.guaranteeType]} size={20} /></span>
                     <div className={styles.guaranteeTitleBlock}>
                       <span className={styles.guaranteeTitle}>{GUARANTEE_TYPE_LABELS[g.guaranteeType]}</span>
-                      <span className={styles.guaranteeSub}>{contract?.contractNumber || "—"}</span>
+                      <span className={styles.guaranteeSub}>{contract ? formatContractLabel(contract) : "—"}</span>
                     </div>
                     <Badge tone={GUARANTEE_STATUS_TONE[g.status] || "neutral"}>{GUARANTEE_STATUS_LABELS[g.status] || g.status}</Badge>
                   </div>
@@ -198,7 +198,7 @@ export default function GarantiasPage() {
           </>
         }
       >
-        <p>Tem certeza que deseja excluir a garantia <strong>{deleteTarget ? GUARANTEE_TYPE_LABELS[deleteTarget.guaranteeType] : ""}</strong> do contrato <strong>{contractOf(deleteTarget?.contractId)?.contractNumber || "—"}</strong>? Esta ação não pode ser desfeita.</p>
+        <p>Tem certeza que deseja excluir a garantia <strong>{deleteTarget ? GUARANTEE_TYPE_LABELS[deleteTarget.guaranteeType] : ""}</strong> do contrato <strong>{formatContractLabel(contractOf(deleteTarget?.contractId)) || "—"}</strong>? Esta ação não pode ser desfeita.</p>
       </Modal>
     </AppShell>
   );
