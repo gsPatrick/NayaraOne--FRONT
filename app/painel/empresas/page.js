@@ -90,7 +90,7 @@ export default function EmpresasPage() {
           </span>
           <div>
             <p className={styles.companyName}>{row.name}</p>
-            <p className={styles.companyLegalName}>{row.legalName}</p>
+            {row.legalName ? <p className={styles.companyLegalName}>{row.legalName}</p> : null}
           </div>
         </div>
       ),
