@@ -40,7 +40,7 @@ import {
 } from "@/lib/api/construction";
 import { listProperties } from "@/lib/api/properties";
 import { apiFetch } from "@/lib/api/client";
-import { formatBRL, formatDate, dateOnlyInputToIso } from "@/lib/format";
+import { formatBRL, formatDate, dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
 import styles from "./page.module.css";
 
 const WEATHER_OPTIONS = ["Ensolarado", "Nublado", "Chuvoso", "Ventania"];
@@ -64,6 +64,8 @@ export default function ObraDetalhePage({ params }) {
 
   const [editOpen, setEditOpen] = useState(false);
   const [editForm, setEditForm] = useState({ name: "", propertyId: "", responsibleUserId: "", budgetAmount: "", startsAt: "", endsAtPlanned: "" });
+  const [editDateErrors, setEditDateErrors] = useState({});
+  const [rdoDateInvalid, setRdoDateInvalid] = useState(false);
   const [savingEdit, setSavingEdit] = useState(false);
 
   const [stageOpen, setStageOpen] = useState(false);
@@ -519,7 +521,7 @@ export default function ObraDetalhePage({ params }) {
         footer={
           <>
             <Button variant="secondary" onClick={() => setEditOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSaveEdit} loading={savingEdit} disabled={!editForm.name.trim()}>Salvar alterações</Button>
+            <Button onClick={handleSaveEdit} loading={savingEdit} disabled={!editForm.name.trim() || editDateErrors.startsAt || editDateErrors.endsAtPlanned}>Salvar alterações</Button>
           </>
         }
       >
@@ -548,11 +550,45 @@ export default function ObraDetalhePage({ params }) {
           <FormField label="Orçamento (R$)" htmlFor="e-budget" helper="Opcional">
             <Input id="e-budget" type="number" min="0" step="0.01" value={editForm.budgetAmount} onChange={(e) => setEditForm((p) => ({ ...p, budgetAmount: e.target.value }))} />
           </FormField>
-          <FormField label="Início" htmlFor="e-starts" helper="Opcional">
-            <Input id="e-starts" type="date" value={editForm.startsAt} onChange={(e) => setEditForm((p) => ({ ...p, startsAt: e.target.value }))} />
+          <FormField
+            label="Início"
+            htmlFor="e-starts"
+            helper={editDateErrors.startsAt ? undefined : "Opcional"}
+            error={editDateErrors.startsAt ? DATE_INPUT_ERROR_MESSAGE : undefined}
+          >
+            <Input
+              id="e-starts"
+              type="date"
+              min="1900-01-01"
+              max="2100-12-31"
+              error={editDateErrors.startsAt}
+              value={editForm.startsAt}
+              onChange={(e) => {
+                setEditDateErrors((p) => ({ ...p, startsAt: isDateInputInvalid(e.target.validity) }));
+                setEditForm((p) => ({ ...p, startsAt: e.target.value }));
+              }}
+              onBlur={(e) => setEditDateErrors((p) => ({ ...p, startsAt: isDateInputInvalid(e.target.validity) }))}
+            />
           </FormField>
-          <FormField label="Previsão de término" htmlFor="e-ends" helper="Opcional">
-            <Input id="e-ends" type="date" value={editForm.endsAtPlanned} onChange={(e) => setEditForm((p) => ({ ...p, endsAtPlanned: e.target.value }))} />
+          <FormField
+            label="Previsão de término"
+            htmlFor="e-ends"
+            helper={editDateErrors.endsAtPlanned ? undefined : "Opcional"}
+            error={editDateErrors.endsAtPlanned ? DATE_INPUT_ERROR_MESSAGE : undefined}
+          >
+            <Input
+              id="e-ends"
+              type="date"
+              min="1900-01-01"
+              max="2100-12-31"
+              error={editDateErrors.endsAtPlanned}
+              value={editForm.endsAtPlanned}
+              onChange={(e) => {
+                setEditDateErrors((p) => ({ ...p, endsAtPlanned: isDateInputInvalid(e.target.validity) }));
+                setEditForm((p) => ({ ...p, endsAtPlanned: e.target.value }));
+              }}
+              onBlur={(e) => setEditDateErrors((p) => ({ ...p, endsAtPlanned: isDateInputInvalid(e.target.validity) }))}
+            />
           </FormField>
         </div>
       </Modal>
@@ -604,13 +640,25 @@ export default function ObraDetalhePage({ params }) {
         footer={
           <>
             <Button variant="secondary" onClick={() => setRdoOpen(false)}>Cancelar</Button>
-            <Button onClick={handleCreateRdo} loading={savingRdo} disabled={!rdoForm.reportDate || !rdoForm.weather || rdoForm.workforceCount === ""}>Registrar RDO</Button>
+            <Button onClick={handleCreateRdo} loading={savingRdo} disabled={!rdoForm.reportDate || rdoDateInvalid || !rdoForm.weather || rdoForm.workforceCount === ""}>Registrar RDO</Button>
           </>
         }
       >
         <div className={styles.formGrid}>
-          <FormField label="Data" htmlFor="m-rdo-date" required>
-            <Input id="m-rdo-date" type="date" value={rdoForm.reportDate} onChange={(e) => setRdoForm((p) => ({ ...p, reportDate: e.target.value }))} />
+          <FormField label="Data" htmlFor="m-rdo-date" required error={rdoDateInvalid ? DATE_INPUT_ERROR_MESSAGE : undefined}>
+            <Input
+              id="m-rdo-date"
+              type="date"
+              min="1900-01-01"
+              max="2100-12-31"
+              error={rdoDateInvalid}
+              value={rdoForm.reportDate}
+              onChange={(e) => {
+                setRdoDateInvalid(isDateInputInvalid(e.target.validity));
+                setRdoForm((p) => ({ ...p, reportDate: e.target.value }));
+              }}
+              onBlur={(e) => setRdoDateInvalid(isDateInputInvalid(e.target.validity))}
+            />
           </FormField>
           <FormField label="Clima" htmlFor="m-rdo-weather" required>
             <Select id="m-rdo-weather" value={rdoForm.weather} onChange={(e) => setRdoForm((p) => ({ ...p, weather: e.target.value }))}>
