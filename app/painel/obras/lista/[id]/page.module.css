@@ -136,3 +136,24 @@
   font-size: var(--text-body-sm);
   resize: vertical;
 }
+
+/* Botão de editar nas linhas de Etapas e RDO (homologação 23/09/2026 — antes não havia
+   nenhuma forma de editar etapa ou RDO pela interface). */
+.rowEditBtn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-canvas);
+  color: var(--color-ink-muted);
+  cursor: pointer;
+}
+
+.rowEditBtn:hover {
+  color: var(--color-ink);
+  border-color: var(--color-ink-muted);
+}

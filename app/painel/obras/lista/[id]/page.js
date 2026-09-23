@@ -30,8 +30,10 @@ import {
   removeProject,
   listProjectStages,
   createProjectStage,
+  updateProjectStage,
   listDailyReports,
   createDailyReport,
+  updateDailyReport,
   listBudgetLines,
   createBudgetLine,
   listQualityItems,
@@ -70,11 +72,15 @@ export default function ObraDetalhePage({ params }) {
 
   const [stageOpen, setStageOpen] = useState(false);
   const [stageForm, setStageForm] = useState({ name: "", sequence: "1", plannedPct: "" });
+  // FIX (homologação 23/09/2026): etapa e RDO só podiam ser CRIADOS. Guardar o id em
+  // edição faz o mesmo modal servir pra criar e pra editar.
+  const [editingStageId, setEditingStageId] = useState(null);
   const [savingStage, setSavingStage] = useState(false);
 
   const [rdoOpen, setRdoOpen] = useState(false);
   const [rdoForm, setRdoForm] = useState({ reportDate: new Date().toISOString().slice(0, 10), weather: WEATHER_OPTIONS[0], workforceCount: "", occurrences: "" });
   const [savingRdo, setSavingRdo] = useState(false);
+  const [editingRdoId, setEditingRdoId] = useState(null);
 
   const [budgetOpen, setBudgetOpen] = useState(false);
   const [budgetForm, setBudgetForm] = useState({ category: "", description: "", plannedAmount: "" });
@@ -234,47 +240,93 @@ export default function ObraDetalhePage({ params }) {
   }
 
   function openStageModal() {
+    setEditingStageId(null);
     setStageForm({ name: "", sequence: String(stages.length + 1), plannedPct: "" });
     setStageOpen(true);
   }
-  async function handleCreateStage() {
+
+  // FIX (homologação 23/09/2026): não existia NENHUMA forma de editar uma etapa de obra pela
+  // interface — a etapa só podia ser criada. PATCH /construction/stages/:id já existia na API
+  // e em lib/api/construction.js (updateProjectStage), mas nenhuma tela consumia. Corrigir
+  // nome, sequência ou percentual planejado de uma etapa era impossível pelo sistema.
+  function openStageEditModal(stage) {
+    setEditingStageId(stage.id);
+    setStageForm({
+      name: stage.name || "",
+      sequence: stage.sequence != null ? String(stage.sequence) : "",
+      plannedPct: stage.plannedPct != null ? String(Number(stage.plannedPct)) : "",
+    });
+    setStageOpen(true);
+  }
+
+  async function handleSaveStage() {
     if (!stageForm.name.trim() || stageForm.sequence === "") return;
     setSavingStage(true);
     setActionError("");
     try {
-      const created = await createProjectStage(project.id, {
+      const payload = {
         name: stageForm.name.trim(),
         sequence: Number(stageForm.sequence),
-        plannedPct: stageForm.plannedPct ? Number(stageForm.plannedPct) : undefined,
-      });
-      setStages((prev) => [...prev, created]);
+        plannedPct: stageForm.plannedPct !== "" ? Number(stageForm.plannedPct) : undefined,
+      };
+      if (editingStageId) {
+        const updated = await updateProjectStage(editingStageId, payload);
+        setStages((prev) => prev.map((s) => (s.id === editingStageId ? updated : s)));
+      } else {
+        const created = await createProjectStage(project.id, payload);
+        setStages((prev) => [...prev, created]);
+      }
       setStageOpen(false);
     } catch (err) {
-      setActionError(err?.message || "Não foi possível criar a etapa.");
+      setActionError(err?.message || "Não foi possível salvar a etapa.");
     } finally {
       setSavingStage(false);
     }
   }
 
   function openRdoModal() {
+    setEditingRdoId(null);
     setRdoForm({ reportDate: new Date().toISOString().slice(0, 10), weather: WEATHER_OPTIONS[0], workforceCount: "", occurrences: "" });
     setRdoOpen(true);
   }
-  async function handleCreateRdo() {
+
+  // FIX (homologação 23/09/2026): mesmo caso da etapa — o RDO só podia ser registrado, nunca
+  // corrigido. PATCH /construction/daily-reports/:id já existia na API e em
+  // lib/api/construction.js (updateDailyReport) sem nenhum consumidor. Um RDO lançado com
+  // data, clima, efetivo ou ocorrências errados ficava errado pra sempre.
+  function openRdoEditModal(report) {
+    setEditingRdoId(report.id);
+    setRdoDateInvalid(false);
+    setRdoForm({
+      reportDate: report.reportDate ? String(report.reportDate).slice(0, 10) : "",
+      weather: report.weather || WEATHER_OPTIONS[0],
+      workforceCount: report.workforceCount != null ? String(report.workforceCount) : "",
+      occurrences: report.occurrences || "",
+    });
+    setRdoOpen(true);
+  }
+
+  async function handleSaveRdo() {
     if (!rdoForm.reportDate || !rdoForm.weather || rdoForm.workforceCount === "") return;
     setSavingRdo(true);
     setActionError("");
     try {
-      const created = await createDailyReport(project.id, {
+      const payload = {
         reportDate: rdoForm.reportDate,
         weather: rdoForm.weather,
         workforceCount: Number(rdoForm.workforceCount),
         occurrences: rdoForm.occurrences.trim() || undefined,
-      });
-      setReports((prev) => [created, ...prev].slice(0, 5));
+      };
+      if (editingRdoId) {
+        const updated = await updateDailyReport(editingRdoId, payload);
+        setReports((prev) => prev.map((r) => (r.id === editingRdoId ? updated : r)));
+      } else {
+        const created = await createDailyReport(project.id, payload);
+        setReports((prev) => [created, ...prev].slice(0, 5));
+      }
       setRdoOpen(false);
     } catch (err) {
-      setActionError(err?.message || "Não foi possível registrar o RDO.");
+      setActionError(err?.message || "Não foi possível salvar o RDO.");
     } finally {
       setSavingRdo(false);
     }
@@ -403,6 +455,18 @@ export default function ObraDetalhePage({ params }) {
                     </span>
                   </div>
                   <Badge tone={STAGE_STATUS_TONE[s.status]}>{STAGE_STATUS_LABELS[s.status]}</Badge>
+                  <button
+                    type="button"
+                    className={styles.rowEditBtn}
+                    aria-label={`Editar etapa ${s.name}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      openStageEditModal(s);
+                    }}
+                  >
+                    <Icon name="pencil" size={14} />
+                  </button>
                 </a>
               ))}
             </div>
@@ -428,6 +492,14 @@ export default function ObraDetalhePage({ params }) {
                       Efetivo: {r.workforceCount} · {r.occurrences || "Sem ocorrências"}
                     </span>
                   </div>
+                  <button
+                    type="button"
+                    className={styles.rowEditBtn}
+                    aria-label={`Editar RDO de ${formatDate(r.reportDate)}`}
+                    onClick={() => openRdoEditModal(r)}
+                  >
+                    <Icon name="pencil" size={14} />
+                  </button>
                 </div>
               ))}
             </div>
@@ -610,11 +682,11 @@ export default function ObraDetalhePage({ params }) {
       <Modal
         open={stageOpen}
         onClose={() => setStageOpen(false)}
-        title="Nova etapa"
+        title={editingStageId ? "Editar etapa" : "Nova etapa"}
         footer={
           <>
             <Button variant="secondary" onClick={() => setStageOpen(false)}>Cancelar</Button>
-            <Button onClick={handleCreateStage} loading={savingStage} disabled={!stageForm.name.trim() || stageForm.sequence === ""}>Criar etapa</Button>
+            <Button onClick={handleSaveStage} loading={savingStage} disabled={!stageForm.name.trim() || stageForm.sequence === ""}>{editingStageId ? "Salvar alterações" : "Criar etapa"}</Button>
           </>
         }
       >
@@ -636,11 +708,11 @@ export default function ObraDetalhePage({ params }) {
       <Modal
         open={rdoOpen}
         onClose={() => setRdoOpen(false)}
-        title="Novo RDO"
+        title={editingRdoId ? "Editar RDO" : "Novo RDO"}
         footer={
           <>
             <Button variant="secondary" onClick={() => setRdoOpen(false)}>Cancelar</Button>
-            <Button onClick={handleCreateRdo} loading={savingRdo} disabled={!rdoForm.reportDate || rdoDateInvalid || !rdoForm.weather || rdoForm.workforceCount === ""}>Registrar RDO</Button>
+            <Button onClick={handleSaveRdo} loading={savingRdo} disabled={!rdoForm.reportDate || rdoDateInvalid || !rdoForm.weather || rdoForm.workforceCount === ""}>{editingRdoId ? "Salvar alterações" : "Registrar RDO"}</Button>
           </>
         }
       >
