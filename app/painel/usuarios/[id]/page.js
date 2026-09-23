@@ -12,6 +12,9 @@ import Select from "@/components/atoms/Select/Select";
 import Spinner from "@/components/atoms/Spinner/Spinner";
 import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
+import Modal from "@/components/organisms/Modal/Modal";
+import Input from "@/components/atoms/Input/Input";
+import FormField from "@/components/molecules/FormField/FormField";
 import MfaVerifyModal from "@/components/organisms/MfaVerifyModal/MfaVerifyModal";
 import MfaSetupRequiredNotice from "@/components/molecules/MfaSetupRequiredNotice/MfaSetupRequiredNotice";
 import { apiFetch } from "@/lib/api/client";
@@ -32,6 +35,15 @@ export default function UserDetailPage({ params }) {
   const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [togglingStatus, setTogglingStatus] = useState(false);
+
+  // FIX (homologação 23/09/2026): a ação "Editar" da listagem de usuários levava pra esta
+  // tela, que não tinha NENHUM formulário de edição — só suspender acesso e vincular papel.
+  // Não havia como corrigir o nome de um usuário cadastrado errado, embora
+  // PATCH /users/:id aceite o campo `name`. (O e-mail é imutável no backend: o PATCH
+  // responde 200 mas ignora a alteração, então não é oferecido como editável aqui.)
+  const [editOpen, setEditOpen] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
 
   const [selectedRoleId, setSelectedRoleId] = useState("");
   const [assigning, setAssigning] = useState(false);
@@ -70,6 +82,28 @@ export default function UserDetailPage({ params }) {
     () => memberships.filter((m) => m.status !== "REVOKED"),
     [memberships]
   );
+
+  function openEditModal() {
+    setEditName(user.name || "");
+    setActionError("");
+    setEditOpen(true);
+  }
+
+  async function handleSaveEdit() {
+    const name = editName.trim();
+    if (!name) return;
+    setSavingEdit(true);
+    setActionError("");
+    try {
+      const updated = await apiFetch(`/users/${params.id}`, { method: "PATCH", body: { name } });
+      setUser(updated);
+      setEditOpen(false);
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível salvar as alterações do usuário.");
+    } finally {
+      setSavingEdit(false);
+    }
+  }
 
   async function toggleStatus() {
     setTogglingStatus(true);
@@ -163,6 +197,9 @@ export default function UserDetailPage({ params }) {
           </div>
           <div className={styles.actions}>
             <Badge tone={STATUS_TONE[user.status] || "neutral"}>{STATUS_LABEL[user.status] || user.status}</Badge>
+            <Button variant="secondary" onClick={openEditModal}>
+              <Icon name="pencil" size={16} /> Editar
+            </Button>
             <Button variant="secondary" onClick={toggleStatus} loading={togglingStatus}>
               <Icon name={user.status === "ACTIVE" ? "ban" : "check"} size={16} />
               {user.status === "ACTIVE" ? "Suspender acesso" : "Reativar acesso"}
@@ -286,6 +323,25 @@ export default function UserDetailPage({ params }) {
           </div>
         </div>
       </div>
+
+      <Modal
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        title="Editar usuário"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setEditOpen(false)}>Cancelar</Button>
+            <Button onClick={handleSaveEdit} loading={savingEdit} disabled={!editName.trim()}>Salvar alterações</Button>
+          </>
+        }
+      >
+        <FormField label="Nome" htmlFor="u-edit-name" required>
+          <Input id="u-edit-name" value={editName} onChange={(e) => setEditName(e.target.value)} />
+        </FormField>
+        <FormField label="E-mail" htmlFor="u-edit-email" helper="O e-mail de acesso não pode ser alterado depois do cadastro.">
+          <Input id="u-edit-email" value={user.email || ""} disabled readOnly />
+        </FormField>
+      </Modal>
 
       <MfaVerifyModal
         open={Boolean(pendingMfaAction)}
