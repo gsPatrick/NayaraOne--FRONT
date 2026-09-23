@@ -29,6 +29,8 @@ import {
   getProperty,
   updateProperty,
   addPropertyOwner,
+  updatePropertyOwner,
+  removePropertyOwner,
   createOffer,
   updateOffer,
   savePropertyDocumentation,
@@ -311,8 +313,38 @@ export default function EditPropertyPage({ params }) {
           else await createOffer(property.id, offerPayload);
         }
 
+        // FIX (homologação 23/09/2026): o bloco "Proprietários" da edição só sabia CRIAR. Só
+        // proprietário novo (sem id) era enviado; alterar percentual/papel/vigência de um
+        // proprietário já cadastrado e remover um proprietário pelo botão da lixeira eram
+        // descartados em silêncio. Agora reconcilia a lista de verdade — remove os que saíram,
+        // atualiza os que mudaram (PATCH /properties/:id/owners/:ownerId) e cria os novos —
+        // como já é feito em contatos/documentos da tela de edição de pessoa.
+        const keptOwnerIds = new Set(owners.filter((o) => o.id).map((o) => o.id));
+        for (const original of property.owners || []) {
+          if (!keptOwnerIds.has(original.id)) {
+            await removePropertyOwner(property.id, original.id);
+          }
+        }
         for (const o of owners) {
-          if (!o.id && o.personId) {
+          if (o.id) {
+            const original = (property.owners || []).find((x) => x.id === o.id);
+            const originalFrom = original?.validFrom ? original.validFrom.slice(0, 10) : "";
+            const originalUntil = original?.validUntil ? original.validUntil.slice(0, 10) : "";
+            const changed =
+              !original ||
+              String(original.roleCode || "") !== String(o.roleCode || "") ||
+              String(original.percentage ?? "") !== String(o.percentage ?? "") ||
+              originalFrom !== (o.validFrom || "") ||
+              originalUntil !== (o.validUntil || "");
+            if (changed) {
+              await updatePropertyOwner(property.id, o.id, {
+                roleCode: o.roleCode,
+                ownershipPercent: o.percentage === "" || o.percentage == null ? "" : Number(o.percentage),
+                validFrom: dateOnlyInputToIso(o.validFrom) || null,
+                validUntil: dateOnlyInputToIso(o.validUntil) || null,
+              });
+            }
+          } else if (o.personId) {
             await addPropertyOwner(property.id, {
               personId: o.personId,
               roleCode: o.roleCode,
