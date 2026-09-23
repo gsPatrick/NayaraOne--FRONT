@@ -10,7 +10,7 @@ import Spinner from "@/components/atoms/Spinner/Spinner";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import CrmNavMenu from "@/components/molecules/CrmNavMenu/CrmNavMenu";
-import { getCrmDashboard, fromApiStage } from "@/lib/api/crm";
+import { getCrmDashboard, fromApiStage, LOST_REASON_LABELS } from "@/lib/api/crm";
 import { STAGES } from "@/lib/mock/opportunities";
 import { formatBRL, formatDateTime } from "@/lib/format";
 import styles from "./page.module.css";
@@ -113,7 +113,7 @@ export default function CrmDashboardPage() {
                   {dashboard.topLostReasons.map((r) => (
                     <div className={styles.barRow} key={r.reason}>
                       <span className={styles.barLabel}>
-                        {r.reason}
+                        {r.inEnum ? (LOST_REASON_LABELS[r.reason] || r.reason) : r.reason}
                         {!r.inEnum ? <Badge tone="neutral" className={styles.legacyBadge}>legado</Badge> : null}
                       </span>
                       <span className={styles.barValue}>{r.total}</span>

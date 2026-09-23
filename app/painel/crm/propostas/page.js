@@ -24,8 +24,17 @@ import {
   listOpportunities,
 } from "@/lib/api/crm";
 import { listProperties } from "@/lib/api/properties";
-import { formatBRL, formatDate, formatDateTime } from "@/lib/format";
+import { listPeople } from "@/lib/api/people";
+import { STAGES } from "@/lib/mock/opportunities";
+import { formatBRL, formatDate, formatDateTime, dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
 import styles from "./page.module.css";
+
+// `opportunity.stage` já vem mapeado pela camada de API (fromApiStage em lib/api/crm.js) —
+// aqui só traduzimos a CHAVE (ex.: "ganho") pro rótulo em pt-BR do funil (ex.: "Fechado
+// (Ganho)"), sem reaplicar o mapeamento do valor cru da API.
+function stageLabel(stageKey) {
+  return STAGES.find((s) => s.key === stageKey)?.label || stageKey || "—";
+}
 
 const STATUS_LABELS = {
   DRAFT: "Rascunho",
@@ -48,6 +57,7 @@ export default function PropostasPage() {
   const [proposals, setProposals] = useState([]);
   const [opportunities, setOpportunities] = useState([]);
   const [properties, setProperties] = useState([]);
+  const [people, setPeople] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
@@ -58,11 +68,12 @@ export default function PropostasPage() {
   function load() {
     setLoading(true);
     setLoadError("");
-    return Promise.all([listProposals(), listOpportunities(), listProperties()])
-      .then(([p, o, props]) => {
+    return Promise.all([listProposals(), listOpportunities(), listProperties(), listPeople()])
+      .then(([p, o, props, ppl]) => {
         setProposals(p);
         setOpportunities(o);
         setProperties(props);
+        setPeople(ppl || []);
       })
       .catch((err) => setLoadError(err?.message || "Não foi possível carregar as propostas."))
       .finally(() => setLoading(false));
@@ -77,9 +88,11 @@ export default function PropostasPage() {
     [proposals, statusFilter]
   );
 
+  const personName = (id) => people.find((p) => p.id === id)?.legalName || "—";
   const opportunityLabel = (id) => {
     const opp = opportunities.find((o) => o.id === id);
-    return opp ? `#${String(opp.id).slice(0, 8)}` : "—";
+    if (!opp) return "—";
+    return `${personName(opp.personId)} · ${stageLabel(opp.stage)}`;
   };
   const propertyName = (id) => properties.find((p) => p.id === id)?.name || "—";
 
@@ -172,6 +185,7 @@ export default function PropostasPage() {
         onCreate={handleCreate}
         opportunities={opportunities}
         properties={properties}
+        personName={personName}
       />
       <StatusModal
         proposal={statusTarget}
@@ -182,11 +196,12 @@ export default function PropostasPage() {
   );
 }
 
-function CreateProposalModal({ open, onClose, onCreate, opportunities, properties }) {
+function CreateProposalModal({ open, onClose, onCreate, opportunities, properties, personName }) {
   const [opportunityId, setOpportunityId] = useState("");
   const [propertyId, setPropertyId] = useState("");
   const [value, setValue] = useState("");
   const [validUntil, setValidUntil] = useState("");
+  const [validUntilInvalid, setValidUntilInvalid] = useState(false);
   const [notes, setNotes] = useState("");
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
@@ -197,6 +212,7 @@ function CreateProposalModal({ open, onClose, onCreate, opportunities, propertie
       setPropertyId("");
       setValue("");
       setValidUntil("");
+      setValidUntilInvalid(false);
       setNotes("");
       setErrors({});
     }
@@ -208,6 +224,7 @@ function CreateProposalModal({ open, onClose, onCreate, opportunities, propertie
     setPropertyId("");
     setValue("");
     setValidUntil("");
+    setValidUntilInvalid(false);
     setNotes("");
     setErrors({});
     setSubmitting(false);
@@ -222,6 +239,7 @@ function CreateProposalModal({ open, onClose, onCreate, opportunities, propertie
     const nextErrors = {};
     if (!opportunityId) nextErrors.opportunityId = "Selecione a oportunidade.";
     if (!value || Number(value) <= 0) nextErrors.value = "Informe um valor maior que zero.";
+    if (validUntilInvalid) nextErrors.validUntil = DATE_INPUT_ERROR_MESSAGE;
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
@@ -230,7 +248,7 @@ function CreateProposalModal({ open, onClose, onCreate, opportunities, propertie
       opportunityId,
       propertyId: propertyId || undefined,
       value: Number(value),
-      validUntil: validUntil ? new Date(validUntil).toISOString() : undefined,
+      validUntil: dateOnlyInputToIso(validUntil),
       notes: notes.trim() || undefined,
     });
     if (ok) reset();
@@ -253,7 +271,7 @@ function CreateProposalModal({ open, onClose, onCreate, opportunities, propertie
         <Select id="p-opportunity" value={opportunityId} onChange={(e) => setOpportunityId(e.target.value)}>
           <option value="">Selecionar…</option>
           {opportunities.map((o) => (
-            <option key={o.id} value={o.id}>{`#${String(o.id).slice(0, 8)} — ${o.stage}`}</option>
+            <option key={o.id} value={o.id}>{`${personName(o.personId)} — ${stageLabel(o.stage)}`}</option>
           ))}
         </Select>
       </FormField>
@@ -268,8 +286,25 @@ function CreateProposalModal({ open, onClose, onCreate, opportunities, propertie
       <FormField label="Valor (R$)" htmlFor="p-value" required error={errors.value}>
         <Input id="p-value" type="number" min="0.01" step="0.01" value={value} onChange={(e) => setValue(e.target.value)} />
       </FormField>
-      <FormField label="Válida até" htmlFor="p-valid-until">
-        <Input id="p-valid-until" type="date" value={validUntil} onChange={(e) => setValidUntil(e.target.value)} />
+      <FormField
+        label="Válida até"
+        htmlFor="p-valid-until"
+        helper={errors.validUntil ? undefined : "Opcional"}
+        error={errors.validUntil}
+      >
+        <Input
+          id="p-valid-until"
+          type="date"
+          min="1900-01-01"
+          max="2100-12-31"
+          error={validUntilInvalid}
+          value={validUntil}
+          onChange={(e) => {
+            setValidUntilInvalid(isDateInputInvalid(e.target.validity));
+            setValidUntil(e.target.value);
+          }}
+          onBlur={(e) => setValidUntilInvalid(isDateInputInvalid(e.target.validity))}
+        />
       </FormField>
       <FormField label="Observações" htmlFor="p-notes">
         <Input id="p-notes" value={notes} onChange={(e) => setNotes(e.target.value)} />
