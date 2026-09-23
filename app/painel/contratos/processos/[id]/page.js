@@ -185,7 +185,18 @@ export default function ProcessoDetailPage({ params }) {
   }
 
   return (
-    <AppShell title={legalCase.caseNumber} backHref="/painel/contratos/processos">
+    // FIX (homologação 23/09/2026): caseNumber é opcional no cadastro. A listagem já tinha
+    // fallback (fix de 18/09), mas o detalhe não — processos sem número abriam com o cabeçalho
+    // da página totalmente vazio, sem nenhuma identificação do registro aberto. Usa o mesmo
+    // fallback da listagem ("<Tipo> — <8 primeiros do id>") pra manter as duas telas coerentes.
+    <AppShell
+      title={
+        legalCase.caseNumber && legalCase.caseNumber.trim()
+          ? legalCase.caseNumber
+          : `${CASE_TYPE_LABELS[legalCase.caseType] || legalCase.caseType || "Processo"} — ${String(legalCase.id || "").slice(0, 8)}`
+      }
+      backHref="/painel/contratos/processos"
+    >
       <div className={styles.wrap}>
         <div className={styles.topRow}>
           <div className={styles.badges}>
