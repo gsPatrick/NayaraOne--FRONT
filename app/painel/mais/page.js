@@ -2,7 +2,6 @@ import Link from "next/link";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Badge from "@/components/atoms/Badge/Badge";
 import Icon from "@/components/atoms/Icon/Icon";
-import LogoutButton from "@/components/molecules/LogoutButton/LogoutButton";
 import { ROADMAP_MARCOS, ROADMAP_STATUS, ROADMAP_STATUS_LABEL, ROADMAP_STATUS_TONE } from "@/lib/mock/roadmap";
 import styles from "./page.module.css";
 
@@ -52,17 +51,6 @@ export default function MaisPage() {
               </li>
             );
           })}
-        </ul>
-
-        <ul className={styles.list}>
-          <li>
-            <LogoutButton className={[styles.item, styles.logout].join(" ")}>
-              <span className={styles.itemIcon}>
-                <Icon name="logout" size={18} />
-              </span>
-              <span className={styles.itemLabel}>Sair</span>
-            </LogoutButton>
-          </li>
         </ul>
       </div>
     </AppShell>
