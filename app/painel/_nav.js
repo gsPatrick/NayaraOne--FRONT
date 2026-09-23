@@ -71,9 +71,9 @@ export const NAV_SECTIONS = [
     ],
   },
   {
-    label: "Em breve",
+    label: "Acompanhamento",
     items: [
-      { label: "NAY · IA", href: "/painel/mais", icon: "bell", soon: true },
+      { label: "Marcos do projeto", href: "/painel/mais", icon: "bell" },
     ],
   },
 ];
