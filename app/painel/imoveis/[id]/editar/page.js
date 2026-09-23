@@ -260,11 +260,31 @@ export default function EditPropertyPage({ params }) {
     return 100;
   });
 
+  // PATCH /properties só aceita `address` completo — a API responde
+  // PROPERTY_ADDRESS_VALIDATION se faltar zipCode/street/neighborhood/city/state. Imóveis
+  // legados podem não ter endereço nenhum, e nesse caso a etapa "Localização" fica vazia:
+  // mandar o objeto meio preenchido derrubaria o salvamento inteiro com 400. Então só envia
+  // o endereço quando os cinco campos obrigatórios estiverem preenchidos.
+  function buildAddressPayload() {
+    const required = ["zipCode", "street", "neighborhood", "city", "state"];
+    if (required.some((key) => !String(address[key] || "").trim())) return null;
+    return {
+      zipCode: address.zipCode,
+      street: address.street,
+      number: address.number || null,
+      complement: address.complement || null,
+      neighborhood: address.neighborhood,
+      city: address.city,
+      state: address.state,
+    };
+  }
+
   async function goNext() {
     if (isLast) {
       setSubmitting(true);
       setSubmitError("");
       try {
+        const addressPayload = buildAddressPayload();
         await updateProperty(property.id, {
           title: basic.name,
           internalCode: basic.internalCode,
@@ -284,15 +304,7 @@ export default function EditPropertyPage({ params }) {
           // alterar CEP/logradouro/número/bairro/cidade/UF de um imóvel existente era descartado
           // em silêncio (a tela ainda navegava pra ficha como se tivesse salvado). A tela de
           // criação sempre mandou `address`, e PATCH /properties aceita o mesmo objeto.
-          address: {
-            zipCode: address.zipCode,
-            street: address.street,
-            number: address.number || null,
-            complement: address.complement || null,
-            neighborhood: address.neighborhood,
-            city: address.city,
-            state: address.state,
-          },
+          ...(addressPayload ? { address: addressPayload } : {}),
           attributesJson: features,
         });
 
