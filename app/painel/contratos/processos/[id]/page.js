@@ -21,6 +21,8 @@ import {
   updateLegalDeadline,
   listEvidencePackages,
   createEvidencePackage,
+  exportEvidencePackage,
+  listEvidencePackageAccessLog,
   updateLegalCase,
 } from "@/lib/api/legal";
 import {
@@ -50,6 +52,7 @@ export default function ProcessoDetailPage({ params }) {
   const [notice, setNotice] = useState(null);
   const [busy, setBusy] = useState(false);
   const [newEvidence, setNewEvidence] = useState({ type: "DOCUMENT", description: "", referenceId: "" });
+  const [custodyByPackage, setCustodyByPackage] = useState({});
 
   useEffect(() => {
     let cancelled = false;
@@ -155,6 +158,32 @@ export default function ProcessoDetailPage({ params }) {
     }
   }
 
+  async function handleExportEvidence(pkg) {
+    setActionError("");
+    try {
+      const exported = await exportEvidencePackage(pkg.id);
+      setCustodyByPackage((prev) => ({
+        ...prev,
+        [pkg.id]: { ...(prev[pkg.id] || {}), exported },
+      }));
+    } catch (err) {
+      setActionError(err.message || "Erro ao exportar pacote de evidência.");
+    }
+  }
+
+  async function handleViewCustody(pkg) {
+    setActionError("");
+    try {
+      const log = await listEvidencePackageAccessLog(pkg.id);
+      setCustodyByPackage((prev) => ({
+        ...prev,
+        [pkg.id]: { ...(prev[pkg.id] || {}), log: log || [] },
+      }));
+    } catch (err) {
+      setActionError(err.message || "Erro ao carregar cadeia de custódia.");
+    }
+  }
+
   return (
     <AppShell title={legalCase.caseNumber} backHref="/painel/contratos/processos">
       <div className={styles.wrap}>
@@ -209,25 +238,72 @@ export default function ProcessoDetailPage({ params }) {
               {evidencePackages.length === 0 ? (
                 <EmptyState icon="document" title="Sem pacotes de evidência" description="Nenhum pacote de evidência gerado para este processo." />
               ) : (
-                evidencePackages.map((pkg) => (
-                  <div key={pkg.id} className={styles.evidencePackage}>
-                    <div className={styles.evidenceHead}>
-                      <span className={styles.evidenceHash} title={pkg.packageHash}>{pkg.packageHash}</span>
-                      <span className={styles.evidenceDate}>{formatDateTime(pkg.createdAt)}</span>
-                    </div>
-                    <div className={styles.manifestList}>
-                      {(pkg.manifestJson || []).map((item, idx) => (
-                        <div key={idx} className={styles.manifestItem}>
-                          <span className={styles.manifestType}>{item.type}</span>
-                          <div className={styles.manifestBody}>
-                            <span className={styles.manifestDesc}>{item.description}</span>
-                            {item.hash ? <span className={styles.manifestHash} title={item.hash}>{item.hash}</span> : null}
+                evidencePackages.map((pkg) => {
+                  const custody = custodyByPackage[pkg.id] || {};
+                  return (
+                    <div key={pkg.id} className={styles.evidencePackage}>
+                      <div className={styles.evidenceHead}>
+                        <span className={styles.evidenceHash} title={pkg.packageHash}>{pkg.packageHash}</span>
+                        <span className={styles.evidenceDate}>{formatDateTime(pkg.createdAt)}</span>
+                      </div>
+                      <div className={styles.manifestList}>
+                        {(pkg.manifestJson || []).map((item, idx) => (
+                          <div key={idx} className={styles.manifestItem}>
+                            <span className={styles.manifestType}>{item.type}</span>
+                            <div className={styles.manifestBody}>
+                              <span className={styles.manifestDesc}>{item.description}</span>
+                              {item.hash ? <span className={styles.manifestHash} title={item.hash}>{item.hash}</span> : null}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className={styles.addEvidenceRow}>
+                        <Button size="sm" variant="ghost" onClick={() => handleExportEvidence(pkg)} disabled={busy}>
+                          Exportar dossiê
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => handleViewCustody(pkg)} disabled={busy}>
+                          Ver cadeia de custódia
+                        </Button>
+                      </div>
+
+                      {custody.exported ? (
+                        <div className={styles.manifestList} data-testid="evidence-export">
+                          <div className={styles.evidenceHead}>
+                            <span>Hash no export: <code>{custody.exported.packageHash}</code></span>
+                          </div>
+                          <div className={styles.evidenceHead}>
+                            <span>
+                              {custody.exported.packageHash === pkg.packageHash
+                                ? "Hash do export confere com o hash gravado no banco."
+                                : "ALERTA: hash do export DIVERGE do hash gravado no banco."}
+                            </span>
                           </div>
                         </div>
-                      ))}
+                      ) : null}
+
+                      {custody.log ? (
+                        <div className={styles.manifestList} data-testid="evidence-custody-log">
+                          {custody.log.length === 0 ? (
+                            <span>Nenhum acesso registrado ainda.</span>
+                          ) : (
+                            custody.log.map((entry) => (
+                              <div key={entry.id} className={styles.manifestItem}>
+                                <span className={styles.manifestType}>{entry.action}</span>
+                                <div className={styles.manifestBody}>
+                                  <span className={styles.manifestDesc}>
+                                    {entry.accessedByUserId ? userName(entry.accessedByUserId) : "—"}
+                                  </span>
+                                  <span className={styles.manifestHash}>{formatDateTime(entry.accessedAt)}</span>
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      ) : null}
                     </div>
-                  </div>
-                ))
+                  );
+                })
               )}
 
               <div className={styles.addEvidenceRow}>
