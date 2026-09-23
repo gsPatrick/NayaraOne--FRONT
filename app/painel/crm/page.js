@@ -22,7 +22,7 @@ import { listOpportunities, createOpportunity, updateOpportunity, listVisits, li
 import { listProperties } from "@/lib/api/properties";
 import { listPeople } from "@/lib/api/people";
 import { apiFetch } from "@/lib/api/client";
-import { formatDateTime, isOverdue, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
+import { formatDateTime, isOverdue, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE, dateTimeLocalInputToIso, isoToDateTimeLocalInput } from "@/lib/format";
 import styles from "./page.module.css";
 
 const CLOSED_STAGES = ["ganho", "perdido"];
@@ -148,6 +148,24 @@ export default function CrmPage() {
     }
   }
 
+  // FIX (homologação 23/09/2026): a oportunidade só podia ser alterada arrastando o card
+  // entre colunas do Kanban (que só muda `stage`). O modal de detalhe era 100% somente
+  // leitura — não havia NENHUMA forma de corrigir a próxima ação, o prazo, o responsável, a
+  // temperatura ou o valor esperado de uma oportunidade já criada, embora PATCH
+  // /opportunities/:id aceite todos esses campos.
+  async function handleEditOpportunity(id, patch) {
+    setActionError("");
+    try {
+      const updated = await updateOpportunity(id, patch);
+      setOpportunities((prev) => prev.map((o) => (o.id === id ? updated : o)));
+      setSelected((prev) => (prev && prev.id === id ? updated : prev));
+      return true;
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível salvar as alterações da oportunidade.");
+      return false;
+    }
+  }
+
   function handleAddColumn(label) {
     // crm.opportunities.stage é uma coluna STRING livre (sem ENUM/CHECK no Caderno) — etapas
     // não são fixas, a equipe pode criar novas conforme o funil da operação.
@@ -257,6 +275,8 @@ export default function CrmPage() {
             : null
         }
         stages={stages}
+        users={users}
+        onSave={handleEditOpportunity}
         onClose={() => setSelected(null)}
       />
       <CreateOpportunityModal
@@ -283,10 +303,14 @@ export default function CrmPage() {
   );
 }
 
-function OpportunityDetailModal({ opportunity, stages, onClose }) {
+function OpportunityDetailModal({ opportunity, stages, users = [], onSave, onClose }) {
   const [visits, setVisits] = useState([]);
   const [messages, setMessages] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [dueInvalid, setDueInvalid] = useState(false);
 
   useEffect(() => {
     if (!opportunity) return;
@@ -306,6 +330,41 @@ function OpportunityDetailModal({ opportunity, stages, onClose }) {
     };
   }, [opportunity]);
 
+  // Ao trocar de oportunidade (ou fechar), sai do modo de edição pra não vazar o formulário
+  // de um card pro outro.
+  useEffect(() => {
+    setEditing(false);
+    setForm(null);
+  }, [opportunity?.id]);
+
+  function startEditing() {
+    setForm({
+      nextAction: opportunity.nextAction || "",
+      // datetime-local espera "YYYY-MM-DDTHH:mm" no horário local.
+      nextActionDueAt: isoToDateTimeLocalInput(opportunity.nextActionDueAt),
+      ownerUserId: opportunity.ownerUserId || "",
+      temperature: opportunity.temperature || "",
+      expectedValue: opportunity.expectedValue != null ? String(opportunity.expectedValue) : "",
+    });
+    setDueInvalid(false);
+    setEditing(true);
+  }
+
+  async function saveEditing() {
+    if (dueInvalid) return;
+    setSaving(true);
+    const patch = {
+      nextAction: form.nextAction.trim() || null,
+      nextActionDueAt: dateTimeLocalInputToIso(form.nextActionDueAt) || null,
+      ownerUserId: form.ownerUserId || null,
+      temperature: form.temperature || null,
+      expectedValue: form.expectedValue !== "" ? Number(form.expectedValue) : null,
+    };
+    const ok = await onSave?.(opportunity.id, patch);
+    setSaving(false);
+    if (ok) setEditing(false);
+  }
+
   const isClosed = opportunity ? CLOSED_STAGES.includes(opportunity.stage) : false;
   const overdue = opportunity && !isClosed && isOverdue(opportunity.nextActionDueAt);
   const stageLabel = opportunity ? stages.find((s) => s.key === opportunity.stage)?.label : "";
@@ -322,15 +381,92 @@ function OpportunityDetailModal({ opportunity, stages, onClose }) {
             Responsável: {opportunity.repName} · Criada em {formatDateTime(opportunity.createdAt)}
           </p>
 
-          {!isClosed ? (
-            <div className={[styles.nextActionBox, overdue ? styles.overdue : ""].join(" ")}>
-              <p className={styles.nextActionLabel}>Próxima ação</p>
-              <p className={styles.nextActionText}>{opportunity.nextAction}</p>
-              <p className={styles.nextActionDue}>
-                Prazo: {formatDateTime(opportunity.nextActionDueAt)}{overdue ? " · vencida" : ""}
-              </p>
+          {editing ? (
+            <div className={styles.detailSection}>
+              <p className={styles.detailSectionTitle}>Editar oportunidade</p>
+              <FormField label="Próxima ação" htmlFor="oe-next-action">
+                <Input
+                  id="oe-next-action"
+                  value={form.nextAction}
+                  onChange={(e) => setForm((p) => ({ ...p, nextAction: e.target.value }))}
+                />
+              </FormField>
+              <FormField
+                label="Prazo da próxima ação"
+                htmlFor="oe-next-due"
+                error={dueInvalid ? DATE_INPUT_ERROR_MESSAGE : undefined}
+              >
+                <Input
+                  id="oe-next-due"
+                  type="datetime-local"
+                  min="1900-01-01T00:00"
+                  max="2100-12-31T23:59"
+                  error={dueInvalid}
+                  value={form.nextActionDueAt}
+                  onChange={(e) => {
+                    setDueInvalid(isDateInputInvalid(e.target.validity));
+                    setForm((p) => ({ ...p, nextActionDueAt: e.target.value }));
+                  }}
+                  onBlur={(e) => setDueInvalid(isDateInputInvalid(e.target.validity))}
+                />
+              </FormField>
+              <FormField label="Responsável" htmlFor="oe-owner">
+                <Select
+                  id="oe-owner"
+                  value={form.ownerUserId}
+                  onChange={(e) => setForm((p) => ({ ...p, ownerUserId: e.target.value }))}
+                >
+                  <option value="">Sem responsável</option>
+                  {users.map((u) => (
+                    <option key={u.id} value={u.id}>{u.name}</option>
+                  ))}
+                </Select>
+              </FormField>
+              <FormField label="Temperatura" htmlFor="oe-temp">
+                <Select
+                  id="oe-temp"
+                  value={form.temperature}
+                  onChange={(e) => setForm((p) => ({ ...p, temperature: e.target.value }))}
+                >
+                  <option value="">Não informada</option>
+                  <option value="COLD">Fria</option>
+                  <option value="WARM">Morna</option>
+                  <option value="HOT">Quente</option>
+                </Select>
+              </FormField>
+              <FormField label="Valor esperado (R$)" htmlFor="oe-value">
+                <Input
+                  id="oe-value"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={form.expectedValue}
+                  onChange={(e) => setForm((p) => ({ ...p, expectedValue: e.target.value }))}
+                />
+              </FormField>
+              <div className={styles.detailEditActions}>
+                <Button variant="secondary" size="sm" onClick={() => setEditing(false)}>Cancelar</Button>
+                <Button size="sm" onClick={saveEditing} loading={saving} disabled={dueInvalid}>Salvar alterações</Button>
+              </div>
             </div>
-          ) : null}
+          ) : (
+            <>
+              {!isClosed ? (
+                <div className={[styles.nextActionBox, overdue ? styles.overdue : ""].join(" ")}>
+                  <p className={styles.nextActionLabel}>Próxima ação</p>
+                  <p className={styles.nextActionText}>{opportunity.nextAction || "—"}</p>
+                  <p className={styles.nextActionDue}>
+                    Prazo: {formatDateTime(opportunity.nextActionDueAt)}{overdue ? " · vencida" : ""}
+                  </p>
+                </div>
+              ) : null}
+              <div className={styles.detailEditActions}>
+                <Button variant="secondary" size="sm" onClick={startEditing}>
+                  <Icon name="pencil" size={14} /> Editar oportunidade
+                </Button>
+              </div>
+            </>
+          )}
 
           <div className={styles.detailSection}>
             <p className={styles.detailSectionTitle}>Histórico de visitas</p>
@@ -500,7 +636,7 @@ function CreateOpportunityModal({ open, onClose, onCreate, stages, initialStageK
       propertyId: propertyId || undefined,
       ownerUserId: ownerUserId || undefined,
       nextAction: nextAction.trim(),
-      nextActionDueAt: nextActionDueAt ? new Date(nextActionDueAt).toISOString() : undefined,
+      nextActionDueAt: dateTimeLocalInputToIso(nextActionDueAt),
       ...(reasonField && outcomeReason ? { [reasonField]: outcomeReason } : {}),
     });
     // FIX: só limpa o formulário quando a criação realmente deu certo — antes o reset()
