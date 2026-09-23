@@ -66,9 +66,17 @@ export default function ComissoesRepassesPage() {
   const [statusFilter, setStatusFilter] = useState("");
   const [notice, setNotice] = useState(null);
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(8);
+  const [pageSize, setPageSize] = useState(20);
   const [page2, setPage2] = useState(1);
-  const [pageSize2, setPageSize2] = useState(8);
+  const [pageSize2, setPageSize2] = useState(20);
+
+  useEffect(() => {
+    setPage(1);
+  }, [pageSize]);
+
+  useEffect(() => {
+    setPage2(1);
+  }, [pageSize2]);
   const [payModal, setPayModal] = useState(null);
   const [busyId, setBusyId] = useState(null);
   const [newCommissionModal, setNewCommissionModal] = useState(false);
@@ -288,19 +296,14 @@ export default function ComissoesRepassesPage() {
                   </ul>
                 )}
                 <div className={styles.paginationRow}>
-                  <Pagination page={page} totalPages={totalPages} onChange={setPage} />
-                  <label className={styles.pageSizeLabel}>
-                    Por página
-                    <Select
-                      className={styles.pageSizeSelect}
-                      value={pageSize}
-                      onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
-                    >
-                      <option value={8}>8</option>
-                      <option value={20}>20</option>
-                      <option value={50}>50</option>
-                    </Select>
-                  </label>
+                  <Pagination
+                    page={page}
+                    totalPages={totalPages}
+                    onChange={setPage}
+                    pageSize={pageSize}
+                    pageSizeOptions={[5, 10, 15, 20, 25]}
+                    onPageSizeChange={setPageSize}
+                  />
                 </div>
               </Card>
 
@@ -340,19 +343,14 @@ export default function ComissoesRepassesPage() {
                   })}
                 </ul>
                 <div className={styles.paginationRow}>
-                  <Pagination page={page2} totalPages={totalPages2} onChange={setPage2} />
-                  <label className={styles.pageSizeLabel}>
-                    Por página
-                    <Select
-                      className={styles.pageSizeSelect}
-                      value={pageSize2}
-                      onChange={(e) => { setPageSize2(Number(e.target.value)); setPage2(1); }}
-                    >
-                      <option value={8}>8</option>
-                      <option value={20}>20</option>
-                      <option value={50}>50</option>
-                    </Select>
-                  </label>
+                  <Pagination
+                    page={page2}
+                    totalPages={totalPages2}
+                    onChange={setPage2}
+                    pageSize={pageSize2}
+                    pageSizeOptions={[5, 10, 15, 20, 25]}
+                    onPageSizeChange={setPageSize2}
+                  />
                 </div>
               </Card>
             </div>

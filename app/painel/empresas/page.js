@@ -11,7 +11,6 @@ import Table from "@/components/organisms/Table/Table";
 import Modal from "@/components/organisms/Modal/Modal";
 import RowActions from "@/components/molecules/RowActions/RowActions";
 import Pagination from "@/components/molecules/Pagination/Pagination";
-import Select from "@/components/atoms/Select/Select";
 import { COMPANY_STATUS_LABELS } from "@/lib/mock/companies";
 import { apiFetch } from "@/lib/api/client";
 import { formatDate } from "@/lib/format";
@@ -38,7 +37,11 @@ export default function EmpresasPage() {
   const [loadError, setLoadError] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(8);
+  const [pageSize, setPageSize] = useState(20);
+
+  useEffect(() => {
+    setPage(1);
+  }, [pageSize]);
 
   useEffect(() => {
     let cancelled = false;
@@ -141,19 +144,14 @@ export default function EmpresasPage() {
 
       <Table columns={columns} rows={loading ? [] : pageItems} loading={loading} emptyMessage="Nenhuma empresa cadastrada." />
       <div className={styles.paginationRow}>
-        <Pagination page={page} totalPages={totalPages} onChange={setPage} />
-        <label className={styles.pageSizeLabel}>
-          Por página
-          <Select
-            className={styles.pageSizeSelect}
-            value={pageSize}
-            onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
-          >
-            <option value={8}>8</option>
-            <option value={20}>20</option>
-            <option value={50}>50</option>
-          </Select>
-        </label>
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onChange={setPage}
+          pageSize={pageSize}
+          pageSizeOptions={[5, 10, 15, 20, 25]}
+          onPageSizeChange={setPageSize}
+        />
       </div>
 
       <Modal

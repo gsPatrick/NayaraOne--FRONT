@@ -47,7 +47,11 @@ export default function LancamentosPage() {
   const [natureFilter, setNatureFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(8);
+  const [pageSize, setPageSize] = useState(20);
+
+  useEffect(() => {
+    setPage(1);
+  }, [pageSize]);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   useEffect(() => {
@@ -217,19 +221,14 @@ export default function LancamentosPage() {
               </div>
               <Table columns={columns} rows={loading ? [] : pageItems} loading={loading} emptyMessage="Nenhum lançamento encontrado." />
               <div className={styles.paginationRow}>
-                <Pagination page={page} totalPages={totalPages} onChange={setPage} />
-                <label className={styles.pageSizeLabel}>
-                  Por página
-                  <Select
-                    className={styles.pageSizeSelect}
-                    value={pageSize}
-                    onChange={(e) => { setPageSize(Number(e.target.value)); resetPage(); }}
-                  >
-                    <option value={8}>8</option>
-                    <option value={20}>20</option>
-                    <option value={50}>50</option>
-                  </Select>
-                </label>
+                <Pagination
+                  page={page}
+                  totalPages={totalPages}
+                  onChange={setPage}
+                  pageSize={pageSize}
+                  pageSizeOptions={[5, 10, 15, 20, 25]}
+                  onPageSizeChange={setPageSize}
+                />
               </div>
             </Card>
 

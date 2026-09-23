@@ -38,7 +38,11 @@ export default function ProcessosPage() {
   const [typeFilter, setTypeFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(8);
+  const [pageSize, setPageSize] = useState(20);
+
+  useEffect(() => {
+    setPage(1);
+  }, [pageSize]);
 
   useEffect(() => {
     let cancelled = false;
@@ -160,19 +164,14 @@ export default function ProcessosPage() {
         </div>
         <Table columns={columns} rows={loading ? [] : pageItems} loading={loading} emptyMessage="Nenhum processo encontrado." />
         <div className={styles.paginationRow}>
-          <Pagination page={page} totalPages={totalPages} onChange={setPage} />
-          <label className={styles.pageSizeLabel}>
-            Por página
-            <Select
-              className={styles.pageSizeSelect}
-              value={pageSize}
-              onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
-            >
-              <option value={8}>8</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-            </Select>
-          </label>
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            onChange={setPage}
+            pageSize={pageSize}
+            pageSizeOptions={[5, 10, 15, 20, 25]}
+            onPageSizeChange={setPageSize}
+          />
         </div>
       </Card>
 

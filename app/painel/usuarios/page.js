@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Button from "@/components/atoms/Button/Button";
-import Select from "@/components/atoms/Select/Select";
 import Badge from "@/components/atoms/Badge/Badge";
 import Avatar from "@/components/atoms/Avatar/Avatar";
 import Icon from "@/components/atoms/Icon/Icon";
@@ -46,7 +45,11 @@ export default function UsuariosPage() {
   const [loadError, setLoadError] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(8);
+  const [pageSize, setPageSize] = useState(20);
+
+  useEffect(() => {
+    setPage(1);
+  }, [pageSize]);
 
   useEffect(() => {
     let cancelled = false;
@@ -186,19 +189,14 @@ export default function UsuariosPage() {
 
       <Table columns={columns} rows={loading ? [] : pageItems} loading={loading} emptyMessage="Nenhum usuário cadastrado." />
       <div className={styles.paginationRow}>
-        <Pagination page={page} totalPages={totalPages} onChange={setPage} />
-        <label className={styles.pageSizeLabel}>
-          Por página
-          <Select
-            className={styles.pageSizeSelect}
-            value={pageSize}
-            onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
-          >
-            <option value={8}>8</option>
-            <option value={20}>20</option>
-            <option value={50}>50</option>
-          </Select>
-        </label>
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onChange={setPage}
+          pageSize={pageSize}
+          pageSizeOptions={[5, 10, 15, 20, 25]}
+          onPageSizeChange={setPageSize}
+        />
       </div>
 
       <Modal

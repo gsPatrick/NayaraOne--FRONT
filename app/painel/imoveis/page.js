@@ -17,7 +17,6 @@ import { AVAILABILITY_STATUS_LABELS } from "@/lib/mock/properties";
 import { listProperties } from "@/lib/api/properties";
 import styles from "./page.module.css";
 
-const PAGE_SIZE = 8;
 
 export default function ImoveisPage() {
   const router = useRouter();
@@ -25,6 +24,11 @@ export default function ImoveisPage() {
   const [typeFilter, setTypeFilter] = useState("todos");
   const [statusFilter, setStatusFilter] = useState("todos");
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+
+  useEffect(() => {
+    setPage(1);
+  }, [pageSize]);
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
@@ -58,8 +62,8 @@ export default function ImoveisPage() {
     });
   }, [properties, query, typeFilter, statusFilter]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const pageItems = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const pageItems = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   return (
     <AppShell title="Imóveis">
@@ -110,7 +114,14 @@ export default function ImoveisPage() {
       )}
 
       <div className={styles.paginationRow}>
-        <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onChange={setPage}
+          pageSize={pageSize}
+          pageSizeOptions={[5, 10, 15, 20, 25]}
+          onPageSizeChange={setPageSize}
+        />
       </div>
 
       <FabLink href="/painel/imoveis/novo" label="Novo imóvel" />

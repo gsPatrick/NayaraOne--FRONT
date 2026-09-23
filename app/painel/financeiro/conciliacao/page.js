@@ -48,11 +48,23 @@ export default function ConciliacaoPage() {
   const [notice, setNotice] = useState(null);
   const [reconcileModal, setReconcileModal] = useState(null);
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(8);
+  const [pageSize, setPageSize] = useState(20);
   const [page2, setPage2] = useState(1);
-  const [pageSize2, setPageSize2] = useState(8);
+  const [pageSize2, setPageSize2] = useState(20);
   const [page3, setPage3] = useState(1);
-  const [pageSize3, setPageSize3] = useState(8);
+  const [pageSize3, setPageSize3] = useState(20);
+
+  useEffect(() => {
+    setPage(1);
+  }, [pageSize]);
+
+  useEffect(() => {
+    setPage2(1);
+  }, [pageSize2]);
+
+  useEffect(() => {
+    setPage3(1);
+  }, [pageSize3]);
 
   useEffect(() => {
     let cancelled = false;
@@ -199,19 +211,14 @@ export default function ConciliacaoPage() {
                   </ul>
                 )}
                 <div className={styles.paginationRow}>
-                  <Pagination page={page} totalPages={totalPages} onChange={setPage} />
-                  <label className={styles.pageSizeLabel}>
-                    Por página
-                    <Select
-                      className={styles.pageSizeSelect}
-                      value={pageSize}
-                      onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
-                    >
-                      <option value={8}>8</option>
-                      <option value={20}>20</option>
-                      <option value={50}>50</option>
-                    </Select>
-                  </label>
+                  <Pagination
+                    page={page}
+                    totalPages={totalPages}
+                    onChange={setPage}
+                    pageSize={pageSize}
+                    pageSizeOptions={[5, 10, 15, 20, 25]}
+                    onPageSizeChange={setPageSize}
+                  />
                 </div>
               </Card>
 
@@ -239,19 +246,14 @@ export default function ConciliacaoPage() {
                   </ul>
                 )}
                 <div className={styles.paginationRow}>
-                  <Pagination page={page2} totalPages={totalPages2} onChange={setPage2} />
-                  <label className={styles.pageSizeLabel}>
-                    Por página
-                    <Select
-                      className={styles.pageSizeSelect}
-                      value={pageSize2}
-                      onChange={(e) => { setPageSize2(Number(e.target.value)); setPage2(1); }}
-                    >
-                      <option value={8}>8</option>
-                      <option value={20}>20</option>
-                      <option value={50}>50</option>
-                    </Select>
-                  </label>
+                  <Pagination
+                    page={page2}
+                    totalPages={totalPages2}
+                    onChange={setPage2}
+                    pageSize={pageSize2}
+                    pageSizeOptions={[5, 10, 15, 20, 25]}
+                    onPageSizeChange={setPageSize2}
+                  />
                 </div>
               </Card>
 
@@ -279,19 +281,14 @@ export default function ConciliacaoPage() {
                   </ul>
                 )}
                 <div className={styles.paginationRow}>
-                  <Pagination page={page3} totalPages={totalPages3} onChange={setPage3} />
-                  <label className={styles.pageSizeLabel}>
-                    Por página
-                    <Select
-                      className={styles.pageSizeSelect}
-                      value={pageSize3}
-                      onChange={(e) => { setPageSize3(Number(e.target.value)); setPage3(1); }}
-                    >
-                      <option value={8}>8</option>
-                      <option value={20}>20</option>
-                      <option value={50}>50</option>
-                    </Select>
-                  </label>
+                  <Pagination
+                    page={page3}
+                    totalPages={totalPages3}
+                    onChange={setPage3}
+                    pageSize={pageSize3}
+                    pageSizeOptions={[5, 10, 15, 20, 25]}
+                    onPageSizeChange={setPageSize3}
+                  />
                 </div>
               </Card>
             </div>

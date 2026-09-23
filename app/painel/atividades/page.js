@@ -49,8 +49,12 @@ export default function AtividadesPage() {
   const [query, setQuery] = useState("");
   const [entityFilter, setEntityFilter] = useState("");
   const [page, setPage] = useState(1);
-  const [pageSize] = useState(20);
+  const [pageSize, setPageSize] = useState(20);
   const [selected, setSelected] = useState(null);
+
+  useEffect(() => {
+    setPage(1);
+  }, [pageSize]);
 
   function load() {
     setLoading(true);
@@ -160,7 +164,14 @@ export default function AtividadesPage() {
           <>
             <Table columns={columns} rows={pageItems} emptyMessage="Nenhuma atividade encontrada." />
             <div className={styles.paginationRow}>
-              <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+              <Pagination
+                page={page}
+                totalPages={totalPages}
+                onChange={setPage}
+                pageSize={pageSize}
+                pageSizeOptions={[5, 10, 15, 20, 25]}
+                onPageSizeChange={setPageSize}
+              />
             </div>
           </>
         )}

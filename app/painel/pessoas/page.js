@@ -25,7 +25,6 @@ import { listPeople, listDuplicatePairs, deletePerson, mergePeople } from "@/lib
 import { formatDate } from "@/lib/format";
 import styles from "./page.module.css";
 
-const PAGE_SIZE = 8;
 
 const ROLE_TABS = [
   { key: "todos", label: "Todos" },
@@ -48,6 +47,11 @@ export default function PessoasPage() {
   const [kindFilter, setKindFilter] = useState("todos");
   const [roleFilter, setRoleFilter] = useState("todos");
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+
+  useEffect(() => {
+    setPage(1);
+  }, [pageSize]);
   const [people, setPeople] = useState([]);
   const [duplicatePairs, setDuplicatePairs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -126,8 +130,8 @@ export default function PessoasPage() {
     });
   }, [people, nameQuery, docQuery, kindFilter, roleFilter]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const pageItems = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const pageItems = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   async function handleMerge(canonicalId, absorbedId) {
     setActionError("");
@@ -312,7 +316,14 @@ export default function PessoasPage() {
       <Table columns={columns} rows={loading ? [] : pageItems} loading={loading} emptyMessage="Nenhum contato encontrado." />
 
       <div className={styles.paginationRow}>
-        <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onChange={setPage}
+          pageSize={pageSize}
+          pageSizeOptions={[5, 10, 15, 20, 25]}
+          onPageSizeChange={setPageSize}
+        />
       </div>
 
       <FabLink href="/painel/pessoas/novo" label="Novo contato" />

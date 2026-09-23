@@ -11,7 +11,6 @@ import Table from "@/components/organisms/Table/Table";
 import Modal from "@/components/organisms/Modal/Modal";
 import RowActions from "@/components/molecules/RowActions/RowActions";
 import Pagination from "@/components/molecules/Pagination/Pagination";
-import Select from "@/components/atoms/Select/Select";
 import Alert from "@/components/molecules/Alert/Alert";
 import { listRadars, deleteRadar, getRadarMatches } from "@/lib/api/radar";
 import { listPeople } from "@/lib/api/people";
@@ -27,7 +26,11 @@ export default function RadarPage() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(8);
+  const [pageSize, setPageSize] = useState(20);
+
+  useEffect(() => {
+    setPage(1);
+  }, [pageSize]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
@@ -190,19 +193,14 @@ export default function RadarPage() {
 
       <Table columns={columns} rows={loading ? [] : pageItems} loading={loading} emptyMessage="Nenhum radar cadastrado." />
       <div className={styles.paginationRow}>
-        <Pagination page={page} totalPages={totalPages} onChange={setPage} />
-        <label className={styles.pageSizeLabel}>
-          Por página
-          <Select
-            className={styles.pageSizeSelect}
-            value={pageSize}
-            onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
-          >
-            <option value={8}>8</option>
-            <option value={20}>20</option>
-            <option value={50}>50</option>
-          </Select>
-        </label>
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onChange={setPage}
+          pageSize={pageSize}
+          pageSizeOptions={[5, 10, 15, 20, 25]}
+          onPageSizeChange={setPageSize}
+        />
       </div>
 
       <Modal

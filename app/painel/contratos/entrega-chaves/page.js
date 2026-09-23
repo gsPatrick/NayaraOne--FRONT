@@ -10,7 +10,6 @@ import Alert from "@/components/molecules/Alert/Alert";
 import { SkeletonList } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import StatTile from "@/components/molecules/StatTile/StatTile";
 import Icon from "@/components/atoms/Icon/Icon";
-import Select from "@/components/atoms/Select/Select";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import ContractsNavMenu from "@/components/molecules/ContractsNavMenu/ContractsNavMenu";
 import RowActions from "@/components/molecules/RowActions/RowActions";
@@ -36,7 +35,11 @@ export default function EntregaChavesPage() {
   const [busyId, setBusyId] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(8);
+  const [pageSize, setPageSize] = useState(20);
+
+  useEffect(() => {
+    setPage(1);
+  }, [pageSize]);
 
   useEffect(() => {
     let cancelled = false;
@@ -131,19 +134,14 @@ export default function EntregaChavesPage() {
           })}
         </div>
         <div className={styles.paginationRow}>
-          <Pagination page={page} totalPages={totalPages} onChange={setPage} />
-          <label className={styles.pageSizeLabel}>
-            Por página
-            <Select
-              className={styles.pageSizeSelect}
-              value={pageSize}
-              onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
-            >
-              <option value={8}>8</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-            </Select>
-          </label>
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            onChange={setPage}
+            pageSize={pageSize}
+            pageSizeOptions={[5, 10, 15, 20, 25]}
+            onPageSizeChange={setPageSize}
+          />
         </div>
       </Card>
 
