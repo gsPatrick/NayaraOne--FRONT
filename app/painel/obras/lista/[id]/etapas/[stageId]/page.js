@@ -26,7 +26,7 @@ import {
   decideStageMeasurement,
 } from "@/lib/api/construction";
 import { apiFetch } from "@/lib/api/client";
-import { formatDate, formatDateTime } from "@/lib/format";
+import { formatDate, formatDateTime, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function EtapaDetalhePage({ params }) {
@@ -148,14 +148,17 @@ export default function EtapaDetalhePage({ params }) {
 
   function openMeasurementModal() {
     setMeasurementForm({ measuredPct: "", measuredAt: new Date().toISOString().slice(0, 10), notes: "" });
+    setMeasuredAtInvalid(false);
     setMeasurementOpen(true);
   }
 
+  const [measuredAtInvalid, setMeasuredAtInvalid] = useState(false);
   const isMeasurementValid =
     measurementForm.measuredPct !== "" &&
     Number(measurementForm.measuredPct) >= 0 &&
     Number(measurementForm.measuredPct) <= 100 &&
-    measurementForm.measuredAt;
+    measurementForm.measuredAt &&
+    !measuredAtInvalid;
 
   async function handleCreateMeasurement() {
     if (!isMeasurementValid) return;
@@ -296,8 +299,20 @@ export default function EtapaDetalhePage({ params }) {
           <FormField label="Percentual medido (%)" htmlFor="m-meas-pct" required>
             <Input id="m-meas-pct" type="number" min="0" max="100" value={measurementForm.measuredPct} onChange={(e) => setMeasurementForm((p) => ({ ...p, measuredPct: e.target.value }))} />
           </FormField>
-          <FormField label="Data da medição" htmlFor="m-meas-date" required>
-            <Input id="m-meas-date" type="date" value={measurementForm.measuredAt} onChange={(e) => setMeasurementForm((p) => ({ ...p, measuredAt: e.target.value }))} />
+          <FormField label="Data da medição" htmlFor="m-meas-date" required error={measuredAtInvalid ? DATE_INPUT_ERROR_MESSAGE : undefined}>
+            <Input
+              id="m-meas-date"
+              type="date"
+              min="1900-01-01"
+              max="2100-12-31"
+              error={measuredAtInvalid}
+              value={measurementForm.measuredAt}
+              onChange={(e) => {
+                setMeasuredAtInvalid(isDateInputInvalid(e.target.validity));
+                setMeasurementForm((p) => ({ ...p, measuredAt: e.target.value }));
+              }}
+              onBlur={(e) => setMeasuredAtInvalid(isDateInputInvalid(e.target.validity))}
+            />
           </FormField>
           <div className={styles.span2}>
             <FormField label="Observações" htmlFor="m-meas-notes" helper="Opcional">
