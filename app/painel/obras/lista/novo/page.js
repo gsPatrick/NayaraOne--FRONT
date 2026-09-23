@@ -13,7 +13,7 @@ import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/Skeleton
 import { createProject } from "@/lib/api/construction";
 import { listProperties } from "@/lib/api/properties";
 import { apiFetch } from "@/lib/api/client";
-import { dateOnlyInputToIso } from "@/lib/format";
+import { dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function NovaObraPage() {
@@ -60,7 +60,18 @@ export default function NovaObraPage() {
     return (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
   }
 
-  const isValid = form.name.trim().length > 0;
+  const [dateErrors, setDateErrors] = useState({});
+  function updateDate(field) {
+    return (e) => {
+      setDateErrors((prev) => ({ ...prev, [field]: isDateInputInvalid(e.target.validity) }));
+      setForm((prev) => ({ ...prev, [field]: e.target.value }));
+    };
+  }
+  function checkDate(field) {
+    return (e) => setDateErrors((prev) => ({ ...prev, [field]: isDateInputInvalid(e.target.validity) }));
+  }
+
+  const isValid = form.name.trim().length > 0 && !dateErrors.startsAt && !dateErrors.endsAtPlanned;
 
   async function handleSubmit() {
     if (!isValid) return;
@@ -121,12 +132,40 @@ export default function NovaObraPage() {
               <Input id="f-budget" type="number" min="0" step="0.01" value={form.budgetAmount} onChange={update("budgetAmount")} placeholder="0,00" />
             </FormField>
 
-            <FormField label="Data de início" htmlFor="f-starts" helper="Opcional">
-              <Input id="f-starts" type="date" value={form.startsAt} onChange={update("startsAt")} />
+            <FormField
+              label="Data de início"
+              htmlFor="f-starts"
+              helper={dateErrors.startsAt ? undefined : "Opcional"}
+              error={dateErrors.startsAt ? DATE_INPUT_ERROR_MESSAGE : undefined}
+            >
+              <Input
+                id="f-starts"
+                type="date"
+                min="1900-01-01"
+                max="2100-12-31"
+                error={dateErrors.startsAt}
+                value={form.startsAt}
+                onChange={updateDate("startsAt")}
+                onBlur={checkDate("startsAt")}
+              />
             </FormField>
 
-            <FormField label="Previsão de término" htmlFor="f-ends" helper="Opcional">
-              <Input id="f-ends" type="date" value={form.endsAtPlanned} onChange={update("endsAtPlanned")} />
+            <FormField
+              label="Previsão de término"
+              htmlFor="f-ends"
+              helper={dateErrors.endsAtPlanned ? undefined : "Opcional"}
+              error={dateErrors.endsAtPlanned ? DATE_INPUT_ERROR_MESSAGE : undefined}
+            >
+              <Input
+                id="f-ends"
+                type="date"
+                min="1900-01-01"
+                max="2100-12-31"
+                error={dateErrors.endsAtPlanned}
+                value={form.endsAtPlanned}
+                onChange={updateDate("endsAtPlanned")}
+                onBlur={checkDate("endsAtPlanned")}
+              />
             </FormField>
           </div>
         </Card>
