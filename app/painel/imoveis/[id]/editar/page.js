@@ -277,6 +277,20 @@ export default function EditPropertyPage({ params }) {
           registryOffice: docs.registryOffice || null,
           latitude: address.latitude || null,
           longitude: address.longitude || null,
+          // FIX (homologação 23/09/2026): a etapa "Localização" era puramente decorativa na
+          // edição — o payload do PATCH mandava só latitude/longitude e nunca o endereço, então
+          // alterar CEP/logradouro/número/bairro/cidade/UF de um imóvel existente era descartado
+          // em silêncio (a tela ainda navegava pra ficha como se tivesse salvado). A tela de
+          // criação sempre mandou `address`, e PATCH /properties aceita o mesmo objeto.
+          address: {
+            zipCode: address.zipCode,
+            street: address.street,
+            number: address.number || null,
+            complement: address.complement || null,
+            neighborhood: address.neighborhood,
+            city: address.city,
+            state: address.state,
+          },
           attributesJson: features,
         });
 
