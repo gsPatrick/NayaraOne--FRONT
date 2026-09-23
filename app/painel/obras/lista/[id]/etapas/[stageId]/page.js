@@ -50,6 +50,14 @@ export default function EtapaDetalhePage({ params }) {
     notes: "",
   });
   const [savingMeasurement, setSavingMeasurement] = useState(false);
+  // FIX (homologação 23/09/2026): este useState estava declarado lá embaixo, DEPOIS dos
+  // early returns de loading/erro/não-encontrado. Na primeira renderização (loading) o
+  // componente saía antes de chegar nele e registrava menos hooks; quando os dados chegavam,
+  // a renderização seguinte passava a registrar um hook a mais e o React derrubava a árvore
+  // com "Rendered more hooks than during the previous render" — a tela de detalhe da etapa
+  // ficava COMPLETAMENTE EM BRANCO, sempre. Movido pra junto dos demais hooks, antes de
+  // qualquer return condicional (Regras dos Hooks).
+  const [measuredAtInvalid, setMeasuredAtInvalid] = useState(false);
 
   function load() {
     let cancelled = false;
@@ -152,7 +160,6 @@ export default function EtapaDetalhePage({ params }) {
     setMeasurementOpen(true);
   }
 
-  const [measuredAtInvalid, setMeasuredAtInvalid] = useState(false);
   const isMeasurementValid =
     measurementForm.measuredPct !== "" &&
     Number(measurementForm.measuredPct) >= 0 &&
