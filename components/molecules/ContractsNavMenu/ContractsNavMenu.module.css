@@ -19,8 +19,10 @@
 }
 
 .triggerLabel { white-space: nowrap; }
-.chevron { color: var(--color-ink-muted); transition: transform var(--duration-base) var(--ease-out-expo); }
-.chevronOpen { transform: rotate(180deg); }
+/* Painel abre pra cima — chevron aponta pra cima (indicando a direção) quando fechado, e
+   desfaz a rotação (aponta pra baixo) quando aberto. */
+.chevron { color: var(--color-ink-muted); transition: transform var(--duration-base) var(--ease-out-expo); transform: rotate(180deg); }
+.chevronOpen { transform: rotate(0deg); }
 
 .panel {
   position: absolute;

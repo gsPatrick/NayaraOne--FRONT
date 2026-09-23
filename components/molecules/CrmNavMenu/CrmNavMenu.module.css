@@ -19,12 +19,16 @@
 }
 
 .triggerLabel { white-space: nowrap; }
-.chevron { color: var(--color-ink-muted); transition: transform var(--duration-base) var(--ease-out-expo); }
-.chevronOpen { transform: rotate(180deg); }
+/* Painel abre pra cima — chevron aponta pra cima (indicando a direção) quando fechado, e
+   desfaz a rotação (aponta pra baixo) quando aberto. */
+.chevron { color: var(--color-ink-muted); transition: transform var(--duration-base) var(--ease-out-expo); transform: rotate(180deg); }
+.chevronOpen { transform: rotate(0deg); }
 
+/* Abre pra cima ("drop-up") — o trigger fica no fim da página/seção, então um dropdown pra
+   baixo (padrão) sairia da viewport. */
 .panel {
   position: absolute;
-  top: calc(100% + 8px);
+  bottom: calc(100% + 8px);
   left: 0;
   min-width: 240px;
   background: var(--color-canvas-raised);
