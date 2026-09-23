@@ -9,7 +9,10 @@ import Input from "@/components/atoms/Input/Input";
 import Select from "@/components/atoms/Select/Select";
 import Spinner from "@/components/atoms/Spinner/Spinner";
 import FormField from "@/components/molecules/FormField/FormField";
+import Alert from "@/components/molecules/Alert/Alert";
 import { fetchCompanyByCnpj } from "@/lib/cnpj";
+import { apiFetch } from "@/lib/api/client";
+import { getSession } from "@/lib/auth/session";
 import styles from "./page.module.css";
 
 function formatCnpj(value) {
@@ -80,26 +83,37 @@ export default function NovaEmpresaPage() {
     runCnpjLookup(value);
   }
 
-  function handleSubmit(event) {
+  const [submitError, setSubmitError] = useState("");
+
+  async function handleSubmit(event) {
     event.preventDefault();
     const nextErrors = {};
     if (!form.taxId.trim()) nextErrors.taxId = "Informe o CNPJ.";
     if (!form.legalName.trim()) nextErrors.legalName = "Informe a razão social.";
     setErrors(nextErrors);
+    setSubmitError("");
     if (Object.keys(nextErrors).length > 0) return;
 
     setSubmitting(true);
-    // Shape mockado do payload — nomenclatura alinhada a core.companies.
+    // FIX (achado real em auditoria de homologação — este formulário era 100% mockado: só
+    // logava no console e navegava de volta pra lista, sem NUNCA chamar a API. Nenhuma empresa
+    // era criada de verdade). Payload alinhado a companies.service.js#createCompany
+    // (groupId/name obrigatórios).
+    const session = getSession();
     const payload = {
+      groupId: session?.groupId,
       name: form.name.trim() || form.legalName.trim(),
       legalName: form.legalName.trim(),
       taxId: form.taxId.trim(),
       status: form.status,
-      groupId: "group-nayara",
     };
-    // eslint-disable-next-line no-console
-    console.log("[mock] nova empresa", payload);
-    window.setTimeout(() => router.push("/painel/empresas"), 500);
+    try {
+      await apiFetch("/companies", { method: "POST", body: payload });
+      router.push("/painel/empresas");
+    } catch (err) {
+      setSubmitError(err.message || "Erro ao salvar empresa.");
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -155,6 +169,7 @@ export default function NovaEmpresaPage() {
             </div>
           </Card>
 
+          {submitError ? <Alert tone="danger">{submitError}</Alert> : null}
           <div className={styles.formActions}>
             <Button type="button" variant="secondary" href="/painel/empresas">Cancelar</Button>
             <Button type="submit" loading={submitting}>Salvar empresa</Button>
