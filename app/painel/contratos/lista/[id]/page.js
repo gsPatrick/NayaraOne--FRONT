@@ -18,11 +18,13 @@ import Input from "@/components/atoms/Input/Input";
 import Select from "@/components/atoms/Select/Select";
 import { getProperty } from "@/lib/api/properties";
 import { listPeople } from "@/lib/api/people";
+import { fetchFileContent } from "@/lib/api/files";
 import {
   getContract,
   listContractParties,
   listContractVersions,
   createContractVersion,
+  getContractVersionPdfBlob,
   listSignatures,
   listGuarantees,
   transitionContract,
@@ -77,6 +79,9 @@ export default function ContratoDetailPage({ params }) {
   const [amendmentError, setAmendmentError] = useState("");
   const [amendmentBusy, setAmendmentBusy] = useState(false);
   const [viewerFile, setViewerFile] = useState(null);
+  const [pdfLoadingIds, setPdfLoadingIds] = useState(() => new Set());
+  const [signedLoadingIds, setSignedLoadingIds] = useState(() => new Set());
+  const [pdfError, setPdfError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -185,6 +190,56 @@ export default function ContratoDetailPage({ params }) {
       setActionError(err.message || "Erro ao criar nova versão do contrato.");
     } finally {
       setBusy(false);
+    }
+  }
+
+  function triggerBlobDownload(blob, fileName) {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  }
+
+  async function handleViewVersionPdf(version) {
+    if (pdfLoadingIds.has(version.id)) return; // evita duplo-clique disparando 2 downloads
+    setPdfError("");
+    setPdfLoadingIds((prev) => new Set(prev).add(version.id));
+    try {
+      const blob = await getContractVersionPdfBlob(contract.id, version.id);
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, "_blank", "noopener,noreferrer");
+      // Não revogamos a URL logo em seguida: a aba recém-aberta ainda precisa dela para
+      // renderizar o PDF — o navegador libera a memória ao fechar a aba/reload.
+    } catch (err) {
+      setPdfError(err.message || "Erro ao gerar o PDF desta versão.");
+    } finally {
+      setPdfLoadingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(version.id);
+        return next;
+      });
+    }
+  }
+
+  async function handleDownloadSignedDocument(version) {
+    if (!version.signedDocumentFileId || signedLoadingIds.has(version.id)) return;
+    setPdfError("");
+    setSignedLoadingIds((prev) => new Set(prev).add(version.id));
+    try {
+      const { blob, meta } = await fetchFileContent(version.signedDocumentFileId);
+      triggerBlobDownload(blob, meta.fileName || `contrato-assinado-v${version.versionNumber}.pdf`);
+    } catch (err) {
+      setPdfError(err.message || "Erro ao baixar o documento assinado.");
+    } finally {
+      setSignedLoadingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(version.id);
+        return next;
+      });
     }
   }
 
@@ -312,21 +367,41 @@ export default function ContratoDetailPage({ params }) {
               subtitle="Imutáveis — cada alteração cria uma nova versão, nunca edita a anterior"
               actions={<Button size="sm" variant="secondary" onClick={handleNewVersion} disabled={busy}><Icon name="document" size={16} /> Nova versão</Button>}
             >
+              {pdfError ? <Alert tone="danger" className={styles.notice}>{pdfError}</Alert> : null}
               {versions.length === 0 ? (
                 <EmptyState icon="document" title="Sem versões" description="Nenhuma versão gerada ainda." />
               ) : (
-                [...versions].reverse().map((version) => (
-                  <div key={version.id} className={styles.versionRow}>
-                    <div className={styles.versionInfo}>
-                      <span className={styles.versionTitle}>Versão {version.versionNumber}</span>
-                      <span className={styles.versionTemplate}>{version.template?.name || "Sem template (conteúdo manual)"}</span>
-                      <span className={styles.versionHash} title={`Hash de integridade (SHA-256 do conteúdo): ${version.contentHash}`}>
-                        hash de integridade: {version.contentHash ? `${version.contentHash.slice(0, 12)}…` : "—"}
-                      </span>
+                [...versions].reverse().map((version) => {
+                  const pdfBusy = pdfLoadingIds.has(version.id);
+                  const signedBusy = signedLoadingIds.has(version.id);
+                  return (
+                    <div key={version.id} className={styles.versionRow}>
+                      <div className={styles.versionInfo}>
+                        <span className={styles.versionTitle}>
+                          Versão {version.versionNumber}
+                          {version.signedDocumentFileId ? (
+                            <Badge tone="success">Assinado</Badge>
+                          ) : null}
+                        </span>
+                        <span className={styles.versionTemplate}>{version.template?.name || "Sem template (conteúdo manual)"}</span>
+                        <span className={styles.versionHash} title={`Hash de integridade (SHA-256 do conteúdo): ${version.contentHash}`}>
+                          hash de integridade: {version.contentHash ? `${version.contentHash.slice(0, 12)}…` : "—"}
+                        </span>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <Button size="sm" variant="secondary" onClick={() => handleViewVersionPdf(version)} loading={pdfBusy} disabled={pdfBusy}>
+                          <Icon name="eye" size={14} /> Visualizar/Baixar PDF
+                        </Button>
+                        {version.signedDocumentFileId ? (
+                          <Button size="sm" variant="primary" onClick={() => handleDownloadSignedDocument(version)} loading={signedBusy} disabled={signedBusy}>
+                            <Icon name="arrowDownCircle" size={14} /> Baixar documento assinado
+                          </Button>
+                        ) : null}
+                        <span className={styles.versionDate}>{formatDate(version.effectiveFrom)}</span>
+                      </div>
                     </div>
-                    <span className={styles.versionDate}>{formatDate(version.effectiveFrom)}</span>
-                  </div>
-                ))
+                  );
+                })
               )}
             </Card>
 
@@ -360,17 +435,28 @@ export default function ContratoDetailPage({ params }) {
               )}
             </Card>
 
-            <Card title="Assinaturas" subtitle={latestVersion ? `Referentes à versão ${latestVersion.versionNumber}` : "Sem versão de documento gerada"}>
+            <Card
+              title="Assinaturas"
+              subtitle={
+                latestVersion
+                  ? signatures.length > 0
+                    ? `${signatures.filter((s) => s.status === "SIGNED").length} de ${signatures.length} assinaram — versão ${latestVersion.versionNumber}`
+                    : `Referentes à versão ${latestVersion.versionNumber}`
+                  : "Sem versão de documento gerada"
+              }
+            >
               {signatures.length === 0 ? (
                 <EmptyState icon="signature" title="Sem assinaturas" description="Nenhuma assinatura registrada para a versão atual." />
               ) : (
                 signatures.map((sig) => {
+                  const party = parties.find((p) => p.personId === sig.personId);
                   const person = personOf(sig.personId);
+                  const signerLabel = person?.legalName || (party ? PARTY_ROLE_LABELS[party.partyRole] : null) || "Signatário";
                   return (
                     <div key={sig.id} className={styles.signatureRow}>
-                      <Avatar name={person?.legalName || "?"} size="sm" />
+                      <Avatar name={signerLabel} size="sm" />
                       <div className={styles.signatureInfo}>
-                        <span className={styles.signatureName}>{person?.legalName || "—"}</span>
+                        <span className={styles.signatureName}>{signerLabel}</span>
                         <span className={styles.signatureMeta}>{sig.signedAt ? `Assinado em ${formatDateTime(sig.signedAt)}` : "Aguardando assinatura"}</span>
                       </div>
                       <Badge tone={SIGNATURE_STATUS_TONE[sig.status]}>{SIGNATURE_STATUS_LABELS[sig.status]}</Badge>
