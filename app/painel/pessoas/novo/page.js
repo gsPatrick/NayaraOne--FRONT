@@ -23,6 +23,7 @@ import {
 } from "@/lib/mock/people";
 import { OWNER_ROLE_LABELS } from "@/lib/mock/properties";
 import { listPeople, createPerson } from "@/lib/api/people";
+import { uploadFile } from "@/lib/api/legal";
 import { listProperties, addPropertyOwner } from "@/lib/api/properties";
 import { fetchAddressByCep } from "@/lib/cep";
 import { formatTaxId, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
@@ -41,7 +42,12 @@ const EMPTY_ADDRESS = {
   latitude: "", longitude: "",
 };
 const EMPTY_CONTACT = { type: "PHONE", value: "", primary: false, consentStatus: "PENDING" };
-const EMPTY_DOCUMENT = { type: "RG", value: "", verificationStatus: "PENDING" };
+// FIX (homologação): este campo é enviado pra API como `fileId` de "people.person_documents"
+// (ver comentário perto do payload de submit) — não é um número de documento digitável, é
+// referência a um ARQUIVO já enviado (scan/foto do RG/CNH). O rótulo antigo "Número/referência"
+// com um campo de texto pedia o usuário digitar algo que a API nunca aceitaria de verdade
+// (fileId precisa ser um UUID real de um File já existente). Agora usa upload real.
+const EMPTY_DOCUMENT = { type: "RG", fileId: "", fileName: "", uploading: false, uploadError: "", verificationStatus: "PENDING" };
 
 export default function NovaPessoaPage() {
   const router = useRouter();
@@ -194,6 +200,21 @@ export default function NovaPessoaPage() {
     setDocuments((prev) => prev.map((d, i) => (i === index ? { ...d, [field]: value } : d)));
   }
 
+  async function handleDocumentFile(index, file) {
+    if (!file) return;
+    updateDocument(index, "uploading", true);
+    updateDocument(index, "uploadError", "");
+    try {
+      const uploaded = await uploadFile(file);
+      updateDocument(index, "fileId", uploaded.id);
+      updateDocument(index, "fileName", file.name);
+    } catch (err) {
+      updateDocument(index, "uploadError", err.message || "Erro ao enviar arquivo.");
+    } finally {
+      updateDocument(index, "uploading", false);
+    }
+  }
+
   function addDocument() {
     setDocuments((prev) => [...prev, { ...EMPTY_DOCUMENT }]);
   }
@@ -237,10 +258,10 @@ export default function NovaPessoaPage() {
             isPrimary: !!c.primary,
           })),
         documents: documents
-          .filter((d) => d.value.trim())
+          .filter((d) => d.fileId)
           .map((d) => ({
             documentType: d.type,
-            fileId: d.value.trim(),
+            fileId: d.fileId,
             verificationStatus: d.verificationStatus,
           })),
         address: address.zipCode || address.street ? address : null,
@@ -500,12 +521,20 @@ export default function NovaPessoaPage() {
                               ))}
                             </Select>
                           </FormField>
-                          <FormField label="Número / referência" htmlFor={`p-doc-value-${index}`}>
-                            <Input
-                              id={`p-doc-value-${index}`}
-                              value={doc.value}
-                              onChange={(e) => updateDocument(index, "value", e.target.value)}
+                          <FormField
+                            label="Arquivo do documento"
+                            htmlFor={`p-doc-file-${index}`}
+                            helper={doc.fileName ? `Enviado: ${doc.fileName}` : "Foto ou scan do documento (máx. 20MB)."}
+                            error={doc.uploadError || undefined}
+                          >
+                            <input
+                              id={`p-doc-file-${index}`}
+                              type="file"
+                              accept="image/*,application/pdf"
+                              disabled={doc.uploading}
+                              onChange={(e) => handleDocumentFile(index, e.target.files?.[0])}
                             />
+                            {doc.uploading ? <Spinner size="sm" /> : null}
                           </FormField>
                           <button type="button" className={styles.removeRow} onClick={() => removeDocument(index)} aria-label="Remover documento">
                             <Icon name="trash" size={16} />
@@ -611,7 +640,7 @@ export default function NovaPessoaPage() {
                 <div className={styles.reviewSection}>
                   <p className={styles.reviewTitle}>Documentos</p>
                   {documents.length > 0 ? documents.map((d, i) => (
-                    <p className={styles.reviewMeta} key={i}>{DOCUMENT_TYPE_LABELS[d.type]}: {d.value || "—"}</p>
+                    <p className={styles.reviewMeta} key={i}>{DOCUMENT_TYPE_LABELS[d.type]}: {d.fileName || "—"}</p>
                   )) : <p className={styles.reviewMeta}>Nenhum documento adicionado.</p>}
                 </div>
 

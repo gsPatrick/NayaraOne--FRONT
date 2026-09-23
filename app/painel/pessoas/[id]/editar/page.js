@@ -26,10 +26,17 @@ import {
   removeDocument,
 } from "@/lib/api/people";
 import { formatTaxId, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
+import { uploadFile } from "@/lib/api/legal";
 import styles from "./page.module.css";
 
 const EMPTY_CONTACT = { id: null, type: "PHONE", value: "", primary: false };
-const EMPTY_DOCUMENT = { id: null, type: "RG", value: "" };
+// FIX (homologação): "value" nunca existiu de verdade na API (PersonDocument só tem
+// documentType/fileId — nenhum campo de "número/referência" digitável). O código anterior
+// mapeava `d.value || ""` de uma resposta que nunca tinha esse campo, então a edição de
+// documento existente sempre mostrava vazio e, ao salvar, mandava `fileId: "".trim()` —
+// sobrescrevendo o vínculo de arquivo real por uma string vazia. Agora usa o `fileId` de
+// verdade (documento já vinculado) e oferece upload real pra trocar/adicionar.
+const EMPTY_DOCUMENT = { id: null, type: "RG", fileId: "", fileName: "", uploading: false, uploadError: "" };
 
 export default function EditarPessoaPage({ params }) {
   const router = useRouter();
@@ -66,7 +73,7 @@ export default function EditarPessoaPage({ params }) {
         const mappedContacts = person.contacts.map((c) => ({ id: c.id, type: c.type, value: c.value, primary: c.primary }));
         setInitialContacts(mappedContacts);
         setContacts(mappedContacts.length ? mappedContacts : [{ ...EMPTY_CONTACT, primary: true }]);
-        const mappedDocuments = person.documents.map((d) => ({ id: d.id, type: d.type, value: d.value || "" }));
+        const mappedDocuments = person.documents.map((d) => ({ id: d.id, type: d.type, fileId: d.fileId || "", fileName: "", uploading: false, uploadError: "" }));
         setInitialDocuments(mappedDocuments);
         setDocuments(mappedDocuments);
       })
@@ -123,6 +130,21 @@ export default function EditarPessoaPage({ params }) {
 
   function updateDocumentField(index, field, value) {
     setDocuments((prev) => prev.map((d, i) => (i === index ? { ...d, [field]: value } : d)));
+  }
+
+  async function handleDocumentFile(index, file) {
+    if (!file) return;
+    updateDocumentField(index, "uploading", true);
+    updateDocumentField(index, "uploadError", "");
+    try {
+      const uploaded = await uploadFile(file);
+      updateDocumentField(index, "fileId", uploaded.id);
+      updateDocumentField(index, "fileName", file.name);
+    } catch (err) {
+      updateDocumentField(index, "uploadError", err.message || "Erro ao enviar arquivo.");
+    } finally {
+      updateDocumentField(index, "uploading", false);
+    }
   }
 
   function addDocument() {
@@ -183,14 +205,14 @@ export default function EditarPessoaPage({ params }) {
         if (!currentDocumentIds.has(original.id)) await removeDocument(params.id, original.id);
       }
       for (const doc of documents) {
-        if (!doc.value.trim()) continue;
+        if (!doc.fileId) continue;
         if (doc.id) {
           const original = initialDocuments.find((d) => d.id === doc.id);
-          if (original && (original.type !== doc.type || original.value !== doc.value)) {
-            await updateDocument(params.id, doc.id, { documentType: doc.type, fileId: doc.value.trim() });
+          if (original && (original.type !== doc.type || original.fileId !== doc.fileId)) {
+            await updateDocument(params.id, doc.id, { documentType: doc.type, fileId: doc.fileId });
           }
         } else {
-          await createDocument(params.id, { documentType: doc.type, fileId: doc.value.trim() });
+          await createDocument(params.id, { documentType: doc.type, fileId: doc.fileId });
         }
       }
 
@@ -324,8 +346,19 @@ export default function EditarPessoaPage({ params }) {
                       ))}
                     </Select>
                   </FormField>
-                  <FormField label="Número / referência" htmlFor={`e-doc-value-${index}`}>
-                    <Input id={`e-doc-value-${index}`} value={doc.value} onChange={(e) => updateDocumentField(index, "value", e.target.value)} />
+                  <FormField
+                    label="Arquivo do documento"
+                    htmlFor={`e-doc-file-${index}`}
+                    helper={doc.fileName ? `Enviado: ${doc.fileName}` : doc.fileId ? "Já existe um arquivo vinculado — selecione outro para substituir." : "Foto ou scan do documento (máx. 20MB)."}
+                    error={doc.uploadError || undefined}
+                  >
+                    <input
+                      id={`e-doc-file-${index}`}
+                      type="file"
+                      accept="image/*,application/pdf"
+                      disabled={doc.uploading}
+                      onChange={(e) => handleDocumentFile(index, e.target.files?.[0])}
+                    />
                   </FormField>
                   <button type="button" className={styles.removeRow} onClick={() => removeDocumentRow(index)} aria-label="Remover documento">
                     <Icon name="trash" size={16} />
