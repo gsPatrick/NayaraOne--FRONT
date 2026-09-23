@@ -26,7 +26,8 @@ import {
 import { formatBRL, formatDate } from "@/lib/format";
 import styles from "./page.module.css";
 
-const STATUS_OPTIONS = ["ACTIVE", "EXPIRED", "CANCELLED"];
+// Espelha o enum real de legal_guarantees.status na API (ACTIVE | RELEASED | CANCELLED).
+const STATUS_OPTIONS = ["ACTIVE", "RELEASED", "CANCELLED"];
 
 export default function GarantiaDetailPage({ params }) {
   const router = useRouter();
