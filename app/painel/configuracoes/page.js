@@ -11,8 +11,76 @@ import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
 import FormField from "@/components/molecules/FormField/FormField";
 import Spinner from "@/components/atoms/Spinner/Spinner";
-import { listSettings, updateSetting } from "@/lib/api/settings";
+import ClicksignLogo from "@/components/atoms/ClicksignLogo/ClicksignLogo";
+import { listSettings, updateSetting, getIntegrationsStatus } from "@/lib/api/settings";
 import styles from "./page.module.css";
+
+// Badge de status de conexão de uma integração externa. Nunca fica "indefinido": enquanto o
+// teste de conexão real está rodando mostra "Testando...", e cai em "Não configurado" (neutro)
+// quando não há token salvo pra aquele provider — só tenta "Conectado"/"Não conectado" quando
+// de fato há algo configurado pra testar.
+function StatusBadge({ status, testing }) {
+  if (testing) {
+    return <span className={`${styles.badge} ${styles.badgeNeutral}`}>Testando...</span>;
+  }
+  if (!status || !status.configured) {
+    return <span className={`${styles.badge} ${styles.badgeNeutral}`}>Não configurado</span>;
+  }
+  if (status.connected) {
+    return <span className={`${styles.badge} ${styles.badgeSuccess}`}>● Conectado</span>;
+  }
+  const reasonLabel =
+    status.reason === "timeout" ? "Tempo esgotado" : status.reason ? "Falha de autenticação" : null;
+  return (
+    <span className={`${styles.badge} ${styles.badgeDanger}`} title={reasonLabel || undefined}>
+      ● Não conectado{reasonLabel ? ` — ${reasonLabel}` : ""}
+    </span>
+  );
+}
+
+// Campo de segredo (token/webhook secret): quando já há um valor salvo, mostra um estado
+// somente-leitura com um botão "Alterar" — clicar troca pra um input vazio de verdade, pronto
+// pra digitar um valor novo (o backend NUNCA devolve o segredo real, então não há nada pra
+// "revelar", só pra substituir). "Cancelar" volta ao estado somente-leitura sem perder o valor
+// já salvo no backend (só descarta o que foi digitado, ainda não enviado).
+function SecretField({ id, label, configured, value, onChange, editing, onStartEdit, onCancelEdit, placeholder }) {
+  const showReadOnly = configured && !editing;
+  return (
+    <FormField
+      label={
+        <span className={styles.secretLabel}>
+          {label} <span title="Valor sensível protegido — nunca exibido em texto claro">🔒</span>
+        </span>
+      }
+      htmlFor={id}
+    >
+      {showReadOnly ? (
+        <div className={styles.secretReadOnlyRow}>
+          <Input id={id} type="password" value="••••••••••••" disabled readOnly />
+          <Button type="button" variant="secondary" onClick={onStartEdit}>
+            Alterar
+          </Button>
+        </div>
+      ) : (
+        <div className={styles.secretReadOnlyRow}>
+          <Input
+            id={id}
+            type="password"
+            placeholder={placeholder}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            autoFocus={editing}
+          />
+          {configured ? (
+            <Button type="button" variant="secondary" onClick={onCancelEdit}>
+              Cancelar
+            </Button>
+          ) : null}
+        </div>
+      )}
+    </FormField>
+  );
+}
 
 const BILLING_KEYS = {
   lateFeePercentage: "billing.late_fee_percentage",
@@ -368,7 +436,9 @@ const INTEGRACOES_SECRET_FIELDS = new Set([
 
 function IntegracoesTab() {
   const [values, setValues] = useState({
-    signatureProvider: "sandbox",
+    // Único provedor exposto na UI é a Clicksign (decisão de produto) — sempre fixo aqui,
+    // nunca lido nem sobrescrito por um valor "sandbox"/"zapsign" antigo salvo no tenant.
+    signatureProvider: "clicksign",
     clicksignApiToken: "",
     clicksignWebhookSecret: "",
     zapsignApiToken: "",
@@ -383,6 +453,18 @@ function IntegracoesTab() {
   const [error, setError] = useState("");
   const [forbidden, setForbidden] = useState(false);
   const [success, setSuccess] = useState("");
+  const [integrationsStatus, setIntegrationsStatus] = useState(null);
+  const [statusTesting, setStatusTesting] = useState(false);
+  // Quais campos de segredo estão no modo "editar novo valor" (input vazio pronto pra digitar).
+  const [editingSecrets, setEditingSecrets] = useState({});
+
+  function refreshIntegrationsStatus() {
+    setStatusTesting(true);
+    getIntegrationsStatus()
+      .then((data) => setIntegrationsStatus(data))
+      .catch(() => setIntegrationsStatus(null))
+      .finally(() => setStatusTesting(false));
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -401,7 +483,9 @@ function IntegracoesTab() {
           if (item && item.key) byKey[item.key] = item.value;
         });
         const next = {
-          signatureProvider: byKey[INTEGRACOES_KEYS.signatureProvider] || "sandbox",
+          // Sempre "clicksign" na UI, mesmo que o tenant tenha "sandbox"/"zapsign" salvo de
+          // antes da decisão de produto — a troca de provider deixou de ser uma opção aqui.
+          signatureProvider: "clicksign",
           clicksignApiToken: "",
           clicksignWebhookSecret: "",
           zapsignApiToken: "",
@@ -411,6 +495,14 @@ function IntegracoesTab() {
         };
         setValues(next);
         setOriginal(next);
+        // Garante que o backend também reflita "clicksign" quando o tenant ainda tinha um
+        // valor antigo salvo (ex.: "sandbox"/"zapsign", de antes da decisão de produto) — a UI
+        // só mostra Clicksign, então o provider efetivo usado pelo fluxo de assinatura real
+        // precisa acompanhar, sem depender de o usuário clicar em "Salvar".
+        const storedProvider = byKey[INTEGRACOES_KEYS.signatureProvider];
+        if (storedProvider && storedProvider !== "clicksign") {
+          updateSetting(INTEGRACOES_KEYS.signatureProvider, "clicksign").catch(() => {});
+        }
         setConfiguredFlags({
           clicksignApiToken: Boolean(byKey[INTEGRACOES_KEYS.clicksignApiToken]),
           clicksignWebhookSecret: Boolean(byKey[INTEGRACOES_KEYS.clicksignWebhookSecret]),
@@ -430,6 +522,7 @@ function IntegracoesTab() {
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
+    refreshIntegrationsStatus();
     return () => {
       cancelled = true;
     };
@@ -437,6 +530,16 @@ function IntegracoesTab() {
 
   function handleChange(field, value) {
     setValues((prev) => ({ ...prev, [field]: value }));
+  }
+
+  function startEditSecret(field) {
+    setEditingSecrets((prev) => ({ ...prev, [field]: true }));
+    setValues((prev) => ({ ...prev, [field]: "" }));
+  }
+
+  function cancelEditSecret(field) {
+    setEditingSecrets((prev) => ({ ...prev, [field]: false }));
+    setValues((prev) => ({ ...prev, [field]: "" }));
   }
 
   async function handleSave() {
@@ -471,7 +574,9 @@ function IntegracoesTab() {
         ...prev,
         ...Object.fromEntries(Array.from(INTEGRACOES_SECRET_FIELDS).map((field) => [field, ""])),
       }));
+      setEditingSecrets({});
       setSuccess("Configurações de integrações salvas.");
+      refreshIntegrationsStatus();
     } catch (err) {
       if (err?.status === 403) {
         setForbidden(true);
@@ -493,13 +598,19 @@ function IntegracoesTab() {
     );
   }
 
+  // Decisão de produto: o único provedor de assinatura eletrônica suportado na UI é a
+  // Clicksign — o backend ainda entende "zapsign" no schema (compatibilidade/uso futuro), mas
+  // a interface não oferece mais essa opção nem exibe campos de ZapSign.
   const isClicksign = values.signatureProvider === "clicksign";
-  const isZapsign = values.signatureProvider === "zapsign";
   const isIgpmAutomatic = values.igpmMode === "automatic";
 
   return (
     <Card
-      title="Integrações"
+      title={
+        <span className={styles.titleWithLogo}>
+          Integrações <ClicksignLogo size={22} />
+        </span>
+      }
       subtitle="Provedores externos usados em assinatura eletrônica de contratos e no índice de reajuste IGPM."
       actions={
         <Button onClick={handleSave} loading={saving} disabled={loading}>
@@ -520,73 +631,70 @@ function IntegracoesTab() {
 
           <div className="formGridFull">
             <Alert tone="warning" title="Custos à parte">
-              Clicksign, ZapSign e o índice automático de IGPM (via API da FGV) não estão incluídos no
-              plano do NayaraOne — são serviços de terceiros contratados diretamente pela cliente, com
-              custo próprio. O modo Sandbox e o modo Manual do IGPM não têm custo adicional.
+              Clicksign e o índice automático de IGPM (via API da FGV) não estão incluídos no plano do
+              NayaraOne — são serviços de terceiros contratados diretamente pela cliente, com custo
+              próprio. O modo Sandbox e o modo Manual do IGPM não têm custo adicional.
             </Alert>
           </div>
 
-          <FormField className="formGridFull" label="Provedor de assinatura eletrônica" htmlFor="integracoes-signature-provider">
-            <Select
-              id="integracoes-signature-provider"
-              value={values.signatureProvider}
-              onChange={(e) => handleChange("signatureProvider", e.target.value)}
-            >
-              <option value="sandbox">Sandbox</option>
+          <FormField
+            className="formGridFull"
+            label={
+              <span className={styles.labelWithBadge}>
+                Provedor de assinatura eletrônica
+                <StatusBadge status={integrationsStatus?.clicksign} testing={statusTesting} />
+              </span>
+            }
+            htmlFor="integracoes-signature-provider"
+          >
+            {/* Único provedor suportado na interface é a Clicksign — fixo, sem seletor. O
+                backend continua entendendo "sandbox"/"zapsign" no schema por compatibilidade,
+                mas a UI não expõe mais essa troca. */}
+            <Select id="integracoes-signature-provider" value="clicksign" disabled>
               <option value="clicksign">Clicksign</option>
-              <option value="zapsign">ZapSign</option>
             </Select>
           </FormField>
 
           {isClicksign ? (
             <>
-              <FormField label="Token da API Clicksign" htmlFor="integracoes-clicksign-token">
-                <Input
-                  id="integracoes-clicksign-token"
-                  type="password"
-                  placeholder={configuredFlags.clicksignApiToken ? "•••••• (configurado — deixe em branco para manter)" : "Token de acesso da Clicksign"}
-                  value={values.clicksignApiToken}
-                  onChange={(e) => handleChange("clicksignApiToken", e.target.value)}
-                />
-              </FormField>
+              <SecretField
+                id="integracoes-clicksign-token"
+                label="Token da API Clicksign"
+                configured={configuredFlags.clicksignApiToken}
+                editing={Boolean(editingSecrets.clicksignApiToken)}
+                value={values.clicksignApiToken}
+                onChange={(v) => handleChange("clicksignApiToken", v)}
+                onStartEdit={() => startEditSecret("clicksignApiToken")}
+                onCancelEdit={() => cancelEditSecret("clicksignApiToken")}
+                placeholder="Token de acesso da Clicksign"
+              />
 
-              <FormField label="Webhook secret da Clicksign" htmlFor="integracoes-clicksign-webhook">
-                <Input
-                  id="integracoes-clicksign-webhook"
-                  type="password"
-                  placeholder={configuredFlags.clicksignWebhookSecret ? "•••••• (configurado — deixe em branco para manter)" : "Segredo usado para validar webhooks da Clicksign"}
-                  value={values.clicksignWebhookSecret}
-                  onChange={(e) => handleChange("clicksignWebhookSecret", e.target.value)}
-                />
-              </FormField>
+              <SecretField
+                id="integracoes-clicksign-webhook"
+                label="Webhook secret da Clicksign"
+                configured={configuredFlags.clicksignWebhookSecret}
+                editing={Boolean(editingSecrets.clicksignWebhookSecret)}
+                value={values.clicksignWebhookSecret}
+                onChange={(v) => handleChange("clicksignWebhookSecret", v)}
+                onStartEdit={() => startEditSecret("clicksignWebhookSecret")}
+                onCancelEdit={() => cancelEditSecret("clicksignWebhookSecret")}
+                placeholder="Segredo usado para validar webhooks da Clicksign"
+              />
             </>
           ) : null}
+          {/* ZapSign removido da interface (decisão de produto: só Clicksign) — o backend
+              continua com suporte a "legal.zapsign_*" no schema, só não é mais exposto aqui. */}
 
-          {isZapsign ? (
-            <>
-              <FormField label="Token da API ZapSign" htmlFor="integracoes-zapsign-token">
-                <Input
-                  id="integracoes-zapsign-token"
-                  type="password"
-                  placeholder={configuredFlags.zapsignApiToken ? "•••••• (configurado — deixe em branco para manter)" : "Token de acesso do ZapSign"}
-                  value={values.zapsignApiToken}
-                  onChange={(e) => handleChange("zapsignApiToken", e.target.value)}
-                />
-              </FormField>
-
-              <FormField label="Webhook secret do ZapSign" htmlFor="integracoes-zapsign-webhook">
-                <Input
-                  id="integracoes-zapsign-webhook"
-                  type="password"
-                  placeholder={configuredFlags.zapsignWebhookSecret ? "•••••• (configurado — deixe em branco para manter)" : "Segredo usado para validar webhooks do ZapSign"}
-                  value={values.zapsignWebhookSecret}
-                  onChange={(e) => handleChange("zapsignWebhookSecret", e.target.value)}
-                />
-              </FormField>
-            </>
-          ) : null}
-
-          <FormField className="formGridFull" label="Modo do índice IGPM" htmlFor="integracoes-igpm-mode">
+          <FormField
+            className="formGridFull"
+            label={
+              <span className={styles.labelWithBadge}>
+                Modo do índice IGPM
+                <StatusBadge status={integrationsStatus?.igpm} testing={statusTesting} />
+              </span>
+            }
+            htmlFor="integracoes-igpm-mode"
+          >
             <Select
               id="integracoes-igpm-mode"
               value={values.igpmMode}
@@ -598,15 +706,17 @@ function IntegracoesTab() {
           </FormField>
 
           {isIgpmAutomatic ? (
-            <FormField label="Token da API FGV" htmlFor="integracoes-fgv-token">
-              <Input
-                id="integracoes-fgv-token"
-                type="password"
-                placeholder={configuredFlags.fgvApiToken ? "•••••• (configurado — deixe em branco para manter)" : "Token de acesso da API de dados da FGV"}
-                value={values.fgvApiToken}
-                onChange={(e) => handleChange("fgvApiToken", e.target.value)}
-              />
-            </FormField>
+            <SecretField
+              id="integracoes-fgv-token"
+              label="Token de acesso da API de dados da FGV"
+              configured={configuredFlags.fgvApiToken}
+              editing={Boolean(editingSecrets.fgvApiToken)}
+              value={values.fgvApiToken}
+              onChange={(v) => handleChange("fgvApiToken", v)}
+              onStartEdit={() => startEditSecret("fgvApiToken")}
+              onCancelEdit={() => cancelEditSecret("fgvApiToken")}
+              placeholder="Token de acesso da API de dados da FGV"
+            />
           ) : null}
         </div>
       )}

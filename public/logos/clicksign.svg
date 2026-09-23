@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 32" width="120" height="32" role="img" aria-label="Clicksign">
+  <!-- Placeholder de marca — trocar por asset oficial fornecido pelo cliente quando disponível. -->
+  <rect x="0" y="4" width="24" height="24" rx="6" fill="#7C3AED" />
+  <path d="M7 16.2l4 4 8-8.4" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+  <text x="30" y="21" font-family="Helvetica, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="-0.02em" fill="#3B0764">clicksign</text>
+</svg>

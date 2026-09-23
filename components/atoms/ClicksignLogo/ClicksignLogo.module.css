@@ -1,0 +1,27 @@
+.logo {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: #7C3AED;
+  color: #FFFFFF;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  user-select: none;
+}
+
+.logoImgWrap {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+}
+
+.logoImg {
+  display: block;
+  max-width: 100%;
+  object-fit: contain;
+}
