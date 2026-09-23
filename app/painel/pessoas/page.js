@@ -111,13 +111,15 @@ export default function PessoasPage() {
 
   const filtered = useMemo(() => {
     const name = nameQuery.trim().toLowerCase();
-    const doc = docQuery.trim().toLowerCase();
+    // Busca por documento aceita com ou sem pontuação (a pessoa digita "143.108.363-20"
+    // ou só "14310836320") — compara sempre pelos dígitos crus dos dois lados.
+    const docDigits = docQuery.replace(/\D/g, "");
     return people.filter((p) => {
       const matchesName =
         name.length === 0 ||
         p.legalName.toLowerCase().includes(name) ||
         (p.preferredName || "").toLowerCase().includes(name);
-      const matchesDoc = doc.length === 0 || (p.taxIdNormalized || "").toLowerCase().includes(doc);
+      const matchesDoc = docDigits.length === 0 || (p.taxIdRaw || "").includes(docDigits);
       const matchesKind = kindFilter === "todos" || p.personType === kindFilter;
       const matchesRole = roleFilter === "todos" || p.roles.includes(roleFilter);
       return matchesName && matchesDoc && matchesKind && matchesRole;
