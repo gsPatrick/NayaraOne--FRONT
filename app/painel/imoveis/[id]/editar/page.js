@@ -89,7 +89,7 @@ function toEditableProperty(property) {
       : null,
     owners: (property.owners || []).map((o) => ({
       id: o.id,
-      name: o.name,
+      name: o.name || "",
       personId: o.personId || null,
       percentage: o.percentage,
       roleCode: o.roleCode || "OWNER",
@@ -254,7 +254,7 @@ export default function EditPropertyPage({ params }) {
       return Math.round((done / required.length) * 100);
     }
     if (s.id === "oferta") return offer?.askingPrice ? 100 : 0;
-    if (s.id === "proprietarios") return owners.some((o) => o.name.trim()) ? 100 : 0;
+    if (s.id === "proprietarios") return owners.some((o) => String(o.name || "").trim()) ? 100 : 0;
     return 100;
   });
 
