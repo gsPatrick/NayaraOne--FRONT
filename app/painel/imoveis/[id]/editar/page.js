@@ -23,7 +23,7 @@ import {
   OWNER_ROLE_LABELS,
 } from "@/lib/mock/properties";
 import { fetchAddressByCep } from "@/lib/cep";
-import { formatBRL, dateOnlyInputToIso } from "@/lib/format";
+import { formatBRL, dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
 import { buildGoogleMapsUrl } from "@/lib/maps";
 import {
   getProperty,
@@ -201,6 +201,11 @@ export default function EditPropertyPage({ params }) {
 
   function updateOwner(index, field, value) {
     setOwners((prev) => prev.map((o, i) => (i === index ? { ...o, [field]: value } : o)));
+  }
+
+  const [dateFieldErrors, setDateFieldErrors] = useState({});
+  function markDateInvalid(key) {
+    return (e) => setDateFieldErrors((prev) => ({ ...prev, [key]: isDateInputInvalid(e.target.validity) }));
   }
 
   function updateOwnerFields(index, patch) {
@@ -524,11 +529,44 @@ export default function EditPropertyPage({ params }) {
                   />
                 </div>
               </FormField>
-              <FormField label="Vigência inicial" htmlFor="e-offer-valid-from">
-                <Input id="e-offer-valid-from" type="date" value={offer.validFrom} onChange={(e) => setOffer({ ...offer, validFrom: e.target.value })} />
+              <FormField
+                label="Vigência inicial"
+                htmlFor="e-offer-valid-from"
+                error={dateFieldErrors.offerValidFrom ? DATE_INPUT_ERROR_MESSAGE : undefined}
+              >
+                <Input
+                  id="e-offer-valid-from"
+                  type="date"
+                  min="1900-01-01"
+                  max="2100-12-31"
+                  error={dateFieldErrors.offerValidFrom}
+                  value={offer.validFrom}
+                  onChange={(e) => {
+                    markDateInvalid("offerValidFrom")(e);
+                    setOffer({ ...offer, validFrom: e.target.value });
+                  }}
+                  onBlur={markDateInvalid("offerValidFrom")}
+                />
               </FormField>
-              <FormField label="Vigência final" htmlFor="e-offer-valid-until" helper="Opcional — deixe em branco se indeterminada.">
-                <Input id="e-offer-valid-until" type="date" value={offer.validUntil} onChange={(e) => setOffer({ ...offer, validUntil: e.target.value })} />
+              <FormField
+                label="Vigência final"
+                htmlFor="e-offer-valid-until"
+                helper={dateFieldErrors.offerValidUntil ? undefined : "Opcional — deixe em branco se indeterminada."}
+                error={dateFieldErrors.offerValidUntil ? DATE_INPUT_ERROR_MESSAGE : undefined}
+              >
+                <Input
+                  id="e-offer-valid-until"
+                  type="date"
+                  min="1900-01-01"
+                  max="2100-12-31"
+                  error={dateFieldErrors.offerValidUntil}
+                  value={offer.validUntil}
+                  onChange={(e) => {
+                    markDateInvalid("offerValidUntil")(e);
+                    setOffer({ ...offer, validUntil: e.target.value });
+                  }}
+                  onBlur={markDateInvalid("offerValidUntil")}
+                />
               </FormField>
               <FormField label="Status da oferta" htmlFor="e-offer-status">
                 <Select id="e-offer-status" value={offer.status} onChange={(e) => setOffer({ ...offer, status: e.target.value })}>
@@ -591,11 +629,43 @@ export default function EditPropertyPage({ params }) {
                     <FormField label="Percentual (%)" htmlFor={`e-owner-pct-${index}`}>
                       <Input id={`e-owner-pct-${index}`} type="number" value={owner.percentage} onChange={(e) => updateOwner(index, "percentage", e.target.value)} />
                     </FormField>
-                    <FormField label="Vigência início" htmlFor={`e-owner-valid-from-${index}`}>
-                      <Input id={`e-owner-valid-from-${index}`} type="date" value={owner.validFrom} onChange={(e) => updateOwner(index, "validFrom", e.target.value)} />
+                    <FormField
+                      label="Vigência início"
+                      htmlFor={`e-owner-valid-from-${index}`}
+                      error={dateFieldErrors[`ownerValidFrom-${index}`] ? DATE_INPUT_ERROR_MESSAGE : undefined}
+                    >
+                      <Input
+                        id={`e-owner-valid-from-${index}`}
+                        type="date"
+                        min="1900-01-01"
+                        max="2100-12-31"
+                        error={dateFieldErrors[`ownerValidFrom-${index}`]}
+                        value={owner.validFrom}
+                        onChange={(e) => {
+                          markDateInvalid(`ownerValidFrom-${index}`)(e);
+                          updateOwner(index, "validFrom", e.target.value);
+                        }}
+                        onBlur={markDateInvalid(`ownerValidFrom-${index}`)}
+                      />
                     </FormField>
-                    <FormField label="Vigência fim" htmlFor={`e-owner-valid-until-${index}`}>
-                      <Input id={`e-owner-valid-until-${index}`} type="date" value={owner.validUntil} onChange={(e) => updateOwner(index, "validUntil", e.target.value)} />
+                    <FormField
+                      label="Vigência fim"
+                      htmlFor={`e-owner-valid-until-${index}`}
+                      error={dateFieldErrors[`ownerValidUntil-${index}`] ? DATE_INPUT_ERROR_MESSAGE : undefined}
+                    >
+                      <Input
+                        id={`e-owner-valid-until-${index}`}
+                        type="date"
+                        min="1900-01-01"
+                        max="2100-12-31"
+                        error={dateFieldErrors[`ownerValidUntil-${index}`]}
+                        value={owner.validUntil}
+                        onChange={(e) => {
+                          markDateInvalid(`ownerValidUntil-${index}`)(e);
+                          updateOwner(index, "validUntil", e.target.value);
+                        }}
+                        onBlur={markDateInvalid(`ownerValidUntil-${index}`)}
+                      />
                     </FormField>
                   </div>
                 </div>
