@@ -15,8 +15,45 @@ import { listProperties } from "@/lib/api/properties";
 import { listPeople } from "@/lib/api/people";
 import { createContract, addContractParty, listContractTemplates, renderContractTemplate, createContractVersion } from "@/lib/api/legal";
 import { CONTRACT_TYPE_LABELS, PARTY_ROLE_LABELS } from "@/lib/mock/legal";
-import { dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
+import { dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE, formatDate, formatBRL } from "@/lib/format";
 import styles from "./page.module.css";
+
+// Detecta placeholders "{{chave}}" que sobraram sem substituir no texto renderizado — o backend
+// (contractTemplates.service.js#applyTemplateVariables) deixa o placeholder intacto quando não
+// recebe valor pra ele, de propósito, pra nunca esconder silenciosamente que faltou preencher
+// algo. O front usa isso pra pedir os campos que faltam antes de criar a versão do contrato.
+function findUnresolvedPlaceholders(text) {
+  const matches = String(text || "").matchAll(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g);
+  return [...new Set([...matches].map((m) => m[1]))];
+}
+
+// Mapeia os placeholders mais comuns dos templates de contrato pra dados já coletados no
+// formulário — evita pedir de novo algo que o usuário já preencheu (nome das partes, endereço
+// do imóvel, valor, datas). Qualquer placeholder que não bater com essas chaves conhecidas cai
+// no formulário dinâmico de "completar o template" pra preenchimento manual.
+function buildKnownVariables({ parties, people, property, form }) {
+  const byRole = (role) => {
+    const party = parties.find((p) => p.partyRole === role);
+    return party ? people.find((p) => p.id === party.personId) : null;
+  };
+  const landlord = byRole("LANDLORD") || byRole("SELLER");
+  const tenant = byRole("TENANT") || byRole("BUYER");
+
+  const vars = {};
+  if (landlord) {
+    vars.nome_locador = landlord.legalName;
+    vars.doc_locador = landlord.taxIdNormalized || "(documento não cadastrado)";
+  }
+  if (tenant) {
+    vars.nome_locatario = tenant.legalName;
+    vars.doc_locatario = tenant.taxIdNormalized || "(documento não cadastrado)";
+  }
+  if (property) vars.endereco_imovel = property.addressLine || property.name;
+  if (form.totalValue) vars.valor_aluguel = formatBRL(Number(form.totalValue)).replace("R$", "").trim();
+  if (form.startsAt) vars.data_inicio = formatDate(dateOnlyInputToIso(form.startsAt));
+  if (form.endsAt) vars.data_fim = formatDate(dateOnlyInputToIso(form.endsAt));
+  return vars;
+}
 
 export default function NovoContratoPage() {
   const router = useRouter();
@@ -37,6 +74,13 @@ export default function NovoContratoPage() {
   });
   const [parties, setParties] = useState([]);
   const [newParty, setNewParty] = useState({ personId: "", partyRole: "LANDLORD" });
+  // Placeholders do template escolhido que não têm dado correspondente já coletado no
+  // formulário (ver buildKnownVariables) — pedidos ao usuário antes de criar a versão, pra
+  // nunca deixar {{assim}} sem preencher no documento gerado (bug real encontrado nesta
+  // sessão: a tela mandava renderContractTemplate(templateId, {}) com variáveis vazias).
+  const [pendingPlaceholders, setPendingPlaceholders] = useState(null);
+  const [placeholderValues, setPlaceholderValues] = useState({});
+  const [checkingTemplate, setCheckingTemplate] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -63,13 +107,17 @@ export default function NovoContratoPage() {
     form.propertyId && Number(form.totalValue) > 0 && parties.length > 0 && !dateErrors.startsAt && !dateErrors.endsAt;
 
   function update(field) {
-    return (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
+    return (e) => {
+      setForm((prev) => ({ ...prev, [field]: e.target.value }));
+      resetTemplateCheck();
+    };
   }
 
   function updateDate(field) {
     return (e) => {
       setDateErrors((prev) => ({ ...prev, [field]: isDateInputInvalid(e.target.validity) }));
       setForm((prev) => ({ ...prev, [field]: e.target.value }));
+      resetTemplateCheck();
     };
   }
 
@@ -81,15 +129,46 @@ export default function NovoContratoPage() {
     const person = people.find((p) => p.id === newParty.personId);
     if (!person) return;
     setParties((prev) => [...prev, { id: `tmp-${Date.now()}`, personId: newParty.personId, partyRole: newParty.partyRole }]);
+    resetTemplateCheck();
   }
 
   function removeParty(id) {
     setParties((prev) => prev.filter((p) => p.id !== id));
+    resetTemplateCheck();
+  }
+
+  function getKnownVariables() {
+    const property = properties.find((p) => p.id === form.propertyId);
+    return buildKnownVariables({ parties, people, property, form });
   }
 
   async function handleSubmit() {
     if (!isValid) return;
     setActionError("");
+
+    // Passo 1 — se tem template escolhido e ainda não checamos os placeholders dele nesta
+    // tentativa, renderiza com o que já sabemos e vê se sobrou algo sem preencher. Se sobrou,
+    // para aqui e pede pro usuário completar (não cria o contrato com documento pela metade).
+    if (form.templateId && pendingPlaceholders === null) {
+      setCheckingTemplate(true);
+      try {
+        const known = getKnownVariables();
+        const rendered = await renderContractTemplate(form.templateId, known);
+        const missing = findUnresolvedPlaceholders(rendered.content);
+        if (missing.length > 0) {
+          setPendingPlaceholders(missing);
+          setPlaceholderValues(Object.fromEntries(missing.map((key) => [key, ""])));
+          return;
+        }
+        setPendingPlaceholders([]);
+      } catch (err) {
+        setActionError(err.message || "Erro ao processar o template do contrato.");
+        return;
+      } finally {
+        setCheckingTemplate(false);
+      }
+    }
+
     setSubmitting(true);
     try {
       const contract = await createContract({
@@ -104,11 +183,14 @@ export default function NovoContratoPage() {
       }
       // Se um template foi escolhido, gera a primeira versão já com o texto renderizado a
       // partir dele (preview via renderContractTemplate + persistência via createContractVersion,
-      // ver lib/api/legal.js). requireDocument:false porque nesta etapa ainda não existe upload
-      // de arquivo real — é um rascunho textual vinculado ao template, gate de documento real
-      // continua valendo mais adiante (transição para SIGNING, ver contracts.service.js).
+      // ver lib/api/legal.js) — sempre com TODAS as variáveis resolvidas (conhecidas do
+      // formulário + as que o usuário completou manualmente no passo anterior), nunca com
+      // {{placeholder}} sobrando no documento gerado. requireDocument:false porque nesta etapa
+      // ainda não existe upload de arquivo real — é um rascunho textual vinculado ao template,
+      // gate de documento real continua valendo mais adiante (transição para SIGNING).
       if (form.templateId) {
-        const rendered = await renderContractTemplate(form.templateId, {});
+        const variables = { ...getKnownVariables(), ...placeholderValues };
+        const rendered = await renderContractTemplate(form.templateId, variables);
         await createContractVersion(contract.id, {
           content: rendered.content,
           templateId: form.templateId,
@@ -121,6 +203,14 @@ export default function NovoContratoPage() {
     } finally {
       setSubmitting(false);
     }
+  }
+
+  // Trocar template ou qualquer dado que alimenta as variáveis conhecidas invalida a checagem
+  // de placeholders já feita — força reconferir antes de criar, pra nunca usar valores
+  // desatualizados (ex: trocou o imóvel depois de já ter "aceitado" o preview).
+  function resetTemplateCheck() {
+    setPendingPlaceholders(null);
+    setPlaceholderValues({});
   }
 
   if (loading) {
@@ -253,9 +343,30 @@ export default function NovoContratoPage() {
           </div>
         </Card>
 
+        {pendingPlaceholders && pendingPlaceholders.length > 0 ? (
+          <Card
+            title="Complete o template do contrato"
+            subtitle="O modelo escolhido tem campos que não puderam ser preenchidos automaticamente com os dados já informados — complete abaixo antes de criar o contrato."
+          >
+            <div className={styles.formGrid}>
+              {pendingPlaceholders.map((key) => (
+                <FormField key={key} label={key.replace(/_/g, " ")} htmlFor={`f-ph-${key}`}>
+                  <Input
+                    id={`f-ph-${key}`}
+                    value={placeholderValues[key] || ""}
+                    onChange={(e) => setPlaceholderValues((prev) => ({ ...prev, [key]: e.target.value }))}
+                  />
+                </FormField>
+              ))}
+            </div>
+          </Card>
+        ) : null}
+
         <div className={styles.actionBar}>
           <Button variant="secondary" onClick={() => router.push("/painel/contratos/lista")}>Cancelar</Button>
-          <Button onClick={handleSubmit} loading={submitting} disabled={!isValid}>Criar contrato</Button>
+          <Button onClick={handleSubmit} loading={submitting || checkingTemplate} disabled={!isValid}>
+            Criar contrato
+          </Button>
         </div>
       </div>
     </AppShell>
