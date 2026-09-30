@@ -30,6 +30,9 @@ import {
   CHANGE_ORDER_REASON_LABELS,
   MATERIAL_REQUEST_STATUS_LABELS,
   MATERIAL_REQUEST_STATUS_TONE,
+  LOSS_RECORD_STATUS_LABELS,
+  LOSS_RECORD_STATUS_TONE,
+  LOSS_RECORD_MOVEMENT_LABELS,
   NONCONFORMITY_SEVERITY_LABELS,
   NONCONFORMITY_SEVERITY_TONE,
   NONCONFORMITY_STATUS_LABELS,
@@ -62,6 +65,10 @@ import {
   listMaterialRequests,
   createMaterialRequest,
   receiveMaterialRequest,
+  listLossRecords,
+  createLossRecord,
+  approveLossRecord,
+  returnLossRecord,
   listNonconformities,
   createNonconformity,
   closeNonconformity,
@@ -80,7 +87,12 @@ export default function ObraDetalhePage({ params }) {
   const [properties, setProperties] = useState([]);
   const [users, setUsers] = useState([]);
   const [stages, setStages] = useState([]);
-  const [reports, setReports] = useState([]);
+  // FIX (auditoria pós-merge Marco 6, 30/09/2026): histórico de RDO ficava truncado a 5 itens
+  // sem nenhuma forma de ver o restante. Mantém a lista completa em `allReports` e um toggle
+  // `reportsShowAll` para exibir os 5 mais recentes por padrão, com opção de ver todos.
+  const [allReports, setAllReports] = useState([]);
+  const [reportsShowAll, setReportsShowAll] = useState(false);
+  const reports = reportsShowAll ? allReports : allReports.slice(0, 5);
   const [budgetLines, setBudgetLines] = useState([]);
   const [qualityItems, setQualityItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -139,6 +151,15 @@ export default function ObraDetalhePage({ params }) {
   const [materialForm, setMaterialForm] = useState({ description: "", quantity: "", unit: "" });
   const [savingMaterial, setSavingMaterial] = useState(false);
   const [receivingMaterialId, setReceivingMaterialId] = useState(null);
+
+  // FIX (auditoria pós-merge Marco 6, 30/09/2026): createLossRecord/listLossRecords/
+  // approveLossRecord/returnLossRecord já existiam na API, mas nenhuma tela chamava (Categoria
+  // 8 do catálogo de bugs — funcionalidade existe só no papel).
+  const [lossRecords, setLossRecords] = useState([]);
+  const [lossOpen, setLossOpen] = useState(false);
+  const [lossForm, setLossForm] = useState({ materialDescription: "", quantity: "", estimatedValue: "", reason: "" });
+  const [savingLoss, setSavingLoss] = useState(false);
+  const [lossBusyId, setLossBusyId] = useState(null);
 
   // Não conformidades (M6-13/M6-24/M6-38/M6-62/M6-86).
   const [nonconformities, setNonconformities] = useState([]);
@@ -200,16 +221,18 @@ export default function ObraDetalhePage({ params }) {
           listChangeOrders(p.id),
           listMaterialRequests(p.id),
           listNonconformities(p.id),
-        ]).then(([st, rd, bl, qi, budgets, cos, mr, ncs]) => {
+          listLossRecords(p.id),
+        ]).then(([st, rd, bl, qi, budgets, cos, mr, ncs, lr]) => {
           if (cancelled) return;
           setStages(st || []);
-          setReports((rd || []).slice(0, 5));
+          setAllReports(rd || []);
           setBudgetLines(bl || []);
           setQualityItems(qi || []);
           setBudget((budgets || [])[0] || null);
           setChangeOrders(cos || []);
           setMaterialRequests(mr || []);
           setNonconformities(ncs || []);
+          setLossRecords(lr || []);
         });
       })
       .catch((err) => {
@@ -430,10 +453,10 @@ export default function ObraDetalhePage({ params }) {
       };
       if (editingRdoId) {
         const updated = await updateDailyReport(editingRdoId, payload);
-        setReports((prev) => prev.map((r) => (r.id === editingRdoId ? updated : r)));
+        setAllReports((prev) => prev.map((r) => (r.id === editingRdoId ? updated : r)));
       } else {
         const created = await createDailyReport(project.id, payload);
-        setReports((prev) => [created, ...prev].slice(0, 5));
+        setAllReports((prev) => [created, ...prev]);
       }
       setRdoOpen(false);
     } catch (err) {
@@ -603,6 +626,56 @@ export default function ObraDetalhePage({ params }) {
       setActionError(err?.message || "Não foi possível marcar a requisição como recebida.");
     } finally {
       setReceivingMaterialId(null);
+    }
+  }
+
+  function openLossModal() {
+    setLossForm({ materialDescription: "", quantity: "", estimatedValue: "", reason: "" });
+    setLossOpen(true);
+  }
+  async function handleCreateLossRecord() {
+    if (!lossForm.materialDescription.trim() || lossForm.quantity === "" || Number(lossForm.quantity) <= 0 || lossForm.estimatedValue === "" || !lossForm.reason.trim()) return;
+    setSavingLoss(true);
+    setActionError("");
+    try {
+      const created = await createLossRecord(project.id, {
+        materialDescription: lossForm.materialDescription.trim(),
+        quantity: Number(lossForm.quantity),
+        estimatedValue: Number(lossForm.estimatedValue),
+        reason: lossForm.reason.trim(),
+      });
+      setLossRecords((prev) => [created, ...prev]);
+      setLossOpen(false);
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível registrar a perda de material.");
+    } finally {
+      setSavingLoss(false);
+    }
+  }
+  async function handleApproveLossRecord(record) {
+    if (lossBusyId) return;
+    setLossBusyId(record.id);
+    setActionError("");
+    try {
+      const updated = await approveLossRecord(record.id);
+      setLossRecords((prev) => prev.map((l) => (l.id === updated.id ? updated : l)));
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível aprovar o registro de perda.");
+    } finally {
+      setLossBusyId(null);
+    }
+  }
+  async function handleReturnLossRecord(record) {
+    if (lossBusyId) return;
+    setLossBusyId(record.id);
+    setActionError("");
+    try {
+      const returned = await returnLossRecord(record.id);
+      setLossRecords((prev) => [returned, ...prev]);
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível registrar a devolução de material.");
+    } finally {
+      setLossBusyId(null);
     }
   }
 
@@ -909,12 +982,12 @@ export default function ObraDetalhePage({ params }) {
 
         <Card
           title="RDO — Relatório Diário de Obra"
-          subtitle="Últimos registros"
+          subtitle={reportsShowAll ? `Todos os ${allReports.length} registros` : "Últimos 5 registros"}
           actions={<Button size="sm" variant="secondary" onClick={openRdoModal}>
             <Icon name="plus" size={14} /> Novo RDO
           </Button>}
         >
-          {reports.length === 0 ? (
+          {allReports.length === 0 ? (
             <EmptyState icon="document" title="Sem RDOs" description="Nenhum relatório diário de obra registrado ainda." />
           ) : (
             <div className={styles.rowList}>
@@ -938,6 +1011,11 @@ export default function ObraDetalhePage({ params }) {
               ))}
             </div>
           )}
+          {allReports.length > 5 ? (
+            <Button size="sm" variant="ghost" onClick={() => setReportsShowAll((v) => !v)}>
+              {reportsShowAll ? "Mostrar só os últimos 5" : `Ver todos os ${allReports.length} registros`}
+            </Button>
+          ) : null}
         </Card>
 
         <Card
@@ -1143,6 +1221,58 @@ export default function ObraDetalhePage({ params }) {
                         disabled={receivingMaterialId !== null && receivingMaterialId !== m.id}
                       >
                         Marcar como recebido
+                      </Button>
+                    ) : null}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+
+        <Card
+          title="Perda e devolução de material"
+          subtitle="Registro de perda/quebra com alçada de aprovação por valor"
+          actions={<Button size="sm" variant="secondary" onClick={openLossModal}>
+            <Icon name="plus" size={14} /> Registrar perda
+          </Button>}
+        >
+          {lossRecords.length === 0 ? (
+            <EmptyState icon="ban" title="Sem registros" description="Nenhuma perda de material registrada para esta obra." />
+          ) : (
+            <div className={styles.rowList}>
+              {lossRecords.map((l) => (
+                <div key={l.id} className={styles.rowStatic}>
+                  <div className={styles.rowInfo}>
+                    <span className={styles.rowTitle}>
+                      {LOSS_RECORD_MOVEMENT_LABELS[l.movementType] || l.movementType} · {l.materialDescription}
+                    </span>
+                    <span className={styles.rowSubtitle}>
+                      {l.quantity} un. · {formatBRL(l.estimatedValue)} · {l.reason}
+                    </span>
+                  </div>
+                  <div className={styles.rowRight}>
+                    <Badge tone={LOSS_RECORD_STATUS_TONE[l.status]}>{LOSS_RECORD_STATUS_LABELS[l.status] || l.status}</Badge>
+                    {l.movementType === "LOSS" && l.status === "PENDING_APPROVAL" ? (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => handleApproveLossRecord(l)}
+                        loading={lossBusyId === l.id}
+                        disabled={lossBusyId !== null && lossBusyId !== l.id}
+                      >
+                        Aprovar
+                      </Button>
+                    ) : null}
+                    {l.movementType === "LOSS" && l.status === "APPROVED" ? (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleReturnLossRecord(l)}
+                        loading={lossBusyId === l.id}
+                        disabled={lossBusyId !== null && lossBusyId !== l.id}
+                      >
+                        Registrar devolução
                       </Button>
                     ) : null}
                   </div>
@@ -1552,6 +1682,43 @@ export default function ObraDetalhePage({ params }) {
           <FormField label="Unidade" htmlFor="m-material-unit" required>
             <Input id="m-material-unit" value={materialForm.unit} onChange={(e) => setMaterialForm((p) => ({ ...p, unit: e.target.value }))} placeholder="Ex: un, kg, m2, saco" />
           </FormField>
+        </div>
+      </Modal>
+
+      <Modal
+        open={lossOpen}
+        onClose={() => setLossOpen(false)}
+        title="Registrar perda de material"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setLossOpen(false)}>Cancelar</Button>
+            <Button
+              onClick={handleCreateLossRecord}
+              loading={savingLoss}
+              disabled={!lossForm.materialDescription.trim() || lossForm.quantity === "" || Number(lossForm.quantity) <= 0 || lossForm.estimatedValue === "" || !lossForm.reason.trim()}
+            >
+              Registrar perda
+            </Button>
+          </>
+        }
+      >
+        <div className={styles.formGrid}>
+          <div className={styles.span2}>
+            <FormField label="Material" htmlFor="m-loss-description" required>
+              <Input id="m-loss-description" value={lossForm.materialDescription} onChange={(e) => setLossForm((p) => ({ ...p, materialDescription: e.target.value }))} placeholder="Ex: Telha cerâmica" />
+            </FormField>
+          </div>
+          <FormField label="Quantidade" htmlFor="m-loss-quantity" required>
+            <Input id="m-loss-quantity" type="number" min="0.001" step="0.001" value={lossForm.quantity} onChange={(e) => setLossForm((p) => ({ ...p, quantity: e.target.value }))} />
+          </FormField>
+          <FormField label="Valor estimado (R$)" htmlFor="m-loss-value" required>
+            <Input id="m-loss-value" type="number" min="0" step="0.01" value={lossForm.estimatedValue} onChange={(e) => setLossForm((p) => ({ ...p, estimatedValue: e.target.value }))} />
+          </FormField>
+          <div className={styles.span2}>
+            <FormField label="Motivo" htmlFor="m-loss-reason" required helper="Acima do limite de alçada configurado, a perda nasce aguardando aprovação; abaixo, é autoaprovada.">
+              <Input id="m-loss-reason" value={lossForm.reason} onChange={(e) => setLossForm((p) => ({ ...p, reason: e.target.value }))} placeholder="Ex: quebra no transporte" />
+            </FormField>
+          </div>
         </div>
       </Modal>
 
