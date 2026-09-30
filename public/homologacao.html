@@ -367,15 +367,32 @@
 
 <div class="wrap">
 
+  <section style="background:#1f2937;color:#f9fafb;border-radius:14px;padding:24px 28px;margin-bottom:28px;border:2px solid #f59e0b;">
+    <p style="text-transform:uppercase;letter-spacing:.08em;font-size:12px;color:#f59e0b;font-weight:700;margin:0 0 10px;">Atualização mais recente — leia antes do restante da página</p>
+    <p style="margin:0 0 14px;font-size:15px;line-height:1.5;">
+      Analisei e corrigi, em 30/09/2026, os dois problemas reais reportados por você no reteste do contrato
+      <strong>LOC-2026-0002</strong> e do contrato <strong>c00af665-98b9-47bc-8aa2-b7c7143ec894</strong>:
+    </p>
+    <ul style="margin:0 0 14px;padding-left:20px;font-size:14px;line-height:1.6;">
+      <li><strong>Entrega de chaves usando a vistoria errada</strong> — confirmei a causa raiz: a validação buscava "qualquer" vistoria de entrada concluída do contrato, sem checar qual estava de fato vinculada à entrega. Corrigido para usar sempre a vistoria explicitamente referenciada pela entrega (ou a mais recente concluída, nunca "qualquer uma"). Teste de regressão reproduz exatamente o cenário relatado (vistoria antiga assinada + vistoria nova sem assinatura) e confirma o bloqueio.</li>
+      <li><strong>Violação de restrição de unicidade ao avançar para "Em assinatura"</strong> — causa raiz: cálculo do próximo número de versão do contrato sem travar a linha, permitindo que duas criações próximas calculassem o mesmo número. Corrigido travando a linha do contrato antes do cálculo. Também corrigida a causa das "partes sem nome": criação de parte não validava se o `personId` existia de fato no tenant.</li>
+    </ul>
+    <p style="margin:0;font-size:13px;color:#d1d5db;">
+      Commit da API publicado: <code style="background:#111827;padding:2px 6px;border-radius:4px;">5f2a0a5750e3be57e2cbf9e05675ea2db5cd7d68</code> ·
+      Commit do Front publicado: <code style="background:#111827;padding:2px 6px;border-radius:4px;">a85a91b665e6eff714b298f180eb2931f4f14c9b</code> ·
+      Atualizado em 30/09/2026.
+    </p>
+  </section>
+
   <header class="cover">
     <p class="eyebrow">Nayara One · Relatório para aceite</p>
     <h1 class="title">Homologação dos Marcos 3, 4 e 5</h1>
     <p class="subtitle">Pessoas, Empresas, Imóveis, CRM, Radar, Financeiro, Contratos e Locação. Preparado em resposta direta à lista de itens solicitada antes do aceite formal.</p>
     <div class="meta-row">
       <span class="meta-pill">Preparado por Patrick Gomes Siqueira</span>
-      <span class="meta-pill">02/09/2026</span>
-      <span class="meta-pill">API 397e47c → 70adef5</span>
-      <span class="meta-pill">Front efff0ae → 8ce02b4</span>
+      <span class="meta-pill">Relatório original: 02/09/2026 (histórico preservado abaixo)</span>
+      <span class="meta-pill">API 397e47c → 70adef5 (histórico)</span>
+      <span class="meta-pill">Front efff0ae → 8ce02b4 (histórico)</span>
     </div>
   </header>
 
