@@ -75,6 +75,8 @@ import {
   approveLossRecord,
   returnLossRecord,
   upsertApprovalThreshold,
+  createMarginRule,
+  getActiveMarginRule,
   listNonconformities,
   createNonconformity,
   closeNonconformity,
@@ -199,6 +201,14 @@ export default function ObraDetalhePage({ params }) {
   const [thresholdAmount, setThresholdAmount] = useState("");
   const [savingThreshold, setSavingThreshold] = useState(false);
 
+  // Margem mínima de obra (MarginRule) — achado numa auditoria do Front do Marco 6: nenhuma
+  // empresa real conseguia aprovar orçamento algum sem isso, e não havia NENHUMA tela pra
+  // configurar (o endpoint nem existia até esta correção).
+  const [activeMarginRule, setActiveMarginRule] = useState(null);
+  const [marginRuleOpen, setMarginRuleOpen] = useState(false);
+  const [marginRulePct, setMarginRulePct] = useState("");
+  const [savingMarginRule, setSavingMarginRule] = useState(false);
+
   // Não conformidades (M6-13/M6-24/M6-38/M6-62/M6-86).
   const [nonconformities, setNonconformities] = useState([]);
   const [ncOpen, setNcOpen] = useState(false);
@@ -314,6 +324,7 @@ export default function ObraDetalhePage({ params }) {
   useEffect(() => {
     loadHealth();
     loadNayObras();
+    getActiveMarginRule().then(setActiveMarginRule).catch(() => setActiveMarginRule(null));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
 
@@ -844,6 +855,30 @@ export default function ObraDetalhePage({ params }) {
     }
   }
 
+  function openMarginRuleModal() {
+    setMarginRulePct(activeMarginRule ? String(Number(activeMarginRule.minMarginPct)) : "");
+    setMarginRuleOpen(true);
+  }
+
+  async function handleSaveMarginRule() {
+    if (marginRulePct === "" || Number(marginRulePct) < 0) return;
+    setSavingMarginRule(true);
+    setActionError("");
+    try {
+      const rule = await createMarginRule({
+        groupId: project.groupId,
+        companyId: project.companyId,
+        minMarginPct: Number(marginRulePct),
+      });
+      setActiveMarginRule(rule);
+      setMarginRuleOpen(false);
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível salvar a margem mínima.");
+    } finally {
+      setSavingMarginRule(false);
+    }
+  }
+
   function openNcModal() {
     setNcForm({
       description: "",
@@ -1285,9 +1320,18 @@ export default function ObraDetalhePage({ params }) {
               <Button size="sm" variant="secondary" onClick={openBudgetModal} disabled={budget?.status === "APPROVED"}>
                 <Icon name="plus" size={14} /> Nova linha de orçamento
               </Button>
+              <Button size="sm" variant="ghost" onClick={openMarginRuleModal}>
+                <Icon name="key" size={14} /> Configurar margem mínima
+              </Button>
             </div>
           }
         >
+          {!activeMarginRule ? (
+            <Alert tone="warning">
+              Nenhuma margem mínima configurada para esta empresa — a aprovação do orçamento
+              será recusada até configurar uma em &quot;Configurar margem mínima&quot;.
+            </Alert>
+          ) : null}
           {budget ? (
             <div className={styles.rowStatic} style={{ marginBottom: "var(--space-3)" }}>
               <div className={styles.rowInfo}>
@@ -1740,6 +1784,35 @@ export default function ObraDetalhePage({ params }) {
             value={thresholdAmount}
             onChange={(e) => setThresholdAmount(e.target.value)}
             placeholder="1000,00"
+          />
+        </FormField>
+      </Modal>
+
+      <Modal
+        open={marginRuleOpen}
+        onClose={() => setMarginRuleOpen(false)}
+        title="Configurar margem mínima"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setMarginRuleOpen(false)}>Cancelar</Button>
+            <Button onClick={handleSaveMarginRule} loading={savingMarginRule} disabled={marginRulePct === "" || Number(marginRulePct) < 0}>Salvar</Button>
+          </>
+        }
+      >
+        <FormField
+          label="Margem mínima exigida (%)"
+          htmlFor="m-margin-pct"
+          required
+          helper="Orçamento só é aprovado se a margem projetada (receita - custo) for maior ou igual a este percentual. Salvar cria uma nova versão — a versão anterior fica preservada no histórico, sem afetar orçamentos já aprovados com ela. Configuração válida para toda a empresa."
+        >
+          <Input
+            id="m-margin-pct"
+            type="number"
+            min="0"
+            step="0.01"
+            value={marginRulePct}
+            onChange={(e) => setMarginRulePct(e.target.value)}
+            placeholder="10,00"
           />
         </FormField>
       </Modal>
