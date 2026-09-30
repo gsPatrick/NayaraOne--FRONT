@@ -18,12 +18,16 @@ import {
   MEASUREMENT_STATUS_LABELS,
   MEASUREMENT_STATUS_TONE,
 } from "@/lib/mock/construction";
+import Select from "@/components/atoms/Select/Select";
 import {
   getProject,
   getProjectStage,
+  listProjectStages,
   listStageMeasurements,
   createStageMeasurement,
   decideStageMeasurement,
+  createStageDependency,
+  listStageDependencies,
 } from "@/lib/api/construction";
 import { apiFetch } from "@/lib/api/client";
 import { formatDate, formatDateTime, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
@@ -59,6 +63,14 @@ export default function EtapaDetalhePage({ params }) {
   // qualquer return condicional (Regras dos Hooks).
   const [measuredAtInvalid, setMeasuredAtInvalid] = useState(false);
 
+  // Dependências entre etapas (M6-03/M6-19/M6-56 — sem ciclo, achado numa auditoria do Front do
+  // Marco 6: a API já tinha o endpoint pronto, mas nenhuma tela chamava).
+  const [allStages, setAllStages] = useState([]);
+  const [dependencies, setDependencies] = useState([]);
+  const [depOpen, setDepOpen] = useState(false);
+  const [depTargetStageId, setDepTargetStageId] = useState("");
+  const [savingDep, setSavingDep] = useState(false);
+
   function load() {
     let cancelled = false;
     setLoading(true);
@@ -69,9 +81,15 @@ export default function EtapaDetalhePage({ params }) {
         setProject(p);
         setStage(s);
         setUsers(u || []);
-        return listStageMeasurements(s.id).then((m) => {
+        return Promise.all([
+          listStageMeasurements(s.id),
+          listProjectStages(p.id),
+          listStageDependencies(s.id),
+        ]).then(([m, stages, deps]) => {
           if (cancelled) return;
           setMeasurements(m || []);
+          setAllStages(stages || []);
+          setDependencies(deps || []);
         });
       })
       .catch((err) => {
@@ -154,6 +172,26 @@ export default function EtapaDetalhePage({ params }) {
     }
   }
 
+  function openDepModal() {
+    setDepTargetStageId("");
+    setDepOpen(true);
+  }
+
+  async function handleCreateDependency() {
+    if (!depTargetStageId) return;
+    setSavingDep(true);
+    setActionError("");
+    try {
+      const created = await createStageDependency(stage.id, { dependsOnStageId: depTargetStageId });
+      setDependencies((prev) => [...prev, created]);
+      setDepOpen(false);
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível criar a dependência.");
+    } finally {
+      setSavingDep(false);
+    }
+  }
+
   function openMeasurementModal() {
     setMeasurementForm({ measuredPct: "", measuredAt: new Date().toISOString().slice(0, 10), notes: "" });
     setMeasuredAtInvalid(false);
@@ -227,6 +265,36 @@ export default function EtapaDetalhePage({ params }) {
           </div>
         </Card>
 
+        <Card
+          title="Dependências"
+          subtitle="Etapas que precisam estar prontas antes desta (sem ciclo)"
+          actions={<Button size="sm" variant="secondary" onClick={openDepModal}>
+            <Icon name="plus" size={14} /> Nova dependência
+          </Button>}
+        >
+          {dependencies.length === 0 ? (
+            <EmptyState icon="layers" title="Sem dependências" description="Esta etapa não depende de nenhuma outra." />
+          ) : (
+            <div className={styles.rowList}>
+              {dependencies.map((d) => {
+                const dependsOn = allStages.find((s) => s.id === d.dependsOnStageId);
+                return (
+                  <div key={d.id} className={styles.measurementRow}>
+                    <div className={styles.rowInfo}>
+                      <span className={styles.rowTitle}>
+                        {dependsOn ? `${dependsOn.sequence}. ${dependsOn.name}` : d.dependsOnStageId}
+                      </span>
+                    </div>
+                    {dependsOn ? (
+                      <Badge tone={STAGE_STATUS_TONE[dependsOn.status]}>{STAGE_STATUS_LABELS[dependsOn.status]}</Badge>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </Card>
+
         <Card title="Histórico de medições">
           {measurements.length === 0 ? (
             <EmptyState icon="chart" title="Sem medições" description="Nenhuma medição registrada para esta etapa ainda." />
@@ -288,6 +356,27 @@ export default function EtapaDetalhePage({ params }) {
             value={rejectReason}
             onChange={(e) => setRejectReason(e.target.value)}
           />
+        </FormField>
+      </Modal>
+
+      <Modal
+        open={depOpen}
+        onClose={() => setDepOpen(false)}
+        title="Nova dependência"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setDepOpen(false)}>Cancelar</Button>
+            <Button onClick={handleCreateDependency} loading={savingDep} disabled={!depTargetStageId}>Criar dependência</Button>
+          </>
+        }
+      >
+        <FormField label="Depende de" htmlFor="m-dep-target" required helper="Esta etapa só pode avançar depois que a etapa selecionada estiver pronta.">
+          <Select id="m-dep-target" value={depTargetStageId} onChange={(e) => setDepTargetStageId(e.target.value)}>
+            <option value="">Selecione a etapa...</option>
+            {allStages.filter((s) => s.id !== stage.id).map((s) => (
+              <option key={s.id} value={s.id}>{s.sequence}. {s.name}</option>
+            ))}
+          </Select>
         </FormField>
       </Modal>
 

@@ -64,6 +64,8 @@ import {
   createChangeOrder,
   decideChangeOrder,
   getProjectHealth,
+  getNayObrasSummary,
+  getNayObrasPostObraSummary,
   listMaterialRequests,
   createMaterialRequest,
   receiveMaterialRequest,
@@ -71,6 +73,7 @@ import {
   createLossRecord,
   approveLossRecord,
   returnLossRecord,
+  upsertApprovalThreshold,
   listNonconformities,
   createNonconformity,
   closeNonconformity,
@@ -164,6 +167,13 @@ export default function ObraDetalhePage({ params }) {
   const [health, setHealth] = useState(null);
   const [healthError, setHealthError] = useState("");
 
+  // NAY Obras (M6-101) — componente nomeado exigido pela fonte, resumo determinístico
+  // (rule-based, nunca decide) sobre os read models de saúde já existentes. Achado numa
+  // auditoria do Front do Marco 6: o endpoint existia, mas nenhuma tela o exibia.
+  const [nayObras, setNayObras] = useState(null);
+  const [nayObrasError, setNayObrasError] = useState("");
+  const [postObraHealth, setPostObraHealth] = useState(null);
+
   const [materialRequests, setMaterialRequests] = useState([]);
   const [materialOpen, setMaterialOpen] = useState(false);
   const [materialForm, setMaterialForm] = useState({ description: "", quantity: "", unit: "" });
@@ -178,6 +188,13 @@ export default function ObraDetalhePage({ params }) {
   const [lossForm, setLossForm] = useState({ materialDescription: "", quantity: "", estimatedValue: "", reason: "" });
   const [savingLoss, setSavingLoss] = useState(false);
   const [lossBusyId, setLossBusyId] = useState(null);
+
+  // Alçada de aprovação (MATERIAL_LOSS) — achado numa auditoria do Front do Marco 6: o endpoint
+  // já existia, mas não havia nenhuma tela pra configurar o valor (só dava pra setar direto no
+  // banco). Configuração por empresa, não por obra.
+  const [thresholdOpen, setThresholdOpen] = useState(false);
+  const [thresholdAmount, setThresholdAmount] = useState("");
+  const [savingThreshold, setSavingThreshold] = useState(false);
 
   // Não conformidades (M6-13/M6-24/M6-38/M6-62/M6-86).
   const [nonconformities, setNonconformities] = useState([]);
@@ -281,8 +298,19 @@ export default function ObraDetalhePage({ params }) {
       .catch((err) => setHealthError(err?.message || "Não foi possível carregar a saúde da obra."));
   }
 
+  function loadNayObras() {
+    setNayObrasError("");
+    getNayObrasSummary(params.id)
+      .then((s) => setNayObras(s || null))
+      .catch((err) => setNayObrasError(err?.message || "Não foi possível carregar o resumo do NAY Obras."));
+    getNayObrasPostObraSummary(params.id)
+      .then((s) => setPostObraHealth(s || null))
+      .catch(() => setPostObraHealth(null));
+  }
+
   useEffect(() => {
     loadHealth();
+    loadNayObras();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
 
@@ -767,6 +795,30 @@ export default function ObraDetalhePage({ params }) {
     }
   }
 
+  function openThresholdModal() {
+    setThresholdAmount("");
+    setThresholdOpen(true);
+  }
+
+  async function handleSaveThreshold() {
+    if (thresholdAmount === "" || Number(thresholdAmount) <= 0) return;
+    setSavingThreshold(true);
+    setActionError("");
+    try {
+      await upsertApprovalThreshold({
+        groupId: project.groupId,
+        companyId: project.companyId,
+        context: "MATERIAL_LOSS",
+        maxAutoApproveAmount: Number(thresholdAmount),
+      });
+      setThresholdOpen(false);
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível salvar a alçada de aprovação.");
+    } finally {
+      setSavingThreshold(false);
+    }
+  }
+
   function openNcModal() {
     setNcForm({
       description: "",
@@ -1069,6 +1121,46 @@ export default function ObraDetalhePage({ params }) {
           )}
         </Card>
 
+        <Card title="NAY Obras" subtitle="Resumo determinístico (rule-based) de progresso, custos e riscos — NAY sugere, nunca decide">
+          {nayObrasError ? (
+            <Alert tone="danger">{nayObrasError}</Alert>
+          ) : !nayObras ? (
+            <p className={styles.infoLabel}>Carregando…</p>
+          ) : (
+            <>
+              {nayObras.risks?.length ? (
+                <div className={styles.rowList} style={{ marginBottom: "var(--space-3)" }}>
+                  {nayObras.risks.map((r, i) => (
+                    <Alert key={i} tone="warning">{r}</Alert>
+                  ))}
+                </div>
+              ) : (
+                <Alert tone="success">Nenhum risco identificado no momento.</Alert>
+              )}
+              {postObraHealth?.summary?.totalCases > 0 ? (
+                <div className={styles.infoGrid} style={{ marginTop: "var(--space-3)" }}>
+                  <div>
+                    <p className={styles.infoLabel}>Chamados de garantia (total)</p>
+                    <p className={styles.infoValue}>{postObraHealth.summary.totalCases}</p>
+                  </div>
+                  <div>
+                    <p className={styles.infoLabel}>Chamados em aberto</p>
+                    <p className={styles.infoValue}>{postObraHealth.summary.openCases}</p>
+                  </div>
+                  <div>
+                    <p className={styles.infoLabel}>Tempo médio de atendimento</p>
+                    <p className={styles.infoValue}>{postObraHealth.summary.avgResolutionHours != null ? `${postObraHealth.summary.avgResolutionHours}h` : "—"}</p>
+                  </div>
+                  <div>
+                    <p className={styles.infoLabel}>Custo total de garantia</p>
+                    <p className={styles.infoValue}>{formatBRL(postObraHealth.summary.totalWarrantyCost)}</p>
+                  </div>
+                </div>
+              ) : null}
+            </>
+          )}
+        </Card>
+
         <Card
           title="Etapas"
           subtitle="Cronograma físico da obra"
@@ -1366,9 +1458,16 @@ export default function ObraDetalhePage({ params }) {
         <Card
           title="Perda e devolução de material"
           subtitle="Registro de perda/quebra com alçada de aprovação por valor"
-          actions={<Button size="sm" variant="secondary" onClick={openLossModal}>
-            <Icon name="plus" size={14} /> Registrar perda
-          </Button>}
+          actions={
+            <div className={styles.quickActions}>
+              <Button size="sm" variant="ghost" onClick={openThresholdModal}>
+                <Icon name="key" size={14} /> Configurar alçada
+              </Button>
+              <Button size="sm" variant="secondary" onClick={openLossModal}>
+                <Icon name="plus" size={14} /> Registrar perda
+              </Button>
+            </div>
+          }
         >
           {lossRecords.length === 0 ? (
             <EmptyState icon="ban" title="Sem registros" description="Nenhuma perda de material registrada para esta obra." />
@@ -1582,6 +1681,35 @@ export default function ObraDetalhePage({ params }) {
             <Input id="m-stage-pct" type="number" min="0" max="100" value={stageForm.plannedPct} onChange={(e) => setStageForm((p) => ({ ...p, plannedPct: e.target.value }))} />
           </FormField>
         </div>
+      </Modal>
+
+      <Modal
+        open={thresholdOpen}
+        onClose={() => setThresholdOpen(false)}
+        title="Configurar alçada de aprovação"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setThresholdOpen(false)}>Cancelar</Button>
+            <Button onClick={handleSaveThreshold} loading={savingThreshold} disabled={thresholdAmount === "" || Number(thresholdAmount) <= 0}>Salvar</Button>
+          </>
+        }
+      >
+        <FormField
+          label="Valor máximo de auto-aprovação (R$)"
+          htmlFor="m-threshold-amount"
+          required
+          helper="Perdas de material com valor estimado até este limite são aprovadas automaticamente; acima, exigem aprovação explícita. Configuração válida para toda a empresa (padrão: R$ 1.000,00)."
+        >
+          <Input
+            id="m-threshold-amount"
+            type="number"
+            min="0.01"
+            step="0.01"
+            value={thresholdAmount}
+            onChange={(e) => setThresholdAmount(e.target.value)}
+            placeholder="1000,00"
+          />
+        </FormField>
       </Modal>
 
       <Modal
