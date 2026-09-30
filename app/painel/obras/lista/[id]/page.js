@@ -114,6 +114,9 @@ export default function ObraDetalhePage({ params }) {
   const [savingBudget, setSavingBudget] = useState(false);
 
   const [qualityOpen, setQualityOpen] = useState(false);
+  const [qualityBusyId, setQualityBusyId] = useState(null);
+  const [qualityRejecting, setQualityRejecting] = useState(null);
+  const [qualityRejectNotes, setQualityRejectNotes] = useState("");
   const [qualityForm, setQualityForm] = useState({ item: "", projectStageId: "" });
   const [savingQuality, setSavingQuality] = useState(false);
 
@@ -327,13 +330,23 @@ export default function ObraDetalhePage({ params }) {
     }
   }
 
-  async function handleQualityQuickAction(item, status) {
+  // FIX (auditoria pós-merge Marco 6, 30/09/2026): a API aceita {status, notes} em
+  // checkQualityItem, mas a tela nunca oferecia campo pra registrar o motivo ao marcar "Não OK"
+  // — dado se perdia em silêncio (Categoria 3 do catálogo de bugs). "OK" continua direto (sem
+  // motivo a justificar); "Não OK" abre o modal de observação obrigatória.
+  async function handleQualityQuickAction(item, status, notes) {
+    if (qualityBusyId) return;
     setActionError("");
+    setQualityBusyId(item.id);
     try {
-      const updated = await checkQualityItem(item.id, { status });
+      const updated = await checkQualityItem(item.id, { status, notes: notes || undefined });
       setQualityItems((prev) => prev.map((q) => (q.id === updated.id ? updated : q)));
+      setQualityRejecting(null);
+      setQualityRejectNotes("");
     } catch (err) {
       setActionError(err?.message || "Não foi possível atualizar o item de qualidade.");
+    } finally {
+      setQualityBusyId(null);
     }
   }
 
@@ -1069,8 +1082,26 @@ export default function ObraDetalhePage({ params }) {
                       <Badge tone={QUALITY_STATUS_TONE[q.status]}>{QUALITY_STATUS_LABELS[q.status]}</Badge>
                       {q.status === "PENDING" ? (
                         <div className={styles.quickActions}>
-                          <Button size="sm" variant="secondary" onClick={() => handleQualityQuickAction(q, "OK")}>OK</Button>
-                          <Button size="sm" variant="danger" onClick={() => handleQualityQuickAction(q, "NOT_OK")}>Não OK</Button>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            loading={qualityBusyId === q.id}
+                            disabled={qualityBusyId === q.id}
+                            onClick={() => handleQualityQuickAction(q, "OK")}
+                          >
+                            OK
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="danger"
+                            disabled={qualityBusyId === q.id}
+                            onClick={() => {
+                              setQualityRejecting(q);
+                              setQualityRejectNotes("");
+                            }}
+                          >
+                            Não OK
+                          </Button>
                         </div>
                       ) : null}
                     </div>
@@ -1452,6 +1483,43 @@ export default function ObraDetalhePage({ params }) {
               ))}
             </Select>
           </FormField>
+        </div>
+      </Modal>
+
+      <Modal
+        open={!!qualityRejecting}
+        onClose={() => {
+          setQualityRejecting(null);
+          setQualityRejectNotes("");
+        }}
+        title="Marcar item como Não OK"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => { setQualityRejecting(null); setQualityRejectNotes(""); }}>Cancelar</Button>
+            <Button
+              variant="danger"
+              loading={qualityBusyId === qualityRejecting?.id}
+              disabled={!qualityRejectNotes.trim()}
+              onClick={() => handleQualityQuickAction(qualityRejecting, "NOT_OK", qualityRejectNotes.trim())}
+            >
+              Confirmar Não OK
+            </Button>
+          </>
+        }
+      >
+        <div className={styles.formGrid}>
+          <div className={styles.span2}>
+            <FormField label="Motivo / observação" htmlFor="m-quality-reject-notes" required helper="Obrigatório — explique o que foi encontrado para registrar no histórico do item.">
+              <textarea
+                id="m-quality-reject-notes"
+                className={styles.textarea}
+                value={qualityRejectNotes}
+                onChange={(e) => setQualityRejectNotes(e.target.value)}
+                placeholder="Ex: infiltração visível na parede leste, precisa de correção antes de prosseguir"
+                rows={4}
+              />
+            </FormField>
+          </div>
         </div>
       </Modal>
 
