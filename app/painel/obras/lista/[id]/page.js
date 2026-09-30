@@ -13,6 +13,7 @@ import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import FormField from "@/components/molecules/FormField/FormField";
 import Input from "@/components/atoms/Input/Input";
 import Select from "@/components/atoms/Select/Select";
+import Spinner from "@/components/atoms/Spinner/Spinner";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import {
   PROJECT_STATUS_LABELS,
@@ -22,12 +23,24 @@ import {
   STAGE_STATUS_TONE,
   QUALITY_STATUS_LABELS,
   QUALITY_STATUS_TONE,
+  BUDGET_STATUS_LABELS,
+  BUDGET_STATUS_TONE,
+  CHANGE_ORDER_STATUS_LABELS,
+  CHANGE_ORDER_STATUS_TONE,
+  CHANGE_ORDER_REASON_LABELS,
+  MATERIAL_REQUEST_STATUS_LABELS,
+  MATERIAL_REQUEST_STATUS_TONE,
+  NONCONFORMITY_SEVERITY_LABELS,
+  NONCONFORMITY_SEVERITY_TONE,
+  NONCONFORMITY_STATUS_LABELS,
+  NONCONFORMITY_STATUS_TONE,
 } from "@/lib/mock/construction";
 import {
   getProject,
   updateProject,
   transitionProject,
   removeProject,
+  deliverProject,
   listProjectStages,
   createProjectStage,
   updateProjectStage,
@@ -39,10 +52,24 @@ import {
   listQualityItems,
   createQualityItem,
   checkQualityItem,
+  listBudgets,
+  createBudget,
+  approveBudget,
+  listChangeOrders,
+  createChangeOrder,
+  decideChangeOrder,
+  getProjectHealth,
+  listMaterialRequests,
+  createMaterialRequest,
+  receiveMaterialRequest,
+  listNonconformities,
+  createNonconformity,
+  closeNonconformity,
 } from "@/lib/api/construction";
 import { listProperties } from "@/lib/api/properties";
+import { uploadFile } from "@/lib/api/legal";
 import { apiFetch } from "@/lib/api/client";
-import { formatBRL, formatDate, dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
+import { formatBRL, formatDate, formatDateTime, dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
 import styles from "./page.module.css";
 
 const WEATHER_OPTIONS = ["Ensolarado", "Nublado", "Chuvoso", "Ventania"];
@@ -90,6 +117,57 @@ export default function ObraDetalhePage({ params }) {
   const [qualityForm, setQualityForm] = useState({ item: "", projectStageId: "" });
   const [savingQuality, setSavingQuality] = useState(false);
 
+  const [budget, setBudget] = useState(null);
+  const [creatingBudget, setCreatingBudget] = useState(false);
+  const [approveBudgetOpen, setApproveBudgetOpen] = useState(false);
+  const [approvingBudget, setApprovingBudget] = useState(false);
+
+  const [changeOrders, setChangeOrders] = useState([]);
+  const [coOpen, setCoOpen] = useState(false);
+  const [coForm, setCoForm] = useState({ reasonCode: "", description: "", budgetImpact: "", scheduleImpactDays: "", file: null });
+  const [savingCo, setSavingCo] = useState(false);
+  const [decidingCoId, setDecidingCoId] = useState(null);
+
+  const [health, setHealth] = useState(null);
+  const [healthError, setHealthError] = useState("");
+
+  const [materialRequests, setMaterialRequests] = useState([]);
+  const [materialOpen, setMaterialOpen] = useState(false);
+  const [materialForm, setMaterialForm] = useState({ description: "", quantity: "", unit: "" });
+  const [savingMaterial, setSavingMaterial] = useState(false);
+  const [receivingMaterialId, setReceivingMaterialId] = useState(null);
+
+  // Não conformidades (M6-13/M6-24/M6-38/M6-62/M6-86).
+  const [nonconformities, setNonconformities] = useState([]);
+  const [ncOpen, setNcOpen] = useState(false);
+  const [ncForm, setNcForm] = useState({
+    description: "",
+    severity: "MEDIUM",
+    responsibleUserId: "",
+    slaDueAt: "",
+    requiresAcceptance: false,
+    beforeFileId: "",
+    beforeFileName: "",
+  });
+  const [ncBeforeUploading, setNcBeforeUploading] = useState(false);
+  const [ncBeforeUploadError, setNcBeforeUploadError] = useState("");
+  const [savingNc, setSavingNc] = useState(false);
+
+  // Modal de fechamento de NC — REGRA FAIL-CLOSED replicada aqui: o botão de confirmar só
+  // habilita depois que a evidência "depois" terminar de subir com sucesso (mesma regra que
+  // o backend aplica em nonconformities.service.js closeNonconformity).
+  const [closingNc, setClosingNc] = useState(null);
+  const [ncAfterFileId, setNcAfterFileId] = useState("");
+  const [ncAfterFileName, setNcAfterFileName] = useState("");
+  const [ncAfterUploading, setNcAfterUploading] = useState(false);
+  const [ncAfterUploadError, setNcAfterUploadError] = useState("");
+  const [ncAcceptedByUserId, setNcAcceptedByUserId] = useState("");
+  const [savingNcClose, setSavingNcClose] = useState(false);
+
+  // Entrega da obra — gate dedicado (bloqueia com NC crítica aberta).
+  const [delivering, setDelivering] = useState(false);
+  const [deliveryBlocked, setDeliveryBlocked] = useState(false);
+
   function load() {
     let cancelled = false;
     setLoading(true);
@@ -115,12 +193,20 @@ export default function ObraDetalhePage({ params }) {
           listDailyReports(p.id),
           listBudgetLines(p.id),
           listQualityItems(p.id),
-        ]).then(([st, rd, bl, qi]) => {
+          listBudgets(p.id),
+          listChangeOrders(p.id),
+          listMaterialRequests(p.id),
+          listNonconformities(p.id),
+        ]).then(([st, rd, bl, qi, budgets, cos, mr, ncs]) => {
           if (cancelled) return;
           setStages(st || []);
           setReports((rd || []).slice(0, 5));
           setBudgetLines(bl || []);
           setQualityItems(qi || []);
+          setBudget((budgets || [])[0] || null);
+          setChangeOrders(cos || []);
+          setMaterialRequests(mr || []);
+          setNonconformities(ncs || []);
         });
       })
       .catch((err) => {
@@ -133,6 +219,18 @@ export default function ObraDetalhePage({ params }) {
       cancelled = true;
     };
   }
+
+  function loadHealth() {
+    setHealthError("");
+    getProjectHealth(params.id)
+      .then((h) => setHealth(h || null))
+      .catch((err) => setHealthError(err?.message || "Não foi possível carregar a saúde da obra."));
+  }
+
+  useEffect(() => {
+    loadHealth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.id]);
 
   useEffect(() => {
     const cancel = load();
@@ -345,6 +443,7 @@ export default function ObraDetalhePage({ params }) {
         category: budgetForm.category.trim(),
         description: budgetForm.description.trim() || undefined,
         plannedAmount: Number(budgetForm.plannedAmount),
+        budgetId: budget?.id || undefined,
       });
       setBudgetLines((prev) => [...prev, created]);
       setBudgetOpen(false);
@@ -352,6 +451,87 @@ export default function ObraDetalhePage({ params }) {
       setActionError(err?.message || "Não foi possível criar a linha de orçamento.");
     } finally {
       setSavingBudget(false);
+    }
+  }
+
+  async function handleCreateBudget() {
+    setCreatingBudget(true);
+    setActionError("");
+    try {
+      const created = await createBudget(project.id);
+      setBudget(created);
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível criar o orçamento agregado.");
+    } finally {
+      setCreatingBudget(false);
+    }
+  }
+
+  async function handleApproveBudget() {
+    if (!budget) return;
+    setApprovingBudget(true);
+    setActionError("");
+    try {
+      const updated = await approveBudget(budget.id);
+      setBudget(updated);
+      setApproveBudgetOpen(false);
+      loadHealth();
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível aprovar o orçamento.");
+    } finally {
+      setApprovingBudget(false);
+    }
+  }
+
+  function openChangeOrderModal() {
+    setCoForm({ reasonCode: "", description: "", budgetImpact: "", scheduleImpactDays: "", file: null });
+    setCoOpen(true);
+  }
+
+  const isChangeOrderValid =
+    coForm.reasonCode !== "" && coForm.description.trim() !== "" && coForm.budgetImpact !== "" && !Number.isNaN(Number(coForm.budgetImpact));
+
+  async function handleCreateChangeOrder() {
+    if (!isChangeOrderValid) return;
+    setSavingCo(true);
+    setActionError("");
+    try {
+      let evidenceFileIds;
+      if (coForm.file) {
+        const uploaded = await uploadFile(coForm.file);
+        evidenceFileIds = [uploaded.id];
+      }
+      const created = await createChangeOrder(project.id, {
+        reasonCode: coForm.reasonCode,
+        description: coForm.description.trim(),
+        budgetImpact: Number(coForm.budgetImpact),
+        scheduleImpactDays: coForm.scheduleImpactDays !== "" ? Number(coForm.scheduleImpactDays) : undefined,
+        evidenceFileIds,
+      });
+      setChangeOrders((prev) => [created, ...prev]);
+      setCoOpen(false);
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível criar o Change Order.");
+    } finally {
+      setSavingCo(false);
+    }
+  }
+
+  async function handleDecideChangeOrder(changeOrder, decision) {
+    setDecidingCoId(changeOrder.id);
+    setActionError("");
+    try {
+      const updated = await decideChangeOrder(changeOrder.id, decision);
+      setChangeOrders((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+      if (decision === "APPROVE") {
+        const [budgets] = await Promise.all([listBudgets(project.id)]);
+        setBudget((budgets || [])[0] || null);
+        loadHealth();
+      }
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível decidir o Change Order.");
+    } finally {
+      setDecidingCoId(null);
     }
   }
 
@@ -377,6 +557,160 @@ export default function ObraDetalhePage({ params }) {
     }
   }
 
+  function openMaterialModal() {
+    setMaterialForm({ description: "", quantity: "", unit: "" });
+    setMaterialOpen(true);
+  }
+  async function handleCreateMaterialRequest() {
+    if (!materialForm.description.trim() || materialForm.quantity === "" || Number(materialForm.quantity) <= 0 || !materialForm.unit.trim()) return;
+    setSavingMaterial(true);
+    setActionError("");
+    try {
+      const created = await createMaterialRequest(project.id, {
+        description: materialForm.description.trim(),
+        quantity: Number(materialForm.quantity),
+        unit: materialForm.unit.trim(),
+      });
+      setMaterialRequests((prev) => [created, ...prev]);
+      setMaterialOpen(false);
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível criar a requisição de material.");
+    } finally {
+      setSavingMaterial(false);
+    }
+  }
+  async function handleReceiveMaterialRequest(request) {
+    if (receivingMaterialId) return;
+    setReceivingMaterialId(request.id);
+    setActionError("");
+    try {
+      const updated = await receiveMaterialRequest(request.id);
+      setMaterialRequests((prev) => prev.map((m) => (m.id === updated.id ? updated : m)));
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível marcar a requisição como recebida.");
+    } finally {
+      setReceivingMaterialId(null);
+    }
+  }
+
+  function openNcModal() {
+    setNcForm({
+      description: "",
+      severity: "MEDIUM",
+      responsibleUserId: "",
+      slaDueAt: "",
+      requiresAcceptance: false,
+      beforeFileId: "",
+      beforeFileName: "",
+    });
+    setNcBeforeUploadError("");
+    setNcOpen(true);
+  }
+
+  async function handleUploadBeforeEvidence(file) {
+    if (!file) return;
+    setNcBeforeUploading(true);
+    setNcBeforeUploadError("");
+    try {
+      const uploaded = await uploadFile(file);
+      setNcForm((p) => ({ ...p, beforeFileId: uploaded.id, beforeFileName: file.name }));
+    } catch (err) {
+      setNcBeforeUploadError(err?.message || "Erro ao enviar evidência.");
+    } finally {
+      setNcBeforeUploading(false);
+    }
+  }
+
+  async function handleCreateNonconformity() {
+    if (!ncForm.description.trim()) return;
+    setSavingNc(true);
+    setActionError("");
+    try {
+      const created = await createNonconformity(project.id, {
+        description: ncForm.description.trim(),
+        severity: ncForm.severity,
+        responsibleUserId: ncForm.responsibleUserId || undefined,
+        slaDueAt: dateOnlyInputToIso(ncForm.slaDueAt) || undefined,
+        requiresAcceptance: ncForm.requiresAcceptance,
+        beforeEvidenceFileIds: ncForm.beforeFileId ? [ncForm.beforeFileId] : [],
+      });
+      setNonconformities((prev) => [created, ...prev]);
+      setNcOpen(false);
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível registrar a não conformidade.");
+    } finally {
+      setSavingNc(false);
+    }
+  }
+
+  function openCloseNcModal(nc) {
+    setClosingNc(nc);
+    setNcAfterFileId("");
+    setNcAfterFileName("");
+    setNcAfterUploadError("");
+    setNcAcceptedByUserId("");
+  }
+
+  async function handleUploadAfterEvidence(file) {
+    if (!file) return;
+    setNcAfterUploading(true);
+    setNcAfterUploadError("");
+    try {
+      const uploaded = await uploadFile(file);
+      setNcAfterFileId(uploaded.id);
+      setNcAfterFileName(file.name);
+    } catch (err) {
+      setNcAfterUploadError(err?.message || "Erro ao enviar evidência.");
+    } finally {
+      setNcAfterUploading(false);
+    }
+  }
+
+  // REGRA FAIL-CLOSED replicada na UI (não só confiar no erro 422 da API): o botão de
+  // confirmar fechamento fica desabilitado até existir uma evidência "depois" já enviada
+  // (ncAfterFileId preenchido) e, se a NC exigir aceite, até um responsável pelo aceite ser
+  // selecionado. Mesmas duas condições de nonconformities.service.js closeNonconformity.
+  async function handleCloseNonconformity() {
+    if (!closingNc || !ncAfterFileId) return;
+    if (closingNc.requiresAcceptance && !ncAcceptedByUserId) return;
+    setSavingNcClose(true);
+    setActionError("");
+    try {
+      const updated = await closeNonconformity(closingNc.id, {
+        afterEvidenceFileIds: [ncAfterFileId],
+        acceptedByUserId: ncAcceptedByUserId || undefined,
+      });
+      setNonconformities((prev) => prev.map((n) => (n.id === updated.id ? updated : n)));
+      setClosingNc(null);
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível fechar a não conformidade.");
+    } finally {
+      setSavingNcClose(false);
+    }
+  }
+
+  // Entrega da obra (M6-25/...) — se a API recusar por NC crítica em aberto, mostramos um
+  // aviso com link direto pra seção de Não Conformidades desta mesma tela, nunca o código de
+  // erro técnico cru.
+  async function handleDeliver() {
+    if (delivering) return;
+    setDelivering(true);
+    setActionError("");
+    setDeliveryBlocked(false);
+    try {
+      const updated = await deliverProject(project.id);
+      setProject(updated);
+    } catch (err) {
+      if (err?.code === "PROJECT_DELIVERY_BLOCKED_BY_CRITICAL_NONCONFORMITY") {
+        setDeliveryBlocked(true);
+      } else {
+        setActionError(err?.message || "Não foi possível entregar a obra.");
+      }
+    } finally {
+      setDelivering(false);
+    }
+  }
+
   const totalPlanned = budgetLines.reduce((s, b) => s + Number(b.plannedAmount || 0), 0);
   const totalActual = budgetLines.reduce((s, b) => s + Number(b.actualAmount || 0), 0);
 
@@ -384,6 +718,15 @@ export default function ObraDetalhePage({ params }) {
     <AppShell title={project.name} backHref="/painel/obras/lista">
       <div className={styles.wrap}>
         {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
+        {deliveryBlocked ? (
+          <Alert tone="danger" title="Entrega bloqueada">
+            Não é possível entregar a obra: existe pelo menos uma não conformidade{" "}
+            <strong>crítica em aberto</strong> vinculada a este projeto. Resolva e feche a(s)
+            pendência(s) na seção{" "}
+            <a href="#nao-conformidades" className={styles.infoLink}>Não Conformidades</a>{" "}
+            abaixo antes de tentar entregar novamente.
+          </Alert>
+        ) : null}
 
         <div className={styles.topRow}>
           <div className={styles.badges}>
@@ -396,6 +739,11 @@ export default function ObraDetalhePage({ params }) {
                   <Icon name="arrowUpCircle" size={16} /> {PROJECT_STATUS_LABELS[status]}
                 </Button>
               ))
+            ) : null}
+            {project.status === "COMPLETED" ? (
+              <Button variant="primary" onClick={handleDeliver} loading={delivering} disabled={delivering}>
+                <Icon name="check" size={16} /> Entregar obra
+              </Button>
             ) : null}
             <Button variant="secondary" onClick={openEditModal}>
               <Icon name="pencil" size={16} /> Editar
@@ -433,6 +781,79 @@ export default function ObraDetalhePage({ params }) {
               <p className={styles.infoValue}>{formatDate(project.endsAtPlanned)}</p>
             </div>
           </div>
+        </Card>
+
+        <Card title="Saúde da obra" subtitle="Read model de custo e progresso (calculado em tempo real)">
+          {healthError ? (
+            <Alert tone="danger">{healthError}</Alert>
+          ) : !health ? (
+            <p className={styles.infoLabel}>Carregando…</p>
+          ) : (
+            <>
+              <div className={styles.infoGrid}>
+                <div>
+                  <p className={styles.infoLabel}>Orçamento base (baseline)</p>
+                  <p className={styles.infoValue}>{formatBRL(health.baselineBudget)}</p>
+                </div>
+                <div>
+                  <p className={styles.infoLabel}>Mudanças aprovadas</p>
+                  <p className={styles.infoValue}>{formatBRL(health.approvedChanges)}</p>
+                </div>
+                <div>
+                  <p className={styles.infoLabel}>Custo comprometido</p>
+                  <p className={styles.infoValue}>{formatBRL(health.committedCost)}</p>
+                </div>
+                <div>
+                  <p className={styles.infoLabel}>Custo financeiro realizado</p>
+                  <p className={styles.infoValue}>{formatBRL(health.actualFinancialCost)}</p>
+                </div>
+                <div>
+                  <p className={styles.infoLabel}>Custo de estoque consumido</p>
+                  <p className={styles.infoValue}>{formatBRL(health.consumedInventoryCost)}</p>
+                </div>
+                <div>
+                  <p className={styles.infoLabel}>Previsão para concluir</p>
+                  <p className={styles.infoValue}>{formatBRL(health.forecastToComplete)}</p>
+                </div>
+                <div>
+                  <p className={styles.infoLabel}>Custo total projetado</p>
+                  <p className={styles.infoValue}>{formatBRL(health.projectedTotalCost)}</p>
+                </div>
+                <div>
+                  <p className={styles.infoLabel}>Margem projetada</p>
+                  <p className={styles.infoValue}>{formatBRL(health.projectedMargin)}</p>
+                </div>
+                <div>
+                  <p className={styles.infoLabel}>Atualizado em</p>
+                  <p className={styles.infoValue}>{formatDateTime(health.updatedAt)}</p>
+                </div>
+              </div>
+              <div className={styles.infoGrid} style={{ marginTop: "var(--space-4)" }}>
+                <div>
+                  <p className={styles.infoLabel}>Progresso físico medido</p>
+                  <p className={styles.infoValue}>{health.kpis?.physicalProgressPct != null ? `${health.kpis.physicalProgressPct}%` : "—"}</p>
+                </div>
+                <div>
+                  <p className={styles.infoLabel}>Progresso planejado</p>
+                  <p className={styles.infoValue}>{health.kpis?.plannedProgressPct != null ? `${health.kpis.plannedProgressPct}%` : "—"}</p>
+                </div>
+                <div>
+                  <p className={styles.infoLabel}>Progresso do cronograma</p>
+                  <p className={styles.infoValue}>{health.kpis?.scheduleProgressPct != null ? `${health.kpis.scheduleProgressPct}%` : "—"}</p>
+                </div>
+                <div>
+                  <p className={styles.infoLabel}>Situação de prazo</p>
+                  <p className={styles.infoValue}>
+                    {health.kpis?.isOverdue ? `Atrasada (${health.kpis?.scheduleDelayDays ?? 0} dias)` : "Em dia"}
+                  </p>
+                </div>
+                <div>
+                  <p className={styles.infoLabel}>Contas a pagar pendentes</p>
+                  <p className={styles.infoValue}>{formatBRL(health.kpis?.payablePendingTotal)}</p>
+                </div>
+              </div>
+            </>
+          )}
         </Card>
 
         <Card
@@ -509,10 +930,38 @@ export default function ObraDetalhePage({ params }) {
         <Card
           title="Orçamento"
           subtitle="Linhas de orçamento por categoria"
-          actions={<Button size="sm" variant="secondary" onClick={openBudgetModal}>
-            <Icon name="plus" size={14} /> Nova linha de orçamento
-          </Button>}
+          actions={
+            <div className={styles.quickActions}>
+              {!budget ? (
+                <Button size="sm" variant="secondary" onClick={handleCreateBudget} loading={creatingBudget}>
+                  <Icon name="plus" size={14} /> Criar orçamento agregado
+                </Button>
+              ) : budget.status === "DRAFT" ? (
+                <Button size="sm" variant="primary" onClick={() => setApproveBudgetOpen(true)}>
+                  <Icon name="check" size={14} /> Aprovar orçamento
+                </Button>
+              ) : null}
+              <Button size="sm" variant="secondary" onClick={openBudgetModal} disabled={budget?.status === "APPROVED"}>
+                <Icon name="plus" size={14} /> Nova linha de orçamento
+              </Button>
+            </div>
+          }
         >
+          {budget ? (
+            <div className={styles.rowStatic} style={{ marginBottom: "var(--space-3)" }}>
+              <div className={styles.rowInfo}>
+                <span className={styles.rowTitle}>Orçamento agregado</span>
+                <span className={styles.rowSubtitle}>
+                  {budget.status === "APPROVED"
+                    ? `Baseline congelada em ${formatBRL(budget.baselineAmount)} — valores das linhas bloqueados (só alteram via Change Order aprovado).`
+                    : "Ainda em rascunho — valores das linhas podem ser ajustados livremente até a aprovação."}
+                </span>
+              </div>
+              <Badge tone={BUDGET_STATUS_TONE[budget.status]}>{BUDGET_STATUS_LABELS[budget.status] || budget.status}</Badge>
+            </div>
+          ) : (
+            <Alert tone="info">Esta obra ainda não tem um orçamento agregado — crie um para poder aprovar a baseline e usar Change Orders.</Alert>
+          )}
           {budgetLines.length === 0 ? (
             <EmptyState icon="money" title="Sem linhas de orçamento" description="Nenhuma linha de orçamento cadastrada para esta obra." />
           ) : (
@@ -531,7 +980,12 @@ export default function ObraDetalhePage({ params }) {
                     <tr key={b.id}>
                       <td>{b.category}</td>
                       <td>{b.description || "—"}</td>
-                      <td>{formatBRL(b.plannedAmount)}</td>
+                      <td>
+                        {formatBRL(b.plannedAmount)}
+                        {budget?.status === "APPROVED" && b.budgetId === budget.id ? (
+                          <Icon name="key" size={12} style={{ marginLeft: "var(--space-1)" }} />
+                        ) : null}
+                      </td>
                       <td>{formatBRL(b.actualAmount)}</td>
                     </tr>
                   ))}
@@ -544,6 +998,48 @@ export default function ObraDetalhePage({ params }) {
                   </tr>
                 </tfoot>
               </table>
+            </div>
+          )}
+        </Card>
+
+        <Card
+          title="Change Orders"
+          subtitle="Mudanças de escopo/prazo/custo — só alteram a baseline aprovada quando decididas"
+          actions={
+            <Button size="sm" variant="secondary" onClick={openChangeOrderModal} disabled={!budget}>
+              <Icon name="plus" size={14} /> Novo Change Order
+            </Button>
+          }
+        >
+          {!budget ? (
+            <EmptyState icon="document" title="Sem orçamento" description="Crie o orçamento agregado da obra antes de registrar Change Orders." />
+          ) : changeOrders.length === 0 ? (
+            <EmptyState icon="document" title="Sem Change Orders" description="Nenhum Change Order registrado para esta obra." />
+          ) : (
+            <div className={styles.rowList}>
+              {changeOrders.map((co) => (
+                <div key={co.id} className={styles.rowStatic}>
+                  <div className={styles.rowInfo}>
+                    <span className={styles.rowTitle}>
+                      {CHANGE_ORDER_REASON_LABELS[co.reasonCode] || co.reasonCode} · {formatBRL(co.budgetImpact)}
+                      {co.scheduleImpactDays ? ` · ${co.scheduleImpactDays} dia(s) de prazo` : ""}
+                    </span>
+                    <span className={styles.rowSubtitle}>{co.description}</span>
+                    {co.evidenceFileIds?.length ? (
+                      <span className={styles.rowSubtitle}>{co.evidenceFileIds.length} evidência(s) anexada(s)</span>
+                    ) : null}
+                  </div>
+                  <div className={styles.rowRight}>
+                    <Badge tone={CHANGE_ORDER_STATUS_TONE[co.status]}>{CHANGE_ORDER_STATUS_LABELS[co.status] || co.status}</Badge>
+                    {co.status === "PENDING_APPROVAL" ? (
+                      <div className={styles.quickActions}>
+                        <Button size="sm" variant="secondary" onClick={() => handleDecideChangeOrder(co, "APPROVE")} loading={decidingCoId === co.id}>Aprovar</Button>
+                        <Button size="sm" variant="danger" onClick={() => handleDecideChangeOrder(co, "REJECT")} loading={decidingCoId === co.id}>Rejeitar</Button>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </Card>
@@ -584,6 +1080,87 @@ export default function ObraDetalhePage({ params }) {
             </div>
           )}
         </Card>
+
+        <Card
+          title="Requisições de material"
+          subtitle="Materiais solicitados para a obra"
+          actions={<Button size="sm" variant="secondary" onClick={openMaterialModal}>
+            <Icon name="plus" size={14} /> Nova requisição
+          </Button>}
+        >
+          {materialRequests.length === 0 ? (
+            <EmptyState icon="arrowDownCircle" title="Sem requisições" description="Nenhuma requisição de material registrada para esta obra." />
+          ) : (
+            <div className={styles.rowList}>
+              {materialRequests.map((m) => (
+                <div key={m.id} className={styles.rowStatic}>
+                  <div className={styles.rowInfo}>
+                    <span className={styles.rowTitle}>{m.description}</span>
+                    <span className={styles.rowSubtitle}>
+                      {m.quantity} {m.unit}
+                      {m.status === "RECEIVED" && m.receivedAt ? ` · Recebido em ${formatDate(m.receivedAt)}` : ""}
+                    </span>
+                  </div>
+                  <div className={styles.rowRight}>
+                    <Badge tone={MATERIAL_REQUEST_STATUS_TONE[m.status]}>{MATERIAL_REQUEST_STATUS_LABELS[m.status] || m.status}</Badge>
+                    {m.status === "REQUESTED" ? (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => handleReceiveMaterialRequest(m)}
+                        loading={receivingMaterialId === m.id}
+                        disabled={receivingMaterialId !== null && receivingMaterialId !== m.id}
+                      >
+                        Marcar como recebido
+                      </Button>
+                    ) : null}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+
+        <div id="nao-conformidades">
+        <Card
+          title="Não Conformidades"
+          subtitle="Ocorrências de qualidade/segurança em aberto ou fechadas"
+          actions={<Button size="sm" variant="secondary" onClick={openNcModal}>
+            <Icon name="plus" size={14} /> Nova não conformidade
+          </Button>}
+        >
+          {nonconformities.length === 0 ? (
+            <EmptyState icon="shield" title="Sem não conformidades" description="Nenhuma não conformidade registrada para esta obra." />
+          ) : (
+            <div className={styles.rowList}>
+              {nonconformities.map((nc) => {
+                const respUser = nc.responsibleUserId ? users.find((u) => u.id === nc.responsibleUserId) : null;
+                return (
+                  <div key={nc.id} className={styles.rowStatic}>
+                    <div className={styles.rowInfo}>
+                      <span className={styles.rowTitle}>{nc.description}</span>
+                      <span className={styles.rowSubtitle}>
+                        {respUser ? `Responsável: ${respUser.name}` : "Sem responsável definido"}
+                        {nc.slaDueAt ? ` · Prazo: ${formatDate(nc.slaDueAt)}` : ""}
+                        {nc.requiresAcceptance ? " · Exige aceite para fechar" : ""}
+                      </span>
+                    </div>
+                    <div className={styles.rowRight}>
+                      <Badge tone={NONCONFORMITY_SEVERITY_TONE[nc.severity]}>{NONCONFORMITY_SEVERITY_LABELS[nc.severity] || nc.severity}</Badge>
+                      <Badge tone={NONCONFORMITY_STATUS_TONE[nc.status]}>{NONCONFORMITY_STATUS_LABELS[nc.status] || nc.status}</Badge>
+                      {nc.status === "OPEN" ? (
+                        <Button size="sm" variant="secondary" onClick={() => openCloseNcModal(nc)}>
+                          Fechar
+                        </Button>
+                      ) : null}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </Card>
+        </div>
       </div>
 
       <Modal
@@ -783,6 +1360,74 @@ export default function ObraDetalhePage({ params }) {
       </Modal>
 
       <Modal
+        open={approveBudgetOpen}
+        onClose={() => setApproveBudgetOpen(false)}
+        title="Aprovar orçamento"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setApproveBudgetOpen(false)}>Cancelar</Button>
+            <Button variant="primary" onClick={handleApproveBudget} loading={approvingBudget}>Confirmar aprovação</Button>
+          </>
+        }
+      >
+        <p>
+          Tem certeza que deseja aprovar este orçamento? A baseline será <strong>congelada</strong> em{" "}
+          <strong>{formatBRL(totalPlanned)}</strong> e passa a ser <strong>imutável</strong> — depois disso, o valor
+          das linhas de orçamento só pode mudar através de um Change Order aprovado. Esta ação não pode ser desfeita.
+        </p>
+      </Modal>
+
+      <Modal
+        open={coOpen}
+        onClose={() => setCoOpen(false)}
+        title="Novo Change Order"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setCoOpen(false)}>Cancelar</Button>
+            <Button onClick={handleCreateChangeOrder} loading={savingCo} disabled={!isChangeOrderValid}>Criar Change Order</Button>
+          </>
+        }
+      >
+        <div className={styles.formGrid}>
+          <FormField label="Motivo" htmlFor="m-co-reason" required>
+            <Select id="m-co-reason" value={coForm.reasonCode} onChange={(e) => setCoForm((p) => ({ ...p, reasonCode: e.target.value }))}>
+              <option value="">Selecione…</option>
+              {Object.entries(CHANGE_ORDER_REASON_LABELS).map(([code, label]) => (
+                <option key={code} value={code}>{label}</option>
+              ))}
+            </Select>
+          </FormField>
+          <FormField label="Impacto financeiro (R$)" htmlFor="m-co-impact" required helper="Positivo aumenta o orçamento, negativo reduz">
+            <Input id="m-co-impact" type="number" step="0.01" value={coForm.budgetImpact} onChange={(e) => setCoForm((p) => ({ ...p, budgetImpact: e.target.value }))} placeholder="0,00" />
+          </FormField>
+          <FormField label="Impacto de prazo (dias)" htmlFor="m-co-schedule" helper="Opcional">
+            <Input id="m-co-schedule" type="number" value={coForm.scheduleImpactDays} onChange={(e) => setCoForm((p) => ({ ...p, scheduleImpactDays: e.target.value }))} placeholder="0" />
+          </FormField>
+          <div className={styles.span2}>
+            <FormField label="Descrição" htmlFor="m-co-description" required>
+              <textarea
+                id="m-co-description"
+                className={styles.textarea}
+                rows={3}
+                value={coForm.description}
+                onChange={(e) => setCoForm((p) => ({ ...p, description: e.target.value }))}
+                placeholder="Detalhe a mudança de escopo/condição que motiva este Change Order"
+              />
+            </FormField>
+          </div>
+          <div className={styles.span2}>
+            <FormField label="Evidência" htmlFor="m-co-file" helper="Opcional — foto, documento ou planilha que sustente o pedido">
+              <input
+                id="m-co-file"
+                type="file"
+                onChange={(e) => setCoForm((p) => ({ ...p, file: e.target.files?.[0] || null }))}
+              />
+            </FormField>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
         open={qualityOpen}
         onClose={() => setQualityOpen(false)}
         title="Novo item de checklist"
@@ -807,6 +1452,176 @@ export default function ObraDetalhePage({ params }) {
               ))}
             </Select>
           </FormField>
+        </div>
+      </Modal>
+
+      <Modal
+        open={materialOpen}
+        onClose={() => setMaterialOpen(false)}
+        title="Nova requisição de material"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setMaterialOpen(false)}>Cancelar</Button>
+            <Button
+              onClick={handleCreateMaterialRequest}
+              loading={savingMaterial}
+              disabled={!materialForm.description.trim() || materialForm.quantity === "" || Number(materialForm.quantity) <= 0 || !materialForm.unit.trim()}
+            >
+              Criar requisição
+            </Button>
+          </>
+        }
+      >
+        <div className={styles.formGrid}>
+          <div className={styles.span2}>
+            <FormField label="Descrição do material" htmlFor="m-material-description" required>
+              <Input id="m-material-description" value={materialForm.description} onChange={(e) => setMaterialForm((p) => ({ ...p, description: e.target.value }))} placeholder="Ex: Cimento CP-II 50kg" />
+            </FormField>
+          </div>
+          <FormField label="Quantidade" htmlFor="m-material-quantity" required>
+            <Input id="m-material-quantity" type="number" min="0.001" step="0.001" value={materialForm.quantity} onChange={(e) => setMaterialForm((p) => ({ ...p, quantity: e.target.value }))} />
+          </FormField>
+          <FormField label="Unidade" htmlFor="m-material-unit" required>
+            <Input id="m-material-unit" value={materialForm.unit} onChange={(e) => setMaterialForm((p) => ({ ...p, unit: e.target.value }))} placeholder="Ex: un, kg, m2, saco" />
+          </FormField>
+        </div>
+      </Modal>
+
+      <Modal
+        open={ncOpen}
+        onClose={() => setNcOpen(false)}
+        title="Nova não conformidade"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setNcOpen(false)}>Cancelar</Button>
+            <Button onClick={handleCreateNonconformity} loading={savingNc} disabled={!ncForm.description.trim()}>
+              Registrar
+            </Button>
+          </>
+        }
+      >
+        <div className={styles.formGrid}>
+          <div className={styles.span2}>
+            <FormField label="Descrição" htmlFor="m-nc-description" required>
+              <textarea
+                id="m-nc-description"
+                className={styles.textarea}
+                rows={3}
+                value={ncForm.description}
+                onChange={(e) => setNcForm((p) => ({ ...p, description: e.target.value }))}
+                placeholder="Descreva a não conformidade encontrada"
+              />
+            </FormField>
+          </div>
+          <FormField label="Severidade" htmlFor="m-nc-severity" required>
+            <Select id="m-nc-severity" value={ncForm.severity} onChange={(e) => setNcForm((p) => ({ ...p, severity: e.target.value }))}>
+              {Object.entries(NONCONFORMITY_SEVERITY_LABELS).map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </Select>
+          </FormField>
+          <FormField label="Responsável" htmlFor="m-nc-responsible" helper="Opcional">
+            <Select id="m-nc-responsible" value={ncForm.responsibleUserId} onChange={(e) => setNcForm((p) => ({ ...p, responsibleUserId: e.target.value }))}>
+              <option value="">Sem responsável</option>
+              {users.map((u) => (
+                <option key={u.id} value={u.id}>{u.name}</option>
+              ))}
+            </Select>
+          </FormField>
+          <FormField label="Prazo (SLA)" htmlFor="m-nc-sla" helper="Opcional">
+            <Input
+              id="m-nc-sla"
+              type="date"
+              min="1900-01-01"
+              max="2100-12-31"
+              value={ncForm.slaDueAt}
+              onChange={(e) => setNcForm((p) => ({ ...p, slaDueAt: e.target.value }))}
+            />
+          </FormField>
+          <FormField label="Exige aceite para fechar?" htmlFor="m-nc-requires-acceptance">
+            <Select
+              id="m-nc-requires-acceptance"
+              value={ncForm.requiresAcceptance ? "yes" : "no"}
+              onChange={(e) => setNcForm((p) => ({ ...p, requiresAcceptance: e.target.value === "yes" }))}
+            >
+              <option value="no">Não</option>
+              <option value="yes">Sim</option>
+            </Select>
+          </FormField>
+          <div className={styles.span2}>
+            <FormField
+              label="Evidência 'antes'"
+              htmlFor="m-nc-before-file"
+              helper={ncForm.beforeFileName ? `Enviado: ${ncForm.beforeFileName}` : "Foto do problema encontrado (opcional)."}
+              error={ncBeforeUploadError || undefined}
+            >
+              <input
+                id="m-nc-before-file"
+                type="file"
+                accept="image/*,application/pdf"
+                disabled={ncBeforeUploading}
+                onChange={(e) => handleUploadBeforeEvidence(e.target.files?.[0])}
+              />
+              {ncBeforeUploading ? <Spinner size="sm" /> : null}
+            </FormField>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        open={Boolean(closingNc)}
+        onClose={() => setClosingNc(null)}
+        title="Fechar não conformidade"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setClosingNc(null)}>Cancelar</Button>
+            <Button
+              onClick={handleCloseNonconformity}
+              loading={savingNcClose}
+              disabled={!ncAfterFileId || (closingNc?.requiresAcceptance && !ncAcceptedByUserId)}
+            >
+              Confirmar fechamento
+            </Button>
+          </>
+        }
+      >
+        <div className={styles.formGrid}>
+          <div className={styles.span2}>
+            <Alert tone="warning">
+              Para fechar esta não conformidade é obrigatório enviar uma evidência "depois" —
+              o botão de confirmar só habilita depois do envio ser concluído com sucesso.
+            </Alert>
+          </div>
+          <div className={styles.span2}>
+            <FormField
+              label="Evidência 'depois'"
+              htmlFor="m-nc-after-file"
+              helper={ncAfterFileName ? `Enviado: ${ncAfterFileName}` : "Foto comprovando a correção do problema — obrigatório."}
+              error={ncAfterUploadError || undefined}
+              required
+            >
+              <input
+                id="m-nc-after-file"
+                type="file"
+                accept="image/*,application/pdf"
+                disabled={ncAfterUploading}
+                onChange={(e) => handleUploadAfterEvidence(e.target.files?.[0])}
+              />
+              {ncAfterUploading ? <Spinner size="sm" /> : null}
+            </FormField>
+          </div>
+          {closingNc?.requiresAcceptance ? (
+            <div className={styles.span2}>
+              <FormField label="Aceite por" htmlFor="m-nc-accepted-by" helper="Esta NC exige aceite — obrigatório para fechar." required>
+                <Select id="m-nc-accepted-by" value={ncAcceptedByUserId} onChange={(e) => setNcAcceptedByUserId(e.target.value)}>
+                  <option value="">Selecione quem aceitou</option>
+                  {users.map((u) => (
+                    <option key={u.id} value={u.id}>{u.name}</option>
+                  ))}
+                </Select>
+              </FormField>
+            </div>
+          ) : null}
         </div>
       </Modal>
     </AppShell>
