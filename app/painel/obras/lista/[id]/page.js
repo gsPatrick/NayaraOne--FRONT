@@ -84,7 +84,7 @@ import { listCostCenters } from "@/lib/api/finance";
 import { listPeople } from "@/lib/api/people";
 import { uploadFile } from "@/lib/api/legal";
 import { apiFetch } from "@/lib/api/client";
-import { formatBRL, formatQuantity, formatDate, formatDateTime, dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
+import { formatBRL, formatQuantity, formatPercent, formatDate, formatDateTime, dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
 import styles from "./page.module.css";
 
 const WEATHER_OPTIONS = ["Ensolarado", "Nublado", "Chuvoso", "Ventania"];
@@ -1202,7 +1202,7 @@ export default function ObraDetalhePage({ params }) {
                   <div className={styles.rowInfo}>
                     <span className={styles.rowTitle}>{s.sequence}. {s.name}</span>
                     <span className={styles.rowSubtitle}>
-                      Planejado {s.plannedPct}% · Medido {s.measuredPct != null ? `${s.measuredPct}%` : "—"}
+                      Planejado {formatPercent(s.plannedPct)} · Medido {formatPercent(s.measuredPct)}
                     </span>
                   </div>
                   <Badge tone={STAGE_STATUS_TONE[s.status]}>{STAGE_STATUS_LABELS[s.status]}</Badge>
@@ -1405,6 +1405,13 @@ export default function ObraDetalhePage({ params }) {
                       <span className={styles.rowSubtitle}>
                         {checkedBy ? `Verificado por ${checkedBy.name}` : "Ainda não verificado"}
                       </span>
+                      {/* FIX (2ª varredura final do Front do Marco 6, 30/09/2026): o motivo
+                          digitado ao marcar "Não OK" era salvo (checkQualityItem já grava
+                          "notes"), mas nunca era exibido em lugar nenhum — ficava impossível
+                          saber por que um item foi reprovado depois que o modal fechava. */}
+                      {q.status === "NOT_OK" && q.notes ? (
+                        <span className={styles.rejectionReason}>Motivo: {q.notes}</span>
+                      ) : null}
                     </div>
                     <div className={styles.rowRight}>
                       <Badge tone={QUALITY_STATUS_TONE[q.status]}>{QUALITY_STATUS_LABELS[q.status]}</Badge>
@@ -1748,6 +1755,11 @@ export default function ObraDetalhePage({ params }) {
           </>
         }
       >
+        {/* FIX (2ª varredura final do Front do Marco 6, 30/09/2026): erro de submissão (ex.: 409
+            "já existe um RDO para esta obra nesta data e turno") só aparecia no Alert do topo da
+            página, fora da área visível de quem está com o modal aberto — o usuário não recebia
+            NENHUM feedback de que o registro falhou. Duplica o erro aqui dentro do modal. */}
+        {rdoOpen && actionError ? <Alert tone="danger">{actionError}</Alert> : null}
         <div className={styles.formGrid}>
           <FormField label="Data" htmlFor="m-rdo-date" required error={rdoDateInvalid ? DATE_INPUT_ERROR_MESSAGE : undefined}>
             <Input

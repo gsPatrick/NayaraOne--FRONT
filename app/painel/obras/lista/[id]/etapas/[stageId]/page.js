@@ -25,12 +25,14 @@ import {
   listProjectStages,
   listStageMeasurements,
   createStageMeasurement,
+  submitStageMeasurement,
+  reviewStageMeasurement,
   decideStageMeasurement,
   createStageDependency,
   listStageDependencies,
 } from "@/lib/api/construction";
 import { apiFetch } from "@/lib/api/client";
-import { formatDate, formatDateTime, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
+import { formatDate, formatDateTime, formatPercent, formatBRL, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function EtapaDetalhePage({ params }) {
@@ -52,6 +54,7 @@ export default function EtapaDetalhePage({ params }) {
     measuredPct: "",
     measuredAt: new Date().toISOString().slice(0, 10),
     notes: "",
+    totalAmount: "",
   });
   const [savingMeasurement, setSavingMeasurement] = useState(false);
   // FIX (homologação 23/09/2026): este useState estava declarado lá embaixo, DEPOIS dos
@@ -140,6 +143,32 @@ export default function EtapaDetalhePage({ params }) {
     );
   }
 
+  async function handleSubmit(measurement) {
+    setBusyId(measurement.id);
+    setActionError("");
+    try {
+      await submitStageMeasurement(measurement.id);
+      reloadStageAndMeasurements();
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível enviar a medição para revisão.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function handleReview(measurement) {
+    setBusyId(measurement.id);
+    setActionError("");
+    try {
+      await reviewStageMeasurement(measurement.id);
+      reloadStageAndMeasurements();
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível marcar a medição como revisada.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   async function handleApprove(measurement) {
     setBusyId(measurement.id);
     setActionError("");
@@ -193,7 +222,7 @@ export default function EtapaDetalhePage({ params }) {
   }
 
   function openMeasurementModal() {
-    setMeasurementForm({ measuredPct: "", measuredAt: new Date().toISOString().slice(0, 10), notes: "" });
+    setMeasurementForm({ measuredPct: "", measuredAt: new Date().toISOString().slice(0, 10), notes: "", totalAmount: "" });
     setMeasuredAtInvalid(false);
     setMeasurementOpen(true);
   }
@@ -214,6 +243,7 @@ export default function EtapaDetalhePage({ params }) {
         measuredPct: Number(measurementForm.measuredPct),
         measuredAt: measurementForm.measuredAt,
         notes: measurementForm.notes.trim() || undefined,
+        totalAmount: measurementForm.totalAmount !== "" ? Number(measurementForm.totalAmount) : undefined,
       });
       setMeasurementOpen(false);
       reloadStageAndMeasurements();
@@ -248,11 +278,11 @@ export default function EtapaDetalhePage({ params }) {
             </div>
             <div>
               <p className={styles.infoLabel}>Planejado</p>
-              <p className={styles.infoValue}>{stage.plannedPct}%</p>
+              <p className={styles.infoValue}>{formatPercent(stage.plannedPct)}</p>
             </div>
             <div>
               <p className={styles.infoLabel}>Medido</p>
-              <p className={styles.infoValue}>{stage.measuredPct != null ? `${stage.measuredPct}%` : "—"}</p>
+              <p className={styles.infoValue}>{formatPercent(stage.measuredPct)}</p>
             </div>
             <div>
               <p className={styles.infoLabel}>Início</p>
@@ -306,14 +336,14 @@ export default function EtapaDetalhePage({ params }) {
                 return (
                   <div key={m.id} className={styles.measurementRow}>
                     <div className={styles.rowInfo}>
-                      <span className={styles.rowTitle}>{formatDate(m.measuredAt)} · {m.measuredPct}%</span>
+                      <span className={styles.rowTitle}>{formatDate(m.measuredAt)} · {formatPercent(m.measuredPct)}</span>
                       <span className={styles.rowSubtitle}>
-                        Medido por {measuredBy?.name || "—"}
+                        Medido por {measuredBy?.name || "—"} · Valor: {formatBRL(m.totalAmount)}
                         {m.notes ? ` · ${m.notes}` : ""}
                       </span>
-                      {m.status !== "PENDING_APPROVAL" ? (
+                      {m.status === "PAYABLE" || m.status === "REJECTED" ? (
                         <span className={styles.rowSubtitle}>
-                          {m.status === "APPROVED" ? "Aprovada" : "Rejeitada"} por {decidedBy?.name || "—"} em {formatDateTime(m.decidedAt)}
+                          {m.status === "PAYABLE" ? "Aprovada" : "Rejeitada"} por {decidedBy?.name || "—"} em {formatDateTime(m.decidedAt)}
                         </span>
                       ) : null}
                       {m.rejectionReason ? (
@@ -322,7 +352,17 @@ export default function EtapaDetalhePage({ params }) {
                     </div>
                     <div className={styles.rowRight}>
                       <Badge tone={MEASUREMENT_STATUS_TONE[m.status]}>{MEASUREMENT_STATUS_LABELS[m.status]}</Badge>
-                      {m.status === "PENDING_APPROVAL" ? (
+                      {m.status === "DRAFT" ? (
+                        <Button size="sm" variant="secondary" onClick={() => handleSubmit(m)} loading={busyId === m.id}>Enviar para revisão</Button>
+                      ) : null}
+                      {m.status === "SUBMITTED" ? (
+                        <div className={styles.quickActions}>
+                          <Button size="sm" variant="ghost" onClick={() => handleReview(m)} loading={busyId === m.id}>Marcar como revisada</Button>
+                          <Button size="sm" variant="secondary" onClick={() => handleApprove(m)} loading={busyId === m.id}>Aprovar</Button>
+                          <Button size="sm" variant="danger" onClick={() => { setRejectTarget(m); setRejectReason(""); }}>Rejeitar</Button>
+                        </div>
+                      ) : null}
+                      {m.status === "REVIEWED" ? (
                         <div className={styles.quickActions}>
                           <Button size="sm" variant="secondary" onClick={() => handleApprove(m)} loading={busyId === m.id}>Aprovar</Button>
                           <Button size="sm" variant="danger" onClick={() => { setRejectTarget(m); setRejectReason(""); }}>Rejeitar</Button>
@@ -394,6 +434,13 @@ export default function EtapaDetalhePage({ params }) {
         <div className={styles.formGrid}>
           <FormField label="Percentual medido (%)" htmlFor="m-meas-pct" required>
             <Input id="m-meas-pct" type="number" min="0" max="100" value={measurementForm.measuredPct} onChange={(e) => setMeasurementForm((p) => ({ ...p, measuredPct: e.target.value }))} />
+          </FormField>
+          <FormField
+            label="Valor total (R$)"
+            htmlFor="m-meas-total"
+            helper="Necessário pra aprovar a medição (vira a obrigação financeira ao aprovar) — pode ser deixado em branco e preenchido depois, numa correção."
+          >
+            <Input id="m-meas-total" type="number" min="0" step="0.01" value={measurementForm.totalAmount} onChange={(e) => setMeasurementForm((p) => ({ ...p, totalAmount: e.target.value }))} placeholder="0,00" />
           </FormField>
           <FormField label="Data da medição" htmlFor="m-meas-date" required error={measuredAtInvalid ? DATE_INPUT_ERROR_MESSAGE : undefined}>
             <Input
