@@ -67,6 +67,10 @@ export default function ContratoDetailPage({ params }) {
   const [actionError, setActionError] = useState("");
   const [notice, setNotice] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [versionModalOpen, setVersionModalOpen] = useState(false);
+  const [versionForm, setVersionForm] = useState({ file: null });
+  const [versionError, setVersionError] = useState("");
+  const [versionBusy, setVersionBusy] = useState(false);
   const [amendmentModalOpen, setAmendmentModalOpen] = useState(false);
   const [amendmentForm, setAmendmentForm] = useState({
     reason: "",
@@ -176,20 +180,36 @@ export default function ContratoDetailPage({ params }) {
     }
   }
 
-  async function handleNewVersion() {
-    setActionError("");
-    setBusy(true);
+  function openVersionModal() {
+    setVersionError("");
+    setVersionForm({ file: null });
+    setVersionModalOpen(true);
+  }
+
+  // FIX (pendência #3, homologação): o botão "Nova versão" chamava createContractVersion
+  // direto, sem nenhum campo de upload — mas o backend (isDocumentRequired) exige
+  // `documentFileId` quando o gate de documento está ativo no tenant, então o botão sempre
+  // falhava com LEGAL_CONTRACT_VERSION_DOCUMENT_REQUIRED. Agora um modal real de upload
+  // (mesmo padrão do modal de aditivo, que já faz `uploadFile` + `documentFileId`) coleta o
+  // arquivo e o manda junto com `content`/`templateId` na criação da versão.
+  async function handleCreateVersion() {
+    if (!versionForm.file) return;
+    setVersionError("");
+    setVersionBusy(true);
     try {
       const versionNumber = versions.length + 1;
+      const uploaded = await uploadFile(versionForm.file);
       const newVersion = await createContractVersion(contract.id, {
         content: `Versão ${versionNumber} do contrato ${formatContractLabel(contract)}`,
+        documentFileId: uploaded.id,
       });
       setVersions((prev) => [...prev, newVersion]);
+      setVersionModalOpen(false);
       setNotice({ tone: "info", text: `Versão ${versionNumber} criada — versões são imutáveis, nunca editadas.` });
     } catch (err) {
-      setActionError(err.message || "Erro ao criar nova versão do contrato.");
+      setVersionError(err.message || "Erro ao criar nova versão do contrato.");
     } finally {
-      setBusy(false);
+      setVersionBusy(false);
     }
   }
 
@@ -365,7 +385,7 @@ export default function ContratoDetailPage({ params }) {
             <Card
               title="Versões do documento"
               subtitle="Imutáveis — cada alteração cria uma nova versão, nunca edita a anterior"
-              actions={<Button size="sm" variant="secondary" onClick={handleNewVersion} disabled={busy}><Icon name="document" size={16} /> Nova versão</Button>}
+              actions={<Button size="sm" variant="secondary" onClick={openVersionModal} disabled={busy}><Icon name="document" size={16} /> Nova versão</Button>}
             >
               {pdfError ? <Alert tone="danger" className={styles.notice}>{pdfError}</Alert> : null}
               {versions.length === 0 ? (
@@ -505,6 +525,29 @@ export default function ContratoDetailPage({ params }) {
           </div>
         </div>
       </div>
+
+      <Modal
+        open={versionModalOpen}
+        onClose={() => setVersionModalOpen(false)}
+        title="Nova versão do documento"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setVersionModalOpen(false)} disabled={versionBusy}>Cancelar</Button>
+            <Button onClick={handleCreateVersion} loading={versionBusy} disabled={!versionForm.file || versionBusy}>Criar versão</Button>
+          </>
+        }
+      >
+        {versionError ? <Alert tone="danger" className={styles.notice}>{versionError}</Alert> : null}
+        <div className={styles.formGrid}>
+          <FormField label="Documento" htmlFor="f-ver-file" required helper="Arquivo do documento desta versão do contrato (PDF recomendado).">
+            <input
+              id="f-ver-file"
+              type="file"
+              onChange={(e) => setVersionForm({ file: e.target.files?.[0] || null })}
+            />
+          </FormField>
+        </div>
+      </Modal>
 
       <Modal
         open={amendmentModalOpen}

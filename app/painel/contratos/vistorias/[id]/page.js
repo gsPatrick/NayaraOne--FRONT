@@ -497,39 +497,43 @@ export default function VistoriaDetailPage({ params }) {
           </Card>
         ) : null}
 
-        {compareOpen && counterpart && comparison ? (
+        {compareOpen && counterpart && comparison ? (() => {
+          // As colunas da comparação sempre representam ENTRADA (esquerda) e SAÍDA (direita),
+          // independentemente de qual delas é a vistoria "atual" (`inspection`) ou a
+          // "contraparte" (`counterpart`) na tela — antes o código assumia que a coluna da
+          // esquerda era sempre `inspection` e mostrava `entryCondition`, o que invertia os
+          // dados quando a vistoria atual era a de SAÍDA (CHECK_OUT). Também consolidamos as
+          // linhas em uma única passada por `comparison.divergences` (que já inclui os itens
+          // MISSING_IN_ENTRY/MISSING_IN_EXIT desde o fix de 22/09/2026): antes, esses itens
+          // ausentes eram renderizados de novo a partir de `onlyInEntry`/`onlyInExit`,
+          // duplicando visualmente a linha.
+          const entryInspection = inspection.inspectionType === "CHECK_IN" ? inspection : counterpart;
+          const exitInspection = inspection.inspectionType === "CHECK_OUT" ? inspection : counterpart;
+          return (
           <Card
             title="Comparação de vistorias"
             subtitle={`${divergenceCount} divergência(s) encontrada(s) entre as vistorias de ${INSPECTION_TYPE_LABELS[inspection.inspectionType].toLowerCase()} e ${INSPECTION_TYPE_LABELS[counterpart.inspectionType].toLowerCase()}`}
           >
             <div className={styles.compareGrid}>
               <div className={styles.compareCol}>
-                <span className={styles.compareColHead}>{INSPECTION_TYPE_LABELS[inspection.inspectionType]} — {formatDate(inspection.scheduledAt)}</span>
+                <span className={styles.compareColHead}>{INSPECTION_TYPE_LABELS[entryInspection.inspectionType]} — {formatDate(entryInspection.scheduledAt)}</span>
                 {comparison.divergences.map((c) => (
                   <div key={`div-a-${c.itemName}`} className={[styles.compareRow, styles.compareRowChanged].join(" ")}>
                     <span className={styles.compareItemName}>{c.itemName}</span>
-                    <span className={styles.compareItemMeta}>{CONDITION_LABELS[c.entryCondition] || c.entryCondition}</span>
-                  </div>
-                ))}
-                {comparison.onlyInEntry.map((c) => (
-                  <div key={`only-a-${c.itemName}`} className={styles.compareRow}>
-                    <span className={styles.compareItemName}>{c.itemName}</span>
-                    <span className={styles.compareItemMeta}>{CONDITION_LABELS[c.entryCondition] || c.entryCondition}</span>
+                    <span className={styles.compareItemMeta}>
+                      {c.entryCondition ? (CONDITION_LABELS[c.entryCondition] || c.entryCondition) : "— item ausente —"}
+                    </span>
                   </div>
                 ))}
               </div>
               <div className={styles.compareCol}>
-                <span className={styles.compareColHead}>{INSPECTION_TYPE_LABELS[counterpart.inspectionType]} — {formatDate(counterpart.scheduledAt)}</span>
+                <span className={styles.compareColHead}>{INSPECTION_TYPE_LABELS[exitInspection.inspectionType]} — {formatDate(exitInspection.scheduledAt)}</span>
                 {comparison.divergences.map((c) => (
                   <div key={`div-b-${c.itemName}`} className={[styles.compareRow, styles.compareRowChanged].join(" ")}>
                     <span className={styles.compareItemName}>{c.itemName}</span>
-                    <span className={styles.compareItemMeta}>{CONDITION_LABELS[c.exitCondition] || c.exitCondition}</span>
-                  </div>
-                ))}
-                {comparison.onlyInExit.map((c) => (
-                  <div key={`only-b-${c.itemName}`} className={styles.compareRow}>
-                    <span className={styles.compareItemName}>{c.itemName}</span>
-                    <span className={styles.compareItemMeta}>{CONDITION_LABELS[c.exitCondition] || c.exitCondition}</span>
+                    <span className={styles.compareItemMeta}>
+                      {c.exitCondition ? (CONDITION_LABELS[c.exitCondition] || c.exitCondition) : "— item ausente —"}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -542,7 +546,8 @@ export default function VistoriaDetailPage({ params }) {
               <EmptyState icon="check" title="Sem divergências" description="Nenhuma divergência encontrada entre as duas vistorias." />
             )}
           </Card>
-        ) : null}
+          );
+        })() : null}
       </div>
 
       <Modal
