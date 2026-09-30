@@ -52,6 +52,7 @@ import {
   createDailyReport,
   updateDailyReport,
   listDailyWorkers,
+  listDailyMaterials,
   listBudgetLines,
   createBudgetLine,
   listQualityItems,
@@ -83,7 +84,7 @@ import { listCostCenters } from "@/lib/api/finance";
 import { listPeople } from "@/lib/api/people";
 import { uploadFile } from "@/lib/api/legal";
 import { apiFetch } from "@/lib/api/client";
-import { formatBRL, formatDate, formatDateTime, dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
+import { formatBRL, formatQuantity, formatDate, formatDateTime, dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
 import styles from "./page.module.css";
 
 const WEATHER_OPTIONS = ["Ensolarado", "Nublado", "Chuvoso", "Ventania"];
@@ -141,6 +142,8 @@ export default function ObraDetalhePage({ params }) {
   const [rdoWorkers, setRdoWorkers] = useState([]);
   const [workerUploadingIndex, setWorkerUploadingIndex] = useState(null);
   const [workerUploadError, setWorkerUploadError] = useState("");
+  // Materiais do dia (DailyMaterial) — mesmo gap, achado na varredura final do Front.
+  const [rdoMaterials, setRdoMaterials] = useState([]);
 
   const [budgetOpen, setBudgetOpen] = useState(false);
   const [budgetForm, setBudgetForm] = useState({ category: "", description: "", plannedAmount: "" });
@@ -483,7 +486,18 @@ export default function ObraDetalhePage({ params }) {
     setRdoUploadError("");
     setRdoWorkers([]);
     setWorkerUploadError("");
+    setRdoMaterials([]);
     setRdoOpen(true);
+  }
+
+  function addRdoMaterial() {
+    setRdoMaterials((prev) => [...prev, { materialDescription: "", quantity: "", unit: "" }]);
+  }
+  function updateRdoMaterial(index, field, value) {
+    setRdoMaterials((prev) => prev.map((m, i) => (i === index ? { ...m, [field]: value } : m)));
+  }
+  function removeRdoMaterial(index) {
+    setRdoMaterials((prev) => prev.filter((_, i) => i !== index));
   }
 
   function addRdoWorker() {
@@ -543,11 +557,19 @@ export default function ObraDetalhePage({ params }) {
     setRdoUploadError("");
     setRdoWorkers([]);
     setWorkerUploadError("");
+    setRdoMaterials([]);
     setRdoOpen(true);
     listDailyWorkers(report.id)
       .then((workers) => {
         setRdoWorkers(
           (workers || []).map((w) => ({ personId: w.personId, role: w.role || "", documentFileIds: Array.isArray(w.documentFileIds) ? w.documentFileIds : [] }))
+        );
+      })
+      .catch(() => {});
+    listDailyMaterials(report.id)
+      .then((materials) => {
+        setRdoMaterials(
+          (materials || []).map((m) => ({ materialDescription: m.materialDescription, quantity: String(m.quantity), unit: m.unit }))
         );
       })
       .catch(() => {});
@@ -566,6 +588,9 @@ export default function ObraDetalhePage({ params }) {
         servicesPerformed: rdoForm.servicesPerformed.trim() || undefined,
         evidenceFileIds: rdoEvidenceFileIds,
         workers: rdoWorkers.filter((w) => w.personId),
+        materials: rdoMaterials
+          .filter((m) => m.materialDescription && m.quantity !== "" && m.unit)
+          .map((m) => ({ ...m, quantity: Number(m.quantity) })),
       };
       if (editingRdoId) {
         const updated = await updateDailyReport(editingRdoId, payload);
@@ -1431,7 +1456,7 @@ export default function ObraDetalhePage({ params }) {
                   <div className={styles.rowInfo}>
                     <span className={styles.rowTitle}>{m.description}</span>
                     <span className={styles.rowSubtitle}>
-                      {m.quantity} {m.unit}
+                      {formatQuantity(m.quantity)} {m.unit}
                       {m.status === "RECEIVED" && m.receivedAt ? ` · Recebido em ${formatDate(m.receivedAt)}` : ""}
                     </span>
                   </div>
@@ -1480,7 +1505,7 @@ export default function ObraDetalhePage({ params }) {
                       {LOSS_RECORD_MOVEMENT_LABELS[l.movementType] || l.movementType} · {l.materialDescription}
                     </span>
                     <span className={styles.rowSubtitle}>
-                      {l.quantity} un. · {formatBRL(l.estimatedValue)} · {l.reason}
+                      {formatQuantity(l.quantity)} un. · {formatBRL(l.estimatedValue)} · {l.reason}
                     </span>
                   </div>
                   <div className={styles.rowRight}>
@@ -1834,6 +1859,45 @@ export default function ObraDetalhePage({ params }) {
               {workerUploadError ? <Alert tone="danger">{workerUploadError}</Alert> : null}
               <Button size="sm" variant="ghost" onClick={addRdoWorker} style={{ marginTop: "var(--space-2)" }}>
                 <Icon name="plus" size={14} /> Adicionar trabalhador
+              </Button>
+            </FormField>
+          </div>
+          <div className={styles.span2}>
+            <FormField label="Materiais do dia" htmlFor="m-rdo-materials" helper="Opcional">
+              <div className={styles.rowList}>
+                {rdoMaterials.map((m, i) => (
+                  <div key={i} className={styles.rowStatic} style={{ flexWrap: "wrap", gap: "var(--space-2)" }}>
+                    <Input
+                      value={m.materialDescription}
+                      onChange={(e) => updateRdoMaterial(i, "materialDescription", e.target.value)}
+                      placeholder="Material (ex: Cimento CP-II)"
+                      aria-label={`Descrição do material ${i + 1}`}
+                    />
+                    <Input
+                      type="number"
+                      min="0"
+                      step="0.001"
+                      value={m.quantity}
+                      onChange={(e) => updateRdoMaterial(i, "quantity", e.target.value)}
+                      placeholder="Qtd"
+                      aria-label={`Quantidade do material ${i + 1}`}
+                      style={{ maxWidth: "100px" }}
+                    />
+                    <Input
+                      value={m.unit}
+                      onChange={(e) => updateRdoMaterial(i, "unit", e.target.value)}
+                      placeholder="Unidade (ex: SC)"
+                      aria-label={`Unidade do material ${i + 1}`}
+                      style={{ maxWidth: "120px" }}
+                    />
+                    <button type="button" className={styles.rowEditBtn} aria-label={`Remover material ${i + 1}`} onClick={() => removeRdoMaterial(i)}>
+                      <Icon name="trash" size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <Button size="sm" variant="ghost" onClick={addRdoMaterial} style={{ marginTop: "var(--space-2)" }}>
+                <Icon name="plus" size={14} /> Adicionar material
               </Button>
             </FormField>
           </div>
