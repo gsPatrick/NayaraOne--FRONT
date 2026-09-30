@@ -51,6 +51,7 @@ import {
   listDailyReports,
   createDailyReport,
   updateDailyReport,
+  listDailyWorkers,
   listBudgetLines,
   createBudgetLine,
   listQualityItems,
@@ -76,6 +77,7 @@ import {
 } from "@/lib/api/construction";
 import { listProperties } from "@/lib/api/properties";
 import { listCostCenters } from "@/lib/api/finance";
+import { listPeople } from "@/lib/api/people";
 import { uploadFile } from "@/lib/api/legal";
 import { apiFetch } from "@/lib/api/client";
 import { formatBRL, formatDate, formatDateTime, dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
@@ -89,6 +91,7 @@ export default function ObraDetalhePage({ params }) {
   const [properties, setProperties] = useState([]);
   const [users, setUsers] = useState([]);
   const [costCenters, setCostCenters] = useState([]);
+  const [people, setPeople] = useState([]);
   const [stages, setStages] = useState([]);
   // FIX (auditoria pós-merge Marco 6, 30/09/2026): histórico de RDO ficava truncado a 5 itens
   // sem nenhuma forma de ver o restante. Mantém a lista completa em `allReports` e um toggle
@@ -129,6 +132,12 @@ export default function ObraDetalhePage({ params }) {
   const [rdoEvidenceFileIds, setRdoEvidenceFileIds] = useState([]);
   const [rdoUploading, setRdoUploading] = useState(false);
   const [rdoUploadError, setRdoUploadError] = useState("");
+  // Equipe do dia (DailyWorker) — achado numa rodada de verificação de integrações
+  // (30/09/2026): a fonte exige "documentação correspondente" vinculada ao prestador do dia,
+  // campo estava inteiramente ausente do Front (nenhuma tela de equipe do RDO existia).
+  const [rdoWorkers, setRdoWorkers] = useState([]);
+  const [workerUploadingIndex, setWorkerUploadingIndex] = useState(null);
+  const [workerUploadError, setWorkerUploadError] = useState("");
 
   const [budgetOpen, setBudgetOpen] = useState(false);
   const [budgetForm, setBudgetForm] = useState({ category: "", description: "", plannedAmount: "" });
@@ -222,13 +231,15 @@ export default function ObraDetalhePage({ params }) {
       // Centro de custo é opcional — não pode derrubar a página inteira se o usuário não tiver
       // permissão finance:read (o formulário de edição só perde essa opção específica).
       listCostCenters().catch(() => []),
+      listPeople().catch(() => []),
     ])
-      .then(([p, props, u, cc]) => {
+      .then(([p, props, u, cc, ppl]) => {
         if (cancelled || !p) return;
         setProject(p);
         setProperties(props || []);
         setUsers(u || []);
         setCostCenters(cc || []);
+        setPeople(ppl || []);
         return Promise.all([
           listProjectStages(p.id),
           listDailyReports(p.id),
@@ -442,7 +453,34 @@ export default function ObraDetalhePage({ params }) {
     setRdoForm({ reportDate: new Date().toISOString().slice(0, 10), weather: WEATHER_OPTIONS[0], workforceCount: "", occurrences: "", servicesPerformed: "" });
     setRdoEvidenceFileIds([]);
     setRdoUploadError("");
+    setRdoWorkers([]);
+    setWorkerUploadError("");
     setRdoOpen(true);
+  }
+
+  function addRdoWorker() {
+    setRdoWorkers((prev) => [...prev, { personId: "", role: "", documentFileIds: [] }]);
+  }
+  function updateRdoWorker(index, field, value) {
+    setRdoWorkers((prev) => prev.map((w, i) => (i === index ? { ...w, [field]: value } : w)));
+  }
+  function removeRdoWorker(index) {
+    setRdoWorkers((prev) => prev.filter((_, i) => i !== index));
+  }
+  async function handleUploadWorkerDocument(index, file) {
+    if (!file) return;
+    setWorkerUploadingIndex(index);
+    setWorkerUploadError("");
+    try {
+      const uploaded = await uploadFile(file);
+      setRdoWorkers((prev) =>
+        prev.map((w, i) => (i === index ? { ...w, documentFileIds: [...(w.documentFileIds || []), uploaded.id] } : w))
+      );
+    } catch (err) {
+      setWorkerUploadError(err?.message || "Erro ao enviar documento.");
+    } finally {
+      setWorkerUploadingIndex(null);
+    }
   }
 
   async function handleUploadRdoEvidence(file) {
@@ -475,7 +513,16 @@ export default function ObraDetalhePage({ params }) {
     });
     setRdoEvidenceFileIds(Array.isArray(report.evidenceFileIds) ? report.evidenceFileIds : []);
     setRdoUploadError("");
+    setRdoWorkers([]);
+    setWorkerUploadError("");
     setRdoOpen(true);
+    listDailyWorkers(report.id)
+      .then((workers) => {
+        setRdoWorkers(
+          (workers || []).map((w) => ({ personId: w.personId, role: w.role || "", documentFileIds: Array.isArray(w.documentFileIds) ? w.documentFileIds : [] }))
+        );
+      })
+      .catch(() => {});
   }
 
   async function handleSaveRdo() {
@@ -490,6 +537,7 @@ export default function ObraDetalhePage({ params }) {
         occurrences: rdoForm.occurrences.trim() || undefined,
         servicesPerformed: rdoForm.servicesPerformed.trim() || undefined,
         evidenceFileIds: rdoEvidenceFileIds,
+        workers: rdoWorkers.filter((w) => w.personId),
       };
       if (editingRdoId) {
         const updated = await updateDailyReport(editingRdoId, payload);
@@ -1611,6 +1659,54 @@ export default function ObraDetalhePage({ params }) {
                 onChange={(e) => handleUploadRdoEvidence(e.target.files?.[0])}
               />
               {rdoUploading ? <Spinner size="sm" /> : null}
+            </FormField>
+          </div>
+          <div className={styles.span2}>
+            <FormField
+              label="Equipe do dia"
+              htmlFor="m-rdo-workers"
+              helper="Opcional — prestador/trabalhador do dia, com documentação correspondente"
+            >
+              <div className={styles.rowList}>
+                {rdoWorkers.map((w, i) => (
+                  <div key={i} className={styles.rowStatic} style={{ flexWrap: "wrap", gap: "var(--space-2)" }}>
+                    <Select
+                      value={w.personId}
+                      onChange={(e) => updateRdoWorker(i, "personId", e.target.value)}
+                      aria-label={`Pessoa do trabalhador ${i + 1}`}
+                    >
+                      <option value="">Selecione a pessoa...</option>
+                      {people.map((p) => (
+                        <option key={p.id} value={p.id}>{p.legalName}</option>
+                      ))}
+                    </Select>
+                    <Input
+                      value={w.role}
+                      onChange={(e) => updateRdoWorker(i, "role", e.target.value)}
+                      placeholder="Função (ex: Pedreiro)"
+                      aria-label={`Função do trabalhador ${i + 1}`}
+                    />
+                    <input
+                      type="file"
+                      accept="image/*,application/pdf"
+                      disabled={workerUploadingIndex === i}
+                      onChange={(e) => handleUploadWorkerDocument(i, e.target.files?.[0])}
+                      aria-label={`Documento do trabalhador ${i + 1}`}
+                    />
+                    {workerUploadingIndex === i ? <Spinner size="sm" /> : null}
+                    {w.documentFileIds?.length ? (
+                      <span className={styles.infoLabel}>{w.documentFileIds.length} doc(s)</span>
+                    ) : null}
+                    <button type="button" className={styles.rowEditBtn} aria-label={`Remover trabalhador ${i + 1}`} onClick={() => removeRdoWorker(i)}>
+                      <Icon name="trash" size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              {workerUploadError ? <Alert tone="danger">{workerUploadError}</Alert> : null}
+              <Button size="sm" variant="ghost" onClick={addRdoWorker} style={{ marginTop: "var(--space-2)" }}>
+                <Icon name="plus" size={14} /> Adicionar trabalhador
+              </Button>
             </FormField>
           </div>
         </div>
