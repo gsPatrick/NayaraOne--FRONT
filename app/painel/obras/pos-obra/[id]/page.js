@@ -14,18 +14,28 @@ import Modal from "@/components/organisms/Modal/Modal";
 import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
-import { MAINTENANCE_STATUS_LABELS, MAINTENANCE_STATUS_TONE } from "@/lib/mock/construction";
+import {
+  MAINTENANCE_STATUS_LABELS,
+  MAINTENANCE_STATUS_TONE,
+  MAINTENANCE_CATEGORY_LABELS,
+  MAINTENANCE_SEVERITY_LABELS,
+  MAINTENANCE_ROOT_CAUSE_LABELS,
+  MAINTENANCE_ESCALATION_LABELS,
+  MAINTENANCE_ESCALATION_TONE,
+} from "@/lib/mock/construction";
 import {
   getMaintenanceCase,
   updateMaintenanceCase,
   removeMaintenanceCase,
   listMaintenanceCases,
   getProject,
+  listWarrantyActions,
+  createWarrantyAction,
 } from "@/lib/api/construction";
 import { getProperty } from "@/lib/api/properties";
 import { getPerson } from "@/lib/api/people";
 import { apiFetch } from "@/lib/api/client";
-import { formatDate, formatDateTime, dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
+import { formatBRL, formatDate, formatDateTime, dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
 import styles from "./page.module.css";
 
 const STATUS_STEPS = ["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"];
@@ -70,10 +80,25 @@ export default function PosObraDetalhePage({ params }) {
   const [busy, setBusy] = useState(false);
 
   const [editOpen, setEditOpen] = useState(false);
-  const [editForm, setEditForm] = useState({ description: "", responsibleUserId: "", warrantyDeadlineAt: "" });
+  const [editForm, setEditForm] = useState({
+    description: "",
+    responsibleUserId: "",
+    warrantyDeadlineAt: "",
+    category: "",
+    severity: "MEDIUM",
+    rootCauseCode: "",
+    laborCost: "",
+    materialCost: "",
+  });
   const [warrantyDateInvalid, setWarrantyDateInvalid] = useState(false);
   const [savingEdit, setSavingEdit] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+
+  // Ações de atendimento (WarrantyAction) — histórico de visitas/reparos dentro do chamado.
+  const [warrantyActions, setWarrantyActions] = useState([]);
+  const [actionOpen, setActionOpen] = useState(false);
+  const [actionForm, setActionForm] = useState({ description: "", cost: "" });
+  const [savingAction, setSavingAction] = useState(false);
 
   function load() {
     let cancelled = false;
@@ -96,13 +121,15 @@ export default function PosObraDetalhePage({ params }) {
           c.projectId ? getProject(c.projectId).catch(() => null) : Promise.resolve(null),
           c.openedByPersonId ? getPerson(c.openedByPersonId).catch(() => null) : Promise.resolve(null),
           c.propertyId ? listMaintenanceCases({ propertyId: c.propertyId }).catch(() => []) : Promise.resolve([]),
-        ]).then(([u, prop, proj, person, related]) => {
+          listWarrantyActions(c.id).catch(() => []),
+        ]).then(([u, prop, proj, person, related, actions]) => {
           if (cancelled) return;
           setUsers(u || []);
           setProperty(prop);
           setProject(proj);
           setOpenedByPerson(person);
           setRelatedCases((related || []).filter((r) => r.id !== c.id));
+          setWarrantyActions(actions || []);
         });
       })
       .catch((err) => {
@@ -173,6 +200,11 @@ export default function PosObraDetalhePage({ params }) {
       description: maintenanceCase.description,
       responsibleUserId: maintenanceCase.responsibleUserId || "",
       warrantyDeadlineAt: maintenanceCase.warrantyDeadlineAt ? maintenanceCase.warrantyDeadlineAt.slice(0, 10) : "",
+      category: maintenanceCase.category || "",
+      severity: maintenanceCase.severity || "MEDIUM",
+      rootCauseCode: maintenanceCase.rootCauseCode || "",
+      laborCost: maintenanceCase.laborCost != null ? String(maintenanceCase.laborCost) : "",
+      materialCost: maintenanceCase.materialCost != null ? String(maintenanceCase.materialCost) : "",
     });
     setEditOpen(true);
   }
@@ -186,6 +218,11 @@ export default function PosObraDetalhePage({ params }) {
         description: editForm.description.trim(),
         responsibleUserId: editForm.responsibleUserId || null,
         warrantyDeadlineAt: dateOnlyInputToIso(editForm.warrantyDeadlineAt) || null,
+        category: editForm.category || null,
+        severity: editForm.severity || undefined,
+        rootCauseCode: editForm.rootCauseCode || null,
+        laborCost: editForm.laborCost !== "" ? Number(editForm.laborCost) : null,
+        materialCost: editForm.materialCost !== "" ? Number(editForm.materialCost) : null,
       });
       setMaintenanceCase(updated);
       setEditOpen(false);
@@ -193,6 +230,29 @@ export default function PosObraDetalhePage({ params }) {
       setActionError(err?.message || "Não foi possível salvar as alterações.");
     } finally {
       setSavingEdit(false);
+    }
+  }
+
+  function openActionModal() {
+    setActionForm({ description: "", cost: "" });
+    setActionOpen(true);
+  }
+
+  async function handleCreateWarrantyAction() {
+    if (!actionForm.description.trim()) return;
+    setSavingAction(true);
+    setActionError("");
+    try {
+      const created = await createWarrantyAction(maintenanceCase.id, {
+        description: actionForm.description.trim(),
+        cost: actionForm.cost !== "" ? Number(actionForm.cost) : undefined,
+      });
+      setWarrantyActions((prev) => [created, ...prev]);
+      setActionOpen(false);
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível registrar a ação de atendimento.");
+    } finally {
+      setSavingAction(false);
     }
   }
 
@@ -217,6 +277,14 @@ export default function PosObraDetalhePage({ params }) {
           <div className={styles.badges}>
             <Badge tone={MAINTENANCE_STATUS_TONE[maintenanceCase.status]}>{MAINTENANCE_STATUS_LABELS[maintenanceCase.status]}</Badge>
             {warranty ? <Badge tone={warranty.tone}>{warranty.label}</Badge> : null}
+            {maintenanceCase.severity ? (
+              <Badge tone="neutral">Severidade: {MAINTENANCE_SEVERITY_LABELS[maintenanceCase.severity] || maintenanceCase.severity}</Badge>
+            ) : null}
+            {maintenanceCase.escalationLevel ? (
+              <Badge tone={MAINTENANCE_ESCALATION_TONE[maintenanceCase.escalationLevel] || "neutral"}>
+                SLA: {MAINTENANCE_ESCALATION_LABELS[maintenanceCase.escalationLevel] || maintenanceCase.escalationLevel}
+              </Badge>
+            ) : null}
           </div>
           <div className={styles.actions}>
             {nextOptions.length > 0 ? (
@@ -298,6 +366,26 @@ export default function PosObraDetalhePage({ params }) {
                   <p className={styles.infoLabel}>Aberto em</p>
                   <p className={styles.infoValue}>{formatDateTime(maintenanceCase.createdAt || maintenanceCase.created_at)}</p>
                 </div>
+                <div>
+                  <p className={styles.infoLabel}>Categoria</p>
+                  <p className={styles.infoValue}>{MAINTENANCE_CATEGORY_LABELS[maintenanceCase.category] || "—"}</p>
+                </div>
+                <div>
+                  <p className={styles.infoLabel}>Causa raiz</p>
+                  <p className={styles.infoValue}>{MAINTENANCE_ROOT_CAUSE_LABELS[maintenanceCase.rootCauseCode] || "—"}</p>
+                </div>
+                <div>
+                  <p className={styles.infoLabel}>Prazo de SLA</p>
+                  <p className={styles.infoValue}>{formatDateTime(maintenanceCase.slaDueAt)}</p>
+                </div>
+                <div>
+                  <p className={styles.infoLabel}>Custo de mão de obra</p>
+                  <p className={styles.infoValue}>{formatBRL(maintenanceCase.laborCost)}</p>
+                </div>
+                <div>
+                  <p className={styles.infoLabel}>Custo de material</p>
+                  <p className={styles.infoValue}>{formatBRL(maintenanceCase.materialCost)}</p>
+                </div>
               </div>
             </Card>
 
@@ -315,6 +403,35 @@ export default function PosObraDetalhePage({ params }) {
                       <Badge tone={MAINTENANCE_STATUS_TONE[c.status]}>{MAINTENANCE_STATUS_LABELS[c.status]}</Badge>
                     </a>
                   ))}
+                </div>
+              )}
+            </Card>
+
+            <Card
+              title="Ações de atendimento"
+              subtitle="Histórico de visitas/reparos deste chamado"
+              actions={<Button size="sm" variant="secondary" onClick={openActionModal}>
+                <Icon name="plus" size={14} /> Nova ação
+              </Button>}
+            >
+              {warrantyActions.length === 0 ? (
+                <EmptyState icon="clock" title="Sem ações registradas" description="Nenhuma ação de atendimento foi registrada para este chamado ainda." />
+              ) : (
+                <div className={styles.relatedList}>
+                  {warrantyActions.map((a) => {
+                    const performedBy = a.performedByUserId ? users.find((u) => u.id === a.performedByUserId) : null;
+                    return (
+                      <div key={a.id} className={styles.relatedRow}>
+                        <div className={styles.relatedInfo}>
+                          <span className={styles.relatedTitle}>{a.description}</span>
+                          <span className={styles.relatedSubtitle}>
+                            {formatDateTime(a.performedAt)}{performedBy ? ` · ${performedBy.name}` : ""}
+                          </span>
+                        </div>
+                        <span className={styles.infoValue}>{formatBRL(a.cost)}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </Card>
@@ -406,6 +523,65 @@ export default function PosObraDetalhePage({ params }) {
               }}
               onBlur={(e) => setWarrantyDateInvalid(isDateInputInvalid(e.target.validity))}
             />
+          </FormField>
+          <FormField label="Categoria" htmlFor="e-category" helper="Opcional">
+            <Select id="e-category" value={editForm.category} onChange={(e) => setEditForm((p) => ({ ...p, category: e.target.value }))}>
+              <option value="">Não classificada</option>
+              {Object.entries(MAINTENANCE_CATEGORY_LABELS).map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </Select>
+          </FormField>
+          <FormField label="Severidade" htmlFor="e-severity" required>
+            <Select id="e-severity" value={editForm.severity} onChange={(e) => setEditForm((p) => ({ ...p, severity: e.target.value }))}>
+              {Object.entries(MAINTENANCE_SEVERITY_LABELS).map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </Select>
+          </FormField>
+          <FormField label="Causa raiz" htmlFor="e-root-cause" helper="Opcional">
+            <Select id="e-root-cause" value={editForm.rootCauseCode} onChange={(e) => setEditForm((p) => ({ ...p, rootCauseCode: e.target.value }))}>
+              <option value="">Não identificada</option>
+              {Object.entries(MAINTENANCE_ROOT_CAUSE_LABELS).map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </Select>
+          </FormField>
+          <FormField label="Custo de mão de obra (R$)" htmlFor="e-labor-cost" helper="Opcional">
+            <Input id="e-labor-cost" type="number" min="0" step="0.01" value={editForm.laborCost} onChange={(e) => setEditForm((p) => ({ ...p, laborCost: e.target.value }))} />
+          </FormField>
+          <FormField label="Custo de material (R$)" htmlFor="e-material-cost" helper="Opcional">
+            <Input id="e-material-cost" type="number" min="0" step="0.01" value={editForm.materialCost} onChange={(e) => setEditForm((p) => ({ ...p, materialCost: e.target.value }))} />
+          </FormField>
+        </div>
+      </Modal>
+
+      <Modal
+        open={actionOpen}
+        onClose={() => setActionOpen(false)}
+        title="Nova ação de atendimento"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setActionOpen(false)}>Cancelar</Button>
+            <Button onClick={handleCreateWarrantyAction} loading={savingAction} disabled={!actionForm.description.trim()}>Registrar ação</Button>
+          </>
+        }
+      >
+        <div className={styles.formGrid}>
+          <div className={styles.span2}>
+            <FormField label="Descrição da ação" htmlFor="a-description" required>
+              <textarea
+                id="a-description"
+                className={styles.textarea}
+                rows={3}
+                value={actionForm.description}
+                onChange={(e) => setActionForm((p) => ({ ...p, description: e.target.value }))}
+                placeholder="Ex: Visita técnica para reparo da infiltração no teto."
+              />
+            </FormField>
+          </div>
+          <FormField label="Custo (R$)" htmlFor="a-cost" helper="Opcional">
+            <Input id="a-cost" type="number" min="0" step="0.01" value={actionForm.cost} onChange={(e) => setActionForm((p) => ({ ...p, cost: e.target.value }))} placeholder="0,00" />
           </FormField>
         </div>
       </Modal>

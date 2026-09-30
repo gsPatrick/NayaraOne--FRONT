@@ -23,6 +23,9 @@
 .info    { background: var(--color-info-soft); color: var(--color-info); --badge-dot: var(--color-info); }
 .brand   { background: var(--color-brand-soft); color: var(--color-brand); --badge-dot: var(--color-brand); }
 .neutral { background: var(--color-canvas-sunken); color: var(--color-ink-soft); --badge-dot: var(--color-ink-soft); }
+/* Tom laranja — usado, por exemplo, pelo escalationLevel=CRITICAL do pós-obra (Marco 6),
+   que precisa de uma cor visualmente distinta entre "warning" (amarelo) e "danger" (vermelho). */
+.critical { background: rgba(198, 93, 24, 0.14); color: #C65D18; --badge-dot: #C65D18; }
 
 .onMedia {
   background: rgba(24, 21, 19, 0.45);

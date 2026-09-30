@@ -15,6 +15,7 @@ import { listProperties } from "@/lib/api/properties";
 import { listPeople } from "@/lib/api/people";
 import { apiFetch } from "@/lib/api/client";
 import { dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
+import { MAINTENANCE_CATEGORY_LABELS, MAINTENANCE_SEVERITY_LABELS } from "@/lib/mock/construction";
 import styles from "./page.module.css";
 
 export default function NovoChamadoPosObraPage() {
@@ -34,6 +35,8 @@ export default function NovoChamadoPosObraPage() {
     openedByPersonId: "",
     responsibleUserId: "",
     warrantyDeadlineAt: "",
+    category: "",
+    severity: "MEDIUM",
   });
 
   useEffect(() => {
@@ -80,6 +83,8 @@ export default function NovoChamadoPosObraPage() {
         responsibleUserId: form.responsibleUserId || undefined,
         description: form.description.trim(),
         warrantyDeadlineAt: dateOnlyInputToIso(form.warrantyDeadlineAt),
+        category: form.category || undefined,
+        severity: form.severity || undefined,
       });
       router.push(`/painel/obras/pos-obra/${newCase.id}`);
     } catch (err) {
@@ -131,6 +136,23 @@ export default function NovoChamadoPosObraPage() {
                 <option value="">Nenhum</option>
                 {users.map((u) => (
                   <option key={u.id} value={u.id}>{u.name}</option>
+                ))}
+              </Select>
+            </FormField>
+
+            <FormField label="Categoria" htmlFor="f-category" helper="Opcional">
+              <Select id="f-category" value={form.category} onChange={update("category")}>
+                <option value="">Não classificada</option>
+                {Object.entries(MAINTENANCE_CATEGORY_LABELS).map(([value, label]) => (
+                  <option key={value} value={value}>{label}</option>
+                ))}
+              </Select>
+            </FormField>
+
+            <FormField label="Severidade" htmlFor="f-severity" required>
+              <Select id="f-severity" value={form.severity} onChange={update("severity")}>
+                {Object.entries(MAINTENANCE_SEVERITY_LABELS).map(([value, label]) => (
+                  <option key={value} value={value}>{label}</option>
                 ))}
               </Select>
             </FormField>
