@@ -22,6 +22,9 @@ import {
   MAINTENANCE_ROOT_CAUSE_LABELS,
   MAINTENANCE_ESCALATION_LABELS,
   MAINTENANCE_ESCALATION_TONE,
+  RESOLUTION_TYPE_LABELS,
+  RESOLUTION_STATUS_LABELS,
+  RESOLUTION_STATUS_TONE,
 } from "@/lib/mock/construction";
 import {
   getMaintenanceCase,
@@ -31,6 +34,8 @@ import {
   getProject,
   listWarrantyActions,
   createWarrantyAction,
+  proposeWarrantyResolution,
+  approveWarrantyResolution,
 } from "@/lib/api/construction";
 import { getProperty } from "@/lib/api/properties";
 import { getPerson } from "@/lib/api/people";
@@ -99,6 +104,13 @@ export default function PosObraDetalhePage({ params }) {
   const [actionOpen, setActionOpen] = useState(false);
   const [actionForm, setActionForm] = useState({ description: "", cost: "" });
   const [savingAction, setSavingAction] = useState(false);
+
+  // Desconto/ressarcimento de garantia — regra/aprovação + Financeiro (achado numa rodada de
+  // verificação de integrações, 30/09/2026 — funcionalidade inteira ausente até então).
+  const [resolutionOpen, setResolutionOpen] = useState(false);
+  const [resolutionForm, setResolutionForm] = useState({ resolutionType: "DISCOUNT", resolutionAmount: "" });
+  const [savingResolution, setSavingResolution] = useState(false);
+  const [approvingResolution, setApprovingResolution] = useState(false);
 
   function load() {
     let cancelled = false;
@@ -253,6 +265,43 @@ export default function PosObraDetalhePage({ params }) {
       setActionError(err?.message || "Não foi possível registrar a ação de atendimento.");
     } finally {
       setSavingAction(false);
+    }
+  }
+
+  function openResolutionModal() {
+    setResolutionForm({ resolutionType: "DISCOUNT", resolutionAmount: "" });
+    setResolutionOpen(true);
+  }
+
+  async function handleProposeResolution() {
+    if (resolutionForm.resolutionAmount === "" || Number(resolutionForm.resolutionAmount) <= 0) return;
+    setSavingResolution(true);
+    setActionError("");
+    try {
+      const updated = await proposeWarrantyResolution(maintenanceCase.id, {
+        resolutionType: resolutionForm.resolutionType,
+        resolutionAmount: Number(resolutionForm.resolutionAmount),
+      });
+      setMaintenanceCase(updated);
+      setResolutionOpen(false);
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível propor a resolução.");
+    } finally {
+      setSavingResolution(false);
+    }
+  }
+
+  async function handleApproveResolution() {
+    if (approvingResolution) return;
+    setApprovingResolution(true);
+    setActionError("");
+    try {
+      const updated = await approveWarrantyResolution(maintenanceCase.id);
+      setMaintenanceCase(updated);
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível aprovar a resolução.");
+    } finally {
+      setApprovingResolution(false);
     }
   }
 
@@ -435,6 +484,43 @@ export default function PosObraDetalhePage({ params }) {
                 </div>
               )}
             </Card>
+
+            <Card
+              title="Desconto/ressarcimento"
+              subtitle="Resolução financeira do chamado — passa por regra/aprovação e integra com o Financeiro"
+              actions={
+                !maintenanceCase.resolutionType ? (
+                  <Button size="sm" variant="secondary" onClick={openResolutionModal}>
+                    <Icon name="plus" size={14} /> Propor resolução
+                  </Button>
+                ) : null
+              }
+            >
+              {!maintenanceCase.resolutionType ? (
+                <EmptyState icon="money" title="Sem resolução" description="Nenhum desconto ou ressarcimento foi proposto para este chamado ainda." />
+              ) : (
+                <div className={styles.relatedRow}>
+                  <div className={styles.relatedInfo}>
+                    <span className={styles.relatedTitle}>
+                      {RESOLUTION_TYPE_LABELS[maintenanceCase.resolutionType] || maintenanceCase.resolutionType} · {formatBRL(maintenanceCase.resolutionAmount)}
+                    </span>
+                    <span className={styles.relatedSubtitle}>
+                      {maintenanceCase.resolutionFinancialEntryId ? "Lançamento financeiro criado." : "Ainda sem lançamento financeiro."}
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "var(--space-2)" }}>
+                    <Badge tone={RESOLUTION_STATUS_TONE[maintenanceCase.resolutionStatus] || "neutral"}>
+                      {RESOLUTION_STATUS_LABELS[maintenanceCase.resolutionStatus] || maintenanceCase.resolutionStatus}
+                    </Badge>
+                    {maintenanceCase.resolutionStatus === "PENDING_APPROVAL" ? (
+                      <Button size="sm" variant="primary" onClick={handleApproveResolution} loading={approvingResolution} disabled={approvingResolution}>
+                        Aprovar
+                      </Button>
+                    ) : null}
+                  </div>
+                </div>
+              )}
+            </Card>
           </div>
 
           <div className={styles.sideCol}>
@@ -582,6 +668,45 @@ export default function PosObraDetalhePage({ params }) {
           </div>
           <FormField label="Custo (R$)" htmlFor="a-cost" helper="Opcional">
             <Input id="a-cost" type="number" min="0" step="0.01" value={actionForm.cost} onChange={(e) => setActionForm((p) => ({ ...p, cost: e.target.value }))} placeholder="0,00" />
+          </FormField>
+        </div>
+      </Modal>
+
+      <Modal
+        open={resolutionOpen}
+        onClose={() => setResolutionOpen(false)}
+        title="Propor resolução (desconto/ressarcimento)"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setResolutionOpen(false)}>Cancelar</Button>
+            <Button
+              onClick={handleProposeResolution}
+              loading={savingResolution}
+              disabled={resolutionForm.resolutionAmount === "" || Number(resolutionForm.resolutionAmount) <= 0}
+            >
+              Propor
+            </Button>
+          </>
+        }
+      >
+        <div className={styles.formGrid}>
+          <FormField label="Tipo" htmlFor="r-type" required>
+            <Select id="r-type" value={resolutionForm.resolutionType} onChange={(e) => setResolutionForm((p) => ({ ...p, resolutionType: e.target.value }))}>
+              {Object.entries(RESOLUTION_TYPE_LABELS).map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </Select>
+          </FormField>
+          <FormField label="Valor (R$)" htmlFor="r-amount" required helper="Dentro da alçada configurada, é aprovado automaticamente e já gera o lançamento financeiro; acima da alçada fica pendente de aprovação.">
+            <Input
+              id="r-amount"
+              type="number"
+              min="0.01"
+              step="0.01"
+              value={resolutionForm.resolutionAmount}
+              onChange={(e) => setResolutionForm((p) => ({ ...p, resolutionAmount: e.target.value }))}
+              placeholder="0,00"
+            />
           </FormField>
         </div>
       </Modal>

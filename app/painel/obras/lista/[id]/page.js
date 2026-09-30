@@ -44,6 +44,7 @@ import {
   transitionProject,
   removeProject,
   deliverProject,
+  closeProjectWarranty,
   listProjectStages,
   createProjectStage,
   updateProjectStage,
@@ -74,6 +75,7 @@ import {
   closeNonconformity,
 } from "@/lib/api/construction";
 import { listProperties } from "@/lib/api/properties";
+import { listCostCenters } from "@/lib/api/finance";
 import { uploadFile } from "@/lib/api/legal";
 import { apiFetch } from "@/lib/api/client";
 import { formatBRL, formatDate, formatDateTime, dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
@@ -86,6 +88,7 @@ export default function ObraDetalhePage({ params }) {
   const [project, setProject] = useState(null);
   const [properties, setProperties] = useState([]);
   const [users, setUsers] = useState([]);
+  const [costCenters, setCostCenters] = useState([]);
   const [stages, setStages] = useState([]);
   // FIX (auditoria pós-merge Marco 6, 30/09/2026): histórico de RDO ficava truncado a 5 itens
   // sem nenhuma forma de ver o restante. Mantém a lista completa em `allReports` e um toggle
@@ -104,7 +107,7 @@ export default function ObraDetalhePage({ params }) {
   const [deleteOpen, setDeleteOpen] = useState(false);
 
   const [editOpen, setEditOpen] = useState(false);
-  const [editForm, setEditForm] = useState({ name: "", propertyId: "", responsibleUserId: "", budgetAmount: "", startsAt: "", endsAtPlanned: "" });
+  const [editForm, setEditForm] = useState({ name: "", propertyId: "", responsibleUserId: "", costCenterId: "", budgetAmount: "", startsAt: "", endsAtPlanned: "" });
   const [editDateErrors, setEditDateErrors] = useState({});
   const [rdoDateInvalid, setRdoDateInvalid] = useState(false);
   const [savingEdit, setSavingEdit] = useState(false);
@@ -117,9 +120,15 @@ export default function ObraDetalhePage({ params }) {
   const [savingStage, setSavingStage] = useState(false);
 
   const [rdoOpen, setRdoOpen] = useState(false);
-  const [rdoForm, setRdoForm] = useState({ reportDate: new Date().toISOString().slice(0, 10), weather: WEATHER_OPTIONS[0], workforceCount: "", occurrences: "" });
+  const [rdoForm, setRdoForm] = useState({ reportDate: new Date().toISOString().slice(0, 10), weather: WEATHER_OPTIONS[0], workforceCount: "", occurrences: "", servicesPerformed: "" });
   const [savingRdo, setSavingRdo] = useState(false);
   const [editingRdoId, setEditingRdoId] = useState(null);
+  // Achado numa rodada de verificação de integrações (30/09/2026): a fonte exige "Fotos possuem
+  // hash/origem" — evidência fotográfica do RDO. Reaproveita o mesmo padrão de upload já usado
+  // em Change Orders/Não Conformidades (uploadFile + File.checksumSha256 no backend).
+  const [rdoEvidenceFileIds, setRdoEvidenceFileIds] = useState([]);
+  const [rdoUploading, setRdoUploading] = useState(false);
+  const [rdoUploadError, setRdoUploadError] = useState("");
 
   const [budgetOpen, setBudgetOpen] = useState(false);
   const [budgetForm, setBudgetForm] = useState({ category: "", description: "", plannedAmount: "" });
@@ -192,6 +201,10 @@ export default function ObraDetalhePage({ params }) {
   const [delivering, setDelivering] = useState(false);
   const [deliveryBlocked, setDeliveryBlocked] = useState(false);
 
+  // Fechamento de garantia — gate dedicado (bloqueia com MaintenanceCase ainda aberto).
+  const [closingWarranty, setClosingWarranty] = useState(false);
+  const [warrantyCloseBlocked, setWarrantyCloseBlocked] = useState(false);
+
   function load() {
     let cancelled = false;
     setLoading(true);
@@ -206,12 +219,16 @@ export default function ObraDetalhePage({ params }) {
       }),
       listProperties(),
       apiFetch("/users?status=ACTIVE"),
+      // Centro de custo é opcional — não pode derrubar a página inteira se o usuário não tiver
+      // permissão finance:read (o formulário de edição só perde essa opção específica).
+      listCostCenters().catch(() => []),
     ])
-      .then(([p, props, u]) => {
+      .then(([p, props, u, cc]) => {
         if (cancelled || !p) return;
         setProject(p);
         setProperties(props || []);
         setUsers(u || []);
+        setCostCenters(cc || []);
         return Promise.all([
           listProjectStages(p.id),
           listDailyReports(p.id),
@@ -324,6 +341,7 @@ export default function ObraDetalhePage({ params }) {
       name: project.name,
       propertyId: project.propertyId || "",
       responsibleUserId: project.responsibleUserId || "",
+      costCenterId: project.costCenterId || "",
       budgetAmount: project.budgetAmount != null ? String(project.budgetAmount) : "",
       startsAt: project.startsAt ? project.startsAt.slice(0, 10) : "",
       endsAtPlanned: project.endsAtPlanned ? project.endsAtPlanned.slice(0, 10) : "",
@@ -340,6 +358,7 @@ export default function ObraDetalhePage({ params }) {
         name: editForm.name.trim(),
         propertyId: editForm.propertyId || null,
         responsibleUserId: editForm.responsibleUserId || null,
+        costCenterId: editForm.costCenterId || null,
         budgetAmount: editForm.budgetAmount !== "" ? Number(editForm.budgetAmount) : null,
         startsAt: dateOnlyInputToIso(editForm.startsAt) || null,
         endsAtPlanned: dateOnlyInputToIso(editForm.endsAtPlanned) || null,
@@ -420,8 +439,24 @@ export default function ObraDetalhePage({ params }) {
 
   function openRdoModal() {
     setEditingRdoId(null);
-    setRdoForm({ reportDate: new Date().toISOString().slice(0, 10), weather: WEATHER_OPTIONS[0], workforceCount: "", occurrences: "" });
+    setRdoForm({ reportDate: new Date().toISOString().slice(0, 10), weather: WEATHER_OPTIONS[0], workforceCount: "", occurrences: "", servicesPerformed: "" });
+    setRdoEvidenceFileIds([]);
+    setRdoUploadError("");
     setRdoOpen(true);
+  }
+
+  async function handleUploadRdoEvidence(file) {
+    if (!file) return;
+    setRdoUploading(true);
+    setRdoUploadError("");
+    try {
+      const uploaded = await uploadFile(file);
+      setRdoEvidenceFileIds((prev) => [...prev, uploaded.id]);
+    } catch (err) {
+      setRdoUploadError(err?.message || "Erro ao enviar foto.");
+    } finally {
+      setRdoUploading(false);
+    }
   }
 
   // FIX (homologação 23/09/2026): mesmo caso da etapa — o RDO só podia ser registrado, nunca
@@ -436,7 +471,10 @@ export default function ObraDetalhePage({ params }) {
       weather: report.weather || WEATHER_OPTIONS[0],
       workforceCount: report.workforceCount != null ? String(report.workforceCount) : "",
       occurrences: report.occurrences || "",
+      servicesPerformed: report.servicesPerformed || "",
     });
+    setRdoEvidenceFileIds(Array.isArray(report.evidenceFileIds) ? report.evidenceFileIds : []);
+    setRdoUploadError("");
     setRdoOpen(true);
   }
 
@@ -450,6 +488,8 @@ export default function ObraDetalhePage({ params }) {
         weather: rdoForm.weather,
         workforceCount: Number(rdoForm.workforceCount),
         occurrences: rdoForm.occurrences.trim() || undefined,
+        servicesPerformed: rdoForm.servicesPerformed.trim() || undefined,
+        evidenceFileIds: rdoEvidenceFileIds,
       };
       if (editingRdoId) {
         const updated = await updateDailyReport(editingRdoId, payload);
@@ -797,6 +837,27 @@ export default function ObraDetalhePage({ params }) {
     }
   }
 
+  // Fechamento de garantia (M6-...) — se a API recusar por caso de garantia ainda aberto, mostra
+  // um aviso claro em vez do código de erro técnico cru.
+  async function handleCloseWarranty() {
+    if (closingWarranty) return;
+    setClosingWarranty(true);
+    setActionError("");
+    setWarrantyCloseBlocked(false);
+    try {
+      const updated = await closeProjectWarranty(project.id);
+      setProject(updated);
+    } catch (err) {
+      if (err?.code === "PROJECT_WARRANTY_CLOSE_BLOCKED_BY_OPEN_CASE") {
+        setWarrantyCloseBlocked(true);
+      } else {
+        setActionError(err?.message || "Não foi possível encerrar a garantia da obra.");
+      }
+    } finally {
+      setClosingWarranty(false);
+    }
+  }
+
   const totalPlanned = budgetLines.reduce((s, b) => s + Number(b.plannedAmount || 0), 0);
   const totalActual = budgetLines.reduce((s, b) => s + Number(b.actualAmount || 0), 0);
 
@@ -813,6 +874,15 @@ export default function ObraDetalhePage({ params }) {
             abaixo antes de tentar entregar novamente.
           </Alert>
         ) : null}
+        {warrantyCloseBlocked ? (
+          <Alert tone="danger" title="Encerramento de garantia bloqueado">
+            Não é possível encerrar a garantia da obra: existe pelo menos um{" "}
+            <strong>chamado de garantia ainda aberto</strong> vinculado a este projeto. Feche
+            todos os chamados em{" "}
+            <a href="/painel/obras/pos-obra" className={styles.infoLink}>Pós-obra</a>{" "}
+            antes de tentar encerrar novamente.
+          </Alert>
+        ) : null}
 
         <div className={styles.topRow}>
           <div className={styles.badges}>
@@ -826,9 +896,14 @@ export default function ObraDetalhePage({ params }) {
                 </Button>
               ))
             ) : null}
-            {project.status === "COMPLETED" ? (
+            {project.status === "FINAL_INSPECTION" ? (
               <Button variant="primary" onClick={handleDeliver} loading={delivering} disabled={delivering}>
                 <Icon name="check" size={16} /> Entregar obra
+              </Button>
+            ) : null}
+            {project.status === "WARRANTY" ? (
+              <Button variant="primary" onClick={handleCloseWarranty} loading={closingWarranty} disabled={closingWarranty}>
+                <Icon name="check" size={16} /> Encerrar garantia
               </Button>
             ) : null}
             <Button variant="secondary" onClick={openEditModal}>
@@ -853,6 +928,10 @@ export default function ObraDetalhePage({ params }) {
             <div>
               <p className={styles.infoLabel}>Responsável</p>
               <p className={styles.infoValue}>{responsible?.name || "—"}</p>
+            </div>
+            <div>
+              <p className={styles.infoLabel}>Centro de custo</p>
+              <p className={styles.infoValue}>{costCenters.find((c) => c.id === project.costCenterId)?.name || "—"}</p>
             </div>
             <div>
               <p className={styles.infoLabel}>Orçamento planejado</p>
@@ -998,6 +1077,12 @@ export default function ObraDetalhePage({ params }) {
                     <span className={styles.rowSubtitle}>
                       Efetivo: {r.workforceCount} · {r.occurrences || "Sem ocorrências"}
                     </span>
+                    {r.servicesPerformed ? (
+                      <span className={styles.rowSubtitle}>Serviços: {r.servicesPerformed}</span>
+                    ) : null}
+                    {r.evidenceFileIds?.length ? (
+                      <span className={styles.rowSubtitle}>{r.evidenceFileIds.length} foto(s) anexada(s)</span>
+                    ) : null}
                   </div>
                   <button
                     type="button"
@@ -1357,6 +1442,14 @@ export default function ObraDetalhePage({ params }) {
               ))}
             </Select>
           </FormField>
+          <FormField label="Centro de custo" htmlFor="e-cost-center" helper="Opcional — usado no relatório de margem por obra">
+            <Select id="e-cost-center" value={editForm.costCenterId} onChange={(e) => setEditForm((p) => ({ ...p, costCenterId: e.target.value }))}>
+              <option value="">Nenhum</option>
+              {costCenters.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </Select>
+          </FormField>
           <FormField label="Orçamento (R$)" htmlFor="e-budget" helper="Opcional">
             <Input id="e-budget" type="number" min="0" step="0.01" value={editForm.budgetAmount} onChange={(e) => setEditForm((p) => ({ ...p, budgetAmount: e.target.value }))} />
           </FormField>
@@ -1489,6 +1582,35 @@ export default function ObraDetalhePage({ params }) {
                 value={rdoForm.occurrences}
                 onChange={(e) => setRdoForm((p) => ({ ...p, occurrences: e.target.value }))}
               />
+            </FormField>
+          </div>
+          <div className={styles.span2}>
+            <FormField label="Serviços executados" htmlFor="m-rdo-services" helper="Opcional">
+              <textarea
+                id="m-rdo-services"
+                className={styles.textarea}
+                rows={3}
+                value={rdoForm.servicesPerformed}
+                onChange={(e) => setRdoForm((p) => ({ ...p, servicesPerformed: e.target.value }))}
+                placeholder="Ex: Concretagem da laje do 2º pavimento, instalação elétrica do térreo"
+              />
+            </FormField>
+          </div>
+          <div className={styles.span2}>
+            <FormField
+              label="Fotos do dia"
+              htmlFor="m-rdo-evidence"
+              helper={rdoEvidenceFileIds.length ? `${rdoEvidenceFileIds.length} foto(s) anexada(s)` : "Opcional — evidência fotográfica do andamento da obra"}
+              error={rdoUploadError || undefined}
+            >
+              <input
+                id="m-rdo-evidence"
+                type="file"
+                accept="image/*"
+                disabled={rdoUploading}
+                onChange={(e) => handleUploadRdoEvidence(e.target.files?.[0])}
+              />
+              {rdoUploading ? <Spinner size="sm" /> : null}
             </FormField>
           </div>
         </div>

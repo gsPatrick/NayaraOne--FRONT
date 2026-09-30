@@ -103,8 +103,8 @@ export default function ObrasListaPage() {
     setPage(1);
   }
 
-  const inProgressCount = projects.filter((p) => p.status === "IN_PROGRESS").length;
-  const completedCount = projects.filter((p) => p.status === "COMPLETED").length;
+  const inProgressCount = projects.filter((p) => p.status === "ACTIVE").length;
+  const completedCount = projects.filter((p) => p.status === "DELIVERED").length;
   const totalBudget = projects.reduce((s, p) => s + Number(p.budgetAmount || 0), 0);
 
   const columns = [

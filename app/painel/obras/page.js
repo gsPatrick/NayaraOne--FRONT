@@ -12,7 +12,7 @@ import Alert from "@/components/molecules/Alert/Alert";
 import BarList from "@/components/molecules/BarList/BarList";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import { SkeletonCardGrid } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
-import { PROJECT_STATUS_LABELS, PROJECT_STATUS_TONE, MAINTENANCE_STATUS_LABELS, MAINTENANCE_STATUS_TONE } from "@/lib/mock/construction";
+import { PROJECT_STATUS_LABELS, PROJECT_STATUS_TONE, PROJECT_TERMINAL_STATUSES, MAINTENANCE_STATUS_LABELS, MAINTENANCE_STATUS_TONE } from "@/lib/mock/construction";
 import { listProjects, listMaintenanceCases } from "@/lib/api/construction";
 import { listProperties } from "@/lib/api/properties";
 import { apiFetch } from "@/lib/api/client";
@@ -58,10 +58,10 @@ export default function ObrasHubPage() {
     return users.find((u) => u.id === id);
   }
 
-  const inProgress = useMemo(() => projects.filter((p) => p.status === "IN_PROGRESS"), [projects]);
+  const inProgress = useMemo(() => projects.filter((p) => p.status === "ACTIVE"), [projects]);
   const totalBudget = useMemo(() => projects.reduce((sum, p) => sum + Number(p.budgetAmount || 0), 0), [projects]);
   const overdueProjects = useMemo(
-    () => projects.filter((p) => p.status !== "COMPLETED" && p.status !== "CANCELLED" && isOverdue(p.endsAtPlanned)),
+    () => projects.filter((p) => !PROJECT_TERMINAL_STATUSES.includes(p.status) && isOverdue(p.endsAtPlanned)),
     [projects]
   );
   const openMaintenance = useMemo(
@@ -75,7 +75,7 @@ export default function ObrasHubPage() {
   const upcomingDeadlines = useMemo(
     () =>
       [...projects]
-        .filter((p) => p.status !== "COMPLETED" && p.status !== "CANCELLED" && p.endsAtPlanned)
+        .filter((p) => !PROJECT_TERMINAL_STATUSES.includes(p.status) && p.endsAtPlanned)
         .sort((a, b) => new Date(a.endsAtPlanned) - new Date(b.endsAtPlanned))
         .slice(0, 5),
     [projects]

@@ -12,6 +12,7 @@ import Alert from "@/components/molecules/Alert/Alert";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import { createProject } from "@/lib/api/construction";
 import { listProperties } from "@/lib/api/properties";
+import { listCostCenters } from "@/lib/api/finance";
 import { apiFetch } from "@/lib/api/client";
 import { dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
 import styles from "./page.module.css";
@@ -24,10 +25,12 @@ export default function NovaObraPage() {
   const [actionError, setActionError] = useState("");
   const [properties, setProperties] = useState([]);
   const [users, setUsers] = useState([]);
+  const [costCenters, setCostCenters] = useState([]);
   const [form, setForm] = useState({
     name: "",
     propertyId: "",
     responsibleUserId: "",
+    costCenterId: "",
     budgetAmount: "",
     startsAt: "",
     endsAtPlanned: "",
@@ -39,11 +42,14 @@ export default function NovaObraPage() {
     setLoadError("");
     // FIX (padrão do seletor de responsável): filtra apenas usuários ACTIVE, evitando
     // usuários suspensos/de QA na lista.
-    Promise.all([listProperties(), apiFetch("/users?status=ACTIVE")])
-      .then(([props, u]) => {
+    // listCostCenters() tem `.catch(() => [])` próprio: centro de custo é opcional e não pode
+    // derrubar o formulário inteiro se o usuário não tiver permissão finance:read.
+    Promise.all([listProperties(), apiFetch("/users?status=ACTIVE"), listCostCenters().catch(() => [])])
+      .then(([props, u, cc]) => {
         if (cancelled) return;
         setProperties(props || []);
         setUsers(u || []);
+        setCostCenters(cc || []);
       })
       .catch((err) => {
         if (!cancelled) setLoadError(err?.message || "Não foi possível carregar os dados do formulário.");
@@ -82,6 +88,7 @@ export default function NovaObraPage() {
         propertyId: form.propertyId || undefined,
         name: form.name.trim(),
         responsibleUserId: form.responsibleUserId || undefined,
+        costCenterId: form.costCenterId || undefined,
         budgetAmount: form.budgetAmount ? Number(form.budgetAmount) : undefined,
         startsAt: dateOnlyInputToIso(form.startsAt),
         endsAtPlanned: dateOnlyInputToIso(form.endsAtPlanned),
@@ -124,6 +131,15 @@ export default function NovaObraPage() {
                 <option value="">Nenhum</option>
                 {users.map((u) => (
                   <option key={u.id} value={u.id}>{u.name}</option>
+                ))}
+              </Select>
+            </FormField>
+
+            <FormField label="Centro de custo" htmlFor="f-cost-center" helper="Opcional — usado no relatório de margem por obra">
+              <Select id="f-cost-center" value={form.costCenterId} onChange={update("costCenterId")}>
+                <option value="">Nenhum</option>
+                {costCenters.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
               </Select>
             </FormField>
