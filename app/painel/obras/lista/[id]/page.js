@@ -56,6 +56,7 @@ import {
   listDailyMaterials,
   listBudgetLines,
   createBudgetLine,
+  updateBudgetLine,
   listQualityItems,
   createQualityItem,
   checkQualityItem,
@@ -151,6 +152,7 @@ export default function ObraDetalhePage({ params }) {
 
   const [budgetOpen, setBudgetOpen] = useState(false);
   const [budgetForm, setBudgetForm] = useState({ category: "", description: "", plannedAmount: "" });
+  const [editingBudgetLineId, setEditingBudgetLineId] = useState(null);
   const [savingBudget, setSavingBudget] = useState(false);
 
   const [qualityOpen, setQualityOpen] = useState(false);
@@ -637,24 +639,48 @@ export default function ObraDetalhePage({ params }) {
   }
 
   function openBudgetModal() {
+    setEditingBudgetLineId(null);
     setBudgetForm({ category: "", description: "", plannedAmount: "" });
     setBudgetOpen(true);
   }
+
+  // Achado numa varredura final do Front do Marco 6: updateBudgetLine já existia na API (e no
+  // wrapper do Front), mas nenhuma tela chamava — não dava pra corrigir categoria/descrição de
+  // uma linha, nem o valor planejado antes da aprovação do orçamento. Mesmo modal de criação,
+  // reaproveitado pra editar (valor planejado trava quando o orçamento agregado já está
+  // aprovado — mesma regra que o backend aplica em updateBudgetLine).
+  function openBudgetLineEditModal(line) {
+    setEditingBudgetLineId(line.id);
+    setBudgetForm({
+      category: line.category || "",
+      description: line.description || "",
+      plannedAmount: line.plannedAmount != null ? String(Number(line.plannedAmount)) : "",
+    });
+    setBudgetOpen(true);
+  }
+
   async function handleCreateBudgetLine() {
     if (!budgetForm.category.trim() || budgetForm.plannedAmount === "" || toNumber(budgetForm.plannedAmount) < 0) return;
     setSavingBudget(true);
     setActionError("");
     try {
-      const created = await createBudgetLine(project.id, {
-        category: budgetForm.category.trim(),
-        description: budgetForm.description.trim() || undefined,
-        plannedAmount: toNumber(budgetForm.plannedAmount),
-        budgetId: budget?.id || undefined,
-      });
-      setBudgetLines((prev) => [...prev, created]);
+      if (editingBudgetLineId) {
+        const payload = { category: budgetForm.category.trim(), description: budgetForm.description.trim() || null };
+        if (budget?.status !== "APPROVED") payload.plannedAmount = toNumber(budgetForm.plannedAmount);
+        const updated = await updateBudgetLine(editingBudgetLineId, payload);
+        setBudgetLines((prev) => prev.map((l) => (l.id === updated.id ? updated : l)));
+      } else {
+        const created = await createBudgetLine(project.id, {
+          category: budgetForm.category.trim(),
+          description: budgetForm.description.trim() || undefined,
+          plannedAmount: toNumber(budgetForm.plannedAmount),
+          budgetId: budget?.id || undefined,
+        });
+        setBudgetLines((prev) => [...prev, created]);
+      }
       setBudgetOpen(false);
     } catch (err) {
-      setActionError(err?.message || "Não foi possível criar a linha de orçamento.");
+      setActionError(err?.message || "Não foi possível salvar a linha de orçamento.");
     } finally {
       setSavingBudget(false);
     }
@@ -1376,6 +1402,7 @@ export default function ObraDetalhePage({ params }) {
                     <th>Descrição</th>
                     <th>Planejado</th>
                     <th>Realizado</th>
+                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1390,6 +1417,16 @@ export default function ObraDetalhePage({ params }) {
                         ) : null}
                       </td>
                       <td>{formatBRL(b.actualAmount)}</td>
+                      <td>
+                        <button
+                          type="button"
+                          className={styles.rowEditBtn}
+                          aria-label={`Editar linha ${b.category}`}
+                          onClick={() => openBudgetLineEditModal(b)}
+                        >
+                          <Icon name="pencil" size={14} />
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -1997,11 +2034,11 @@ export default function ObraDetalhePage({ params }) {
       <Modal
         open={budgetOpen}
         onClose={() => setBudgetOpen(false)}
-        title="Nova linha de orçamento"
+        title={editingBudgetLineId ? "Editar linha de orçamento" : "Nova linha de orçamento"}
         footer={
           <>
             <Button variant="secondary" onClick={() => setBudgetOpen(false)}>Cancelar</Button>
-            <Button onClick={handleCreateBudgetLine} loading={savingBudget} disabled={!budgetForm.category.trim() || budgetForm.plannedAmount === ""}>Criar linha</Button>
+            <Button onClick={handleCreateBudgetLine} loading={savingBudget} disabled={!budgetForm.category.trim() || budgetForm.plannedAmount === ""}>{editingBudgetLineId ? "Salvar alterações" : "Criar linha"}</Button>
           </>
         }
       >
@@ -2009,8 +2046,19 @@ export default function ObraDetalhePage({ params }) {
           <FormField label="Categoria" htmlFor="m-budget-category" required>
             <Input id="m-budget-category" value={budgetForm.category} onChange={(e) => setBudgetForm((p) => ({ ...p, category: e.target.value }))} placeholder="Ex: Fundação e estrutura" />
           </FormField>
-          <FormField label="Valor planejado (R$)" htmlFor="m-budget-planned" required>
-            <DecimalInput id="m-budget-planned" value={budgetForm.plannedAmount} onChange={(e) => setBudgetForm((p) => ({ ...p, plannedAmount: e.target.value }))} placeholder="0,00" />
+          <FormField
+            label="Valor planejado (R$)"
+            htmlFor="m-budget-planned"
+            required
+            helper={editingBudgetLineId && budget?.status === "APPROVED" ? "Baseline já aprovada — valor só muda via Change Order." : undefined}
+          >
+            <DecimalInput
+              id="m-budget-planned"
+              value={budgetForm.plannedAmount}
+              onChange={(e) => setBudgetForm((p) => ({ ...p, plannedAmount: e.target.value }))}
+              placeholder="0,00"
+              disabled={editingBudgetLineId != null && budget?.status === "APPROVED"}
+            />
           </FormField>
           <div className={styles.span2}>
             <FormField label="Descrição" htmlFor="m-budget-description" helper="Opcional">
