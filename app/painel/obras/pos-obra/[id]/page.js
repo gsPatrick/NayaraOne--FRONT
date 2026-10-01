@@ -9,6 +9,7 @@ import Button from "@/components/atoms/Button/Button";
 import Icon from "@/components/atoms/Icon/Icon";
 import Select from "@/components/atoms/Select/Select";
 import Input from "@/components/atoms/Input/Input";
+import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import FormField from "@/components/molecules/FormField/FormField";
 import Modal from "@/components/organisms/Modal/Modal";
 import Alert from "@/components/molecules/Alert/Alert";
@@ -40,7 +41,7 @@ import {
 import { getProperty } from "@/lib/api/properties";
 import { getPerson } from "@/lib/api/people";
 import { apiFetch } from "@/lib/api/client";
-import { formatBRL, formatDate, formatDateTime, dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
+import { formatBRL, formatDate, formatDateTime, dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE, toNumber } from "@/lib/format";
 import styles from "./page.module.css";
 
 const STATUS_STEPS = ["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"];
@@ -233,8 +234,8 @@ export default function PosObraDetalhePage({ params }) {
         category: editForm.category || null,
         severity: editForm.severity || undefined,
         rootCauseCode: editForm.rootCauseCode || null,
-        laborCost: editForm.laborCost !== "" ? Number(editForm.laborCost) : null,
-        materialCost: editForm.materialCost !== "" ? Number(editForm.materialCost) : null,
+        laborCost: editForm.laborCost !== "" ? toNumber(editForm.laborCost) : null,
+        materialCost: editForm.materialCost !== "" ? toNumber(editForm.materialCost) : null,
       });
       setMaintenanceCase(updated);
       setEditOpen(false);
@@ -257,7 +258,7 @@ export default function PosObraDetalhePage({ params }) {
     try {
       const created = await createWarrantyAction(maintenanceCase.id, {
         description: actionForm.description.trim(),
-        cost: actionForm.cost !== "" ? Number(actionForm.cost) : undefined,
+        cost: actionForm.cost !== "" ? toNumber(actionForm.cost) : undefined,
       });
       setWarrantyActions((prev) => [created, ...prev]);
       setActionOpen(false);
@@ -274,13 +275,13 @@ export default function PosObraDetalhePage({ params }) {
   }
 
   async function handleProposeResolution() {
-    if (resolutionForm.resolutionAmount === "" || Number(resolutionForm.resolutionAmount) <= 0) return;
+    if (resolutionForm.resolutionAmount === "" || toNumber(resolutionForm.resolutionAmount) <= 0) return;
     setSavingResolution(true);
     setActionError("");
     try {
       const updated = await proposeWarrantyResolution(maintenanceCase.id, {
         resolutionType: resolutionForm.resolutionType,
-        resolutionAmount: Number(resolutionForm.resolutionAmount),
+        resolutionAmount: toNumber(resolutionForm.resolutionAmount),
       });
       setMaintenanceCase(updated);
       setResolutionOpen(false);
@@ -634,10 +635,10 @@ export default function PosObraDetalhePage({ params }) {
             </Select>
           </FormField>
           <FormField label="Custo de mão de obra (R$)" htmlFor="e-labor-cost" helper="Opcional">
-            <Input id="e-labor-cost" type="number" min="0" step="0.01" value={editForm.laborCost} onChange={(e) => setEditForm((p) => ({ ...p, laborCost: e.target.value }))} />
+            <DecimalInput id="e-labor-cost" value={editForm.laborCost} onChange={(e) => setEditForm((p) => ({ ...p, laborCost: e.target.value }))} />
           </FormField>
           <FormField label="Custo de material (R$)" htmlFor="e-material-cost" helper="Opcional">
-            <Input id="e-material-cost" type="number" min="0" step="0.01" value={editForm.materialCost} onChange={(e) => setEditForm((p) => ({ ...p, materialCost: e.target.value }))} />
+            <DecimalInput id="e-material-cost" value={editForm.materialCost} onChange={(e) => setEditForm((p) => ({ ...p, materialCost: e.target.value }))} />
           </FormField>
         </div>
       </Modal>
@@ -667,7 +668,7 @@ export default function PosObraDetalhePage({ params }) {
             </FormField>
           </div>
           <FormField label="Custo (R$)" htmlFor="a-cost" helper="Opcional">
-            <Input id="a-cost" type="number" min="0" step="0.01" value={actionForm.cost} onChange={(e) => setActionForm((p) => ({ ...p, cost: e.target.value }))} placeholder="0,00" />
+            <DecimalInput id="a-cost" value={actionForm.cost} onChange={(e) => setActionForm((p) => ({ ...p, cost: e.target.value }))} placeholder="0,00" />
           </FormField>
         </div>
       </Modal>
@@ -682,7 +683,7 @@ export default function PosObraDetalhePage({ params }) {
             <Button
               onClick={handleProposeResolution}
               loading={savingResolution}
-              disabled={resolutionForm.resolutionAmount === "" || Number(resolutionForm.resolutionAmount) <= 0}
+              disabled={resolutionForm.resolutionAmount === "" || toNumber(resolutionForm.resolutionAmount) <= 0}
             >
               Propor
             </Button>
@@ -698,11 +699,8 @@ export default function PosObraDetalhePage({ params }) {
             </Select>
           </FormField>
           <FormField label="Valor (R$)" htmlFor="r-amount" required helper="Dentro da alçada configurada, é aprovado automaticamente e já gera o lançamento financeiro; acima da alçada fica pendente de aprovação.">
-            <Input
+            <DecimalInput
               id="r-amount"
-              type="number"
-              min="0.01"
-              step="0.01"
               value={resolutionForm.resolutionAmount}
               onChange={(e) => setResolutionForm((p) => ({ ...p, resolutionAmount: e.target.value }))}
               placeholder="0,00"

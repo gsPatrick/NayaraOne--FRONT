@@ -11,7 +11,8 @@ import styles from "./FileDropInput.module.css";
 // destoante do resto do app. Componente único, reutilizado em todos esses pontos.
 //
 // fileNames: nomes já selecionados/enviados, exibidos como chips removíveis (onRemove opcional).
-// onFiles recebe a FileList bruta (o caller decide se processa 1 ou todos os arquivos).
+// onFiles recebe um array de File (não a FileList bruta — ver nota em handleFiles abaixo sobre
+// por que isso importa).
 export default function FileDropInput({
   id,
   accept,
@@ -28,7 +29,15 @@ export default function FileDropInput({
 
   function handleFiles(fileList) {
     if (!fileList || fileList.length === 0) return;
-    onFiles?.(fileList);
+    // BUG REAL CORRIGIDO (achado numa auditoria final do Marco 6, 30/09/2026): o <input> de
+    // arquivo reseta `value = ""` logo depois de disparar onChange (pra permitir selecionar o
+    // MESMO arquivo de novo em seguida) — isso também esvazia a FileList "ao vivo" do próprio
+    // input. Chamadores que só leem `files[0]` dentro de um updater de estado do React (ex.:
+    // `onFiles={(files) => setForm(p => ({...p, file: files[0] || null}))}`) liam essa
+    // referência DEPOIS do reset já ter rodado, sempre recebendo lista vazia — o upload parecia
+    // funcionar (sem erro) mas o arquivo NUNCA era anexado de verdade. `Array.from` aqui copia
+    // os arquivos pra um array comum ANTES do reset, cortando a ligação com o input nativo.
+    onFiles?.(Array.from(fileList));
   }
 
   return (

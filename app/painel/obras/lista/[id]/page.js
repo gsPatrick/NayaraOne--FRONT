@@ -12,6 +12,7 @@ import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import FormField from "@/components/molecules/FormField/FormField";
 import Input from "@/components/atoms/Input/Input";
+import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import Select from "@/components/atoms/Select/Select";
 import FileDropInput from "@/components/molecules/FileDropInput/FileDropInput";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
@@ -86,7 +87,7 @@ import { listCostCenters } from "@/lib/api/finance";
 import { listPeople } from "@/lib/api/people";
 import { uploadFile } from "@/lib/api/legal";
 import { apiFetch } from "@/lib/api/client";
-import { formatBRL, formatQuantity, formatPercent, formatDate, formatDateTime, dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
+import { formatBRL, formatQuantity, formatPercent, formatDate, formatDateTime, dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE, toNumber } from "@/lib/format";
 import styles from "./page.module.css";
 
 const WEATHER_OPTIONS = ["Ensolarado", "Nublado", "Chuvoso", "Ventania"];
@@ -413,7 +414,7 @@ export default function ObraDetalhePage({ params }) {
         propertyId: editForm.propertyId || null,
         responsibleUserId: editForm.responsibleUserId || null,
         costCenterId: editForm.costCenterId || null,
-        budgetAmount: editForm.budgetAmount !== "" ? Number(editForm.budgetAmount) : null,
+        budgetAmount: editForm.budgetAmount !== "" ? toNumber(editForm.budgetAmount) : null,
         startsAt: dateOnlyInputToIso(editForm.startsAt) || null,
         endsAtPlanned: dateOnlyInputToIso(editForm.endsAtPlanned) || null,
       });
@@ -474,7 +475,7 @@ export default function ObraDetalhePage({ params }) {
       const payload = {
         name: stageForm.name.trim(),
         sequence: Number(stageForm.sequence),
-        plannedPct: stageForm.plannedPct !== "" ? Number(stageForm.plannedPct) : undefined,
+        plannedPct: stageForm.plannedPct !== "" ? toNumber(stageForm.plannedPct) : undefined,
       };
       if (editingStageId) {
         const updated = await updateProjectStage(editingStageId, payload);
@@ -618,7 +619,7 @@ export default function ObraDetalhePage({ params }) {
         workers: rdoWorkers.filter((w) => w.personId),
         materials: rdoMaterials
           .filter((m) => m.materialDescription && m.quantity !== "" && m.unit)
-          .map((m) => ({ ...m, quantity: Number(m.quantity) })),
+          .map((m) => ({ ...m, quantity: toNumber(m.quantity) })),
       };
       if (editingRdoId) {
         const updated = await updateDailyReport(editingRdoId, payload);
@@ -640,14 +641,14 @@ export default function ObraDetalhePage({ params }) {
     setBudgetOpen(true);
   }
   async function handleCreateBudgetLine() {
-    if (!budgetForm.category.trim() || budgetForm.plannedAmount === "" || Number(budgetForm.plannedAmount) < 0) return;
+    if (!budgetForm.category.trim() || budgetForm.plannedAmount === "" || toNumber(budgetForm.plannedAmount) < 0) return;
     setSavingBudget(true);
     setActionError("");
     try {
       const created = await createBudgetLine(project.id, {
         category: budgetForm.category.trim(),
         description: budgetForm.description.trim() || undefined,
-        plannedAmount: Number(budgetForm.plannedAmount),
+        plannedAmount: toNumber(budgetForm.plannedAmount),
         budgetId: budget?.id || undefined,
       });
       setBudgetLines((prev) => [...prev, created]);
@@ -694,7 +695,7 @@ export default function ObraDetalhePage({ params }) {
   }
 
   const isChangeOrderValid =
-    coForm.reasonCode !== "" && coForm.description.trim() !== "" && coForm.budgetImpact !== "" && !Number.isNaN(Number(coForm.budgetImpact));
+    coForm.reasonCode !== "" && coForm.description.trim() !== "" && coForm.budgetImpact !== "" && !Number.isNaN(toNumber(coForm.budgetImpact));
 
   async function handleCreateChangeOrder() {
     if (!isChangeOrderValid) return;
@@ -709,7 +710,7 @@ export default function ObraDetalhePage({ params }) {
       const created = await createChangeOrder(project.id, {
         reasonCode: coForm.reasonCode,
         description: coForm.description.trim(),
-        budgetImpact: Number(coForm.budgetImpact),
+        budgetImpact: toNumber(coForm.budgetImpact),
         scheduleImpactDays: coForm.scheduleImpactDays !== "" ? Number(coForm.scheduleImpactDays) : undefined,
         evidenceFileIds,
       });
@@ -767,13 +768,13 @@ export default function ObraDetalhePage({ params }) {
     setMaterialOpen(true);
   }
   async function handleCreateMaterialRequest() {
-    if (!materialForm.description.trim() || materialForm.quantity === "" || Number(materialForm.quantity) <= 0 || !materialForm.unit.trim()) return;
+    if (!materialForm.description.trim() || materialForm.quantity === "" || toNumber(materialForm.quantity) <= 0 || !materialForm.unit.trim()) return;
     setSavingMaterial(true);
     setActionError("");
     try {
       const created = await createMaterialRequest(project.id, {
         description: materialForm.description.trim(),
-        quantity: Number(materialForm.quantity),
+        quantity: toNumber(materialForm.quantity),
         unit: materialForm.unit.trim(),
       });
       setMaterialRequests((prev) => [created, ...prev]);
@@ -803,14 +804,14 @@ export default function ObraDetalhePage({ params }) {
     setLossOpen(true);
   }
   async function handleCreateLossRecord() {
-    if (!lossForm.materialDescription.trim() || lossForm.quantity === "" || Number(lossForm.quantity) <= 0 || lossForm.estimatedValue === "" || !lossForm.reason.trim()) return;
+    if (!lossForm.materialDescription.trim() || lossForm.quantity === "" || toNumber(lossForm.quantity) <= 0 || lossForm.estimatedValue === "" || !lossForm.reason.trim()) return;
     setSavingLoss(true);
     setActionError("");
     try {
       const created = await createLossRecord(project.id, {
         materialDescription: lossForm.materialDescription.trim(),
-        quantity: Number(lossForm.quantity),
-        estimatedValue: Number(lossForm.estimatedValue),
+        quantity: toNumber(lossForm.quantity),
+        estimatedValue: toNumber(lossForm.estimatedValue),
         reason: lossForm.reason.trim(),
       });
       setLossRecords((prev) => [created, ...prev]);
@@ -854,7 +855,7 @@ export default function ObraDetalhePage({ params }) {
   }
 
   async function handleSaveThreshold() {
-    if (thresholdAmount === "" || Number(thresholdAmount) <= 0) return;
+    if (thresholdAmount === "" || toNumber(thresholdAmount) <= 0) return;
     setSavingThreshold(true);
     setActionError("");
     try {
@@ -862,7 +863,7 @@ export default function ObraDetalhePage({ params }) {
         groupId: project.groupId,
         companyId: project.companyId,
         context: "MATERIAL_LOSS",
-        maxAutoApproveAmount: Number(thresholdAmount),
+        maxAutoApproveAmount: toNumber(thresholdAmount),
       });
       setThresholdOpen(false);
     } catch (err) {
@@ -878,14 +879,14 @@ export default function ObraDetalhePage({ params }) {
   }
 
   async function handleSaveMarginRule() {
-    if (marginRulePct === "" || Number(marginRulePct) < 0) return;
+    if (marginRulePct === "" || toNumber(marginRulePct) < 0) return;
     setSavingMarginRule(true);
     setActionError("");
     try {
       const rule = await createMarginRule({
         groupId: project.groupId,
         companyId: project.companyId,
-        minMarginPct: Number(marginRulePct),
+        minMarginPct: toNumber(marginRulePct),
       });
       setActiveMarginRule(rule);
       setMarginRuleOpen(false);
@@ -1691,7 +1692,7 @@ export default function ObraDetalhePage({ params }) {
             </Select>
           </FormField>
           <FormField label="Orçamento (R$)" htmlFor="e-budget" helper="Opcional">
-            <Input id="e-budget" type="number" min="0" step="0.01" value={editForm.budgetAmount} onChange={(e) => setEditForm((p) => ({ ...p, budgetAmount: e.target.value }))} />
+            <DecimalInput id="e-budget" value={editForm.budgetAmount} onChange={(e) => setEditForm((p) => ({ ...p, budgetAmount: e.target.value }))} />
           </FormField>
           <FormField
             label="Início"
@@ -1771,7 +1772,7 @@ export default function ObraDetalhePage({ params }) {
             <Input id="m-stage-seq" type="number" min="1" value={stageForm.sequence} onChange={(e) => setStageForm((p) => ({ ...p, sequence: e.target.value }))} />
           </FormField>
           <FormField label="Percentual planejado (%)" htmlFor="m-stage-pct" helper="Opcional">
-            <Input id="m-stage-pct" type="number" min="0" max="100" value={stageForm.plannedPct} onChange={(e) => setStageForm((p) => ({ ...p, plannedPct: e.target.value }))} />
+            <DecimalInput id="m-stage-pct" value={stageForm.plannedPct} onChange={(e) => setStageForm((p) => ({ ...p, plannedPct: e.target.value }))} />
           </FormField>
         </div>
       </Modal>
@@ -1783,7 +1784,7 @@ export default function ObraDetalhePage({ params }) {
         footer={
           <>
             <Button variant="secondary" onClick={() => setThresholdOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSaveThreshold} loading={savingThreshold} disabled={thresholdAmount === "" || Number(thresholdAmount) <= 0}>Salvar</Button>
+            <Button onClick={handleSaveThreshold} loading={savingThreshold} disabled={thresholdAmount === "" || toNumber(thresholdAmount) <= 0}>Salvar</Button>
           </>
         }
       >
@@ -1793,11 +1794,8 @@ export default function ObraDetalhePage({ params }) {
           required
           helper="Perdas de material com valor estimado até este limite são aprovadas automaticamente; acima, exigem aprovação explícita. Configuração válida para toda a empresa (padrão: R$ 1.000,00)."
         >
-          <Input
+          <DecimalInput
             id="m-threshold-amount"
-            type="number"
-            min="0.01"
-            step="0.01"
             value={thresholdAmount}
             onChange={(e) => setThresholdAmount(e.target.value)}
             placeholder="1000,00"
@@ -1812,7 +1810,7 @@ export default function ObraDetalhePage({ params }) {
         footer={
           <>
             <Button variant="secondary" onClick={() => setMarginRuleOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSaveMarginRule} loading={savingMarginRule} disabled={marginRulePct === "" || Number(marginRulePct) < 0}>Salvar</Button>
+            <Button onClick={handleSaveMarginRule} loading={savingMarginRule} disabled={marginRulePct === "" || toNumber(marginRulePct) < 0}>Salvar</Button>
           </>
         }
       >
@@ -1822,11 +1820,8 @@ export default function ObraDetalhePage({ params }) {
           required
           helper="Orçamento só é aprovado se a margem projetada (receita - custo) for maior ou igual a este percentual. Salvar cria uma nova versão — a versão anterior fica preservada no histórico, sem afetar orçamentos já aprovados com ela. Configuração válida para toda a empresa."
         >
-          <Input
+          <DecimalInput
             id="m-margin-pct"
-            type="number"
-            min="0"
-            step="0.01"
             value={marginRulePct}
             onChange={(e) => setMarginRulePct(e.target.value)}
             placeholder="10,00"
@@ -1971,10 +1966,7 @@ export default function ObraDetalhePage({ params }) {
                       placeholder="Material (ex: Cimento CP-II)"
                       aria-label={`Descrição do material ${i + 1}`}
                     />
-                    <Input
-                      type="number"
-                      min="0"
-                      step="0.001"
+                    <DecimalInput
                       value={m.quantity}
                       onChange={(e) => updateRdoMaterial(i, "quantity", e.target.value)}
                       placeholder="Qtd"
@@ -2018,7 +2010,7 @@ export default function ObraDetalhePage({ params }) {
             <Input id="m-budget-category" value={budgetForm.category} onChange={(e) => setBudgetForm((p) => ({ ...p, category: e.target.value }))} placeholder="Ex: Fundação e estrutura" />
           </FormField>
           <FormField label="Valor planejado (R$)" htmlFor="m-budget-planned" required>
-            <Input id="m-budget-planned" type="number" min="0" step="0.01" value={budgetForm.plannedAmount} onChange={(e) => setBudgetForm((p) => ({ ...p, plannedAmount: e.target.value }))} placeholder="0,00" />
+            <DecimalInput id="m-budget-planned" value={budgetForm.plannedAmount} onChange={(e) => setBudgetForm((p) => ({ ...p, plannedAmount: e.target.value }))} placeholder="0,00" />
           </FormField>
           <div className={styles.span2}>
             <FormField label="Descrição" htmlFor="m-budget-description" helper="Opcional">
@@ -2067,7 +2059,7 @@ export default function ObraDetalhePage({ params }) {
             </Select>
           </FormField>
           <FormField label="Impacto financeiro (R$)" htmlFor="m-co-impact" required helper="Positivo aumenta o orçamento, negativo reduz">
-            <Input id="m-co-impact" type="number" step="0.01" value={coForm.budgetImpact} onChange={(e) => setCoForm((p) => ({ ...p, budgetImpact: e.target.value }))} placeholder="0,00" />
+            <DecimalInput id="m-co-impact" value={coForm.budgetImpact} onChange={(e) => setCoForm((p) => ({ ...p, budgetImpact: e.target.value }))} placeholder="0,00" />
           </FormField>
           <FormField label="Impacto de prazo (dias)" htmlFor="m-co-schedule" helper="Opcional">
             <Input id="m-co-schedule" type="number" value={coForm.scheduleImpactDays} onChange={(e) => setCoForm((p) => ({ ...p, scheduleImpactDays: e.target.value }))} placeholder="0" />
@@ -2173,7 +2165,7 @@ export default function ObraDetalhePage({ params }) {
             <Button
               onClick={handleCreateMaterialRequest}
               loading={savingMaterial}
-              disabled={!materialForm.description.trim() || materialForm.quantity === "" || Number(materialForm.quantity) <= 0 || !materialForm.unit.trim()}
+              disabled={!materialForm.description.trim() || materialForm.quantity === "" || toNumber(materialForm.quantity) <= 0 || !materialForm.unit.trim()}
             >
               Criar requisição
             </Button>
@@ -2187,7 +2179,7 @@ export default function ObraDetalhePage({ params }) {
             </FormField>
           </div>
           <FormField label="Quantidade" htmlFor="m-material-quantity" required>
-            <Input id="m-material-quantity" type="number" min="0.001" step="0.001" value={materialForm.quantity} onChange={(e) => setMaterialForm((p) => ({ ...p, quantity: e.target.value }))} />
+            <DecimalInput id="m-material-quantity" value={materialForm.quantity} onChange={(e) => setMaterialForm((p) => ({ ...p, quantity: e.target.value }))} />
           </FormField>
           <FormField label="Unidade" htmlFor="m-material-unit" required>
             <Input id="m-material-unit" value={materialForm.unit} onChange={(e) => setMaterialForm((p) => ({ ...p, unit: e.target.value }))} placeholder="Ex: un, kg, m2, saco" />
@@ -2205,7 +2197,7 @@ export default function ObraDetalhePage({ params }) {
             <Button
               onClick={handleCreateLossRecord}
               loading={savingLoss}
-              disabled={!lossForm.materialDescription.trim() || lossForm.quantity === "" || Number(lossForm.quantity) <= 0 || lossForm.estimatedValue === "" || !lossForm.reason.trim()}
+              disabled={!lossForm.materialDescription.trim() || lossForm.quantity === "" || toNumber(lossForm.quantity) <= 0 || lossForm.estimatedValue === "" || !lossForm.reason.trim()}
             >
               Registrar perda
             </Button>
@@ -2219,10 +2211,10 @@ export default function ObraDetalhePage({ params }) {
             </FormField>
           </div>
           <FormField label="Quantidade" htmlFor="m-loss-quantity" required>
-            <Input id="m-loss-quantity" type="number" min="0.001" step="0.001" value={lossForm.quantity} onChange={(e) => setLossForm((p) => ({ ...p, quantity: e.target.value }))} />
+            <DecimalInput id="m-loss-quantity" value={lossForm.quantity} onChange={(e) => setLossForm((p) => ({ ...p, quantity: e.target.value }))} />
           </FormField>
           <FormField label="Valor estimado (R$)" htmlFor="m-loss-value" required>
-            <Input id="m-loss-value" type="number" min="0" step="0.01" value={lossForm.estimatedValue} onChange={(e) => setLossForm((p) => ({ ...p, estimatedValue: e.target.value }))} />
+            <DecimalInput id="m-loss-value" value={lossForm.estimatedValue} onChange={(e) => setLossForm((p) => ({ ...p, estimatedValue: e.target.value }))} />
           </FormField>
           <div className={styles.span2}>
             <FormField label="Motivo" htmlFor="m-loss-reason" required helper="Acima do limite de alçada configurado, a perda nasce aguardando aprovação; abaixo, é autoaprovada.">

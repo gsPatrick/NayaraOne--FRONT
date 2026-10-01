@@ -11,6 +11,7 @@ import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import FormField from "@/components/molecules/FormField/FormField";
 import Input from "@/components/atoms/Input/Input";
+import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import {
   STAGE_STATUS_LABELS,
@@ -32,7 +33,7 @@ import {
   listStageDependencies,
 } from "@/lib/api/construction";
 import { apiFetch } from "@/lib/api/client";
-import { formatDate, formatDateTime, formatPercent, formatBRL, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
+import { formatDate, formatDateTime, formatPercent, formatBRL, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE, toNumber } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function EtapaDetalhePage({ params }) {
@@ -229,8 +230,8 @@ export default function EtapaDetalhePage({ params }) {
 
   const isMeasurementValid =
     measurementForm.measuredPct !== "" &&
-    Number(measurementForm.measuredPct) >= 0 &&
-    Number(measurementForm.measuredPct) <= 100 &&
+    toNumber(measurementForm.measuredPct) >= 0 &&
+    toNumber(measurementForm.measuredPct) <= 100 &&
     measurementForm.measuredAt &&
     !measuredAtInvalid;
 
@@ -240,10 +241,10 @@ export default function EtapaDetalhePage({ params }) {
     setActionError("");
     try {
       await createStageMeasurement(stage.id, {
-        measuredPct: Number(measurementForm.measuredPct),
+        measuredPct: toNumber(measurementForm.measuredPct),
         measuredAt: measurementForm.measuredAt,
         notes: measurementForm.notes.trim() || undefined,
-        totalAmount: measurementForm.totalAmount !== "" ? Number(measurementForm.totalAmount) : undefined,
+        totalAmount: measurementForm.totalAmount !== "" ? toNumber(measurementForm.totalAmount) : undefined,
       });
       setMeasurementOpen(false);
       reloadStageAndMeasurements();
@@ -433,14 +434,14 @@ export default function EtapaDetalhePage({ params }) {
       >
         <div className={styles.formGrid}>
           <FormField label="Percentual medido (%)" htmlFor="m-meas-pct" required>
-            <Input id="m-meas-pct" type="number" min="0" max="100" value={measurementForm.measuredPct} onChange={(e) => setMeasurementForm((p) => ({ ...p, measuredPct: e.target.value }))} />
+            <DecimalInput id="m-meas-pct" value={measurementForm.measuredPct} onChange={(e) => setMeasurementForm((p) => ({ ...p, measuredPct: e.target.value }))} />
           </FormField>
           <FormField
             label="Valor total (R$)"
             htmlFor="m-meas-total"
             helper="Necessário pra aprovar a medição (vira a obrigação financeira ao aprovar) — pode ser deixado em branco e preenchido depois, numa correção."
           >
-            <Input id="m-meas-total" type="number" min="0" step="0.01" value={measurementForm.totalAmount} onChange={(e) => setMeasurementForm((p) => ({ ...p, totalAmount: e.target.value }))} placeholder="0,00" />
+            <DecimalInput id="m-meas-total" value={measurementForm.totalAmount} onChange={(e) => setMeasurementForm((p) => ({ ...p, totalAmount: e.target.value }))} placeholder="0,00" />
           </FormField>
           <FormField label="Data da medição" htmlFor="m-meas-date" required error={measuredAtInvalid ? DATE_INPUT_ERROR_MESSAGE : undefined}>
             <Input

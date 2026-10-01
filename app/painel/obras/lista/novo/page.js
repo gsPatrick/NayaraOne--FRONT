@@ -6,6 +6,7 @@ import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import FormField from "@/components/molecules/FormField/FormField";
 import Input from "@/components/atoms/Input/Input";
+import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import Select from "@/components/atoms/Select/Select";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
@@ -14,7 +15,7 @@ import { createProject } from "@/lib/api/construction";
 import { listProperties } from "@/lib/api/properties";
 import { listCostCenters } from "@/lib/api/finance";
 import { apiFetch } from "@/lib/api/client";
-import { dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
+import { dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE, toNumber } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function NovaObraPage() {
@@ -89,7 +90,7 @@ export default function NovaObraPage() {
         name: form.name.trim(),
         responsibleUserId: form.responsibleUserId || undefined,
         costCenterId: form.costCenterId || undefined,
-        budgetAmount: form.budgetAmount ? Number(form.budgetAmount) : undefined,
+        budgetAmount: form.budgetAmount ? toNumber(form.budgetAmount) : undefined,
         startsAt: dateOnlyInputToIso(form.startsAt),
         endsAtPlanned: dateOnlyInputToIso(form.endsAtPlanned),
       });
@@ -145,7 +146,7 @@ export default function NovaObraPage() {
             </FormField>
 
             <FormField label="Orçamento (R$)" htmlFor="f-budget" helper="Opcional">
-              <Input id="f-budget" type="number" min="0" step="0.01" value={form.budgetAmount} onChange={update("budgetAmount")} placeholder="0,00" />
+              <DecimalInput id="f-budget" value={form.budgetAmount} onChange={update("budgetAmount")} placeholder="0,00" />
             </FormField>
 
             <FormField
