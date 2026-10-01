@@ -1371,9 +1371,16 @@ export default function ObraDetalhePage({ params }) {
           }
         >
           {!activeMarginRule ? (
-            <Alert tone="warning">
-              Nenhuma margem mínima configurada para esta empresa — a aprovação do orçamento
-              será recusada até configurar uma em &quot;Configurar margem mínima&quot;.
+            // Achado pelo cliente (30/09/2026): o aviso de margem mínima ausente precisa ser
+            // mais visível e levar direto pra onde resolver, não só um texto solto.
+            <Alert tone="warning" title="Margem mínima não configurada">
+              <>
+                A aprovação de orçamento desta empresa será recusada até configurar uma margem
+                mínima.{" "}
+                <Button size="sm" variant="secondary" onClick={openMarginRuleModal} style={{ marginTop: "var(--space-2)" }}>
+                  Configurar agora
+                </Button>
+              </>
             </Alert>
           ) : null}
           {budget ? (
@@ -2075,15 +2082,32 @@ export default function ObraDetalhePage({ params }) {
         footer={
           <>
             <Button variant="secondary" onClick={() => setApproveBudgetOpen(false)}>Cancelar</Button>
-            <Button variant="primary" onClick={handleApproveBudget} loading={approvingBudget}>Confirmar aprovação</Button>
+            <Button variant="primary" onClick={handleApproveBudget} loading={approvingBudget} disabled={!activeMarginRule}>Confirmar aprovação</Button>
           </>
         }
       >
-        <p>
-          Tem certeza que deseja aprovar este orçamento? A baseline será <strong>congelada</strong> em{" "}
-          <strong>{formatBRL(totalPlanned)}</strong> e passa a ser <strong>imutável</strong> — depois disso, o valor
-          das linhas de orçamento só pode mudar através de um Change Order aprovado. Esta ação não pode ser desfeita.
-        </p>
+        {!activeMarginRule ? (
+          <Alert tone="warning" title="Margem mínima não configurada">
+            <>
+              Esta empresa ainda não tem uma margem mínima configurada — a aprovação será
+              recusada até isso ser feito.{" "}
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => { setApproveBudgetOpen(false); openMarginRuleModal(); }}
+                style={{ marginTop: "var(--space-2)" }}
+              >
+                Configurar agora
+              </Button>
+            </>
+          </Alert>
+        ) : (
+          <p>
+            Tem certeza que deseja aprovar este orçamento? A baseline será <strong>congelada</strong> em{" "}
+            <strong>{formatBRL(totalPlanned)}</strong> e passa a ser <strong>imutável</strong> — depois disso, o valor
+            das linhas de orçamento só pode mudar através de um Change Order aprovado. Esta ação não pode ser desfeita.
+          </p>
+        )}
       </Modal>
 
       <Modal
