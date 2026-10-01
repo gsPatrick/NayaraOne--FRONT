@@ -661,7 +661,7 @@ export default function ObraDetalhePage({ params }) {
     setBudgetForm({
       category: line.category || "",
       description: line.description || "",
-      plannedAmount: line.plannedAmount != null ? String(Number(line.plannedAmount)) : "",
+      plannedAmount: line.plannedAmount != null ? String(Number(line.plannedAmount)).replace(".", ",") : "",
     });
     setBudgetOpen(true);
   }

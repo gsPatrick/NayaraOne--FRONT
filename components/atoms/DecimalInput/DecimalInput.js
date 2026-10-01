@@ -21,13 +21,24 @@ import Input from "@/components/atoms/Input/Input";
 export default function DecimalInput({ value, onChange, ...rest }) {
   function handleChange(e) {
     const raw = e.target.value;
-    // Permite dígitos e um único separador decimal (',' ou '.'); descarta qualquer outro
-    // caractere (letras, segundo separador, espaços) sem travar a digitação do que já é válido.
+    // Permite dígitos, ponto (separador de milhar BR) e vírgula (separador decimal BR).
     let cleaned = raw.replace(/[^0-9,.]/g, "");
-    const firstSepMatch = cleaned.match(/[,.]/);
-    if (firstSepMatch) {
-      const sepIndex = firstSepMatch.index;
-      cleaned = cleaned.slice(0, sepIndex + 1) + cleaned.slice(sepIndex + 1).replace(/[,.]/g, "");
+    // BUG REAL CORRIGIDO (achado em auditoria E2E de browser, 01/10/2026): valores >= R$ 1.000
+    // digitados com separador de milhar BR (ex.: "1.546,73") eram cortados errado — o PRIMEIRO
+    // separador encontrado (o ponto de milhar) era tratado como "o" separador decimal, e a
+    // vírgula real era descartada, resultando em "1.54673" -> R$ 1,55 salvo (perda de ~1000x do
+    // valor). Regra correta: se há vírgula no texto, ela É o separador decimal — todo ponto é
+    // separador de milhar e deve ser removido; só a PRIMEIRA vírgula sobrevive. Sem vírgula
+    // nenhuma, mantém o comportamento anterior (só o primeiro ponto sobrevive como decimal).
+    if (cleaned.includes(",")) {
+      cleaned = cleaned.replace(/\./g, "");
+      const firstComma = cleaned.indexOf(",");
+      cleaned = cleaned.slice(0, firstComma + 1) + cleaned.slice(firstComma + 1).replace(/,/g, "");
+    } else {
+      const firstDot = cleaned.indexOf(".");
+      if (firstDot !== -1) {
+        cleaned = cleaned.slice(0, firstDot + 1) + cleaned.slice(firstDot + 1).replace(/\./g, "");
+      }
     }
     if (cleaned === raw) {
       onChange(e);
