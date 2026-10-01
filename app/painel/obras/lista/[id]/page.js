@@ -708,6 +708,12 @@ export default function ObraDetalhePage({ params }) {
       setBudget(updated);
       setApproveBudgetOpen(false);
       loadHealth();
+      // BUG REAL CORRIGIDO (achado numa auditoria final do Marco 6, 30/09/2026): aprovar o
+      // orçamento move a obra PLANNED->BUDGETED como efeito colateral no backend (M6-18), mas
+      // esta tela só atualizava o estado local de "budget" — o status da obra na tela (badge,
+      // botões de ação disponíveis) ficava desatualizado até um reload manual da página.
+      const refreshedProject = await getProject(project.id);
+      setProject(refreshedProject);
     } catch (err) {
       setActionError(err?.message || "Não foi possível aprovar o orçamento.");
     } finally {
