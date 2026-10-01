@@ -1886,7 +1886,7 @@ export default function ObraDetalhePage({ params }) {
           label="Margem mínima exigida (%)"
           htmlFor="m-margin-pct"
           required
-          helper="Orçamento só é aprovado se a margem projetada (receita - custo) for maior ou igual a este percentual. Salvar cria uma nova versão — a versão anterior fica preservada no histórico, sem afetar orçamentos já aprovados com ela. Configuração válida para toda a empresa."
+          helper="É obrigatório ter uma margem mínima configurada para aprovar qualquer orçamento. Depois de aprovado, a Saúde da obra compara a margem projetada (receita - custo) com este percentual e avisa quando estiver abaixo — não bloqueia a aprovação em si, pois o custo real só é conhecido durante a execução da obra. Salvar cria uma nova versão — a versão anterior fica preservada no histórico, sem afetar orçamentos já aprovados com ela. Configuração válida para toda a empresa."
         >
           <DecimalInput
             id="m-margin-pct"
