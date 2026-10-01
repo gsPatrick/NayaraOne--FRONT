@@ -1203,13 +1203,24 @@ export default function ObraDetalhePage({ params }) {
                 </div>
                 <div>
                   <p className={styles.infoLabel}>Margem projetada</p>
-                  <p className={styles.infoValue}>{formatBRL(health.projectedMargin)}</p>
+                  <p className={styles.infoValue}>
+                    {formatBRL(health.projectedMargin)}
+                    {health.marginPct != null ? ` (${health.marginPct}%)` : ""}
+                  </p>
                 </div>
                 <div>
                   <p className={styles.infoLabel}>Atualizado em</p>
                   <p className={styles.infoValue}>{formatDateTime(health.updatedAt)}</p>
                 </div>
               </div>
+              {health.belowMinMargin ? (
+                <div style={{ marginTop: "var(--space-4)" }}>
+                  <Alert tone="danger" title="Margem projetada abaixo da regra mínima">
+                    Margem projetada atual de {health.marginPct}% está abaixo do mínimo configurado de {health.minMarginPct}%.
+                    Revise o custo da obra ou o orçamento com a diretoria.
+                  </Alert>
+                </div>
+              ) : null}
               <div className={styles.infoGrid} style={{ marginTop: "var(--space-4)" }}>
                 <div>
                   <p className={styles.infoLabel}>Progresso físico medido</p>
