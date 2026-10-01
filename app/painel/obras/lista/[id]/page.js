@@ -598,7 +598,7 @@ export default function ObraDetalhePage({ params }) {
     listDailyMaterials(report.id)
       .then((materials) => {
         setRdoMaterials(
-          (materials || []).map((m) => ({ materialDescription: m.materialDescription, quantity: String(m.quantity), unit: m.unit }))
+          (materials || []).map((m) => ({ materialDescription: m.materialDescription, quantity: String(Number(m.quantity)), unit: m.unit }))
         );
       })
       .catch(() => {});
