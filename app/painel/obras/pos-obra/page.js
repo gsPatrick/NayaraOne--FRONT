@@ -122,19 +122,19 @@ export default function PosObraListaPage() {
     {
       key: "description",
       label: "Descrição",
-      width: "19%",
+      width: "17%",
       render: (row) => <span className={styles.nameMain}>{row.description}</span>,
     },
     {
       key: "property",
       label: "Imóvel",
-      width: "13%",
+      width: "12%",
       render: (row) => propertyOf(row.propertyId)?.name || "—",
     },
     {
       key: "project",
       label: "Obra vinculada",
-      width: "13%",
+      width: "11%",
       render: (row) => projectOf(row.projectId)?.name || "—",
     },
     {
@@ -158,8 +158,8 @@ export default function PosObraListaPage() {
     {
       key: "warranty",
       label: "Prazo de garantia",
-      width: "9%",
-      render: (row) => formatDate(row.warrantyDeadlineAt),
+      width: "12%",
+      render: (row) => <span style={{ whiteSpace: "nowrap" }}>{formatDate(row.warrantyDeadlineAt)}</span>,
     },
     {
       key: "actions",
