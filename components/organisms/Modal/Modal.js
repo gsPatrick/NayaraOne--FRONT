@@ -6,11 +6,21 @@ import styles from "./Modal.module.css";
 
 export default function Modal({ open, onClose, title, children, footer, size = "md" }) {
   const ref = useRef(null);
+  // BUG REAL CRÍTICO CORRIGIDO (achado pelo cliente, 30/09/2026): este efeito tinha `onClose`
+  // nas dependências, mas todo chamador passa `onClose={() => setXOpen(false)}` — uma função
+  // NOVA a cada render do componente pai. Qualquer `onChange` de um campo controlado dentro do
+  // modal (ex.: digitar num <Input>) causa um re-render do pai, recria `onClose`, o efeito
+  // via dependência muda e reroda, chamando `ref.current.focus()` de novo — isso tira o foco
+  // do campo que o usuário acabou de digitar, UM CARACTERE DE CADA VEZ. Guarda `onClose` numa
+  // ref (sempre atualizada, nunca entra como dependência) para o listener de Escape usar a
+  // versão mais recente sem forçar o efeito a reexecutar a cada render do pai.
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   useEffect(() => {
     if (!open) return;
     function onKey(e) {
-      if (e.key === "Escape") onClose?.();
+      if (e.key === "Escape") onCloseRef.current?.();
     }
     document.addEventListener("keydown", onKey);
     const previousActive = document.activeElement;
@@ -19,7 +29,8 @@ export default function Modal({ open, onClose, title, children, footer, size = "
       document.removeEventListener("keydown", onKey);
       previousActive?.focus?.();
     };
-  }, [open, onClose]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   if (!open) return null;
 
