@@ -25,3 +25,26 @@
   justify-content: flex-end;
   gap: var(--space-3);
 }
+
+/* FIX (achado visualmente pelo cliente, 30/09/2026): o textarea de "Descrição" usava
+   className={styles.textarea}, mas esta classe nunca foi definida neste módulo CSS — caía no
+   estilo padrão do navegador (sem borda arredondada, sem foco estilizado), destoando do resto
+   do formulário. Mesma definição usada nos outros formulários de Obras/Pós-obra. */
+.textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: inherit;
+  font-size: var(--text-body-sm);
+  resize: vertical;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 3px var(--color-brand-soft);
+}

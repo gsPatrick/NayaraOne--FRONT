@@ -13,7 +13,7 @@ import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import FormField from "@/components/molecules/FormField/FormField";
 import Input from "@/components/atoms/Input/Input";
 import Select from "@/components/atoms/Select/Select";
-import Spinner from "@/components/atoms/Spinner/Spinner";
+import FileDropInput from "@/components/molecules/FileDropInput/FileDropInput";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import {
   PROJECT_STATUS_LABELS,
@@ -136,6 +136,7 @@ export default function ObraDetalhePage({ params }) {
   // hash/origem" — evidência fotográfica do RDO. Reaproveita o mesmo padrão de upload já usado
   // em Change Orders/Não Conformidades (uploadFile + File.checksumSha256 no backend).
   const [rdoEvidenceFileIds, setRdoEvidenceFileIds] = useState([]);
+  const [rdoEvidenceFileNames, setRdoEvidenceFileNames] = useState([]);
   const [rdoUploading, setRdoUploading] = useState(false);
   const [rdoUploadError, setRdoUploadError] = useState("");
   // Equipe do dia (DailyWorker) — achado numa rodada de verificação de integrações
@@ -494,6 +495,7 @@ export default function ObraDetalhePage({ params }) {
     setEditingRdoId(null);
     setRdoForm({ reportDate: new Date().toISOString().slice(0, 10), weather: WEATHER_OPTIONS[0], workforceCount: "", occurrences: "", servicesPerformed: "" });
     setRdoEvidenceFileIds([]);
+    setRdoEvidenceFileNames([]);
     setRdoUploadError("");
     setRdoWorkers([]);
     setWorkerUploadError("");
@@ -536,18 +538,27 @@ export default function ObraDetalhePage({ params }) {
     }
   }
 
-  async function handleUploadRdoEvidence(file) {
-    if (!file) return;
+  async function handleUploadRdoEvidence(files) {
+    const fileArray = Array.from(files || []);
+    if (fileArray.length === 0) return;
     setRdoUploading(true);
     setRdoUploadError("");
     try {
-      const uploaded = await uploadFile(file);
-      setRdoEvidenceFileIds((prev) => [...prev, uploaded.id]);
+      for (const file of fileArray) {
+        const uploaded = await uploadFile(file);
+        setRdoEvidenceFileIds((prev) => [...prev, uploaded.id]);
+        setRdoEvidenceFileNames((prev) => [...prev, file.name]);
+      }
     } catch (err) {
       setRdoUploadError(err?.message || "Erro ao enviar foto.");
     } finally {
       setRdoUploading(false);
     }
+  }
+
+  function removeRdoEvidence(index) {
+    setRdoEvidenceFileIds((prev) => prev.filter((_, i) => i !== index));
+    setRdoEvidenceFileNames((prev) => prev.filter((_, i) => i !== index));
   }
 
   // FIX (homologação 23/09/2026): mesmo caso da etapa — o RDO só podia ser registrado, nunca
@@ -564,7 +575,13 @@ export default function ObraDetalhePage({ params }) {
       occurrences: report.occurrences || "",
       servicesPerformed: report.servicesPerformed || "",
     });
-    setRdoEvidenceFileIds(Array.isArray(report.evidenceFileIds) ? report.evidenceFileIds : []);
+    {
+      const existingIds = Array.isArray(report.evidenceFileIds) ? report.evidenceFileIds : [];
+      setRdoEvidenceFileIds(existingIds);
+      // Nomes originais não são devolvidos pelo RDO (só o id do arquivo) — usa um rótulo
+      // genérico numerado pros já existentes; uploads novos nesta sessão mostram o nome real.
+      setRdoEvidenceFileNames(existingIds.map((_, i) => `Evidência ${i + 1}`));
+    }
     setRdoUploadError("");
     setRdoWorkers([]);
     setWorkerUploadError("");
@@ -1883,20 +1900,18 @@ export default function ObraDetalhePage({ params }) {
             </FormField>
           </div>
           <div className={styles.span2}>
-            <FormField
-              label="Fotos do dia"
-              htmlFor="m-rdo-evidence"
-              helper={rdoEvidenceFileIds.length ? `${rdoEvidenceFileIds.length} foto(s) anexada(s)` : "Opcional — evidência fotográfica do andamento da obra"}
-              error={rdoUploadError || undefined}
-            >
-              <input
+            <FormField label="Fotos do dia" htmlFor="m-rdo-evidence">
+              <FileDropInput
                 id="m-rdo-evidence"
-                type="file"
                 accept="image/*"
-                disabled={rdoUploading}
-                onChange={(e) => handleUploadRdoEvidence(e.target.files?.[0])}
+                multiple
+                uploading={rdoUploading}
+                error={rdoUploadError || undefined}
+                fileNames={rdoEvidenceFileNames}
+                onFiles={handleUploadRdoEvidence}
+                onRemove={removeRdoEvidence}
+                helper="Opcional — evidência fotográfica do andamento da obra"
               />
-              {rdoUploading ? <Spinner size="sm" /> : null}
             </FormField>
           </div>
           <div className={styles.span2}>
@@ -1924,17 +1939,15 @@ export default function ObraDetalhePage({ params }) {
                       placeholder="Função (ex: Pedreiro)"
                       aria-label={`Função do trabalhador ${i + 1}`}
                     />
-                    <input
-                      type="file"
-                      accept="image/*,application/pdf"
-                      disabled={workerUploadingIndex === i}
-                      onChange={(e) => handleUploadWorkerDocument(i, e.target.files?.[0])}
-                      aria-label={`Documento do trabalhador ${i + 1}`}
-                    />
-                    {workerUploadingIndex === i ? <Spinner size="sm" /> : null}
-                    {w.documentFileIds?.length ? (
-                      <span className={styles.infoLabel}>{w.documentFileIds.length} doc(s)</span>
-                    ) : null}
+                    <div style={{ minWidth: "220px", flex: 1 }}>
+                      <FileDropInput
+                        id={`m-rdo-worker-doc-${i}`}
+                        accept="image/*,application/pdf"
+                        uploading={workerUploadingIndex === i}
+                        fileNames={(w.documentFileIds || []).map((_, docIndex) => `Documento ${docIndex + 1}`)}
+                        onFiles={(files) => handleUploadWorkerDocument(i, files[0])}
+                      />
+                    </div>
                     <button type="button" className={styles.rowEditBtn} aria-label={`Remover trabalhador ${i + 1}`} onClick={() => removeRdoWorker(i)}>
                       <Icon name="trash" size={14} />
                     </button>
@@ -2072,11 +2085,13 @@ export default function ObraDetalhePage({ params }) {
             </FormField>
           </div>
           <div className={styles.span2}>
-            <FormField label="Evidência" htmlFor="m-co-file" helper="Opcional — foto, documento ou planilha que sustente o pedido">
-              <input
+            <FormField label="Evidência" htmlFor="m-co-file">
+              <FileDropInput
                 id="m-co-file"
-                type="file"
-                onChange={(e) => setCoForm((p) => ({ ...p, file: e.target.files?.[0] || null }))}
+                fileNames={coForm.file ? [coForm.file.name] : []}
+                onFiles={(files) => setCoForm((p) => ({ ...p, file: files[0] || null }))}
+                onRemove={() => setCoForm((p) => ({ ...p, file: null }))}
+                helper="Opcional — foto, documento ou planilha que sustente o pedido"
               />
             </FormField>
           </div>
@@ -2279,20 +2294,17 @@ export default function ObraDetalhePage({ params }) {
             </Select>
           </FormField>
           <div className={styles.span2}>
-            <FormField
-              label="Evidência 'antes'"
-              htmlFor="m-nc-before-file"
-              helper={ncForm.beforeFileName ? `Enviado: ${ncForm.beforeFileName}` : "Foto do problema encontrado (opcional)."}
-              error={ncBeforeUploadError || undefined}
-            >
-              <input
+            <FormField label="Evidência 'antes'" htmlFor="m-nc-before-file">
+              <FileDropInput
                 id="m-nc-before-file"
-                type="file"
                 accept="image/*,application/pdf"
-                disabled={ncBeforeUploading}
-                onChange={(e) => handleUploadBeforeEvidence(e.target.files?.[0])}
+                uploading={ncBeforeUploading}
+                error={ncBeforeUploadError || undefined}
+                fileNames={ncForm.beforeFileName ? [ncForm.beforeFileName] : []}
+                onFiles={(files) => handleUploadBeforeEvidence(files[0])}
+                onRemove={() => setNcForm((p) => ({ ...p, beforeFileId: "", beforeFileName: "" }))}
+                helper="Foto do problema encontrado (opcional)."
               />
-              {ncBeforeUploading ? <Spinner size="sm" /> : null}
             </FormField>
           </div>
         </div>
@@ -2323,21 +2335,17 @@ export default function ObraDetalhePage({ params }) {
             </Alert>
           </div>
           <div className={styles.span2}>
-            <FormField
-              label="Evidência 'depois'"
-              htmlFor="m-nc-after-file"
-              helper={ncAfterFileName ? `Enviado: ${ncAfterFileName}` : "Foto comprovando a correção do problema — obrigatório."}
-              error={ncAfterUploadError || undefined}
-              required
-            >
-              <input
+            <FormField label="Evidência 'depois'" htmlFor="m-nc-after-file" required>
+              <FileDropInput
                 id="m-nc-after-file"
-                type="file"
                 accept="image/*,application/pdf"
-                disabled={ncAfterUploading}
-                onChange={(e) => handleUploadAfterEvidence(e.target.files?.[0])}
+                uploading={ncAfterUploading}
+                error={ncAfterUploadError || undefined}
+                fileNames={ncAfterFileName ? [ncAfterFileName] : []}
+                onFiles={(files) => handleUploadAfterEvidence(files[0])}
+                onRemove={() => { setNcAfterFileId(""); setNcAfterFileName(""); }}
+                helper="Foto comprovando a correção do problema — obrigatório."
               />
-              {ncAfterUploading ? <Spinner size="sm" /> : null}
             </FormField>
           </div>
           {closingNc?.requiresAcceptance ? (
