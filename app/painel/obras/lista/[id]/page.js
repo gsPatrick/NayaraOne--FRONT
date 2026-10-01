@@ -93,6 +93,13 @@ import styles from "./page.module.css";
 
 const WEATHER_OPTIONS = ["Ensolarado", "Nublado", "Chuvoso", "Ventania"];
 
+function isLossFullyReturned(lossRecord, allRecords) {
+  const alreadyReturned = allRecords
+    .filter((r) => r.movementType === "RETURN" && r.status === "APPROVED" && r.relatedLossRecordId === lossRecord.id)
+    .reduce((sum, r) => sum + Number(r.quantity || 0), 0);
+  return alreadyReturned >= Number(lossRecord.quantity || 0);
+}
+
 export default function ObraDetalhePage({ params }) {
   const router = useRouter();
   const [project, setProject] = useState(null);
@@ -1640,7 +1647,7 @@ export default function ObraDetalhePage({ params }) {
                         Aprovar
                       </Button>
                     ) : null}
-                    {l.movementType === "LOSS" && l.status === "APPROVED" ? (
+                    {l.movementType === "LOSS" && l.status === "APPROVED" && !isLossFullyReturned(l, lossRecords) ? (
                       <Button
                         size="sm"
                         variant="ghost"

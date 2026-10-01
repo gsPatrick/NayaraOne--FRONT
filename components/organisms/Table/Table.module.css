@@ -19,7 +19,7 @@
   table-layout: auto;
 }
 
-.table.fixed { table-layout: fixed; }
+.table.fixed { table-layout: fixed; min-width: 900px; }
 
 .table thead th {
   text-align: left;
@@ -31,6 +31,8 @@
   text-transform: uppercase;
   letter-spacing: var(--tracking-wide);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .table tbody td {
