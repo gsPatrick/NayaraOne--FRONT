@@ -370,16 +370,36 @@
   <section style="background:#1f2937;color:#f9fafb;border-radius:14px;padding:24px 28px;margin-bottom:28px;border:2px solid #f59e0b;">
     <p style="text-transform:uppercase;letter-spacing:.08em;font-size:12px;color:#f59e0b;font-weight:700;margin:0 0 10px;">Atualização mais recente — leia antes do restante da página</p>
     <p style="margin:0 0 14px;font-size:15px;line-height:1.5;">
+      No reteste de 01/10/2026 você reproduziu os mesmos dois sintomas de novo no contrato
+      <strong>LOC-2026-0002</strong> e no contrato <strong>c00af665-98b9-47bc-8aa2-b7c7143ec894</strong>. Você estava certa:
+      a correção de 30/09 abaixo tratou uma causa real, mas não era a única. Encontrei uma segunda causa raiz
+      e corrigi hoje, 02/10/2026:
+    </p>
+    <ul style="margin:0 0 14px;padding-left:20px;font-size:14px;line-height:1.6;">
+      <li><strong>Entrega de chaves usando a vistoria errada</strong> — a correção de 30/09 (buscar a vistoria vinculada explicitamente, não "qualquer uma") estava correta e permanece; confirmei agora criando uma entrega nova sobre a mesma vistoria sem assinatura do seu reteste (6a5ff1c5-bd40-4527-b668-0a14881d580c) — o bloqueio funciona. A entrega antiga (221a26f7-afa2-4a4a-81f5-af1e8fab85e2) que você liberou como teste negativo continua com o status RELEASED que ela tinha quando a liberou — não alterei esse registro, é a evidência do seu teste.</li>
+      <li><strong>Violação de restrição de unicidade ao avançar o status do contrato</strong> — causa raiz NOVA, diferente da de 30/09: a chave de idempotência do evento de mudança de status (usada para nunca publicar o mesmo evento duas vezes) não incluía nada que diferenciasse duas ocorrências legítimas da MESMA transição no mesmo contrato — por exemplo, um contrato que passa por "Em assinatura" mais de uma vez ao longo do seu histórico. A segunda ocorrência colidia com essa chave e derrubava a transação inteira, gerando exatamente o erro cru que você viu. Corrigido incluindo a versão interna do registro na chave. Testado agora mesmo repetindo a transição exata que você reportou no contrato c00af665 — funcionou (200, status mudou para "Em assinatura").</li>
+    </ul>
+    <p style="margin:0;font-size:13px;color:#d1d5db;">
+      Branch publicada (API): <code style="background:#111827;padding:2px 6px;border-radius:4px;">hotfix/entrega-chaves-e-contrato-unicidade</code>,
+      commit <code style="background:#111827;padding:2px 6px;border-radius:4px;">fefa0b0</code> ·
+      Front sem alteração nesta rodada (a correção foi só na API) ·
+      Atualizado em 02/10/2026. Para conferir a qualquer momento: <code style="background:#111827;padding:2px 6px;border-radius:4px;">GET /api/version</code> no Front mostra o commit publicado agora.
+    </p>
+  </section>
+
+  <section style="background:#111827;color:#d1d5db;border-radius:14px;padding:20px 28px;margin-bottom:28px;border:1px solid #374151;">
+    <p style="text-transform:uppercase;letter-spacing:.08em;font-size:11px;color:#9ca3af;font-weight:700;margin:0 0 10px;">Nota anterior, 30/09/2026 — mantida para histórico (causa parcial, não era a completa)</p>
+    <p style="margin:0 0 14px;font-size:14px;line-height:1.5;">
       Analisei e corrigi, em 30/09/2026, os dois problemas reais reportados por você no reteste do contrato
       <strong>LOC-2026-0002</strong> e do contrato <strong>c00af665-98b9-47bc-8aa2-b7c7143ec894</strong>:
     </p>
-    <ul style="margin:0 0 14px;padding-left:20px;font-size:14px;line-height:1.6;">
+    <ul style="margin:0 0 14px;padding-left:20px;font-size:13px;line-height:1.6;">
       <li><strong>Entrega de chaves usando a vistoria errada</strong> — confirmei a causa raiz: a validação buscava "qualquer" vistoria de entrada concluída do contrato, sem checar qual estava de fato vinculada à entrega. Corrigido para usar sempre a vistoria explicitamente referenciada pela entrega (ou a mais recente concluída, nunca "qualquer uma"). Teste de regressão reproduz exatamente o cenário relatado (vistoria antiga assinada + vistoria nova sem assinatura) e confirma o bloqueio.</li>
-      <li><strong>Violação de restrição de unicidade ao avançar para "Em assinatura"</strong> — causa raiz: cálculo do próximo número de versão do contrato sem travar a linha, permitindo que duas criações próximas calculassem o mesmo número. Corrigido travando a linha do contrato antes do cálculo. Também corrigida a causa das "partes sem nome": criação de parte não validava se o `personId` existia de fato no tenant.</li>
+      <li><strong>Violação de restrição de unicidade ao avançar para "Em assinatura"</strong> — causa raiz identificada na época: cálculo do próximo número de versão do contrato sem travar a linha, permitindo que duas criações próximas calculassem o mesmo número. Corrigido travando a linha do contrato antes do cálculo. Também corrigida a causa das "partes sem nome": criação de parte não validava se o `personId` existia de fato no tenant. <strong>Essa causa era real, mas incompleta</strong> — havia uma segunda causa raiz para o mesmo sintoma, só encontrada no reteste de 01-02/10 (ver nota acima).</li>
     </ul>
-    <p style="margin:0;font-size:13px;color:#d1d5db;">
-      Commit da API publicado: <code style="background:#111827;padding:2px 6px;border-radius:4px;">5f2a0a5750e3be57e2cbf9e05675ea2db5cd7d68</code> ·
-      Commit do Front publicado: <code style="background:#111827;padding:2px 6px;border-radius:4px;">a85a91b665e6eff714b298f180eb2931f4f14c9b</code> ·
+    <p style="margin:0;font-size:12px;color:#9ca3af;">
+      Commit da API publicado então: <code style="background:#1f2937;padding:2px 6px;border-radius:4px;">5f2a0a5750e3be57e2cbf9e05675ea2db5cd7d68</code> ·
+      Commit do Front publicado então: <code style="background:#1f2937;padding:2px 6px;border-radius:4px;">a85a91b665e6eff714b298f180eb2931f4f14c9b</code> ·
       Atualizado em 30/09/2026.
     </p>
   </section>
@@ -606,6 +626,15 @@
   "verificacao_versao": {
     "api": "GET /health",
     "front": "GET /api/version"
+  },
+  "patch_02_10_2026": {
+    "motivo": "Reteste de 01/10 reproduziu de novo: entrega de chaves com vistoria errada e violacao de unicidade ao avancar status de contrato",
+    "branch_api": "hotfix/entrega-chaves-e-contrato-unicidade",
+    "commit_api": "fefa0b0",
+    "front_alterado": false,
+    "contratos_retestados": ["c00af665-98b9-47bc-8aa2-b7c7143ec894"],
+    "inspecoes_retestadas": ["6a5ff1c5-bd40-4527-b668-0a14881d580c"],
+    "resultado": "ambos confirmados corrigidos via chamada real a API apos deploy"
   }
 }</pre>
     </div>
