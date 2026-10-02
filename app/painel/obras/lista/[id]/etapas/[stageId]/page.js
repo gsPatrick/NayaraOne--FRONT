@@ -237,6 +237,14 @@ export default function EtapaDetalhePage({ params }) {
 
   async function handleCreateMeasurement() {
     if (!isMeasurementValid) return;
+    // FIX (auditoria E2E de browser, ciclo 6, 02/10/2026, mesma causa raiz do achado em
+    // pos-obra): "Valor total" é opcional, então só a checagem `!== ""` deixava passar "," sozinho
+    // (toNumber(",") = NaN) — silenciosamente virava totalAmount: null no payload sem avisar o
+    // usuário que o valor digitado foi descartado.
+    if (measurementForm.totalAmount !== "" && Number.isNaN(toNumber(measurementForm.totalAmount))) {
+      setActionError('"Valor total (R$)" não é um número válido.');
+      return;
+    }
     setSavingMeasurement(true);
     setActionError("");
     try {

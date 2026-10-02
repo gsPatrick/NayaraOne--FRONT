@@ -93,6 +93,19 @@ import styles from "./page.module.css";
 
 const WEATHER_OPTIONS = ["Ensolarado", "Nublado", "Chuvoso", "Ventania"];
 
+// FIX (auditoria E2E de browser, ciclo 6, 02/10/2026): "NaN <= 0" e "NaN < 0" são ambos FALSE
+// em JS — todo guard de validação deste arquivo que fazia `toNumber(x) <= 0` (ou `< 0`) sem
+// checar Number.isNaN primeiro deixava passar entrada tipo "," (vírgula sozinha, sem dígito)
+// como se fosse válida, mandando NaN pro backend (serializado como `null` pelo JSON.stringify)
+// sem nenhum feedback ao usuário. isInvalidNumber centraliza o guard correto: trata vazio como
+// inválido também, pra não precisar repetir `x === "" || ...` em cada call-site.
+function isInvalidNumber(value, { allowZero = false } = {}) {
+  if (value === "" || value === null || value === undefined) return true;
+  const numeric = toNumber(value);
+  if (Number.isNaN(numeric)) return true;
+  return allowZero ? numeric < 0 : numeric <= 0;
+}
+
 function isLossFullyReturned(lossRecord, allRecords) {
   const alreadyReturned = allRecords
     .filter((r) => r.movementType === "RETURN" && r.status === "APPROVED" && r.relatedLossRecordId === lossRecord.id)
@@ -676,7 +689,7 @@ export default function ObraDetalhePage({ params }) {
   }
 
   async function handleCreateBudgetLine() {
-    if (!budgetForm.category.trim() || budgetForm.plannedAmount === "" || toNumber(budgetForm.plannedAmount) < 0) return;
+    if (!budgetForm.category.trim() || isInvalidNumber(budgetForm.plannedAmount, { allowZero: true })) return;
     setSavingBudget(true);
     setActionError("");
     try {
@@ -816,7 +829,7 @@ export default function ObraDetalhePage({ params }) {
     setMaterialOpen(true);
   }
   async function handleCreateMaterialRequest() {
-    if (!materialForm.description.trim() || materialForm.quantity === "" || toNumber(materialForm.quantity) <= 0 || !materialForm.unit.trim()) return;
+    if (!materialForm.description.trim() || isInvalidNumber(materialForm.quantity) || !materialForm.unit.trim()) return;
     setSavingMaterial(true);
     setActionError("");
     try {
@@ -852,7 +865,7 @@ export default function ObraDetalhePage({ params }) {
     setLossOpen(true);
   }
   async function handleCreateLossRecord() {
-    if (!lossForm.materialDescription.trim() || lossForm.quantity === "" || toNumber(lossForm.quantity) <= 0 || lossForm.estimatedValue === "" || !lossForm.reason.trim()) return;
+    if (!lossForm.materialDescription.trim() || isInvalidNumber(lossForm.quantity) || isInvalidNumber(lossForm.estimatedValue, { allowZero: true }) || !lossForm.reason.trim()) return;
     setSavingLoss(true);
     setActionError("");
     try {
@@ -903,7 +916,7 @@ export default function ObraDetalhePage({ params }) {
   }
 
   async function handleSaveThreshold() {
-    if (thresholdAmount === "" || toNumber(thresholdAmount) <= 0) return;
+    if (isInvalidNumber(thresholdAmount)) return;
     setSavingThreshold(true);
     setActionError("");
     try {
@@ -928,7 +941,7 @@ export default function ObraDetalhePage({ params }) {
   }
 
   async function handleSaveMarginRule() {
-    if (marginRulePct === "" || toNumber(marginRulePct) < 0 || toNumber(marginRulePct) > 100) return;
+    if (marginRulePct === "" || Number.isNaN(toNumber(marginRulePct)) || toNumber(marginRulePct) < 0 || toNumber(marginRulePct) > 100) return;
     setSavingMarginRule(true);
     setMarginRuleError("");
     try {
@@ -1923,7 +1936,7 @@ export default function ObraDetalhePage({ params }) {
         footer={
           <>
             <Button variant="secondary" onClick={() => setThresholdOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSaveThreshold} loading={savingThreshold} disabled={thresholdAmount === "" || toNumber(thresholdAmount) <= 0}>Salvar</Button>
+            <Button onClick={handleSaveThreshold} loading={savingThreshold} disabled={isInvalidNumber(thresholdAmount)}>Salvar</Button>
           </>
         }
       >
@@ -1949,7 +1962,7 @@ export default function ObraDetalhePage({ params }) {
         footer={
           <>
             <Button variant="secondary" onClick={() => setMarginRuleOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSaveMarginRule} loading={savingMarginRule} disabled={marginRulePct === "" || toNumber(marginRulePct) < 0 || toNumber(marginRulePct) > 100}>Salvar</Button>
+            <Button onClick={handleSaveMarginRule} loading={savingMarginRule} disabled={marginRulePct === "" || Number.isNaN(toNumber(marginRulePct)) || toNumber(marginRulePct) < 0 || toNumber(marginRulePct) > 100}>Salvar</Button>
           </>
         }
       >
@@ -2334,7 +2347,7 @@ export default function ObraDetalhePage({ params }) {
             <Button
               onClick={handleCreateMaterialRequest}
               loading={savingMaterial}
-              disabled={!materialForm.description.trim() || materialForm.quantity === "" || toNumber(materialForm.quantity) <= 0 || !materialForm.unit.trim()}
+              disabled={!materialForm.description.trim() || isInvalidNumber(materialForm.quantity) || !materialForm.unit.trim()}
             >
               Criar requisição
             </Button>
@@ -2366,7 +2379,7 @@ export default function ObraDetalhePage({ params }) {
             <Button
               onClick={handleCreateLossRecord}
               loading={savingLoss}
-              disabled={!lossForm.materialDescription.trim() || lossForm.quantity === "" || toNumber(lossForm.quantity) <= 0 || lossForm.estimatedValue === "" || !lossForm.reason.trim()}
+              disabled={!lossForm.materialDescription.trim() || isInvalidNumber(lossForm.quantity) || isInvalidNumber(lossForm.estimatedValue, { allowZero: true }) || !lossForm.reason.trim()}
             >
               Registrar perda
             </Button>

@@ -253,12 +253,22 @@ export default function PosObraDetalhePage({ params }) {
 
   async function handleCreateWarrantyAction() {
     if (!actionForm.description.trim()) return;
+    // FIX (auditoria E2E de browser, ciclo 6, 02/10/2026): digitar só "," no campo "Custo (R$)"
+    // (opcional) gerava toNumber(",") = NaN — a checagem anterior só olhava actionForm.cost
+    // !== "" (vírgula sozinha não é string vazia), então NaN seguia pro payload;
+    // JSON.stringify(NaN) vira `null` silenciosamente, criando a ação com custo apagado sem
+    // nenhum aviso ao usuário, que achava que tinha registrado um valor.
+    const rawCost = actionForm.cost.trim();
+    if (rawCost !== "" && Number.isNaN(toNumber(rawCost))) {
+      setActionError('"Custo (R$)" não é um número válido.');
+      return;
+    }
     setSavingAction(true);
     setActionError("");
     try {
       const created = await createWarrantyAction(maintenanceCase.id, {
         description: actionForm.description.trim(),
-        cost: actionForm.cost !== "" ? toNumber(actionForm.cost) : undefined,
+        cost: rawCost !== "" ? toNumber(rawCost) : undefined,
       });
       setWarrantyActions((prev) => [created, ...prev]);
       setActionOpen(false);
@@ -275,7 +285,13 @@ export default function PosObraDetalhePage({ params }) {
   }
 
   async function handleProposeResolution() {
-    if (resolutionForm.resolutionAmount === "" || toNumber(resolutionForm.resolutionAmount) <= 0) return;
+    // FIX (auditoria E2E de browser, ciclo 6, 02/10/2026): "NaN <= 0" é false em JS — digitar
+    // só "," (sem dígitos) passava pela checagem antiga, mandava resolutionAmount: NaN pro
+    // backend (serializado como `null`), e o fluxo nunca completava nem mostrava erro nenhum
+    // ao usuário, travando o botão em loading indefinidamente. Number.isNaN explícito fecha o
+    // buraco; mesmo guard replicado na condição `disabled` do botão, abaixo.
+    const numericAmount = toNumber(resolutionForm.resolutionAmount);
+    if (resolutionForm.resolutionAmount === "" || Number.isNaN(numericAmount) || numericAmount <= 0) return;
     setSavingResolution(true);
     setActionError("");
     try {
@@ -692,7 +708,7 @@ export default function PosObraDetalhePage({ params }) {
             <Button
               onClick={handleProposeResolution}
               loading={savingResolution}
-              disabled={resolutionForm.resolutionAmount === "" || toNumber(resolutionForm.resolutionAmount) <= 0}
+              disabled={resolutionForm.resolutionAmount === "" || Number.isNaN(toNumber(resolutionForm.resolutionAmount)) || toNumber(resolutionForm.resolutionAmount) <= 0}
             >
               Propor
             </Button>
