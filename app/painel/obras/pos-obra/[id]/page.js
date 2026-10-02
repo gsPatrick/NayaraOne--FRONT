@@ -321,7 +321,16 @@ export default function PosObraDetalhePage({ params }) {
   return (
     <AppShell title="Chamado de pós-obra" backHref="/painel/obras/pos-obra">
       <div className={styles.wrap}>
-        {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
+        {/* FIX (auditoria E2E de browser, ciclo 4, 02/10/2026, mesmo achado de obras/lista/[id]):
+            actionError é compartilhado pelos modais de edição/resolução/ação de atendimento,
+            mas só renderizava aqui, atrás do overlay de qualquer modal aberto. Posição fixa
+            com z-index acima do Modal garante feedback visível independente de qual modal
+            estiver aberto. */}
+        {actionError ? (
+          <div style={{ position: "fixed", top: "var(--space-4)", left: "50%", transform: "translateX(-50%)", zIndex: 200, width: "min(560px, calc(100vw - 2 * var(--space-4)))" }}>
+            <Alert tone="danger">{actionError}</Alert>
+          </div>
+        ) : null}
 
         <div className={styles.topRow}>
           <div className={styles.badges}>

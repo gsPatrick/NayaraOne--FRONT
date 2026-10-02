@@ -123,6 +123,7 @@ export default function ObraDetalhePage({ params }) {
   const [busy, setBusy] = useState(false);
 
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
 
   const [editOpen, setEditOpen] = useState(false);
   const [editForm, setEditForm] = useState({ name: "", propertyId: "", responsibleUserId: "", costCenterId: "", budgetAmount: "", startsAt: "", endsAtPlanned: "" });
@@ -1087,7 +1088,17 @@ export default function ObraDetalhePage({ params }) {
   return (
     <AppShell title={project.name} backHref="/painel/obras/lista">
       <div className={styles.wrap}>
-        {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
+        {/* FIX (auditoria E2E de browser, ciclo 4, 02/10/2026): actionError é compartilhado por
+            TODOS os modais do módulo (orçamento, change order, NC, perda de material, checklist,
+            etc.), mas só era renderizado aqui, no topo da página — atrás do overlay de qualquer
+            modal aberto (z-index 100). Usuário via o modal "travar" sem feedback nenhum ao
+            submeter um valor rejeitado pela API. Posição fixa com z-index acima do Modal corrige
+            de uma vez só, sem duplicar a condição em cada um dos ~13 modais da tela. */}
+        {actionError ? (
+          <div style={{ position: "fixed", top: "var(--space-4)", left: "50%", transform: "translateX(-50%)", zIndex: 200, width: "min(560px, calc(100vw - 2 * var(--space-4)))" }}>
+            <Alert tone="danger">{actionError}</Alert>
+          </div>
+        ) : null}
         {deliveryBlocked ? (
           <Alert tone="danger" title="Entrega bloqueada">
             Não é possível entregar a obra: existe pelo menos uma não conformidade{" "}
@@ -1113,11 +1124,21 @@ export default function ObraDetalhePage({ params }) {
           </div>
           <div className={styles.actions}>
             {nextStatuses.length > 0 ? (
-              nextStatuses.map((status) => (
-                <Button key={status} variant="secondary" onClick={() => handleAdvanceStatus(status)} loading={busy}>
-                  <Icon name="arrowUpCircle" size={16} /> {PROJECT_STATUS_LABELS[status]}
-                </Button>
-              ))
+              nextStatuses.map((status) =>
+                // FIX (auditoria E2E de browser, ciclo 4, 02/10/2026): "Cancelar" é a única
+                // transição destrutiva/irreversível deste conjunto (as demais são progresso
+                // normal da obra) — executava na hora, sem confirmação nenhuma, rotulada com o
+                // nome do estado-alvo ("Cancelada") em vez de um verbo de ação.
+                status === "CANCELLED" ? (
+                  <Button key={status} variant="danger" onClick={() => setCancelConfirmOpen(true)} loading={busy}>
+                    <Icon name="arrowUpCircle" size={16} /> Cancelar obra
+                  </Button>
+                ) : (
+                  <Button key={status} variant="secondary" onClick={() => handleAdvanceStatus(status)} loading={busy}>
+                    <Icon name="arrowUpCircle" size={16} /> {PROJECT_STATUS_LABELS[status]}
+                  </Button>
+                )
+              )
             ) : null}
             {project.status === "FINAL_INSPECTION" ? (
               <Button variant="primary" onClick={handleDeliver} loading={delivering} disabled={delivering}>
@@ -1828,6 +1849,29 @@ export default function ObraDetalhePage({ params }) {
         }
       >
         <p>Tem certeza que deseja excluir a obra <strong>{project.name}</strong>? Esta ação não pode ser desfeita.</p>
+      </Modal>
+
+      <Modal
+        open={cancelConfirmOpen}
+        onClose={() => setCancelConfirmOpen(false)}
+        title="Cancelar obra"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setCancelConfirmOpen(false)}>Voltar</Button>
+            <Button
+              variant="danger"
+              loading={busy}
+              onClick={async () => {
+                await handleAdvanceStatus("CANCELLED");
+                setCancelConfirmOpen(false);
+              }}
+            >
+              Cancelar obra
+            </Button>
+          </>
+        }
+      >
+        <p>Tem certeza que deseja cancelar a obra <strong>{project.name}</strong>? Esta ação não pode ser desfeita.</p>
       </Modal>
 
       <Modal

@@ -41,6 +41,16 @@
   color: var(--color-ink);
 }
 
+/* FIX (auditoria E2E de browser, ciclo 4, 02/10/2026): numa tabela table-layout:fixed, a
+   LARGURA da coluna é respeitada pela estrutura, mas o CONTEÚDO de uma célula (ex.: um Badge
+   com white-space:nowrap mais largo que a coluna) ainda vaza visualmente por cima da célula
+   vizinha, porque nada aqui recorta o overflow. Alargar a coluna caso a caso (feito no ciclo 3
+   pra "Orçamento aprovado") só adia o mesmo bug pro próximo label/valor mais longo que aparecer.
+   overflow:hidden aqui recorta de uma vez por todas, pra qualquer tabela de largura fixa. */
+.table.fixed tbody td {
+  overflow: hidden;
+}
+
 .table tbody tr {
   transition: background-color var(--duration-base) var(--ease-out-expo);
 }
