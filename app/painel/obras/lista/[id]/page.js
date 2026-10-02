@@ -425,7 +425,14 @@ export default function ObraDetalhePage({ params }) {
         propertyId: editForm.propertyId || null,
         responsibleUserId: editForm.responsibleUserId || null,
         costCenterId: editForm.costCenterId || null,
-        budgetAmount: editForm.budgetAmount !== "" ? toNumber(editForm.budgetAmount) : null,
+        // FIX (auditoria E2E de browser, ciclo 5, 02/10/2026): com orçamento já aprovado
+        // (baseline imutável), o backend agora rejeita qualquer alteração de budgetAmount —
+        // omite o campo do payload nesse caso (igual ao padrão já usado em
+        // updateBudgetLine/plannedAmount), senão salvar OUTRO campo do modal (ex.: nome)
+        // quebraria também, mesmo sem o usuário ter mexido no orçamento.
+        ...(budget?.status !== "APPROVED"
+          ? { budgetAmount: editForm.budgetAmount !== "" ? toNumber(editForm.budgetAmount) : null }
+          : {}),
         startsAt: dateOnlyInputToIso(editForm.startsAt) || null,
         endsAtPlanned: dateOnlyInputToIso(editForm.endsAtPlanned) || null,
       });
@@ -1791,8 +1798,17 @@ export default function ObraDetalhePage({ params }) {
               ))}
             </Select>
           </FormField>
-          <FormField label="Orçamento (R$)" htmlFor="e-budget" helper="Opcional">
-            <DecimalInput id="e-budget" value={editForm.budgetAmount} onChange={(e) => setEditForm((p) => ({ ...p, budgetAmount: e.target.value }))} />
+          <FormField
+            label="Orçamento (R$)"
+            htmlFor="e-budget"
+            helper={budget?.status === "APPROVED" ? "Baseline já aprovada — valor só muda via Change Order." : "Opcional"}
+          >
+            <DecimalInput
+              id="e-budget"
+              value={editForm.budgetAmount}
+              onChange={(e) => setEditForm((p) => ({ ...p, budgetAmount: e.target.value }))}
+              disabled={budget?.status === "APPROVED"}
+            />
           </FormField>
           <FormField
             label="Início"
