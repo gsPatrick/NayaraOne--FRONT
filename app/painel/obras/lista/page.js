@@ -128,15 +128,18 @@ export default function ObrasListaPage() {
     },
     {
       key: "status",
+      // FIX (auditoria E2E de browser, ciclo 3, 02/10/2026): 13% não comportava o label mais
+      // longo ("Orçamento aprovado") sem o Badge (white-space:nowrap de propósito, pra manter
+      // a pílula legível) vazar visualmente por cima da coluna de Orçamento ao lado.
       label: "Status",
-      width: "13%",
+      width: "16%",
       render: (row) => <Badge tone={PROJECT_STATUS_TONE[row.status]}>{PROJECT_STATUS_LABELS[row.status]}</Badge>,
     },
     { key: "budgetAmount", label: "Orçamento", width: "11%", render: (row) => formatBRL(row.budgetAmount) },
     {
       key: "dates",
       label: "Início / Previsão",
-      width: "18%",
+      width: "15%",
       render: (row) => `${formatDate(row.startsAt)} — ${formatDate(row.endsAtPlanned)}`,
     },
     {

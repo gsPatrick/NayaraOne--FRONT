@@ -217,6 +217,7 @@ export default function ObraDetalhePage({ params }) {
   // configurar (o endpoint nem existia até esta correção).
   const [activeMarginRule, setActiveMarginRule] = useState(null);
   const [marginRuleOpen, setMarginRuleOpen] = useState(false);
+  const [marginRuleError, setMarginRuleError] = useState("");
   const [marginRulePct, setMarginRulePct] = useState("");
   const [savingMarginRule, setSavingMarginRule] = useState(false);
 
@@ -914,13 +915,14 @@ export default function ObraDetalhePage({ params }) {
 
   function openMarginRuleModal() {
     setMarginRulePct(activeMarginRule ? String(Number(activeMarginRule.minMarginPct)).replace(".", ",") : "");
+    setMarginRuleError("");
     setMarginRuleOpen(true);
   }
 
   async function handleSaveMarginRule() {
-    if (marginRulePct === "" || toNumber(marginRulePct) < 0) return;
+    if (marginRulePct === "" || toNumber(marginRulePct) < 0 || toNumber(marginRulePct) > 100) return;
     setSavingMarginRule(true);
-    setActionError("");
+    setMarginRuleError("");
     try {
       const rule = await createMarginRule({
         groupId: project.groupId,
@@ -930,7 +932,11 @@ export default function ObraDetalhePage({ params }) {
       setActiveMarginRule(rule);
       setMarginRuleOpen(false);
     } catch (err) {
-      setActionError(err?.message || "Não foi possível salvar a margem mínima.");
+      // FIX (auditoria E2E de browser, ciclo 3, 02/10/2026): o erro era gravado em
+      // actionError, que só é exibido na tela PRINCIPAL por trás do modal — com o modal
+      // aberto por cima, o usuário não via nenhum feedback e a ação parecia travar
+      // silenciosamente. Erro agora aparece dentro do próprio modal.
+      setMarginRuleError(err?.message || "Não foi possível salvar a margem mínima.");
     } finally {
       setSavingMarginRule(false);
     }
@@ -1545,30 +1551,35 @@ export default function ObraDetalhePage({ params }) {
                     </div>
                     <div className={styles.rowRight}>
                       <Badge tone={QUALITY_STATUS_TONE[q.status]}>{QUALITY_STATUS_LABELS[q.status]}</Badge>
-                      {q.status === "PENDING" ? (
-                        <div className={styles.quickActions}>
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            loading={qualityBusyId === q.id}
-                            disabled={qualityBusyId === q.id}
-                            onClick={() => handleQualityQuickAction(q, "OK")}
-                          >
-                            OK
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="danger"
-                            disabled={qualityBusyId === q.id}
-                            onClick={() => {
-                              setQualityRejecting(q);
-                              setQualityRejectNotes("");
-                            }}
-                          >
-                            Não OK
-                          </Button>
-                        </div>
-                      ) : null}
+                      {/* FIX (auditoria E2E de browser, ciclo 3, 02/10/2026): os botões
+                          OK/Não OK só apareciam com status PENDING — depois do primeiro
+                          veredito não havia NENHUMA forma de corrigir um engano (ex.: marcar
+                          "OK" sem querer). checkQualityItem no backend já aceita re-verificar
+                          livremente (sem trava de status atual), então a UI é quem artificialmente
+                          travava — agora os botões sempre aparecem, com rótulo "Revisar" quando
+                          já verificado. */}
+                      <div className={styles.quickActions}>
+                        <Button
+                          size="sm"
+                          variant={q.status === "OK" ? "ghost" : "secondary"}
+                          loading={qualityBusyId === q.id}
+                          disabled={qualityBusyId === q.id || q.status === "OK"}
+                          onClick={() => handleQualityQuickAction(q, "OK")}
+                        >
+                          {q.status === "PENDING" ? "OK" : "Marcar OK"}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant={q.status === "NOT_OK" ? "ghost" : "danger"}
+                          disabled={qualityBusyId === q.id || q.status === "NOT_OK"}
+                          onClick={() => {
+                            setQualityRejecting(q);
+                            setQualityRejectNotes("");
+                          }}
+                        >
+                          {q.status === "PENDING" ? "Não OK" : "Marcar não conforme"}
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -1878,10 +1889,11 @@ export default function ObraDetalhePage({ params }) {
         footer={
           <>
             <Button variant="secondary" onClick={() => setMarginRuleOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSaveMarginRule} loading={savingMarginRule} disabled={marginRulePct === "" || toNumber(marginRulePct) < 0}>Salvar</Button>
+            <Button onClick={handleSaveMarginRule} loading={savingMarginRule} disabled={marginRulePct === "" || toNumber(marginRulePct) < 0 || toNumber(marginRulePct) > 100}>Salvar</Button>
           </>
         }
       >
+        {marginRuleError ? <Alert tone="danger">{marginRuleError}</Alert> : null}
         <FormField
           label="Margem mínima exigida (%)"
           htmlFor="m-margin-pct"
