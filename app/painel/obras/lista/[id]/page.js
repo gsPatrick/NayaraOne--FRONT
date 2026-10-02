@@ -913,7 +913,7 @@ export default function ObraDetalhePage({ params }) {
   }
 
   function openMarginRuleModal() {
-    setMarginRulePct(activeMarginRule ? String(Number(activeMarginRule.minMarginPct)) : "");
+    setMarginRulePct(activeMarginRule ? String(Number(activeMarginRule.minMarginPct)).replace(".", ",") : "");
     setMarginRuleOpen(true);
   }
 
@@ -1892,6 +1892,7 @@ export default function ObraDetalhePage({ params }) {
             id="m-margin-pct"
             value={marginRulePct}
             onChange={(e) => setMarginRulePct(e.target.value)}
+            onFocus={(e) => e.target.select()}
             placeholder="10,00"
           />
         </FormField>
