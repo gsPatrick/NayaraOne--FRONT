@@ -82,6 +82,14 @@ export default function NovaObraPage() {
 
   async function handleSubmit() {
     if (!isValid) return;
+    // FIX (auditoria E2E de browser, ciclo 7, 02/10/2026): "Orçamento (R$)" é opcional, então só
+    // a checagem de string vazia deixava passar "," sozinho (toNumber(",") = NaN) sem avisar —
+    // o backend descarta com segurança (JSON.stringify(NaN) vira null), mas o usuário não sabia
+    // que o valor digitado foi ignorado.
+    if (form.budgetAmount && Number.isNaN(toNumber(form.budgetAmount))) {
+      setActionError('"Orçamento (R$)" não é um número válido.');
+      return;
+    }
     setActionError("");
     setSubmitting(true);
     try {

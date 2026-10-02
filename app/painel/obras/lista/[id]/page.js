@@ -2155,7 +2155,7 @@ export default function ObraDetalhePage({ params }) {
         footer={
           <>
             <Button variant="secondary" onClick={() => setBudgetOpen(false)}>Cancelar</Button>
-            <Button onClick={handleCreateBudgetLine} loading={savingBudget} disabled={!budgetForm.category.trim() || budgetForm.plannedAmount === ""}>{editingBudgetLineId ? "Salvar alterações" : "Criar linha"}</Button>
+            <Button onClick={handleCreateBudgetLine} loading={savingBudget} disabled={!budgetForm.category.trim() || isInvalidNumber(budgetForm.plannedAmount, { allowZero: true })}>{editingBudgetLineId ? "Salvar alterações" : "Criar linha"}</Button>
           </>
         }
       >
