@@ -8,13 +8,14 @@ import Badge from "@/components/atoms/Badge/Badge";
 import Button from "@/components/atoms/Button/Button";
 import Select from "@/components/atoms/Select/Select";
 import Input from "@/components/atoms/Input/Input";
+import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import Icon from "@/components/atoms/Icon/Icon";
 import Alert from "@/components/molecules/Alert/Alert";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
 import { listInventoryItems, listInventoryLocations, recordInventoryMovement, getItemBalances } from "@/lib/api/inventory";
-import { formatQuantity, formatDateTime } from "@/lib/format";
+import { formatQuantity, formatDateTime, toNumber } from "@/lib/format";
 import styles from "../../obras/lista/page.module.css";
 
 const MOVEMENT_TYPE_LABELS = { IN: "Entrada", OUT: "Saída", RETURN: "Devolução", TRANSFER: "Transferência", ADJUSTMENT: "Ajuste", LOSS: "Perda", DISPOSAL: "Descarte" };
@@ -64,7 +65,8 @@ export default function MovimentosPage() {
   const isValid =
     form.inventoryItemId &&
     form.quantity &&
-    Number(form.quantity) > 0 &&
+    !Number.isNaN(toNumber(form.quantity)) &&
+    toNumber(form.quantity) > 0 &&
     (requirement !== "source" || form.sourceLocationId) &&
     (requirement !== "destination" || form.destinationLocationId) &&
     (requirement !== "both" || (form.sourceLocationId && form.destinationLocationId)) &&
@@ -80,7 +82,7 @@ export default function MovimentosPage() {
       await recordInventoryMovement({
         inventoryItemId: form.inventoryItemId,
         movementType: form.movementType,
-        quantity: Number(form.quantity),
+        quantity: toNumber(form.quantity),
         sourceLocationId: form.sourceLocationId || undefined,
         destinationLocationId: form.destinationLocationId || undefined,
         responsiblePersonId: form.responsiblePersonId || undefined,
@@ -153,7 +155,7 @@ export default function MovimentosPage() {
           </Select>
         </FormField>
         <FormField label="Quantidade" required>
-          <Input type="number" value={form.quantity} onChange={(e) => setForm((p) => ({ ...p, quantity: e.target.value }))} />
+          <DecimalInput value={form.quantity} onChange={(e) => setForm((p) => ({ ...p, quantity: e.target.value }))} />
         </FormField>
         {(requirement === "source" || requirement === "both" || requirement === "either") ? (
           <FormField label="Local de origem" required={requirement !== "either"}>

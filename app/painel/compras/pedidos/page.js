@@ -8,12 +8,13 @@ import Badge from "@/components/atoms/Badge/Badge";
 import Button from "@/components/atoms/Button/Button";
 import Select from "@/components/atoms/Select/Select";
 import Input from "@/components/atoms/Input/Input";
+import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import Alert from "@/components/molecules/Alert/Alert";
 import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
 import { listPurchaseOrders, getPurchaseOrder, confirmGoodsReceipt, listDiscrepancies } from "@/lib/api/procurement";
 import { listInventoryLocations } from "@/lib/api/inventory";
-import { formatBRL, formatDateTime, formatQuantity } from "@/lib/format";
+import { formatBRL, formatDateTime, formatQuantity, toNumber } from "@/lib/format";
 
 const STATUS_LABELS = { OPEN: "Aberto", RECEIVED: "Recebido", CANCELED: "Cancelado" };
 const STATUS_TONE = { OPEN: "info", RECEIVED: "success", CANCELED: "neutral" };
@@ -66,7 +67,7 @@ export default function PedidosDeCompraPage() {
       await confirmGoodsReceipt(receiveModal.id, {
         destinationLocationId,
         invoiceFingerprint: invoiceFingerprint || undefined,
-        items: receiveModal.items.map((it) => ({ purchaseOrderItemId: it.id, receivedQuantity: Number(receivedQuantities[it.id] || 0) })),
+        items: receiveModal.items.map((it) => ({ purchaseOrderItemId: it.id, receivedQuantity: toNumber(receivedQuantities[it.id] || "0") })),
       });
       setReceiveModal(null);
       setDestinationLocationId("");
@@ -138,7 +139,7 @@ export default function PedidosDeCompraPage() {
         </FormField>
         {(receiveModal?.items || []).map((it) => (
           <FormField key={it.id} label={`${it.description} (pedido: ${formatQuantity(it.quantity)}, já recebido: ${formatQuantity(it.receivedQuantity)})`}>
-            <Input type="number" value={receivedQuantities[it.id] || ""} onChange={(e) => setReceivedQuantities((p) => ({ ...p, [it.id]: e.target.value }))} />
+            <DecimalInput value={receivedQuantities[it.id] || ""} onChange={(e) => setReceivedQuantities((p) => ({ ...p, [it.id]: e.target.value }))} />
           </FormField>
         ))}
       </Modal>

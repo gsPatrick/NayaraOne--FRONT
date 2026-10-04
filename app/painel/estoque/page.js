@@ -9,6 +9,7 @@ import Button from "@/components/atoms/Button/Button";
 import SearchInput from "@/components/molecules/SearchInput/SearchInput";
 import Select from "@/components/atoms/Select/Select";
 import Input from "@/components/atoms/Input/Input";
+import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import StatTile from "@/components/molecules/StatTile/StatTile";
 import Icon from "@/components/atoms/Icon/Icon";
 import Alert from "@/components/molecules/Alert/Alert";
@@ -16,7 +17,7 @@ import StickyActionBar from "@/components/organisms/StickyActionBar/StickyAction
 import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
 import { listInventoryItems, createInventoryItem, listInventoryLocations, createInventoryLocation } from "@/lib/api/inventory";
-import { formatQuantity, formatBRL } from "@/lib/format";
+import { formatQuantity, formatBRL, toNumber } from "@/lib/format";
 import styles from "../obras/lista/page.module.css";
 
 const ITEM_TYPE_LABELS = { CONSUMABLE: "Consumível", TOOL: "Ferramenta", ASSET: "Patrimônio", SERVICE_ITEM: "Serviço" };
@@ -74,7 +75,7 @@ export default function EstoqueItensPage() {
         sku: itemForm.sku || undefined,
         unitOfMeasure: itemForm.unitOfMeasure || undefined,
         itemType: itemForm.itemType,
-        minimumQuantity: itemForm.minimumQuantity ? Number(itemForm.minimumQuantity) : undefined,
+        minimumQuantity: itemForm.minimumQuantity ? toNumber(itemForm.minimumQuantity) : undefined,
       });
       setItemModalOpen(false);
       setItemForm({ name: "", sku: "", unitOfMeasure: "", itemType: "CONSUMABLE", minimumQuantity: "" });
@@ -183,7 +184,7 @@ export default function EstoqueItensPage() {
           </Select>
         </FormField>
         <FormField label="Estoque mínimo" helper="Dispara aviso (inventory.stock.low) quando o saldo cruzar este valor.">
-          <Input type="number" value={itemForm.minimumQuantity} onChange={(e) => setItemForm((p) => ({ ...p, minimumQuantity: e.target.value }))} />
+          <DecimalInput value={itemForm.minimumQuantity} onChange={(e) => setItemForm((p) => ({ ...p, minimumQuantity: e.target.value }))} />
         </FormField>
       </Modal>
 

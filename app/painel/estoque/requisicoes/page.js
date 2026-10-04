@@ -8,6 +8,7 @@ import Badge from "@/components/atoms/Badge/Badge";
 import Button from "@/components/atoms/Button/Button";
 import Select from "@/components/atoms/Select/Select";
 import Input from "@/components/atoms/Input/Input";
+import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import Icon from "@/components/atoms/Icon/Icon";
 import Alert from "@/components/molecules/Alert/Alert";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
@@ -15,7 +16,7 @@ import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
 import { listRequisitions, createRequisition, decideRequisition, issueRequisition, listInventoryItems, listInventoryLocations } from "@/lib/api/inventory";
 import { listProjects } from "@/lib/api/construction";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTime, toNumber } from "@/lib/format";
 
 const STATUS_LABELS = { REQUESTED: "Solicitada", APPROVED: "Aprovada", REJECTED: "Rejeitada", ISSUED: "Entregue" };
 const STATUS_TONE = { REQUESTED: "neutral", APPROVED: "info", REJECTED: "danger", ISSUED: "success" };
@@ -57,7 +58,7 @@ export default function RequisicoesPage() {
     });
   }
 
-  const isValid = form.warehouseLocationId && (!form.projectLocationId || form.projectId) && form.lines.every((l) => l.inventoryItemId && Number(l.quantity) > 0);
+  const isValid = form.warehouseLocationId && (!form.projectLocationId || form.projectId) && form.lines.every((l) => l.inventoryItemId && !Number.isNaN(toNumber(l.quantity)) && toNumber(l.quantity) > 0);
 
   async function handleCreate() {
     if (!isValid) return;
@@ -68,7 +69,7 @@ export default function RequisicoesPage() {
         warehouseLocationId: form.warehouseLocationId,
         projectLocationId: form.projectLocationId || undefined,
         projectId: form.projectId || undefined,
-        items: form.lines.map((l) => ({ inventoryItemId: l.inventoryItemId, quantity: Number(l.quantity) })),
+        items: form.lines.map((l) => ({ inventoryItemId: l.inventoryItemId, quantity: toNumber(l.quantity) })),
       });
       setModalOpen(false);
       setForm({ warehouseLocationId: "", projectLocationId: "", projectId: "", lines: [{ inventoryItemId: "", quantity: "" }] });
@@ -195,7 +196,7 @@ export default function RequisicoesPage() {
                 <option key={i.id} value={i.id}>{i.name}</option>
               ))}
             </Select>
-            <Input type="number" placeholder="Qtd" value={line.quantity} onChange={(e) => updateLine(idx, "quantity", e.target.value)} style={{ flex: 1 }} />
+            <DecimalInput placeholder="Qtd" value={line.quantity} onChange={(e) => updateLine(idx, "quantity", e.target.value)} style={{ flex: 1 }} />
           </div>
         ))}
         <Button variant="secondary" size="sm" onClick={() => setForm((p) => ({ ...p, lines: [...p.lines, { inventoryItemId: "", quantity: "" }] }))}>+ Adicionar item</Button>

@@ -8,13 +8,14 @@ import Badge from "@/components/atoms/Badge/Badge";
 import Button from "@/components/atoms/Button/Button";
 import Select from "@/components/atoms/Select/Select";
 import Input from "@/components/atoms/Input/Input";
+import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import Icon from "@/components/atoms/Icon/Icon";
 import Alert from "@/components/molecules/Alert/Alert";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
 import { listAssets, createAsset, transferAsset, loanTool, returnTool, listInventoryLocations } from "@/lib/api/inventory";
-import { formatBRL, formatDate } from "@/lib/format";
+import { formatBRL, formatDate, toNumber } from "@/lib/format";
 
 const STATUS_LABELS = { AVAILABLE: "Disponível", IN_USE: "Em uso", LOANED: "Emprestado", MAINTENANCE: "Em manutenção" };
 const STATUS_TONE = { AVAILABLE: "success", IN_USE: "info", LOANED: "warning", MAINTENANCE: "danger" };
@@ -63,7 +64,7 @@ export default function PatrimonioPage() {
         name: form.name,
         assetTag: form.assetTag || undefined,
         currentLocationId: form.currentLocationId || undefined,
-        acquisitionValue: form.acquisitionValue ? Number(form.acquisitionValue) : undefined,
+        acquisitionValue: form.acquisitionValue ? toNumber(form.acquisitionValue) : undefined,
       });
       setCreateOpen(false);
       setForm({ name: "", assetTag: "", currentLocationId: "", acquisitionValue: "" });
@@ -193,7 +194,7 @@ export default function PatrimonioPage() {
           </Select>
         </FormField>
         <FormField label="Valor de aquisição (R$)">
-          <Input type="number" value={form.acquisitionValue} onChange={(e) => setForm((p) => ({ ...p, acquisitionValue: e.target.value }))} />
+          <DecimalInput value={form.acquisitionValue} onChange={(e) => setForm((p) => ({ ...p, acquisitionValue: e.target.value }))} />
         </FormField>
       </Modal>
 

@@ -8,13 +8,14 @@ import Badge from "@/components/atoms/Badge/Badge";
 import Button from "@/components/atoms/Button/Button";
 import Select from "@/components/atoms/Select/Select";
 import Input from "@/components/atoms/Input/Input";
+import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import Icon from "@/components/atoms/Icon/Icon";
 import Alert from "@/components/molecules/Alert/Alert";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
 import { listLossCases, openLossCase, decideLossCase, listInventoryItems, listInventoryLocations } from "@/lib/api/inventory";
-import { formatBRL, formatDateTime } from "@/lib/format";
+import { formatBRL, formatDateTime, toNumber } from "@/lib/format";
 
 const STATUS_LABELS = { OPEN: "Em análise", APPROVED: "Aprovada (baixa gerada)", REJECTED: "Rejeitada" };
 const STATUS_TONE = { OPEN: "warning", APPROVED: "danger", REJECTED: "neutral" };
@@ -47,7 +48,7 @@ export default function PerdasPage() {
   useEffect(() => { load(); }, []);
 
   const evidenceIds = form.evidenceFileIds.split(",").map((s) => s.trim()).filter(Boolean);
-  const isValid = form.inventoryItemId && Number(form.quantity) > 0 && form.context.trim() && evidenceIds.length > 0;
+  const isValid = form.inventoryItemId && !Number.isNaN(toNumber(form.quantity)) && toNumber(form.quantity) > 0 && form.context.trim() && evidenceIds.length > 0;
 
   async function handleCreate() {
     if (!isValid) return;
@@ -57,10 +58,10 @@ export default function PerdasPage() {
       await openLossCase({
         inventoryItemId: form.inventoryItemId,
         locationId: form.locationId || undefined,
-        quantity: Number(form.quantity),
+        quantity: toNumber(form.quantity),
         context: form.context,
         evidenceFileIds: evidenceIds,
-        estimatedCost: form.estimatedCost ? Number(form.estimatedCost) : undefined,
+        estimatedCost: form.estimatedCost ? toNumber(form.estimatedCost) : undefined,
       });
       setModalOpen(false);
       setForm({ inventoryItemId: "", locationId: "", quantity: "", context: "", evidenceFileIds: "", estimatedCost: "" });
@@ -151,7 +152,7 @@ export default function PerdasPage() {
           </Select>
         </FormField>
         <FormField label="Quantidade perdida" required>
-          <Input type="number" value={form.quantity} onChange={(e) => setForm((p) => ({ ...p, quantity: e.target.value }))} />
+          <DecimalInput value={form.quantity} onChange={(e) => setForm((p) => ({ ...p, quantity: e.target.value }))} />
         </FormField>
         <FormField label="Contexto" required helper="O que aconteceu — obrigatório para auditoria.">
           <Input value={form.context} onChange={(e) => setForm((p) => ({ ...p, context: e.target.value }))} />
@@ -160,7 +161,7 @@ export default function PerdasPage() {
           <Input value={form.evidenceFileIds} onChange={(e) => setForm((p) => ({ ...p, evidenceFileIds: e.target.value }))} />
         </FormField>
         <FormField label="Estimativa de custo (R$)">
-          <Input type="number" value={form.estimatedCost} onChange={(e) => setForm((p) => ({ ...p, estimatedCost: e.target.value }))} />
+          <DecimalInput value={form.estimatedCost} onChange={(e) => setForm((p) => ({ ...p, estimatedCost: e.target.value }))} />
         </FormField>
       </Modal>
     </AppShell>

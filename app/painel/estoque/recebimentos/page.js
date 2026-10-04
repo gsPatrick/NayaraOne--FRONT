@@ -8,6 +8,7 @@ import Badge from "@/components/atoms/Badge/Badge";
 import Button from "@/components/atoms/Button/Button";
 import Select from "@/components/atoms/Select/Select";
 import Input from "@/components/atoms/Input/Input";
+import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import Icon from "@/components/atoms/Icon/Icon";
 import Alert from "@/components/molecules/Alert/Alert";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
@@ -16,7 +17,7 @@ import FormField from "@/components/molecules/FormField/FormField";
 import RowActions from "@/components/molecules/RowActions/RowActions";
 import { listReceipts, createReceipt, reviewReceipt, confirmReceipt } from "@/lib/api/inventory";
 import { listInventoryItems, listInventoryLocations } from "@/lib/api/inventory";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTime, toNumber } from "@/lib/format";
 import styles from "../../obras/lista/page.module.css";
 
 const STATUS_LABELS = { DRAFT: "Rascunho", REVIEWED: "Revisado", COMPLETED: "Confirmado" };
@@ -60,7 +61,7 @@ export default function RecebimentosPage() {
     setForm((p) => ({ ...p, lines: [...p.lines, { inventoryItemId: "", quantity: "", unitCost: "" }] }));
   }
 
-  const isValid = form.destinationLocationId && form.lines.every((l) => l.inventoryItemId && Number(l.quantity) > 0);
+  const isValid = form.destinationLocationId && form.lines.every((l) => l.inventoryItemId && !Number.isNaN(toNumber(l.quantity)) && toNumber(l.quantity) > 0);
 
   async function handleCreate() {
     if (!isValid) return;
@@ -71,7 +72,7 @@ export default function RecebimentosPage() {
         destinationLocationId: form.destinationLocationId,
         invoiceNumber: form.invoiceNumber || undefined,
         invoiceFingerprint: form.invoiceFingerprint || undefined,
-        items: form.lines.map((l) => ({ inventoryItemId: l.inventoryItemId, quantity: Number(l.quantity), unitCost: l.unitCost ? Number(l.unitCost) : undefined })),
+        items: form.lines.map((l) => ({ inventoryItemId: l.inventoryItemId, quantity: toNumber(l.quantity), unitCost: l.unitCost ? toNumber(l.unitCost) : undefined })),
       });
       setModalOpen(false);
       setForm({ destinationLocationId: "", invoiceNumber: "", invoiceFingerprint: "", lines: [{ inventoryItemId: "", quantity: "", unitCost: "" }] });
@@ -183,8 +184,8 @@ export default function RecebimentosPage() {
                 <option key={i.id} value={i.id}>{i.name}</option>
               ))}
             </Select>
-            <Input type="number" placeholder="Qtd" value={line.quantity} onChange={(e) => updateLine(idx, "quantity", e.target.value)} style={{ flex: 1 }} />
-            <Input type="number" placeholder="Custo unit." value={line.unitCost} onChange={(e) => updateLine(idx, "unitCost", e.target.value)} style={{ flex: 1 }} />
+            <DecimalInput placeholder="Qtd" value={line.quantity} onChange={(e) => updateLine(idx, "quantity", e.target.value)} style={{ flex: 1 }} />
+            <DecimalInput placeholder="Custo unit." value={line.unitCost} onChange={(e) => updateLine(idx, "unitCost", e.target.value)} style={{ flex: 1 }} />
           </div>
         ))}
         <Button variant="secondary" size="sm" onClick={addLine}>+ Adicionar item</Button>

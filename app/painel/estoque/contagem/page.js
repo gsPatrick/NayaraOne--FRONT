@@ -8,13 +8,14 @@ import Badge from "@/components/atoms/Badge/Badge";
 import Button from "@/components/atoms/Button/Button";
 import Select from "@/components/atoms/Select/Select";
 import Input from "@/components/atoms/Input/Input";
+import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import Icon from "@/components/atoms/Icon/Icon";
 import Alert from "@/components/molecules/Alert/Alert";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
 import { listCounts, openCount, getCount, addCountItem, completeCount, applyCountAdjustment, listInventoryItems, listInventoryLocations } from "@/lib/api/inventory";
-import { formatDateTime, formatQuantity } from "@/lib/format";
+import { formatDateTime, formatQuantity, toNumber } from "@/lib/format";
 
 const STATUS_LABELS = { OPEN: "Em contagem", COMPLETED: "Fechado" };
 const STATUS_TONE = { OPEN: "warning", COMPLETED: "success" };
@@ -78,7 +79,7 @@ export default function ContagemPage() {
     if (!lineForm.inventoryItemId || lineForm.countedQuantity === "") return;
     setSaving(true);
     try {
-      await addCountItem(detail.id, { inventoryItemId: lineForm.inventoryItemId, countedQuantity: Number(lineForm.countedQuantity) });
+      await addCountItem(detail.id, { inventoryItemId: lineForm.inventoryItemId, countedQuantity: toNumber(lineForm.countedQuantity) });
       setLineForm({ inventoryItemId: "", countedQuantity: "" });
       const full = await getCount(detail.id);
       setDetail(full);
@@ -186,7 +187,7 @@ export default function ContagemPage() {
                 <option key={i.id} value={i.id}>{i.name}</option>
               ))}
             </Select>
-            <Input type="number" placeholder="Contado" value={lineForm.countedQuantity} onChange={(e) => setLineForm((p) => ({ ...p, countedQuantity: e.target.value }))} style={{ flex: 1 }} />
+            <DecimalInput placeholder="Contado" value={lineForm.countedQuantity} onChange={(e) => setLineForm((p) => ({ ...p, countedQuantity: e.target.value }))} style={{ flex: 1 }} />
             <Button size="sm" onClick={handleAddLine} loading={saving}>Add</Button>
           </div>
         ) : null}
