@@ -100,7 +100,12 @@ export default function ComprasPage() {
       // quebrava quoteModal.request.items.map() com TypeError assim que o modal tentava
       // renderizar. Precisa buscar o detalhe completo (com items) antes de abrir o modal.
       const [fullRequest, quotation] = await Promise.all([getPurchaseRequest(request.id), createQuotation(request.id)]);
-      setQuoteModal({ request: fullRequest, quotation, offers: [] });
+      // BUG REAL CORRIGIDO (auditoria E2E ciclo 5): createQuotation agora reaproveita a OPEN
+      // existente (fix no backend), mas o front também precisa carregar as ofertas já
+      // submetidas nela — senão reabrir o modal (reload, nova sessão) mostrava a comparação
+      // vazia mesmo com ofertas reais já registradas.
+      const offers = await compareOffers(quotation.id).catch(() => []);
+      setQuoteModal({ request: fullRequest, quotation, offers });
     } catch (err) {
       setActionError(err?.message || "Não foi possível abrir a cotação.");
     }
