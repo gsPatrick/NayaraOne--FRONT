@@ -139,7 +139,15 @@ export default function RequisicoesPage() {
   return (
     <AppShell title="Requisições de material" backHref="/painel/estoque">
       {loadError ? <Alert tone="danger" title="Não foi possível carregar as requisições">{loadError}</Alert> : null}
-      {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
+      {actionError ? (
+        /* BUG REAL CORRIGIDO (auditoria E2E Marco 7, ciclo 4) — mesma classe sistêmica já
+           catalogada no Marco 6: Alert de erro renderizado só no topo da página ficava atrás do
+           overlay de qualquer modal aberto (z-index 100), deixando o usuário sem nenhum feedback
+           visível ao submeter algo rejeitado pela API. Posição fixa com z-index acima do Modal. */
+        <div style={{ position: "fixed", top: "var(--space-4)", left: "50%", transform: "translateX(-50%)", zIndex: 200, width: "min(560px, calc(100vw - 2 * var(--space-4)))" }}>
+          <Alert tone="danger">{actionError}</Alert>
+        </div>
+      ) : null}
 
       <Card title="Requisições" subtitle="Solicitação → aprovação → baixa (OUT) por obra">
         <Table columns={columns} rows={loading ? [] : requisitions} loading={loading} emptyMessage="Nenhuma requisição registrada." />

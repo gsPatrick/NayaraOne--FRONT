@@ -48,7 +48,7 @@ export default function PerdasPage() {
   useEffect(() => { load(); }, []);
 
   const evidenceIds = form.evidenceFileIds.split(",").map((s) => s.trim()).filter(Boolean);
-  const isValid = form.inventoryItemId && !Number.isNaN(toNumber(form.quantity)) && toNumber(form.quantity) > 0 && form.context.trim() && evidenceIds.length > 0;
+  const isValid = form.inventoryItemId && form.locationId && !Number.isNaN(toNumber(form.quantity)) && toNumber(form.quantity) > 0 && form.context.trim() && evidenceIds.length > 0;
 
   async function handleCreate() {
     if (!isValid) return;
@@ -112,7 +112,15 @@ export default function PerdasPage() {
   return (
     <AppShell title="Perdas, quebras e extravios" backHref="/painel/estoque">
       {loadError ? <Alert tone="danger" title="Não foi possível carregar os casos de perda">{loadError}</Alert> : null}
-      {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
+      {actionError ? (
+        /* BUG REAL CORRIGIDO (auditoria E2E Marco 7, ciclo 4) — mesma classe sistêmica já
+           catalogada no Marco 6: Alert de erro renderizado só no topo da página ficava atrás do
+           overlay de qualquer modal aberto (z-index 100), deixando o usuário sem nenhum feedback
+           visível ao submeter algo rejeitado pela API. Posição fixa com z-index acima do Modal. */
+        <div style={{ position: "fixed", top: "var(--space-4)", left: "50%", transform: "translateX(-50%)", zIndex: 200, width: "min(560px, calc(100vw - 2 * var(--space-4)))" }}>
+          <Alert tone="danger">{actionError}</Alert>
+        </div>
+      ) : null}
 
       <Card title="Casos de perda" subtitle="Perda não é baixa comum — exige evidência e decisão separada (EST-010)">
         <Table columns={columns} rows={loading ? [] : cases} loading={loading} emptyMessage="Nenhum caso de perda registrado." />
@@ -143,9 +151,9 @@ export default function PerdasPage() {
             ))}
           </Select>
         </FormField>
-        <FormField label="Local">
+        <FormField label="Local" required helper="Obrigatório — necessário para aprovar a baixa depois (gera o movimento LOSS nesse local).">
           <Select value={form.locationId} onChange={(e) => setForm((p) => ({ ...p, locationId: e.target.value }))}>
-            <option value="">Nenhum</option>
+            <option value="">Selecione...</option>
             {locations.map((l) => (
               <option key={l.id} value={l.id}>{l.name}</option>
             ))}
