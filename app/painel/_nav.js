@@ -57,6 +57,32 @@ export const NAV_SECTIONS = [
           { label: "Pós-obra", href: "/painel/obras/pos-obra" },
         ],
       },
+      {
+        label: "Estoque",
+        href: "/painel/estoque",
+        icon: "building",
+        permission: "inventory:read",
+        children: [
+          { label: "Itens", href: "/painel/estoque" },
+          { label: "Movimentos", href: "/painel/estoque/movimentos" },
+          { label: "Recebimentos (NF)", href: "/painel/estoque/recebimentos" },
+          { label: "Requisições", href: "/painel/estoque/requisicoes" },
+          { label: "Patrimônio & QR", href: "/painel/estoque/patrimonio" },
+          { label: "Manutenção", href: "/painel/estoque/manutencao" },
+          { label: "Perdas & Extravios", href: "/painel/estoque/perdas" },
+          { label: "Inventário físico", href: "/painel/estoque/contagem" },
+        ],
+      },
+      {
+        label: "Compras",
+        href: "/painel/compras",
+        icon: "chart",
+        permission: "procurement:read",
+        children: [
+          { label: "Requisições de compra", href: "/painel/compras" },
+          { label: "Pedidos de compra", href: "/painel/compras/pedidos" },
+        ],
+      },
     ],
   },
   {
