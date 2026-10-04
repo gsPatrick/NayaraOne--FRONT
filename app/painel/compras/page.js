@@ -58,11 +58,18 @@ export default function ComprasPage() {
     setSaving(true);
     setActionError("");
     try {
-      await createPurchaseRequest({
+      const created = await createPurchaseRequest({
         items: form.lines.map((l) => ({ description: l.description, inventoryItemId: l.inventoryItemId || undefined, quantity: Number(l.quantity) })),
       });
       setCreateOpen(false);
       setForm({ lines: [{ description: "", inventoryItemId: "", quantity: "" }] });
+      if (created?.stockWarnings?.length) {
+        setActionError(
+          "Aviso: já há saldo em estoque para " +
+            created.stockWarnings.map((w) => `"${w.description}" (disponível: ${w.availableQuantity})`).join(", ") +
+            " — confirme se a compra é mesmo necessária antes de prosseguir."
+        );
+      }
       load();
     } catch (err) {
       setActionError(err?.message || "Não foi possível criar a requisição de compra.");
