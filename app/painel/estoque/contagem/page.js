@@ -15,6 +15,7 @@ import StickyActionBar from "@/components/organisms/StickyActionBar/StickyAction
 import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
 import { listCounts, openCount, getCount, addCountItem, completeCount, applyCountAdjustment, listInventoryItems, listInventoryLocations } from "@/lib/api/inventory";
+import { listProjects } from "@/lib/api/construction";
 import { formatDateTime, formatQuantity, toNumber } from "@/lib/format";
 
 const STATUS_LABELS = { OPEN: "Em contagem", COMPLETED: "Fechado" };
@@ -31,6 +32,8 @@ export default function ContagemPage() {
 
   const [openModalOpen, setOpenModalOpen] = useState(false);
   const [newLocationId, setNewLocationId] = useState("");
+  const [newProjectId, setNewProjectId] = useState("");
+  const [projects, setProjects] = useState([]);
   const [saving, setSaving] = useState(false);
 
   const [detail, setDetail] = useState(null);
@@ -39,25 +42,30 @@ export default function ContagemPage() {
   function load() {
     setLoading(true);
     setLoadError("");
-    Promise.all([listCounts(), listInventoryItems(), listInventoryLocations()])
-      .then(([c, i, l]) => {
+    Promise.all([listCounts(), listInventoryItems(), listInventoryLocations(), listProjects().catch(() => [])])
+      .then(([c, i, l, p]) => {
         setCounts(c || []);
         setItems(i || []);
         setLocations(l || []);
+        setProjects(p || []);
       })
       .catch((err) => setLoadError(err?.message || "Não foi possível carregar os inventários."))
       .finally(() => setLoading(false));
   }
   useEffect(() => { load(); }, []);
 
+  const newLocation = locations.find((l) => l.id === newLocationId);
+  const newLocationNeedsProject = newLocation?.locationType === "PROJECT_SITE";
+
   async function handleOpenCount() {
-    if (!newLocationId) return;
+    if (!newLocationId || (newLocationNeedsProject && !newProjectId)) return;
     setSaving(true);
     setActionError("");
     try {
-      await openCount({ locationId: newLocationId });
+      await openCount({ locationId: newLocationId, projectId: newLocationNeedsProject ? newProjectId : undefined });
       setOpenModalOpen(false);
       setNewLocationId("");
+      setNewProjectId("");
       load();
     } catch (err) {
       setActionError(err?.message || "Não foi possível abrir o inventário.");
@@ -160,18 +168,28 @@ export default function ContagemPage() {
         footer={
           <>
             <Button variant="secondary" onClick={() => setOpenModalOpen(false)}>Cancelar</Button>
-            <Button onClick={handleOpenCount} loading={saving} disabled={!newLocationId}>Abrir</Button>
+            <Button onClick={handleOpenCount} loading={saving} disabled={!newLocationId || (newLocationNeedsProject && !newProjectId)}>Abrir</Button>
           </>
         }
       >
         <FormField label="Local" required>
-          <Select value={newLocationId} onChange={(e) => setNewLocationId(e.target.value)}>
+          <Select value={newLocationId} onChange={(e) => { setNewLocationId(e.target.value); setNewProjectId(""); }}>
             <option value="">Selecione...</option>
             {locations.map((l) => (
               <option key={l.id} value={l.id}>{l.name}</option>
             ))}
           </Select>
         </FormField>
+        {newLocationNeedsProject ? (
+          <FormField label="Obra" required helper="Local de obra (canteiro) exige vincular a uma obra (EST-004).">
+            <Select value={newProjectId} onChange={(e) => setNewProjectId(e.target.value)}>
+              <option value="">Selecione...</option>
+              {projects.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </Select>
+          </FormField>
+        ) : null}
       </Modal>
 
       <Modal
