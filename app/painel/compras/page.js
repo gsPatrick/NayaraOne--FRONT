@@ -15,7 +15,7 @@ import StickyActionBar from "@/components/organisms/StickyActionBar/StickyAction
 import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
 import {
-  listPurchaseRequests, createPurchaseRequest, decidePurchaseRequest,
+  listPurchaseRequests, getPurchaseRequest, createPurchaseRequest, decidePurchaseRequest,
   createQuotation, submitSupplierOffer, compareOffers, awardSupplierOffer,
 } from "@/lib/api/procurement";
 import { listInventoryItems } from "@/lib/api/inventory";
@@ -95,8 +95,12 @@ export default function ComprasPage() {
   async function openQuoteFlow(request) {
     setActionError("");
     try {
-      const quotation = await createQuotation(request.id);
-      setQuoteModal({ request, quotation, offers: [] });
+      // BUG REAL CORRIGIDO (auditoria E2E ciclo 2): a linha vinda da listagem
+      // (listPurchaseRequests) é só um resumo, sem o array "items" — usar ela direto aqui
+      // quebrava quoteModal.request.items.map() com TypeError assim que o modal tentava
+      // renderizar. Precisa buscar o detalhe completo (com items) antes de abrir o modal.
+      const [fullRequest, quotation] = await Promise.all([getPurchaseRequest(request.id), createQuotation(request.id)]);
+      setQuoteModal({ request: fullRequest, quotation, offers: [] });
     } catch (err) {
       setActionError(err?.message || "Não foi possível abrir a cotação.");
     }
