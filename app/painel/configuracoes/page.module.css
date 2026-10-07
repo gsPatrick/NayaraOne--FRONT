@@ -86,6 +86,74 @@
   font-size: var(--text-body-md);
 }
 
+/* Cartão "com a cara" do provedor integrado: fundo e borda tingidos na cor oficial da marca
+   (via --brand-tint/--brand-border, setados inline por integração), logo grande no cabeçalho —
+   cada bloco funciona como um mini design-system da empresa integrada, não só uma lista de
+   campos genéricos. */
+.brandCard {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-5) var(--space-6);
+  align-items: start;
+  padding: var(--space-6);
+  border-radius: var(--radius-lg, 16px);
+  background: var(--brand-tint);
+  border: 1px solid var(--brand-border);
+}
+
+.brandCard + .brandCard {
+  margin-top: var(--space-5);
+}
+
+.brandCard > :global(.formGridFull) {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 640px) {
+  .brandCard {
+    grid-template-columns: 1fr;
+    padding: var(--space-5);
+  }
+}
+
+.brandCardHeader {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding-bottom: var(--space-4);
+  margin-bottom: var(--space-1);
+  border-bottom: 1px solid var(--brand-border);
+}
+
+.brandCardLogo {
+  display: flex;
+  align-items: center;
+}
+
+.brandCardMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.brandCardCategory {
+  font-size: var(--text-body-xs, 0.75rem);
+  font-weight: 700;
+  color: var(--color-ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.brandCardName {
+  font-size: var(--text-body-lg, 1.125rem);
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
 .labelWithBadge {
   display: inline-flex;
   align-items: center;

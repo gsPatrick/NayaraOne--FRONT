@@ -7,7 +7,14 @@ import Table from "@/components/organisms/Table/Table";
 import Badge from "@/components/atoms/Badge/Badge";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
-import { listMaintenanceOrders, closeMaintenanceOrder, listAssets } from "@/lib/api/inventory";
+import Icon from "@/components/atoms/Icon/Icon";
+import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
+import Modal from "@/components/organisms/Modal/Modal";
+import FormField from "@/components/molecules/FormField/FormField";
+import Select from "@/components/atoms/Select/Select";
+import Input from "@/components/atoms/Input/Input";
+import { listMaintenanceOrders, closeMaintenanceOrder, openMaintenanceOrder, listAssets } from "@/lib/api/inventory";
+import { apiFetch } from "@/lib/api/client";
 import { formatDateTime } from "@/lib/format";
 
 const STATUS_LABELS = { OPEN: "Aberta", CLOSED: "Fechada" };
@@ -16,18 +23,26 @@ const STATUS_TONE = { OPEN: "warning", CLOSED: "success" };
 export default function ManutencaoPage() {
   const [orders, setOrders] = useState([]);
   const [assets, setAssets] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [busyId, setBusyId] = useState(null);
+  const [openModal, setOpenModal] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({ assetId: "", description: "" });
 
+  // BUG REAL CORRIGIDO (auditoria "loop até secar", rodada 53, 2026-10-05): a OS fechada só
+  // mostrava a mesma data de abertura — closedAt (quando fechou) e quem abriu/fechou
+  // (createdBy/updatedBy, já retornados pelo backend) nunca eram exibidos.
   function load() {
     setLoading(true);
     setLoadError("");
-    Promise.all([listMaintenanceOrders(), listAssets()])
-      .then(([o, a]) => {
+    Promise.all([listMaintenanceOrders(), listAssets(), apiFetch("/users")])
+      .then(([o, a, u]) => {
         setOrders(o || []);
         setAssets(a || []);
+        setUsers(u || []);
       })
       .catch((err) => setLoadError(err?.message || "Não foi possível carregar as ordens de manutenção."))
       .finally(() => setLoading(false));
@@ -47,19 +62,46 @@ export default function ManutencaoPage() {
     }
   }
 
+  async function handleOpen() {
+    if (!form.assetId) return;
+    setSaving(true);
+    setActionError("");
+    try {
+      await openMaintenanceOrder({ assetId: form.assetId, description: form.description || undefined });
+      setOpenModal(false);
+      setForm({ assetId: "", description: "" });
+      load();
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível abrir a ordem de manutenção.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   function assetName(id) {
     return assets.find((a) => a.id === id)?.name || "—";
   }
 
+  function userName(id) {
+    return users.find((u) => u.id === id)?.name || "—";
+  }
+
   const columns = [
-    { key: "asset", label: "Patrimônio", width: "28%", render: (row) => assetName(row.assetId) },
-    { key: "description", label: "Descrição", width: "30%", render: (row) => row.description || "—" },
-    { key: "status", label: "Status", width: "14%", render: (row) => <Badge tone={STATUS_TONE[row.status]}>{STATUS_LABELS[row.status]}</Badge> },
-    { key: "opened", label: "Aberta em", width: "16%", render: (row) => formatDateTime(row.openedAt || row.opened_at) },
+    { key: "asset", label: "Patrimônio", width: "20%", render: (row) => assetName(row.assetId) },
+    { key: "description", label: "Descrição", width: "20%", render: (row) => row.description || "—" },
+    { key: "status", label: "Status", width: "10%", render: (row) => <Badge tone={STATUS_TONE[row.status]}>{STATUS_LABELS[row.status]}</Badge> },
+    { key: "opened", label: "Aberta em", width: "14%", render: (row) => formatDateTime(row.openedAt || row.opened_at) },
+    { key: "openedBy", label: "Aberta por", width: "12%", render: (row) => userName(row.createdBy) },
+    {
+      key: "closed",
+      label: "Fechada em / por",
+      width: "16%",
+      render: (row) => (row.status === "CLOSED" ? `${formatDateTime(row.closedAt || row.closed_at)} — ${userName(row.updatedBy)}` : "—"),
+    },
     {
       key: "actions",
       label: "",
-      width: "12%",
+      width: "8%",
       render: (row) => (row.status === "OPEN" ? (
         <Button size="sm" onClick={() => handleClose(row.id)} loading={busyId === row.id}>Fechar OS</Button>
       ) : null),
@@ -79,9 +121,39 @@ export default function ManutencaoPage() {
         </div>
       ) : null}
 
-      <Card title="Ordens de manutenção" subtitle="Abertas automaticamente na devolução de ferramenta danificada">
+      <Card title="Ordens de manutenção" subtitle="Abertas automaticamente na devolução de ferramenta danificada, ou manualmente abaixo">
         <Table columns={columns} rows={loading ? [] : orders} loading={loading} emptyMessage="Nenhuma ordem de manutenção registrada." />
       </Card>
+
+      <StickyActionBar>
+        <Button onClick={() => setOpenModal(true)}>
+          <Icon name="plus" size={18} /> Abrir OS
+        </Button>
+      </StickyActionBar>
+
+      <Modal
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+        title="Abrir ordem de manutenção"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setOpenModal(false)}>Cancelar</Button>
+            <Button onClick={handleOpen} loading={saving} disabled={!form.assetId}>Abrir</Button>
+          </>
+        }
+      >
+        <FormField label="Patrimônio" required>
+          <Select value={form.assetId} onChange={(e) => setForm((p) => ({ ...p, assetId: e.target.value }))}>
+            <option value="">Selecione...</option>
+            {assets.filter((a) => a.status === "AVAILABLE").map((a) => (
+              <option key={a.id} value={a.id}>{a.name}{a.assetTag ? ` (${a.assetTag})` : ""}</option>
+            ))}
+          </Select>
+        </FormField>
+        <FormField label="Descrição do problema">
+          <Input value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} placeholder="Ex.: Revisão preventiva programada" />
+        </FormField>
+      </Modal>
     </AppShell>
   );
 }

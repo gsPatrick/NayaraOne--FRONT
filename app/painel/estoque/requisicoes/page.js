@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Table from "@/components/organisms/Table/Table";
@@ -30,6 +31,7 @@ export default function RequisicoesPage() {
   const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [busyId, setBusyId] = useState(null);
+  const { confirm, ConfirmDialog } = useConfirm();
 
   const [modalOpen, setModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -82,6 +84,17 @@ export default function RequisicoesPage() {
   }
 
   async function handleDecide(id, decision) {
+    const isApprove = decision === "APPROVED";
+    const ok = await confirm({
+      title: isApprove ? "Aprovar esta requisição?" : "Rejeitar esta requisição?",
+      message: isApprove
+        ? "A requisição será aprovada e liberada para entrega/baixa de estoque."
+        : "A requisição será rejeitada e não poderá mais ser entregue.",
+      confirmLabel: isApprove ? "Aprovar" : "Rejeitar",
+      tone: isApprove ? "primary" : "danger",
+    });
+    if (!ok) return;
+
     setBusyId(id);
     setActionError("");
     try {
@@ -95,6 +108,13 @@ export default function RequisicoesPage() {
   }
 
   async function handleIssue(id) {
+    const ok = await confirm({
+      title: "Entregar esta requisição?",
+      message: "O estoque será baixado para os itens desta requisição. Esta ação não pode ser desfeita.",
+      confirmLabel: "Entregar",
+      tone: "danger",
+    });
+    if (!ok) return;
     setBusyId(id);
     setActionError("");
     try {
@@ -111,15 +131,33 @@ export default function RequisicoesPage() {
     return locations.find((l) => l.id === id)?.name || "—";
   }
 
+  function itemName(id) {
+    return items.find((i) => i.id === id)?.name || "—";
+  }
+
+  // BUG REAL CORRIGIDO (auditoria "loop até secar", rodada 53, 2026-10-05): listRequisitions
+  // (backend) só retornava o registro agregado, nunca os itens — a tela nunca mostrava quais
+  // itens/quantidades foram solicitados, só o status. Agora o backend inclui "items" e a tela
+  // exibe um resumo por linha.
   const columns = [
-    { key: "warehouse", label: "Almoxarifado", width: "18%", render: (row) => locationName(row.warehouseLocationId) },
-    { key: "project", label: "Canteiro", width: "18%", render: (row) => (row.projectLocationId ? locationName(row.projectLocationId) : "—") },
-    { key: "status", label: "Status", width: "14%", render: (row) => <Badge tone={STATUS_TONE[row.status]}>{STATUS_LABELS[row.status]}</Badge> },
-    { key: "created", label: "Criada em", width: "18%", render: (row) => formatDateTime(row.created_at) },
+    { key: "warehouse", label: "Almoxarifado", width: "16%", render: (row) => locationName(row.warehouseLocationId) },
+    { key: "project", label: "Canteiro", width: "16%", render: (row) => (row.projectLocationId ? locationName(row.projectLocationId) : "—") },
+    {
+      key: "items",
+      label: "Itens",
+      width: "22%",
+      render: (row) => (
+        <span style={{ fontSize: "var(--text-body-sm)" }}>
+          {(row.items || []).map((it) => `${itemName(it.inventoryItemId)} (${it.quantity})`).join(", ") || "—"}
+        </span>
+      ),
+    },
+    { key: "status", label: "Status", width: "12%", render: (row) => <Badge tone={STATUS_TONE[row.status]}>{STATUS_LABELS[row.status]}</Badge> },
+    { key: "created", label: "Criada em", width: "16%", render: (row) => formatDateTime(row.created_at) },
     {
       key: "actions",
       label: "",
-      width: "32%",
+      width: "18%",
       render: (row) => (
         <div style={{ display: "flex", gap: 8 }}>
           {row.status === "REQUESTED" ? (
@@ -209,6 +247,8 @@ export default function RequisicoesPage() {
         ))}
         <Button variant="secondary" size="sm" onClick={() => setForm((p) => ({ ...p, lines: [...p.lines, { inventoryItemId: "", quantity: "" }] }))}>+ Adicionar item</Button>
       </Modal>
+
+      <ConfirmDialog />
     </AppShell>
   );
 }

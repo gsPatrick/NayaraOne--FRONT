@@ -7,7 +7,15 @@
   font-size: var(--text-caption);
   font-weight: 600;
   letter-spacing: var(--tracking-normal);
+  max-width: 100%;
+  min-width: 0;
+}
+
+.label {
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
 }
 
 .dot {

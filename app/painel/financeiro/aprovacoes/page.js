@@ -17,6 +17,7 @@ import StickyActionBar from "@/components/organisms/StickyActionBar/StickyAction
 import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu";
 import Pagination from "@/components/molecules/Pagination/Pagination";
 import MfaVerifyModal from "@/components/organisms/MfaVerifyModal/MfaVerifyModal";
+import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
 import {
   REQUIRED_STEPS_BY_RISK,
   APPROVAL_STATUS_LABELS,
@@ -63,6 +64,7 @@ export default function AprovacoesPage() {
     setPage(1);
   }, [pageSize]);
   const [busyId, setBusyId] = useState(null);
+  const { confirm, ConfirmDialog } = useConfirm();
   const [pendingDecision, setPendingDecision] = useState(null); // { request, decision }
 
   useEffect(() => {
@@ -114,6 +116,15 @@ export default function AprovacoesPage() {
       showNotice("danger", "Auto-aprovação bloqueada", "Você não pode aprovar/rejeitar uma solicitação que você mesmo criou (segregação de funções).");
       return;
     }
+    const isApprove = decision === "APPROVED";
+    const ok = await confirm({
+      title: isApprove ? "Aprovar esta solicitação?" : "Rejeitar esta solicitação?",
+      message: `${approvalRequestLabel(request)} será ${isApprove ? "aprovada" : "rejeitada"}. Esta decisão fica registrada e não pode ser desfeita pelo mesmo fluxo.`,
+      confirmLabel: isApprove ? "Aprovar" : "Rejeitar",
+      tone: isApprove ? "primary" : "danger",
+    });
+    if (!ok) return;
+
     // Step-up MFA obrigatório para decisões de risco HIGH/CRITICAL (Caderno §3.3/3.4) — pede
     // o código antes de chamar a API; a API também recusa sem step-up recente (fail closed),
     // este modal é só UX para não deixar o usuário descobrir isso depois de tentar decidir.
@@ -263,6 +274,8 @@ export default function AprovacoesPage() {
       <StickyActionBar>
         <FinanceNavMenu />
       </StickyActionBar>
+
+      <ConfirmDialog />
     </AppShell>
   );
 }

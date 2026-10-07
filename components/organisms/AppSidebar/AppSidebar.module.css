@@ -192,6 +192,34 @@
   font-weight: 700;
 }
 
+/* BUG REAL CORRIGIDO (achado pelo cliente, 05/10/2026): o item PAI usava a mesma pílula branca
+   sólida (`.active`) do item FILHO selecionado — quando a seção estava aberta com um filho
+   ativo, ficavam duas pílulas brancas empilhadas, visualmente confuso. `.itemSectionOpen` é um
+   estado mais discreto (só texto em destaque + barra de acento), reservado pro pai quando a
+   seção está aberta por causa de um filho — a pílula branca cheia (`.active`) fica exclusiva
+   de quando o próprio item (sem filho selecionado) é a página atual. */
+.item.itemSectionOpen {
+  background: transparent;
+  color: var(--color-sidebar-ink);
+  font-weight: 700;
+}
+
+.item.itemSectionOpen::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 18px;
+  border-radius: var(--radius-full);
+  background: var(--color-brand);
+}
+
+.item.itemSectionOpen .itemIcon {
+  opacity: 1;
+}
+
 .itemIcon {
   flex-shrink: 0;
   display: inline-flex;

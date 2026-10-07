@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
 import { useRouter, notFound } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -67,6 +68,7 @@ export default function ContratoDetailPage({ params }) {
   const [actionError, setActionError] = useState("");
   const [notice, setNotice] = useState(null);
   const [busy, setBusy] = useState(false);
+  const { confirm, ConfirmDialog } = useConfirm();
   const [versionModalOpen, setVersionModalOpen] = useState(false);
   const [versionForm, setVersionForm] = useState({ file: null });
   const [versionError, setVersionError] = useState("");
@@ -153,6 +155,12 @@ export default function ContratoDetailPage({ params }) {
 
   async function handleAdvance() {
     if (!next) return;
+    const ok = await confirm({
+      title: `Avançar contrato para "${CONTRACT_STATUS_LABELS[next]}"?`,
+      message: `O status do contrato será alterado para "${CONTRACT_STATUS_LABELS[next]}". Confirme antes de continuar.`,
+      confirmLabel: "Avançar",
+    });
+    if (!ok) return;
     setActionError("");
     setBusy(true);
     try {
@@ -167,6 +175,13 @@ export default function ContratoDetailPage({ params }) {
   }
 
   async function handleCancel() {
+    const ok = await confirm({
+      title: "Cancelar este contrato?",
+      message: "O contrato será cancelado definitivamente. Esta ação não pode ser desfeita.",
+      confirmLabel: "Cancelar contrato",
+      tone: "danger",
+    });
+    if (!ok) return;
     setActionError("");
     setBusy(true);
     try {
@@ -598,6 +613,8 @@ export default function ContratoDetailPage({ params }) {
         file={viewerFile}
         fileId={viewerFile?.id}
       />
+
+      <ConfirmDialog />
     </AppShell>
   );
 }

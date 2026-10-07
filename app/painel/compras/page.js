@@ -14,19 +14,24 @@ import Alert from "@/components/molecules/Alert/Alert";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
+import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
+import PersonPicker from "@/components/molecules/PersonPicker/PersonPicker";
 import {
   listPurchaseRequests, getPurchaseRequest, createPurchaseRequest, decidePurchaseRequest,
   createQuotation, submitSupplierOffer, compareOffers, awardSupplierOffer,
 } from "@/lib/api/procurement";
 import { listInventoryItems } from "@/lib/api/inventory";
+import { listProjects } from "@/lib/api/construction";
 import { formatDateTime, formatBRL, toNumber } from "@/lib/format";
 
 const STATUS_LABELS = { REQUESTED: "Solicitada", APPROVED: "Aprovada", REJECTED: "Rejeitada", AWARDED: "Adjudicada", CLOSED: "Fechada" };
 const STATUS_TONE = { REQUESTED: "neutral", APPROVED: "info", REJECTED: "danger", AWARDED: "success", CLOSED: "success" };
 
 export default function ComprasPage() {
+  const { confirm, ConfirmDialog } = useConfirm();
   const [requests, setRequests] = useState([]);
   const [items, setItems] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
@@ -34,18 +39,23 @@ export default function ComprasPage() {
 
   const [createOpen, setCreateOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ lines: [{ description: "", inventoryItemId: "", quantity: "" }] });
+  // BUG REAL CORRIGIDO (auditoria "loop até secar", rodada 50, 2026-10-05): o backend aceita
+  // projectId/notes na requisição de compra desde sempre, mas o formulário nunca os enviava —
+  // perdendo a rastreabilidade de custo por obra que o fluxo RFQ->PO->recebimento deveria
+  // alimentar (igual ao módulo de requisições de Estoque, que já tem esse seletor).
+  const [form, setForm] = useState({ projectId: "", notes: "", lines: [{ description: "", inventoryItemId: "", quantity: "" }] });
 
   const [quoteModal, setQuoteModal] = useState(null); // { request, quotation, offers }
-  const [offerForm, setOfferForm] = useState({ supplierPersonId: "", prices: {} });
+  const [offerForm, setOfferForm] = useState({ supplierPersonId: "", supplierPersonName: "", prices: {} });
 
   function load() {
     setLoading(true);
     setLoadError("");
-    Promise.all([listPurchaseRequests(), listInventoryItems()])
-      .then(([r, i]) => {
+    Promise.all([listPurchaseRequests(), listInventoryItems(), listProjects()])
+      .then(([r, i, p]) => {
         setRequests(r || []);
         setItems(i || []);
+        setProjects(p || []);
       })
       .catch((err) => setLoadError(err?.message || "Não foi possível carregar as requisições de compra."))
       .finally(() => setLoading(false));
@@ -60,10 +70,12 @@ export default function ComprasPage() {
     setActionError("");
     try {
       const created = await createPurchaseRequest({
+        projectId: form.projectId || undefined,
+        notes: form.notes || undefined,
         items: form.lines.map((l) => ({ description: l.description, inventoryItemId: l.inventoryItemId || undefined, quantity: toNumber(l.quantity) })),
       });
       setCreateOpen(false);
-      setForm({ lines: [{ description: "", inventoryItemId: "", quantity: "" }] });
+      setForm({ projectId: "", notes: "", lines: [{ description: "", inventoryItemId: "", quantity: "" }] });
       if (created?.stockWarnings?.length) {
         setActionError(
           "Aviso: já há saldo em estoque para " +
@@ -80,6 +92,17 @@ export default function ComprasPage() {
   }
 
   async function handleDecide(id, decision) {
+    const isApprove = decision === "APPROVED";
+    const ok = await confirm({
+      title: isApprove ? "Aprovar requisição de compra?" : "Rejeitar requisição de compra?",
+      message: isApprove
+        ? "A requisição será aprovada e liberada para cotação com fornecedores."
+        : "A requisição será rejeitada e não poderá mais seguir para cotação.",
+      confirmLabel: isApprove ? "Aprovar" : "Rejeitar",
+      tone: isApprove ? "primary" : "danger",
+    });
+    if (!ok) return;
+
     setBusyId(id);
     setActionError("");
     try {
@@ -122,7 +145,7 @@ export default function ComprasPage() {
       });
       const offers = await compareOffers(quoteModal.quotation.id);
       setQuoteModal((p) => ({ ...p, offers }));
-      setOfferForm({ supplierPersonId: "", prices: {} });
+      setOfferForm({ supplierPersonId: "", supplierPersonName: "", prices: {} });
     } catch (err) {
       setActionError(err?.message || "Não foi possível submeter a oferta.");
     } finally {
@@ -130,11 +153,18 @@ export default function ComprasPage() {
     }
   }
 
-  async function handleAward(offerId) {
+  async function handleAward(offer) {
+    const ok = await confirm({
+      title: "Adjudicar esta oferta?",
+      message: `A oferta de ${offer.supplierPersonName || offer.supplierPersonId} (${formatBRL(offer.totalAmount)}) será adjudicada e a requisição seguirá para pedido de compra. As demais ofertas desta cotação serão descartadas.`,
+      confirmLabel: "Adjudicar",
+    });
+    if (!ok) return;
+
     setSaving(true);
     setActionError("");
     try {
-      await awardSupplierOffer(offerId);
+      await awardSupplierOffer(offer.id);
       setQuoteModal(null);
       load();
     } catch (err) {
@@ -145,14 +175,14 @@ export default function ComprasPage() {
   }
 
   const columns = [
-    { key: "status", label: "Status", width: "14%", render: (row) => <Badge tone={STATUS_TONE[row.status]}>{STATUS_LABELS[row.status]}</Badge> },
-    { key: "created", label: "Criada em", width: "20%", render: (row) => formatDateTime(row.created_at) },
+    { key: "status", label: "Status", width: "18%", render: (row) => <Badge tone={STATUS_TONE[row.status]}>{STATUS_LABELS[row.status]}</Badge> },
+    { key: "created", label: "Criada em", width: "28%", render: (row) => formatDateTime(row.created_at) },
     {
       key: "actions",
       label: "",
-      width: "36%",
+      width: "30%",
       render: (row) => (
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", flexWrap: "wrap" }}>
           {row.status === "REQUESTED" ? (
             <>
               <Button size="sm" onClick={() => handleDecide(row.id, "APPROVED")} loading={busyId === row.id}>Aprovar</Button>
@@ -201,6 +231,17 @@ export default function ComprasPage() {
           </>
         }
       >
+        <FormField label="Obra vinculada (opcional)">
+          <Select value={form.projectId} onChange={(e) => setForm((p) => ({ ...p, projectId: e.target.value }))}>
+            <option value="">Nenhuma — compra não vinculada a obra</option>
+            {projects.map((proj) => (
+              <option key={proj.id} value={proj.id}>{proj.name}</option>
+            ))}
+          </Select>
+        </FormField>
+        <FormField label="Observações (opcional)">
+          <Input value={form.notes} onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))} />
+        </FormField>
         {form.lines.map((line, idx) => (
           <div key={idx} style={{ display: "flex", gap: 8, marginBottom: 8 }}>
             <Input placeholder="Descrição" value={line.description} onChange={(e) => setForm((p) => { const lines = [...p.lines]; lines[idx] = { ...lines[idx], description: e.target.value }; return { ...p, lines }; })} style={{ flex: 2 }} />
@@ -225,8 +266,17 @@ export default function ComprasPage() {
         {quoteModal ? (
           <>
             <p style={{ marginBottom: 12 }}><strong>Itens da requisição:</strong> {quoteModal.request.items.map((it) => it.description).join(", ")}</p>
-            <FormField label="Fornecedor (ID da pessoa)" required>
-              <Input value={offerForm.supplierPersonId} onChange={(e) => setOfferForm((p) => ({ ...p, supplierPersonId: e.target.value }))} />
+            {/* BUG REAL CORRIGIDO (auditoria "loop até secar", rodada 61, 2026-10-06): campo de
+                texto livre pra UUID de fornecedor — trocado pelo PersonPicker já padrão em
+                CRM/Imóveis/Radar, que resolve nome -> personId de verdade. */}
+            <FormField label="Fornecedor" required>
+              <PersonPicker
+                id="offer-supplier"
+                value={offerForm.supplierPersonName}
+                personId={offerForm.supplierPersonId}
+                placeholder="Buscar fornecedor pelo nome..."
+                onSelect={({ name, personId }) => setOfferForm((p) => ({ ...p, supplierPersonName: name, supplierPersonId: personId || "" }))}
+              />
             </FormField>
             {quoteModal.request.items.map((it) => (
               <FormField key={it.id} label={`Preço unitário — ${it.description}`}>
@@ -236,20 +286,53 @@ export default function ComprasPage() {
             <Button size="sm" onClick={handleSubmitOffer} loading={saving} disabled={!offerForm.supplierPersonId.trim()}>Submeter oferta</Button>
 
             {quoteModal.offers.length > 0 ? (
-              <div style={{ marginTop: 16 }}>
+              <div style={{ marginTop: 20 }}>
                 <strong>Comparação (mais barato primeiro):</strong>
-                {quoteModal.offers.map((offer) => (
-                  <div key={offer.id} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid var(--color-border)" }}>
-                    <span>{offer.supplierPersonId}</span>
-                    <span>{formatBRL(offer.totalAmount)}</span>
-                    <Button size="sm" onClick={() => handleAward(offer.id)} loading={saving}>Adjudicar</Button>
-                  </div>
-                ))}
+                <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 10 }}>
+                  {quoteModal.offers.map((offer) => (
+                    <div
+                      key={offer.id}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: 12,
+                        padding: "10px 12px",
+                        border: "1px solid var(--color-border)",
+                        borderRadius: "var(--radius-md)",
+                      }}
+                    >
+                      <div style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0, flex: 1 }}>
+                        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{offer.supplierPersonName || offer.supplierPersonId}</span>
+                        <strong>{formatBRL(offer.totalAmount)}</strong>
+                        {/* BUG REAL CORRIGIDO (auditoria "loop até secar", rodada 52, 2026-10-05):
+                            compareOffers já inclui offer.items (preço unitário por item da
+                            requisição), mas só o total agregado era exibido — impossível
+                            comparar "fornecedor A mais barato no item X, mais caro no item Y". */}
+                        {Array.isArray(offer.items) && offer.items.length > 0 ? (
+                          <ul style={{ margin: "4px 0 0", paddingLeft: 16, fontSize: "var(--text-body-sm)", color: "var(--color-ink-muted)" }}>
+                            {offer.items.map((oi) => {
+                              const reqItem = quoteModal.request.items.find((it) => it.id === oi.purchaseRequestItemId);
+                              return (
+                                <li key={oi.id}>{reqItem?.description || oi.purchaseRequestItemId}: {formatBRL(oi.unitPrice)}</li>
+                              );
+                            })}
+                          </ul>
+                        ) : null}
+                      </div>
+                      <Button size="sm" onClick={() => handleAward(offer)} loading={saving} style={{ flexShrink: 0 }}>
+                        Adjudicar
+                      </Button>
+                    </div>
+                  ))}
+                </div>
               </div>
             ) : null}
           </>
         ) : null}
       </Modal>
+
+      <ConfirmDialog />
     </AppShell>
   );
 }

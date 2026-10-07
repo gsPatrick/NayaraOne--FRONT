@@ -106,7 +106,17 @@ export default function AppSidebar({ collapsed, onToggle }) {
             <ul className={styles.list}>
               {section.items.map((item) => {
                 const hasChildren = Boolean(item.children?.length);
-                const active = pathname === item.href || (hasChildren && item.children.some((c) => pathname === c.href.split("?")[0]));
+                // Item com filhos nunca é "a própria página atual" de verdade — ele renderiza
+                // como botão de toggle, nunca como link navegável, e em vários itens do menu o
+                // `href` do pai é literalmente igual ao do primeiro filho (ex.: "Compras" e
+                // "Requisições de compra" compartilham "/painel/compras"), então um match de
+                // `pathname === item.href` aqui não distingue "estou na página do pai" de "estou
+                // num filho". Por isso o pai NUNCA usa a pílula cheia (`.active`) — só a barra de
+                // acento discreta (`.itemSectionOpen`) quando algum filho (ou o próprio href,
+                // tanto faz) bate com a rota atual. A pílula cheia fica exclusiva do filho real.
+                const parentSelfActive = !hasChildren && pathname === item.href;
+                const hasActiveChild = hasChildren && (pathname === item.href || item.children.some((c) => pathname === c.href.split("?")[0]));
+                const active = parentSelfActive || hasActiveChild;
                 const menuOpen = openMenus.has(item.label);
 
                 if (hasChildren && !collapsed) {
@@ -114,7 +124,11 @@ export default function AppSidebar({ collapsed, onToggle }) {
                     <li key={item.label}>
                       <button
                         type="button"
-                        className={[styles.item, styles.itemButton, active ? styles.active : ""].filter(Boolean).join(" ")}
+                        className={[
+                          styles.item,
+                          styles.itemButton,
+                          hasActiveChild ? styles.itemSectionOpen : "",
+                        ].filter(Boolean).join(" ")}
                         onClick={() => toggleMenu(item.label)}
                         aria-expanded={menuOpen}
                       >

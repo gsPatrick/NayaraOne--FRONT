@@ -36,11 +36,10 @@
 }
 
 .chartArea {
-  height: 220px;
+  min-height: 220px;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
 }
 
 .chartArea > * {

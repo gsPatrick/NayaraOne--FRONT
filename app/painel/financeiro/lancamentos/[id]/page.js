@@ -13,6 +13,7 @@ import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/Skeleton
 import NatureBadge from "@/components/molecules/NatureBadge/NatureBadge";
 import BankLogo from "@/components/atoms/BankLogo/BankLogo";
 import MfaVerifyModal from "@/components/organisms/MfaVerifyModal/MfaVerifyModal";
+import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
 import { getBankName } from "@/lib/mock/banks";
 import { maskAccountNumber } from "@/lib/mask";
 import {
@@ -53,6 +54,7 @@ export default function LancamentoDetailPage({ params }) {
   const [notice, setNotice] = useState(null);
   const [busy, setBusy] = useState(false);
   const [mfaOpen, setMfaOpen] = useState(false);
+  const { confirm, ConfirmDialog } = useConfirm();
 
   function load() {
     let cancelled = false;
@@ -106,7 +108,13 @@ export default function LancamentoDetailPage({ params }) {
 
   // Liquidar é step-up MFA obrigatório (Caderno §3.3/3.4: "aprovação de pagamento") — abre o
   // modal de verificação; a chamada real de negócio só acontece em runSettle, após confirmar.
-  function handleSettle() {
+  async function handleSettle() {
+    const ok = await confirm({
+      title: "Liquidar este lançamento?",
+      message: `O lançamento "${entry?.description || ""}" (${formatBRL(entry?.amount)}) será marcado como liquidado e o pagamento será efetivado.`,
+      confirmLabel: "Liquidar",
+    });
+    if (!ok) return;
     setMfaOpen(true);
   }
 
@@ -125,6 +133,13 @@ export default function LancamentoDetailPage({ params }) {
   }
 
   async function handleReverse() {
+    const ok = await confirm({
+      title: "Estornar este lançamento?",
+      message: `Um lançamento compensatório será criado para reverter "${entry?.description || ""}" (${formatBRL(entry?.amount)}). O lançamento original nunca é editado (ledger imutável) — esta ação não pode ser desfeita.`,
+      confirmLabel: "Estornar",
+      tone: "danger",
+    });
+    if (!ok) return;
     setBusy(true);
     setNotice(null);
     try {
@@ -248,6 +263,8 @@ export default function LancamentoDetailPage({ params }) {
           await runSettle();
         }}
       />
+
+      <ConfirmDialog />
     </AppShell>
   );
 }
