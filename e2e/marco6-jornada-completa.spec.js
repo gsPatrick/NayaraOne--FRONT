@@ -47,29 +47,32 @@ function record(step, ok, detail) {
 async function main() {
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width: 1440, height: 1100 } });
-  page.setDefaultTimeout(15000);
+  // Timeout generoso: este ambiente usa um banco de dados remoto compartilhado
+  // (não localhost), cuja latência varia bastante sob carga concorrente de outras
+  // sessões de auditoria — 15s era curto demais e gerava falso-negativo.
+  page.setDefaultTimeout(70000);
 
   const suffix = Date.now();
   const projectName = `E2E Marco6 Obra ${suffix}`;
 
   try {
     // --- 1. Login ---
-    await page.goto(`${BASE_URL}/entrar`, { waitUntil: 'networkidle' });
+    await page.goto(`${BASE_URL}/entrar`, { waitUntil: 'domcontentloaded' });
     const teamTab = page.getByText('Sou da equipe', { exact: false });
     if (await teamTab.count()) await teamTab.first().click();
-    await page.waitForSelector('input[type=email]', { timeout: 15000 });
+    await page.waitForSelector('input[type=email]', { timeout: 70000 });
     await page.fill('input[type=email]', EMAIL);
     await page.fill('input[type=password]', PASSWORD);
     await page.click('button[type=submit]');
-    await page.waitForURL((url) => !url.pathname.includes('/entrar'), { timeout: 15000 }).catch(() => {});
+    await page.waitForURL((url) => !url.pathname.includes('/entrar'), { timeout: 70000 }).catch(() => {});
     await page.waitForTimeout(1500);
     record('1. login', true, `${EMAIL}`);
 
     // --- 2. Criar obra ---
-    await page.goto(`${BASE_URL}/painel/obras/lista/novo`, { waitUntil: 'networkidle' });
+    await page.goto(`${BASE_URL}/painel/obras/lista/novo`, { waitUntil: 'domcontentloaded' });
     await page.fill('#f-name', projectName);
     await page.click('button:has-text("Criar obra")');
-    await page.waitForURL(/\/painel\/obras\/lista\/[a-z0-9-]+$/, { timeout: 15000 });
+    await page.waitForURL(/\/painel\/obras\/lista\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/, { timeout: 70000 });
     const projectUrl = page.url();
     record('2. criar obra', true, projectUrl);
 
@@ -82,6 +85,9 @@ async function main() {
     record('3. criar etapa', true, 'Fundação e estrutura');
 
     // --- 4. Orçamento (linha) ---
+    // GAP CORRIGIDO (reauditoria pós-split de páginas): Orçamento virou rota dedicada
+    // (/orcamento) em vez de aba na página principal — precisa navegar até lá.
+    await page.goto(`${projectUrl}/orcamento`, { waitUntil: 'domcontentloaded' });
     await page.click('button:has-text("Nova linha de orçamento")');
     await page.fill('#m-budget-category', 'Fundação');
     await page.fill('#m-budget-planned', '10000');
@@ -111,8 +117,10 @@ async function main() {
     if (approveOk) record('5. aprovar orçamento', true);
 
     // --- Abrir etapa para registrar medição ---
+    // O link da etapa vive no resumo da obra (página principal), não em /orcamento.
+    await page.goto(projectUrl, { waitUntil: 'domcontentloaded' });
     await page.click('text=Fundação e estrutura');
-    await page.waitForURL(/\/etapas\/[a-z0-9-]+$/, { timeout: 15000 });
+    await page.waitForURL(/\/etapas\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/, { timeout: 70000 });
 
     // --- 6. Medição (registrar) ---
     await page.click('button:has-text("Registrar medição")');
@@ -137,25 +145,23 @@ async function main() {
       record('7. medição aprovada', false, err.message);
     }
 
-    // --- Volta pra obra ---
-    // NOTA: um `page.goto(projectUrl)` direto (recarregamento de página completo) foi
-    // observado redirecionando de volta para "/painel/obras/lista/novo" nesta tela — navegação
-    // real de usuário (clicar no link da obra a partir da listagem, SPA) não tem esse problema,
-    // então o E2E segue esse caminho em vez do reload direto.
-    await page.goto(`${BASE_URL}/painel/obras/lista`, { waitUntil: 'networkidle' });
-    const projectRow = page.locator('tr', { hasText: projectName });
-    await projectRow.getByLabel('Ver detalhes').click();
-    await page.waitForURL(/\/painel\/obras\/lista\/[a-z0-9-]+$/, { timeout: 15000 });
-
     // --- 8. Diário (RDO) ---
+    // GAP CORRIGIDO (reauditoria pós-split de páginas): Diário virou rota dedicada (/diario).
+    await page.goto(`${projectUrl}/diario`, { waitUntil: 'domcontentloaded' });
     await page.click('button:has-text("Novo RDO")');
     await page.fill('#m-rdo-date', new Date().toISOString().slice(0, 10));
+    // "Clima" é obrigatório (botão fica desabilitado sem ele) — seleciona a primeira opção real.
+    const weatherSelect = page.locator('#m-rdo-weather');
+    const weatherOptions = await weatherSelect.locator('option').allTextContents();
+    if (weatherOptions.length > 0) await weatherSelect.selectOption({ index: 0 });
     await page.fill('#m-rdo-workforce', '8');
     await page.click('button:has-text("Registrar RDO")');
     await page.waitForTimeout(1500);
     record('8. diário (RDO) registrado', true, '8 trabalhadores');
 
     // --- 9. Qualidade/NC ---
+    // GAP CORRIGIDO (reauditoria pós-split de páginas): Qualidade/NC virou rota dedicada.
+    await page.goto(`${projectUrl}/qualidade`, { waitUntil: 'domcontentloaded' });
     await page.click('button:has-text("Nova não conformidade")');
     await page.fill('#m-nc-description', 'Trinca identificada na fundação (teste E2E Marco 6).');
     // "Registrar" sozinho casa com vários botões da página (ex.: "Registrar perda", "Registrar
@@ -165,6 +171,8 @@ async function main() {
     record('9. não conformidade aberta', true, 'Trinca na fundação');
 
     // --- 10. Entrega + Pós-obra ---
+    // "Entregar obra" vive no resumo (página principal), não em /qualidade.
+    await page.goto(projectUrl, { waitUntil: 'domcontentloaded' });
     let deliverOutcome = 'não tentado';
     try {
       const deliverBtn = page.locator('button:has-text("Entregar obra")');
@@ -180,10 +188,12 @@ async function main() {
     }
     record('10a. tentativa de entrega da obra', true, deliverOutcome);
 
-    await page.goto(`${BASE_URL}/painel/obras/pos-obra/novo`, { waitUntil: 'networkidle' });
+    await page.goto(`${BASE_URL}/painel/obras/pos-obra/novo`, { waitUntil: 'domcontentloaded' });
     const propertySelect = page.locator('#f-property');
-    const propertyOptions = await propertySelect.locator('option').allTextContents();
-    if (propertyOptions.length > 1) await propertySelect.selectOption({ index: 1 });
+    // "Imóvel" é obrigatório (isValid exige propertyId) e a lista carrega assíncrona — espera
+    // sair do estado "só placeholder" (mesma causa raiz do timeout de latência já documentado).
+    await propertySelect.locator('option').nth(1).waitFor({ state: 'attached', timeout: 70000 });
+    await propertySelect.selectOption({ index: 1 });
     await page.fill('#f-description', `Chamado de pós-obra — teste E2E Marco 6 (${suffix}).`);
     await page.click('button:has-text("Criar chamado")');
     await page.waitForTimeout(1500);
