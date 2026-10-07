@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Button from "@/components/atoms/Button/Button";
@@ -45,17 +46,24 @@ export default function EtapaDetalhePage({ params }) {
   const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [busyId, setBusyId] = useState(null);
+  const { confirm, ConfirmDialog } = useConfirm();
 
   const [rejectTarget, setRejectTarget] = useState(null);
   const [rejectReason, setRejectReason] = useState("");
   const [rejecting, setRejecting] = useState(false);
 
   const [measurementOpen, setMeasurementOpen] = useState(false);
+  // BUG REAL CORRIGIDO (auditoria "loop até secar", rodada 51, 2026-10-05): o backend aceita um
+  // array "items" (serviço/quantidade/preço unitário) que calcula totalAmount automaticamente
+  // a partir das linhas — mas a tela só tinha um campo de texto livre pro totalAmount, sem
+  // conseguir detalhar o que compõe a medição. "items" vazio mantém o comportamento antigo
+  // (totalAmount digitado manualmente).
   const [measurementForm, setMeasurementForm] = useState({
     measuredPct: "",
     measuredAt: new Date().toISOString().slice(0, 10),
     notes: "",
     totalAmount: "",
+    items: [],
   });
   const [savingMeasurement, setSavingMeasurement] = useState(false);
   // FIX (homologação 23/09/2026): este useState estava declarado lá embaixo, DEPOIS dos
@@ -171,6 +179,12 @@ export default function EtapaDetalhePage({ params }) {
   }
 
   async function handleApprove(measurement) {
+    const ok = await confirm({
+      title: "Aprovar esta medição?",
+      message: "A medição será aprovada e passa a contar no orçamento realizado da obra.",
+      confirmLabel: "Aprovar",
+    });
+    if (!ok) return;
     setBusyId(measurement.id);
     setActionError("");
     try {
@@ -223,9 +237,25 @@ export default function EtapaDetalhePage({ params }) {
   }
 
   function openMeasurementModal() {
-    setMeasurementForm({ measuredPct: "", measuredAt: new Date().toISOString().slice(0, 10), notes: "", totalAmount: "" });
+    setMeasurementForm({ measuredPct: "", measuredAt: new Date().toISOString().slice(0, 10), notes: "", totalAmount: "", items: [] });
     setMeasuredAtInvalid(false);
     setMeasurementOpen(true);
+  }
+
+  function addMeasurementItemLine() {
+    setMeasurementForm((p) => ({ ...p, items: [...p.items, { description: "", quantity: "", unitPrice: "" }] }));
+  }
+
+  function updateMeasurementItemLine(idx, field, value) {
+    setMeasurementForm((p) => {
+      const items = [...p.items];
+      items[idx] = { ...items[idx], [field]: value };
+      return { ...p, items };
+    });
+  }
+
+  function removeMeasurementItemLine(idx) {
+    setMeasurementForm((p) => ({ ...p, items: p.items.filter((_, i) => i !== idx) }));
   }
 
   const isMeasurementValid =
@@ -236,6 +266,10 @@ export default function EtapaDetalhePage({ params }) {
     !measuredAtInvalid;
 
   async function handleCreateMeasurement() {
+    // BUG REAL CORRIGIDO (auditoria Marco 6, Ciclo 9): duplo-clique nativo criava 2 medições
+    // duplicadas — createStageMeasurement é um INSERT simples, sem checagem de duplicidade no
+    // backend. Guarda de reentrância explícita (mesma classe de bug já achada em ciclo 8).
+    if (savingMeasurement) return;
     if (!isMeasurementValid) return;
     // FIX (auditoria E2E de browser, ciclo 6, 02/10/2026, mesma causa raiz do achado em
     // pos-obra): "Valor total" é opcional, então só a checagem `!== ""` deixava passar "," sozinho
@@ -248,11 +282,17 @@ export default function EtapaDetalhePage({ params }) {
     setSavingMeasurement(true);
     setActionError("");
     try {
+      const validItems = measurementForm.items.filter((it) => it.description.trim() && it.quantity !== "" && it.unitPrice !== "");
       await createStageMeasurement(stage.id, {
         measuredPct: toNumber(measurementForm.measuredPct),
         measuredAt: measurementForm.measuredAt,
         notes: measurementForm.notes.trim() || undefined,
-        totalAmount: measurementForm.totalAmount !== "" ? toNumber(measurementForm.totalAmount) : undefined,
+        // Quando há itens detalhados, o backend calcula totalAmount a partir deles — o campo
+        // de texto livre só é usado quando não há nenhuma linha (comportamento antigo).
+        totalAmount: validItems.length === 0 && measurementForm.totalAmount !== "" ? toNumber(measurementForm.totalAmount) : undefined,
+        items: validItems.length > 0
+          ? validItems.map((it) => ({ description: it.description, quantity: toNumber(it.quantity), unitPrice: toNumber(it.unitPrice) }))
+          : undefined,
       });
       setMeasurementOpen(false);
       reloadStageAndMeasurements();
@@ -266,7 +306,16 @@ export default function EtapaDetalhePage({ params }) {
   return (
     <AppShell title={stage.name} backHref={`/painel/obras/lista/${project.id}`}>
       <div className={styles.wrap}>
-        {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
+        {actionError ? (
+          /* BUG REAL CORRIGIDO (auditoria E2E ao vivo, Marco 6, Ciclo 7, 2026-10-06): mesma
+             classe sistêmica já catalogada (Alert de erro renderizado no corpo normal da página
+             fica atrás do overlay de qualquer Modal aberto, z-index 100) — aqui especificamente
+             o modal de registrar medição nunca tinha recebido o fix. Posição fixa com z-index
+             acima do Modal. */
+          <div style={{ position: "fixed", top: "var(--space-4)", left: "50%", transform: "translateX(-50%)", zIndex: 200, width: "min(560px, calc(100vw - 2 * var(--space-4)))" }}>
+            <Alert tone="danger">{actionError}</Alert>
+          </div>
+        ) : null}
 
         <div className={styles.topRow}>
           <div className={styles.badges}>
@@ -444,13 +493,15 @@ export default function EtapaDetalhePage({ params }) {
           <FormField label="Percentual medido (%)" htmlFor="m-meas-pct" required>
             <DecimalInput id="m-meas-pct" value={measurementForm.measuredPct} onChange={(e) => setMeasurementForm((p) => ({ ...p, measuredPct: e.target.value }))} />
           </FormField>
-          <FormField
-            label="Valor total (R$)"
-            htmlFor="m-meas-total"
-            helper="Necessário pra aprovar a medição (vira a obrigação financeira ao aprovar) — pode ser deixado em branco e preenchido depois, numa correção."
-          >
-            <DecimalInput id="m-meas-total" value={measurementForm.totalAmount} onChange={(e) => setMeasurementForm((p) => ({ ...p, totalAmount: e.target.value }))} placeholder="0,00" />
-          </FormField>
+          {measurementForm.items.length === 0 ? (
+            <FormField
+              label="Valor total (R$)"
+              htmlFor="m-meas-total"
+              helper="Necessário pra aprovar a medição (vira a obrigação financeira ao aprovar) — pode ser deixado em branco e preenchido depois, numa correção. Ou detalhe por item abaixo."
+            >
+              <DecimalInput id="m-meas-total" value={measurementForm.totalAmount} onChange={(e) => setMeasurementForm((p) => ({ ...p, totalAmount: e.target.value }))} placeholder="0,00" />
+            </FormField>
+          ) : null}
           <FormField label="Data da medição" htmlFor="m-meas-date" required error={measuredAtInvalid ? DATE_INPUT_ERROR_MESSAGE : undefined}>
             <Input
               id="m-meas-date"
@@ -477,8 +528,22 @@ export default function EtapaDetalhePage({ params }) {
               />
             </FormField>
           </div>
+          <div className={styles.span2}>
+            <strong>Itens medidos (opcional)</strong>
+            {measurementForm.items.map((item, idx) => (
+              <div key={idx} style={{ display: "flex", gap: 8, marginTop: 8, alignItems: "flex-end" }}>
+                <Input placeholder="Serviço" value={item.description} onChange={(e) => updateMeasurementItemLine(idx, "description", e.target.value)} style={{ flex: 2 }} />
+                <DecimalInput placeholder="Quantidade" value={item.quantity} onChange={(e) => updateMeasurementItemLine(idx, "quantity", e.target.value)} style={{ flex: 1 }} />
+                <DecimalInput placeholder="Preço unitário" value={item.unitPrice} onChange={(e) => updateMeasurementItemLine(idx, "unitPrice", e.target.value)} style={{ flex: 1 }} />
+                <Button variant="secondary" size="sm" onClick={() => removeMeasurementItemLine(idx)}>Remover</Button>
+              </div>
+            ))}
+            <Button variant="secondary" size="sm" style={{ marginTop: 8 }} onClick={addMeasurementItemLine}>+ Adicionar item</Button>
+          </div>
         </div>
       </Modal>
+
+      <ConfirmDialog />
     </AppShell>
   );
 }

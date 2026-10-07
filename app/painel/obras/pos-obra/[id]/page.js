@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
 import { useRouter, notFound } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -84,6 +85,7 @@ export default function PosObraDetalhePage({ params }) {
   const [notFoundFlag, setNotFoundFlag] = useState(false);
   const [actionError, setActionError] = useState("");
   const [busy, setBusy] = useState(false);
+  const { confirm, ConfirmDialog } = useConfirm();
 
   const [editOpen, setEditOpen] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -252,6 +254,10 @@ export default function PosObraDetalhePage({ params }) {
   }
 
   async function handleCreateWarrantyAction() {
+    // BUG REAL CORRIGIDO (auditoria Marco 6, Ciclo 9): duplo-clique nativo criava 2 ações de
+    // atendimento duplicadas — createWarrantyAction é um INSERT simples, sem checagem de
+    // duplicidade no backend.
+    if (savingAction) return;
     if (!actionForm.description.trim()) return;
     // FIX (auditoria E2E de browser, ciclo 6, 02/10/2026): digitar só "," no campo "Custo (R$)"
     // (opcional) gerava toNumber(",") = NaN — a checagem anterior só olhava actionForm.cost
@@ -310,6 +316,12 @@ export default function PosObraDetalhePage({ params }) {
 
   async function handleApproveResolution() {
     if (approvingResolution) return;
+    const ok = await confirm({
+      title: "Aprovar esta resolução de garantia?",
+      message: "O chamado de garantia será marcado como resolvido e encerrado.",
+      confirmLabel: "Aprovar",
+    });
+    if (!ok) return;
     setApprovingResolution(true);
     setActionError("");
     try {
@@ -747,6 +759,8 @@ export default function PosObraDetalhePage({ params }) {
       >
         <p>Tem certeza que deseja excluir este chamado? Esta ação não pode ser desfeita.</p>
       </Modal>
+
+      <ConfirmDialog />
     </AppShell>
   );
 }

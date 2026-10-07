@@ -178,7 +178,15 @@ export default function PosObraListaPage() {
   return (
     <AppShell title="Pós-obra" backHref="/painel/obras">
       {loadError ? <Alert tone="danger" title="Não foi possível carregar os chamados">{loadError}</Alert> : null}
-      {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
+      {actionError ? (
+        /* BUG REAL CORRIGIDO (auditoria E2E ao vivo, Marco 6, Ciclo 7, 2026-10-06): mesma
+           classe sistêmica já catalogada (Alert no corpo normal da página fica atrás do
+           overlay de qualquer Modal aberto, z-index 100) — esta tela tem Modal e nunca
+           recebeu o fix. Posição fixa com z-index acima do Modal. */
+        <div style={{ position: "fixed", top: "var(--space-4)", left: "50%", transform: "translateX(-50%)", zIndex: 200, width: "min(560px, calc(100vw - 2 * var(--space-4)))" }}>
+          <Alert tone="danger">{actionError}</Alert>
+        </div>
+      ) : null}
 
       <div className={styles.grid}>
         <StatTile label="Total de chamados" value={cases.length} tone="neutral" icon="key" />

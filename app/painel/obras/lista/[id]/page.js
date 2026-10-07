@@ -8,6 +8,7 @@ import Button from "@/components/atoms/Button/Button";
 import Badge from "@/components/atoms/Badge/Badge";
 import Icon from "@/components/atoms/Icon/Icon";
 import Modal from "@/components/organisms/Modal/Modal";
+import FileViewerModal from "@/components/organisms/FileViewerModal/FileViewerModal";
 import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import FormField from "@/components/molecules/FormField/FormField";
@@ -16,6 +17,7 @@ import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import Select from "@/components/atoms/Select/Select";
 import FileDropInput from "@/components/molecules/FileDropInput/FileDropInput";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
 import {
   PROJECT_STATUS_LABELS,
   PROJECT_STATUS_TONE,
@@ -38,6 +40,7 @@ import {
   NONCONFORMITY_SEVERITY_TONE,
   NONCONFORMITY_STATUS_LABELS,
   NONCONFORMITY_STATUS_TONE,
+  MAINTENANCE_ESCALATION_LABELS,
 } from "@/lib/mock/construction";
 import {
   getProject,
@@ -57,9 +60,11 @@ import {
   listBudgetLines,
   createBudgetLine,
   updateBudgetLine,
+  removeBudgetLine,
   listQualityItems,
   createQualityItem,
   checkQualityItem,
+  removeQualityItem,
   listBudgets,
   createBudget,
   approveBudget,
@@ -92,6 +97,22 @@ import { formatBRL, formatQuantity, formatPercent, formatDate, formatDateTime, d
 import styles from "./page.module.css";
 
 const WEATHER_OPTIONS = ["Ensolarado", "Nublado", "Chuvoso", "Ventania"];
+
+// BUG REAL CORRIGIDO (auditoria E2E ao vivo, Marco 6, Ciclo 1, 2026-10-06): o modal "Novo item
+// de checklist" nunca tinha campo de categoria — o POST sempre ia sem "category", caindo no
+// default "OUTROS" do backend (qualityChecklist.service.js). Como o gate de entrega só bloqueia
+// com Nonconformity CRITICAL (gerada automaticamente só para categorias ESTRUTURA/HIDRAULICA/
+// ELETRICA), NENHUMA reprovação de checklist real jamais bloqueava a entrega da obra — o fix de
+// severidade do backend (rodada 60) nunca era alcançável pelo fluxo real da UI.
+const QUALITY_CATEGORIES = [
+  { value: "ESTRUTURA", label: "Estrutura" },
+  { value: "HIDRAULICA", label: "Hidráulica" },
+  { value: "ELETRICA", label: "Elétrica" },
+  { value: "ALVENARIA", label: "Alvenaria" },
+  { value: "ACABAMENTO", label: "Acabamento" },
+  { value: "PINTURA", label: "Pintura" },
+  { value: "OUTROS", label: "Outros" },
+];
 
 // FIX (auditoria E2E de browser, ciclo 6, 02/10/2026): "NaN <= 0" e "NaN < 0" são ambos FALSE
 // em JS — todo guard de validação deste arquivo que fazia `toNumber(x) <= 0` (ou `< 0`) sem
@@ -134,6 +155,12 @@ export default function ObraDetalhePage({ params }) {
   const [notFoundFlag, setNotFoundFlag] = useState(false);
   const [actionError, setActionError] = useState("");
   const [busy, setBusy] = useState(false);
+  // BUG REAL CORRIGIDO (auditoria E2E ao vivo, Marco 6, Ciclo 15, 2026-10-06): upload de
+  // evidência em RDO/Change Order/Não Conformidade funcionava, mas depois de enviado o arquivo
+  // ficava funcionalmente inacessível — nenhum link/preview em lugar nenhum da tela, só o texto
+  // "N foto(s) anexada(s)". Componente FileViewerModal já existe e é usado em outras telas do
+  // projeto (pessoas, contratos) — nunca tinha sido ligado em Obras.
+  const [viewerFileId, setViewerFileId] = useState(null);
 
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
@@ -175,12 +202,13 @@ export default function ObraDetalhePage({ params }) {
   const [budgetForm, setBudgetForm] = useState({ category: "", description: "", plannedAmount: "" });
   const [editingBudgetLineId, setEditingBudgetLineId] = useState(null);
   const [savingBudget, setSavingBudget] = useState(false);
+  const [deletingBudgetLineId, setDeletingBudgetLineId] = useState(null);
 
   const [qualityOpen, setQualityOpen] = useState(false);
   const [qualityBusyId, setQualityBusyId] = useState(null);
   const [qualityRejecting, setQualityRejecting] = useState(null);
   const [qualityRejectNotes, setQualityRejectNotes] = useState("");
-  const [qualityForm, setQualityForm] = useState({ item: "", projectStageId: "" });
+  const [qualityForm, setQualityForm] = useState({ item: "", projectStageId: "", category: "OUTROS" });
   const [savingQuality, setSavingQuality] = useState(false);
 
   const [budget, setBudget] = useState(null);
@@ -193,6 +221,7 @@ export default function ObraDetalhePage({ params }) {
   const [coForm, setCoForm] = useState({ reasonCode: "", description: "", budgetImpact: "", scheduleImpactDays: "", file: null });
   const [savingCo, setSavingCo] = useState(false);
   const [decidingCoId, setDecidingCoId] = useState(null);
+  const { confirm, ConfirmDialog } = useConfirm();
 
   const [health, setHealth] = useState(null);
   const [healthError, setHealthError] = useState("");
@@ -462,6 +491,10 @@ export default function ObraDetalhePage({ params }) {
   // checkQualityItem, mas a tela nunca oferecia campo pra registrar o motivo ao marcar "Não OK"
   // — dado se perdia em silêncio (Categoria 3 do catálogo de bugs). "OK" continua direto (sem
   // motivo a justificar); "Não OK" abre o modal de observação obrigatória.
+  // BUG REAL CORRIGIDO (auditoria "loop até secar", rodada 51, 2026-10-05): marcar um item
+  // NOT_OK dispara createNonconformity automaticamente no backend (R19 — "falha abre
+  // nonconformity"), mas a aba de Não Conformidades só era recarregada no load inicial da
+  // página — a NC nova existia no banco mas ficava invisível na tela até um F5 manual.
   async function handleQualityQuickAction(item, status, notes) {
     if (qualityBusyId) return;
     setActionError("");
@@ -471,6 +504,10 @@ export default function ObraDetalhePage({ params }) {
       setQualityItems((prev) => prev.map((q) => (q.id === updated.id ? updated : q)));
       setQualityRejecting(null);
       setQualityRejectNotes("");
+      if (status === "NOT_OK") {
+        const refreshedNcs = await listNonconformities(params.id);
+        setNonconformities(refreshedNcs || []);
+      }
     } catch (err) {
       setActionError(err?.message || "Não foi possível atualizar o item de qualidade.");
     } finally {
@@ -499,6 +536,11 @@ export default function ObraDetalhePage({ params }) {
   }
 
   async function handleSaveStage() {
+    // BUG REAL CORRIGIDO (auditoria E2E ao vivo, Marco 6, Ciclo 8, 2026-10-06): duplo-clique
+    // nativo (2 cliques no mesmo tick JS) disparava o handler 2x antes do React re-renderizar o
+    // `disabled` do botão, criando 2 etapas duplicadas — nenhum backend bloqueava, pois é um
+    // INSERT simples sem checagem de duplicidade. Guarda de reentrância explícita.
+    if (savingStage) return;
     if (!stageForm.name.trim() || stageForm.sequence === "") return;
     setSavingStage(true);
     setActionError("");
@@ -678,6 +720,30 @@ export default function ObraDetalhePage({ params }) {
   // uma linha, nem o valor planejado antes da aprovação do orçamento. Mesmo modal de criação,
   // reaproveitado pra editar (valor planejado trava quando o orçamento agregado já está
   // aprovado — mesma regra que o backend aplica em updateBudgetLine).
+  // BUG REAL CORRIGIDO (auditoria E2E ao vivo, Marco 6, Ciclo 8, 2026-10-06): não existia
+  // NENHUM jeito, via API nem via UI, de remover uma linha de orçamento digitada errada antes
+  // da aprovação — só editar valor/categoria/descrição.
+  async function handleDeleteBudgetLine(line) {
+    if (deletingBudgetLineId) return;
+    const ok = await confirm({
+      title: "Excluir linha de orçamento?",
+      message: `A linha "${line.category}" será removida. Esta ação não pode ser desfeita.`,
+      confirmLabel: "Excluir",
+      tone: "danger",
+    });
+    if (!ok) return;
+    setActionError("");
+    setDeletingBudgetLineId(line.id);
+    try {
+      await removeBudgetLine(line.id);
+      setBudgetLines((prev) => prev.filter((l) => l.id !== line.id));
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível excluir a linha de orçamento.");
+    } finally {
+      setDeletingBudgetLineId(null);
+    }
+  }
+
   function openBudgetLineEditModal(line) {
     setEditingBudgetLineId(line.id);
     setBudgetForm({
@@ -689,6 +755,10 @@ export default function ObraDetalhePage({ params }) {
   }
 
   async function handleCreateBudgetLine() {
+    // BUG REAL CORRIGIDO (auditoria Marco 6, Ciclo 9): duplo-clique nativo criava 2 linhas de
+    // orçamento duplicadas (ou aplicava a mesma edição 2x) — createBudgetLine/updateBudgetLine
+    // são INSERTs/UPDATEs simples, sem checagem de duplicidade no backend.
+    if (savingBudget) return;
     if (!budgetForm.category.trim() || isInvalidNumber(budgetForm.plannedAmount, { allowZero: true })) return;
     setSavingBudget(true);
     setActionError("");
@@ -699,11 +769,23 @@ export default function ObraDetalhePage({ params }) {
         const updated = await updateBudgetLine(editingBudgetLineId, payload);
         setBudgetLines((prev) => prev.map((l) => (l.id === updated.id ? updated : l)));
       } else {
+        // BUG REAL CORRIGIDO (auditoria E2E ao vivo, Marco 6, Ciclo 1, 2026-10-06): era possível
+        // criar uma linha de orçamento ANTES de existir o orçamento agregado — a linha nascia
+        // com budgetId=null, permanentemente órfã. Quando o orçamento agregado era criado e
+        // aprovado depois, approveBudget soma só as linhas com budgetId igual ao aprovado, então
+        // a baseline congelada saía errada (sem a linha órfã), gerando alerta de margem negativa
+        // falso no NAY Obras mesmo com orçamento e custo batendo de verdade. Fix: garante que o
+        // orçamento agregado exista ANTES de criar a primeira linha, nunca manda budgetId vazio.
+        let currentBudget = budget;
+        if (!currentBudget) {
+          currentBudget = await createBudget(project.id);
+          setBudget(currentBudget);
+        }
         const created = await createBudgetLine(project.id, {
           category: budgetForm.category.trim(),
           description: budgetForm.description.trim() || undefined,
           plannedAmount: toNumber(budgetForm.plannedAmount),
-          budgetId: budget?.id || undefined,
+          budgetId: currentBudget.id,
         });
         setBudgetLines((prev) => [...prev, created]);
       }
@@ -759,6 +841,10 @@ export default function ObraDetalhePage({ params }) {
     coForm.reasonCode !== "" && coForm.description.trim() !== "" && coForm.budgetImpact !== "" && !Number.isNaN(toNumber(coForm.budgetImpact));
 
   async function handleCreateChangeOrder() {
+    // BUG REAL CORRIGIDO (auditoria Marco 6, Ciclo 9): duplo-clique nativo criava 2 Change
+    // Orders duplicados — createChangeOrder é um INSERT simples, sem checagem de duplicidade
+    // no backend.
+    if (savingCo) return;
     if (!isChangeOrderValid) return;
     setSavingCo(true);
     setActionError("");
@@ -785,6 +871,17 @@ export default function ObraDetalhePage({ params }) {
   }
 
   async function handleDecideChangeOrder(changeOrder, decision) {
+    const isApprove = decision === "APPROVE";
+    const ok = await confirm({
+      title: isApprove ? "Aprovar este aditivo (Change Order)?" : "Rejeitar este aditivo (Change Order)?",
+      message: isApprove
+        ? "O aditivo será aprovado e o orçamento da obra será atualizado de acordo."
+        : "O aditivo será rejeitado e o orçamento da obra não será alterado por ele.",
+      confirmLabel: isApprove ? "Aprovar" : "Rejeitar",
+      tone: isApprove ? "primary" : "danger",
+    });
+    if (!ok) return;
+
     setDecidingCoId(changeOrder.id);
     setActionError("");
     try {
@@ -803,10 +900,13 @@ export default function ObraDetalhePage({ params }) {
   }
 
   function openQualityModal() {
-    setQualityForm({ item: "", projectStageId: "" });
+    setQualityForm({ item: "", projectStageId: "", category: "OUTROS" });
     setQualityOpen(true);
   }
   async function handleCreateQualityItem() {
+    // BUG REAL CORRIGIDO (auditoria E2E ao vivo, Marco 6, Ciclo 8, 2026-10-06): mesma classe de
+    // duplo-clique nativo criando registro duplicado (sem checagem de duplicidade no backend).
+    if (savingQuality) return;
     if (!qualityForm.item.trim()) return;
     setSavingQuality(true);
     setActionError("");
@@ -814,6 +914,7 @@ export default function ObraDetalhePage({ params }) {
       const created = await createQualityItem(project.id, {
         item: qualityForm.item.trim(),
         projectStageId: qualityForm.projectStageId || undefined,
+        category: qualityForm.category || "OUTROS",
       });
       setQualityItems((prev) => [...prev, created]);
       setQualityOpen(false);
@@ -824,11 +925,41 @@ export default function ObraDetalhePage({ params }) {
     }
   }
 
+  // LACUNA REAL CORRIGIDA (auditoria Marco 6, Ciclo 9): havia create+check para item de
+  // checklist de qualidade, mas nenhuma forma de remover um item cadastrado por engano (ex.:
+  // categoria/texto errado) antes de qualquer verificação — só restava "resolver" marcando
+  // OK/NOT_OK, poluindo o checklist real da obra pra sempre. DELETE só é aceito pelo backend
+  // enquanto o item ainda está PENDING (removeQualityItem).
+  async function handleDeleteQualityItem(item) {
+    if (qualityBusyId) return;
+    const ok = await confirm({
+      title: "Excluir item de checklist?",
+      message: `O item "${item.item}" será removido. Esta ação não pode ser desfeita.`,
+      confirmLabel: "Excluir",
+      tone: "danger",
+    });
+    if (!ok) return;
+    setActionError("");
+    setQualityBusyId(item.id);
+    try {
+      await removeQualityItem(item.id);
+      setQualityItems((prev) => prev.filter((q) => q.id !== item.id));
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível excluir o item de checklist.");
+    } finally {
+      setQualityBusyId(null);
+    }
+  }
+
   function openMaterialModal() {
     setMaterialForm({ description: "", quantity: "", unit: "" });
     setMaterialOpen(true);
   }
   async function handleCreateMaterialRequest() {
+    // BUG REAL CORRIGIDO (auditoria Marco 6, Ciclo 9): duplo-clique nativo criava 2 requisições
+    // de material duplicadas — createMaterialRequest é um INSERT simples, sem checagem de
+    // duplicidade no backend.
+    if (savingMaterial) return;
     if (!materialForm.description.trim() || isInvalidNumber(materialForm.quantity) || !materialForm.unit.trim()) return;
     setSavingMaterial(true);
     setActionError("");
@@ -865,6 +996,10 @@ export default function ObraDetalhePage({ params }) {
     setLossOpen(true);
   }
   async function handleCreateLossRecord() {
+    // BUG REAL CORRIGIDO (auditoria Marco 6, Ciclo 9): duplo-clique nativo criava 2 registros
+    // de perda de material duplicados — createLossRecord é um INSERT simples, sem checagem de
+    // duplicidade no backend.
+    if (savingLoss) return;
     if (!lossForm.materialDescription.trim() || isInvalidNumber(lossForm.quantity) || isInvalidNumber(lossForm.estimatedValue, { allowZero: true }) || !lossForm.reason.trim()) return;
     setSavingLoss(true);
     setActionError("");
@@ -885,6 +1020,12 @@ export default function ObraDetalhePage({ params }) {
   }
   async function handleApproveLossRecord(record) {
     if (lossBusyId) return;
+    const ok = await confirm({
+      title: "Aprovar esta baixa de material?",
+      message: "O registro de perda será aprovado e o estoque será baixado definitivamente.",
+      confirmLabel: "Aprovar",
+    });
+    if (!ok) return;
     setLossBusyId(record.id);
     setActionError("");
     try {
@@ -992,6 +1133,9 @@ export default function ObraDetalhePage({ params }) {
   }
 
   async function handleCreateNonconformity() {
+    // BUG REAL CORRIGIDO (auditoria E2E ao vivo, Marco 6, Ciclo 8, 2026-10-06): mesma classe de
+    // duplo-clique nativo criando registro duplicado (sem checagem de duplicidade no backend).
+    if (savingNc) return;
     if (!ncForm.description.trim()) return;
     setSavingNc(true);
     setActionError("");
@@ -1284,7 +1428,14 @@ export default function ObraDetalhePage({ params }) {
                 <div>
                   <p className={styles.infoLabel}>Situação de prazo</p>
                   <p className={styles.infoValue}>
-                    {health.kpis?.isOverdue ? `Atrasada (${health.kpis?.scheduleDelayDays ?? 0} dias)` : "Em dia"}
+                    {/* BUG REAL CORRIGIDO (auditoria E2E ao vivo, Marco 6, Ciclo 8, 2026-10-06):
+                        atraso aparecia só como texto preto comum dentro do card, sem nenhum
+                        destaque visual — mesmo sinal que já é um Badge vermelho no dashboard. */}
+                    {health.kpis?.isOverdue ? (
+                      <Badge tone="danger">{`Atrasada (${health.kpis?.scheduleDelayDays ?? 0} dias)`}</Badge>
+                    ) : (
+                      "Em dia"
+                    )}
                   </p>
                 </div>
                 <div>
@@ -1329,6 +1480,31 @@ export default function ObraDetalhePage({ params }) {
                   <div>
                     <p className={styles.infoLabel}>Custo total de garantia</p>
                     <p className={styles.infoValue}>{formatBRL(postObraHealth.summary.totalWarrantyCost)}</p>
+                  </div>
+                  {/* BUG REAL CORRIGIDO (auditoria "loop até secar", rodada 35, 2026-10-05): o
+                      backend (postObraHealth.service.js) já calculava totalLaborCost,
+                      totalMaterialCost e casesByEscalationLevel — exatamente os campos exigidos
+                      pelo contrato ("Pós-obra possui SLA, causa, materiais, mão de obra, custo e
+                      evidências") — mas eles nunca eram exibidos, só totalWarrantyCost agregado. */}
+                  <div>
+                    <p className={styles.infoLabel}>Custo de mão de obra</p>
+                    <p className={styles.infoValue}>{formatBRL(postObraHealth.summary.totalLaborCost)}</p>
+                  </div>
+                  <div>
+                    <p className={styles.infoLabel}>Custo de materiais</p>
+                    <p className={styles.infoValue}>{formatBRL(postObraHealth.summary.totalMaterialCost)}</p>
+                  </div>
+                  <div>
+                    <p className={styles.infoLabel}>Chamados por nível de SLA</p>
+                    <p className={styles.infoValue}>
+                      {/* BUG REAL CORRIGIDO (auditoria E2E ao vivo, Marco 6, Ciclo 4, 2026-10-06):
+                          renderizava o código cru do enum (NONE/WARNING/CRITICAL/OVERDUE) sem
+                          tradução — mesma Categoria 6 do catálogo já corrigida em outras telas. */}
+                      {Object.entries(postObraHealth.summary.casesByEscalationLevel || {})
+                        .filter(([, count]) => count > 0)
+                        .map(([level, count]) => `${MAINTENANCE_ESCALATION_LABELS[level] || level}: ${count}`)
+                        .join(" · ") || "—"}
+                    </p>
                   </div>
                 </div>
               ) : null}
@@ -1396,7 +1572,19 @@ export default function ObraDetalhePage({ params }) {
                       <span className={styles.rowSubtitle}>Serviços: {r.servicesPerformed}</span>
                     ) : null}
                     {r.evidenceFileIds?.length ? (
-                      <span className={styles.rowSubtitle}>{r.evidenceFileIds.length} foto(s) anexada(s)</span>
+                      <span className={styles.rowSubtitle}>
+                        {r.evidenceFileIds.length} foto(s) anexada(s) —{" "}
+                        {r.evidenceFileIds.map((fid, idx) => (
+                          <button
+                            key={fid}
+                            type="button"
+                            style={{ background: "none", border: "none", padding: 0, color: "var(--color-brand)", textDecoration: "underline", cursor: "pointer", font: "inherit" }}
+                            onClick={() => setViewerFileId(fid)}
+                          >
+                            {idx > 0 ? ", " : ""}ver foto {idx + 1}
+                          </button>
+                        ))}
+                      </span>
                     ) : null}
                   </div>
                   <button
@@ -1495,7 +1683,7 @@ export default function ObraDetalhePage({ params }) {
                         ) : null}
                       </td>
                       <td>{formatBRL(b.actualAmount)}</td>
-                      <td>
+                      <td style={{ display: "flex", gap: 4 }}>
                         <button
                           type="button"
                           className={styles.rowEditBtn}
@@ -1504,6 +1692,17 @@ export default function ObraDetalhePage({ params }) {
                         >
                           <Icon name="pencil" size={14} />
                         </button>
+                        {!(budget?.status === "APPROVED" && b.budgetId === budget.id) ? (
+                          <button
+                            type="button"
+                            className={styles.rowEditBtn}
+                            aria-label={`Excluir linha ${b.category}`}
+                            disabled={deletingBudgetLineId === b.id}
+                            onClick={() => handleDeleteBudgetLine(b)}
+                          >
+                            <Icon name="trash" size={14} />
+                          </button>
+                        ) : null}
                       </td>
                     </tr>
                   ))}
@@ -1544,7 +1743,19 @@ export default function ObraDetalhePage({ params }) {
                     </span>
                     <span className={styles.rowSubtitle}>{co.description}</span>
                     {co.evidenceFileIds?.length ? (
-                      <span className={styles.rowSubtitle}>{co.evidenceFileIds.length} evidência(s) anexada(s)</span>
+                      <span className={styles.rowSubtitle}>
+                        {co.evidenceFileIds.length} evidência(s) anexada(s) —{" "}
+                        {co.evidenceFileIds.map((fid, idx) => (
+                          <button
+                            key={fid}
+                            type="button"
+                            style={{ background: "none", border: "none", padding: 0, color: "var(--color-brand)", textDecoration: "underline", cursor: "pointer", font: "inherit" }}
+                            onClick={() => setViewerFileId(fid)}
+                          >
+                            {idx > 0 ? ", " : ""}ver {idx + 1}
+                          </button>
+                        ))}
+                      </span>
                     ) : null}
                   </div>
                   <div className={styles.rowRight}>
@@ -1578,7 +1789,11 @@ export default function ObraDetalhePage({ params }) {
                 return (
                   <div key={q.id} className={styles.rowStatic}>
                     <div className={styles.rowInfo}>
-                      <span className={styles.rowTitle}>{q.item}</span>
+                      <span className={styles.rowTitle}>
+                        {q.item}
+                        {" "}
+                        <Badge tone="neutral">{QUALITY_CATEGORIES.find((c) => c.value === q.category)?.label || q.category}</Badge>
+                      </span>
                       <span className={styles.rowSubtitle}>
                         {checkedBy ? `Verificado por ${checkedBy.name}` : "Ainda não verificado"}
                       </span>
@@ -1609,6 +1824,17 @@ export default function ObraDetalhePage({ params }) {
                         >
                           {q.status === "PENDING" ? "OK" : "Marcar OK"}
                         </Button>
+                        {q.status === "PENDING" ? (
+                          <button
+                            type="button"
+                            className={styles.rowEditBtn}
+                            aria-label={`Excluir item ${q.item}`}
+                            disabled={qualityBusyId === q.id}
+                            onClick={() => handleDeleteQualityItem(q)}
+                          >
+                            <Icon name="trash" size={14} />
+                          </button>
+                        ) : null}
                         <Button
                           size="sm"
                           variant={q.status === "NOT_OK" ? "ghost" : "danger"}
@@ -1751,8 +1977,41 @@ export default function ObraDetalhePage({ params }) {
                         {nc.slaDueAt ? ` · Prazo: ${formatDate(nc.slaDueAt)}` : ""}
                         {nc.requiresAcceptance ? " · Exige aceite para fechar" : ""}
                       </span>
+                      {nc.beforeEvidenceFileIds?.length || nc.afterEvidenceFileIds?.length ? (
+                        <span className={styles.rowSubtitle}>
+                          {(nc.beforeEvidenceFileIds || []).map((fid, idx) => (
+                            <button
+                              key={fid}
+                              type="button"
+                              style={{ background: "none", border: "none", padding: 0, marginRight: 8, color: "var(--color-brand)", textDecoration: "underline", cursor: "pointer", font: "inherit" }}
+                              onClick={() => setViewerFileId(fid)}
+                            >
+                              ver evidência (antes) {idx + 1}
+                            </button>
+                          ))}
+                          {(nc.afterEvidenceFileIds || []).map((fid, idx) => (
+                            <button
+                              key={fid}
+                              type="button"
+                              style={{ background: "none", border: "none", padding: 0, marginRight: 8, color: "var(--color-brand)", textDecoration: "underline", cursor: "pointer", font: "inherit" }}
+                              onClick={() => setViewerFileId(fid)}
+                            >
+                              ver evidência (depois) {idx + 1}
+                            </button>
+                          ))}
+                        </span>
+                      ) : null}
                     </div>
                     <div className={styles.rowRight}>
+                      {/* BUG REAL CORRIGIDO (auditoria "loop até secar", rodada 51, 2026-10-05):
+                          o backend calcula e persiste evidenceReuseFlagged (M6-59 — alerta
+                          anti-fraude de foto reaproveitada entre NCs diferentes), mas a tela
+                          nunca exibia isso — o alerta ficava funcionalmente invisível. */}
+                      {nc.evidenceReuseFlagged ? (
+                        <span title="A mesma evidência (foto) já foi usada em outra não conformidade — possível reuso indevido.">
+                          <Badge tone="danger">Evidência reutilizada</Badge>
+                        </span>
+                      ) : null}
                       <Badge tone={NONCONFORMITY_SEVERITY_TONE[nc.severity]}>{NONCONFORMITY_SEVERITY_LABELS[nc.severity] || nc.severity}</Badge>
                       <Badge tone={NONCONFORMITY_STATUS_TONE[nc.status]}>{NONCONFORMITY_STATUS_LABELS[nc.status] || nc.status}</Badge>
                       {nc.status === "OPEN" ? (
@@ -2289,6 +2548,13 @@ export default function ObraDetalhePage({ params }) {
               <Input id="m-quality-item" value={qualityForm.item} onChange={(e) => setQualityForm((p) => ({ ...p, item: e.target.value }))} placeholder="Ex: Verificar prumo e nível da fundação" />
             </FormField>
           </div>
+          <FormField label="Categoria" htmlFor="m-quality-category" required helper="Reprovação em Estrutura/Hidráulica/Elétrica abre não conformidade crítica e bloqueia a entrega da obra.">
+            <Select id="m-quality-category" value={qualityForm.category} onChange={(e) => setQualityForm((p) => ({ ...p, category: e.target.value }))}>
+              {QUALITY_CATEGORIES.map((c) => (
+                <option key={c.value} value={c.value}>{c.label}</option>
+              ))}
+            </Select>
+          </FormField>
           <FormField label="Etapa vinculada" htmlFor="m-quality-stage" helper="Opcional">
             <Select id="m-quality-stage" value={qualityForm.projectStageId} onChange={(e) => setQualityForm((p) => ({ ...p, projectStageId: e.target.value }))}>
               <option value="">Obra toda</option>
@@ -2536,6 +2802,14 @@ export default function ObraDetalhePage({ params }) {
           ) : null}
         </div>
       </Modal>
+
+      <ConfirmDialog />
+
+      <FileViewerModal
+        open={!!viewerFileId}
+        onClose={() => setViewerFileId(null)}
+        fileId={viewerFileId}
+      />
     </AppShell>
   );
 }

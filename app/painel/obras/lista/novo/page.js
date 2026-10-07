@@ -81,6 +81,10 @@ export default function NovaObraPage() {
   const isValid = form.name.trim().length > 0 && !dateErrors.startsAt && !dateErrors.endsAtPlanned;
 
   async function handleSubmit() {
+    // BUG REAL CORRIGIDO (auditoria E2E ao vivo, Marco 6, Ciclo 8, 2026-10-06): duplo-clique
+    // nativo disparava o handler 2x antes do React re-renderizar o `disabled` do botão, criando
+    // 2 obras duplicadas — nenhum backend bloqueava, pois é um INSERT simples.
+    if (submitting) return;
     if (!isValid) return;
     // FIX (auditoria E2E de browser, ciclo 7, 02/10/2026): "Orçamento (R$)" é opcional, então só
     // a checagem de string vazia deixava passar "," sozinho (toNumber(",") = NaN) sem avisar —

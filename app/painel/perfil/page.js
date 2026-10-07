@@ -12,7 +12,7 @@ import Alert from "@/components/molecules/Alert/Alert";
 import Badge from "@/components/atoms/Badge/Badge";
 import Icon from "@/components/atoms/Icon/Icon";
 import Modal from "@/components/organisms/Modal/Modal";
-import { getCurrentUser, isMfaSetupRequired, clearMfaSetupRequired } from "@/lib/auth/session";
+import { getCurrentUser, getSession, saveSession, isMfaSetupRequired, clearMfaSetupRequired } from "@/lib/auth/session";
 import { setupMfa, confirmMfa, disableMfa } from "@/lib/api/mfa";
 import styles from "./page.module.css";
 
@@ -100,6 +100,14 @@ export default function PerfilPage() {
     setMfaRequired(isMfaSetupRequired());
   }, []);
 
+  // Mantém localStorage.user em sincronia com o estado real de MFA no backend, para que
+  // navegar para outra tela e voltar não reexiba um valor obsoleto de getCurrentUser().mfaEnabled.
+  function syncMfaEnabledInSession(enabled) {
+    const session = getSession();
+    if (!session?.user) return;
+    saveSession({ ...session, user: { ...session.user, mfaEnabled: enabled } });
+  }
+
   const [step, setStep] = useState("idle"); // idle | setup | confirm | recovery
   const [otpauthUri, setOtpauthUri] = useState("");
   const [qrDataUrl, setQrDataUrl] = useState("");
@@ -152,6 +160,7 @@ export default function PerfilPage() {
       setRecoveryCodes(codes);
       setStep("recovery");
       setMfaEnabled(true);
+      syncMfaEnabledInSession(true);
       setConfirmCode("");
       if (mfaRequired) {
         clearMfaSetupRequired();
@@ -186,6 +195,7 @@ export default function PerfilPage() {
     try {
       await disableMfa(disableCode.trim());
       setMfaEnabled(false);
+      syncMfaEnabledInSession(false);
       setDisableOpen(false);
       setDisableCode("");
       handleFinish();

@@ -16,11 +16,11 @@ import StickyActionBar from "@/components/organisms/StickyActionBar/StickyAction
 import Pagination from "@/components/molecules/Pagination/Pagination";
 import RowActions from "@/components/molecules/RowActions/RowActions";
 import Modal from "@/components/organisms/Modal/Modal";
-import { PROJECT_STATUS_LABELS, PROJECT_STATUS_TONE } from "@/lib/mock/construction";
+import { PROJECT_STATUS_LABELS, PROJECT_STATUS_TONE, PROJECT_TERMINAL_STATUSES } from "@/lib/mock/construction";
 import { listProjects, removeProject } from "@/lib/api/construction";
 import { listProperties } from "@/lib/api/properties";
 import { apiFetch } from "@/lib/api/client";
-import { formatBRL, formatDate } from "@/lib/format";
+import { formatBRL, formatDate, isOverdue } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function ObrasListaPage() {
@@ -133,7 +133,18 @@ export default function ObrasListaPage() {
       // a pílula legível) vazar visualmente por cima da coluna de Orçamento ao lado.
       label: "Status",
       width: "16%",
-      render: (row) => <Badge tone={PROJECT_STATUS_TONE[row.status]}>{PROJECT_STATUS_LABELS[row.status]}</Badge>,
+      render: (row) => (
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          <Badge tone={PROJECT_STATUS_TONE[row.status]}>{PROJECT_STATUS_LABELS[row.status]}</Badge>
+          {/* BUG REAL CORRIGIDO (auditoria E2E ao vivo, Marco 6, Ciclo 8, 2026-10-06): o
+              dashboard (/painel/obras) já mostrava o badge "Atrasada", mas esta listagem — a
+              tela de CRUD usada no dia a dia — nunca tinha nenhum indicador visual de atraso,
+              mesmo com a coluna de datas mostrando a previsão vencida. */}
+          {!PROJECT_TERMINAL_STATUSES.includes(row.status) && isOverdue(row.endsAtPlanned) ? (
+            <Badge tone="danger">Atrasada</Badge>
+          ) : null}
+        </div>
+      ),
     },
     { key: "budgetAmount", label: "Orçamento", width: "11%", render: (row) => formatBRL(row.budgetAmount) },
     {
@@ -159,7 +170,15 @@ export default function ObrasListaPage() {
   return (
     <AppShell title="Obras" backHref="/painel/obras">
       {loadError ? <Alert tone="danger" title="Não foi possível carregar as obras">{loadError}</Alert> : null}
-      {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
+      {actionError ? (
+        /* BUG REAL CORRIGIDO (auditoria E2E ao vivo, Marco 6, Ciclo 7, 2026-10-06): mesma
+           classe sistêmica já catalogada (Alert no corpo normal da página fica atrás do
+           overlay de qualquer Modal aberto, z-index 100) — esta tela tem Modal e nunca
+           recebeu o fix. Posição fixa com z-index acima do Modal. */
+        <div style={{ position: "fixed", top: "var(--space-4)", left: "50%", transform: "translateX(-50%)", zIndex: 200, width: "min(560px, calc(100vw - 2 * var(--space-4)))" }}>
+          <Alert tone="danger">{actionError}</Alert>
+        </div>
+      ) : null}
 
       <div className={styles.grid}>
         <StatTile label="Total de obras" value={projects.length} tone="neutral" icon="building" />

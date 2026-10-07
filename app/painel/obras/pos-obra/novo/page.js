@@ -72,6 +72,11 @@ export default function NovoChamadoPosObraPage() {
   const isValid = form.propertyId && form.description.trim().length > 0 && !warrantyDateInvalid;
 
   async function handleSubmit() {
+    // BUG REAL CORRIGIDO (auditoria Marco 6, Ciclo 9): duplo-clique nativo disparava o handler
+    // 2x antes do React re-renderizar o `disabled` do botão, criando 2 chamados de pós-obra
+    // duplicados — createMaintenanceCase é um INSERT simples, sem checagem de duplicidade no
+    // backend. Guarda de reentrância explícita (mesmo padrão já aplicado em obras/lista/novo).
+    if (submitting) return;
     if (!isValid) return;
     setActionError("");
     setSubmitting(true);
