@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Table from "@/components/organisms/Table/Table";
@@ -11,6 +12,7 @@ import Icon from "@/components/atoms/Icon/Icon";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
+import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import Select from "@/components/atoms/Select/Select";
 import Input from "@/components/atoms/Input/Input";
 import { listMaintenanceOrders, closeMaintenanceOrder, openMaintenanceOrder, listAssets } from "@/lib/api/inventory";
@@ -21,6 +23,7 @@ const STATUS_LABELS = { OPEN: "Aberta", CLOSED: "Fechada" };
 const STATUS_TONE = { OPEN: "warning", CLOSED: "success" };
 
 export default function ManutencaoPage() {
+  const router = useRouter();
   const [orders, setOrders] = useState([]);
   const [assets, setAssets] = useState([]);
   const [users, setUsers] = useState([]);
@@ -108,6 +111,8 @@ export default function ManutencaoPage() {
     },
   ];
 
+  const availableAssets = assets.filter((a) => a.status === "AVAILABLE");
+
   return (
     <AppShell title="Manutenção de patrimônio" backHref="/painel/estoque">
       {loadError ? <Alert tone="danger" title="Não foi possível carregar as ordens de manutenção">{loadError}</Alert> : null}
@@ -132,20 +137,32 @@ export default function ManutencaoPage() {
       </StickyActionBar>
 
       <Modal
+        size="lg"
         open={openModal}
         onClose={() => setOpenModal(false)}
         title="Abrir ordem de manutenção"
         footer={
-          <>
-            <Button variant="secondary" onClick={() => setOpenModal(false)}>Cancelar</Button>
-            <Button onClick={handleOpen} loading={saving} disabled={!form.assetId}>Abrir</Button>
-          </>
+          availableAssets.length === 0 ? (
+            <Button variant="secondary" onClick={() => setOpenModal(false)}>Fechar</Button>
+          ) : (
+            <>
+              <Button variant="secondary" onClick={() => setOpenModal(false)}>Cancelar</Button>
+              <Button onClick={handleOpen} loading={saving} disabled={!form.assetId}>Abrir</Button>
+            </>
+          )
         }
       >
+        {availableAssets.length === 0 ? (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "var(--space-4)", padding: "var(--space-4) 0" }}>
+            <EmptyState icon="layers" title="Nenhum patrimônio disponível" description="Você precisa cadastrar um item de patrimônio com status Disponível antes de abrir uma ordem de manutenção." />
+            <Button onClick={() => router.push("/painel/estoque/patrimonio")}>Cadastrar patrimônio agora</Button>
+          </div>
+        ) : (
+        <>
         <FormField label="Patrimônio" required>
           <Select value={form.assetId} onChange={(e) => setForm((p) => ({ ...p, assetId: e.target.value }))}>
             <option value="">Selecione...</option>
-            {assets.filter((a) => a.status === "AVAILABLE").map((a) => (
+            {availableAssets.map((a) => (
               <option key={a.id} value={a.id}>{a.name}{a.assetTag ? ` (${a.assetTag})` : ""}</option>
             ))}
           </Select>
@@ -153,6 +170,8 @@ export default function ManutencaoPage() {
         <FormField label="Descrição do problema">
           <Input value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} placeholder="Ex.: Revisão preventiva programada" />
         </FormField>
+        </>
+        )}
       </Modal>
     </AppShell>
   );

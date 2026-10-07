@@ -13,6 +13,7 @@ import Alert from "@/components/molecules/Alert/Alert";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
+import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import { listCounts, openCount, listInventoryLocations } from "@/lib/api/inventory";
 import { listProjects } from "@/lib/api/construction";
 import { formatDateTime } from "@/lib/format";
@@ -102,16 +103,28 @@ export default function ContagemPage() {
       </StickyActionBar>
 
       <Modal
+        size="lg"
         open={openModalOpen}
         onClose={() => setOpenModalOpen(false)}
         title="Abrir inventário físico"
         footer={
-          <>
-            <Button variant="secondary" onClick={() => setOpenModalOpen(false)}>Cancelar</Button>
-            <Button onClick={handleOpenCount} loading={saving} disabled={!newLocationId || (newLocationNeedsProject && !newProjectId)}>Abrir</Button>
-          </>
+          locations.length === 0 ? (
+            <Button variant="secondary" onClick={() => setOpenModalOpen(false)}>Fechar</Button>
+          ) : (
+            <>
+              <Button variant="secondary" onClick={() => setOpenModalOpen(false)}>Cancelar</Button>
+              <Button onClick={handleOpenCount} loading={saving} disabled={!newLocationId || (newLocationNeedsProject && !newProjectId)}>Abrir</Button>
+            </>
+          )
         }
       >
+        {locations.length === 0 ? (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "var(--space-4)", padding: "var(--space-4) 0" }}>
+            <EmptyState icon="mapPin" title="Nenhum local de estoque cadastrado" description="Você precisa cadastrar pelo menos um local antes de abrir um inventário físico." />
+            <Button onClick={() => router.push("/painel/estoque")}>Cadastrar local agora</Button>
+          </div>
+        ) : (
+        <>
         <FormField label="Local" required>
           <Select value={newLocationId} onChange={(e) => { setNewLocationId(e.target.value); setNewProjectId(""); }}>
             <option value="">Selecione...</option>
@@ -130,6 +143,8 @@ export default function ContagemPage() {
             </Select>
           </FormField>
         ) : null}
+        </>
+        )}
       </Modal>
     </AppShell>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -15,6 +16,7 @@ import Alert from "@/components/molecules/Alert/Alert";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
+import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import { listLossCases, openLossCase, decideLossCase, listInventoryItems, listInventoryLocations, listAssets } from "@/lib/api/inventory";
 import { formatBRL, formatDateTime, toNumber } from "@/lib/format";
 
@@ -22,6 +24,7 @@ const STATUS_LABELS = { OPEN: "Em análise", APPROVED: "Aprovada (baixa gerada)"
 const STATUS_TONE = { OPEN: "warning", APPROVED: "danger", REJECTED: "neutral" };
 
 export default function PerdasPage() {
+  const router = useRouter();
   const [cases, setCases] = useState([]);
   const [items, setItems] = useState([]);
   const [assets, setAssets] = useState([]);
@@ -60,6 +63,10 @@ export default function PerdasPage() {
   const isValid = targetType === "ITEM"
     ? form.inventoryItemId && form.locationId && !Number.isNaN(toNumber(form.quantity)) && toNumber(form.quantity) > 0 && form.context.trim() && evidenceIds.length > 0
     : form.assetId && form.context.trim() && evidenceIds.length > 0;
+
+  const targetMissingPrerequisite = targetType === "ITEM"
+    ? (items.length === 0 ? "item" : locations.length === 0 ? "local" : null)
+    : (assets.filter((a) => a.status !== "LOST").length === 0 ? "patrimônio" : null);
 
   async function handleCreate() {
     if (!isValid) return;
@@ -161,14 +168,19 @@ export default function PerdasPage() {
       </StickyActionBar>
 
       <Modal
+        size="lg"
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         title="Registrar perda, quebra ou extravio"
         footer={
-          <>
-            <Button variant="secondary" onClick={() => setModalOpen(false)}>Cancelar</Button>
-            <Button onClick={handleCreate} loading={saving} disabled={!isValid}>Registrar</Button>
-          </>
+          targetMissingPrerequisite ? (
+            <Button variant="secondary" onClick={() => setModalOpen(false)}>Fechar</Button>
+          ) : (
+            <>
+              <Button variant="secondary" onClick={() => setModalOpen(false)}>Cancelar</Button>
+              <Button onClick={handleCreate} loading={saving} disabled={!isValid}>Registrar</Button>
+            </>
+          )
         }
       >
         <FormField label="Tipo" required>
@@ -177,7 +189,19 @@ export default function PerdasPage() {
             <option value="ASSET">Patrimônio (ferramenta/equipamento)</option>
           </Select>
         </FormField>
-        {targetType === "ITEM" ? (
+
+        {targetMissingPrerequisite ? (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "var(--space-4)", padding: "var(--space-4) 0" }}>
+            <EmptyState
+              icon={targetMissingPrerequisite === "patrimônio" ? "layers" : targetMissingPrerequisite === "local" ? "mapPin" : "layers"}
+              title={`Nenhum ${targetMissingPrerequisite} cadastrado`}
+              description={`Você precisa cadastrar pelo menos um ${targetMissingPrerequisite} antes de registrar essa perda.`}
+            />
+            <Button onClick={() => router.push(targetType === "ASSET" ? "/painel/estoque/patrimonio" : "/painel/estoque")}>
+              Cadastrar {targetMissingPrerequisite} agora
+            </Button>
+          </div>
+        ) : targetType === "ITEM" ? (
           <>
             <FormField label="Item" required>
               <Select value={form.inventoryItemId} onChange={(e) => setForm((p) => ({ ...p, inventoryItemId: e.target.value }))}>
@@ -209,15 +233,19 @@ export default function PerdasPage() {
             </Select>
           </FormField>
         )}
-        <FormField label="Contexto" required helper="O que aconteceu — obrigatório para auditoria.">
-          <Input value={form.context} onChange={(e) => setForm((p) => ({ ...p, context: e.target.value }))} />
-        </FormField>
-        <FormField label="IDs de evidência (arquivo)" required helper="Pelo menos um arquivo de evidência é obrigatório (EST-TS-10). Separe por vírgula.">
-          <Input value={form.evidenceFileIds} onChange={(e) => setForm((p) => ({ ...p, evidenceFileIds: e.target.value }))} />
-        </FormField>
-        <FormField label="Estimativa de custo (R$)">
-          <DecimalInput value={form.estimatedCost} onChange={(e) => setForm((p) => ({ ...p, estimatedCost: e.target.value }))} />
-        </FormField>
+        {!targetMissingPrerequisite ? (
+          <>
+            <FormField label="Contexto" required helper="O que aconteceu — obrigatório para auditoria.">
+              <Input value={form.context} onChange={(e) => setForm((p) => ({ ...p, context: e.target.value }))} />
+            </FormField>
+            <FormField label="IDs de evidência (arquivo)" required helper="Pelo menos um arquivo de evidência é obrigatório (EST-TS-10). Separe por vírgula.">
+              <Input value={form.evidenceFileIds} onChange={(e) => setForm((p) => ({ ...p, evidenceFileIds: e.target.value }))} />
+            </FormField>
+            <FormField label="Estimativa de custo (R$)">
+              <DecimalInput value={form.estimatedCost} onChange={(e) => setForm((p) => ({ ...p, estimatedCost: e.target.value }))} />
+            </FormField>
+          </>
+        ) : null}
       </Modal>
 
       <ConfirmDialog />

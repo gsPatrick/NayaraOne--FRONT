@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Table from "@/components/organisms/Table/Table";
@@ -14,6 +15,7 @@ import Alert from "@/components/molecules/Alert/Alert";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
+import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import { listAssets, createAsset, updateAsset, transferAsset, listAssetMovements, loanTool, returnTool, listInventoryLocations, getAssetByTag } from "@/lib/api/inventory";
 import { apiFetch } from "@/lib/api/client";
 import { formatBRL, formatDate, toNumber } from "@/lib/format";
@@ -22,6 +24,7 @@ const STATUS_LABELS = { AVAILABLE: "Disponível", IN_USE: "Em uso", LOANED: "Emp
 const STATUS_TONE = { AVAILABLE: "success", IN_USE: "info", LOANED: "warning", MAINTENANCE: "danger", LOST: "danger" };
 
 export default function PatrimonioPage() {
+  const router = useRouter();
   const [assets, setAssets] = useState([]);
   const [locations, setLocations] = useState([]);
   const [users, setUsers] = useState([]);
@@ -373,16 +376,27 @@ export default function PatrimonioPage() {
       </Modal>
 
       <Modal
+        size="lg"
         open={Boolean(transferTarget)}
         onClose={() => setTransferTarget(null)}
         title="Transferir patrimônio"
         footer={
-          <>
-            <Button variant="secondary" onClick={() => setTransferTarget(null)}>Cancelar</Button>
-            <Button onClick={handleTransfer} loading={busyId === transferTarget?.id} disabled={!transferLocationId}>Transferir</Button>
-          </>
+          locations.length === 0 ? (
+            <Button variant="secondary" onClick={() => setTransferTarget(null)}>Fechar</Button>
+          ) : (
+            <>
+              <Button variant="secondary" onClick={() => setTransferTarget(null)}>Cancelar</Button>
+              <Button onClick={handleTransfer} loading={busyId === transferTarget?.id} disabled={!transferLocationId}>Transferir</Button>
+            </>
+          )
         }
       >
+        {locations.length === 0 ? (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "var(--space-4)", padding: "var(--space-4) 0" }}>
+            <EmptyState icon="mapPin" title="Nenhum local de estoque cadastrado" description="Você precisa cadastrar pelo menos um local antes de transferir este patrimônio." />
+            <Button onClick={() => router.push("/painel/estoque")}>Cadastrar local agora</Button>
+          </div>
+        ) : (
         <FormField label="Novo local" required>
           <Select value={transferLocationId} onChange={(e) => setTransferLocationId(e.target.value)}>
             <option value="">Selecione...</option>
@@ -391,6 +405,7 @@ export default function PatrimonioPage() {
             ))}
           </Select>
         </FormField>
+        )}
       </Modal>
 
       <Modal

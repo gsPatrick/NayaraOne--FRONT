@@ -12,6 +12,8 @@ import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import Alert from "@/components/molecules/Alert/Alert";
 import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
+import EmptyState from "@/components/molecules/EmptyState/EmptyState";
+import { useRouter } from "next/navigation";
 import { listPurchaseOrders, getPurchaseOrder, confirmGoodsReceipt, listGoodsReceipts, listDiscrepancies, resolveDiscrepancy, evaluateSupplier, listSupplierEvaluations } from "@/lib/api/procurement";
 import { listInventoryLocations } from "@/lib/api/inventory";
 import { formatBRL, formatDateTime, formatQuantity, toNumber } from "@/lib/format";
@@ -21,6 +23,7 @@ const STATUS_LABELS = { OPEN: "Aberto", RECEIVED: "Recebido", CANCELED: "Cancela
 const STATUS_TONE = { OPEN: "info", RECEIVED: "success", CANCELED: "neutral" };
 
 export default function PedidosDeCompraPage() {
+  const router = useRouter();
   const [orders, setOrders] = useState([]);
   const [discrepancies, setDiscrepancies] = useState([]);
   const [locations, setLocations] = useState([]);
@@ -235,54 +238,68 @@ export default function PedidosDeCompraPage() {
       </Card>
 
       <Modal
+        size="lg"
         open={Boolean(receiveModal)}
         onClose={() => { setReceiveModal(null); setReceipts([]); }}
         title="Confirmar recebimento de material"
         footer={
-          <>
-            <Button variant="secondary" onClick={() => { setReceiveModal(null); setReceipts([]); }}>Cancelar</Button>
-            <Button onClick={handleConfirmReceipt} loading={saving} disabled={!destinationLocationId}>Confirmar</Button>
-          </>
+          locations.length === 0 ? (
+            <Button variant="secondary" onClick={() => { setReceiveModal(null); setReceipts([]); }}>Fechar</Button>
+          ) : (
+            <>
+              <Button variant="secondary" onClick={() => { setReceiveModal(null); setReceipts([]); }}>Cancelar</Button>
+              <Button onClick={handleConfirmReceipt} loading={saving} disabled={!destinationLocationId}>Confirmar</Button>
+            </>
+          )
         }
       >
-        {receipts.length > 0 ? (
-          <div style={{ marginBottom: 16 }}>
-            <strong>Recebimentos anteriores</strong>
-            <ul style={{ margin: "6px 0 0", paddingLeft: 0, listStyle: "none" }}>
-              {receipts.map((r) => (
-                <li key={r.id} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid var(--color-border)" }}>
-                  <span>
-                    {formatDateTime(r.created_at)}
-                    {r.invoiceTotalAmount != null ? ` — NF: ${formatBRL(r.invoiceTotalAmount)}` : ""}
-                  </span>
-                  <Badge tone={r.financialEntryId ? "success" : "neutral"}>
-                    {r.financialEntryId ? "Contas a pagar gerado" : "Sem lançamento"}
-                  </Badge>
-                </li>
-              ))}
-            </ul>
+        {locations.length === 0 ? (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "var(--space-4)", padding: "var(--space-4) 0" }}>
+            <EmptyState icon="mapPin" title="Nenhum local de estoque cadastrado" description="Você precisa cadastrar pelo menos um local de destino antes de confirmar um recebimento." />
+            <Button onClick={() => router.push("/painel/estoque")}>Cadastrar local agora</Button>
           </div>
-        ) : null}
+        ) : (
+          <>
+            {receipts.length > 0 ? (
+              <div style={{ marginBottom: 16 }}>
+                <strong>Recebimentos anteriores</strong>
+                <ul style={{ margin: "6px 0 0", paddingLeft: 0, listStyle: "none" }}>
+                  {receipts.map((r) => (
+                    <li key={r.id} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid var(--color-border)" }}>
+                      <span>
+                        {formatDateTime(r.created_at)}
+                        {r.invoiceTotalAmount != null ? ` — NF: ${formatBRL(r.invoiceTotalAmount)}` : ""}
+                      </span>
+                      <Badge tone={r.financialEntryId ? "success" : "neutral"}>
+                        {r.financialEntryId ? "Contas a pagar gerado" : "Sem lançamento"}
+                      </Badge>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
 
-        <FormField label="Local de destino" required>
-          <Select value={destinationLocationId} onChange={(e) => setDestinationLocationId(e.target.value)}>
-            <option value="">Selecione...</option>
-            {locations.map((l) => (
-              <option key={l.id} value={l.id}>{l.name}</option>
+            <FormField label="Local de destino" required>
+              <Select value={destinationLocationId} onChange={(e) => setDestinationLocationId(e.target.value)}>
+                <option value="">Selecione...</option>
+                {locations.map((l) => (
+                  <option key={l.id} value={l.id}>{l.name}</option>
+                ))}
+              </Select>
+            </FormField>
+            <FormField label="Chave/fingerprint da NF">
+              <Input value={invoiceFingerprint} onChange={(e) => setInvoiceFingerprint(e.target.value)} />
+            </FormField>
+            <FormField label="Valor total da NF (opcional — confere three-way match e gera o contas a pagar)">
+              <DecimalInput value={invoiceTotalAmount} onChange={(e) => setInvoiceTotalAmount(e.target.value)} />
+            </FormField>
+            {(receiveModal?.items || []).map((it) => (
+              <FormField key={it.id} label={`${it.description} (pedido: ${formatQuantity(it.quantity)}, já recebido: ${formatQuantity(it.receivedQuantity)})`}>
+                <DecimalInput value={receivedQuantities[it.id] || ""} onChange={(e) => setReceivedQuantities((p) => ({ ...p, [it.id]: e.target.value }))} />
+              </FormField>
             ))}
-          </Select>
-        </FormField>
-        <FormField label="Chave/fingerprint da NF">
-          <Input value={invoiceFingerprint} onChange={(e) => setInvoiceFingerprint(e.target.value)} />
-        </FormField>
-        <FormField label="Valor total da NF (opcional — confere three-way match e gera o contas a pagar)">
-          <DecimalInput value={invoiceTotalAmount} onChange={(e) => setInvoiceTotalAmount(e.target.value)} />
-        </FormField>
-        {(receiveModal?.items || []).map((it) => (
-          <FormField key={it.id} label={`${it.description} (pedido: ${formatQuantity(it.quantity)}, já recebido: ${formatQuantity(it.receivedQuantity)})`}>
-            <DecimalInput value={receivedQuantities[it.id] || ""} onChange={(e) => setReceivedQuantities((p) => ({ ...p, [it.id]: e.target.value }))} />
-          </FormField>
-        ))}
+          </>
+        )}
       </Modal>
 
       <Modal

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Table from "@/components/organisms/Table/Table";
@@ -14,6 +15,7 @@ import Alert from "@/components/molecules/Alert/Alert";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
+import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import RowActions from "@/components/molecules/RowActions/RowActions";
 import { listReceipts, createReceipt, reviewReceipt, confirmReceipt } from "@/lib/api/inventory";
 import { listInventoryItems, listInventoryLocations } from "@/lib/api/inventory";
@@ -24,6 +26,7 @@ const STATUS_LABELS = { DRAFT: "Rascunho", REVIEWED: "Revisado", COMPLETED: "Con
 const STATUS_TONE = { DRAFT: "neutral", REVIEWED: "info", COMPLETED: "success" };
 
 export default function RecebimentosPage() {
+  const router = useRouter();
   const [receipts, setReceipts] = useState([]);
   const [items, setItems] = useState([]);
   const [locations, setLocations] = useState([]);
@@ -160,16 +163,33 @@ export default function RecebimentosPage() {
       </StickyActionBar>
 
       <Modal
+        size="lg"
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         title="Novo recebimento"
         footer={
-          <>
-            <Button variant="secondary" onClick={() => setModalOpen(false)}>Cancelar</Button>
-            <Button onClick={handleCreate} loading={saving} disabled={!isValid}>Criar rascunho</Button>
-          </>
+          items.length === 0 || locations.length === 0 ? (
+            <Button variant="secondary" onClick={() => setModalOpen(false)}>Fechar</Button>
+          ) : (
+            <>
+              <Button variant="secondary" onClick={() => setModalOpen(false)}>Cancelar</Button>
+              <Button onClick={handleCreate} loading={saving} disabled={!isValid}>Criar rascunho</Button>
+            </>
+          )
         }
       >
+        {items.length === 0 ? (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "var(--space-4)", padding: "var(--space-4) 0" }}>
+            <EmptyState icon="layers" title="Nenhum item de estoque cadastrado" description="Você precisa cadastrar pelo menos um item antes de registrar um recebimento." />
+            <Button onClick={() => router.push("/painel/estoque")}>Cadastrar item agora</Button>
+          </div>
+        ) : locations.length === 0 ? (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "var(--space-4)", padding: "var(--space-4) 0" }}>
+            <EmptyState icon="mapPin" title="Nenhum local de estoque cadastrado" description="Você precisa cadastrar pelo menos um local de destino antes de registrar um recebimento." />
+            <Button onClick={() => router.push("/painel/estoque")}>Cadastrar local agora</Button>
+          </div>
+        ) : (
+        <>
         <FormField label="Local de destino" required>
           <Select value={form.destinationLocationId} onChange={(e) => setForm((p) => ({ ...p, destinationLocationId: e.target.value }))}>
             <option value="">Selecione...</option>
@@ -197,6 +217,8 @@ export default function RecebimentosPage() {
           </div>
         ))}
         <Button variant="secondary" size="sm" onClick={addLine}>+ Adicionar item</Button>
+        </>
+        )}
       </Modal>
     </AppShell>
   );
