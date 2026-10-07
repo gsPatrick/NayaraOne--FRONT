@@ -294,6 +294,7 @@ export default function PatrimonioPage() {
       </StickyActionBar>
 
       <Modal
+        size="lg"
         open={createOpen}
         onClose={() => setCreateOpen(false)}
         title="Novo patrimônio"
@@ -310,13 +311,22 @@ export default function PatrimonioPage() {
         <FormField label="Tag / QR Code" helper="Código único — bloqueia duplicidade (EST-TS-04).">
           <Input value={form.assetTag} onChange={(e) => setForm((p) => ({ ...p, assetTag: e.target.value }))} />
         </FormField>
-        <FormField label="Local atual">
-          <Select value={form.currentLocationId} onChange={(e) => setForm((p) => ({ ...p, currentLocationId: e.target.value }))}>
-            <option value="">Nenhum</option>
-            {locations.map((l) => (
-              <option key={l.id} value={l.id}>{l.name}</option>
-            ))}
-          </Select>
+        <FormField
+          label="Local atual"
+          helper={locations.length === 0 ? "Nenhum local cadastrado ainda — você pode criar o patrimônio sem local e transferir depois, ou cadastrar um local primeiro." : undefined}
+        >
+          {locations.length === 0 ? (
+            <Button variant="secondary" size="sm" onClick={() => router.push("/painel/estoque")} style={{ alignSelf: "flex-start" }}>
+              Cadastrar local
+            </Button>
+          ) : (
+            <Select value={form.currentLocationId} onChange={(e) => setForm((p) => ({ ...p, currentLocationId: e.target.value }))}>
+              <option value="">Nenhum</option>
+              {locations.map((l) => (
+                <option key={l.id} value={l.id}>{l.name}</option>
+              ))}
+            </Select>
+          )}
         </FormField>
         <FormField label="Valor de aquisição (R$)">
           <DecimalInput value={form.acquisitionValue} onChange={(e) => setForm((p) => ({ ...p, acquisitionValue: e.target.value }))} />
