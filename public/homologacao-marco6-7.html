@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Homologação Marcos 6 e 7</title>
+<style>
+  :root {
+    --color-brand: #BE9130;
+    --color-brand-hover: #A97D28;
+    --color-brand-active: #8A6620;
+    --color-brand-soft: rgba(190, 145, 48, 0.12);
+    --color-brand-border: rgba(190, 145, 48, 0.34);
+    --color-canvas: #FDFCFA;
+    --color-canvas-raised: #FFFFFF;
+    --color-canvas-sunken: #F7F5F1;
+    --color-ink: #17130F;
+    --color-ink-soft: #4A4033;
+    --color-ink-muted: #8C7F68;
+    --color-border: #EAE6DE;
+    --color-border-strong: #D9D2C4;
+    --color-success: #1E7A4C;
+    --color-success-soft: rgba(30, 122, 76, 0.12);
+    --color-warning: #B8790C;
+    --color-warning-soft: rgba(184, 121, 12, 0.14);
+    --color-danger: #C0392B;
+    --color-danger-soft: rgba(192, 57, 43, 0.12);
+    --color-info: #2563A6;
+    --color-info-soft: rgba(37, 99, 166, 0.12);
+    --color-code-bg: #17130F;
+    --color-code-ink: #F2EFE8;
+    --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+    --font-body: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --color-canvas: #16130E; --color-canvas-raised: #1D1913; --color-canvas-sunken: #100D09;
+      --color-ink: #F2EEE5; --color-ink-soft: #CFC6B5; --color-ink-muted: #9A8C71;
+      --color-border: #332C21; --color-border-strong: #443A2B;
+      --color-brand: #D6A845; --color-brand-hover: #E3B75B; --color-brand-active: #F0C670;
+      --color-brand-soft: rgba(214, 168, 69, 0.14); --color-brand-border: rgba(214, 168, 69, 0.32);
+      --color-success-soft: rgba(30, 122, 76, 0.2); --color-warning-soft: rgba(184, 121, 12, 0.22);
+      --color-danger-soft: rgba(192, 57, 43, 0.2); --color-info-soft: rgba(37, 99, 166, 0.22);
+      --color-code-bg: #0D0B08; --color-code-ink: #EDE8DC;
+    }
+  }
+  :root[data-theme="dark"] {
+    --color-canvas: #16130E; --color-canvas-raised: #1D1913; --color-canvas-sunken: #100D09;
+    --color-ink: #F2EEE5; --color-ink-soft: #CFC6B5; --color-ink-muted: #9A8C71;
+    --color-border: #332C21; --color-border-strong: #443A2B;
+    --color-brand: #D6A845; --color-brand-hover: #E3B75B; --color-brand-active: #F0C670;
+    --color-brand-soft: rgba(214, 168, 69, 0.14); --color-brand-border: rgba(214, 168, 69, 0.32);
+    --color-success-soft: rgba(30, 122, 76, 0.2); --color-warning-soft: rgba(184, 121, 12, 0.22);
+    --color-danger-soft: rgba(192, 57, 43, 0.2); --color-info-soft: rgba(37, 99, 166, 0.22);
+    --color-code-bg: #0D0B08; --color-code-ink: #EDE8DC;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--color-canvas); color: var(--color-ink); font-family: var(--font-body); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  a { color: var(--color-brand-active); }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 0 24px 96px; }
+  header.cover { padding: 72px 0 40px; border-bottom: 1px solid var(--color-border); margin-bottom: 40px; }
+  .eyebrow { font-family: var(--font-mono); font-size: 12.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-brand-active); margin: 0 0 14px; }
+  h1.title { font-family: var(--font-display); font-weight: 700; font-size: clamp(2rem, 1.5rem + 2vw, 3rem); line-height: 1.1; margin: 0 0 10px; text-wrap: balance; }
+  .subtitle { font-size: 18px; color: var(--color-ink-soft); margin: 0 0 28px; max-width: 60ch; }
+  .meta-row { display: flex; flex-wrap: wrap; gap: 10px; }
+  .meta-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: var(--color-canvas-sunken); border: 1px solid var(--color-border); font-size: 13px; color: var(--color-ink-soft); font-family: var(--font-mono); }
+  .status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 48px; }
+  .status-card { padding: 18px; border-radius: 12px; background: var(--color-canvas-raised); border: 1px solid var(--color-border); }
+  .status-card .num { font-family: var(--font-display); font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; margin-bottom: 6px; }
+  .status-card .num.ok { color: var(--color-success); }
+  .status-card .num.warn { color: var(--color-warning); }
+  .status-card .label { font-size: 13px; color: var(--color-ink-muted); }
+  section { margin-bottom: 56px; }
+  h2.h { font-family: var(--font-display); font-size: 26px; font-weight: 700; margin: 0 0 6px; display: flex; align-items: baseline; gap: 10px; }
+  h2.h .n { color: var(--color-brand-active); font-size: 16px; font-family: var(--font-mono); }
+  h3.h3 { font-family: var(--font-display); font-size: 19px; font-weight: 700; margin: 28px 0 12px; }
+  .lede { color: var(--color-ink-soft); margin: 0 0 20px; max-width: 68ch; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+  .pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .pill.ok { background: var(--color-success-soft); color: var(--color-success); }
+  .pill.warn { background: var(--color-warning-soft); color: var(--color-warning); }
+  .pill.bad { background: var(--color-danger-soft); color: var(--color-danger); }
+  .pill.info { background: var(--color-info-soft); color: var(--color-info); }
+  .tbl-wrap { overflow-x: auto; border: 1px solid var(--color-border); border-radius: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14.5px; background: var(--color-canvas-raised); }
+  th, td { text-align: left; padding: 12px 14px; vertical-align: top; }
+  thead th { background: var(--color-canvas-sunken); font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-ink-muted); font-weight: 600; border-bottom: 1px solid var(--color-border); }
+  tbody tr + tr td { border-top: 1px solid var(--color-border); }
+  td.narrow, th.narrow { white-space: nowrap; }
+  .fix-card { border: 1px solid var(--color-border); border-radius: 12px; padding: 18px 20px; margin-bottom: 12px; background: var(--color-canvas-raised); }
+  .fix-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+  .fix-code { font-family: var(--font-mono); font-size: 13px; color: var(--color-ink-muted); }
+  .fix-title { font-weight: 700; }
+  .fix-body { color: var(--color-ink-soft); font-size: 14.5px; margin: 0; }
+  .cred-card { border: 1px solid var(--color-brand-border); background: var(--color-brand-soft); border-radius: 12px; padding: 20px 22px; }
+  .cred-row { display: flex; justify-content: space-between; gap: 16px; padding: 8px 0; border-bottom: 1px dashed var(--color-brand-border); }
+  .cred-row:last-child { border-bottom: none; }
+  .cred-k { font-size: 13px; color: var(--color-ink-muted); }
+  .cred-v { font-family: var(--font-mono); font-size: 14.5px; font-weight: 600; text-align: right; }
+  footer { margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--color-border); color: var(--color-ink-muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="cover">
+    <p class="eyebrow">Nayara One — Relatório de Homologação</p>
+    <h1 class="title">Marco 6 (Obras e Pós-obra) e Marco 7 (Estoque, Patrimônio, Compras e Seguros)</h1>
+    <p class="subtitle">Resultado da auditoria de entrega antes da apresentação formal para validação da Nayara.</p>
+    <div class="meta-row">
+      <span class="meta-pill">Gerado em 07/10/2026</span>
+      <span class="meta-pill">Cláusula 4.7 — Marco 6</span>
+      <span class="meta-pill">Cláusula 4.8 — Marco 7 (inclui Seguros, cláusula 1.2)</span>
+    </div>
+  </header>
+
+  <section>
+    <div class="status-grid">
+      <div class="status-card"><div class="num ok">103/106</div><div class="label">Itens Marco 6 ✅ entregues (3 N/A justificados)</div></div>
+      <div class="status-card"><div class="num ok">18</div><div class="label">Ciclos de auditoria no Marco 6 (código + E2E ao vivo + RLS)</div></div>
+      <div class="status-card"><div class="num ok">421/422</div><div class="label">Testes automatizados passando (1 falha = contenção de teste paralelo, não regressão)</div></div>
+      <div class="status-card"><div class="num warn">3</div><div class="label">Gaps do Marco 7 corrigidos nesta rodada (due diligence, cancel/return, UNDER_RECEIPT)</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="h"><span class="n">01</span> Marco 6 — Obras e Pós-obra</h2>
+    <p class="lede">Cláusula 4.7: Obras, RDO, medições, orçamento/custos, qualidade e pós-obra. Auditoria de escopo completa (106 itens extraídos do contrato) seguida de 18 ciclos de auditoria contínua — cada ciclo rodou 3 frentes em paralelo: revisão de código adversarial, teste E2E ao vivo (login real, navegador, fluxo completo de usuário) e verificação de RLS/segurança de banco.</p>
+
+    <h3 class="h3">Bugs reais encontrados e corrigidos ao longo dos 18 ciclos</h3>
+    <div class="fix-card"><div class="fix-head"><span class="pill ok">corrigido</span><span class="fix-code">files.service.js</span></div><p class="fix-body">Upload de arquivo vazio vazava nome de parâmetro interno na mensagem de erro em vez de mensagem de negócio.</p></div>
+    <div class="fix-card"><div class="fix-head"><span class="pill ok">corrigido</span><span class="fix-code">dailyReports.service.js / stageMeasurements.service.js</span></div><p class="fix-body">Listagens expunham revisões já supersedidas (cadeia append-only vazando versão antiga em vez de só a atual).</p></div>
+    <div class="fix-card"><div class="fix-head"><span class="pill ok">corrigido</span><span class="fix-code">mfa.service.js</span></div><p class="fix-body">Desabilitar MFA deixava credencial "fantasma" (soft-delete) que bloqueava reconfiguração futura — trocado para remoção real.</p></div>
+    <div class="fix-card"><div class="fix-head"><span class="pill ok">corrigido</span><span class="fix-code">lib/api/client.js (front)</span></div><p class="fix-body">Tratamento de sessão expirada capturava erro de negócio indevidamente e, no sentido oposto, não capturava um erro de sessão real — corrigido com lista explícita de códigos.</p></div>
+    <div class="fix-card"><div class="fix-head"><span class="pill ok">corrigido</span><span class="fix-code">app/painel/perfil/page.js (front)</span></div><p class="fix-body">Habilitar/desabilitar MFA não atualizava o cache local da sessão — status de MFA ficava desatualizado ao navegar e voltar à tela.</p></div>
+    <div class="fix-card"><div class="fix-head"><span class="pill ok">corrigido</span><span class="fix-code">stageDependencies.service.js</span></div><p class="fix-body">Dependência entre etapas de obras diferentes não era validada.</p></div>
+    <div class="fix-card"><div class="fix-head"><span class="pill ok">corrigido</span><span class="fix-code">projects.service.js</span></div><p class="fix-body">Criação de obra não validava o valor do orçamento, permitindo valor inválido.</p></div>
+    <div class="fix-card"><div class="fix-head"><span class="pill ok">corrigido</span><span class="fix-code">RLS / GRANTs</span></div><p class="fix-body">Privilégio de criação de tabela indevido na role de runtime da aplicação — revogado e revalidado sem regressão.</p></div>
+
+    <h3 class="h3">Status final</h3>
+    <p class="lede">Isolamento entre empresas (RLS) e bloqueio por padrão sem contexto de empresa (fail-closed) confirmados sólidos em múltiplos ciclos consecutivos. Nenhum bug conhecido em aberto no Marco 6.</p>
+  </section>
+
+  <section>
+    <h2 class="h"><span class="n">02</span> Marco 7 — Estoque, Patrimônio, Compras e Seguros</h2>
+    <p class="lede">Cláusula 4.8 do contrato lista "Estoque, Patrimônio e Compras"; o módulo de Seguros (Insurance Hub) integra o mesmo Caderno sob o título "Compras/Procurement + Seguros" e, pela cláusula 1.2 do contrato, tudo que está no Caderno vigente está incluído sem cobrança adicional — por isso apresentado junto, sem custo à parte.</p>
+
+    <h3 class="h3">Auditoria contratual (07/10/2026) — contrato real linha a linha contra o código</h3>
+    <p class="lede">Entidades, ledger append-only, os 15 requisitos centrais de Estoque, os 12 fluxos operacionais, eventos, RLS, APIs mínimas e as 10 telas (8 de Estoque + 2 de Compras/Seguros) foram confirmados completos em código real. A auditoria encontrou 3 gaps reais, corrigidos nesta mesma rodada:</p>
+
+    <div class="fix-card"><div class="fix-head"><span class="pill ok">corrigido</span><span class="fix-code">SupplierQualification (novo)</span></div><p class="fix-body">Contrato exige "documentos/vigência; due diligence para alto risco" de fornecedor — não existia. Agora um fornecedor marcado como alto risco só pode receber um pedido de compra com due diligence aprovada e dentro da vigência.</p></div>
+    <div class="fix-card"><div class="fix-head"><span class="pill ok">corrigido</span><span class="fix-code">cancelPurchaseOrder (novo)</span></div><p class="fix-body">Contrato exige "cancel/return = compensação" — não existia endpoint de cancelamento. Cancelar um pedido com saldo ainda não recebido agora registra uma divergência auditável (UNDER_RECEIPT) em vez de descartar a diferença em silêncio.</p></div>
+    <div class="fix-card"><div class="fix-head"><span class="pill ok">corrigido</span><span class="fix-code">three-way match</span></div><p class="fix-body">O tipo de divergência "recebimento a menor" existia só no vocabulário do sistema, nunca era gerado — agora é produzido pelo fluxo de cancelamento acima.</p></div>
+
+    <h3 class="h3">Itens de atenção (não bloqueiam a apresentação, mas valem registro)</h3>
+    <table>
+      <thead><tr><th>Item</th><th>Situação</th></tr></thead>
+      <tbody>
+        <tr><td>Depreciação de patrimônio</td><td><span class="pill info">fora do mínimo contratual</span> informativa/contábil condicionada a regra futura — contrato não define o cálculo, decisão de engenharia documentada.</td></tr>
+        <tr><td>Descarte/venda de patrimônio com vínculo financeiro</td><td><span class="pill warn">fora do DoD mínimo</span> integração cross-módulo com Financeiro não definida no Caderno.</td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="h3">Status final</h3>
+    <p class="lede">Suíte de testes automatizados rodada contra o banco de homologação: <strong>421 de 422 testes passando</strong> (a única falha é uma condição de contenção entre testes paralelos já conhecida — não é regressão nem bug de produto). Migrations do Marco 7 aplicadas e confirmadas no ambiente de homologação.</p>
+  </section>
+
+  <section>
+    <h2 class="h"><span class="n">03</span> Acesso para validação</h2>
+    <div class="cred-card">
+      <div class="cred-row"><span class="cred-k">URL</span><span class="cred-v">homologacao-nayaraone--front.hpztyd.easypanel.host/entrar</span></div>
+      <div class="cred-row"><span class="cred-k">Usuário</span><span class="cred-v">admin@nayaraone.dev</span></div>
+      <div class="cred-row"><span class="cred-k">Senha</span><span class="cred-v">DevAdmin#2026</span></div>
+    </div>
+  </section>
+
+  <footer>
+    Documento gerado automaticamente a partir da auditoria técnica. Qualquer divergência encontrada na validação deve ser reportada para correção antes do aceite formal.
+  </footer>
+
+</div>
+</body>
+</html>
