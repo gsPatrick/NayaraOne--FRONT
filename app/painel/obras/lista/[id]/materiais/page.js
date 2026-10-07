@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { notFound } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -35,7 +35,13 @@ import {
 } from "@/lib/api/construction";
 import { formatBRL, formatQuantity, formatDate, toNumber } from "@/lib/format";
 import { isInvalidNumber, isLossFullyReturned } from "../_components/obraShared";
+import OfflineSyncBadge from "@/components/molecules/OfflineSyncBadge/OfflineSyncBadge";
+import { enqueueOfflineRecord, generateIdempotencyKey } from "@/lib/offline/offlineQueue";
+import { useOfflineSync } from "@/lib/offline/useOfflineSync";
 import styles from "./page.module.css";
+
+// Fila offline (Marco 6, contrato §13) — requisição de material.
+const OFFLINE_QUEUE_NAME = "construction.material-requests";
 
 export default function MateriaisObraPage({ params }) {
   const [project, setProject] = useState(null);
@@ -51,6 +57,15 @@ export default function MateriaisObraPage({ params }) {
   const [materialForm, setMaterialForm] = useState({ description: "", quantity: "", unit: "" });
   const [savingMaterial, setSavingMaterial] = useState(false);
   const [receivingMaterialId, setReceivingMaterialId] = useState(null);
+
+  // PWA/offline (Marco 6, contrato §13): se o POST de requisição falhar por rede, fica numa
+  // fila local com o idempotencyKey já gerado no cliente, reenviada automaticamente quando a
+  // conexão voltar (ou via botão "Sincronizar pendentes") — nunca duplicando no servidor.
+  const sendQueuedMaterialRequest = useCallback(
+    (payload, idempotencyKey) => createMaterialRequest(payload.projectId, { ...payload, idempotencyKey }),
+    []
+  );
+  const { pendingCount, syncing, syncError, syncNow } = useOfflineSync(OFFLINE_QUEUE_NAME, sendQueuedMaterialRequest, () => load());
 
   // FIX (auditoria pós-merge Marco 6, 30/09/2026): createLossRecord/listLossRecords/
   // approveLossRecord/returnLossRecord já existiam na API, mas nenhuma tela chamava (Categoria
@@ -143,15 +158,29 @@ export default function MateriaisObraPage({ params }) {
     if (!materialForm.description.trim() || isInvalidNumber(materialForm.quantity) || !materialForm.unit.trim()) return;
     setSavingMaterial(true);
     setActionError("");
+    const requestPayload = {
+      description: materialForm.description.trim(),
+      quantity: toNumber(materialForm.quantity),
+      unit: materialForm.unit.trim(),
+    };
+    const idempotencyKey = generateIdempotencyKey();
     try {
-      const created = await createMaterialRequest(project.id, {
-        description: materialForm.description.trim(),
-        quantity: toNumber(materialForm.quantity),
-        unit: materialForm.unit.trim(),
-      });
+      const created = await createMaterialRequest(project.id, { ...requestPayload, idempotencyKey });
       setMaterialRequests((prev) => [created, ...prev]);
       setMaterialOpen(false);
     } catch (err) {
+      if (err?.code === "NETWORK_ERROR") {
+        // Offline: guarda localmente com o MESMO idempotencyKey — reenvia quando a conexão
+        // voltar, sem perder nem duplicar a requisição.
+        enqueueOfflineRecord(OFFLINE_QUEUE_NAME, {
+          idempotencyKey,
+          label: `Requisição de ${requestPayload.description}`,
+          payload: { ...requestPayload, projectId: project.id },
+        });
+        setMaterialOpen(false);
+        setSavingMaterial(false);
+        return;
+      }
       setActionError(err?.message || "Não foi possível criar a requisição de material.");
     } finally {
       setSavingMaterial(false);
@@ -263,6 +292,8 @@ export default function MateriaisObraPage({ params }) {
             <Alert tone="danger">{actionError}</Alert>
           </div>
         ) : null}
+
+        <OfflineSyncBadge pendingCount={pendingCount} syncing={syncing} syncError={syncError} onSyncNow={syncNow} />
 
         <Card
           title="Requisições de material"

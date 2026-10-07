@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -35,7 +35,13 @@ import {
 } from "@/lib/api/construction";
 import { apiFetch } from "@/lib/api/client";
 import { formatDate, formatDateTime, formatPercent, formatBRL, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE, toNumber } from "@/lib/format";
+import OfflineSyncBadge from "@/components/molecules/OfflineSyncBadge/OfflineSyncBadge";
+import { enqueueOfflineRecord, generateIdempotencyKey } from "@/lib/offline/offlineQueue";
+import { useOfflineSync } from "@/lib/offline/useOfflineSync";
 import styles from "./page.module.css";
+
+// Fila offline (Marco 6, contrato §13) — medição.
+const OFFLINE_QUEUE_NAME = "construction.stage-measurements";
 
 export default function EtapaDetalhePage({ params }) {
   const [project, setProject] = useState(null);
@@ -51,6 +57,17 @@ export default function EtapaDetalhePage({ params }) {
   const [rejectTarget, setRejectTarget] = useState(null);
   const [rejectReason, setRejectReason] = useState("");
   const [rejecting, setRejecting] = useState(false);
+
+  // PWA/offline (Marco 6, contrato §13): se o POST de medição falhar por rede, fica numa fila
+  // local com o idempotencyKey já gerado no cliente, reenviada automaticamente quando a conexão
+  // voltar (ou via botão "Sincronizar pendentes") — nunca duplicando no servidor.
+  const sendQueuedMeasurement = useCallback(
+    (payload, idempotencyKey) => createStageMeasurement(payload.stageId, { ...payload, idempotencyKey }),
+    []
+  );
+  const { pendingCount, syncing, syncError, syncNow } = useOfflineSync(OFFLINE_QUEUE_NAME, sendQueuedMeasurement, () =>
+    reloadStageAndMeasurements()
+  );
 
   const [measurementOpen, setMeasurementOpen] = useState(false);
   // BUG REAL CORRIGIDO (auditoria "loop até secar", rodada 51, 2026-10-05): o backend aceita um
@@ -283,7 +300,7 @@ export default function EtapaDetalhePage({ params }) {
     setActionError("");
     try {
       const validItems = measurementForm.items.filter((it) => it.description.trim() && it.quantity !== "" && it.unitPrice !== "");
-      await createStageMeasurement(stage.id, {
+      const measurementPayload = {
         measuredPct: toNumber(measurementForm.measuredPct),
         measuredAt: measurementForm.measuredAt,
         notes: measurementForm.notes.trim() || undefined,
@@ -293,9 +310,26 @@ export default function EtapaDetalhePage({ params }) {
         items: validItems.length > 0
           ? validItems.map((it) => ({ description: it.description, quantity: toNumber(it.quantity), unitPrice: toNumber(it.unitPrice) }))
           : undefined,
-      });
-      setMeasurementOpen(false);
-      reloadStageAndMeasurements();
+      };
+      const idempotencyKey = generateIdempotencyKey();
+      try {
+        await createStageMeasurement(stage.id, { ...measurementPayload, idempotencyKey });
+        setMeasurementOpen(false);
+        reloadStageAndMeasurements();
+      } catch (err) {
+        if (err?.code === "NETWORK_ERROR") {
+          // Offline: guarda localmente com o MESMO idempotencyKey — reenvia quando a conexão
+          // voltar, sem perder nem duplicar a medição.
+          enqueueOfflineRecord(OFFLINE_QUEUE_NAME, {
+            idempotencyKey,
+            label: `Medição de ${measurementForm.measuredAt} (${stage.name})`,
+            payload: { ...measurementPayload, stageId: stage.id },
+          });
+          setMeasurementOpen(false);
+          return;
+        }
+        throw err;
+      }
     } catch (err) {
       setActionError(err?.message || "Não foi possível registrar a medição.");
     } finally {
@@ -316,6 +350,8 @@ export default function EtapaDetalhePage({ params }) {
             <Alert tone="danger">{actionError}</Alert>
           </div>
         ) : null}
+
+        <OfflineSyncBadge pendingCount={pendingCount} syncing={syncing} syncError={syncError} onSyncNow={syncNow} />
 
         <div className={styles.topRow}>
           <div className={styles.badges}>

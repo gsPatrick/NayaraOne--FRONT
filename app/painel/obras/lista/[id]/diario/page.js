@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { notFound } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -28,7 +28,14 @@ import { listPeople } from "@/lib/api/people";
 import { uploadFile } from "@/lib/api/legal";
 import { formatDate, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE, toNumber } from "@/lib/format";
 import { WEATHER_OPTIONS } from "../_components/obraShared";
+import OfflineSyncBadge from "@/components/molecules/OfflineSyncBadge/OfflineSyncBadge";
+import { enqueueOfflineRecord, generateIdempotencyKey } from "@/lib/offline/offlineQueue";
+import { useOfflineSync } from "@/lib/offline/useOfflineSync";
 import styles from "./page.module.css";
+
+// Fila offline (Marco 6, contrato §13) — mesmo nome usado como chave de armazenamento local e
+// como rótulo do registro pendente.
+const OFFLINE_QUEUE_NAME = "construction.daily-reports";
 
 export default function DiarioObraPage({ params }) {
   const [project, setProject] = useState(null);
@@ -65,6 +72,15 @@ export default function DiarioObraPage({ params }) {
   const [workerUploadError, setWorkerUploadError] = useState("");
   // Materiais do dia (DailyMaterial) — mesmo gap, achado na varredura final do Front.
   const [rdoMaterials, setRdoMaterials] = useState([]);
+
+  // PWA/offline (Marco 6, contrato §13): se o POST falhar por rede, o RDO fica numa fila local
+  // com o idempotencyKey já gerado no cliente e é reenviado automaticamente quando a conexão
+  // voltar (ou via botão "Sincronizar pendentes") — nunca duplicando no servidor.
+  const sendQueuedRdo = useCallback(
+    (payload, idempotencyKey) => createDailyReport(payload.projectId, { ...payload, idempotencyKey }),
+    []
+  );
+  const { pendingCount, syncing, syncError, syncNow } = useOfflineSync(OFFLINE_QUEUE_NAME, sendQueuedRdo, () => load());
 
   function load() {
     let cancelled = false;
@@ -265,8 +281,25 @@ export default function DiarioObraPage({ params }) {
         const updated = await updateDailyReport(editingRdoId, payload);
         setAllReports((prev) => prev.map((r) => (r.id === editingRdoId ? updated : r)));
       } else {
-        const created = await createDailyReport(project.id, payload);
-        setAllReports((prev) => [created, ...prev]);
+        const idempotencyKey = generateIdempotencyKey();
+        try {
+          const created = await createDailyReport(project.id, { ...payload, idempotencyKey });
+          setAllReports((prev) => [created, ...prev]);
+        } catch (err) {
+          if (err?.code === "NETWORK_ERROR") {
+            // Offline: guarda localmente com o MESMO idempotencyKey e deixa pra sincronizar
+            // quando a conexão voltar — nunca perde o registro nem duplica depois.
+            enqueueOfflineRecord(OFFLINE_QUEUE_NAME, {
+              idempotencyKey,
+              label: `RDO de ${rdoForm.reportDate}`,
+              payload: { ...payload, projectId: project.id },
+            });
+            setRdoOpen(false);
+            setSavingRdo(false);
+            return;
+          }
+          throw err;
+        }
       }
       setRdoOpen(false);
     } catch (err) {
@@ -284,6 +317,8 @@ export default function DiarioObraPage({ params }) {
             <Alert tone="danger">{actionError}</Alert>
           </div>
         ) : null}
+
+        <OfflineSyncBadge pendingCount={pendingCount} syncing={syncing} syncError={syncError} onSyncNow={syncNow} />
 
         <Card
           title="RDO — Relatório Diário de Obra"
