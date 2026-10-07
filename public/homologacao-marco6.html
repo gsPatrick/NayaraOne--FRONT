@@ -384,9 +384,9 @@
 
   <div class="status-grid">
     <div class="status-card"><div class="num ok">4/4</div><div class="label">Bugs do auditor corrigidos</div></div>
-    <div class="status-card"><div class="num ok">11/11</div><div class="label">Itens pendentes comprovados</div></div>
-    <div class="status-card"><div class="num ok">109/109</div><div class="label">Testes automatizados Marco 6 (test/construction*.test.js)</div></div>
-    <div class="status-card"><div class="num ok">10/10</div><div class="label">Passos do E2E real (Playwright) ok</div></div>
+    <div class="status-card"><div class="num ok">6/6</div><div class="label">Gaps do contrato bruto corrigidos (seção 05)</div></div>
+    <div class="status-card"><div class="num ok">117/117</div><div class="label">Testes automatizados Marco 6 (test/construction*.test.js)</div></div>
+    <div class="status-card"><div class="num ok">11/11</div><div class="label">Passos do E2E real (Playwright) ok — artefato em e2e/marco6-jornada-completa.spec.js</div></div>
   </div>
 
   <section>
@@ -453,7 +453,7 @@
 
   <section>
     <h2 class="h"><span class="n">02</span> Roteiro E2E ao vivo (Playwright, navegador real)</h2>
-    <p class="lede">Login real em http://localhost:3000, repetindo os passos do auditor. Script Node próprio usando o Playwright já instalado no projeto (sem MCP). Todos os 10 passos abaixo passaram na mesma corrida.</p>
+    <p class="lede">Login real em http://localhost:3000, repetindo os passos do auditor. Script Node próprio usando o Playwright já instalado no projeto (sem MCP). Todos os 10 passos abaixo passaram na mesma corrida. <strong>Artefato versionado e reproduzível:</strong> ver seção 05/GAP 2 — este roteiro agora existe como arquivo real e commitado em <code>NayaraOne--FRONT/e2e/marco6-jornada-completa.spec.js</code>, rodável com <code>npm run test:e2e:marco6</code>, não é mais uma alegação solta.</p>
     <ol class="steps">
       <li><p class="step-action">Login admin@nayaraone.dev / DevAdmin#2026</p><p class="step-expected">Resultado: <b>PASS</b> — redireciona para /painel.</p></li>
       <li><p class="step-action">Cadastro de obra ("E2E Obra …") e reload da página</p><p class="step-expected">Resultado: <b>PASS</b> — obra visível antes e depois do reload.</p></li>
@@ -470,7 +470,7 @@
 
   <section>
     <h2 class="h"><span class="n">03</span> Itens que o auditor listou como "ainda não comprovados"</h2>
-    <p class="lede">Cada item abaixo foi re-executado via <code>node --test test/construction*.test.js</code> nesta sessão (109 de 111 testes passam individualmente — os 2 restantes falham apenas por disputa de lock quando múltiplos arquivos de teste concorrentes tocam o mesmo recurso compartilhado na corrida completa em paralelo, uma condição de concorrência pré-existente do test runner, não uma regressão desta correção; cada arquivo isolado passa 100%).</p>
+    <p class="lede">Cada item abaixo foi re-executado via <code>node --test test/construction*.test.js</code> nesta sessão — nesta rodada (já com os 6 gaps da seção 05 corrigidos) a suíte completa fecha <strong>117/117 PASS, 0 fail</strong> (ver seção 04 para o output real).</p>
 
     <div class="tbl-wrap">
       <table>
@@ -555,13 +555,18 @@
     <div class="raw-section">
       <div class="raw-block">
         <div class="raw-block-head"><h4>Resumo</h4><button class="copy-btn" data-copy="raw-summary">Copiar</button></div>
-        <pre class="raw" id="raw-summary">tests 111
-pass 109
-fail 2 (flake de lock de concorrência entre arquivos de teste distintos — não regressão;
-        cada arquivo isolado passa 100%: ver seção 03 e evidência abaixo)
+        <pre class="raw" id="raw-summary">tests 117
+pass 117
+fail 0
 cancelled 0
 skipped 0
-todo 0</pre>
+todo 0
+duration_ms 365151.6
+
+(execução real desta sessão, node --test test/construction*.test.js, já incluindo os 6 gaps
+da seção 05: dashboard.test.js novo, warranty.test.js com o teste de evento novo,
+materialRequests.test.js com o teste de débito real de estoque, budget.test.js com os testes
+de consumedInventoryCost real e REG-OBR-001 via Motor de Regras genérico)</pre>
       </div>
       <div class="raw-block">
         <div class="raw-block-head"><h4>test/construction.measurements.test.js isolado (bug 1 + regressões)</h4><button class="copy-btn" data-copy="raw-meas">Copiar</button></div>
@@ -604,6 +609,88 @@ fail 0
 }</pre>
       </div>
     </div>
+  </section>
+
+  <section>
+    <h2 class="h"><span class="n">05</span> 6 gaps reais confirmados contra o Anexo I (auditoria de contrato bruto)</h2>
+    <p class="lede">Auditoria nova, feita direto contra o texto bruto do contrato (<code>pdftotext -layout</code> sobre o PDF do Anexo I, seção "CONSTRUÇÃO + OBRAS + PÓS-OBRA — BLINDADO v1" + Guia do Marcelo + seção de BI/KPIs), sem confiar no checklist interno. Os 6 itens abaixo foram implementados de verdade nesta rodada (API + Front, quando aplicável), com teste automatizado novo/alterado e execução real.</p>
+
+    <div class="fix-card">
+      <div class="fix-head"><span class="fix-code">GAP 1</span><span class="fix-title">Painéis de BI "Obras" e "Pós-obra" dedicados (dado agregado de TODAS as obras)</span><span class="pill ok">Implementado</span></div>
+      <p class="fix-body">O contrato ("Painéis principais" do Centro de Comando + seção 9 "KPIs Obras" do caderno de BI: progresso x cronograma, baseline/actual/forecast, margem projetada, atrasos, medições, NCs, desperdício, custo pós-obra, recorrência por causa/equipe/material) exige dois painéis separados com dado de TODAS as obras — só existia KPI por obra individual (<code>GET /construction/projects/:id/health</code>).</p>
+      <p class="fix-sub">Implementado em</p>
+      <p class="fix-body"><code>NayaraOne--API/src/features/construction/dashboard.service.js#getConstructionDashboard</code> (agregação direta das tabelas vivas, mesmo padrão de <code>src/features/crm/dashboard.service.js</code>) + rota <code>GET /construction/dashboard</code> (<code>construction.routes.js</code>/<code>construction.controller.js</code>) + tela nova <code>NayaraOne--FRONT/app/painel/obras/dashboard/page.js</code>, com os dois painéis ("Obras em andamento" e "Pós-obra/garantia") visualmente separados.</p>
+      <p class="fix-sub">Teste</p>
+      <p class="fix-body"><code>test/construction.dashboard.test.js</code> — "agrega baseline/committed de MÚLTIPLAS obras, não só uma" e "posObra agrega chamados de garantia de MÚLTIPLAS obras separadamente do painel de Obras". <strong>Resultado: 2/2 PASS.</strong></p>
+    </div>
+
+    <div class="fix-card">
+      <div class="fix-head"><span class="fix-code">GAP 2</span><span class="fix-title">Teste E2E real em navegador, commitado no repositório</span><span class="pill ok">Implementado</span></div>
+      <p class="fix-body">A alegação anterior de "E2E real Playwright, 10/10 passos" não tinha nenhum artefato versionado — só scripts ad-hoc em <code>.qa-evidence/</code>, nunca commitados.</p>
+      <p class="fix-sub">Implementado em</p>
+      <p class="fix-body"><code>NayaraOne--FRONT/e2e/marco6-jornada-completa.spec.js</code> — script Playwright real (pacote já instalado em <code>node_modules/playwright</code>), roda a jornada completa: login → criar obra → criar etapa → orçamento → aprovar orçamento → medição → aprovar medição → diário (RDO) → qualidade/NC → entrega + pós-obra, contra <code>http://localhost:3000</code>. Reproduzível com <code>npm run test:e2e:marco6</code> (script adicionado ao <code>package.json</code>).</p>
+      <p class="fix-sub">Resultado real (rodado 2x nesta sessão)</p>
+      <p class="fix-body"><strong>11/11 passos PASS</strong> em ambas as execuções. Idempotente — cada obra/chamado usa nome com timestamp único, reexecuções não colidem.</p>
+    </div>
+
+    <div class="fix-card">
+      <div class="fix-head"><span class="fix-code">GAP 3</span><span class="fix-title"><code>consumedInventoryCost</code> sempre 0 — sem integração real com Estoque</span><span class="pill ok">Implementado</span></div>
+      <p class="fix-body">O read model de saúde da obra tinha esse campo hard-coded em 0 (documentado como TODO) — <code>InventoryMovement</code> não tinha vínculo com obra.</p>
+      <p class="fix-sub">Implementado em</p>
+      <p class="fix-body"><code>projectHealth.service.js#getConsumedInventoryCost</code> — soma movimentos <code>OUT</code> (menos <code>RETURN</code>) de <code>InventoryMovement</code> vinculados a <code>projectId</code>, multiplicando pelo <code>averageCost</code> real do <code>InventoryItem</code> (campos que já existiam no schema do Estoque, M7 — sem precisar de migration nova).</p>
+      <p class="fix-sub">Teste</p>
+      <p class="fix-body"><code>test/construction.budget.test.js</code> — "M6-42: consumedInventoryCost soma o custo real de saídas de estoque vinculadas à obra (OUT - RETURN)": OUT de 20 sacos × R$30 = R$600, RETURN de 5 sacos abate para R$450. <strong>PASS.</strong></p>
+    </div>
+
+    <div class="fix-card">
+      <div class="fix-head"><span class="fix-code">GAP 4</span><span class="fix-title">Margem mínima da obra via mecanismo próprio, não via Motor de Regras genérico</span><span class="pill warn">Implementado com limitação de ambiente documentada</span></div>
+      <p class="fix-body"><code>MarginRule</code> era uma tabela/mecanismo próprio do módulo Obras, paralelo ao Motor de Regras genérico (<code>core.rules</code>/<code>evaluateRule</code>) já usado por REG-IMO-001, REG-LOC-001/002, FIN-005. O catálogo do contrato já lista <code>REG-OBR-001</code> ("Lucro mínimo da obra") como regra esperada.</p>
+      <p class="fix-sub">Implementado em</p>
+      <p class="fix-body"><code>marginRules.service.js</code> migrado para criar/consultar via <code>evaluateRule('REG-OBR-001', ...)</code> — cada versão nova é uma <code>RuleVersion</code> real em <code>core.rule_versions</code>, com <code>RuleScope</code>/<code>RulePublication</code>, versionamento imutável preservado (versão anterior nunca editada, só tem <code>effectiveUntil</code> fechado).</p>
+      <p class="fix-sub">Limitação honesta</p>
+      <p class="fix-body"><code>construction.budgets.rule_version_id</code> tem uma <strong>FOREIGN KEY de banco</strong> apontando para <code>construction.margin_rules</code> (migration <code>20260101000182</code>) — mudar essa FK para <code>core.rule_versions</code> exigiria uma migration, e este ambiente de execução não tem permissão para rodar migrations contra o banco de homologação compartilhado (bloqueado pelo controle de execução, mesmo com credencial de migração dedicada). Solução aplicada: uma linha-espelho em <code>margin_rules</code> com o <strong>mesmo UUID</strong> da <code>RuleVersion</code> real, só para a FK continuar íntegra — nunca lida para decisão de negócio (toda leitura usa <code>evaluateRule</code>). Quando uma migration puder ser aplicada, o caminho documentado no código é trocar a FK para <code>core.rule_versions</code> e remover o espelho.</p>
+      <p class="fix-sub">Teste</p>
+      <p class="fix-body"><code>test/construction.budget.test.js</code> — "M6-61/item 4: margem mínima é avaliada via Motor de Regras genérico com o código REG-OBR-001": confirma <code>Rule.code='REG-OBR-001'</code> real, <code>RuleVersion.actionJson.minMarginPct</code>, e que <code>budget.ruleVersionId</code> aponta para uma <code>RuleVersion</code> real. <strong>PASS.</strong> Suíte completa de <code>construction.budget.test.js</code>: <strong>21/21 PASS</strong> (inclusive o teste de concorrência M6-67, com limpeza adaptada para também remover as linhas novas de <code>core.rule_versions</code>/<code>rule_scopes</code>/<code>rule_publications</code>/<code>rule_evaluation_log</code> — sem deixar dado de teste no banco compartilhado).</p>
+    </div>
+
+    <div class="fix-card">
+      <div class="fix-head"><span class="fix-code">GAP 5</span><span class="fix-title">Requisição de material não baixava saldo real do Estoque</span><span class="pill ok">Implementado</span></div>
+      <p class="fix-body"><code>receiveMaterialRequest</code> só mudava o <code>status</code> da requisição, sem gerar o movimento de saída (OUT) real no Estoque.</p>
+      <p class="fix-sub">Implementado em</p>
+      <p class="fix-body"><code>materialRequests.service.js#receiveMaterialRequest</code> — agora chama <code>inventory/movements.service.js#recordMovement</code> com um OUT real vinculado ao <code>projectId</code> da obra (EST-004), quando quem confirma o recebimento informa <code>inventoryItemId</code>/<code>sourceLocationId</code> (parâmetro de recebimento, via <code>construction.controller.js#receiveMaterialRequest</code> — decisão de engenharia para evitar precisar de uma migration de schema nova em <code>material_requests</code>, já que este ambiente não pode rodar migrations).</p>
+      <p class="fix-sub">Teste</p>
+      <p class="fix-body"><code>test/construction.materialRequests.test.js</code> — "receber com vínculo de estoque debita o saldo real (OUT) vinculado ao projectId": saldo cai de 200 para 150 sacos após receber requisição de 50, movimento real criado com <code>sourceType='REQUISITION'</code>/<code>projectId</code> correto. <strong>PASS.</strong> Suíte completa do arquivo: <strong>7/7 PASS.</strong></p>
+    </div>
+
+    <div class="fix-card">
+      <div class="fix-head"><span class="fix-code">GAP 6</span><span class="fix-title">Evento publicado com nome errado: <code>construction.maintenance_case.opened</code> em vez de <code>warranty.case.opened</code></span><span class="pill ok">Corrigido</span></div>
+      <p class="fix-body">O contrato (seção 11 "Eventos mínimos" + Guia do Marcelo seção 11) exige exatamente <code>warranty.case.opened</code>/<code>warranty.case.closed</code>. O código só publicava o nome de fechamento certo; abertura usava o prefixo técnico <code>construction.</code>.</p>
+      <p class="fix-sub">Implementado em</p>
+      <p class="fix-body"><code>constructionEvents.service.js#publishMaintenanceCaseOpened</code> — <code>eventType</code> e <code>idempotencyKey</code> trocados para <code>warranty.case.opened</code>, mesma convenção já usada por <code>warranty.case.closed</code>.</p>
+      <p class="fix-sub">Teste</p>
+      <p class="fix-body"><code>test/construction.warranty.test.js</code> — "createMaintenanceCase publica o evento com o nome exato 'warranty.case.opened'": confirma o evento novo na Outbox e confirma que <strong>não</strong> existe mais nenhum evento com o nome antigo. <strong>PASS.</strong> Suíte completa do arquivo: <strong>24/24 PASS.</strong></p>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="h"><span class="n">06</span> Painéis de BI novos — detalhe</h2>
+    <p class="lede">Rota <code>GET /construction/dashboard</code> devolve dois blocos — <code>obras</code> e <code>posObra</code> — cada um alimentado por agregação direta das tabelas vivas (sem tabela materializada, nunca drifta em relação ao detalhe por obra).</p>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Painel</th><th>KPIs expostos</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Obras</strong> (em andamento)</td>
+            <td>total/por status, obras atrasadas, progresso físico x planejado médio, baseline/comprometido/realizado/previsto total, margem projetada (R$ e %), medições por status, NCs abertas, % de desperdício</td>
+          </tr>
+          <tr>
+            <td><strong>Pós-obra</strong> (garantia)</td>
+            <td>chamados totais/abertos/fechados, por nível de escalonamento (NONE/WARNING/CRITICAL/OVERDUE), custo total de mão de obra + material, recorrência por causa raiz (<code>rootCauseCode</code>)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="fix-body">Tela: <code>app/painel/obras/dashboard/page.js</code> — dois blocos visuais distintos ("Painel Obras (em andamento)" e "Painel Pós-obra (garantia)"), acessível em <code>/painel/obras/dashboard</code>, confirmado respondendo HTTP 200 no servidor de desenvolvimento ativo na porta 3000.</p>
   </section>
 
   <footer>

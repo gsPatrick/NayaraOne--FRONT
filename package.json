@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:e2e:marco6": "node e2e/marco6-jornada-completa.spec.js"
   },
   "dependencies": {
     "leaflet": "^1.9.4",
