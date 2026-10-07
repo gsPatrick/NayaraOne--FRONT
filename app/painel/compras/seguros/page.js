@@ -15,6 +15,7 @@ import StickyActionBar from "@/components/organisms/StickyActionBar/StickyAction
 import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
 import FileViewerModal from "@/components/organisms/FileViewerModal/FileViewerModal";
+import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
 import {
   listInsurancePolicies, getInsurancePolicy, createInsurancePolicy,
   quoteInsurancePolicy, issueInsurancePolicy, openInsuranceClaim, submitInsuranceClaim,
@@ -39,6 +40,7 @@ const FORM_GAP_STYLE = { display: "flex", flexDirection: "column", gap: "var(--s
 const SECTION_STYLE = { marginTop: "var(--space-6)", paddingTop: "var(--space-5)", borderTop: "1px solid var(--color-border)" };
 
 export default function SegurosPage() {
+  const { confirm, ConfirmDialog } = useConfirm();
   const [policies, setPolicies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
@@ -166,6 +168,12 @@ export default function SegurosPage() {
   }
 
   async function handleQuote(id) {
+    const ok = await confirm({
+      title: "Cotar esta apólice?",
+      message: "Vai consultar a seguradora configurada em Configurações → Integrações pra obter um prêmio. Essa chamada é real, não um teste.",
+      confirmLabel: "Cotar",
+    });
+    if (!ok) return;
     setBusyId(id);
     setActionError("");
     try {
@@ -182,6 +190,13 @@ export default function SegurosPage() {
   }
 
   async function handleIssue(id) {
+    const ok = await confirm({
+      title: "Emitir esta apólice?",
+      message: "A apólice será emitida com vigência de 1 ano a partir de hoje e as parcelas do prêmio serão geradas. Esta ação não pode ser desfeita.",
+      confirmLabel: "Emitir",
+      tone: "danger",
+    });
+    if (!ok) return;
     setBusyId(id);
     setActionError("");
     try {
@@ -483,6 +498,7 @@ export default function SegurosPage() {
       </Modal>
 
       <FileViewerModal open={!!viewerFile} onClose={() => setViewerFile(null)} fileId={viewerFile?.id} />
+      <ConfirmDialog />
     </AppShell>
   );
 }
