@@ -2,20 +2,19 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, notFound } from "next/navigation";
+import Link from "next/link";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Button from "@/components/atoms/Button/Button";
 import Badge from "@/components/atoms/Badge/Badge";
 import Icon from "@/components/atoms/Icon/Icon";
 import Modal from "@/components/organisms/Modal/Modal";
-import FileViewerModal from "@/components/organisms/FileViewerModal/FileViewerModal";
 import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import FormField from "@/components/molecules/FormField/FormField";
 import Input from "@/components/atoms/Input/Input";
 import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import Select from "@/components/atoms/Select/Select";
-import FileDropInput from "@/components/molecules/FileDropInput/FileDropInput";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
 import {
@@ -24,22 +23,6 @@ import {
   PROJECT_STATUS_FLOW,
   STAGE_STATUS_LABELS,
   STAGE_STATUS_TONE,
-  QUALITY_STATUS_LABELS,
-  QUALITY_STATUS_TONE,
-  BUDGET_STATUS_LABELS,
-  BUDGET_STATUS_TONE,
-  CHANGE_ORDER_STATUS_LABELS,
-  CHANGE_ORDER_STATUS_TONE,
-  CHANGE_ORDER_REASON_LABELS,
-  MATERIAL_REQUEST_STATUS_LABELS,
-  MATERIAL_REQUEST_STATUS_TONE,
-  LOSS_RECORD_STATUS_LABELS,
-  LOSS_RECORD_STATUS_TONE,
-  LOSS_RECORD_MOVEMENT_LABELS,
-  NONCONFORMITY_SEVERITY_LABELS,
-  NONCONFORMITY_SEVERITY_TONE,
-  NONCONFORMITY_STATUS_LABELS,
-  NONCONFORMITY_STATUS_TONE,
   MAINTENANCE_ESCALATION_LABELS,
 } from "@/lib/mock/construction";
 import {
@@ -53,114 +36,40 @@ import {
   createProjectStage,
   updateProjectStage,
   listDailyReports,
-  createDailyReport,
-  updateDailyReport,
-  listDailyWorkers,
-  listDailyMaterials,
   listBudgetLines,
-  createBudgetLine,
-  updateBudgetLine,
-  removeBudgetLine,
-  listQualityItems,
-  createQualityItem,
-  checkQualityItem,
-  removeQualityItem,
   listBudgets,
-  createBudget,
-  approveBudget,
   listChangeOrders,
-  createChangeOrder,
-  decideChangeOrder,
   getProjectHealth,
   getNayObrasSummary,
   getNayObrasPostObraSummary,
-  listMaterialRequests,
-  createMaterialRequest,
-  receiveMaterialRequest,
-  listLossRecords,
-  createLossRecord,
-  approveLossRecord,
-  returnLossRecord,
-  upsertApprovalThreshold,
-  createMarginRule,
-  getActiveMarginRule,
-  listNonconformities,
-  createNonconformity,
-  closeNonconformity,
 } from "@/lib/api/construction";
 import { listProperties } from "@/lib/api/properties";
 import { listCostCenters } from "@/lib/api/finance";
-import { listPeople } from "@/lib/api/people";
-import { uploadFile } from "@/lib/api/legal";
 import { apiFetch } from "@/lib/api/client";
-import { formatBRL, formatQuantity, formatPercent, formatDate, formatDateTime, dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE, toNumber } from "@/lib/format";
+import { formatBRL, formatPercent, formatDate, formatDateTime, dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE, toNumber } from "@/lib/format";
 import styles from "./page.module.css";
 
-const WEATHER_OPTIONS = ["Ensolarado", "Nublado", "Chuvoso", "Ventania"];
-
-// BUG REAL CORRIGIDO (auditoria E2E ao vivo, Marco 6, Ciclo 1, 2026-10-06): o modal "Novo item
-// de checklist" nunca tinha campo de categoria — o POST sempre ia sem "category", caindo no
-// default "OUTROS" do backend (qualityChecklist.service.js). Como o gate de entrega só bloqueia
-// com Nonconformity CRITICAL (gerada automaticamente só para categorias ESTRUTURA/HIDRAULICA/
-// ELETRICA), NENHUMA reprovação de checklist real jamais bloqueava a entrega da obra — o fix de
-// severidade do backend (rodada 60) nunca era alcançável pelo fluxo real da UI.
-const QUALITY_CATEGORIES = [
-  { value: "ESTRUTURA", label: "Estrutura" },
-  { value: "HIDRAULICA", label: "Hidráulica" },
-  { value: "ELETRICA", label: "Elétrica" },
-  { value: "ALVENARIA", label: "Alvenaria" },
-  { value: "ACABAMENTO", label: "Acabamento" },
-  { value: "PINTURA", label: "Pintura" },
-  { value: "OUTROS", label: "Outros" },
-];
-
-// FIX (auditoria E2E de browser, ciclo 6, 02/10/2026): "NaN <= 0" e "NaN < 0" são ambos FALSE
-// em JS — todo guard de validação deste arquivo que fazia `toNumber(x) <= 0` (ou `< 0`) sem
-// checar Number.isNaN primeiro deixava passar entrada tipo "," (vírgula sozinha, sem dígito)
-// como se fosse válida, mandando NaN pro backend (serializado como `null` pelo JSON.stringify)
-// sem nenhum feedback ao usuário. isInvalidNumber centraliza o guard correto: trata vazio como
-// inválido também, pra não precisar repetir `x === "" || ...` em cada call-site.
-function isInvalidNumber(value, { allowZero = false } = {}) {
-  if (value === "" || value === null || value === undefined) return true;
-  const numeric = toNumber(value);
-  if (Number.isNaN(numeric)) return true;
-  return allowZero ? numeric < 0 : numeric <= 0;
-}
-
-function isLossFullyReturned(lossRecord, allRecords) {
-  const alreadyReturned = allRecords
-    .filter((r) => r.movementType === "RETURN" && r.status === "APPROVED" && r.relatedLossRecordId === lossRecord.id)
-    .reduce((sum, r) => sum + Number(r.quantity || 0), 0);
-  return alreadyReturned >= Number(lossRecord.quantity || 0);
-}
-
+// Visão geral da obra — depois da divisão do antigo monólito (orçamento, change orders, RDO/
+// diário, medições, materiais e qualidade/NC agora moram em subrotas dedicadas, veja
+// app/painel/obras/lista/[id]/{orcamento,change-orders,diario,medicoes,materiais,qualidade}/
+// page.js). Esta tela mantém: dados gerais da obra, ações de status/entrega/garantia, saúde da
+// obra, resumo do NAY Obras, e a lista/CRUD de etapas (cronograma físico), com atalhos para
+// cada subrotina.
 export default function ObraDetalhePage({ params }) {
   const router = useRouter();
   const [project, setProject] = useState(null);
   const [properties, setProperties] = useState([]);
   const [users, setUsers] = useState([]);
   const [costCenters, setCostCenters] = useState([]);
-  const [people, setPeople] = useState([]);
   const [stages, setStages] = useState([]);
-  // FIX (auditoria pós-merge Marco 6, 30/09/2026): histórico de RDO ficava truncado a 5 itens
-  // sem nenhuma forma de ver o restante. Mantém a lista completa em `allReports` e um toggle
-  // `reportsShowAll` para exibir os 5 mais recentes por padrão, com opção de ver todos.
-  const [allReports, setAllReports] = useState([]);
-  const [reportsShowAll, setReportsShowAll] = useState(false);
-  const reports = reportsShowAll ? allReports : allReports.slice(0, 5);
-  const [budgetLines, setBudgetLines] = useState([]);
-  const [qualityItems, setQualityItems] = useState([]);
+  const [reportsCount, setReportsCount] = useState(0);
+  const [budgetLinesCount, setBudgetLinesCount] = useState(0);
+  const [changeOrdersCount, setChangeOrdersCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [notFoundFlag, setNotFoundFlag] = useState(false);
   const [actionError, setActionError] = useState("");
   const [busy, setBusy] = useState(false);
-  // BUG REAL CORRIGIDO (auditoria E2E ao vivo, Marco 6, Ciclo 15, 2026-10-06): upload de
-  // evidência em RDO/Change Order/Não Conformidade funcionava, mas depois de enviado o arquivo
-  // ficava funcionalmente inacessível — nenhum link/preview em lugar nenhum da tela, só o texto
-  // "N foto(s) anexada(s)". Componente FileViewerModal já existe e é usado em outras telas do
-  // projeto (pessoas, contratos) — nunca tinha sido ligado em Obras.
-  const [viewerFileId, setViewerFileId] = useState(null);
 
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
@@ -168,8 +77,8 @@ export default function ObraDetalhePage({ params }) {
   const [editOpen, setEditOpen] = useState(false);
   const [editForm, setEditForm] = useState({ name: "", propertyId: "", responsibleUserId: "", costCenterId: "", budgetAmount: "", startsAt: "", endsAtPlanned: "" });
   const [editDateErrors, setEditDateErrors] = useState({});
-  const [rdoDateInvalid, setRdoDateInvalid] = useState(false);
   const [savingEdit, setSavingEdit] = useState(false);
+  const [budgetApproved, setBudgetApproved] = useState(false);
 
   const [stageOpen, setStageOpen] = useState(false);
   const [stageForm, setStageForm] = useState({ name: "", sequence: "1", plannedPct: "", startsAt: "", endsAt: "" });
@@ -178,55 +87,10 @@ export default function ObraDetalhePage({ params }) {
   // formulário de etapa simplesmente não expunha esses campos. Mesmo padrão de validação de
   // <input type="date"> usado no formulário da obra (editDateErrors).
   const [stageDateErrors, setStageDateErrors] = useState({});
-  // FIX (homologação 23/09/2026): etapa e RDO só podiam ser CRIADOS. Guardar o id em
-  // edição faz o mesmo modal servir pra criar e pra editar.
+  // FIX (homologação 23/09/2026): etapa só podia ser CRIADA. Guardar o id em edição faz o
+  // mesmo modal servir pra criar e pra editar.
   const [editingStageId, setEditingStageId] = useState(null);
   const [savingStage, setSavingStage] = useState(false);
-
-  const [rdoOpen, setRdoOpen] = useState(false);
-  const [rdoForm, setRdoForm] = useState({ reportDate: new Date().toISOString().slice(0, 10), weather: WEATHER_OPTIONS[0], workforceCount: "", occurrences: "", servicesPerformed: "" });
-  const [savingRdo, setSavingRdo] = useState(false);
-  const [editingRdoId, setEditingRdoId] = useState(null);
-  // Achado numa rodada de verificação de integrações (30/09/2026): a fonte exige "Fotos possuem
-  // hash/origem" — evidência fotográfica do RDO. Reaproveita o mesmo padrão de upload já usado
-  // em Change Orders/Não Conformidades (uploadFile + File.checksumSha256 no backend).
-  const [rdoEvidenceFileIds, setRdoEvidenceFileIds] = useState([]);
-  const [rdoEvidenceFileNames, setRdoEvidenceFileNames] = useState([]);
-  const [rdoUploading, setRdoUploading] = useState(false);
-  const [rdoUploadError, setRdoUploadError] = useState("");
-  // Equipe do dia (DailyWorker) — achado numa rodada de verificação de integrações
-  // (30/09/2026): a fonte exige "documentação correspondente" vinculada ao prestador do dia,
-  // campo estava inteiramente ausente do Front (nenhuma tela de equipe do RDO existia).
-  const [rdoWorkers, setRdoWorkers] = useState([]);
-  const [workerUploadingIndex, setWorkerUploadingIndex] = useState(null);
-  const [workerUploadError, setWorkerUploadError] = useState("");
-  // Materiais do dia (DailyMaterial) — mesmo gap, achado na varredura final do Front.
-  const [rdoMaterials, setRdoMaterials] = useState([]);
-
-  const [budgetOpen, setBudgetOpen] = useState(false);
-  const [budgetForm, setBudgetForm] = useState({ category: "", description: "", plannedAmount: "" });
-  const [editingBudgetLineId, setEditingBudgetLineId] = useState(null);
-  const [savingBudget, setSavingBudget] = useState(false);
-  const [deletingBudgetLineId, setDeletingBudgetLineId] = useState(null);
-
-  const [qualityOpen, setQualityOpen] = useState(false);
-  const [qualityBusyId, setQualityBusyId] = useState(null);
-  const [qualityRejecting, setQualityRejecting] = useState(null);
-  const [qualityRejectNotes, setQualityRejectNotes] = useState("");
-  const [qualityForm, setQualityForm] = useState({ item: "", projectStageId: "", category: "OUTROS" });
-  const [savingQuality, setSavingQuality] = useState(false);
-
-  const [budget, setBudget] = useState(null);
-  const [creatingBudget, setCreatingBudget] = useState(false);
-  const [approveBudgetOpen, setApproveBudgetOpen] = useState(false);
-  const [approvingBudget, setApprovingBudget] = useState(false);
-
-  const [changeOrders, setChangeOrders] = useState([]);
-  const [coOpen, setCoOpen] = useState(false);
-  const [coForm, setCoForm] = useState({ reasonCode: "", description: "", budgetImpact: "", scheduleImpactDays: "", file: null });
-  const [savingCo, setSavingCo] = useState(false);
-  const [decidingCoId, setDecidingCoId] = useState(null);
-  const { confirm, ConfirmDialog } = useConfirm();
 
   const [health, setHealth] = useState(null);
   const [healthError, setHealthError] = useState("");
@@ -237,64 +101,6 @@ export default function ObraDetalhePage({ params }) {
   const [nayObras, setNayObras] = useState(null);
   const [nayObrasError, setNayObrasError] = useState("");
   const [postObraHealth, setPostObraHealth] = useState(null);
-
-  const [materialRequests, setMaterialRequests] = useState([]);
-  const [materialOpen, setMaterialOpen] = useState(false);
-  const [materialForm, setMaterialForm] = useState({ description: "", quantity: "", unit: "" });
-  const [savingMaterial, setSavingMaterial] = useState(false);
-  const [receivingMaterialId, setReceivingMaterialId] = useState(null);
-
-  // FIX (auditoria pós-merge Marco 6, 30/09/2026): createLossRecord/listLossRecords/
-  // approveLossRecord/returnLossRecord já existiam na API, mas nenhuma tela chamava (Categoria
-  // 8 do catálogo de bugs — funcionalidade existe só no papel).
-  const [lossRecords, setLossRecords] = useState([]);
-  const [lossOpen, setLossOpen] = useState(false);
-  const [lossForm, setLossForm] = useState({ materialDescription: "", quantity: "", estimatedValue: "", reason: "" });
-  const [savingLoss, setSavingLoss] = useState(false);
-  const [lossBusyId, setLossBusyId] = useState(null);
-
-  // Alçada de aprovação (MATERIAL_LOSS) — achado numa auditoria do Front do Marco 6: o endpoint
-  // já existia, mas não havia nenhuma tela pra configurar o valor (só dava pra setar direto no
-  // banco). Configuração por empresa, não por obra.
-  const [thresholdOpen, setThresholdOpen] = useState(false);
-  const [thresholdAmount, setThresholdAmount] = useState("");
-  const [savingThreshold, setSavingThreshold] = useState(false);
-
-  // Margem mínima de obra (MarginRule) — achado numa auditoria do Front do Marco 6: nenhuma
-  // empresa real conseguia aprovar orçamento algum sem isso, e não havia NENHUMA tela pra
-  // configurar (o endpoint nem existia até esta correção).
-  const [activeMarginRule, setActiveMarginRule] = useState(null);
-  const [marginRuleOpen, setMarginRuleOpen] = useState(false);
-  const [marginRuleError, setMarginRuleError] = useState("");
-  const [marginRulePct, setMarginRulePct] = useState("");
-  const [savingMarginRule, setSavingMarginRule] = useState(false);
-
-  // Não conformidades (M6-13/M6-24/M6-38/M6-62/M6-86).
-  const [nonconformities, setNonconformities] = useState([]);
-  const [ncOpen, setNcOpen] = useState(false);
-  const [ncForm, setNcForm] = useState({
-    description: "",
-    severity: "MEDIUM",
-    responsibleUserId: "",
-    slaDueAt: "",
-    requiresAcceptance: false,
-    beforeFileId: "",
-    beforeFileName: "",
-  });
-  const [ncBeforeUploading, setNcBeforeUploading] = useState(false);
-  const [ncBeforeUploadError, setNcBeforeUploadError] = useState("");
-  const [savingNc, setSavingNc] = useState(false);
-
-  // Modal de fechamento de NC — REGRA FAIL-CLOSED replicada aqui: o botão de confirmar só
-  // habilita depois que a evidência "depois" terminar de subir com sucesso (mesma regra que
-  // o backend aplica em nonconformities.service.js closeNonconformity).
-  const [closingNc, setClosingNc] = useState(null);
-  const [ncAfterFileId, setNcAfterFileId] = useState("");
-  const [ncAfterFileName, setNcAfterFileName] = useState("");
-  const [ncAfterUploading, setNcAfterUploading] = useState(false);
-  const [ncAfterUploadError, setNcAfterUploadError] = useState("");
-  const [ncAcceptedByUserId, setNcAcceptedByUserId] = useState("");
-  const [savingNcClose, setSavingNcClose] = useState(false);
 
   // Entrega da obra — gate dedicado (bloqueia com NC crítica aberta).
   const [delivering, setDelivering] = useState(false);
@@ -321,36 +127,26 @@ export default function ObraDetalhePage({ params }) {
       // Centro de custo é opcional — não pode derrubar a página inteira se o usuário não tiver
       // permissão finance:read (o formulário de edição só perde essa opção específica).
       listCostCenters().catch(() => []),
-      listPeople().catch(() => []),
     ])
-      .then(([p, props, u, cc, ppl]) => {
+      .then(([p, props, u, cc]) => {
         if (cancelled || !p) return;
         setProject(p);
         setProperties(props || []);
         setUsers(u || []);
         setCostCenters(cc || []);
-        setPeople(ppl || []);
         return Promise.all([
           listProjectStages(p.id),
           listDailyReports(p.id),
           listBudgetLines(p.id),
-          listQualityItems(p.id),
-          listBudgets(p.id),
           listChangeOrders(p.id),
-          listMaterialRequests(p.id),
-          listNonconformities(p.id),
-          listLossRecords(p.id),
-        ]).then(([st, rd, bl, qi, budgets, cos, mr, ncs, lr]) => {
+          listBudgets(p.id),
+        ]).then(([st, rd, bl, cos, budgets]) => {
           if (cancelled) return;
           setStages(st || []);
-          setAllReports(rd || []);
-          setBudgetLines(bl || []);
-          setQualityItems(qi || []);
-          setBudget((budgets || [])[0] || null);
-          setChangeOrders(cos || []);
-          setMaterialRequests(mr || []);
-          setNonconformities(ncs || []);
-          setLossRecords(lr || []);
+          setReportsCount((rd || []).length);
+          setBudgetLinesCount((bl || []).length);
+          setChangeOrdersCount((cos || []).length);
+          setBudgetApproved(((budgets || [])[0]?.status) === "APPROVED");
         });
       })
       .catch((err) => {
@@ -384,7 +180,6 @@ export default function ObraDetalhePage({ params }) {
   useEffect(() => {
     loadHealth();
     loadNayObras();
-    getActiveMarginRule().then(setActiveMarginRule).catch(() => setActiveMarginRule(null));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
 
@@ -477,7 +272,7 @@ export default function ObraDetalhePage({ params }) {
         // omite o campo do payload nesse caso (igual ao padrão já usado em
         // updateBudgetLine/plannedAmount), senão salvar OUTRO campo do modal (ex.: nome)
         // quebraria também, mesmo sem o usuário ter mexido no orçamento.
-        ...(budget?.status !== "APPROVED"
+        ...(!budgetApproved
           ? { budgetAmount: editForm.budgetAmount !== "" ? toNumber(editForm.budgetAmount) : null }
           : {}),
         startsAt: dateOnlyInputToIso(editForm.startsAt) || null,
@@ -489,34 +284,6 @@ export default function ObraDetalhePage({ params }) {
       setActionError(err?.message || "Não foi possível salvar as alterações.");
     } finally {
       setSavingEdit(false);
-    }
-  }
-
-  // FIX (auditoria pós-merge Marco 6, 30/09/2026): a API aceita {status, notes} em
-  // checkQualityItem, mas a tela nunca oferecia campo pra registrar o motivo ao marcar "Não OK"
-  // — dado se perdia em silêncio (Categoria 3 do catálogo de bugs). "OK" continua direto (sem
-  // motivo a justificar); "Não OK" abre o modal de observação obrigatória.
-  // BUG REAL CORRIGIDO (auditoria "loop até secar", rodada 51, 2026-10-05): marcar um item
-  // NOT_OK dispara createNonconformity automaticamente no backend (R19 — "falha abre
-  // nonconformity"), mas a aba de Não Conformidades só era recarregada no load inicial da
-  // página — a NC nova existia no banco mas ficava invisível na tela até um F5 manual.
-  async function handleQualityQuickAction(item, status, notes) {
-    if (qualityBusyId) return;
-    setActionError("");
-    setQualityBusyId(item.id);
-    try {
-      const updated = await checkQualityItem(item.id, { status, notes: notes || undefined });
-      setQualityItems((prev) => prev.map((q) => (q.id === updated.id ? updated : q)));
-      setQualityRejecting(null);
-      setQualityRejectNotes("");
-      if (status === "NOT_OK") {
-        const refreshedNcs = await listNonconformities(params.id);
-        setNonconformities(refreshedNcs || []);
-      }
-    } catch (err) {
-      setActionError(err?.message || "Não foi possível atualizar o item de qualidade.");
-    } finally {
-      setQualityBusyId(null);
     }
   }
 
@@ -576,647 +343,9 @@ export default function ObraDetalhePage({ params }) {
     }
   }
 
-  function openRdoModal() {
-    setEditingRdoId(null);
-    setRdoForm({ reportDate: new Date().toISOString().slice(0, 10), weather: WEATHER_OPTIONS[0], workforceCount: "", occurrences: "", servicesPerformed: "" });
-    setRdoEvidenceFileIds([]);
-    setRdoEvidenceFileNames([]);
-    setRdoUploadError("");
-    setRdoWorkers([]);
-    setWorkerUploadError("");
-    setRdoMaterials([]);
-    setRdoOpen(true);
-  }
-
-  function addRdoMaterial() {
-    setRdoMaterials((prev) => [...prev, { materialDescription: "", quantity: "", unit: "" }]);
-  }
-  function updateRdoMaterial(index, field, value) {
-    setRdoMaterials((prev) => prev.map((m, i) => (i === index ? { ...m, [field]: value } : m)));
-  }
-  function removeRdoMaterial(index) {
-    setRdoMaterials((prev) => prev.filter((_, i) => i !== index));
-  }
-
-  function addRdoWorker() {
-    setRdoWorkers((prev) => [...prev, { personId: "", role: "", documentFileIds: [] }]);
-  }
-  function updateRdoWorker(index, field, value) {
-    setRdoWorkers((prev) => prev.map((w, i) => (i === index ? { ...w, [field]: value } : w)));
-  }
-  function removeRdoWorker(index) {
-    setRdoWorkers((prev) => prev.filter((_, i) => i !== index));
-  }
-  async function handleUploadWorkerDocument(index, file) {
-    if (!file) return;
-    setWorkerUploadingIndex(index);
-    setWorkerUploadError("");
-    try {
-      const uploaded = await uploadFile(file);
-      setRdoWorkers((prev) =>
-        prev.map((w, i) => (i === index ? { ...w, documentFileIds: [...(w.documentFileIds || []), uploaded.id] } : w))
-      );
-    } catch (err) {
-      setWorkerUploadError(err?.message || "Erro ao enviar documento.");
-    } finally {
-      setWorkerUploadingIndex(null);
-    }
-  }
-
-  async function handleUploadRdoEvidence(files) {
-    const fileArray = Array.from(files || []);
-    if (fileArray.length === 0) return;
-    setRdoUploading(true);
-    setRdoUploadError("");
-    try {
-      for (const file of fileArray) {
-        const uploaded = await uploadFile(file);
-        setRdoEvidenceFileIds((prev) => [...prev, uploaded.id]);
-        setRdoEvidenceFileNames((prev) => [...prev, file.name]);
-      }
-    } catch (err) {
-      setRdoUploadError(err?.message || "Erro ao enviar foto.");
-    } finally {
-      setRdoUploading(false);
-    }
-  }
-
-  function removeRdoEvidence(index) {
-    setRdoEvidenceFileIds((prev) => prev.filter((_, i) => i !== index));
-    setRdoEvidenceFileNames((prev) => prev.filter((_, i) => i !== index));
-  }
-
-  // FIX (homologação 23/09/2026): mesmo caso da etapa — o RDO só podia ser registrado, nunca
-  // corrigido. PATCH /construction/daily-reports/:id já existia na API e em
-  // lib/api/construction.js (updateDailyReport) sem nenhum consumidor. Um RDO lançado com
-  // data, clima, efetivo ou ocorrências errados ficava errado pra sempre.
-  function openRdoEditModal(report) {
-    setEditingRdoId(report.id);
-    setRdoDateInvalid(false);
-    setRdoForm({
-      reportDate: report.reportDate ? String(report.reportDate).slice(0, 10) : "",
-      weather: report.weather || WEATHER_OPTIONS[0],
-      workforceCount: report.workforceCount != null ? String(report.workforceCount) : "",
-      occurrences: report.occurrences || "",
-      servicesPerformed: report.servicesPerformed || "",
-    });
-    {
-      const existingIds = Array.isArray(report.evidenceFileIds) ? report.evidenceFileIds : [];
-      setRdoEvidenceFileIds(existingIds);
-      // Nomes originais não são devolvidos pelo RDO (só o id do arquivo) — usa um rótulo
-      // genérico numerado pros já existentes; uploads novos nesta sessão mostram o nome real.
-      setRdoEvidenceFileNames(existingIds.map((_, i) => `Evidência ${i + 1}`));
-    }
-    setRdoUploadError("");
-    setRdoWorkers([]);
-    setWorkerUploadError("");
-    setRdoMaterials([]);
-    setRdoOpen(true);
-    listDailyWorkers(report.id)
-      .then((workers) => {
-        setRdoWorkers(
-          (workers || []).map((w) => ({ personId: w.personId, role: w.role || "", documentFileIds: Array.isArray(w.documentFileIds) ? w.documentFileIds : [] }))
-        );
-      })
-      .catch(() => {});
-    listDailyMaterials(report.id)
-      .then((materials) => {
-        setRdoMaterials(
-          (materials || []).map((m) => ({ materialDescription: m.materialDescription, quantity: String(Number(m.quantity)), unit: m.unit }))
-        );
-      })
-      .catch(() => {});
-  }
-
-  async function handleSaveRdo() {
-    if (!rdoForm.reportDate || !rdoForm.weather || rdoForm.workforceCount === "") return;
-    setSavingRdo(true);
-    setActionError("");
-    try {
-      const payload = {
-        reportDate: rdoForm.reportDate,
-        weather: rdoForm.weather,
-        workforceCount: Number(rdoForm.workforceCount),
-        occurrences: rdoForm.occurrences.trim() || undefined,
-        servicesPerformed: rdoForm.servicesPerformed.trim() || undefined,
-        evidenceFileIds: rdoEvidenceFileIds,
-        workers: rdoWorkers.filter((w) => w.personId),
-        materials: rdoMaterials
-          .filter((m) => m.materialDescription && m.quantity !== "" && m.unit)
-          .map((m) => ({ ...m, quantity: toNumber(m.quantity) })),
-      };
-      if (editingRdoId) {
-        const updated = await updateDailyReport(editingRdoId, payload);
-        setAllReports((prev) => prev.map((r) => (r.id === editingRdoId ? updated : r)));
-      } else {
-        const created = await createDailyReport(project.id, payload);
-        setAllReports((prev) => [created, ...prev]);
-      }
-      setRdoOpen(false);
-    } catch (err) {
-      setActionError(err?.message || "Não foi possível salvar o RDO.");
-    } finally {
-      setSavingRdo(false);
-    }
-  }
-
-  function openBudgetModal() {
-    setEditingBudgetLineId(null);
-    setBudgetForm({ category: "", description: "", plannedAmount: "" });
-    setBudgetOpen(true);
-  }
-
-  // Achado numa varredura final do Front do Marco 6: updateBudgetLine já existia na API (e no
-  // wrapper do Front), mas nenhuma tela chamava — não dava pra corrigir categoria/descrição de
-  // uma linha, nem o valor planejado antes da aprovação do orçamento. Mesmo modal de criação,
-  // reaproveitado pra editar (valor planejado trava quando o orçamento agregado já está
-  // aprovado — mesma regra que o backend aplica em updateBudgetLine).
-  // BUG REAL CORRIGIDO (auditoria E2E ao vivo, Marco 6, Ciclo 8, 2026-10-06): não existia
-  // NENHUM jeito, via API nem via UI, de remover uma linha de orçamento digitada errada antes
-  // da aprovação — só editar valor/categoria/descrição.
-  async function handleDeleteBudgetLine(line) {
-    if (deletingBudgetLineId) return;
-    const ok = await confirm({
-      title: "Excluir linha de orçamento?",
-      message: `A linha "${line.category}" será removida. Esta ação não pode ser desfeita.`,
-      confirmLabel: "Excluir",
-      tone: "danger",
-    });
-    if (!ok) return;
-    setActionError("");
-    setDeletingBudgetLineId(line.id);
-    try {
-      await removeBudgetLine(line.id);
-      setBudgetLines((prev) => prev.filter((l) => l.id !== line.id));
-    } catch (err) {
-      setActionError(err?.message || "Não foi possível excluir a linha de orçamento.");
-    } finally {
-      setDeletingBudgetLineId(null);
-    }
-  }
-
-  function openBudgetLineEditModal(line) {
-    setEditingBudgetLineId(line.id);
-    setBudgetForm({
-      category: line.category || "",
-      description: line.description || "",
-      plannedAmount: line.plannedAmount != null ? String(Number(line.plannedAmount)).replace(".", ",") : "",
-    });
-    setBudgetOpen(true);
-  }
-
-  async function handleCreateBudgetLine() {
-    // BUG REAL CORRIGIDO (auditoria Marco 6, Ciclo 9): duplo-clique nativo criava 2 linhas de
-    // orçamento duplicadas (ou aplicava a mesma edição 2x) — createBudgetLine/updateBudgetLine
-    // são INSERTs/UPDATEs simples, sem checagem de duplicidade no backend.
-    if (savingBudget) return;
-    if (!budgetForm.category.trim() || isInvalidNumber(budgetForm.plannedAmount, { allowZero: true })) return;
-    setSavingBudget(true);
-    setActionError("");
-    try {
-      if (editingBudgetLineId) {
-        const payload = { category: budgetForm.category.trim(), description: budgetForm.description.trim() || null };
-        if (budget?.status !== "APPROVED") payload.plannedAmount = toNumber(budgetForm.plannedAmount);
-        const updated = await updateBudgetLine(editingBudgetLineId, payload);
-        setBudgetLines((prev) => prev.map((l) => (l.id === updated.id ? updated : l)));
-      } else {
-        // BUG REAL CORRIGIDO (auditoria E2E ao vivo, Marco 6, Ciclo 1, 2026-10-06): era possível
-        // criar uma linha de orçamento ANTES de existir o orçamento agregado — a linha nascia
-        // com budgetId=null, permanentemente órfã. Quando o orçamento agregado era criado e
-        // aprovado depois, approveBudget soma só as linhas com budgetId igual ao aprovado, então
-        // a baseline congelada saía errada (sem a linha órfã), gerando alerta de margem negativa
-        // falso no NAY Obras mesmo com orçamento e custo batendo de verdade. Fix: garante que o
-        // orçamento agregado exista ANTES de criar a primeira linha, nunca manda budgetId vazio.
-        let currentBudget = budget;
-        if (!currentBudget) {
-          currentBudget = await createBudget(project.id);
-          setBudget(currentBudget);
-        }
-        const created = await createBudgetLine(project.id, {
-          category: budgetForm.category.trim(),
-          description: budgetForm.description.trim() || undefined,
-          plannedAmount: toNumber(budgetForm.plannedAmount),
-          budgetId: currentBudget.id,
-        });
-        setBudgetLines((prev) => [...prev, created]);
-      }
-      setBudgetOpen(false);
-    } catch (err) {
-      setActionError(err?.message || "Não foi possível salvar a linha de orçamento.");
-    } finally {
-      setSavingBudget(false);
-    }
-  }
-
-  async function handleCreateBudget() {
-    setCreatingBudget(true);
-    setActionError("");
-    try {
-      const created = await createBudget(project.id);
-      setBudget(created);
-    } catch (err) {
-      setActionError(err?.message || "Não foi possível criar o orçamento agregado.");
-    } finally {
-      setCreatingBudget(false);
-    }
-  }
-
-  async function handleApproveBudget() {
-    if (!budget) return;
-    setApprovingBudget(true);
-    setActionError("");
-    try {
-      const updated = await approveBudget(budget.id);
-      setBudget(updated);
-      setApproveBudgetOpen(false);
-      loadHealth();
-      // BUG REAL CORRIGIDO (achado numa auditoria final do Marco 6, 30/09/2026): aprovar o
-      // orçamento move a obra PLANNED->BUDGETED como efeito colateral no backend (M6-18), mas
-      // esta tela só atualizava o estado local de "budget" — o status da obra na tela (badge,
-      // botões de ação disponíveis) ficava desatualizado até um reload manual da página.
-      const refreshedProject = await getProject(project.id);
-      setProject(refreshedProject);
-    } catch (err) {
-      setActionError(err?.message || "Não foi possível aprovar o orçamento.");
-    } finally {
-      setApprovingBudget(false);
-    }
-  }
-
-  function openChangeOrderModal() {
-    setCoForm({ reasonCode: "", description: "", budgetImpact: "", scheduleImpactDays: "", file: null });
-    setCoOpen(true);
-  }
-
-  const isChangeOrderValid =
-    coForm.reasonCode !== "" && coForm.description.trim() !== "" && coForm.budgetImpact !== "" && !Number.isNaN(toNumber(coForm.budgetImpact));
-
-  async function handleCreateChangeOrder() {
-    // BUG REAL CORRIGIDO (auditoria Marco 6, Ciclo 9): duplo-clique nativo criava 2 Change
-    // Orders duplicados — createChangeOrder é um INSERT simples, sem checagem de duplicidade
-    // no backend.
-    if (savingCo) return;
-    if (!isChangeOrderValid) return;
-    setSavingCo(true);
-    setActionError("");
-    try {
-      let evidenceFileIds;
-      if (coForm.file) {
-        const uploaded = await uploadFile(coForm.file);
-        evidenceFileIds = [uploaded.id];
-      }
-      const created = await createChangeOrder(project.id, {
-        reasonCode: coForm.reasonCode,
-        description: coForm.description.trim(),
-        budgetImpact: toNumber(coForm.budgetImpact),
-        scheduleImpactDays: coForm.scheduleImpactDays !== "" ? Number(coForm.scheduleImpactDays) : undefined,
-        evidenceFileIds,
-      });
-      setChangeOrders((prev) => [created, ...prev]);
-      setCoOpen(false);
-    } catch (err) {
-      setActionError(err?.message || "Não foi possível criar o Change Order.");
-    } finally {
-      setSavingCo(false);
-    }
-  }
-
-  async function handleDecideChangeOrder(changeOrder, decision) {
-    const isApprove = decision === "APPROVE";
-    const ok = await confirm({
-      title: isApprove ? "Aprovar este aditivo (Change Order)?" : "Rejeitar este aditivo (Change Order)?",
-      message: isApprove
-        ? "O aditivo será aprovado e o orçamento da obra será atualizado de acordo."
-        : "O aditivo será rejeitado e o orçamento da obra não será alterado por ele.",
-      confirmLabel: isApprove ? "Aprovar" : "Rejeitar",
-      tone: isApprove ? "primary" : "danger",
-    });
-    if (!ok) return;
-
-    setDecidingCoId(changeOrder.id);
-    setActionError("");
-    try {
-      const updated = await decideChangeOrder(changeOrder.id, decision);
-      setChangeOrders((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
-      if (decision === "APPROVE") {
-        const [budgets] = await Promise.all([listBudgets(project.id)]);
-        setBudget((budgets || [])[0] || null);
-        loadHealth();
-      }
-    } catch (err) {
-      setActionError(err?.message || "Não foi possível decidir o Change Order.");
-    } finally {
-      setDecidingCoId(null);
-    }
-  }
-
-  function openQualityModal() {
-    setQualityForm({ item: "", projectStageId: "", category: "OUTROS" });
-    setQualityOpen(true);
-  }
-  async function handleCreateQualityItem() {
-    // BUG REAL CORRIGIDO (auditoria E2E ao vivo, Marco 6, Ciclo 8, 2026-10-06): mesma classe de
-    // duplo-clique nativo criando registro duplicado (sem checagem de duplicidade no backend).
-    if (savingQuality) return;
-    if (!qualityForm.item.trim()) return;
-    setSavingQuality(true);
-    setActionError("");
-    try {
-      const created = await createQualityItem(project.id, {
-        item: qualityForm.item.trim(),
-        projectStageId: qualityForm.projectStageId || undefined,
-        category: qualityForm.category || "OUTROS",
-      });
-      setQualityItems((prev) => [...prev, created]);
-      setQualityOpen(false);
-    } catch (err) {
-      setActionError(err?.message || "Não foi possível criar o item de checklist.");
-    } finally {
-      setSavingQuality(false);
-    }
-  }
-
-  // LACUNA REAL CORRIGIDA (auditoria Marco 6, Ciclo 9): havia create+check para item de
-  // checklist de qualidade, mas nenhuma forma de remover um item cadastrado por engano (ex.:
-  // categoria/texto errado) antes de qualquer verificação — só restava "resolver" marcando
-  // OK/NOT_OK, poluindo o checklist real da obra pra sempre. DELETE só é aceito pelo backend
-  // enquanto o item ainda está PENDING (removeQualityItem).
-  async function handleDeleteQualityItem(item) {
-    if (qualityBusyId) return;
-    const ok = await confirm({
-      title: "Excluir item de checklist?",
-      message: `O item "${item.item}" será removido. Esta ação não pode ser desfeita.`,
-      confirmLabel: "Excluir",
-      tone: "danger",
-    });
-    if (!ok) return;
-    setActionError("");
-    setQualityBusyId(item.id);
-    try {
-      await removeQualityItem(item.id);
-      setQualityItems((prev) => prev.filter((q) => q.id !== item.id));
-    } catch (err) {
-      setActionError(err?.message || "Não foi possível excluir o item de checklist.");
-    } finally {
-      setQualityBusyId(null);
-    }
-  }
-
-  function openMaterialModal() {
-    setMaterialForm({ description: "", quantity: "", unit: "" });
-    setMaterialOpen(true);
-  }
-  async function handleCreateMaterialRequest() {
-    // BUG REAL CORRIGIDO (auditoria Marco 6, Ciclo 9): duplo-clique nativo criava 2 requisições
-    // de material duplicadas — createMaterialRequest é um INSERT simples, sem checagem de
-    // duplicidade no backend.
-    if (savingMaterial) return;
-    if (!materialForm.description.trim() || isInvalidNumber(materialForm.quantity) || !materialForm.unit.trim()) return;
-    setSavingMaterial(true);
-    setActionError("");
-    try {
-      const created = await createMaterialRequest(project.id, {
-        description: materialForm.description.trim(),
-        quantity: toNumber(materialForm.quantity),
-        unit: materialForm.unit.trim(),
-      });
-      setMaterialRequests((prev) => [created, ...prev]);
-      setMaterialOpen(false);
-    } catch (err) {
-      setActionError(err?.message || "Não foi possível criar a requisição de material.");
-    } finally {
-      setSavingMaterial(false);
-    }
-  }
-  async function handleReceiveMaterialRequest(request) {
-    if (receivingMaterialId) return;
-    setReceivingMaterialId(request.id);
-    setActionError("");
-    try {
-      const updated = await receiveMaterialRequest(request.id);
-      setMaterialRequests((prev) => prev.map((m) => (m.id === updated.id ? updated : m)));
-    } catch (err) {
-      setActionError(err?.message || "Não foi possível marcar a requisição como recebida.");
-    } finally {
-      setReceivingMaterialId(null);
-    }
-  }
-
-  function openLossModal() {
-    setLossForm({ materialDescription: "", quantity: "", estimatedValue: "", reason: "" });
-    setLossOpen(true);
-  }
-  async function handleCreateLossRecord() {
-    // BUG REAL CORRIGIDO (auditoria Marco 6, Ciclo 9): duplo-clique nativo criava 2 registros
-    // de perda de material duplicados — createLossRecord é um INSERT simples, sem checagem de
-    // duplicidade no backend.
-    if (savingLoss) return;
-    if (!lossForm.materialDescription.trim() || isInvalidNumber(lossForm.quantity) || isInvalidNumber(lossForm.estimatedValue, { allowZero: true }) || !lossForm.reason.trim()) return;
-    setSavingLoss(true);
-    setActionError("");
-    try {
-      const created = await createLossRecord(project.id, {
-        materialDescription: lossForm.materialDescription.trim(),
-        quantity: toNumber(lossForm.quantity),
-        estimatedValue: toNumber(lossForm.estimatedValue),
-        reason: lossForm.reason.trim(),
-      });
-      setLossRecords((prev) => [created, ...prev]);
-      setLossOpen(false);
-    } catch (err) {
-      setActionError(err?.message || "Não foi possível registrar a perda de material.");
-    } finally {
-      setSavingLoss(false);
-    }
-  }
-  async function handleApproveLossRecord(record) {
-    if (lossBusyId) return;
-    const ok = await confirm({
-      title: "Aprovar esta baixa de material?",
-      message: "O registro de perda será aprovado e o estoque será baixado definitivamente.",
-      confirmLabel: "Aprovar",
-    });
-    if (!ok) return;
-    setLossBusyId(record.id);
-    setActionError("");
-    try {
-      const updated = await approveLossRecord(record.id);
-      setLossRecords((prev) => prev.map((l) => (l.id === updated.id ? updated : l)));
-    } catch (err) {
-      setActionError(err?.message || "Não foi possível aprovar o registro de perda.");
-    } finally {
-      setLossBusyId(null);
-    }
-  }
-  async function handleReturnLossRecord(record) {
-    if (lossBusyId) return;
-    setLossBusyId(record.id);
-    setActionError("");
-    try {
-      const returned = await returnLossRecord(record.id);
-      setLossRecords((prev) => [returned, ...prev]);
-    } catch (err) {
-      setActionError(err?.message || "Não foi possível registrar a devolução de material.");
-    } finally {
-      setLossBusyId(null);
-    }
-  }
-
-  function openThresholdModal() {
-    setThresholdAmount("");
-    setThresholdOpen(true);
-  }
-
-  async function handleSaveThreshold() {
-    if (isInvalidNumber(thresholdAmount)) return;
-    setSavingThreshold(true);
-    setActionError("");
-    try {
-      await upsertApprovalThreshold({
-        groupId: project.groupId,
-        companyId: project.companyId,
-        context: "MATERIAL_LOSS",
-        maxAutoApproveAmount: toNumber(thresholdAmount),
-      });
-      setThresholdOpen(false);
-    } catch (err) {
-      setActionError(err?.message || "Não foi possível salvar a alçada de aprovação.");
-    } finally {
-      setSavingThreshold(false);
-    }
-  }
-
-  function openMarginRuleModal() {
-    setMarginRulePct(activeMarginRule ? String(Number(activeMarginRule.minMarginPct)).replace(".", ",") : "");
-    setMarginRuleError("");
-    setMarginRuleOpen(true);
-  }
-
-  async function handleSaveMarginRule() {
-    if (marginRulePct === "" || Number.isNaN(toNumber(marginRulePct)) || toNumber(marginRulePct) < 0 || toNumber(marginRulePct) > 100) return;
-    setSavingMarginRule(true);
-    setMarginRuleError("");
-    try {
-      const rule = await createMarginRule({
-        groupId: project.groupId,
-        companyId: project.companyId,
-        minMarginPct: toNumber(marginRulePct),
-      });
-      setActiveMarginRule(rule);
-      setMarginRuleOpen(false);
-    } catch (err) {
-      // FIX (auditoria E2E de browser, ciclo 3, 02/10/2026): o erro era gravado em
-      // actionError, que só é exibido na tela PRINCIPAL por trás do modal — com o modal
-      // aberto por cima, o usuário não via nenhum feedback e a ação parecia travar
-      // silenciosamente. Erro agora aparece dentro do próprio modal.
-      setMarginRuleError(err?.message || "Não foi possível salvar a margem mínima.");
-    } finally {
-      setSavingMarginRule(false);
-    }
-  }
-
-  function openNcModal() {
-    setNcForm({
-      description: "",
-      severity: "MEDIUM",
-      responsibleUserId: "",
-      slaDueAt: "",
-      requiresAcceptance: false,
-      beforeFileId: "",
-      beforeFileName: "",
-    });
-    setNcBeforeUploadError("");
-    setNcOpen(true);
-  }
-
-  async function handleUploadBeforeEvidence(file) {
-    if (!file) return;
-    setNcBeforeUploading(true);
-    setNcBeforeUploadError("");
-    try {
-      const uploaded = await uploadFile(file);
-      setNcForm((p) => ({ ...p, beforeFileId: uploaded.id, beforeFileName: file.name }));
-    } catch (err) {
-      setNcBeforeUploadError(err?.message || "Erro ao enviar evidência.");
-    } finally {
-      setNcBeforeUploading(false);
-    }
-  }
-
-  async function handleCreateNonconformity() {
-    // BUG REAL CORRIGIDO (auditoria E2E ao vivo, Marco 6, Ciclo 8, 2026-10-06): mesma classe de
-    // duplo-clique nativo criando registro duplicado (sem checagem de duplicidade no backend).
-    if (savingNc) return;
-    if (!ncForm.description.trim()) return;
-    setSavingNc(true);
-    setActionError("");
-    try {
-      const created = await createNonconformity(project.id, {
-        description: ncForm.description.trim(),
-        severity: ncForm.severity,
-        responsibleUserId: ncForm.responsibleUserId || undefined,
-        slaDueAt: dateOnlyInputToIso(ncForm.slaDueAt) || undefined,
-        requiresAcceptance: ncForm.requiresAcceptance,
-        beforeEvidenceFileIds: ncForm.beforeFileId ? [ncForm.beforeFileId] : [],
-      });
-      setNonconformities((prev) => [created, ...prev]);
-      setNcOpen(false);
-    } catch (err) {
-      setActionError(err?.message || "Não foi possível registrar a não conformidade.");
-    } finally {
-      setSavingNc(false);
-    }
-  }
-
-  function openCloseNcModal(nc) {
-    setClosingNc(nc);
-    setNcAfterFileId("");
-    setNcAfterFileName("");
-    setNcAfterUploadError("");
-    setNcAcceptedByUserId("");
-  }
-
-  async function handleUploadAfterEvidence(file) {
-    if (!file) return;
-    setNcAfterUploading(true);
-    setNcAfterUploadError("");
-    try {
-      const uploaded = await uploadFile(file);
-      setNcAfterFileId(uploaded.id);
-      setNcAfterFileName(file.name);
-    } catch (err) {
-      setNcAfterUploadError(err?.message || "Erro ao enviar evidência.");
-    } finally {
-      setNcAfterUploading(false);
-    }
-  }
-
-  // REGRA FAIL-CLOSED replicada na UI (não só confiar no erro 422 da API): o botão de
-  // confirmar fechamento fica desabilitado até existir uma evidência "depois" já enviada
-  // (ncAfterFileId preenchido) e, se a NC exigir aceite, até um responsável pelo aceite ser
-  // selecionado. Mesmas duas condições de nonconformities.service.js closeNonconformity.
-  async function handleCloseNonconformity() {
-    if (!closingNc || !ncAfterFileId) return;
-    if (closingNc.requiresAcceptance && !ncAcceptedByUserId) return;
-    setSavingNcClose(true);
-    setActionError("");
-    try {
-      const updated = await closeNonconformity(closingNc.id, {
-        afterEvidenceFileIds: [ncAfterFileId],
-        acceptedByUserId: ncAcceptedByUserId || undefined,
-      });
-      setNonconformities((prev) => prev.map((n) => (n.id === updated.id ? updated : n)));
-      setClosingNc(null);
-    } catch (err) {
-      setActionError(err?.message || "Não foi possível fechar a não conformidade.");
-    } finally {
-      setSavingNcClose(false);
-    }
-  }
-
   // Entrega da obra (M6-25/...) — se a API recusar por NC crítica em aberto, mostramos um
-  // aviso com link direto pra seção de Não Conformidades desta mesma tela, nunca o código de
-  // erro técnico cru.
+  // aviso com link direto pra seção de Não Conformidades na subrota de Qualidade, nunca o
+  // código de erro técnico cru.
   async function handleDeliver() {
     if (delivering) return;
     setDelivering(true);
@@ -1257,18 +386,9 @@ export default function ObraDetalhePage({ params }) {
     }
   }
 
-  const totalPlanned = budgetLines.reduce((s, b) => s + Number(b.plannedAmount || 0), 0);
-  const totalActual = budgetLines.reduce((s, b) => s + Number(b.actualAmount || 0), 0);
-
   return (
     <AppShell title={project.name} backHref="/painel/obras/lista">
       <div className={styles.wrap}>
-        {/* FIX (auditoria E2E de browser, ciclo 4, 02/10/2026): actionError é compartilhado por
-            TODOS os modais do módulo (orçamento, change order, NC, perda de material, checklist,
-            etc.), mas só era renderizado aqui, no topo da página — atrás do overlay de qualquer
-            modal aberto (z-index 100). Usuário via o modal "travar" sem feedback nenhum ao
-            submeter um valor rejeitado pela API. Posição fixa com z-index acima do Modal corrige
-            de uma vez só, sem duplicar a condição em cada um dos ~13 modais da tela. */}
         {actionError ? (
           <div style={{ position: "fixed", top: "var(--space-4)", left: "50%", transform: "translateX(-50%)", zIndex: 200, width: "min(560px, calc(100vw - 2 * var(--space-4)))" }}>
             <Alert tone="danger">{actionError}</Alert>
@@ -1279,8 +399,8 @@ export default function ObraDetalhePage({ params }) {
             Não é possível entregar a obra: existe pelo menos uma não conformidade{" "}
             <strong>crítica em aberto</strong> vinculada a este projeto. Resolva e feche a(s)
             pendência(s) na seção{" "}
-            <a href="#nao-conformidades" className={styles.infoLink}>Não Conformidades</a>{" "}
-            abaixo antes de tentar entregar novamente.
+            <Link href={`/painel/obras/lista/${project.id}/qualidade#nao-conformidades`} className={styles.infoLink}>Não Conformidades</Link>{" "}
+            antes de tentar entregar novamente.
           </Alert>
         ) : null}
         {warrantyCloseBlocked ? (
@@ -1561,483 +681,52 @@ export default function ObraDetalhePage({ params }) {
           )}
         </Card>
 
-        <Card
-          title="RDO — Relatório Diário de Obra"
-          subtitle={reportsShowAll ? `Todos os ${allReports.length} registros` : "Últimos 5 registros"}
-          actions={<Button size="sm" variant="secondary" onClick={openRdoModal}>
-            <Icon name="plus" size={14} /> Novo RDO
-          </Button>}
-        >
-          {allReports.length === 0 ? (
-            <EmptyState icon="document" title="Sem RDOs" description="Nenhum relatório diário de obra registrado ainda." />
-          ) : (
-            <div className={styles.rowList}>
-              {reports.map((r) => (
-                <div key={r.id} className={styles.rowStatic}>
-                  <div className={styles.rowInfo}>
-                    <span className={styles.rowTitle}>{formatDate(r.reportDate)} · {r.weather}</span>
-                    <span className={styles.rowSubtitle}>
-                      Efetivo: {r.workforceCount} · {r.occurrences || "Sem ocorrências"}
-                    </span>
-                    {r.servicesPerformed ? (
-                      <span className={styles.rowSubtitle}>Serviços: {r.servicesPerformed}</span>
-                    ) : null}
-                    {r.evidenceFileIds?.length ? (
-                      <span className={styles.rowSubtitle}>
-                        {r.evidenceFileIds.length} foto(s) anexada(s) —{" "}
-                        {r.evidenceFileIds.map((fid, idx) => (
-                          <button
-                            key={fid}
-                            type="button"
-                            style={{ background: "none", border: "none", padding: 0, color: "var(--color-brand)", textDecoration: "underline", cursor: "pointer", font: "inherit" }}
-                            onClick={() => setViewerFileId(fid)}
-                          >
-                            {idx > 0 ? ", " : ""}ver foto {idx + 1}
-                          </button>
-                        ))}
-                      </span>
-                    ) : null}
-                  </div>
-                  <button
-                    type="button"
-                    className={styles.rowEditBtn}
-                    aria-label={`Editar RDO de ${formatDate(r.reportDate)}`}
-                    onClick={() => openRdoEditModal(r)}
-                  >
-                    <Icon name="pencil" size={14} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-          {allReports.length > 5 ? (
-            <Button size="sm" variant="ghost" onClick={() => setReportsShowAll((v) => !v)}>
-              {reportsShowAll ? "Mostrar só os últimos 5" : `Ver todos os ${allReports.length} registros`}
-            </Button>
-          ) : null}
-        </Card>
-
-        <Card
-          title="Orçamento"
-          subtitle="Linhas de orçamento por categoria"
-          actions={
-            <div className={styles.quickActions}>
-              {!budget ? (
-                <Button size="sm" variant="secondary" onClick={handleCreateBudget} loading={creatingBudget}>
-                  <Icon name="plus" size={14} /> Criar orçamento agregado
-                </Button>
-              ) : budget.status === "DRAFT" ? (
-                <Button size="sm" variant="primary" onClick={() => setApproveBudgetOpen(true)}>
-                  <Icon name="check" size={14} /> Aprovar orçamento
-                </Button>
-              ) : null}
-              <Button size="sm" variant="secondary" onClick={openBudgetModal} disabled={budget?.status === "APPROVED"}>
-                <Icon name="plus" size={14} /> Nova linha de orçamento
-              </Button>
-              <Button size="sm" variant="ghost" onClick={openMarginRuleModal}>
-                <Icon name="key" size={14} /> Configurar margem mínima
-              </Button>
-            </div>
-          }
-        >
-          {!activeMarginRule ? (
-            // Achado pelo cliente (30/09/2026): o aviso de margem mínima ausente precisa ser
-            // mais visível e levar direto pra onde resolver, não só um texto solto.
-            <Alert tone="warning" title="Margem mínima não configurada">
-              <>
-                A aprovação de orçamento desta empresa será recusada até configurar uma margem
-                mínima.{" "}
-                <Button size="sm" variant="secondary" onClick={openMarginRuleModal} style={{ marginTop: "var(--space-2)" }}>
-                  Configurar agora
-                </Button>
-              </>
-            </Alert>
-          ) : null}
-          {budget ? (
-            <div className={styles.rowStatic} style={{ marginBottom: "var(--space-3)" }}>
+        <Card title="Áreas da obra" subtitle="Orçamento, aditivos, diário, medições, materiais e qualidade — agora em páginas dedicadas">
+          <div className={styles.rowList}>
+            <Link href={`/painel/obras/lista/${project.id}/orcamento`} className={styles.row}>
               <div className={styles.rowInfo}>
-                <span className={styles.rowTitle}>Orçamento agregado</span>
-                <span className={styles.rowSubtitle}>
-                  {budget.status === "APPROVED"
-                    ? `Baseline congelada em ${formatBRL(budget.baselineAmount)} — valores das linhas bloqueados (só alteram via Change Order aprovado).`
-                    : "Ainda em rascunho — valores das linhas podem ser ajustados livremente até a aprovação."}
-                </span>
+                <span className={styles.rowTitle}>Orçamento</span>
+                <span className={styles.rowSubtitle}>{budgetLinesCount} linha(s) de orçamento</span>
               </div>
-              <Badge tone={BUDGET_STATUS_TONE[budget.status]}>{BUDGET_STATUS_LABELS[budget.status] || budget.status}</Badge>
-            </div>
-          ) : (
-            <Alert tone="info">Esta obra ainda não tem um orçamento agregado — crie um para poder aprovar a baseline e usar Change Orders.</Alert>
-          )}
-          {budgetLines.length === 0 ? (
-            <EmptyState icon="money" title="Sem linhas de orçamento" description="Nenhuma linha de orçamento cadastrada para esta obra." />
-          ) : (
-            <div className={styles.tableWrap}>
-              <table className={styles.table}>
-                <thead>
-                  <tr>
-                    <th>Categoria</th>
-                    <th>Descrição</th>
-                    <th>Planejado</th>
-                    <th>Realizado</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {budgetLines.map((b) => (
-                    <tr key={b.id}>
-                      <td>{b.category}</td>
-                      <td>{b.description || "—"}</td>
-                      <td>
-                        {formatBRL(b.plannedAmount)}
-                        {budget?.status === "APPROVED" && b.budgetId === budget.id ? (
-                          <Icon name="key" size={12} style={{ marginLeft: "var(--space-1)" }} />
-                        ) : null}
-                      </td>
-                      <td>{formatBRL(b.actualAmount)}</td>
-                      <td style={{ display: "flex", gap: 4 }}>
-                        <button
-                          type="button"
-                          className={styles.rowEditBtn}
-                          aria-label={`Editar linha ${b.category}`}
-                          onClick={() => openBudgetLineEditModal(b)}
-                        >
-                          <Icon name="pencil" size={14} />
-                        </button>
-                        {!(budget?.status === "APPROVED" && b.budgetId === budget.id) ? (
-                          <button
-                            type="button"
-                            className={styles.rowEditBtn}
-                            aria-label={`Excluir linha ${b.category}`}
-                            disabled={deletingBudgetLineId === b.id}
-                            onClick={() => handleDeleteBudgetLine(b)}
-                          >
-                            <Icon name="trash" size={14} />
-                          </button>
-                        ) : null}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot>
-                  <tr>
-                    <td colSpan={2}><strong>Total</strong></td>
-                    <td><strong>{formatBRL(totalPlanned)}</strong></td>
-                    <td><strong>{formatBRL(totalActual)}</strong></td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-          )}
+              <Icon name="arrowUpCircle" size={16} />
+            </Link>
+            <Link href={`/painel/obras/lista/${project.id}/change-orders`} className={styles.row}>
+              <div className={styles.rowInfo}>
+                <span className={styles.rowTitle}>Change Orders</span>
+                <span className={styles.rowSubtitle}>{changeOrdersCount} registro(s)</span>
+              </div>
+              <Icon name="arrowUpCircle" size={16} />
+            </Link>
+            <Link href={`/painel/obras/lista/${project.id}/diario`} className={styles.row}>
+              <div className={styles.rowInfo}>
+                <span className={styles.rowTitle}>Diário de obra (RDO)</span>
+                <span className={styles.rowSubtitle}>{reportsCount} relatório(s)</span>
+              </div>
+              <Icon name="arrowUpCircle" size={16} />
+            </Link>
+            <Link href={`/painel/obras/lista/${project.id}/medicoes`} className={styles.row}>
+              <div className={styles.rowInfo}>
+                <span className={styles.rowTitle}>Medições</span>
+                <span className={styles.rowSubtitle}>Medições registradas por etapa</span>
+              </div>
+              <Icon name="arrowUpCircle" size={16} />
+            </Link>
+            <Link href={`/painel/obras/lista/${project.id}/materiais`} className={styles.row}>
+              <div className={styles.rowInfo}>
+                <span className={styles.rowTitle}>Materiais</span>
+                <span className={styles.rowSubtitle}>Requisições e perdas/devoluções de material</span>
+              </div>
+              <Icon name="arrowUpCircle" size={16} />
+            </Link>
+            <Link href={`/painel/obras/lista/${project.id}/qualidade`} className={styles.row}>
+              <div className={styles.rowInfo}>
+                <span className={styles.rowTitle}>Qualidade</span>
+                <span className={styles.rowSubtitle}>Checklist de qualidade e não conformidades</span>
+              </div>
+              <Icon name="arrowUpCircle" size={16} />
+            </Link>
+          </div>
         </Card>
-
-        <Card
-          title="Change Orders"
-          subtitle="Mudanças de escopo/prazo/custo — só alteram a baseline aprovada quando decididas"
-          actions={
-            <Button size="sm" variant="secondary" onClick={openChangeOrderModal} disabled={!budget}>
-              <Icon name="plus" size={14} /> Novo Change Order
-            </Button>
-          }
-        >
-          {!budget ? (
-            <EmptyState icon="document" title="Sem orçamento" description="Crie o orçamento agregado da obra antes de registrar Change Orders." />
-          ) : changeOrders.length === 0 ? (
-            <EmptyState icon="document" title="Sem Change Orders" description="Nenhum Change Order registrado para esta obra." />
-          ) : (
-            <div className={styles.rowList}>
-              {changeOrders.map((co) => (
-                <div key={co.id} className={styles.rowStatic}>
-                  <div className={styles.rowInfo}>
-                    <span className={styles.rowTitle}>
-                      {CHANGE_ORDER_REASON_LABELS[co.reasonCode] || co.reasonCode} · {formatBRL(co.budgetImpact)}
-                      {co.scheduleImpactDays ? ` · ${co.scheduleImpactDays} dia(s) de prazo` : ""}
-                    </span>
-                    <span className={styles.rowSubtitle}>{co.description}</span>
-                    {co.evidenceFileIds?.length ? (
-                      <span className={styles.rowSubtitle}>
-                        {co.evidenceFileIds.length} evidência(s) anexada(s) —{" "}
-                        {co.evidenceFileIds.map((fid, idx) => (
-                          <button
-                            key={fid}
-                            type="button"
-                            style={{ background: "none", border: "none", padding: 0, color: "var(--color-brand)", textDecoration: "underline", cursor: "pointer", font: "inherit" }}
-                            onClick={() => setViewerFileId(fid)}
-                          >
-                            {idx > 0 ? ", " : ""}ver {idx + 1}
-                          </button>
-                        ))}
-                      </span>
-                    ) : null}
-                  </div>
-                  <div className={styles.rowRight}>
-                    <Badge tone={CHANGE_ORDER_STATUS_TONE[co.status]}>{CHANGE_ORDER_STATUS_LABELS[co.status] || co.status}</Badge>
-                    {co.status === "PENDING_APPROVAL" ? (
-                      <div className={styles.quickActions}>
-                        <Button size="sm" variant="secondary" onClick={() => handleDecideChangeOrder(co, "APPROVE")} loading={decidingCoId === co.id}>Aprovar</Button>
-                        <Button size="sm" variant="danger" onClick={() => handleDecideChangeOrder(co, "REJECT")} loading={decidingCoId === co.id}>Rejeitar</Button>
-                      </div>
-                    ) : null}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </Card>
-
-        <Card
-          title="Qualidade"
-          subtitle="Checklist de qualidade"
-          actions={<Button size="sm" variant="secondary" onClick={openQualityModal}>
-            <Icon name="plus" size={14} /> Novo item de checklist
-          </Button>}
-        >
-          {qualityItems.length === 0 ? (
-            <EmptyState icon="check" title="Sem itens de checklist" description="Nenhum item de qualidade cadastrado para esta obra." />
-          ) : (
-            <div className={styles.rowList}>
-              {qualityItems.map((q) => {
-                const checkedBy = q.checkedByUserId ? users.find((u) => u.id === q.checkedByUserId) : null;
-                return (
-                  <div key={q.id} className={styles.rowStatic}>
-                    <div className={styles.rowInfo}>
-                      <span className={styles.rowTitle}>
-                        {q.item}
-                        {" "}
-                        <Badge tone="neutral">{QUALITY_CATEGORIES.find((c) => c.value === q.category)?.label || q.category}</Badge>
-                      </span>
-                      <span className={styles.rowSubtitle}>
-                        {checkedBy ? `Verificado por ${checkedBy.name}` : "Ainda não verificado"}
-                      </span>
-                      {/* FIX (2ª varredura final do Front do Marco 6, 30/09/2026): o motivo
-                          digitado ao marcar "Não OK" era salvo (checkQualityItem já grava
-                          "notes"), mas nunca era exibido em lugar nenhum — ficava impossível
-                          saber por que um item foi reprovado depois que o modal fechava. */}
-                      {q.status === "NOT_OK" && q.notes ? (
-                        <span className={styles.rejectionReason}>Motivo: {q.notes}</span>
-                      ) : null}
-                    </div>
-                    <div className={styles.rowRight}>
-                      <Badge tone={QUALITY_STATUS_TONE[q.status]}>{QUALITY_STATUS_LABELS[q.status]}</Badge>
-                      {/* FIX (auditoria E2E de browser, ciclo 3, 02/10/2026): os botões
-                          OK/Não OK só apareciam com status PENDING — depois do primeiro
-                          veredito não havia NENHUMA forma de corrigir um engano (ex.: marcar
-                          "OK" sem querer). checkQualityItem no backend já aceita re-verificar
-                          livremente (sem trava de status atual), então a UI é quem artificialmente
-                          travava — agora os botões sempre aparecem, com rótulo "Revisar" quando
-                          já verificado. */}
-                      <div className={styles.quickActions}>
-                        <Button
-                          size="sm"
-                          variant={q.status === "OK" ? "ghost" : "secondary"}
-                          loading={qualityBusyId === q.id}
-                          disabled={qualityBusyId === q.id || q.status === "OK"}
-                          onClick={() => handleQualityQuickAction(q, "OK")}
-                        >
-                          {q.status === "PENDING" ? "OK" : "Marcar OK"}
-                        </Button>
-                        {q.status === "PENDING" ? (
-                          <button
-                            type="button"
-                            className={styles.rowEditBtn}
-                            aria-label={`Excluir item ${q.item}`}
-                            disabled={qualityBusyId === q.id}
-                            onClick={() => handleDeleteQualityItem(q)}
-                          >
-                            <Icon name="trash" size={14} />
-                          </button>
-                        ) : null}
-                        <Button
-                          size="sm"
-                          variant={q.status === "NOT_OK" ? "ghost" : "danger"}
-                          disabled={qualityBusyId === q.id || q.status === "NOT_OK"}
-                          onClick={() => {
-                            setQualityRejecting(q);
-                            setQualityRejectNotes("");
-                          }}
-                        >
-                          {q.status === "PENDING" ? "Não OK" : "Marcar não conforme"}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </Card>
-
-        <Card
-          title="Requisições de material"
-          subtitle="Materiais solicitados para a obra"
-          actions={<Button size="sm" variant="secondary" onClick={openMaterialModal}>
-            <Icon name="plus" size={14} /> Nova requisição
-          </Button>}
-        >
-          {materialRequests.length === 0 ? (
-            <EmptyState icon="arrowDownCircle" title="Sem requisições" description="Nenhuma requisição de material registrada para esta obra." />
-          ) : (
-            <div className={styles.rowList}>
-              {materialRequests.map((m) => (
-                <div key={m.id} className={styles.rowStatic}>
-                  <div className={styles.rowInfo}>
-                    <span className={styles.rowTitle}>{m.description}</span>
-                    <span className={styles.rowSubtitle}>
-                      {formatQuantity(m.quantity)} {m.unit}
-                      {m.status === "RECEIVED" && m.receivedAt ? ` · Recebido em ${formatDate(m.receivedAt)}` : ""}
-                    </span>
-                  </div>
-                  <div className={styles.rowRight}>
-                    <Badge tone={MATERIAL_REQUEST_STATUS_TONE[m.status]}>{MATERIAL_REQUEST_STATUS_LABELS[m.status] || m.status}</Badge>
-                    {m.status === "REQUESTED" ? (
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => handleReceiveMaterialRequest(m)}
-                        loading={receivingMaterialId === m.id}
-                        disabled={receivingMaterialId !== null && receivingMaterialId !== m.id}
-                      >
-                        Marcar como recebido
-                      </Button>
-                    ) : null}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </Card>
-
-        <Card
-          title="Perda e devolução de material"
-          subtitle="Registro de perda/quebra com alçada de aprovação por valor"
-          actions={
-            <div className={styles.quickActions}>
-              <Button size="sm" variant="ghost" onClick={openThresholdModal}>
-                <Icon name="key" size={14} /> Configurar alçada
-              </Button>
-              <Button size="sm" variant="secondary" onClick={openLossModal}>
-                <Icon name="plus" size={14} /> Registrar perda
-              </Button>
-            </div>
-          }
-        >
-          {lossRecords.length === 0 ? (
-            <EmptyState icon="ban" title="Sem registros" description="Nenhuma perda de material registrada para esta obra." />
-          ) : (
-            <div className={styles.rowList}>
-              {lossRecords.map((l) => (
-                <div key={l.id} className={styles.rowStatic}>
-                  <div className={styles.rowInfo}>
-                    <span className={styles.rowTitle}>
-                      {LOSS_RECORD_MOVEMENT_LABELS[l.movementType] || l.movementType} · {l.materialDescription}
-                    </span>
-                    <span className={styles.rowSubtitle}>
-                      {formatQuantity(l.quantity)} un. · {formatBRL(l.estimatedValue)} · {l.reason}
-                    </span>
-                  </div>
-                  <div className={styles.rowRight}>
-                    <Badge tone={LOSS_RECORD_STATUS_TONE[l.status]}>{LOSS_RECORD_STATUS_LABELS[l.status] || l.status}</Badge>
-                    {l.movementType === "LOSS" && l.status === "PENDING_APPROVAL" ? (
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => handleApproveLossRecord(l)}
-                        loading={lossBusyId === l.id}
-                        disabled={lossBusyId !== null && lossBusyId !== l.id}
-                      >
-                        Aprovar
-                      </Button>
-                    ) : null}
-                    {l.movementType === "LOSS" && l.status === "APPROVED" && !isLossFullyReturned(l, lossRecords) ? (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleReturnLossRecord(l)}
-                        loading={lossBusyId === l.id}
-                        disabled={lossBusyId !== null && lossBusyId !== l.id}
-                      >
-                        Registrar devolução
-                      </Button>
-                    ) : null}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </Card>
-
-        <div id="nao-conformidades">
-        <Card
-          title="Não Conformidades"
-          subtitle="Ocorrências de qualidade/segurança em aberto ou fechadas"
-          actions={<Button size="sm" variant="secondary" onClick={openNcModal}>
-            <Icon name="plus" size={14} /> Nova não conformidade
-          </Button>}
-        >
-          {nonconformities.length === 0 ? (
-            <EmptyState icon="shield" title="Sem não conformidades" description="Nenhuma não conformidade registrada para esta obra." />
-          ) : (
-            <div className={styles.rowList}>
-              {nonconformities.map((nc) => {
-                const respUser = nc.responsibleUserId ? users.find((u) => u.id === nc.responsibleUserId) : null;
-                return (
-                  <div key={nc.id} className={styles.rowStatic}>
-                    <div className={styles.rowInfo}>
-                      <span className={styles.rowTitle}>{nc.description}</span>
-                      <span className={styles.rowSubtitle}>
-                        {respUser ? `Responsável: ${respUser.name}` : "Sem responsável definido"}
-                        {nc.slaDueAt ? ` · Prazo: ${formatDate(nc.slaDueAt)}` : ""}
-                        {nc.requiresAcceptance ? " · Exige aceite para fechar" : ""}
-                      </span>
-                      {nc.beforeEvidenceFileIds?.length || nc.afterEvidenceFileIds?.length ? (
-                        <span className={styles.rowSubtitle}>
-                          {(nc.beforeEvidenceFileIds || []).map((fid, idx) => (
-                            <button
-                              key={fid}
-                              type="button"
-                              style={{ background: "none", border: "none", padding: 0, marginRight: 8, color: "var(--color-brand)", textDecoration: "underline", cursor: "pointer", font: "inherit" }}
-                              onClick={() => setViewerFileId(fid)}
-                            >
-                              ver evidência (antes) {idx + 1}
-                            </button>
-                          ))}
-                          {(nc.afterEvidenceFileIds || []).map((fid, idx) => (
-                            <button
-                              key={fid}
-                              type="button"
-                              style={{ background: "none", border: "none", padding: 0, marginRight: 8, color: "var(--color-brand)", textDecoration: "underline", cursor: "pointer", font: "inherit" }}
-                              onClick={() => setViewerFileId(fid)}
-                            >
-                              ver evidência (depois) {idx + 1}
-                            </button>
-                          ))}
-                        </span>
-                      ) : null}
-                    </div>
-                    <div className={styles.rowRight}>
-                      {/* BUG REAL CORRIGIDO (auditoria "loop até secar", rodada 51, 2026-10-05):
-                          o backend calcula e persiste evidenceReuseFlagged (M6-59 — alerta
-                          anti-fraude de foto reaproveitada entre NCs diferentes), mas a tela
-                          nunca exibia isso — o alerta ficava funcionalmente invisível. */}
-                      {nc.evidenceReuseFlagged ? (
-                        <span title="A mesma evidência (foto) já foi usada em outra não conformidade — possível reuso indevido.">
-                          <Badge tone="danger">Evidência reutilizada</Badge>
-                        </span>
-                      ) : null}
-                      <Badge tone={NONCONFORMITY_SEVERITY_TONE[nc.severity]}>{NONCONFORMITY_SEVERITY_LABELS[nc.severity] || nc.severity}</Badge>
-                      <Badge tone={NONCONFORMITY_STATUS_TONE[nc.status]}>{NONCONFORMITY_STATUS_LABELS[nc.status] || nc.status}</Badge>
-                      {nc.status === "OPEN" ? (
-                        <Button size="sm" variant="secondary" onClick={() => openCloseNcModal(nc)}>
-                          Fechar
-                        </Button>
-                      ) : null}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </Card>
-        </div>
       </div>
 
       <Modal
@@ -2084,13 +773,13 @@ export default function ObraDetalhePage({ params }) {
           <FormField
             label="Orçamento (R$)"
             htmlFor="e-budget"
-            helper={budget?.status === "APPROVED" ? "Baseline já aprovada — valor só muda via Change Order." : "Opcional"}
+            helper={budgetApproved ? "Baseline já aprovada — valor só muda via Change Order." : "Opcional"}
           >
             <DecimalInput
               id="e-budget"
               value={editForm.budgetAmount}
               onChange={(e) => setEditForm((p) => ({ ...p, budgetAmount: e.target.value }))}
-              disabled={budget?.status === "APPROVED"}
+              disabled={budgetApproved}
             />
           </FormField>
           <FormField
@@ -2238,629 +927,6 @@ export default function ObraDetalhePage({ params }) {
           </FormField>
         </div>
       </Modal>
-
-      <Modal
-        open={thresholdOpen}
-        onClose={() => setThresholdOpen(false)}
-        title="Configurar alçada de aprovação"
-        footer={
-          <>
-            <Button variant="secondary" onClick={() => setThresholdOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSaveThreshold} loading={savingThreshold} disabled={isInvalidNumber(thresholdAmount)}>Salvar</Button>
-          </>
-        }
-      >
-        <FormField
-          label="Valor máximo de auto-aprovação (R$)"
-          htmlFor="m-threshold-amount"
-          required
-          helper="Perdas de material com valor estimado até este limite são aprovadas automaticamente; acima, exigem aprovação explícita. Configuração válida para toda a empresa (padrão: R$ 1.000,00)."
-        >
-          <DecimalInput
-            id="m-threshold-amount"
-            value={thresholdAmount}
-            onChange={(e) => setThresholdAmount(e.target.value)}
-            placeholder="1000,00"
-          />
-        </FormField>
-      </Modal>
-
-      <Modal
-        open={marginRuleOpen}
-        onClose={() => setMarginRuleOpen(false)}
-        title="Configurar margem mínima"
-        footer={
-          <>
-            <Button variant="secondary" onClick={() => setMarginRuleOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSaveMarginRule} loading={savingMarginRule} disabled={marginRulePct === "" || Number.isNaN(toNumber(marginRulePct)) || toNumber(marginRulePct) < 0 || toNumber(marginRulePct) > 100}>Salvar</Button>
-          </>
-        }
-      >
-        {marginRuleError ? <Alert tone="danger">{marginRuleError}</Alert> : null}
-        <FormField
-          label="Margem mínima exigida (%)"
-          htmlFor="m-margin-pct"
-          required
-          helper="É obrigatório ter uma margem mínima configurada para aprovar qualquer orçamento. Depois de aprovado, a Saúde da obra compara a margem projetada (receita - custo) com este percentual e avisa quando estiver abaixo — não bloqueia a aprovação em si, pois o custo real só é conhecido durante a execução da obra. Salvar cria uma nova versão — a versão anterior fica preservada no histórico, sem afetar orçamentos já aprovados com ela. Configuração válida para toda a empresa."
-        >
-          <DecimalInput
-            id="m-margin-pct"
-            value={marginRulePct}
-            onChange={(e) => setMarginRulePct(e.target.value)}
-            onFocus={(e) => e.target.select()}
-            placeholder="10,00"
-          />
-        </FormField>
-      </Modal>
-
-      <Modal
-        open={rdoOpen}
-        onClose={() => setRdoOpen(false)}
-        title={editingRdoId ? "Editar RDO" : "Novo RDO"}
-        footer={
-          <>
-            <Button variant="secondary" onClick={() => setRdoOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSaveRdo} loading={savingRdo} disabled={!rdoForm.reportDate || rdoDateInvalid || !rdoForm.weather || rdoForm.workforceCount === ""}>{editingRdoId ? "Salvar alterações" : "Registrar RDO"}</Button>
-          </>
-        }
-      >
-        {/* FIX (2ª varredura final do Front do Marco 6, 30/09/2026): erro de submissão (ex.: 409
-            "já existe um RDO para esta obra nesta data e turno") só aparecia no Alert do topo da
-            página, fora da área visível de quem está com o modal aberto — o usuário não recebia
-            NENHUM feedback de que o registro falhou. Duplica o erro aqui dentro do modal. */}
-        {rdoOpen && actionError ? <Alert tone="danger">{actionError}</Alert> : null}
-        <div className={styles.formGrid}>
-          <FormField label="Data" htmlFor="m-rdo-date" required error={rdoDateInvalid ? DATE_INPUT_ERROR_MESSAGE : undefined}>
-            <Input
-              id="m-rdo-date"
-              type="date"
-              min="1900-01-01"
-              max="2100-12-31"
-              error={rdoDateInvalid}
-              value={rdoForm.reportDate}
-              onChange={(e) => {
-                setRdoDateInvalid(isDateInputInvalid(e.target.validity));
-                setRdoForm((p) => ({ ...p, reportDate: e.target.value }));
-              }}
-              onBlur={(e) => setRdoDateInvalid(isDateInputInvalid(e.target.validity))}
-            />
-          </FormField>
-          <FormField label="Clima" htmlFor="m-rdo-weather" required>
-            <Select id="m-rdo-weather" value={rdoForm.weather} onChange={(e) => setRdoForm((p) => ({ ...p, weather: e.target.value }))}>
-              {WEATHER_OPTIONS.map((w) => (
-                <option key={w} value={w}>{w}</option>
-              ))}
-            </Select>
-          </FormField>
-          <FormField label="Efetivo (nº de trabalhadores)" htmlFor="m-rdo-workforce" required>
-            <Input id="m-rdo-workforce" type="number" min="0" value={rdoForm.workforceCount} onChange={(e) => setRdoForm((p) => ({ ...p, workforceCount: e.target.value }))} />
-          </FormField>
-          <div className={styles.span2}>
-            <FormField label="Ocorrências" htmlFor="m-rdo-occurrences" helper="Opcional">
-              <textarea
-                id="m-rdo-occurrences"
-                className={styles.textarea}
-                rows={3}
-                value={rdoForm.occurrences}
-                onChange={(e) => setRdoForm((p) => ({ ...p, occurrences: e.target.value }))}
-              />
-            </FormField>
-          </div>
-          <div className={styles.span2}>
-            <FormField label="Serviços executados" htmlFor="m-rdo-services" helper="Opcional">
-              <textarea
-                id="m-rdo-services"
-                className={styles.textarea}
-                rows={3}
-                value={rdoForm.servicesPerformed}
-                onChange={(e) => setRdoForm((p) => ({ ...p, servicesPerformed: e.target.value }))}
-                placeholder="Ex: Concretagem da laje do 2º pavimento, instalação elétrica do térreo"
-              />
-            </FormField>
-          </div>
-          <div className={styles.span2}>
-            <FormField label="Fotos do dia" htmlFor="m-rdo-evidence">
-              <FileDropInput
-                id="m-rdo-evidence"
-                accept="image/*"
-                multiple
-                uploading={rdoUploading}
-                error={rdoUploadError || undefined}
-                fileNames={rdoEvidenceFileNames}
-                onFiles={handleUploadRdoEvidence}
-                onRemove={removeRdoEvidence}
-                helper="Opcional — evidência fotográfica do andamento da obra"
-              />
-            </FormField>
-          </div>
-          <div className={styles.span2}>
-            <FormField
-              label="Equipe do dia"
-              htmlFor="m-rdo-workers"
-              helper="Opcional — prestador/trabalhador do dia, com documentação correspondente"
-            >
-              <div className={styles.rowList}>
-                {rdoWorkers.map((w, i) => (
-                  <div key={i} className={styles.rowStatic} style={{ flexWrap: "wrap", gap: "var(--space-2)" }}>
-                    <Select
-                      value={w.personId}
-                      onChange={(e) => updateRdoWorker(i, "personId", e.target.value)}
-                      aria-label={`Pessoa do trabalhador ${i + 1}`}
-                    >
-                      <option value="">Selecione a pessoa...</option>
-                      {people.map((p) => (
-                        <option key={p.id} value={p.id}>{p.legalName}</option>
-                      ))}
-                    </Select>
-                    <Input
-                      value={w.role}
-                      onChange={(e) => updateRdoWorker(i, "role", e.target.value)}
-                      placeholder="Função (ex: Pedreiro)"
-                      aria-label={`Função do trabalhador ${i + 1}`}
-                    />
-                    <div style={{ minWidth: "220px", flex: 1 }}>
-                      <FileDropInput
-                        id={`m-rdo-worker-doc-${i}`}
-                        accept="image/*,application/pdf"
-                        uploading={workerUploadingIndex === i}
-                        fileNames={(w.documentFileIds || []).map((_, docIndex) => `Documento ${docIndex + 1}`)}
-                        onFiles={(files) => handleUploadWorkerDocument(i, files[0])}
-                      />
-                    </div>
-                    <button type="button" className={styles.rowEditBtn} aria-label={`Remover trabalhador ${i + 1}`} onClick={() => removeRdoWorker(i)}>
-                      <Icon name="trash" size={14} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-              {workerUploadError ? <Alert tone="danger">{workerUploadError}</Alert> : null}
-              <Button size="sm" variant="ghost" onClick={addRdoWorker} style={{ marginTop: "var(--space-2)" }}>
-                <Icon name="plus" size={14} /> Adicionar trabalhador
-              </Button>
-            </FormField>
-          </div>
-          <div className={styles.span2}>
-            <FormField label="Materiais do dia" htmlFor="m-rdo-materials" helper="Opcional">
-              <div className={styles.rowList}>
-                {rdoMaterials.map((m, i) => (
-                  <div key={i} className={styles.rowStatic} style={{ flexWrap: "wrap", gap: "var(--space-2)" }}>
-                    <Input
-                      value={m.materialDescription}
-                      onChange={(e) => updateRdoMaterial(i, "materialDescription", e.target.value)}
-                      placeholder="Material (ex: Cimento CP-II)"
-                      aria-label={`Descrição do material ${i + 1}`}
-                    />
-                    <DecimalInput
-                      value={m.quantity}
-                      onChange={(e) => updateRdoMaterial(i, "quantity", e.target.value)}
-                      placeholder="Qtd"
-                      aria-label={`Quantidade do material ${i + 1}`}
-                      style={{ maxWidth: "100px" }}
-                    />
-                    <Input
-                      value={m.unit}
-                      onChange={(e) => updateRdoMaterial(i, "unit", e.target.value)}
-                      placeholder="Unidade (ex: SC)"
-                      aria-label={`Unidade do material ${i + 1}`}
-                      style={{ maxWidth: "120px" }}
-                    />
-                    <button type="button" className={styles.rowEditBtn} aria-label={`Remover material ${i + 1}`} onClick={() => removeRdoMaterial(i)}>
-                      <Icon name="trash" size={14} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-              <Button size="sm" variant="ghost" onClick={addRdoMaterial} style={{ marginTop: "var(--space-2)" }}>
-                <Icon name="plus" size={14} /> Adicionar material
-              </Button>
-            </FormField>
-          </div>
-        </div>
-      </Modal>
-
-      <Modal
-        open={budgetOpen}
-        onClose={() => setBudgetOpen(false)}
-        title={editingBudgetLineId ? "Editar linha de orçamento" : "Nova linha de orçamento"}
-        footer={
-          <>
-            <Button variant="secondary" onClick={() => setBudgetOpen(false)}>Cancelar</Button>
-            <Button onClick={handleCreateBudgetLine} loading={savingBudget} disabled={!budgetForm.category.trim() || isInvalidNumber(budgetForm.plannedAmount, { allowZero: true })}>{editingBudgetLineId ? "Salvar alterações" : "Criar linha"}</Button>
-          </>
-        }
-      >
-        <div className={styles.formGrid}>
-          <FormField label="Categoria" htmlFor="m-budget-category" required>
-            <Input id="m-budget-category" value={budgetForm.category} onChange={(e) => setBudgetForm((p) => ({ ...p, category: e.target.value }))} placeholder="Ex: Fundação e estrutura" />
-          </FormField>
-          <FormField
-            label="Valor planejado (R$)"
-            htmlFor="m-budget-planned"
-            required
-            helper={editingBudgetLineId && budget?.status === "APPROVED" ? "Baseline já aprovada — valor só muda via Change Order." : undefined}
-          >
-            <DecimalInput
-              id="m-budget-planned"
-              value={budgetForm.plannedAmount}
-              onChange={(e) => setBudgetForm((p) => ({ ...p, plannedAmount: e.target.value }))}
-              placeholder="0,00"
-              disabled={editingBudgetLineId != null && budget?.status === "APPROVED"}
-            />
-          </FormField>
-          <div className={styles.span2}>
-            <FormField label="Descrição" htmlFor="m-budget-description" helper="Opcional">
-              <Input id="m-budget-description" value={budgetForm.description} onChange={(e) => setBudgetForm((p) => ({ ...p, description: e.target.value }))} placeholder="Detalhes da linha de orçamento" />
-            </FormField>
-          </div>
-        </div>
-      </Modal>
-
-      <Modal
-        open={approveBudgetOpen}
-        onClose={() => setApproveBudgetOpen(false)}
-        title="Aprovar orçamento"
-        footer={
-          <>
-            <Button variant="secondary" onClick={() => setApproveBudgetOpen(false)}>Cancelar</Button>
-            <Button variant="primary" onClick={handleApproveBudget} loading={approvingBudget} disabled={!activeMarginRule}>Confirmar aprovação</Button>
-          </>
-        }
-      >
-        {!activeMarginRule ? (
-          <Alert tone="warning" title="Margem mínima não configurada">
-            <>
-              Esta empresa ainda não tem uma margem mínima configurada — a aprovação será
-              recusada até isso ser feito.{" "}
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => { setApproveBudgetOpen(false); openMarginRuleModal(); }}
-                style={{ marginTop: "var(--space-2)" }}
-              >
-                Configurar agora
-              </Button>
-            </>
-          </Alert>
-        ) : (
-          <p>
-            Tem certeza que deseja aprovar este orçamento? A baseline será <strong>congelada</strong> em{" "}
-            <strong>{formatBRL(totalPlanned)}</strong> e passa a ser <strong>imutável</strong> — depois disso, o valor
-            das linhas de orçamento só pode mudar através de um Change Order aprovado. Esta ação não pode ser desfeita.
-          </p>
-        )}
-      </Modal>
-
-      <Modal
-        open={coOpen}
-        onClose={() => setCoOpen(false)}
-        title="Novo Change Order"
-        footer={
-          <>
-            <Button variant="secondary" onClick={() => setCoOpen(false)}>Cancelar</Button>
-            <Button onClick={handleCreateChangeOrder} loading={savingCo} disabled={!isChangeOrderValid}>Criar Change Order</Button>
-          </>
-        }
-      >
-        <div className={styles.formGrid}>
-          <FormField label="Motivo" htmlFor="m-co-reason" required>
-            <Select id="m-co-reason" value={coForm.reasonCode} onChange={(e) => setCoForm((p) => ({ ...p, reasonCode: e.target.value }))}>
-              <option value="">Selecione…</option>
-              {Object.entries(CHANGE_ORDER_REASON_LABELS).map(([code, label]) => (
-                <option key={code} value={code}>{label}</option>
-              ))}
-            </Select>
-          </FormField>
-          <FormField label="Impacto financeiro (R$)" htmlFor="m-co-impact" required helper="Positivo aumenta o orçamento, negativo reduz">
-            <DecimalInput id="m-co-impact" value={coForm.budgetImpact} onChange={(e) => setCoForm((p) => ({ ...p, budgetImpact: e.target.value }))} placeholder="0,00" />
-          </FormField>
-          <FormField label="Impacto de prazo (dias)" htmlFor="m-co-schedule" helper="Opcional">
-            <Input id="m-co-schedule" type="number" value={coForm.scheduleImpactDays} onChange={(e) => setCoForm((p) => ({ ...p, scheduleImpactDays: e.target.value }))} placeholder="0" />
-          </FormField>
-          <div className={styles.span2}>
-            <FormField label="Descrição" htmlFor="m-co-description" required>
-              <textarea
-                id="m-co-description"
-                className={styles.textarea}
-                rows={3}
-                value={coForm.description}
-                onChange={(e) => setCoForm((p) => ({ ...p, description: e.target.value }))}
-                placeholder="Detalhe a mudança de escopo/condição que motiva este Change Order"
-              />
-            </FormField>
-          </div>
-          <div className={styles.span2}>
-            <FormField label="Evidência" htmlFor="m-co-file">
-              <FileDropInput
-                id="m-co-file"
-                fileNames={coForm.file ? [coForm.file.name] : []}
-                onFiles={(files) => setCoForm((p) => ({ ...p, file: files[0] || null }))}
-                onRemove={() => setCoForm((p) => ({ ...p, file: null }))}
-                helper="Opcional — foto, documento ou planilha que sustente o pedido"
-              />
-            </FormField>
-          </div>
-        </div>
-      </Modal>
-
-      <Modal
-        open={qualityOpen}
-        onClose={() => setQualityOpen(false)}
-        title="Novo item de checklist"
-        footer={
-          <>
-            <Button variant="secondary" onClick={() => setQualityOpen(false)}>Cancelar</Button>
-            <Button onClick={handleCreateQualityItem} loading={savingQuality} disabled={!qualityForm.item.trim()}>Criar item</Button>
-          </>
-        }
-      >
-        <div className={styles.formGrid}>
-          <div className={styles.span2}>
-            <FormField label="Descrição do item" htmlFor="m-quality-item" required>
-              <Input id="m-quality-item" value={qualityForm.item} onChange={(e) => setQualityForm((p) => ({ ...p, item: e.target.value }))} placeholder="Ex: Verificar prumo e nível da fundação" />
-            </FormField>
-          </div>
-          <FormField label="Categoria" htmlFor="m-quality-category" required helper="Reprovação em Estrutura/Hidráulica/Elétrica abre não conformidade crítica e bloqueia a entrega da obra.">
-            <Select id="m-quality-category" value={qualityForm.category} onChange={(e) => setQualityForm((p) => ({ ...p, category: e.target.value }))}>
-              {QUALITY_CATEGORIES.map((c) => (
-                <option key={c.value} value={c.value}>{c.label}</option>
-              ))}
-            </Select>
-          </FormField>
-          <FormField label="Etapa vinculada" htmlFor="m-quality-stage" helper="Opcional">
-            <Select id="m-quality-stage" value={qualityForm.projectStageId} onChange={(e) => setQualityForm((p) => ({ ...p, projectStageId: e.target.value }))}>
-              <option value="">Obra toda</option>
-              {stages.map((s) => (
-                <option key={s.id} value={s.id}>{s.sequence}. {s.name}</option>
-              ))}
-            </Select>
-          </FormField>
-        </div>
-      </Modal>
-
-      <Modal
-        open={!!qualityRejecting}
-        onClose={() => {
-          setQualityRejecting(null);
-          setQualityRejectNotes("");
-        }}
-        title="Marcar item como Não OK"
-        footer={
-          <>
-            <Button variant="secondary" onClick={() => { setQualityRejecting(null); setQualityRejectNotes(""); }}>Cancelar</Button>
-            <Button
-              variant="danger"
-              loading={qualityBusyId === qualityRejecting?.id}
-              disabled={!qualityRejectNotes.trim()}
-              onClick={() => handleQualityQuickAction(qualityRejecting, "NOT_OK", qualityRejectNotes.trim())}
-            >
-              Confirmar Não OK
-            </Button>
-          </>
-        }
-      >
-        <div className={styles.formGrid}>
-          <div className={styles.span2}>
-            <FormField label="Motivo / observação" htmlFor="m-quality-reject-notes" required helper="Obrigatório — explique o que foi encontrado para registrar no histórico do item.">
-              <textarea
-                id="m-quality-reject-notes"
-                className={styles.textarea}
-                value={qualityRejectNotes}
-                onChange={(e) => setQualityRejectNotes(e.target.value)}
-                placeholder="Ex: infiltração visível na parede leste, precisa de correção antes de prosseguir"
-                rows={4}
-              />
-            </FormField>
-          </div>
-        </div>
-      </Modal>
-
-      <Modal
-        open={materialOpen}
-        onClose={() => setMaterialOpen(false)}
-        title="Nova requisição de material"
-        footer={
-          <>
-            <Button variant="secondary" onClick={() => setMaterialOpen(false)}>Cancelar</Button>
-            <Button
-              onClick={handleCreateMaterialRequest}
-              loading={savingMaterial}
-              disabled={!materialForm.description.trim() || isInvalidNumber(materialForm.quantity) || !materialForm.unit.trim()}
-            >
-              Criar requisição
-            </Button>
-          </>
-        }
-      >
-        <div className={styles.formGrid}>
-          <div className={styles.span2}>
-            <FormField label="Descrição do material" htmlFor="m-material-description" required>
-              <Input id="m-material-description" value={materialForm.description} onChange={(e) => setMaterialForm((p) => ({ ...p, description: e.target.value }))} placeholder="Ex: Cimento CP-II 50kg" />
-            </FormField>
-          </div>
-          <FormField label="Quantidade" htmlFor="m-material-quantity" required>
-            <DecimalInput id="m-material-quantity" value={materialForm.quantity} onChange={(e) => setMaterialForm((p) => ({ ...p, quantity: e.target.value }))} />
-          </FormField>
-          <FormField label="Unidade" htmlFor="m-material-unit" required>
-            <Input id="m-material-unit" value={materialForm.unit} onChange={(e) => setMaterialForm((p) => ({ ...p, unit: e.target.value }))} placeholder="Ex: un, kg, m2, saco" />
-          </FormField>
-        </div>
-      </Modal>
-
-      <Modal
-        open={lossOpen}
-        onClose={() => setLossOpen(false)}
-        title="Registrar perda de material"
-        footer={
-          <>
-            <Button variant="secondary" onClick={() => setLossOpen(false)}>Cancelar</Button>
-            <Button
-              onClick={handleCreateLossRecord}
-              loading={savingLoss}
-              disabled={!lossForm.materialDescription.trim() || isInvalidNumber(lossForm.quantity) || isInvalidNumber(lossForm.estimatedValue, { allowZero: true }) || !lossForm.reason.trim()}
-            >
-              Registrar perda
-            </Button>
-          </>
-        }
-      >
-        <div className={styles.formGrid}>
-          <div className={styles.span2}>
-            <FormField label="Material" htmlFor="m-loss-description" required>
-              <Input id="m-loss-description" value={lossForm.materialDescription} onChange={(e) => setLossForm((p) => ({ ...p, materialDescription: e.target.value }))} placeholder="Ex: Telha cerâmica" />
-            </FormField>
-          </div>
-          <FormField label="Quantidade" htmlFor="m-loss-quantity" required>
-            <DecimalInput id="m-loss-quantity" value={lossForm.quantity} onChange={(e) => setLossForm((p) => ({ ...p, quantity: e.target.value }))} />
-          </FormField>
-          <FormField label="Valor estimado (R$)" htmlFor="m-loss-value" required>
-            <DecimalInput id="m-loss-value" value={lossForm.estimatedValue} onChange={(e) => setLossForm((p) => ({ ...p, estimatedValue: e.target.value }))} />
-          </FormField>
-          <div className={styles.span2}>
-            <FormField label="Motivo" htmlFor="m-loss-reason" required helper="Acima do limite de alçada configurado, a perda nasce aguardando aprovação; abaixo, é autoaprovada.">
-              <Input id="m-loss-reason" value={lossForm.reason} onChange={(e) => setLossForm((p) => ({ ...p, reason: e.target.value }))} placeholder="Ex: quebra no transporte" />
-            </FormField>
-          </div>
-        </div>
-      </Modal>
-
-      <Modal
-        open={ncOpen}
-        onClose={() => setNcOpen(false)}
-        title="Nova não conformidade"
-        footer={
-          <>
-            <Button variant="secondary" onClick={() => setNcOpen(false)}>Cancelar</Button>
-            <Button onClick={handleCreateNonconformity} loading={savingNc} disabled={!ncForm.description.trim()}>
-              Registrar
-            </Button>
-          </>
-        }
-      >
-        <div className={styles.formGrid}>
-          <div className={styles.span2}>
-            <FormField label="Descrição" htmlFor="m-nc-description" required>
-              <textarea
-                id="m-nc-description"
-                className={styles.textarea}
-                rows={3}
-                value={ncForm.description}
-                onChange={(e) => setNcForm((p) => ({ ...p, description: e.target.value }))}
-                placeholder="Descreva a não conformidade encontrada"
-              />
-            </FormField>
-          </div>
-          <FormField label="Severidade" htmlFor="m-nc-severity" required>
-            <Select id="m-nc-severity" value={ncForm.severity} onChange={(e) => setNcForm((p) => ({ ...p, severity: e.target.value }))}>
-              {Object.entries(NONCONFORMITY_SEVERITY_LABELS).map(([value, label]) => (
-                <option key={value} value={value}>{label}</option>
-              ))}
-            </Select>
-          </FormField>
-          <FormField label="Responsável" htmlFor="m-nc-responsible" helper="Opcional">
-            <Select id="m-nc-responsible" value={ncForm.responsibleUserId} onChange={(e) => setNcForm((p) => ({ ...p, responsibleUserId: e.target.value }))}>
-              <option value="">Sem responsável</option>
-              {users.map((u) => (
-                <option key={u.id} value={u.id}>{u.name}</option>
-              ))}
-            </Select>
-          </FormField>
-          <FormField label="Prazo (SLA)" htmlFor="m-nc-sla" helper="Opcional">
-            <Input
-              id="m-nc-sla"
-              type="date"
-              min="1900-01-01"
-              max="2100-12-31"
-              value={ncForm.slaDueAt}
-              onChange={(e) => setNcForm((p) => ({ ...p, slaDueAt: e.target.value }))}
-            />
-          </FormField>
-          <FormField label="Exige aceite para fechar?" htmlFor="m-nc-requires-acceptance">
-            <Select
-              id="m-nc-requires-acceptance"
-              value={ncForm.requiresAcceptance ? "yes" : "no"}
-              onChange={(e) => setNcForm((p) => ({ ...p, requiresAcceptance: e.target.value === "yes" }))}
-            >
-              <option value="no">Não</option>
-              <option value="yes">Sim</option>
-            </Select>
-          </FormField>
-          <div className={styles.span2}>
-            <FormField label="Evidência 'antes'" htmlFor="m-nc-before-file">
-              <FileDropInput
-                id="m-nc-before-file"
-                accept="image/*,application/pdf"
-                uploading={ncBeforeUploading}
-                error={ncBeforeUploadError || undefined}
-                fileNames={ncForm.beforeFileName ? [ncForm.beforeFileName] : []}
-                onFiles={(files) => handleUploadBeforeEvidence(files[0])}
-                onRemove={() => setNcForm((p) => ({ ...p, beforeFileId: "", beforeFileName: "" }))}
-                helper="Foto do problema encontrado (opcional)."
-              />
-            </FormField>
-          </div>
-        </div>
-      </Modal>
-
-      <Modal
-        open={Boolean(closingNc)}
-        onClose={() => setClosingNc(null)}
-        title="Fechar não conformidade"
-        footer={
-          <>
-            <Button variant="secondary" onClick={() => setClosingNc(null)}>Cancelar</Button>
-            <Button
-              onClick={handleCloseNonconformity}
-              loading={savingNcClose}
-              disabled={!ncAfterFileId || (closingNc?.requiresAcceptance && !ncAcceptedByUserId)}
-            >
-              Confirmar fechamento
-            </Button>
-          </>
-        }
-      >
-        <div className={styles.formGrid}>
-          <div className={styles.span2}>
-            <Alert tone="warning">
-              Para fechar esta não conformidade é obrigatório enviar uma evidência "depois" —
-              o botão de confirmar só habilita depois do envio ser concluído com sucesso.
-            </Alert>
-          </div>
-          <div className={styles.span2}>
-            <FormField label="Evidência 'depois'" htmlFor="m-nc-after-file" required>
-              <FileDropInput
-                id="m-nc-after-file"
-                accept="image/*,application/pdf"
-                uploading={ncAfterUploading}
-                error={ncAfterUploadError || undefined}
-                fileNames={ncAfterFileName ? [ncAfterFileName] : []}
-                onFiles={(files) => handleUploadAfterEvidence(files[0])}
-                onRemove={() => { setNcAfterFileId(""); setNcAfterFileName(""); }}
-                helper="Foto comprovando a correção do problema — obrigatório."
-              />
-            </FormField>
-          </div>
-          {closingNc?.requiresAcceptance ? (
-            <div className={styles.span2}>
-              <FormField label="Aceite por" htmlFor="m-nc-accepted-by" helper="Esta NC exige aceite — obrigatório para fechar." required>
-                <Select id="m-nc-accepted-by" value={ncAcceptedByUserId} onChange={(e) => setNcAcceptedByUserId(e.target.value)}>
-                  <option value="">Selecione quem aceitou</option>
-                  {users.map((u) => (
-                    <option key={u.id} value={u.id}>{u.name}</option>
-                  ))}
-                </Select>
-              </FormField>
-            </div>
-          ) : null}
-        </div>
-      </Modal>
-
-      <ConfirmDialog />
-
-      <FileViewerModal
-        open={!!viewerFileId}
-        onClose={() => setViewerFileId(null)}
-        fileId={viewerFileId}
-      />
     </AppShell>
   );
 }
