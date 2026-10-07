@@ -65,8 +65,11 @@ export default function EstoqueItensPage() {
 
   const totalAvgValue = items.reduce((s, i) => s + (Number(i.averageCost) || 0), 0);
 
+  // BUG REAL CORRIGIDO (auditoria "loop até secar", Marco 7, ciclo 1, 2026-10-07): a API exige
+  // sku e unitOfMeasure (TAB-0750) mas o form só validava "name", deixando o usuário clicar em
+  // "Criar" e só descobrir o erro depois da chamada à API. Agora valida os 3 campos no client.
   async function handleCreateItem() {
-    if (!itemForm.name.trim()) return;
+    if (!itemForm.name.trim() || !itemForm.sku.trim() || !itemForm.unitOfMeasure.trim()) return;
     setSavingItem(true);
     setActionError("");
     try {
@@ -171,17 +174,17 @@ export default function EstoqueItensPage() {
         footer={
           <>
             <Button variant="secondary" onClick={() => setItemModalOpen(false)}>Cancelar</Button>
-            <Button onClick={handleCreateItem} loading={savingItem} disabled={!itemForm.name.trim()}>Criar</Button>
+            <Button onClick={handleCreateItem} loading={savingItem} disabled={!itemForm.name.trim() || !itemForm.sku.trim() || !itemForm.unitOfMeasure.trim()}>Criar</Button>
           </>
         }
       >
         <FormField label="Nome" required>
           <Input value={itemForm.name} onChange={(e) => setItemForm((p) => ({ ...p, name: e.target.value }))} placeholder="Ex.: Cimento CP-II 50kg" />
         </FormField>
-        <FormField label="SKU">
-          <Input value={itemForm.sku} onChange={(e) => setItemForm((p) => ({ ...p, sku: e.target.value }))} />
+        <FormField label="SKU" required>
+          <Input value={itemForm.sku} onChange={(e) => setItemForm((p) => ({ ...p, sku: e.target.value }))} placeholder="Ex.: CIM-CPII-50" />
         </FormField>
-        <FormField label="Unidade de medida">
+        <FormField label="Unidade de medida" required>
           <Input value={itemForm.unitOfMeasure} onChange={(e) => setItemForm((p) => ({ ...p, unitOfMeasure: e.target.value }))} placeholder="Ex.: SC, UN, M3" />
         </FormField>
         <FormField label="Tipo" required>

@@ -375,6 +375,7 @@ export default function SegurosPage() {
                 {detailModal.policy.externalPolicyNumber ? ` — Nº ${detailModal.policy.externalPolicyNumber}` : ""}
               </p>
               {detailModal.policy.premiumAmount ? <p style={{ margin: "0 0 4px" }}>Prêmio: {formatBRL(detailModal.policy.premiumAmount)}</p> : null}
+              {detailModal.policy.effectiveDate ? <p style={{ margin: "0 0 4px" }}>Vigência: {detailModal.policy.effectiveDate} a {detailModal.policy.expiryDate || "—"}</p> : null}
               {detailModal.policy.coverageSummary ? <p style={{ margin: "0 0 4px" }}>Cobertura: {detailModal.policy.coverageSummary}</p> : null}
               {detailModal.policy.propertyId ? <p style={{ margin: "0 0 4px" }}>Imóvel vinculado: {properties.find((pr) => pr.id === detailModal.policy.propertyId)?.title || detailModal.policy.propertyId}</p> : null}
               {detailModal.policy.contractId ? <p style={{ margin: 0 }}>Contrato vinculado: {contracts.find((c) => c.id === detailModal.policy.contractId)?.code || detailModal.policy.contractId}</p> : null}

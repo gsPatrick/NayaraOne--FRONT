@@ -91,8 +91,11 @@ export default function PatrimonioPage() {
   }
   useEffect(() => { load(); }, []);
 
+  // BUG REAL CORRIGIDO (auditoria "loop até secar", Marco 7, ciclo 1, 2026-10-07): a API exige
+  // assetTag (QR/etiqueta — TAB-0760) mas o form só validava "name", deixando o usuário clicar
+  // em "Criar" e só descobrir o erro depois da chamada à API. Agora valida os 2 campos no client.
   async function handleCreate() {
-    if (!form.name.trim()) return;
+    if (!form.name.trim() || !form.assetTag.trim()) return;
     setSaving(true);
     setActionError("");
     try {
@@ -301,14 +304,14 @@ export default function PatrimonioPage() {
         footer={
           <>
             <Button variant="secondary" onClick={() => setCreateOpen(false)}>Cancelar</Button>
-            <Button onClick={handleCreate} loading={saving} disabled={!form.name.trim()}>Criar</Button>
+            <Button onClick={handleCreate} loading={saving} disabled={!form.name.trim() || !form.assetTag.trim()}>Criar</Button>
           </>
         }
       >
         <FormField label="Nome" required>
           <Input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} />
         </FormField>
-        <FormField label="Tag / QR Code" helper="Código único — bloqueia duplicidade (EST-TS-04).">
+        <FormField label="Tag / QR Code" required helper="Código único — bloqueia duplicidade (EST-TS-04).">
           <Input value={form.assetTag} onChange={(e) => setForm((p) => ({ ...p, assetTag: e.target.value }))} />
         </FormField>
         <FormField

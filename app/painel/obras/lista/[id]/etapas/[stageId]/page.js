@@ -414,9 +414,15 @@ export default function EtapaDetalhePage({ params }) {
                         <Button size="sm" variant="secondary" onClick={() => handleSubmit(m)} loading={busyId === m.id}>Enviar para revisão</Button>
                       ) : null}
                       {m.status === "SUBMITTED" ? (
+                        // FIX (auditoria do contrato, Marco 6, 2026-10-07): o caderno exige REVIEWED
+                        // antes de APPROVED. O botão "Aprovar" ficava visível já em SUBMITTED,
+                        // permitindo pular a revisão técnica pela UI. Bloqueado aqui: só "Marcar
+                        // como revisada" ou "Rejeitar" ficam disponíveis nesse estágio; "Aprovar"
+                        // só aparece após REVIEWED. O backend (decideStageMeasurement) agora também
+                        // recusa APPROVED fora de REVIEWED (STAGE_MEASUREMENT_REVIEW_REQUIRED) —
+                        // bloqueio em duas camadas, não só visual.
                         <div className={styles.quickActions}>
                           <Button size="sm" variant="ghost" onClick={() => handleReview(m)} loading={busyId === m.id}>Marcar como revisada</Button>
-                          <Button size="sm" variant="secondary" onClick={() => handleApprove(m)} loading={busyId === m.id}>Aprovar</Button>
                           <Button size="sm" variant="danger" onClick={() => { setRejectTarget(m); setRejectReason(""); }}>Rejeitar</Button>
                         </div>
                       ) : null}

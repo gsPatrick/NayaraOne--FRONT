@@ -172,7 +172,12 @@ export default function ObraDetalhePage({ params }) {
   const [savingEdit, setSavingEdit] = useState(false);
 
   const [stageOpen, setStageOpen] = useState(false);
-  const [stageForm, setStageForm] = useState({ name: "", sequence: "1", plannedPct: "" });
+  const [stageForm, setStageForm] = useState({ name: "", sequence: "1", plannedPct: "", startsAt: "", endsAt: "" });
+  // FIX (auditoria externa Marco 6, 2026-10-07): o caderno exige prazo (início/fim) por
+  // etapa e o backend (projectStages.service.js) já valida/persiste startsAt/endsAt — o
+  // formulário de etapa simplesmente não expunha esses campos. Mesmo padrão de validação de
+  // <input type="date"> usado no formulário da obra (editDateErrors).
+  const [stageDateErrors, setStageDateErrors] = useState({});
   // FIX (homologação 23/09/2026): etapa e RDO só podiam ser CRIADOS. Guardar o id em
   // edição faz o mesmo modal servir pra criar e pra editar.
   const [editingStageId, setEditingStageId] = useState(null);
@@ -517,7 +522,8 @@ export default function ObraDetalhePage({ params }) {
 
   function openStageModal() {
     setEditingStageId(null);
-    setStageForm({ name: "", sequence: String(stages.length + 1), plannedPct: "" });
+    setStageForm({ name: "", sequence: String(stages.length + 1), plannedPct: "", startsAt: "", endsAt: "" });
+    setStageDateErrors({});
     setStageOpen(true);
   }
 
@@ -531,7 +537,10 @@ export default function ObraDetalhePage({ params }) {
       name: stage.name || "",
       sequence: stage.sequence != null ? String(stage.sequence) : "",
       plannedPct: stage.plannedPct != null ? String(Number(stage.plannedPct)) : "",
+      startsAt: stage.startsAt ? stage.startsAt.slice(0, 10) : "",
+      endsAt: stage.endsAt ? stage.endsAt.slice(0, 10) : "",
     });
+    setStageDateErrors({});
     setStageOpen(true);
   }
 
@@ -549,6 +558,8 @@ export default function ObraDetalhePage({ params }) {
         name: stageForm.name.trim(),
         sequence: Number(stageForm.sequence),
         plannedPct: stageForm.plannedPct !== "" ? toNumber(stageForm.plannedPct) : undefined,
+        startsAt: dateOnlyInputToIso(stageForm.startsAt) || null,
+        endsAt: dateOnlyInputToIso(stageForm.endsAt) || null,
       };
       if (editingStageId) {
         const updated = await updateProjectStage(editingStageId, payload);
@@ -2169,7 +2180,7 @@ export default function ObraDetalhePage({ params }) {
         footer={
           <>
             <Button variant="secondary" onClick={() => setStageOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSaveStage} loading={savingStage} disabled={!stageForm.name.trim() || stageForm.sequence === ""}>{editingStageId ? "Salvar alterações" : "Criar etapa"}</Button>
+            <Button onClick={handleSaveStage} loading={savingStage} disabled={!stageForm.name.trim() || stageForm.sequence === "" || stageDateErrors.startsAt || stageDateErrors.endsAt}>{editingStageId ? "Salvar alterações" : "Criar etapa"}</Button>
           </>
         }
       >
@@ -2184,6 +2195,46 @@ export default function ObraDetalhePage({ params }) {
           </FormField>
           <FormField label="Percentual planejado (%)" htmlFor="m-stage-pct" helper="Opcional">
             <DecimalInput id="m-stage-pct" value={stageForm.plannedPct} onChange={(e) => setStageForm((p) => ({ ...p, plannedPct: e.target.value }))} />
+          </FormField>
+          <FormField
+            label="Início previsto"
+            htmlFor="m-stage-start"
+            helper={stageDateErrors.startsAt ? undefined : "Opcional"}
+            error={stageDateErrors.startsAt ? DATE_INPUT_ERROR_MESSAGE : undefined}
+          >
+            <Input
+              id="m-stage-start"
+              type="date"
+              min="1900-01-01"
+              max="2100-12-31"
+              error={stageDateErrors.startsAt}
+              value={stageForm.startsAt}
+              onChange={(e) => {
+                setStageDateErrors((p) => ({ ...p, startsAt: isDateInputInvalid(e.target.validity) }));
+                setStageForm((p) => ({ ...p, startsAt: e.target.value }));
+              }}
+              onBlur={(e) => setStageDateErrors((p) => ({ ...p, startsAt: isDateInputInvalid(e.target.validity) }))}
+            />
+          </FormField>
+          <FormField
+            label="Término previsto"
+            htmlFor="m-stage-end"
+            helper={stageDateErrors.endsAt ? undefined : "Opcional"}
+            error={stageDateErrors.endsAt ? DATE_INPUT_ERROR_MESSAGE : undefined}
+          >
+            <Input
+              id="m-stage-end"
+              type="date"
+              min="1900-01-01"
+              max="2100-12-31"
+              error={stageDateErrors.endsAt}
+              value={stageForm.endsAt}
+              onChange={(e) => {
+                setStageDateErrors((p) => ({ ...p, endsAt: isDateInputInvalid(e.target.validity) }));
+                setStageForm((p) => ({ ...p, endsAt: e.target.value }));
+              }}
+              onBlur={(e) => setStageDateErrors((p) => ({ ...p, endsAt: isDateInputInvalid(e.target.validity) }))}
+            />
           </FormField>
         </div>
       </Modal>

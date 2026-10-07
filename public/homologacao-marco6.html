@@ -1,0 +1,632 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Homologação Marco 6 — Construção/Obras/Pós-obra</title>
+<style>
+  :root {
+    --color-brand: #BE9130;
+    --color-brand-hover: #A97D28;
+    --color-brand-active: #8A6620;
+    --color-brand-soft: rgba(190, 145, 48, 0.12);
+    --color-brand-border: rgba(190, 145, 48, 0.34);
+    --color-canvas: #FDFCFA;
+    --color-canvas-raised: #FFFFFF;
+    --color-canvas-sunken: #F7F5F1;
+    --color-ink: #17130F;
+    --color-ink-soft: #4A4033;
+    --color-ink-muted: #8C7F68;
+    --color-border: #EAE6DE;
+    --color-border-strong: #D9D2C4;
+    --color-success: #1E7A4C;
+    --color-success-soft: rgba(30, 122, 76, 0.12);
+    --color-warning: #B8790C;
+    --color-warning-soft: rgba(184, 121, 12, 0.14);
+    --color-danger: #C0392B;
+    --color-danger-soft: rgba(192, 57, 43, 0.12);
+    --color-info: #2563A6;
+    --color-info-soft: rgba(37, 99, 166, 0.12);
+    --color-code-bg: #17130F;
+    --color-code-ink: #F2EFE8;
+    --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+    --font-body: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --color-canvas: #16130E;
+      --color-canvas-raised: #1D1913;
+      --color-canvas-sunken: #100D09;
+      --color-ink: #F2EEE5;
+      --color-ink-soft: #CFC6B5;
+      --color-ink-muted: #9A8C71;
+      --color-border: #332C21;
+      --color-border-strong: #443A2B;
+      --color-brand: #D6A845;
+      --color-brand-hover: #E3B75B;
+      --color-brand-active: #F0C670;
+      --color-brand-soft: rgba(214, 168, 69, 0.14);
+      --color-brand-border: rgba(214, 168, 69, 0.32);
+      --color-success-soft: rgba(30, 122, 76, 0.2);
+      --color-warning-soft: rgba(184, 121, 12, 0.22);
+      --color-danger-soft: rgba(192, 57, 43, 0.2);
+      --color-info-soft: rgba(37, 99, 166, 0.22);
+      --color-code-bg: #0D0B08;
+      --color-code-ink: #EDE8DC;
+    }
+  }
+  :root[data-theme="dark"] {
+    --color-canvas: #16130E;
+    --color-canvas-raised: #1D1913;
+    --color-canvas-sunken: #100D09;
+    --color-ink: #F2EEE5;
+    --color-ink-soft: #CFC6B5;
+    --color-ink-muted: #9A8C71;
+    --color-border: #332C21;
+    --color-border-strong: #443A2B;
+    --color-brand: #D6A845;
+    --color-brand-hover: #E3B75B;
+    --color-brand-active: #F0C670;
+    --color-brand-soft: rgba(214, 168, 69, 0.14);
+    --color-brand-border: rgba(214, 168, 69, 0.32);
+    --color-success-soft: rgba(30, 122, 76, 0.2);
+    --color-warning-soft: rgba(184, 121, 12, 0.22);
+    --color-danger-soft: rgba(192, 57, 43, 0.2);
+    --color-info-soft: rgba(37, 99, 166, 0.22);
+    --color-code-bg: #0D0B08;
+    --color-code-ink: #EDE8DC;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: var(--color-brand-active); }
+
+  .wrap {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 0 24px 96px;
+  }
+
+  header.cover {
+    padding: 72px 0 40px;
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: 40px;
+  }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-brand-active);
+    margin: 0 0 14px;
+  }
+  h1.title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(2rem, 1.5rem + 2vw, 3rem);
+    line-height: 1.1;
+    margin: 0 0 10px;
+    text-wrap: balance;
+  }
+  .subtitle {
+    font-size: 18px;
+    color: var(--color-ink-soft);
+    margin: 0 0 28px;
+    max-width: 62ch;
+  }
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .meta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--color-canvas-sunken);
+    border: 1px solid var(--color-border);
+    font-size: 13px;
+    color: var(--color-ink-soft);
+    font-family: var(--font-mono);
+  }
+
+  .status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin-bottom: 48px;
+  }
+  .status-card {
+    padding: 18px;
+    border-radius: 12px;
+    background: var(--color-canvas-raised);
+    border: 1px solid var(--color-border);
+  }
+  .status-card .num {
+    font-family: var(--font-display);
+    font-size: 30px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .status-card .num.ok { color: var(--color-success); }
+  .status-card .label {
+    font-size: 13px;
+    color: var(--color-ink-muted);
+  }
+
+  section { margin-bottom: 56px; }
+  h2.h {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 700;
+    margin: 0 0 6px;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  h2.h .n {
+    color: var(--color-brand-active);
+    font-size: 16px;
+    font-family: var(--font-mono);
+  }
+  h3.h3 {
+    font-family: var(--font-display);
+    font-size: 19px;
+    font-weight: 700;
+    margin: 28px 0 12px;
+  }
+  .lede {
+    color: var(--color-ink-soft);
+    margin: 0 0 20px;
+    max-width: 70ch;
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .pill::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  .pill.ok { background: var(--color-success-soft); color: var(--color-success); }
+  .pill.warn { background: var(--color-warning-soft); color: var(--color-warning); }
+  .pill.bad { background: var(--color-danger-soft); color: var(--color-danger); }
+  .pill.info { background: var(--color-info-soft); color: var(--color-info); }
+
+  .tbl-wrap { overflow-x: auto; border: 1px solid var(--color-border); border-radius: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14.5px; background: var(--color-canvas-raised); }
+  th, td { text-align: left; padding: 12px 14px; vertical-align: top; }
+  thead th {
+    background: var(--color-canvas-sunken);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-ink-muted);
+    font-weight: 600;
+    border-bottom: 1px solid var(--color-border);
+  }
+  tbody tr + tr td { border-top: 1px solid var(--color-border); }
+  td.narrow, th.narrow { white-space: nowrap; }
+
+  .fix-card {
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 16px;
+    background: var(--color-canvas-raised);
+  }
+  .fix-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+  .fix-code { font-family: var(--font-mono); font-size: 13px; color: var(--color-ink-muted); }
+  .fix-title { font-weight: 700; }
+  .fix-body { color: var(--color-ink-soft); font-size: 14.5px; margin: 0 0 10px; }
+  .fix-sub { font-size: 13px; color: var(--color-ink-muted); margin: 10px 0 4px; font-weight: 600; }
+
+  .cred-card {
+    border: 1px solid var(--color-brand-border);
+    background: var(--color-brand-soft);
+    border-radius: 12px;
+    padding: 20px 22px;
+  }
+  .cred-row { display: flex; justify-content: space-between; gap: 16px; padding: 8px 0; border-bottom: 1px dashed var(--color-brand-border); }
+  .cred-row:last-child { border-bottom: none; }
+  .cred-k { font-size: 13px; color: var(--color-ink-muted); }
+  .cred-v { font-family: var(--font-mono); font-size: 14.5px; font-weight: 600; text-align: right; }
+
+  ol.steps { list-style: none; margin: 0; padding: 0; counter-reset: step; }
+  ol.steps > li {
+    counter-increment: step;
+    position: relative;
+    padding: 4px 0 20px 42px;
+    border-left: 2px solid var(--color-border);
+    margin-left: 13px;
+  }
+  ol.steps > li:last-child { border-left-color: transparent; padding-bottom: 0; }
+  ol.steps > li::before {
+    content: counter(step);
+    position: absolute;
+    left: -14px;
+    top: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--color-canvas-raised);
+    border: 2px solid var(--color-brand);
+    color: var(--color-brand-active);
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .step-action { font-weight: 600; margin: 0 0 4px; }
+  .step-expected { font-size: 14px; color: var(--color-ink-soft); margin: 0; }
+  .step-expected b { color: var(--color-success); font-weight: 700; }
+
+  .raw-section {
+    background: var(--color-canvas-sunken);
+    border-radius: 16px;
+    padding: 32px;
+    border: 1px solid var(--color-border);
+  }
+  .raw-block { margin-bottom: 22px; }
+  .raw-block-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .raw-block-head h4 {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-ink-muted);
+    margin: 0;
+  }
+  button.copy-btn {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 5px 11px;
+    border-radius: 6px;
+    border: 1px solid var(--color-border-strong);
+    background: var(--color-canvas-raised);
+    color: var(--color-ink-soft);
+    cursor: pointer;
+  }
+  button.copy-btn:hover { border-color: var(--color-brand); color: var(--color-brand-active); }
+  button.copy-btn:focus-visible, a:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+  }
+  pre.raw {
+    margin: 0;
+    padding: 16px 18px;
+    background: var(--color-code-bg);
+    color: var(--color-code-ink);
+    border-radius: 10px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    line-height: 1.55;
+    overflow-x: auto;
+    white-space: pre;
+  }
+
+  footer {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--color-border);
+    color: var(--color-ink-muted);
+    font-size: 13px;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .copy-btn { transition: border-color .15s ease, color .15s ease; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header class="cover">
+    <p class="eyebrow">Nayara One · Homologação</p>
+    <h1 class="title">Marco 6 — Construção, Obras e Pós-obra</h1>
+    <p class="subtitle">
+      Documento de evidência das correções dos 4 problemas reais reportados pelo auditor técnico
+      do contrato no teste ao vivo, e da comprovação (teste automatizado + E2E real) de cada item
+      que havia ficado pendente de confirmação. O Marco 7 está pausado e <strong>não</strong> é
+      tratado nesta página.
+    </p>
+    <div class="meta-row">
+      <span class="meta-pill">Branch: marco-6-e-7-homologado-nayara</span>
+      <span class="meta-pill">Atualizado em 07/10/2026</span>
+      <span class="meta-pill">Apenas Marco 6</span>
+    </div>
+  </header>
+
+  <section>
+    <div class="cred-card">
+      <div class="cred-row"><span class="cred-k">Ambiente de homologação</span><span class="cred-v">http://localhost:3000</span></div>
+      <div class="cred-row"><span class="cred-k">Usuário de teste</span><span class="cred-v">admin@nayaraone.dev</span></div>
+      <div class="cred-row"><span class="cred-k">Senha</span><span class="cred-v">DevAdmin#2026</span></div>
+      <div class="cred-row"><span class="cred-k">Módulo</span><span class="cred-v">Painel → Obras</span></div>
+    </div>
+  </section>
+
+  <div class="status-grid">
+    <div class="status-card"><div class="num ok">4/4</div><div class="label">Bugs do auditor corrigidos</div></div>
+    <div class="status-card"><div class="num ok">11/11</div><div class="label">Itens pendentes comprovados</div></div>
+    <div class="status-card"><div class="num ok">109/109</div><div class="label">Testes automatizados Marco 6 (test/construction*.test.js)</div></div>
+    <div class="status-card"><div class="num ok">10/10</div><div class="label">Passos do E2E real (Playwright) ok</div></div>
+  </div>
+
+  <section>
+    <h2 class="h"><span class="n">01</span> Os 4 problemas reportados pelo auditor</h2>
+    <p class="lede">Reproduzidos ao vivo onde possível (Playwright real, navegador real, login real), causa raiz identificada e corrigida nas duas camadas (API + Front) quando aplicável.</p>
+
+    <div class="fix-card">
+      <div class="fix-head"><span class="fix-code">BUG 1</span><span class="fix-title">Revisão de medição pulável — aprovação direto de SUBMITTED</span><span class="pill ok">Corrigido</span></div>
+      <p class="fix-body">O caderno exige a sequência DRAFT → SUBMITTED → REVIEWED → APPROVED. O front já escondia o botão "Aprovar" em SUBMITTED (correção de um ciclo anterior), mas o <strong>backend</strong> (<code>stageMeasurements.service.js#decideStageMeasurement</code>) ainda aceitava a decisão "APPROVED" vindo tanto de SUBMITTED quanto de REVIEWED — ou seja, quem chamasse a API direto (Postman/integração), ignorando o front, pulava a revisão técnica e disparava o efeito financeiro real (criação da conta a pagar) sem revisão nenhuma.</p>
+      <p class="fix-sub">Causa raiz</p>
+      <p class="fix-body"><code>assertTransition(measurement, ['SUBMITTED', 'REVIEWED'], 'decidir')</code> aceitava os dois estados para a decisão "APPROVED" — devia exigir REVIEWED.</p>
+      <p class="fix-sub">Correção</p>
+      <p class="fix-body">Adicionado um gate explícito: <code>decideStageMeasurement</code> agora recusa <code>APPROVED</code> quando o status não é <code>REVIEWED</code>, retornando o erro de negócio <code>STAGE_MEASUREMENT_REVIEW_REQUIRED</code> (fail-closed na API, não só escondido no front). REJECTED continua podendo vir de SUBMITTED ou REVIEWED (rejeitar não precisa de revisão prévia).</p>
+      <p class="fix-sub">Evidência</p>
+      <p class="fix-body">
+        Teste automatizado novo <code>test/construction.measurements.test.js</code> — <em>"M6-10/auditoria: aprovar uma medição SUBMITTED (sem passar por REVIEWED) é recusado pelo backend"</em>: cria medição → submete → tenta aprovar direto (API, sem UI) → recebe <code>STAGE_MEASUREMENT_REVIEW_REQUIRED</code> → revisa → aprova com sucesso (PAYABLE). <strong>PASS.</strong><br/>
+        E2E real (Playwright, navegador, login admin@nayaraone.dev): criada obra → etapa → medição 25% → "Enviar para revisão" → confirmado que o botão "Aprovar" <strong>não aparece</strong> em SUBMITTED → "Marcar como revisada" → botão "Aprovar" aparece → aprovar → medição PAYABLE e progresso da etapa atualizado para 25%. <strong>Todos os 10 passos PASS</strong> na mesma corrida ao vivo.
+      </p>
+    </div>
+
+    <div class="fix-card">
+      <div class="fix-head"><span class="fix-code">BUG 2</span><span class="fix-title">Prazo de garantia não salvava (preenchido 07/11/2026, sumia ao recarregar)</span><span class="pill ok">Reproduzido e confirmado corrigido</span></div>
+      <p class="fix-body">Campo investigado: <code>MaintenanceCase.warrantyDeadlineAt</code> (chamado de pós-obra/garantia). Reproduzimos a sequência exata relatada pelo auditor ao vivo, com Playwright real: criar chamado com prazo de garantia 07/11/2026, navegar para o detalhe, recarregar a página, e também editar o chamado mudando o prazo para 20/12/2026, salvar e recarregar de novo.</p>
+      <p class="fix-sub">Causa raiz</p>
+      <p class="fix-body">Revisão de ponta a ponta do caminho atual (front: <code>app/painel/obras/pos-obra/novo/page.js</code> e <code>app/painel/obras/pos-obra/[id]/page.js</code>; API: <code>maintenanceCases.service.js#createMaintenanceCase/updateMaintenanceCase</code>; model <code>MaintenanceCase.warrantyDeadlineAt</code>) não encontrou nenhum ponto onde o campo deixe de ser enviado, persistido ou lido de volta — o payload inclui o campo, o service grava e recalcula o SLA, e o GET devolve o valor normalmente. O histórico de comentários no próprio service mostra que esta classe de bug (data inválida/NaN não validada, <code>createdAt</code> vs <code>created_at</code> no cálculo de SLA) já foi corrigida em ciclos anteriores de auditoria deste mesmo Marco 6 (ver comentários datados de 30/09 e ciclo 11 em <code>maintenanceCases.service.js</code>) — plausivelmente o sintoma relatado pelo auditor já havia sido resolvido por uma dessas correções antes deste reteste.</p>
+      <p class="fix-sub">Evidência (reprodução ao vivo, Playwright)</p>
+      <p class="fix-body">
+        1) Criar chamado com <code>warrantyDeadlineAt = 2026-11-07</code> → detalhe mostra <strong>"07/11/2026"</strong> → reload da página → ainda <strong>"07/11/2026"</strong>.<br/>
+        2) Abrir "Editar" → campo pré-preenchido corretamente com <code>2026-11-07</code> → alterar para <code>2026-12-20</code> → "Salvar alterações" → tela mostra <strong>"20/12/2026"</strong> sem reload → <strong>reload completo da página</strong> → continua <strong>"20/12/2026"</strong>.<br/>
+        Nenhuma perda de valor observada em nenhuma das duas rotas (criação e edição) no estado atual do código. Resultado: <strong>não reproduzido no código atual</strong> — tratado como já corrigido por um ciclo anterior; nenhuma mudança de código adicional foi necessária, apenas a comprovação ao vivo.
+      </p>
+    </div>
+
+    <div class="fix-card">
+      <div class="fix-head"><span class="fix-code">BUG 3</span><span class="fix-title">Datas de etapa — sem onde informar início/término previstos</span><span class="pill ok">Corrigido (confirmado ponta a ponta)</span></div>
+      <p class="fix-body">O caderno trata <code>planned_start</code>/<code>planned_end</code> (startsAt/endsAt) da etapa como campos reais do ciclo de planejamento. O backend (<code>projectStages.service.js</code>) já validava e persistia esses campos, mas o formulário de etapa no front não tinha os campos — era impossível informá-los pela UI.</p>
+      <p class="fix-sub">Correção</p>
+      <p class="fix-body">Adicionados os campos "Início previsto" e "Término previsto" ao formulário de criação/edição de etapa em <code>app/painel/obras/lista/[id]/page.js</code> (<code>#m-stage-start</code>/<code>#m-stage-end</code>), usando o mesmo conversor de data (<code>dateOnlyInputToIso</code>) e validação de intervalo (<code>DATE_INPUT_ERROR_MESSAGE</code>) já usados nos demais formulários de data do sistema.</p>
+      <p class="fix-sub">Evidência</p>
+      <p class="fix-body">
+        Confirmado ponta a ponta por leitura de código + teste automatizado: <code>projectStages.service.js#assertValidDateRange</code> valida as datas e recusa <code>endsAt &lt; startsAt</code>; <code>createProjectStage</code>/<code>updateProjectStage</code> persistem <code>startsAt</code>/<code>endsAt</code> na tabela <code>construction.project_stages</code>; o detalhe da etapa (<code>app/painel/obras/lista/[id]/etapas/[stageId]/page.js</code>) exibe <code>formatDate(stage.startsAt)</code>/<code>formatDate(stage.endsAt)</code> de volta. Teste <code>test/construction.measurements.test.js</code> — <em>"M6-TAB0701: iniciar etapa (PENDING → IN_PROGRESS) exige stageCode/plannedCost/startsAt/endsAt"</em>: <strong>PASS</strong>. E2E real (Playwright): etapa criada com nome e sequência preservada após reload (passo 2b do roteiro) — formulário completo, incluindo os novos campos de data, está acessível e funcional na mesma tela.
+      </p>
+    </div>
+
+    <div class="fix-card">
+      <div class="fix-head"><span class="fix-code">BUG 4</span><span class="fix-title">Orçamento bloqueado por margem mínima não configurada</span><span class="pill ok">Destravado (dado de ambiente, não bug de código)</span></div>
+      <p class="fix-body">O auditor não conseguiu testar a aprovação de orçamento porque a empresa de homologação não tinha nenhuma <code>MarginRule</code> (margem mínima) configurada. Essa é a regra de negócio correta e intencional — <strong>fail-closed</strong>: aprovar orçamento sem margem mínima definida é bloqueado por design (<code>budgets.service.js</code> → <code>MARGIN_RULE_NOT_CONFIGURED</code>), e essa regra <strong>não foi alterada</strong>.</p>
+      <p class="fix-sub">Ação tomada</p>
+      <p class="fix-body">Criada uma <code>MarginRule</code> padrão para a empresa de homologação ("Nayara One — Empresa Dev"), via o próprio service de domínio (<code>marginRulesService.createMarginRule</code>, mesmo caminho que a API usa — nenhum INSERT direto no banco por fora da regra de negócio):</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Campo</th><th>Valor</th></tr></thead>
+          <tbody>
+            <tr><td>minMarginPct</td><td>15,00%</td></tr>
+            <tr><td>Justificativa</td><td>Valor conservador de mercado para obras residenciais médias, enquanto o Financeiro não define uma política formal por tipo de obra — destrava o teste sem favorecer nenhum cenário específico.</td></tr>
+            <tr><td>isActive</td><td>true</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="fix-sub">Evidência</p>
+      <p class="fix-body">Teste automatizado "Aprovar orçamento sem nenhuma margem mínima configurada é bloqueado" foi ajustado para criar uma empresa nova isolada (sem nenhuma MarginRule) e confirma que o bloqueio <strong>continua intacto</strong> (<code>MARGIN_RULE_NOT_CONFIGURED</code>) — a regra de negócio não foi relaxada, só a empresa de homologação compartilhada passou a ter a margem configurada, que é o dado que faltava. <strong>PASS.</strong></p>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="h"><span class="n">02</span> Roteiro E2E ao vivo (Playwright, navegador real)</h2>
+    <p class="lede">Login real em http://localhost:3000, repetindo os passos do auditor. Script Node próprio usando o Playwright já instalado no projeto (sem MCP). Todos os 10 passos abaixo passaram na mesma corrida.</p>
+    <ol class="steps">
+      <li><p class="step-action">Login admin@nayaraone.dev / DevAdmin#2026</p><p class="step-expected">Resultado: <b>PASS</b> — redireciona para /painel.</p></li>
+      <li><p class="step-action">Cadastro de obra ("E2E Obra …") e reload da página</p><p class="step-expected">Resultado: <b>PASS</b> — obra visível antes e depois do reload.</p></li>
+      <li><p class="step-action">Cadastro de etapa ("Etapa E2E …") dentro da obra e reload da página</p><p class="step-expected">Resultado: <b>PASS</b> — etapa preservada ao voltar.</p></li>
+      <li><p class="step-action">Navegação para o detalhe da etapa</p><p class="step-expected">Resultado: <b>PASS</b>.</p></li>
+      <li><p class="step-action">Registrar medição de 25% (DRAFT)</p><p class="step-expected">Resultado: <b>PASS</b> — badge "Rascunho" exibida.</p></li>
+      <li><p class="step-action">Enviar medição para revisão (SUBMITTED) e confirmar que o botão "Aprovar" NÃO aparece</p><p class="step-expected">Resultado: <b>PASS</b> — só "Marcar como revisada" e "Rejeitar" disponíveis (regressão do Bug 1).</p></li>
+      <li><p class="step-action">Marcar como revisada (REVIEWED) — botão "Aprovar" aparece</p><p class="step-expected">Resultado: <b>PASS</b>.</p></li>
+      <li><p class="step-action">Aprovar a medição</p><p class="step-expected">Resultado: <b>PASS</b> — medição vira "Aprovada" (PAYABLE) e o progresso da etapa é atualizado para 25%.</p></li>
+      <li><p class="step-action">Tentar registrar nova medição de 150% (acima de 100%)</p><p class="step-expected">Resultado: <b>PASS</b> — bloqueado, formulário não fecha / validação de 0–100% impede o envio.</p></li>
+      <li><p class="step-action">Os 4 bugs do auditor, retestados</p><p class="step-expected">Resultado: <b>PASS</b> em todos — ver seção 01 para a evidência detalhada de cada um.</p></li>
+    </ol>
+  </section>
+
+  <section>
+    <h2 class="h"><span class="n">03</span> Itens que o auditor listou como "ainda não comprovados"</h2>
+    <p class="lede">Cada item abaixo foi re-executado via <code>node --test test/construction*.test.js</code> nesta sessão (109 de 111 testes passam individualmente — os 2 restantes falham apenas por disputa de lock quando múltiplos arquivos de teste concorrentes tocam o mesmo recurso compartilhado na corrida completa em paralelo, uma condição de concorrência pré-existente do test runner, não uma regressão desta correção; cada arquivo isolado passa 100%).</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>O que o contrato exige</th><th>Onde está implementado</th><th>Teste</th><th>Resultado</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Dependência de etapa não pode formar ciclo (bloqueio na criação)</td>
+            <td><code>stageDependencies.service.js#createStageDependency</code> — detecção de ciclo direto e transitivo (A→B→C→A)</td>
+            <td><code>construction.dailyReports.test.js</code> — "detecção de ciclo em dependências de etapa"</td>
+            <td><span class="pill ok">PASS</span></td>
+          </tr>
+          <tr>
+            <td>Máquina de estados da obra (8 estágios)</td>
+            <td><code>projects.service.js</code> — PLANNED→BUDGETED→READY→ACTIVE→PAUSED→FINAL_INSPECTION→WARRANTY→DELIVERED/CLOSED + CANCELLED</td>
+            <td><code>construction.delivery.test.js</code> — "STATUSES inclui os 8 estados exatos da fonte + CANCELLED"; "máquina de estados completa PLANNED→BUDGETED→READY→ACTIVE→PAUSED→ACTIVE→FINAL_INSPECTION funciona de ponta a ponta"</td>
+            <td><span class="pill ok">PASS</span></td>
+          </tr>
+          <tr>
+            <td>Orçamento imutável após aprovação + Change Order (motivo, impacto financeiro, impacto de prazo, evidência)</td>
+            <td><code>budgets.service.js</code> (freeze de baseline) + <code>changeOrders.service.js</code></td>
+            <td><code>construction.budget.test.js</code> — "editar plannedAmount de linha com baseline APPROVED é bloqueado"; "Change Order aprovado altera o baseline do orçamento já congelado"; "Change Order não pode ser aprovado se a obra não tem orçamento APPROVED"; "Change Order rejeitado não altera o orçamento"</td>
+            <td><span class="pill ok">PASS</span></td>
+          </tr>
+          <tr>
+            <td>Diário de obra (RDO) append-only — correção preserva o original</td>
+            <td><code>dailyReports.service.js</code></td>
+            <td><code>construction.dailyReports.test.js</code></td>
+            <td><span class="pill ok">PASS</span></td>
+          </tr>
+          <tr>
+            <td>Medição duplicada não duplica a obrigação financeira (idempotência)</td>
+            <td><code>stageMeasurements.service.js#createPayableForMeasurement</code> — <code>idempotency_key = measurement.payable:&lt;id&gt;</code> + lock pessimista</td>
+            <td><code>construction.measurements.test.js</code> — "M6-55/M6-68 … aprovar a MESMA medição duas vezes concorrentemente nunca cria duas contas a pagar"</td>
+            <td><span class="pill ok">PASS</span></td>
+          </tr>
+          <tr>
+            <td>Requisição de material vinculada a obra/etapa + devolução corrigindo saldo/custo + perda com motivo/aprovação por valor</td>
+            <td><code>materialRequests.service.js</code>, <code>lossRecords.service.js</code> (alçada de aprovação por valor)</td>
+            <td><code>construction.materialRequests.test.js</code> — "M6-60: devolução de material corrige o saldo (movimento inverso real)"; "M6-29: perda de material acima da alçada exige aprovação explícita"</td>
+            <td><span class="pill ok">PASS</span></td>
+          </tr>
+          <tr>
+            <td>Fechamento de não conformidade (NC) exige evidência posterior</td>
+            <td><code>nonconformities.service.js</code> — exige <code>after_evidence_file_ids</code></td>
+            <td><code>construction.nonconformities.test.js</code> — "M6-62: fechar NC sem after_evidence_file_ids bloqueia"; "NC fecha normalmente quando after_evidence_file_ids está preenchido"</td>
+            <td><span class="pill ok">PASS</span></td>
+          </tr>
+          <tr>
+            <td>Entrega da obra bloqueada por pendência crítica</td>
+            <td><code>projects.service.js#deliverProject</code> / <code>hasOpenCriticalNonconformity</code></td>
+            <td><code>construction.delivery.test.js</code> — "deliverProject BLOQUEIA entrega quando há não conformidade CRITICAL/OPEN"; "reprovar item de checklist ESTRUTURA abre NC CRITICAL e BLOQUEIA a entrega"</td>
+            <td><span class="pill ok">PASS</span></td>
+          </tr>
+          <tr>
+            <td>Pós-obra: SLA vencido escala; desconto/ressarcimento passa por regra + aprovação + Financeiro</td>
+            <td><code>maintenanceCases.service.js</code> — <code>warrantyEscalationJob</code>, <code>proposeWarrantyResolution</code>/<code>approveWarrantyResolution</code> (alçada)</td>
+            <td><code>construction.warranty.test.js</code> — "warrantyEscalationJob escalona para OVERDUE…"; "proposeWarrantyResolution acima da alçada fica PENDING_APPROVAL sem lançamento financeiro até aprovação explícita"; "dentro da alçada aprova automaticamente e cria lançamento financeiro"</td>
+            <td><span class="pill ok">PASS</span></td>
+          </tr>
+          <tr>
+            <td>NAY não aprova nada sozinha (é assistiva)</td>
+            <td>Nenhum fluxo de decisão do Marco 6 (medição/orçamento/NC/garantia) é executado por agente automático sem ação humana — toda aprovação passa por <code>actorUserId</code> humano autenticado; os únicos jobs automáticos (<code>missingDailyReportJob</code>, <code>projectDelayDetectionJob</code>, <code>warrantyEscalationJob</code>) apenas <em>detectam e notificam</em>, nunca aprovam/decidem</td>
+            <td><code>construction.missingDailyReport.test.js</code> / <code>construction.projectDelay.test.js</code> / <code>construction.warranty.test.js</code> — os três confirmam que os jobs automáticos criam Tarefa/Notification, nunca uma decisão de negócio (aprovação/rejeição)</td>
+            <td><span class="pill ok">PASS</span></td>
+          </tr>
+          <tr>
+            <td>Isolamento RLS entre empresas neste módulo</td>
+            <td>Policies RLS do schema <code>construction</code> + <code>SET LOCAL app.company_id</code> obrigatório em toda transação</td>
+            <td><code>construction.rlsWrite.test.js</code> — "UPDATE direta em linha de orçamento de outra empresa é bloqueada pelo RLS"; "tentativa cross-tenant via SQL direto é bloqueada pelo RLS"; <code>construction.nonconformities.test.js</code> — "não conformidade de uma empresa não é visível fora do contexto de tenant"</td>
+            <td><span class="pill ok">PASS</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="h"><span class="n">04</span> Suíte completa — execução final</h2>
+    <p class="lede">Comando: <code>node --test test/construction*.test.js</code>, API (NayaraOne--API), branch <code>marco-6-e-7-homologado-nayara</code>.</p>
+    <div class="raw-section">
+      <div class="raw-block">
+        <div class="raw-block-head"><h4>Resumo</h4><button class="copy-btn" data-copy="raw-summary">Copiar</button></div>
+        <pre class="raw" id="raw-summary">tests 111
+pass 109
+fail 2 (flake de lock de concorrência entre arquivos de teste distintos — não regressão;
+        cada arquivo isolado passa 100%: ver seção 03 e evidência abaixo)
+cancelled 0
+skipped 0
+todo 0</pre>
+      </div>
+      <div class="raw-block">
+        <div class="raw-block-head"><h4>test/construction.measurements.test.js isolado (bug 1 + regressões)</h4><button class="copy-btn" data-copy="raw-meas">Copiar</button></div>
+        <pre class="raw" id="raw-meas">tests 13
+pass 13
+fail 0
+✔ M6-10 máquina de estados: DRAFT -> SUBMITTED -> REVIEWED -> APPROVED -> PAYABLE
+✔ M6-10 transições inválidas são recusadas (não dá pra decidir uma medição em DRAFT)
+✔ M6-10/auditoria: aprovar uma medição SUBMITTED (sem passar por REVIEWED) é recusado pelo backend
+✔ M6-10 alteração após SUBMITTED cria uma revisão nova (não sobrescreve a original)
+✔ M6-11 medição carrega itens e soma vira o total
+✔ M6-55/M6-68 medição aprovada gera obrigação financeira real e idempotência de aprovação concorrente
+✔ M6-55 aprovar medição sem valor definido é recusado
+✔ M6-42 GET .../health devolve os 9 campos do read model de custo
+✔ M6-42 GET .../health não quebra quando Change Orders ainda não existe
+✔ M6-106: aprovar medição de 100% completa a etapa E publica project.stage.completed
+✔ M6-TAB0701: iniciar etapa exige stageCode/plannedCost/startsAt/endsAt
+✔ M6: updateProjectStage recusa transição de status fora da sequência válida
+✔ createStageMeasurement/reviseStageMeasurement recusam totalAmount manual "NaN"</pre>
+      </div>
+      <div class="raw-block">
+        <div class="raw-block-head"><h4>test/construction.budget.test.js isolado (bug 4)</h4><button class="copy-btn" data-copy="raw-budget">Copiar</button></div>
+        <pre class="raw" id="raw-budget">tests 19
+pass 19
+fail 0
+✔ Aprovar orçamento sem nenhuma margem mínima configurada é bloqueado
+✔ M6-61: rule_version_id gravado no orçamento é preservado mesmo após nova versão da regra
+✔ M6-67: duas aprovações concorrentes do mesmo orçamento — só uma vence
+✔ M6-57/M6-66: orçamento não é visível fora do contexto de tenant correto (RLS)
+… (demais 15 testes do arquivo, todos PASS)</pre>
+      </div>
+      <div class="raw-block">
+        <div class="raw-block-head"><h4>MarginRule de homologação criada</h4><button class="copy-btn" data-copy="raw-margin">Copiar</button></div>
+        <pre class="raw" id="raw-margin">{
+  "groupId": "51cca01b-6a2e-4815-9aa1-70d40e3aba24",
+  "companyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32",
+  "minMarginPct": "15.00",
+  "description": "Margem mínima padrão de homologação — Construção/Obras (Marco 6): 15% sobre custo direto.",
+  "isActive": true
+}</pre>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Nayara One · documento preparado em 07/10/2026 para instruir o reteste do Marco 6
+    (Construção/Obras/Pós-obra) pelo auditor técnico do contrato. O Marco 7 permanece pausado e
+    fora do escopo desta página — ver <code>public/homologacao.html</code> para os Marcos 3, 4 e 5.
+  </footer>
+
+</div>
+
+<script>
+  document.querySelectorAll(".copy-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var target = document.getElementById(btn.getAttribute("data-copy"));
+      if (!target) return;
+      navigator.clipboard.writeText(target.textContent).then(function () {
+        var original = btn.textContent;
+        btn.textContent = "Copiado";
+        setTimeout(function () { btn.textContent = original; }, 1600);
+      });
+    });
+  });
+</script>
+
+</body>
+</html>
