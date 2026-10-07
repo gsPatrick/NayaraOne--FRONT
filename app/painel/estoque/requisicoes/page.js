@@ -15,6 +15,8 @@ import Alert from "@/components/molecules/Alert/Alert";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
+import EmptyState from "@/components/molecules/EmptyState/EmptyState";
+import { useRouter } from "next/navigation";
 import { listRequisitions, createRequisition, decideRequisition, issueRequisition, listInventoryItems, listInventoryLocations } from "@/lib/api/inventory";
 import { listProjects } from "@/lib/api/construction";
 import { formatDateTime, toNumber } from "@/lib/format";
@@ -23,6 +25,7 @@ const STATUS_LABELS = { REQUESTED: "Solicitada", APPROVED: "Aprovada", REJECTED:
 const STATUS_TONE = { REQUESTED: "neutral", APPROVED: "info", REJECTED: "danger", ISSUED: "success" };
 
 export default function RequisicoesPage() {
+  const router = useRouter();
   const [requisitions, setRequisitions] = useState([]);
   const [items, setItems] = useState([]);
   const [locations, setLocations] = useState([]);
@@ -135,6 +138,9 @@ export default function RequisicoesPage() {
     return items.find((i) => i.id === id)?.name || "—";
   }
 
+  const hasWarehouse = locations.some((l) => l.locationType === "WAREHOUSE");
+  const missingPrerequisite = items.length === 0 ? "item" : !hasWarehouse ? "almoxarifado" : null;
+
   // BUG REAL CORRIGIDO (auditoria "loop até secar", rodada 53, 2026-10-05): listRequisitions
   // (backend) só retornava o registro agregado, nunca os itens — a tela nunca mostrava quais
   // itens/quantidades foram solicitados, só o status. Agora o backend inclui "items" e a tela
@@ -198,16 +204,34 @@ export default function RequisicoesPage() {
       </StickyActionBar>
 
       <Modal
+        size="lg"
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         title="Nova requisição de material"
         footer={
-          <>
-            <Button variant="secondary" onClick={() => setModalOpen(false)}>Cancelar</Button>
-            <Button onClick={handleCreate} loading={saving} disabled={!isValid}>Criar</Button>
-          </>
+          missingPrerequisite ? (
+            <Button variant="secondary" onClick={() => setModalOpen(false)}>Fechar</Button>
+          ) : (
+            <>
+              <Button variant="secondary" onClick={() => setModalOpen(false)}>Cancelar</Button>
+              <Button onClick={handleCreate} loading={saving} disabled={!isValid}>Criar</Button>
+            </>
+          )
         }
       >
+        {missingPrerequisite ? (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "var(--space-4)", padding: "var(--space-4) 0" }}>
+            <EmptyState
+              icon={missingPrerequisite === "item" ? "layers" : "mapPin"}
+              title={missingPrerequisite === "item" ? "Nenhum item de estoque cadastrado" : "Nenhum almoxarifado cadastrado"}
+              description={missingPrerequisite === "item"
+                ? "Você precisa cadastrar pelo menos um item antes de criar uma requisição."
+                : "Você precisa cadastrar pelo menos um local do tipo Almoxarifado antes de criar uma requisição."}
+            />
+            <Button onClick={() => router.push("/painel/estoque")}>{missingPrerequisite === "item" ? "Cadastrar item agora" : "Cadastrar local agora"}</Button>
+          </div>
+        ) : (
+        <>
         <FormField label="Almoxarifado (origem)" required>
           <Select value={form.warehouseLocationId} onChange={(e) => setForm((p) => ({ ...p, warehouseLocationId: e.target.value }))}>
             <option value="">Selecione...</option>
@@ -246,6 +270,8 @@ export default function RequisicoesPage() {
           </div>
         ))}
         <Button variant="secondary" size="sm" onClick={() => setForm((p) => ({ ...p, lines: [...p.lines, { inventoryItemId: "", quantity: "" }] }))}>+ Adicionar item</Button>
+        </>
+        )}
       </Modal>
 
       <ConfirmDialog />

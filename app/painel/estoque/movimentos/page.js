@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Table from "@/components/organisms/Table/Table";
@@ -14,6 +15,7 @@ import Alert from "@/components/molecules/Alert/Alert";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
+import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import { listInventoryItems, listInventoryLocations, recordInventoryMovement, getItemBalances } from "@/lib/api/inventory";
 import { formatQuantity, formatDateTime, toNumber } from "@/lib/format";
 import styles from "../../obras/lista/page.module.css";
@@ -23,6 +25,7 @@ const MOVEMENT_TYPE_TONE = { IN: "success", OUT: "info", RETURN: "neutral", TRAN
 const SOURCE_REQUIRED = { OUT: "source", LOSS: "source", DISPOSAL: "source", IN: "destination", RETURN: "destination", TRANSFER: "both", ADJUSTMENT: "either" };
 
 export default function MovimentosPage() {
+  const router = useRouter();
   const [items, setItems] = useState([]);
   const [locations, setLocations] = useState([]);
   const [balances, setBalances] = useState([]);
@@ -137,16 +140,36 @@ export default function MovimentosPage() {
       </StickyActionBar>
 
       <Modal
+        size="lg"
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         title="Registrar movimento de estoque"
         footer={
-          <>
-            <Button variant="secondary" onClick={() => setModalOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSubmit} loading={saving} disabled={!isValid}>Registrar</Button>
-          </>
+          items.length === 0 || locations.length === 0 ? (
+            <Button variant="secondary" onClick={() => setModalOpen(false)}>Fechar</Button>
+          ) : (
+            <>
+              <Button variant="secondary" onClick={() => setModalOpen(false)}>Cancelar</Button>
+              <Button onClick={handleSubmit} loading={saving} disabled={!isValid}>Registrar</Button>
+            </>
+          )
         }
       >
+        {/* BUG REAL CORRIGIDO: sem nenhum item/local cadastrado, o modal abria com os dois
+            selects vazios ("Selecione...") sem nenhuma explicação do porquê, nem como resolver —
+            o usuário não tinha como saber que precisava cadastrar Item/Local primeiro. */}
+        {items.length === 0 ? (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "var(--space-4)", padding: "var(--space-4) 0" }}>
+            <EmptyState icon="layers" title="Nenhum item de estoque cadastrado" description="Você precisa cadastrar pelo menos um item antes de registrar um movimento." />
+            <Button onClick={() => router.push("/painel/estoque")}>Cadastrar item agora</Button>
+          </div>
+        ) : locations.length === 0 ? (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "var(--space-4)", padding: "var(--space-4) 0" }}>
+            <EmptyState icon="mapPin" title="Nenhum local de estoque cadastrado" description="Você precisa cadastrar pelo menos um local (depósito, obra, loja...) antes de registrar um movimento." />
+            <Button onClick={() => router.push("/painel/estoque")}>Cadastrar local agora</Button>
+          </div>
+        ) : (
+        <>
         <FormField label="Item" required>
           <Select value={form.inventoryItemId} onChange={(e) => setForm((p) => ({ ...p, inventoryItemId: e.target.value }))}>
             <option value="">Selecione...</option>
@@ -195,6 +218,8 @@ export default function MovimentosPage() {
             <Input value={form.reason} onChange={(e) => setForm((p) => ({ ...p, reason: e.target.value }))} />
           </FormField>
         ) : null}
+        </>
+        )}
       </Modal>
     </AppShell>
   );
