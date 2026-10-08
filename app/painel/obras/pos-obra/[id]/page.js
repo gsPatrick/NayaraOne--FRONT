@@ -16,6 +16,8 @@ import Modal from "@/components/organisms/Modal/Modal";
 import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import FileDropInput from "@/components/molecules/FileDropInput/FileDropInput";
+import { uploadFile } from "@/lib/api/legal";
 import {
   MAINTENANCE_STATUS_LABELS,
   MAINTENANCE_STATUS_TONE,
@@ -101,6 +103,15 @@ export default function PosObraDetalhePage({ params }) {
   const [warrantyDateInvalid, setWarrantyDateInvalid] = useState(false);
   const [savingEdit, setSavingEdit] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+
+  // GAP REAL CORRIGIDO (auditoria externa Nayara, 2026-10-07): contrato exige evidência
+  // "antes/depois" no chamado de pós-obra — a tela nunca tinha NENHUM campo de upload pra isso.
+  const [beforeEvidenceFileIds, setBeforeEvidenceFileIds] = useState([]);
+  const [beforeEvidenceNames, setBeforeEvidenceNames] = useState([]);
+  const [afterEvidenceFileIds, setAfterEvidenceFileIds] = useState([]);
+  const [afterEvidenceNames, setAfterEvidenceNames] = useState([]);
+  const [evidenceUploading, setEvidenceUploading] = useState(false);
+  const [evidenceUploadError, setEvidenceUploadError] = useState("");
 
   // Ações de atendimento (WarrantyAction) — histórico de visitas/reparos dentro do chamado.
   const [warrantyActions, setWarrantyActions] = useState([]);
@@ -198,6 +209,20 @@ export default function PosObraDetalhePage({ params }) {
   async function handleStatusChange(e) {
     const value = e.target.value;
     if (!value) return;
+    // BUG REAL CORRIGIDO (auditoria externa Nayara, 2026-10-07): fechar pelo select de status
+    // direto pulava causa raiz/evidências/ação de atendimento — a API agora bloqueia (contrato),
+    // mas o front precisa orientar o usuário pra onde preencher isso em vez de só mostrar o erro.
+    if (value === "CLOSED") {
+      const missing = [];
+      if (!maintenanceCase.rootCauseCode) missing.push("causa raiz");
+      if (!maintenanceCase.beforeMediaFileIds?.length) missing.push('evidência "antes"');
+      if (!maintenanceCase.afterMediaFileIds?.length) missing.push('evidência "depois"');
+      if (!warrantyActions.length) missing.push("ao menos uma ação de atendimento");
+      if (missing.length) {
+        setActionError(`Para fechar o chamado, preencha antes: ${missing.join(", ")}. Use "Editar" para causa raiz/evidências e "Nova ação de atendimento" para registrar o atendimento.`);
+        return;
+      }
+    }
     setBusy(true);
     setActionError("");
     try {
@@ -221,7 +246,32 @@ export default function PosObraDetalhePage({ params }) {
       laborCost: maintenanceCase.laborCost != null ? String(maintenanceCase.laborCost) : "",
       materialCost: maintenanceCase.materialCost != null ? String(maintenanceCase.materialCost) : "",
     });
+    setBeforeEvidenceFileIds(maintenanceCase.beforeMediaFileIds || []);
+    setBeforeEvidenceNames((maintenanceCase.beforeMediaFileIds || []).map((_, i) => `Evidência ${i + 1}`));
+    setAfterEvidenceFileIds(maintenanceCase.afterMediaFileIds || []);
+    setAfterEvidenceNames((maintenanceCase.afterMediaFileIds || []).map((_, i) => `Evidência ${i + 1}`));
+    setEvidenceUploadError("");
     setEditOpen(true);
+  }
+
+  async function handleUploadEvidence(file, kind) {
+    if (!file) return;
+    setEvidenceUploading(true);
+    setEvidenceUploadError("");
+    try {
+      const uploaded = await uploadFile(file);
+      if (kind === "before") {
+        setBeforeEvidenceFileIds((prev) => [...prev, uploaded.id]);
+        setBeforeEvidenceNames((prev) => [...prev, file.name]);
+      } else {
+        setAfterEvidenceFileIds((prev) => [...prev, uploaded.id]);
+        setAfterEvidenceNames((prev) => [...prev, file.name]);
+      }
+    } catch (err) {
+      setEvidenceUploadError(err?.message || "Erro ao enviar evidência.");
+    } finally {
+      setEvidenceUploading(false);
+    }
   }
 
   async function handleSaveEdit() {
@@ -238,6 +288,8 @@ export default function PosObraDetalhePage({ params }) {
         rootCauseCode: editForm.rootCauseCode || null,
         laborCost: editForm.laborCost !== "" ? toNumber(editForm.laborCost) : null,
         materialCost: editForm.materialCost !== "" ? toNumber(editForm.materialCost) : null,
+        beforeMediaFileIds: beforeEvidenceFileIds,
+        afterMediaFileIds: afterEvidenceFileIds,
       });
       setMaintenanceCase(updated);
       setEditOpen(false);
@@ -676,6 +728,33 @@ export default function PosObraDetalhePage({ params }) {
           </FormField>
           <FormField label="Custo de material (R$)" htmlFor="e-material-cost" helper="Opcional">
             <DecimalInput id="e-material-cost" value={editForm.materialCost} onChange={(e) => setEditForm((p) => ({ ...p, materialCost: e.target.value }))} />
+          </FormField>
+          {evidenceUploadError ? <Alert tone="danger" className={styles.span2}>{evidenceUploadError}</Alert> : null}
+          <FormField label='Evidência "antes"' htmlFor="e-before-evidence" helper='Obrigatório para fechar o chamado.'>
+            <FileDropInput
+              id="e-before-evidence"
+              accept="image/*,application/pdf"
+              uploading={evidenceUploading}
+              fileNames={beforeEvidenceNames}
+              onFiles={(files) => handleUploadEvidence(files[0], "before")}
+              onRemove={(idx) => {
+                setBeforeEvidenceFileIds((prev) => prev.filter((_, i) => i !== idx));
+                setBeforeEvidenceNames((prev) => prev.filter((_, i) => i !== idx));
+              }}
+            />
+          </FormField>
+          <FormField label='Evidência "depois"' htmlFor="e-after-evidence" helper='Obrigatório para fechar o chamado.'>
+            <FileDropInput
+              id="e-after-evidence"
+              accept="image/*,application/pdf"
+              uploading={evidenceUploading}
+              fileNames={afterEvidenceNames}
+              onFiles={(files) => handleUploadEvidence(files[0], "after")}
+              onRemove={(idx) => {
+                setAfterEvidenceFileIds((prev) => prev.filter((_, i) => i !== idx));
+                setAfterEvidenceNames((prev) => prev.filter((_, i) => i !== idx));
+              }}
+            />
           </FormField>
         </div>
       </Modal>

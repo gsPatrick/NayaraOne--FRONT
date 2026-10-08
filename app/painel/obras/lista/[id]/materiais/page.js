@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Button from "@/components/atoms/Button/Button";
+import Select from "@/components/atoms/Select/Select";
 import Badge from "@/components/atoms/Badge/Badge";
 import Icon from "@/components/atoms/Icon/Icon";
 import Modal from "@/components/organisms/Modal/Modal";
@@ -27,12 +28,14 @@ import {
   listMaterialRequests,
   createMaterialRequest,
   receiveMaterialRequest,
+  returnMaterialRequest,
   listLossRecords,
   createLossRecord,
   approveLossRecord,
   returnLossRecord,
   upsertApprovalThreshold,
 } from "@/lib/api/construction";
+import { listInventoryItems, listInventoryLocations } from "@/lib/api/inventory";
 import { formatBRL, formatQuantity, formatDate, toNumber } from "@/lib/format";
 import { isInvalidNumber, isLossFullyReturned } from "../_components/obraShared";
 import OfflineSyncBadge from "@/components/molecules/OfflineSyncBadge/OfflineSyncBadge";
@@ -56,7 +59,18 @@ export default function MateriaisObraPage({ params }) {
   const [materialOpen, setMaterialOpen] = useState(false);
   const [materialForm, setMaterialForm] = useState({ description: "", quantity: "", unit: "" });
   const [savingMaterial, setSavingMaterial] = useState(false);
-  const [receivingMaterialId, setReceivingMaterialId] = useState(null);
+
+  // GAP CORRIGIDO (auditoria externa Nayara, 2026-10-07; contrato §7/§8): confirmar recebimento
+  // agora exige escolher de qual item/local real do Estoque o material saiu — a API bloqueia
+  // sem isso. Devolução (movimento inverso) também ganhou UI aqui.
+  const [inventoryItems, setInventoryItems] = useState([]);
+  const [inventoryLocations, setInventoryLocations] = useState([]);
+  const [receiveTarget, setReceiveTarget] = useState(null);
+  const [receiveForm, setReceiveForm] = useState({ inventoryItemId: "", sourceLocationId: "" });
+  const [savingReceive, setSavingReceive] = useState(false);
+  const [returnTarget, setReturnTarget] = useState(null);
+  const [returnForm, setReturnForm] = useState({ inventoryItemId: "", destinationLocationId: "", quantity: "" });
+  const [savingReturn, setSavingReturn] = useState(false);
 
   // PWA/offline (Marco 6, contrato §13): se o POST de requisição falhar por rede, fica numa
   // fila local com o idempotencyKey já gerado no cliente, reenviada automaticamente quando a
@@ -119,6 +133,11 @@ export default function MateriaisObraPage({ params }) {
     return cancel;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
+
+  useEffect(() => {
+    listInventoryItems().then(setInventoryItems).catch(() => {});
+    listInventoryLocations().then(setInventoryLocations).catch(() => {});
+  }, []);
 
   if (notFoundFlag) return notFound();
 
@@ -186,17 +205,51 @@ export default function MateriaisObraPage({ params }) {
       setSavingMaterial(false);
     }
   }
-  async function handleReceiveMaterialRequest(request) {
-    if (receivingMaterialId) return;
-    setReceivingMaterialId(request.id);
+  function openReceiveModal(request) {
+    setActionError("");
+    setReceiveForm({ inventoryItemId: "", sourceLocationId: "" });
+    setReceiveTarget(request);
+  }
+
+  async function handleConfirmReceive() {
+    if (!receiveTarget || !receiveForm.inventoryItemId || !receiveForm.sourceLocationId) return;
+    setSavingReceive(true);
     setActionError("");
     try {
-      const updated = await receiveMaterialRequest(request.id);
+      const updated = await receiveMaterialRequest(receiveTarget.id, {
+        inventoryItemId: receiveForm.inventoryItemId,
+        sourceLocationId: receiveForm.sourceLocationId,
+      });
       setMaterialRequests((prev) => prev.map((m) => (m.id === updated.id ? updated : m)));
+      setReceiveTarget(null);
     } catch (err) {
       setActionError(err?.message || "Não foi possível marcar a requisição como recebida.");
     } finally {
-      setReceivingMaterialId(null);
+      setSavingReceive(false);
+    }
+  }
+
+  function openReturnModal(request) {
+    setActionError("");
+    setReturnForm({ inventoryItemId: "", destinationLocationId: "", quantity: String(request.quantity) });
+    setReturnTarget(request);
+  }
+
+  async function handleConfirmReturn() {
+    if (!returnTarget || !returnForm.inventoryItemId || !returnForm.destinationLocationId) return;
+    setSavingReturn(true);
+    setActionError("");
+    try {
+      await returnMaterialRequest(returnTarget.id, {
+        inventoryItemId: returnForm.inventoryItemId,
+        destinationLocationId: returnForm.destinationLocationId,
+        quantity: returnForm.quantity !== "" ? toNumber(returnForm.quantity) : undefined,
+      });
+      setReturnTarget(null);
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível registrar a devolução.");
+    } finally {
+      setSavingReturn(false);
     }
   }
 
@@ -318,14 +371,13 @@ export default function MateriaisObraPage({ params }) {
                   <div className={styles.rowRight}>
                     <Badge tone={MATERIAL_REQUEST_STATUS_TONE[m.status]}>{MATERIAL_REQUEST_STATUS_LABELS[m.status] || m.status}</Badge>
                     {m.status === "REQUESTED" ? (
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => handleReceiveMaterialRequest(m)}
-                        loading={receivingMaterialId === m.id}
-                        disabled={receivingMaterialId !== null && receivingMaterialId !== m.id}
-                      >
+                      <Button size="sm" variant="secondary" onClick={() => openReceiveModal(m)}>
                         Marcar como recebido
+                      </Button>
+                    ) : null}
+                    {m.status === "RECEIVED" ? (
+                      <Button size="sm" variant="secondary" onClick={() => openReturnModal(m)}>
+                        Devolver ao estoque
                       </Button>
                     ) : null}
                   </div>
@@ -487,6 +539,85 @@ export default function MateriaisObraPage({ params }) {
             onChange={(e) => setThresholdAmount(e.target.value)}
             placeholder="1000,00"
           />
+        </FormField>
+      </Modal>
+
+      <Modal
+        open={!!receiveTarget}
+        onClose={() => setReceiveTarget(null)}
+        title="Confirmar recebimento"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setReceiveTarget(null)}>Cancelar</Button>
+            <Button onClick={handleConfirmReceive} loading={savingReceive} disabled={!receiveForm.inventoryItemId || !receiveForm.sourceLocationId}>Confirmar recebimento</Button>
+          </>
+        }
+      >
+        <p className={styles.rowSubtitle}>{receiveTarget?.description} — {receiveTarget ? formatQuantity(receiveTarget.quantity) : ""} {receiveTarget?.unit}</p>
+        <FormField label="Item do estoque" htmlFor="m-receive-item" required helper="De qual item do almoxarifado este material saiu.">
+          <Select
+            id="m-receive-item"
+            value={receiveForm.inventoryItemId}
+            onChange={(e) => setReceiveForm((p) => ({ ...p, inventoryItemId: e.target.value }))}
+          >
+            <option value="">Selecione...</option>
+            {inventoryItems.map((it) => (
+              <option key={it.id} value={it.id}>{it.name}</option>
+            ))}
+          </Select>
+        </FormField>
+        <FormField label="Local do estoque" htmlFor="m-receive-location" required helper="De qual local (almoxarifado/obra) o material saiu.">
+          <Select
+            id="m-receive-location"
+            value={receiveForm.sourceLocationId}
+            onChange={(e) => setReceiveForm((p) => ({ ...p, sourceLocationId: e.target.value }))}
+          >
+            <option value="">Selecione...</option>
+            {inventoryLocations.map((loc) => (
+              <option key={loc.id} value={loc.id}>{loc.name}</option>
+            ))}
+          </Select>
+        </FormField>
+      </Modal>
+
+      <Modal
+        open={!!returnTarget}
+        onClose={() => setReturnTarget(null)}
+        title="Devolver material ao estoque"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setReturnTarget(null)}>Cancelar</Button>
+            <Button onClick={handleConfirmReturn} loading={savingReturn} disabled={!returnForm.inventoryItemId || !returnForm.destinationLocationId}>Confirmar devolução</Button>
+          </>
+        }
+      >
+        <p className={styles.rowSubtitle}>{returnTarget?.description} — recebido: {returnTarget ? formatQuantity(returnTarget.quantity) : ""} {returnTarget?.unit}</p>
+        <FormField label="Item do estoque" htmlFor="m-return-item" required>
+          <Select
+            id="m-return-item"
+            value={returnForm.inventoryItemId}
+            onChange={(e) => setReturnForm((p) => ({ ...p, inventoryItemId: e.target.value }))}
+          >
+            <option value="">Selecione...</option>
+            {inventoryItems.map((it) => (
+              <option key={it.id} value={it.id}>{it.name}</option>
+            ))}
+          </Select>
+        </FormField>
+        <FormField label="Local de destino" htmlFor="m-return-location" required helper="Para onde o material volta no estoque.">
+          <Select
+            id="m-return-location"
+            value={returnForm.destinationLocationId}
+            onChange={(e) => setReturnForm((p) => ({ ...p, destinationLocationId: e.target.value }))}
+          >
+            <option value="">Selecione...</option>
+            {inventoryLocations.map((loc) => (
+              <option key={loc.id} value={loc.id}>{loc.name}</option>
+            ))}
+          </Select>
+        </FormField>
+        <FormField label="Quantidade a devolver" htmlFor="m-return-quantity" required>
+          <DecimalInput id="m-return-quantity" value={returnForm.quantity} onChange={(e) => setReturnForm((p) => ({ ...p, quantity: e.target.value }))} />
         </FormField>
       </Modal>
 

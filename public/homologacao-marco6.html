@@ -357,6 +357,24 @@
 
 <div class="wrap">
 
+  <section style="background:#1f2937;color:#f9fafb;border-radius:14px;padding:24px 28px;margin-bottom:28px;border:2px solid #10b981;">
+    <p style="text-transform:uppercase;letter-spacing:.08em;font-size:12px;color:#34d399;font-weight:700;margin:0 0 10px;">Atualização mais recente — 07/10/2026 — leia antes do restante da página</p>
+    <p style="margin:0 0 14px;font-size:15px;line-height:1.5;">
+      Resposta aos 4 pontos do seu reteste mais recente na obra <code style="background:#111827;padding:2px 6px;border-radius:4px;">e6d36119-e440-412b-96ad-dc9282ef29a9</code>:
+    </p>
+    <ul style="margin:0 0 14px;padding-left:20px;font-size:14px;line-height:1.6;">
+      <li><strong>Margem mínima "não configurada"</strong> — não era bug de código: rodadas de testes automatizados concorrentes na mesma empresa de homologação fecharam a versão ativa da regra sem publicar outra. Reconfigurada (10%) na empresa "Nayara One — Empresa Dev".</li>
+      <li><strong>Não conformidade sem responsável/evidência "antes"</strong> — confirmado, era um gap real (contrato: "Não conformidade exige severidade, responsável, SLA, evidência antes/depois e aceite quando aplicável"). A API agora bloqueia abrir (ou gerar automaticamente, ao reprovar um item de checklist) uma NC sem os dois. O registro "HOMO QA RETESTE" que você criou como evidência foi preservado, intocado. O SLA agora é calculado automaticamente por severidade quando não informado manualmente (mesma regra REG-OBR-002 já usada em garantia).</li>
+      <li><strong>Pós-obra fechado sem causa raiz/fotos/ação</strong> — confirmado, gap real (contrato: "Pós-obra possui SLA, causa, materiais, mão de obra, custo e evidências"). A API agora bloqueia fechar um chamado sem causa raiz, evidência "antes" e "depois", e ao menos uma ação de atendimento registrada. A tela nunca tinha campo de upload de evidência pro pós-obra — foi adicionado. O chamado <code style="background:#111827;padding:2px 6px;border-radius:4px;">ab17bf65…</code> que você usou como evidência foi preservado, intocado.</li>
+      <li><strong>Requisição de material "recebida" sem vínculo ao estoque</strong> — confirmado, gap real (contrato §7/§8: "recebimento integra Estoque"). Confirmar recebimento agora exige escolher o item e o local reais do estoque (bloqueado sem isso), debitando saldo de verdade. Também criamos o fluxo de devolução que não existia (contrato: "Devolução/reaproveitamento gera movimento inverso") — credita o saldo de volta via um movimento RETURN real, idempotente.</li>
+    </ul>
+    <p style="margin:0;font-size:13px;color:#d1d5db;">
+      Branch: <code style="background:#111827;padding:2px 6px;border-radius:4px;">marco-6-e-7-homologado-nayara</code> ·
+      Commits publicados: ver seção <a href="#s-matriz" style="color:#34d399;">06 — Matriz desta rodada</a> abaixo ·
+      Para conferir o commit publicado a qualquer momento: <code style="background:#111827;padding:2px 6px;border-radius:4px;">GET /api/version</code> no Front.
+    </p>
+  </section>
+
   <header class="cover">
     <p class="eyebrow">Nayara One · Homologação</p>
     <h1 class="title">Marco 6 — Construção, Obras e Pós-obra</h1>
@@ -691,6 +709,43 @@ fail 0
       </table>
     </div>
     <p class="fix-body">Tela: <code>app/painel/obras/dashboard/page.js</code> — dois blocos visuais distintos ("Painel Obras (em andamento)" e "Painel Pós-obra (garantia)"), acessível em <code>/painel/obras/dashboard</code>, confirmado respondendo HTTP 200 no servidor de desenvolvimento ativo na porta 3000.</p>
+  </section>
+
+  <section id="s-matriz">
+    <h2 class="h"><span class="n">07</span> Pontos corrigidos nesta rodada (07/10/2026)</h2>
+    <p class="lede">Resposta direta ao reteste mais recente, obra <code>e6d36119-e440-412b-96ad-dc9282ef29a9</code>.</p>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Ponto reportado</th><th>Situação</th><th>Implementação</th><th>Teste</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Margem mínima "não configurada"</td>
+            <td><span class="pill ok">Dado corrigido</span></td>
+            <td>Não era bug — versão ativa da regra (REG-OBR-001) ficou sem sucessora depois de rodadas de teste automatizado concorrentes na mesma empresa. Republicada (10%).</td>
+            <td>Confirmado via consulta direta: exatamente 1 versão ativa de <code>REG-OBR-001</code> para a empresa.</td>
+          </tr>
+          <tr>
+            <td>NC sem responsável/evidência "antes" (pág. 160)</td>
+            <td><span class="pill ok">Corrigido</span></td>
+            <td><code>nonconformities.service.js#createNonconformity</code> exige <code>responsibleUserId</code> e <code>beforeEvidenceFileIds</code>; SLA calculado automaticamente por severidade (REG-OBR-002) quando não informado. <code>qualityChecklist.service.js</code> (abertura automática ao reprovar item) também exige evidência.</td>
+            <td><code>test/construction.nonconformities.test.js</code>, <code>test/construction.evidenceReuse.test.js</code>, <code>test/construction.delivery.test.js</code> — todos PASS.</td>
+          </tr>
+          <tr>
+            <td>Pós-obra fechado sem causa raiz/fotos/ação (pág. 160-161)</td>
+            <td><span class="pill ok">Corrigido</span></td>
+            <td><code>maintenanceCases.service.js#updateMaintenanceCase</code> bloqueia transição para CLOSED sem <code>rootCauseCode</code>, <code>beforeMediaFileIds</code>/<code>afterMediaFileIds</code> e ao menos uma <code>WarrantyAction</code>. Tela de pós-obra ganhou upload de evidência (não existia).</td>
+            <td><code>test/construction.warranty.test.js</code> (42/42), <code>test/construction.delivery.test.js</code>, <code>test/construction.e2e.test.js</code> — todos PASS.</td>
+          </tr>
+          <tr>
+            <td>Requisição "recebida" sem vínculo ao estoque (§7/§8)</td>
+            <td><span class="pill ok">Corrigido</span></td>
+            <td><code>materialRequests.service.js#receiveMaterialRequest</code> agora exige <code>inventoryItemId</code>/<code>sourceLocationId</code> (antes era opcional). Novo <code>returnMaterialRequest</code> — devolução gera movimento RETURN real, idempotente. Tela ganhou modais de recebimento (seleção de item/local) e devolução.</td>
+            <td><code>test/construction.materialRequests.test.js</code> — 12/12 PASS, incluindo devolução e bloqueio sem vínculo.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="lede" style="margin-top:20px;">Commits publicados: API <code>PENDENTE-PREENCHER</code> · Front <code>PENDENTE-PREENCHER</code> · Branch <code>marco-6-e-7-homologado-nayara</code>.</p>
   </section>
 
   <footer>
