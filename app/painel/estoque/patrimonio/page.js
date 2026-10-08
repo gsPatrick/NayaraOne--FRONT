@@ -78,6 +78,10 @@ export default function PatrimonioPage() {
     }
   }
   const [transferLocationId, setTransferLocationId] = useState("");
+  // GAP REAL CORRIGIDO (auditoria Marco 7, 2026-10-08): assets.service.js#transferAsset aceita
+  // destinationCustodianUserId (troca de responsável sem necessariamente mudar o local físico) —
+  // o modal só tinha "Novo local", exigindo sempre mudar o local até pra só repassar a posse.
+  const [transferCustodianId, setTransferCustodianId] = useState("");
 
   const [loanTarget, setLoanTarget] = useState(null);
   const [loanPersonId, setLoanPersonId] = useState("");
@@ -169,9 +173,13 @@ export default function PatrimonioPage() {
     setBusyId(transferTarget.id);
     setActionError("");
     try {
-      await transferAsset(transferTarget.id, { destinationLocationId: transferLocationId });
+      await transferAsset(transferTarget.id, {
+        destinationLocationId: transferLocationId || undefined,
+        destinationCustodianUserId: transferCustodianId || undefined,
+      });
       setTransferTarget(null);
       setTransferLocationId("");
+      setTransferCustodianId("");
       load();
     } catch (err) {
       setActionError(err?.message || "Não foi possível transferir o patrimônio.");
@@ -493,34 +501,37 @@ export default function PatrimonioPage() {
       <Modal
         size="lg"
         open={Boolean(transferTarget)}
-        onClose={() => setTransferTarget(null)}
+        onClose={() => { setTransferTarget(null); setTransferLocationId(""); setTransferCustodianId(""); }}
         title="Transferir patrimônio"
         footer={
-          locations.length === 0 ? (
-            <Button variant="secondary" onClick={() => setTransferTarget(null)}>Fechar</Button>
-          ) : (
-            <>
-              <Button variant="secondary" onClick={() => setTransferTarget(null)}>Cancelar</Button>
-              <Button onClick={handleTransfer} loading={busyId === transferTarget?.id} disabled={!transferLocationId}>Transferir</Button>
-            </>
-          )
+          <>
+            <Button variant="secondary" onClick={() => { setTransferTarget(null); setTransferLocationId(""); setTransferCustodianId(""); }}>Cancelar</Button>
+            <Button onClick={handleTransfer} loading={busyId === transferTarget?.id} disabled={!transferLocationId && !transferCustodianId}>Transferir</Button>
+          </>
         }
       >
-        {locations.length === 0 ? (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "var(--space-4)", padding: "var(--space-4) 0" }}>
-            <EmptyState icon="mapPin" title="Nenhum local de estoque cadastrado" description="Você precisa cadastrar pelo menos um local antes de transferir este patrimônio." />
-            <Button onClick={() => router.push("/painel/estoque")}>Cadastrar local agora</Button>
-          </div>
-        ) : (
-        <FormField label="Novo local" required>
-          <Select value={transferLocationId} onChange={(e) => setTransferLocationId(e.target.value)}>
-            <option value="">Selecione...</option>
-            {locations.map((l) => (
-              <option key={l.id} value={l.id}>{l.name}</option>
+        <FormField label="Novo local" helper="Informe o novo local e/ou o novo responsável — ao menos um dos dois é obrigatório.">
+          {locations.length === 0 ? (
+            <Button variant="secondary" size="sm" onClick={() => router.push("/painel/estoque")} style={{ alignSelf: "flex-start" }}>
+              Cadastrar local
+            </Button>
+          ) : (
+            <Select value={transferLocationId} onChange={(e) => setTransferLocationId(e.target.value)}>
+              <option value="">Sem alteração</option>
+              {locations.map((l) => (
+                <option key={l.id} value={l.id}>{l.name}</option>
+              ))}
+            </Select>
+          )}
+        </FormField>
+        <FormField label="Novo responsável/custodiante">
+          <Select value={transferCustodianId} onChange={(e) => setTransferCustodianId(e.target.value)}>
+            <option value="">Sem alteração</option>
+            {users.map((u) => (
+              <option key={u.id} value={u.id}>{u.name || u.email}</option>
             ))}
           </Select>
         </FormField>
-        )}
       </Modal>
 
       <Modal

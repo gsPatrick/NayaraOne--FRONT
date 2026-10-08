@@ -93,6 +93,22 @@ export default function SegurosPage() {
   // Lista os lançamentos SETTLED da empresa pra escolher por descrição/valor.
   const [settledEntries, setSettledEntries] = useState([]);
 
+  // GAP REAL CORRIGIDO (auditoria Marco 7, 2026-10-08): quoteInsurancePolicy ia com payload
+  // vazio — insurance.service.js#quotePolicy repassa o quoteRequest pro adapter, que usa
+  // estimatedValue pra calcular o prêmio (ver SandboxInsuranceAdapter.quote em
+  // InsuranceAdapter.js: premiumAmount = estimatedValue * 0.01). Sem isso o prêmio sandbox
+  // sempre caía no fallback fixo de 100, e providers reais (Porto/Yelum) recebiam cotação sem
+  // nenhum dado pra calcular de verdade.
+  const [quoteTarget, setQuoteTarget] = useState(null);
+  const [quoteForm, setQuoteForm] = useState({ estimatedValue: "" });
+
+  // GAP REAL CORRIGIDO (auditoria Marco 7, 2026-10-08): issueInsurancePolicy sempre calculava
+  // effectiveDate/expiryDate como hoje+1 ano no handler, sem input visível, e nunca enviava
+  // installmentsCount (sempre 1 parcela) — issuePolicy em insurance.service.js aceita os três
+  // campos reais no payload.
+  const [issueTarget, setIssueTarget] = useState(null);
+  const [issueForm, setIssueForm] = useState({ effectiveDate: "", expiryDate: "", installmentsCount: "1" });
+
   useEffect(() => {
     listFinancialEntries({ status: "SETTLED" }).then(setSettledEntries).catch(() => {});
   }, []);
@@ -199,17 +215,20 @@ export default function SegurosPage() {
     }
   }
 
-  async function handleQuote(id) {
-    const ok = await confirm({
-      title: "Cotar esta apólice?",
-      message: "Vai consultar a seguradora configurada em Configurações → Integrações pra obter um prêmio. Essa chamada é real, não um teste.",
-      confirmLabel: "Cotar",
-    });
-    if (!ok) return;
+  function openQuote(id) {
+    setQuoteForm({ estimatedValue: "" });
+    setQuoteTarget(id);
+  }
+
+  async function handleQuote() {
+    const id = quoteTarget;
     setBusyId(id);
     setActionError("");
     try {
-      await quoteInsurancePolicy(id, {});
+      await quoteInsurancePolicy(id, {
+        estimatedValue: quoteForm.estimatedValue ? toNumber(quoteForm.estimatedValue) : undefined,
+      });
+      setQuoteTarget(null);
       const policy = await getInsurancePolicy(id);
       setDetailModal({ policy });
       loadDocuments(policy.id);
@@ -221,24 +240,29 @@ export default function SegurosPage() {
     }
   }
 
-  async function handleIssue(id) {
-    const ok = await confirm({
-      title: "Emitir esta apólice?",
-      message: "A apólice será emitida com vigência de 1 ano a partir de hoje e as parcelas do prêmio serão geradas. Esta ação não pode ser desfeita.",
-      confirmLabel: "Emitir",
-      tone: "danger",
+  function openIssue(id) {
+    const today = new Date();
+    const nextYear = new Date(today);
+    nextYear.setFullYear(nextYear.getFullYear() + 1);
+    setIssueForm({
+      effectiveDate: today.toISOString().slice(0, 10),
+      expiryDate: nextYear.toISOString().slice(0, 10),
+      installmentsCount: "1",
     });
-    if (!ok) return;
+    setIssueTarget(id);
+  }
+
+  async function handleIssue() {
+    const id = issueTarget;
     setBusyId(id);
     setActionError("");
     try {
-      const today = new Date();
-      const nextYear = new Date(today);
-      nextYear.setFullYear(nextYear.getFullYear() + 1);
       await issueInsurancePolicy(id, {
-        effectiveDate: today.toISOString().slice(0, 10),
-        expiryDate: nextYear.toISOString().slice(0, 10),
+        effectiveDate: issueForm.effectiveDate || undefined,
+        expiryDate: issueForm.expiryDate || undefined,
+        installmentsCount: issueForm.installmentsCount ? Number(issueForm.installmentsCount) : undefined,
       });
+      setIssueTarget(null);
       const policy = await getInsurancePolicy(id);
       setDetailModal({ policy });
       loadInstallments(policy.id);
@@ -302,10 +326,10 @@ export default function SegurosPage() {
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
           <Button size="sm" variant="secondary" onClick={() => openDetail(row)}>Ver</Button>
           {row.status === "DRAFT" ? (
-            <Button size="sm" onClick={() => handleQuote(row.id)} loading={busyId === row.id}>Cotar</Button>
+            <Button size="sm" onClick={() => openQuote(row.id)} loading={busyId === row.id}>Cotar</Button>
           ) : null}
           {["DRAFT", "QUOTED"].includes(row.status) ? (
-            <Button size="sm" onClick={() => handleIssue(row.id)} loading={busyId === row.id}>Emitir</Button>
+            <Button size="sm" onClick={() => openIssue(row.id)} loading={busyId === row.id}>Emitir</Button>
           ) : null}
         </div>
       ),
@@ -539,6 +563,56 @@ export default function SegurosPage() {
             </div>
           </div>
         ) : null}
+      </Modal>
+
+      <Modal
+        open={Boolean(quoteTarget)}
+        onClose={() => setQuoteTarget(null)}
+        title="Cotar apólice"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setQuoteTarget(null)}>Cancelar</Button>
+            <Button onClick={handleQuote} loading={busyId === quoteTarget}>Cotar</Button>
+          </>
+        }
+      >
+        <p style={{ color: "var(--color-ink-muted)", marginTop: 0 }}>
+          Vai consultar a seguradora configurada em Configurações → Integrações pra obter um prêmio. Essa chamada é real, não um teste.
+        </p>
+        <FormField label="Valor estimado do bem/aluguel segurado (R$)" helper="Usado pelo provider pra calcular o prêmio (ex.: valor do imóvel no seguro-fiança).">
+          <DecimalInput value={quoteForm.estimatedValue} onChange={(e) => setQuoteForm((p) => ({ ...p, estimatedValue: e.target.value }))} />
+        </FormField>
+      </Modal>
+
+      <Modal
+        open={Boolean(issueTarget)}
+        onClose={() => setIssueTarget(null)}
+        title="Emitir apólice"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setIssueTarget(null)}>Cancelar</Button>
+            <Button variant="danger" onClick={handleIssue} loading={busyId === issueTarget}>Emitir</Button>
+          </>
+        }
+      >
+        <p style={{ color: "var(--color-ink-muted)", marginTop: 0 }}>
+          Esta ação não pode ser desfeita. As parcelas do prêmio serão geradas conforme o número de parcelas informado.
+        </p>
+        <FormField label="Início da vigência" required>
+          <Input type="date" value={issueForm.effectiveDate} onChange={(e) => setIssueForm((p) => ({ ...p, effectiveDate: e.target.value }))} />
+        </FormField>
+        <FormField label="Fim da vigência" required>
+          <Input type="date" value={issueForm.expiryDate} onChange={(e) => setIssueForm((p) => ({ ...p, expiryDate: e.target.value }))} />
+        </FormField>
+        <FormField label="Número de parcelas">
+          <Input
+            type="number"
+            min="1"
+            step="1"
+            value={issueForm.installmentsCount}
+            onChange={(e) => setIssueForm((p) => ({ ...p, installmentsCount: e.target.value }))}
+          />
+        </FormField>
       </Modal>
 
       <FileViewerModal open={!!viewerFile} onClose={() => setViewerFile(null)} fileId={viewerFile?.id} />
