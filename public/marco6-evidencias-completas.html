@@ -3039,7 +3039,7 @@ function publishMeasurementApproved(measurement, transaction) {
  * createPayableForMeasurement — IDEMPOTÊNCIA (M6-55/M6-68): usa o MESMO mecanismo de
  * idempotência já usado em todo o módulo Financeiro — `idempotency_key` UNIQUE em
  * finance.financial_entries — derivada deterministicamente do id da medição
- * (`measurement.payable:<measurementId>`). Aprovar a MESMA medição duas vezes (reprocessamento
+ * (`measurement.payable:&lt;measurementId&gt;`). Aprovar a MESMA medição duas vezes (reprocessamento
  * de evento, duplo clique, corrida) NUNCA cria duas contas a pagar:
  *   1º caminho de defesa: lock pessimista em `getStageMeasurement(..., { lock: true })` —
  *      decideStageMeasurement já trava a linha da medição antes de checar o status, então a
@@ -3208,9 +3208,9 @@ test  Run test suite (RLS real, sem bypass — mesmo usuário de privilégio mí
     </dd>
     <dt>Código real</dt>
     <dd>Comandos reais de uso, documentados em <code>scripts/README-backup-restore.md</code>:
-<pre><code>node scripts/backupDatabase.js [--out <diretorio>]
+<pre><code>node scripts/backupDatabase.js [--out &lt;diretorio&gt;]
 
-node scripts/restoreDatabase.js --file <caminho-do-dump> --target-db <banco-destino></code></pre>
+node scripts/restoreDatabase.js --file &lt;caminho-do-dump&gt; --target-db &lt;banco-destino&gt;</code></pre>
     </dd>
     <dt>Teste real</dt>
     <dd>Evidência de execução real documentada em <code>scripts/README-backup-restore.md</code> (seção "Evidência real de execução (08/10/2026)"), com 6 passos reais verificados sequencialmente — não um teste automatizado no <code>node --test</code>, mas um procedimento manual ponta a ponta contra banco real, com banco descartável criado e removido ao final (sem resíduo).</dd>
