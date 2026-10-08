@@ -13,6 +13,7 @@ import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import FormField from "@/components/molecules/FormField/FormField";
 import Input from "@/components/atoms/Input/Input";
 import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
+import Radio from "@/components/atoms/Radio/Radio";
 import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import { BUDGET_STATUS_LABELS, BUDGET_STATUS_TONE } from "@/lib/mock/construction";
@@ -56,6 +57,9 @@ export default function OrcamentoObraPage({ params }) {
   const [marginRuleOpen, setMarginRuleOpen] = useState(false);
   const [marginRuleError, setMarginRuleError] = useState("");
   const [marginRulePct, setMarginRulePct] = useState("");
+  const [marginEconomyPct, setMarginEconomyPct] = useState("");
+  const [marginCommissionPct, setMarginCommissionPct] = useState("");
+  const [marginEnforcementMode, setMarginEnforcementMode] = useState("ALERT");
   const [savingMarginRule, setSavingMarginRule] = useState(false);
 
   function load() {
@@ -235,6 +239,17 @@ export default function OrcamentoObraPage({ params }) {
 
   function openMarginRuleModal() {
     setMarginRulePct(activeMarginRule ? String(Number(activeMarginRule.minMarginPct)).replace(".", ",") : "");
+    setMarginEconomyPct(
+      activeMarginRule && activeMarginRule.economyPct !== null && activeMarginRule.economyPct !== undefined
+        ? String(Number(activeMarginRule.economyPct)).replace(".", ",")
+        : ""
+    );
+    setMarginCommissionPct(
+      activeMarginRule && activeMarginRule.commissionPct !== null && activeMarginRule.commissionPct !== undefined
+        ? String(Number(activeMarginRule.commissionPct)).replace(".", ",")
+        : ""
+    );
+    setMarginEnforcementMode(activeMarginRule?.enforcementMode === "BLOCK" ? "BLOCK" : "ALERT");
     setMarginRuleError("");
     setMarginRuleOpen(true);
   }
@@ -248,6 +263,9 @@ export default function OrcamentoObraPage({ params }) {
         groupId: project.groupId,
         companyId: project.companyId,
         minMarginPct: toNumber(marginRulePct),
+        economyPct: marginEconomyPct === "" ? null : toNumber(marginEconomyPct),
+        commissionPct: marginCommissionPct === "" ? null : toNumber(marginCommissionPct),
+        enforcementMode: marginEnforcementMode,
       });
       setActiveMarginRule(rule);
       setMarginRuleOpen(false);
@@ -483,6 +501,57 @@ export default function OrcamentoObraPage({ params }) {
             onFocus={(e) => e.target.select()}
             placeholder="10,00"
           />
+        </FormField>
+
+        <FormField
+          label="Economia (%)"
+          htmlFor="m-economy-pct"
+          helper="Opcional — percentual de economia esperado sobre o custo, usado apenas como referência informativa."
+        >
+          <DecimalInput
+            id="m-economy-pct"
+            value={marginEconomyPct}
+            onChange={(e) => setMarginEconomyPct(e.target.value)}
+            onFocus={(e) => e.target.select()}
+            placeholder="0,00"
+          />
+        </FormField>
+
+        <FormField
+          label="Comissão (%)"
+          htmlFor="m-commission-pct"
+          helper="Opcional — percentual de comissão considerado no cálculo de margem."
+        >
+          <DecimalInput
+            id="m-commission-pct"
+            value={marginCommissionPct}
+            onChange={(e) => setMarginCommissionPct(e.target.value)}
+            onFocus={(e) => e.target.select()}
+            placeholder="0,00"
+          />
+        </FormField>
+
+        <FormField
+          label="Comportamento quando a margem ficar abaixo do mínimo"
+          htmlFor="m-enforcement-alert"
+          helper="Alertar apenas avisa na Saúde da obra. Bloquear impede a aprovação do orçamento e de change orders enquanto a margem projetada estiver abaixo do mínimo."
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
+            <Radio
+              id="m-enforcement-alert"
+              name="marginEnforcementMode"
+              label="Apenas alertar"
+              checked={marginEnforcementMode === "ALERT"}
+              onChange={() => setMarginEnforcementMode("ALERT")}
+            />
+            <Radio
+              id="m-enforcement-block"
+              name="marginEnforcementMode"
+              label="Bloquear aprovação"
+              checked={marginEnforcementMode === "BLOCK"}
+              onChange={() => setMarginEnforcementMode("BLOCK")}
+            />
+          </div>
         </FormField>
       </Modal>
 
