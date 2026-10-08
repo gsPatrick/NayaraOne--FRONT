@@ -16,6 +16,8 @@ import StickyActionBar from "@/components/organisms/StickyActionBar/StickyAction
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import SwitchableChart from "@/components/molecules/SwitchableChart/SwitchableChart";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import Modal from "@/components/organisms/Modal/Modal";
+import FileDropInput from "@/components/molecules/FileDropInput/FileDropInput";
 import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
 import {
   getCount, addCountItem, completeCount, applyCountAdjustment,
@@ -23,6 +25,7 @@ import {
 } from "@/lib/api/inventory";
 import { listProjects } from "@/lib/api/construction";
 import { apiFetch } from "@/lib/api/client";
+import { uploadFile } from "@/lib/api/legal";
 import { formatDateTime, formatQuantity, toNumber } from "@/lib/format";
 import styles from "./page.module.css";
 
@@ -50,6 +53,17 @@ export default function ContagemDetailPage() {
   const [busyLineId, setBusyLineId] = useState(null);
 
   const [lineForm, setLineForm] = useState({ inventoryItemId: "", countedQuantity: "" });
+
+  // GAP REAL CORRIGIDO (EST-008/REG-EST-002, 2026-10-08): ajuste de contagem de alto valor agora
+  // exige evidenceFileId (ver movements.service.js) — essa tela nunca teve campo de evidência,
+  // o que bloquearia o fluxo sem nenhuma saída. Evidência fica opcional aqui (só é exigida de
+  // fato pelo backend quando o valor estimado cruza o limiar do REG-EST-002); o erro
+  // INVENTORY_MOVEMENT_EVIDENCE_REQUIRED_HIGH_VALUE reabre este modal pedindo o anexo.
+  const [adjustModalLine, setAdjustModalLine] = useState(null);
+  const [adjustEvidenceFileId, setAdjustEvidenceFileId] = useState("");
+  const [adjustEvidenceFileName, setAdjustEvidenceFileName] = useState("");
+  const [adjustEvidenceUploading, setAdjustEvidenceUploading] = useState(false);
+  const [adjustEvidenceError, setAdjustEvidenceError] = useState("");
 
   function load() {
     setLoading(true);
@@ -124,23 +138,46 @@ export default function ContagemDetailPage() {
     }
   }
 
-  async function handleAdjust(line) {
-    const ok = await confirm({
-      title: "Aplicar este ajuste de estoque?",
-      message: `O saldo de "${itemName(line.inventoryItemId)}" será ajustado em ${formatQuantity(line.divergence)} pra bater com o que foi contado fisicamente. Esta ação movimenta estoque de verdade e não pode ser desfeita pelo mesmo fluxo.`,
-      confirmLabel: "Aplicar ajuste",
-      tone: "danger",
-    });
-    if (!ok) return;
+  function handleAdjust(line) {
+    setAdjustModalLine(line);
+    setAdjustEvidenceFileId("");
+    setAdjustEvidenceFileName("");
+    setAdjustEvidenceError("");
+  }
 
+  async function handleAdjustEvidenceUpload(files) {
+    const file = files?.[0];
+    if (!file) return;
+    setAdjustEvidenceUploading(true);
+    setAdjustEvidenceError("");
+    try {
+      const uploaded = await uploadFile(file);
+      setAdjustEvidenceFileId(uploaded.id);
+      setAdjustEvidenceFileName(file.name);
+    } catch (err) {
+      setAdjustEvidenceError(err?.message || "Não foi possível enviar o arquivo.");
+    } finally {
+      setAdjustEvidenceUploading(false);
+    }
+  }
+
+  async function handleConfirmAdjust() {
+    const line = adjustModalLine;
+    if (!line) return;
     setBusyLineId(line.id);
     setActionError("");
     try {
-      await applyCountAdjustment(line.id);
+      await applyCountAdjustment(line.id, adjustEvidenceFileId || undefined);
       const full = await getCount(count.id);
       setCount(full);
+      setAdjustModalLine(null);
     } catch (err) {
-      setActionError(err?.message || "Não foi possível aplicar o ajuste.");
+      if (err?.code === "INVENTORY_MOVEMENT_EVIDENCE_REQUIRED_HIGH_VALUE") {
+        setAdjustEvidenceError(err.message);
+      } else {
+        setActionError(err?.message || "Não foi possível aplicar o ajuste.");
+        setAdjustModalLine(null);
+      }
     } finally {
       setBusyLineId(null);
     }
@@ -312,6 +349,41 @@ export default function ContagemDetailPage() {
           </Button>
         </StickyActionBar>
       ) : null}
+
+      <Modal
+        open={Boolean(adjustModalLine)}
+        title="Aplicar ajuste de estoque"
+        onClose={() => setAdjustModalLine(null)}
+        footer={
+          adjustModalLine ? (
+            <>
+              <Button variant="secondary" onClick={() => setAdjustModalLine(null)}>Cancelar</Button>
+              <Button variant="danger" onClick={handleConfirmAdjust} loading={busyLineId === adjustModalLine.id}>
+                Aplicar ajuste
+              </Button>
+            </>
+          ) : null
+        }
+      >
+        {adjustModalLine ? (
+          <>
+            <p>
+              O saldo de &quot;{itemName(adjustModalLine.inventoryItemId)}&quot; será ajustado em{" "}
+              {formatQuantity(adjustModalLine.divergence)} pra bater com o que foi contado fisicamente. Esta ação
+              movimenta estoque de verdade e não pode ser desfeita pelo mesmo fluxo.
+            </p>
+            {adjustEvidenceError ? <Alert tone="danger">{adjustEvidenceError}</Alert> : null}
+            <FormField label="Evidência fotográfica (opcional — obrigatória para ajustes de alto valor)">
+              <FileDropInput
+                onFiles={handleAdjustEvidenceUpload}
+                uploading={adjustEvidenceUploading}
+                fileNames={adjustEvidenceFileName ? [adjustEvidenceFileName] : []}
+                onRemove={() => { setAdjustEvidenceFileId(""); setAdjustEvidenceFileName(""); }}
+              />
+            </FormField>
+          </>
+        ) : null}
+      </Modal>
 
       <ConfirmDialog />
     </AppShell>
