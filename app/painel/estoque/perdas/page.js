@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -17,7 +18,7 @@ import StickyActionBar from "@/components/organisms/StickyActionBar/StickyAction
 import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
-import { listLossCases, openLossCase, decideLossCase, listInventoryItems, listInventoryLocations, listAssets } from "@/lib/api/inventory";
+import { listLossCases, openLossCase, decideLossCase, listInventoryItems, listInventoryLocations, listAssets, listLossCaseAnomalies } from "@/lib/api/inventory";
 import { formatBRL, formatDateTime, toNumber } from "@/lib/format";
 
 const STATUS_LABELS = { OPEN: "Em análise", APPROVED: "Aprovada (baixa gerada)", REJECTED: "Rejeitada" };
@@ -33,6 +34,10 @@ export default function PerdasPage() {
   const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [busyId, setBusyId] = useState(null);
+  // EST-013/EST-TS-14: indícios da NAY (recorrência/valor fora do padrão) — contexto de LEITURA
+  // para quem decide; não altera o fluxo de decisão nem gera cobrança. Falha aqui nunca impede a
+  // tela de funcionar.
+  const [nayFlags, setNayFlags] = useState({});
   const { confirm, ConfirmDialog } = useConfirm();
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -56,6 +61,13 @@ export default function PerdasPage() {
       })
       .catch((err) => setLoadError(err?.message || "Não foi possível carregar os casos de perda."))
       .finally(() => setLoading(false));
+    listLossCaseAnomalies()
+      .then((analysis) => {
+        const map = {};
+        for (const c of analysis?.cases || []) if (c.flags?.length) map[c.lossCaseId] = c.flags;
+        setNayFlags(map);
+      })
+      .catch(() => setNayFlags({}));
   }
   useEffect(() => { load(); }, []);
 
@@ -130,7 +142,22 @@ export default function PerdasPage() {
     { key: "qty", label: "Quantidade", width: "10%", render: (row) => row.quantity || "—" },
     { key: "context", label: "Contexto", width: "21%" },
     { key: "estimate", label: "Estimativa", width: "12%", render: (row) => (row.estimatedCost != null ? formatBRL(row.estimatedCost) : "—") },
-    { key: "status", label: "Status", width: "26%", render: (row) => <Badge tone={STATUS_TONE[row.status]}>{STATUS_LABELS[row.status]}</Badge> },
+    {
+      key: "status",
+      label: "Status",
+      width: "26%",
+      render: (row) => (
+        <div style={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-start" }}>
+          <Badge tone={STATUS_TONE[row.status]}>{STATUS_LABELS[row.status]}</Badge>
+          {nayFlags[row.id] ? (
+            <span title={`${nayFlags[row.id].map((f) => f.message).join(" ")} (Sugestão da NAY — não atribui culpa nem gera cobrança.)`} style={{ fontSize: 12 }}>
+              <Badge tone="warning">NAY: {nayFlags[row.id].length} indício(s)</Badge>{" "}
+              <Link href="/painel/estoque/sugestoes">ver</Link>
+            </span>
+          ) : null}
+        </div>
+      ),
+    },
     {
       key: "actions",
       label: "",

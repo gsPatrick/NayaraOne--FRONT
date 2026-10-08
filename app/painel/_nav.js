@@ -71,6 +71,7 @@ export const NAV_SECTIONS = [
           { label: "Manutenção", href: "/painel/estoque/manutencao" },
           { label: "Perdas & Extravios", href: "/painel/estoque/perdas" },
           { label: "Inventário físico", href: "/painel/estoque/contagem" },
+          { label: "Sugestões da NAY", href: "/painel/estoque/sugestoes" },
         ],
       },
       {
