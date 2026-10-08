@@ -16,7 +16,7 @@ import Alert from "@/components/molecules/Alert/Alert";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
-import { listInventoryItems, createInventoryItem, listInventoryLocations, createInventoryLocation } from "@/lib/api/inventory";
+import { listInventoryItems, createInventoryItem, listInventoryLocations, createInventoryLocation, getItemMinStockRule, createItemMinStockRule } from "@/lib/api/inventory";
 import { formatQuantity, formatBRL, toNumber } from "@/lib/format";
 import styles from "../obras/lista/page.module.css";
 
@@ -40,6 +40,16 @@ export default function EstoqueItensPage() {
   const [locationModalOpen, setLocationModalOpen] = useState(false);
   const [locationForm, setLocationForm] = useState({ name: "", locationType: "WAREHOUSE" });
   const [savingLocation, setSavingLocation] = useState(false);
+
+  // GAP CORRIGIDO (auditoria de conformidade Marco 7, EST-012: "Estoque mínimo e reposição vêm
+  // do Motor de Regras"): a política de mínimo/reposição de cada item é a regra REG-EST-001 do
+  // Motor de Regras (por item, com sobreposição opcional por local). Cada gravação publica uma
+  // NOVA versão da regra — a coluna "Estoque mínimo" da tabela é só o espelho do padrão vigente.
+  const [policyItem, setPolicyItem] = useState(null);
+  const [policyInfo, setPolicyInfo] = useState(null);
+  const [policyForm, setPolicyForm] = useState({ minimumQuantity: "", reorderQuantity: "", byLocation: {} });
+  const [policyLoading, setPolicyLoading] = useState(false);
+  const [savingPolicy, setSavingPolicy] = useState(false);
 
   function load() {
     setLoading(true);
@@ -106,6 +116,63 @@ export default function EstoqueItensPage() {
     }
   }
 
+  function toInputValue(value) {
+    return value == null ? "" : String(value).replace(".", ",");
+  }
+
+  async function openPolicyModal(item) {
+    setActionError("");
+    setPolicyItem(item);
+    setPolicyInfo(null);
+    setPolicyForm({ minimumQuantity: "", reorderQuantity: "", byLocation: {} });
+    setPolicyLoading(true);
+    try {
+      const policy = await getItemMinStockRule(item.id);
+      setPolicyInfo(policy);
+      const byLocation = {};
+      Object.entries(policy?.byLocation || {}).forEach(([locId, qty]) => { byLocation[locId] = toInputValue(qty); });
+      setPolicyForm({ minimumQuantity: toInputValue(policy?.minimumQuantity), reorderQuantity: toInputValue(policy?.reorderQuantity), byLocation });
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível carregar a política de estoque mínimo.");
+    } finally {
+      setPolicyLoading(false);
+    }
+  }
+
+  function optionalQuantity(raw) {
+    if (raw == null || String(raw).trim() === "") return null;
+    return toNumber(raw);
+  }
+
+  const policyValues = [policyForm.minimumQuantity, policyForm.reorderQuantity, ...Object.values(policyForm.byLocation)]
+    .map(optionalQuantity)
+    .filter((v) => v !== null);
+  const policyValid = policyValues.every((v) => !Number.isNaN(v) && v >= 0);
+
+  async function handleSavePolicy() {
+    if (!policyItem || !policyValid) return;
+    setSavingPolicy(true);
+    setActionError("");
+    try {
+      const byLocation = {};
+      Object.entries(policyForm.byLocation).forEach(([locId, raw]) => {
+        const qty = optionalQuantity(raw);
+        if (qty !== null) byLocation[locId] = qty;
+      });
+      await createItemMinStockRule(policyItem.id, {
+        minimumQuantity: optionalQuantity(policyForm.minimumQuantity),
+        reorderQuantity: optionalQuantity(policyForm.reorderQuantity),
+        byLocation,
+      });
+      setPolicyItem(null);
+      load();
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível salvar a política de estoque mínimo.");
+    } finally {
+      setSavingPolicy(false);
+    }
+  }
+
   const columns = [
     { key: "name", label: "Nome", width: "22%", render: (row) => <span className={styles.nameMain}>{row.name}</span> },
     { key: "sku", label: "SKU", width: "12%", render: (row) => row.sku || "—" },
@@ -113,6 +180,14 @@ export default function EstoqueItensPage() {
     { key: "unit", label: "Unidade", width: "10%", render: (row) => row.unitOfMeasure || "—" },
     { key: "min", label: "Estoque mínimo", width: "14%", render: (row) => (row.minimumQuantity != null ? formatQuantity(row.minimumQuantity) : "—") },
     { key: "avgCost", label: "Custo médio", width: "14%", render: (row) => (row.averageCost != null ? formatBRL(row.averageCost) : "—") },
+    {
+      key: "policy",
+      label: "",
+      width: "14%",
+      render: (row) => (row.itemType === "SERVICE_ITEM" ? null : (
+        <Button size="sm" variant="secondary" onClick={() => openPolicyModal(row)}>Política de mínimo</Button>
+      )),
+    },
   ];
 
   const locationColumns = [
@@ -194,9 +269,50 @@ export default function EstoqueItensPage() {
             ))}
           </Select>
         </FormField>
-        <FormField label="Estoque mínimo" helper="Dispara aviso (inventory.stock.low) quando o saldo cruzar este valor.">
+        <FormField label="Estoque mínimo" helper="Vira a versão 1 da política de mínimo do item no Motor de Regras (REG-EST-001). Dispara aviso (inventory.stock.low) quando o saldo cruzar este valor; ajuste por local depois em “Política de mínimo”.">
           <DecimalInput value={itemForm.minimumQuantity} onChange={(e) => setItemForm((p) => ({ ...p, minimumQuantity: e.target.value }))} />
         </FormField>
+      </Modal>
+
+      <Modal
+        size="lg"
+        open={Boolean(policyItem)}
+        onClose={() => setPolicyItem(null)}
+        title={policyItem ? `Política de estoque mínimo — ${policyItem.name}` : "Política de estoque mínimo"}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setPolicyItem(null)}>Cancelar</Button>
+            <Button onClick={handleSavePolicy} loading={savingPolicy} disabled={policyLoading || !policyValid}>Publicar nova versão</Button>
+          </>
+        }
+      >
+        <p style={{ marginBottom: "var(--space-4)", color: "var(--color-ink-muted)", fontSize: "var(--text-body-sm)" }}>
+          Regra REG-EST-001 do Motor de Regras.{" "}
+          {policyInfo
+            ? policyInfo.source === "ITEM"
+              ? "Este item tem política própria vigente — salvar publica uma nova versão (a anterior é preservada no histórico)."
+              : "Este item ainda usa a política padrão da empresa (sem mínimo) — salvar cria a política própria do item."
+            : null}
+        </p>
+        <FormField label="Estoque mínimo padrão" helper="Vale para todos os locais sem valor próprio abaixo. Vazio = sem aviso de estoque baixo.">
+          <DecimalInput value={policyForm.minimumQuantity} onChange={(e) => setPolicyForm((p) => ({ ...p, minimumQuantity: e.target.value }))} />
+        </FormField>
+        <FormField label="Quantidade de reposição" helper="Opcional — quanto repor quando o saldo cruzar o mínimo (segue no aviso inventory.stock.low).">
+          <DecimalInput value={policyForm.reorderQuantity} onChange={(e) => setPolicyForm((p) => ({ ...p, reorderQuantity: e.target.value }))} />
+        </FormField>
+        {locations.length > 0 ? (
+          <>
+            <p style={{ margin: "var(--space-4) 0 var(--space-2)", fontWeight: 600 }}>Mínimo por local (opcional)</p>
+            {locations.map((loc) => (
+              <FormField key={loc.id} label={`${loc.name} (${LOCATION_TYPE_LABELS[loc.locationType] || loc.locationType})`} helper="Vazio = usa o mínimo padrão do item.">
+                <DecimalInput
+                  value={policyForm.byLocation[loc.id] || ""}
+                  onChange={(e) => setPolicyForm((p) => ({ ...p, byLocation: { ...p.byLocation, [loc.id]: e.target.value } }))}
+                />
+              </FormField>
+            ))}
+          </>
+        ) : null}
       </Modal>
 
       <Modal
