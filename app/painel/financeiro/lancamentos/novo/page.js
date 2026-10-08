@@ -67,7 +67,21 @@ export default function NovoLancamentoPage() {
     };
   }, []);
 
-  const isValid = form.description.trim() && Number(form.amount) > 0 && form.bankAccountId && !dueAtInvalid;
+  // BUG REAL CORRIGIDO (auditoria externa Nayara, 2026-10-07; contrato, Centro Financeiro
+  // BLINDADO v1, §4): "Centro de custo obrigatório para despesa. Centro de resultado
+  // obrigatório para receita." A tela marcava os dois campos como "Opcional" e deixava
+  // passar lançamento de despesa/receita sem o centro correspondente — a API agora também
+  // bloqueia isso (FINANCE_ENTRY_COST_CENTER_REQUIRED/FINANCE_ENTRY_RESULT_CENTER_REQUIRED),
+  // mas o front precisa impedir o envio antes, não só mostrar o erro depois do POST.
+  const costCenterMissing = form.nature === "PAYABLE" && !form.costCenterId;
+  const resultCenterMissing = form.nature === "RECEIVABLE" && !form.resultCenterId;
+  const isValid =
+    form.description.trim() &&
+    Number(form.amount) > 0 &&
+    form.bankAccountId &&
+    !dueAtInvalid &&
+    !costCenterMissing &&
+    !resultCenterMissing;
 
   function update(field) {
     return (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
@@ -173,7 +187,13 @@ export default function NovoLancamentoPage() {
                 />
               </FormField>
 
-              <FormField label="Centro de custo" htmlFor="f-cc" helper="Opcional">
+              <FormField
+                label="Centro de custo"
+                htmlFor="f-cc"
+                required={form.nature === "PAYABLE"}
+                helper={form.nature === "PAYABLE" ? "Obrigatório para despesa" : "Opcional"}
+                error={costCenterMissing ? "Obrigatório para lançamentos de despesa." : undefined}
+              >
                 <Select id="f-cc" value={form.costCenterId} onChange={update("costCenterId")}>
                   <option value="">Nenhum</option>
                   {costCenters.map((c) => (
@@ -182,7 +202,13 @@ export default function NovoLancamentoPage() {
                 </Select>
               </FormField>
 
-              <FormField label="Centro de resultado" htmlFor="f-rc" helper="Opcional">
+              <FormField
+                label="Centro de resultado"
+                htmlFor="f-rc"
+                required={form.nature === "RECEIVABLE"}
+                helper={form.nature === "RECEIVABLE" ? "Obrigatório para receita" : "Opcional"}
+                error={resultCenterMissing ? "Obrigatório para lançamentos de receita." : undefined}
+              >
                 <Select id="f-rc" value={form.resultCenterId} onChange={update("resultCenterId")}>
                   <option value="">Nenhum</option>
                   {resultCenters.map((r) => (

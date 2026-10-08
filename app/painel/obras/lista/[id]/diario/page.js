@@ -23,6 +23,7 @@ import {
   updateDailyReport,
   listDailyWorkers,
   listDailyMaterials,
+  getDailyReportHistory,
 } from "@/lib/api/construction";
 import { listPeople } from "@/lib/api/people";
 import { uploadFile } from "@/lib/api/legal";
@@ -67,6 +68,10 @@ export default function DiarioObraPage({ params }) {
   // Equipe do dia (DailyWorker) — achado numa rodada de verificação de integrações
   // (30/09/2026): a fonte exige "documentação correspondente" vinculada ao prestador do dia,
   // campo estava inteiramente ausente do Front (nenhuma tela de equipe do RDO existia).
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState("");
+  const [historyItems, setHistoryItems] = useState([]);
   const [rdoWorkers, setRdoWorkers] = useState([]);
   const [workerUploadingIndex, setWorkerUploadingIndex] = useState(null);
   const [workerUploadError, setWorkerUploadError] = useState("");
@@ -222,6 +227,24 @@ export default function DiarioObraPage({ params }) {
   // corrigido. PATCH /construction/daily-reports/:id já existia na API e em
   // lib/api/construction.js (updateDailyReport) sem nenhum consumidor. Um RDO lançado com
   // data, clima, efetivo ou ocorrências errados ficava errado pra sempre.
+  // GAP CORRIGIDO (auditoria externa Nayara, 2026-10-07): o conteúdo original de um RDO
+  // corrigido sempre foi preservado no banco (append-only via supersedesId), mas a tela nunca
+  // mostrava a versão anterior — não havia como comprovar visualmente que nada foi perdido.
+  async function openHistoryModal(report) {
+    setHistoryOpen(true);
+    setHistoryLoading(true);
+    setHistoryError("");
+    setHistoryItems([]);
+    try {
+      const items = await getDailyReportHistory(report.id);
+      setHistoryItems(items || []);
+    } catch (err) {
+      setHistoryError(err?.message || "Não foi possível carregar o histórico deste RDO.");
+    } finally {
+      setHistoryLoading(false);
+    }
+  }
+
   function openRdoEditModal(report) {
     setEditingRdoId(report.id);
     setRdoDateInvalid(false);
@@ -357,14 +380,25 @@ export default function DiarioObraPage({ params }) {
                       </span>
                     ) : null}
                   </div>
-                  <button
-                    type="button"
-                    className={styles.rowEditBtn}
-                    aria-label={`Editar RDO de ${formatDate(r.reportDate)}`}
-                    onClick={() => openRdoEditModal(r)}
-                  >
-                    <Icon name="pencil" size={14} />
-                  </button>
+                  <div style={{ display: "flex", gap: 4 }}>
+                    <button
+                      type="button"
+                      className={styles.rowEditBtn}
+                      aria-label={`Ver histórico do RDO de ${formatDate(r.reportDate)}`}
+                      title="Ver histórico (append-only — nenhuma correção apaga a versão anterior)"
+                      onClick={() => openHistoryModal(r)}
+                    >
+                      <Icon name="clock" size={14} />
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.rowEditBtn}
+                      aria-label={`Editar RDO de ${formatDate(r.reportDate)}`}
+                      onClick={() => openRdoEditModal(r)}
+                    >
+                      <Icon name="pencil" size={14} />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -547,6 +581,39 @@ export default function DiarioObraPage({ params }) {
         onClose={() => setViewerFileId(null)}
         fileId={viewerFileId}
       />
+
+      <Modal
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        title="Histórico do RDO"
+        footer={<Button variant="secondary" onClick={() => setHistoryOpen(false)}>Fechar</Button>}
+      >
+        {historyError ? <Alert tone="danger">{historyError}</Alert> : null}
+        {historyLoading ? (
+          <p>Carregando...</p>
+        ) : historyItems.length <= 1 ? (
+          <p className={styles.rowSubtitle}>Este RDO nunca foi corrigido — não há versões anteriores.</p>
+        ) : (
+          <div className={styles.rowList}>
+            {historyItems.map((item, idx) => (
+              <div key={item.id} className={styles.rowStatic}>
+                <div className={styles.rowInfo}>
+                  <span className={styles.rowTitle}>
+                    {idx === historyItems.length - 1 ? "Versão atual" : `Versão anterior ${idx + 1}`} —{" "}
+                    {formatDate(item.reportDate)} · {item.weather}
+                  </span>
+                  <span className={styles.rowSubtitle}>
+                    Efetivo: {item.workforceCount} · {item.occurrences || "Sem ocorrências"}
+                  </span>
+                  {item.servicesPerformed ? (
+                    <span className={styles.rowSubtitle}>Serviços: {item.servicesPerformed}</span>
+                  ) : null}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Modal>
     </AppShell>
   );
 }

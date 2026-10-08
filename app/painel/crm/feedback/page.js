@@ -16,6 +16,7 @@ import Table from "@/components/organisms/Table/Table";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import CrmNavMenu from "@/components/molecules/CrmNavMenu/CrmNavMenu";
 import PersonPicker from "@/components/molecules/PersonPicker/PersonPicker";
+import { apiFetch } from "@/lib/api/client";
 import {
   listFeedbackCases,
   createFeedbackCase,
@@ -37,6 +38,7 @@ const OPEN_LIKE = ["OPEN", "IN_PROGRESS"];
 
 export default function FeedbackPage() {
   const [cases, setCases] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
@@ -45,6 +47,10 @@ export default function FeedbackPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [resolveTarget, setResolveTarget] = useState(null);
   const [escalatingId, setEscalatingId] = useState(null);
+
+  function userName(id) {
+    return users.find((u) => u.id === id)?.name || "—";
+  }
 
   function load() {
     setLoading(true);
@@ -57,6 +63,9 @@ export default function FeedbackPage() {
 
   useEffect(() => {
     load();
+    apiFetch("/users")
+      .then((u) => setUsers(u || []))
+      .catch(() => {});
   }, []);
 
   const filtered = useMemo(
@@ -84,10 +93,10 @@ export default function FeedbackPage() {
     }
   }
 
-  async function handleResolve(id, resolutionNotes) {
+  async function handleResolve(id, resolutionNotes, assignedToUserId) {
     setActionError("");
     try {
-      const updated = await resolveFeedbackCase(id, { resolutionNotes });
+      const updated = await resolveFeedbackCase(id, { resolutionNotes, assignedToUserId });
       setCases((prev) => prev.map((c) => (c.id === id ? updated : c)));
       setResolveTarget(null);
       return true;
@@ -147,6 +156,7 @@ export default function FeedbackPage() {
             { key: "description", label: "Descrição", render: (r) => <span className={styles.descCell}>{r.description}</span> },
             { key: "severity", label: "Severidade", render: (r) => <Badge tone={SEVERITY_TONE[r.severity] || "neutral"}>{SEVERITY_LABELS[r.severity] || r.severity}</Badge> },
             { key: "status", label: "Status", render: (r) => <Badge tone={STATUS_TONE[r.status] || "neutral"}>{STATUS_LABELS[r.status] || r.status}</Badge> },
+            { key: "assignedTo", label: "Responsável", render: (r) => (r.assignedToUserId ? userName(r.assignedToUserId) : "—") },
             {
               key: "sla",
               label: "SLA",
@@ -181,18 +191,19 @@ export default function FeedbackPage() {
         </Button>
       </StickyActionBar>
 
-      <CreateFeedbackModal open={createOpen} onClose={() => setCreateOpen(false)} onCreate={handleCreate} />
-      <ResolveModal feedbackCase={resolveTarget} onClose={() => setResolveTarget(null)} onConfirm={handleResolve} />
+      <CreateFeedbackModal open={createOpen} onClose={() => setCreateOpen(false)} onCreate={handleCreate} users={users} />
+      <ResolveModal feedbackCase={resolveTarget} onClose={() => setResolveTarget(null)} onConfirm={handleResolve} users={users} />
     </AppShell>
   );
 }
 
-function CreateFeedbackModal({ open, onClose, onCreate }) {
+function CreateFeedbackModal({ open, onClose, onCreate, users }) {
   const [personName, setPersonName] = useState("");
   const [personId, setPersonId] = useState(null);
   const [type, setType] = useState("COMPLAINT");
   const [severity, setSeverity] = useState("MEDIUM");
   const [description, setDescription] = useState("");
+  const [assignedToUserId, setAssignedToUserId] = useState("");
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
 
@@ -203,6 +214,7 @@ function CreateFeedbackModal({ open, onClose, onCreate }) {
       setType("COMPLAINT");
       setSeverity("MEDIUM");
       setDescription("");
+      setAssignedToUserId("");
       setErrors({});
     }
   }, [open]);
@@ -213,6 +225,7 @@ function CreateFeedbackModal({ open, onClose, onCreate }) {
     setType("COMPLAINT");
     setSeverity("MEDIUM");
     setDescription("");
+    setAssignedToUserId("");
     setErrors({});
     setSubmitting(false);
   }
@@ -226,11 +239,15 @@ function CreateFeedbackModal({ open, onClose, onCreate }) {
     const nextErrors = {};
     if (!personId) nextErrors.personName = "Selecione a pessoa envolvida.";
     if (!description.trim()) nextErrors.description = "Descreva o caso.";
+    // BUG REAL CORRIGIDO (auditoria externa Nayara, 2026-10-07): o contrato exige que toda
+    // ocorrência tenha responsável desde a abertura ("Ocorrência possui responsável, SLA,
+    // severidade e conclusão") — a tela deixava o campo totalmente ausente.
+    if (!assignedToUserId) nextErrors.assignedToUserId = "Selecione o responsável pelo caso.";
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
     setSubmitting(true);
-    const ok = await onCreate({ personId, type, severity, description: description.trim() });
+    const ok = await onCreate({ personId, type, severity, description: description.trim(), assignedToUserId });
     if (ok) reset();
     else setSubmitting(false);
   }
@@ -276,25 +293,47 @@ function CreateFeedbackModal({ open, onClose, onCreate }) {
       <FormField label="Descrição" htmlFor="f-description" required error={errors.description}>
         <Input id="f-description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Descreva o ocorrido..." />
       </FormField>
+      <FormField label="Responsável" htmlFor="f-assigned" required error={errors.assignedToUserId}>
+        <Select id="f-assigned" value={assignedToUserId} onChange={(e) => setAssignedToUserId(e.target.value)}>
+          <option value="">Selecione...</option>
+          {users.map((u) => (
+            <option key={u.id} value={u.id}>{u.name}</option>
+          ))}
+        </Select>
+      </FormField>
     </Modal>
   );
 }
 
-function ResolveModal({ feedbackCase, onClose, onConfirm }) {
+function ResolveModal({ feedbackCase, onClose, onConfirm, users }) {
   const [notes, setNotes] = useState("");
+  const [assignedToUserId, setAssignedToUserId] = useState("");
+  const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     setNotes("");
+    setAssignedToUserId(feedbackCase?.assignedToUserId || "");
+    setErrors({});
     setSubmitting(false);
   }, [feedbackCase]);
 
   if (!feedbackCase) return null;
 
   async function handleConfirm() {
+    // BUG REAL CORRIGIDO (auditoria externa Nayara, 2026-10-07): era possível resolver um caso
+    // deixando a conclusão vazia — o contrato exige "responsável, SLA, severidade e conclusão"
+    // em toda ocorrência. Bloqueio aqui no front espelha a validação que agora existe na API
+    // (FEEDBACK_CASE_RESOLUTION_REQUIRED / FEEDBACK_CASE_ASSIGNEE_REQUIRED).
+    const nextErrors = {};
+    if (!notes.trim()) nextErrors.notes = "Descreva a conclusão do caso.";
+    if (!assignedToUserId) nextErrors.assignedToUserId = "Selecione o responsável antes de resolver.";
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) return;
+
     setSubmitting(true);
-    await onConfirm(feedbackCase.id, notes.trim() || undefined);
-    setSubmitting(false);
+    const ok = await onConfirm(feedbackCase.id, notes.trim(), assignedToUserId);
+    if (!ok) setSubmitting(false);
   }
 
   return (
@@ -310,7 +349,15 @@ function ResolveModal({ feedbackCase, onClose, onConfirm }) {
       }
     >
       <p className={styles.descCell}>{feedbackCase.description}</p>
-      <FormField label="Notas de resolução (opcional)" htmlFor="f-resolution-notes">
+      <FormField label="Responsável" htmlFor="f-resolve-assigned" required error={errors.assignedToUserId}>
+        <Select id="f-resolve-assigned" value={assignedToUserId} onChange={(e) => setAssignedToUserId(e.target.value)}>
+          <option value="">Selecione...</option>
+          {users.map((u) => (
+            <option key={u.id} value={u.id}>{u.name}</option>
+          ))}
+        </Select>
+      </FormField>
+      <FormField label="Conclusão" htmlFor="f-resolution-notes" required error={errors.notes}>
         <Input id="f-resolution-notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="O que foi feito para resolver..." />
       </FormField>
     </Modal>

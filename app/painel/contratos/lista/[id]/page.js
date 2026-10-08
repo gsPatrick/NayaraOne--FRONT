@@ -29,6 +29,10 @@ import {
   listSignatures,
   listGuarantees,
   transitionContract,
+  suspendContract,
+  reactivateContract,
+  terminateContract,
+  closeContract,
   listContractAmendments,
   createContractAmendment,
   uploadFile,
@@ -88,6 +92,12 @@ export default function ContratoDetailPage({ params }) {
   const [pdfLoadingIds, setPdfLoadingIds] = useState(() => new Set());
   const [signedLoadingIds, setSignedLoadingIds] = useState(() => new Set());
   const [pdfError, setPdfError] = useState("");
+  // GAP CORRIGIDO (auditoria externa Nayara, 2026-10-07): suspender/reativar/encerrar/fechar
+  // contrato (Anexo I "5. Estado do contrato") — backend já existia, tela nunca expunha.
+  const [stateActionModal, setStateActionModal] = useState(null); // { action, label, tone }
+  const [stateActionReason, setStateActionReason] = useState("");
+  const [stateActionBusy, setStateActionBusy] = useState(false);
+  const [stateActionError, setStateActionError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -192,6 +202,40 @@ export default function ContratoDetailPage({ params }) {
       setActionError(err.message || "Erro ao cancelar contrato.");
     } finally {
       setBusy(false);
+    }
+  }
+
+  const STATE_ACTIONS = {
+    suspend: { fn: suspendContract, label: "Suspender contrato", confirmLabel: "Suspender", successText: 'Contrato suspenso ("SUSPENDED").', tone: "danger" },
+    reactivate: { fn: reactivateContract, label: "Reativar contrato", confirmLabel: "Reativar", successText: 'Contrato reativado ("ACTIVE").', tone: "success" },
+    terminate: { fn: terminateContract, label: "Rescindir contrato", confirmLabel: "Rescindir", successText: 'Contrato rescindido ("TERMINATED").', tone: "danger" },
+    close: { fn: closeContract, label: "Encerrar contrato", confirmLabel: "Encerrar", successText: 'Contrato encerrado ("CLOSED").', tone: "success" },
+  };
+
+  function openStateActionModal(action) {
+    setStateActionError("");
+    setStateActionReason("");
+    setStateActionModal(action);
+  }
+
+  async function handleConfirmStateAction() {
+    if (!stateActionModal) return;
+    if (!stateActionReason.trim()) {
+      setStateActionError("Informe o motivo desta transição — obrigatório para auditoria.");
+      return;
+    }
+    const { fn, successText } = STATE_ACTIONS[stateActionModal];
+    setStateActionBusy(true);
+    setStateActionError("");
+    try {
+      const updated = await fn(contract.id, stateActionReason.trim());
+      setContract(updated);
+      setStateActionModal(null);
+      setNotice({ tone: "info", text: successText });
+    } catch (err) {
+      setStateActionError(err.message || "Erro ao transicionar o contrato.");
+    } finally {
+      setStateActionBusy(false);
     }
   }
 
@@ -336,6 +380,18 @@ export default function ContratoDetailPage({ params }) {
             ) : null}
             {next ? (
               <Button onClick={handleAdvance} disabled={busy}><Icon name="check" size={16} /> Avançar etapa ({CONTRACT_STATUS_LABELS[next]})</Button>
+            ) : null}
+            {contract.status === "ACTIVE" ? (
+              <Button variant="secondary" onClick={() => openStateActionModal("suspend")} disabled={busy}><Icon name="ban" size={16} /> Suspender</Button>
+            ) : null}
+            {contract.status === "SUSPENDED" ? (
+              <Button variant="secondary" onClick={() => openStateActionModal("reactivate")} disabled={busy}><Icon name="check" size={16} /> Reativar</Button>
+            ) : null}
+            {contract.status === "ACTIVE" || contract.status === "SUSPENDED" ? (
+              <Button variant="secondary" onClick={() => openStateActionModal("terminate")} disabled={busy}><Icon name="ban" size={16} /> Rescindir</Button>
+            ) : null}
+            {contract.status === "TERMINATED" ? (
+              <Button onClick={() => openStateActionModal("close")} disabled={busy}><Icon name="check" size={16} /> Encerrar</Button>
             ) : null}
           </div>
         </div>
@@ -604,6 +660,37 @@ export default function ContratoDetailPage({ params }) {
               />
             </FormField>
           ) : null}
+        </div>
+      </Modal>
+
+      <Modal
+        open={!!stateActionModal}
+        onClose={() => setStateActionModal(null)}
+        title={stateActionModal ? STATE_ACTIONS[stateActionModal].label : ""}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setStateActionModal(null)} disabled={stateActionBusy}>Cancelar</Button>
+            <Button
+              variant={stateActionModal && STATE_ACTIONS[stateActionModal].tone === "danger" ? "danger" : "primary"}
+              onClick={handleConfirmStateAction}
+              loading={stateActionBusy}
+              disabled={stateActionBusy}
+            >
+              {stateActionModal ? STATE_ACTIONS[stateActionModal].confirmLabel : ""}
+            </Button>
+          </>
+        }
+      >
+        {stateActionError ? <Alert tone="danger" className={styles.notice}>{stateActionError}</Alert> : null}
+        <div className={styles.formGrid}>
+          <FormField label="Motivo" htmlFor="f-state-reason" required helper="Registrado na auditoria junto com a transição.">
+            <Input
+              id="f-state-reason"
+              value={stateActionReason}
+              onChange={(e) => setStateActionReason(e.target.value)}
+              placeholder="Ex.: Inadimplência em negociação com o locatário"
+            />
+          </FormField>
         </div>
       </Modal>
 
