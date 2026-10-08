@@ -36,8 +36,16 @@ export function isInvalidNumber(value, { allowZero = false } = {}) {
 }
 
 export function isLossFullyReturned(lossRecord, allRecords) {
+  return lossRemainingToReturn(lossRecord, allRecords) <= 0;
+}
+
+// GAP REAL CORRIGIDO (reauditoria externa Nayara, 2026-10-08): o backend sempre suportou
+// devolução parcial (soma os RETURN já aprovados e valida contra o saldo restante), mas a
+// tela só permitia devolver tudo de uma vez. Reaproveitado por isLossFullyReturned e pelo
+// modal de devolução parcial.
+export function lossRemainingToReturn(lossRecord, allRecords) {
   const alreadyReturned = allRecords
     .filter((r) => r.movementType === "RETURN" && r.status === "APPROVED" && r.relatedLossRecordId === lossRecord.id)
     .reduce((sum, r) => sum + Number(r.quantity || 0), 0);
-  return alreadyReturned >= Number(lossRecord.quantity || 0);
+  return Math.max(0, Number(lossRecord.quantity || 0) - alreadyReturned);
 }

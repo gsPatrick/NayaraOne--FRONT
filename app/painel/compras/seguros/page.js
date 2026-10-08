@@ -24,6 +24,7 @@ import {
 } from "@/lib/api/procurement";
 import { uploadFile, listContracts } from "@/lib/api/legal";
 import { listProperties } from "@/lib/api/properties";
+import { listFinancialEntries } from "@/lib/api/finance";
 import { listPeople } from "@/lib/api/people";
 import { formatDateTime, formatBRL, toNumber } from "@/lib/format";
 
@@ -87,6 +88,14 @@ export default function SegurosPage() {
   const [viewerFile, setViewerFile] = useState(null);
   const [installments, setInstallments] = useState([]);
   const [payForm, setPayForm] = useState({}); // { [installmentId]: financialEntryId }
+  // GAP REAL CORRIGIDO (reauditoria externa Nayara, 2026-10-08): o campo pedia o UUID do
+  // lançamento financeiro digitado à mão — sem busca nenhuma, impossível de usar na prática.
+  // Lista os lançamentos SETTLED da empresa pra escolher por descrição/valor.
+  const [settledEntries, setSettledEntries] = useState([]);
+
+  useEffect(() => {
+    listFinancialEntries({ status: "SETTLED" }).then(setSettledEntries).catch(() => {});
+  }, []);
 
   async function loadDocuments(policyId) {
     try {
@@ -485,12 +494,16 @@ export default function SegurosPage() {
                     </span>
                     {inst.status !== "PAID" ? (
                       <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                        <Input
-                          placeholder="ID do lançamento financeiro"
+                        <Select
                           value={payForm[inst.id] || ""}
                           onChange={(e) => setPayForm((p) => ({ ...p, [inst.id]: e.target.value }))}
-                          style={{ width: 220 }}
-                        />
+                          style={{ width: 320 }}
+                        >
+                          <option value="">Selecione o lançamento liquidado...</option>
+                          {settledEntries.map((e) => (
+                            <option key={e.id} value={e.id}>{e.description} — {formatBRL(e.amount)}</option>
+                          ))}
+                        </Select>
                         <Button size="sm" onClick={() => handlePayInstallment(inst.id)} loading={busyId === inst.id}>Dar baixa</Button>
                       </div>
                     ) : null}

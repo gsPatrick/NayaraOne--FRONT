@@ -37,7 +37,7 @@ import {
 } from "@/lib/api/construction";
 import { listInventoryItems, listInventoryLocations } from "@/lib/api/inventory";
 import { formatBRL, formatQuantity, formatDate, toNumber } from "@/lib/format";
-import { isInvalidNumber, isLossFullyReturned } from "../_components/obraShared";
+import { isInvalidNumber, isLossFullyReturned, lossRemainingToReturn } from "../_components/obraShared";
 import OfflineSyncBadge from "@/components/molecules/OfflineSyncBadge/OfflineSyncBadge";
 import { enqueueOfflineRecord, generateIdempotencyKey } from "@/lib/offline/offlineQueue";
 import { useOfflineSync } from "@/lib/offline/useOfflineSync";
@@ -71,6 +71,8 @@ export default function MateriaisObraPage({ params }) {
   const [returnTarget, setReturnTarget] = useState(null);
   const [returnForm, setReturnForm] = useState({ inventoryItemId: "", destinationLocationId: "", quantity: "" });
   const [savingReturn, setSavingReturn] = useState(false);
+  const [lossReturnTarget, setLossReturnTarget] = useState(null);
+  const [lossReturnQuantity, setLossReturnQuantity] = useState("");
 
   // PWA/offline (Marco 6, contrato §13): se o POST de requisição falhar por rede, fica numa
   // fila local com o idempotencyKey já gerado no cliente, reenviada automaticamente quando a
@@ -299,13 +301,20 @@ export default function MateriaisObraPage({ params }) {
       setLossBusyId(null);
     }
   }
-  async function handleReturnLossRecord(record) {
-    if (lossBusyId) return;
-    setLossBusyId(record.id);
+  function openLossReturnModal(record) {
+    setActionError("");
+    setLossReturnQuantity(String(lossRemainingToReturn(record, lossRecords)));
+    setLossReturnTarget(record);
+  }
+
+  async function handleConfirmLossReturn() {
+    if (!lossReturnTarget || isInvalidNumber(lossReturnQuantity)) return;
+    setLossBusyId(lossReturnTarget.id);
     setActionError("");
     try {
-      const returned = await returnLossRecord(record.id);
+      const returned = await returnLossRecord(lossReturnTarget.id, { quantity: toNumber(lossReturnQuantity) });
       setLossRecords((prev) => [returned, ...prev]);
+      setLossReturnTarget(null);
     } catch (err) {
       setActionError(err?.message || "Não foi possível registrar a devolução de material.");
     } finally {
@@ -432,7 +441,7 @@ export default function MateriaisObraPage({ params }) {
                       <Button
                         size="sm"
                         variant="ghost"
-                        onClick={() => handleReturnLossRecord(l)}
+                        onClick={() => openLossReturnModal(l)}
                         loading={lossBusyId === l.id}
                         disabled={lossBusyId !== null && lossBusyId !== l.id}
                       >
@@ -618,6 +627,25 @@ export default function MateriaisObraPage({ params }) {
         </FormField>
         <FormField label="Quantidade a devolver" htmlFor="m-return-quantity" required>
           <DecimalInput id="m-return-quantity" value={returnForm.quantity} onChange={(e) => setReturnForm((p) => ({ ...p, quantity: e.target.value }))} />
+        </FormField>
+      </Modal>
+
+      <Modal
+        open={!!lossReturnTarget}
+        onClose={() => setLossReturnTarget(null)}
+        title="Registrar devolução de perda"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setLossReturnTarget(null)}>Cancelar</Button>
+            <Button onClick={handleConfirmLossReturn} loading={lossBusyId === lossReturnTarget?.id} disabled={isInvalidNumber(lossReturnQuantity)}>Confirmar devolução</Button>
+          </>
+        }
+      >
+        <p className={styles.rowSubtitle}>
+          {lossReturnTarget?.materialDescription} — saldo disponível pra devolver: {lossReturnTarget ? lossRemainingToReturn(lossReturnTarget, lossRecords) : 0}
+        </p>
+        <FormField label="Quantidade a devolver" htmlFor="m-loss-return-quantity" required helper="Pode ser parcial — o restante continua disponível pra devolução depois.">
+          <DecimalInput id="m-loss-return-quantity" value={lossReturnQuantity} onChange={(e) => setLossReturnQuantity(e.target.value)} />
         </FormField>
       </Modal>
 

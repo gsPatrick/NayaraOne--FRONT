@@ -20,8 +20,10 @@ import FormField from "@/components/molecules/FormField/FormField";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import PersonPicker from "@/components/molecules/PersonPicker/PersonPicker";
 import Checkbox from "@/components/atoms/Checkbox/Checkbox";
+import FileDropInput from "@/components/molecules/FileDropInput/FileDropInput";
 import { listLossCases, openLossCase, decideLossCase, listInventoryItems, listInventoryLocations, listAssets, listLossCaseAnomalies } from "@/lib/api/inventory";
 import { listPeople } from "@/lib/api/people";
+import { uploadFile } from "@/lib/api/legal";
 import { formatBRL, formatDateTime, toNumber } from "@/lib/format";
 
 const STATUS_LABELS = { OPEN: "Em análise", APPROVED: "Aprovada (baixa gerada)", REJECTED: "Rejeitada" };
@@ -52,7 +54,9 @@ export default function PerdasPage() {
   // LOST/limpar custodiante/fechar empréstimos (R28/R30) — mas esta tela só permitia perda de
   // item de estoque (inventoryItemId). "targetType" alterna o formulário entre os dois modos.
   const [targetType, setTargetType] = useState("ITEM"); // ITEM | ASSET
-  const [form, setForm] = useState({ inventoryItemId: "", assetId: "", locationId: "", quantity: "", context: "", evidenceFileIds: "", estimatedCost: "", responsiblePersonId: "", responsibleName: "" });
+  const [form, setForm] = useState({ inventoryItemId: "", assetId: "", locationId: "", quantity: "", context: "", evidenceFileIds: [], evidenceFileNames: [], estimatedCost: "", responsiblePersonId: "", responsibleName: "" });
+  const [evidenceUploading, setEvidenceUploading] = useState(false);
+  const [evidenceUploadError, setEvidenceUploadError] = useState("");
 
   // GAP CORRIGIDO (auditoria de conformidade Marco 7, contrato §11): "Investigação e decisão
   // humana determinam responsabilidade. Qualquer desconto financeiro segue regra/aprovação e
@@ -93,7 +97,7 @@ export default function PerdasPage() {
   }
   useEffect(() => { load(); }, []);
 
-  const evidenceIds = form.evidenceFileIds.split(",").map((s) => s.trim()).filter(Boolean);
+  const evidenceIds = form.evidenceFileIds;
   const isValid = targetType === "ITEM"
     ? form.inventoryItemId && form.locationId && !Number.isNaN(toNumber(form.quantity)) && toNumber(form.quantity) > 0 && form.context.trim() && evidenceIds.length > 0
     : form.assetId && form.context.trim() && evidenceIds.length > 0;
@@ -101,6 +105,20 @@ export default function PerdasPage() {
   const targetMissingPrerequisite = targetType === "ITEM"
     ? (items.length === 0 ? "item" : locations.length === 0 ? "local" : null)
     : (assets.filter((a) => a.status !== "LOST").length === 0 ? "patrimônio" : null);
+
+  async function handleUploadEvidence(file) {
+    if (!file) return;
+    setEvidenceUploading(true);
+    setEvidenceUploadError("");
+    try {
+      const uploaded = await uploadFile(file);
+      setForm((p) => ({ ...p, evidenceFileIds: [...p.evidenceFileIds, uploaded.id], evidenceFileNames: [...p.evidenceFileNames, file.name] }));
+    } catch (err) {
+      setEvidenceUploadError(err?.message || "Erro ao enviar evidência.");
+    } finally {
+      setEvidenceUploading(false);
+    }
+  }
 
   async function handleCreate() {
     if (!isValid) return;
@@ -118,7 +136,7 @@ export default function PerdasPage() {
         responsiblePersonId: form.responsiblePersonId || undefined,
       });
       setModalOpen(false);
-      setForm({ inventoryItemId: "", assetId: "", locationId: "", quantity: "", context: "", evidenceFileIds: "", estimatedCost: "", responsiblePersonId: "", responsibleName: "" });
+      setForm({ inventoryItemId: "", assetId: "", locationId: "", quantity: "", context: "", evidenceFileIds: [], evidenceFileNames: [], estimatedCost: "", responsiblePersonId: "", responsibleName: "" });
       setTargetType("ITEM");
       load();
     } catch (err) {
@@ -340,8 +358,21 @@ export default function PerdasPage() {
             <FormField label="Contexto" required helper="O que aconteceu — obrigatório para auditoria.">
               <Input value={form.context} onChange={(e) => setForm((p) => ({ ...p, context: e.target.value }))} />
             </FormField>
-            <FormField label="IDs de evidência (arquivo)" required helper="Pelo menos um arquivo de evidência é obrigatório (EST-TS-10). Separe por vírgula.">
-              <Input value={form.evidenceFileIds} onChange={(e) => setForm((p) => ({ ...p, evidenceFileIds: e.target.value }))} />
+            <FormField label="Evidência (arquivo)" required helper="Pelo menos um arquivo de evidência é obrigatório (EST-TS-10).">
+              {evidenceUploadError ? <Alert tone="danger">{evidenceUploadError}</Alert> : null}
+              <FileDropInput
+                id="loss-evidence"
+                accept="image/*,application/pdf"
+                multiple
+                uploading={evidenceUploading}
+                fileNames={form.evidenceFileNames}
+                onFiles={(files) => files.forEach(handleUploadEvidence)}
+                onRemove={(idx) => setForm((p) => ({
+                  ...p,
+                  evidenceFileIds: p.evidenceFileIds.filter((_, i) => i !== idx),
+                  evidenceFileNames: p.evidenceFileNames.filter((_, i) => i !== idx),
+                }))}
+              />
             </FormField>
             <FormField label="Estimativa de custo (R$)">
               <DecimalInput value={form.estimatedCost} onChange={(e) => setForm((p) => ({ ...p, estimatedCost: e.target.value }))} />
