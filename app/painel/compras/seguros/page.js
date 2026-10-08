@@ -29,6 +29,29 @@ import { formatDateTime, formatBRL, toNumber } from "@/lib/format";
 
 const POLICY_STATUS_LABELS = { DRAFT: "Rascunho", QUOTED: "Cotada", ISSUED: "Emitida", ACTIVE: "Ativa", EXPIRED: "Expirada", CANCELED: "Cancelada" };
 const POLICY_STATUS_TONE = { DRAFT: "neutral", QUOTED: "info", ISSUED: "info", ACTIVE: "success", EXPIRED: "warning", CANCELED: "danger" };
+const CLAIM_ELIGIBLE_STATUSES = ["ACTIVE", "ISSUED"];
+
+// GAP REAL CORRIGIDO (auditoria contrato Marco 7, 2026-10-07 — vigência da apólice): a API agora
+// bloqueia sinistro novo em apólice vencida (INSURANCE_POLICY_EXPIRED) e um job marca a apólice
+// como EXPIRED. Entre o vencimento e a próxima execução do job o status gravado ainda pode ser
+// ACTIVE — a API devolve `isExpired` derivado da data, e o front usa isso (com fallback local
+// pela data, fuso São Paulo, mesmo critério da API: expiryDate é o último dia coberto) pra já
+// mostrar "Expirada" e esconder o formulário de sinistro novo.
+function todaySaoPaulo() {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+}
+function isPolicyExpired(policy) {
+  if (!policy) return false;
+  if (policy.status === "EXPIRED" || policy.isExpired === true) return true;
+  return Boolean(policy.expiryDate) && String(policy.expiryDate).slice(0, 10) < todaySaoPaulo();
+}
+function displayPolicyStatus(policy) {
+  return CLAIM_ELIGIBLE_STATUSES.includes(policy.status) && isPolicyExpired(policy) ? "EXPIRED" : policy.status;
+}
+function PolicyStatusBadge({ policy }) {
+  const status = displayPolicyStatus(policy);
+  return <Badge tone={POLICY_STATUS_TONE[status]}>{POLICY_STATUS_LABELS[status] || status}</Badge>;
+}
 
 const CLAIM_STATUS_LABELS = { OPEN: "Aberto", SUBMITTED: "Submetido", UNDER_REVIEW: "Em análise", APPROVED: "Aprovado", REJECTED: "Rejeitado", SETTLED: "Liquidado" };
 const CLAIM_STATUS_TONE = { OPEN: "neutral", SUBMITTED: "info", UNDER_REVIEW: "warning", APPROVED: "success", REJECTED: "danger", SETTLED: "success" };
@@ -257,7 +280,7 @@ export default function SegurosPage() {
   }
 
   const columns = [
-    { key: "status", label: "Status", width: "14%", render: (row) => <Badge tone={POLICY_STATUS_TONE[row.status]}>{POLICY_STATUS_LABELS[row.status]}</Badge> },
+    { key: "status", label: "Status", width: "14%", render: (row) => <PolicyStatusBadge policy={row} /> },
     { key: "provider", label: "Seguradora", width: "16%", render: (row) => row.provider || "sandbox" },
     { key: "number", label: "Nº da apólice", width: "18%", render: (row) => row.externalPolicyNumber || "—" },
     { key: "premium", label: "Prêmio", width: "14%", render: (row) => (row.premiumAmount ? formatBRL(row.premiumAmount) : "—") },
@@ -369,7 +392,7 @@ export default function SegurosPage() {
           <div style={FORM_GAP_STYLE}>
             <div>
               <p style={{ margin: "0 0 8px" }}>
-                <Badge tone={POLICY_STATUS_TONE[detailModal.policy.status]}>{POLICY_STATUS_LABELS[detailModal.policy.status]}</Badge>
+                <PolicyStatusBadge policy={detailModal.policy} />
                 {" — "}
                 {detailModal.policy.provider || "sandbox"}
                 {detailModal.policy.externalPolicyNumber ? ` — Nº ${detailModal.policy.externalPolicyNumber}` : ""}
@@ -426,7 +449,14 @@ export default function SegurosPage() {
                 ))
               )}
 
-              {["ACTIVE", "ISSUED"].includes(detailModal.policy.status) ? (
+              {isPolicyExpired(detailModal.policy) ? (
+                <div style={{ marginTop: "var(--space-5)" }}>
+                  <Alert tone="warning" title="Vigência encerrada">
+                    A vigência desta apólice terminou em {detailModal.policy.expiryDate || "—"} — não é possível abrir sinistro novo.
+                    Sinistros abertos antes do vencimento continuam podendo ser submetidos e liquidados normalmente.
+                  </Alert>
+                </div>
+              ) : CLAIM_ELIGIBLE_STATUSES.includes(detailModal.policy.status) ? (
                 <div style={{ marginTop: "var(--space-5)", display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
                   <strong>Abrir novo sinistro</strong>
                   <FormField label="Descrição" required>
