@@ -244,14 +244,18 @@ export default function ComprasPage() {
         </FormField>
         {form.lines.map((line, idx) => (
           <div key={idx} style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-            <Input placeholder="Descrição" value={line.description} onChange={(e) => setForm((p) => { const lines = [...p.lines]; lines[idx] = { ...lines[idx], description: e.target.value }; return { ...p, lines }; })} style={{ flex: 2 }} />
-            <Select value={line.inventoryItemId} onChange={(e) => setForm((p) => { const lines = [...p.lines]; lines[idx] = { ...lines[idx], inventoryItemId: e.target.value }; return { ...p, lines }; })} style={{ flex: 2 }}>
+            {/* FIX (auditoria de acessibilidade mobile, Marco 7): estes três campos dependiam só
+               do placeholder (some ao digitar e não é lido por leitor de tela). aria-label com o
+               índice da linha torna cada campo identificável mesmo sem um <label> visível, já
+               que aqui são linhas repetidas sem espaço pra um FormField por campo. */}
+            <Input aria-label={`Descrição do item ${idx + 1}`} placeholder="Descrição" value={line.description} onChange={(e) => setForm((p) => { const lines = [...p.lines]; lines[idx] = { ...lines[idx], description: e.target.value }; return { ...p, lines }; })} style={{ flex: 2 }} />
+            <Select aria-label={`Item de estoque da linha ${idx + 1} (opcional)`} value={line.inventoryItemId} onChange={(e) => setForm((p) => { const lines = [...p.lines]; lines[idx] = { ...lines[idx], inventoryItemId: e.target.value }; return { ...p, lines }; })} style={{ flex: 2 }}>
               <option value="">Item de estoque (opcional)</option>
               {items.map((i) => (
                 <option key={i.id} value={i.id}>{i.name}</option>
               ))}
             </Select>
-            <DecimalInput placeholder="Qtd" value={line.quantity} onChange={(e) => setForm((p) => { const lines = [...p.lines]; lines[idx] = { ...lines[idx], quantity: e.target.value }; return { ...p, lines }; })} style={{ flex: 1 }} />
+            <DecimalInput aria-label={`Quantidade do item ${idx + 1}`} placeholder="Qtd" value={line.quantity} onChange={(e) => setForm((p) => { const lines = [...p.lines]; lines[idx] = { ...lines[idx], quantity: e.target.value }; return { ...p, lines }; })} style={{ flex: 1 }} />
           </div>
         ))}
         <Button variant="secondary" size="sm" onClick={() => setForm((p) => ({ ...p, lines: [...p.lines, { description: "", inventoryItemId: "", quantity: "" }] }))}>+ Adicionar item</Button>

@@ -324,13 +324,15 @@ export default function RequisicoesPage() {
         ) : null}
         {form.lines.map((line, idx) => (
           <div key={idx} style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-            <Select value={line.inventoryItemId} onChange={(e) => updateLine(idx, "inventoryItemId", e.target.value)} style={{ flex: 2 }}>
+            {/* FIX (auditoria de acessibilidade mobile, Marco 7): campos de linha repetida
+               dependiam só do placeholder — adicionado aria-label por linha. */}
+            <Select aria-label={`Item da linha ${idx + 1}`} value={line.inventoryItemId} onChange={(e) => updateLine(idx, "inventoryItemId", e.target.value)} style={{ flex: 2 }}>
               <option value="">Item...</option>
               {items.map((i) => (
                 <option key={i.id} value={i.id}>{i.name}</option>
               ))}
             </Select>
-            <DecimalInput placeholder="Qtd" value={line.quantity} onChange={(e) => updateLine(idx, "quantity", e.target.value)} style={{ flex: 1 }} />
+            <DecimalInput aria-label={`Quantidade da linha ${idx + 1}`} placeholder="Qtd" value={line.quantity} onChange={(e) => updateLine(idx, "quantity", e.target.value)} style={{ flex: 1 }} />
           </div>
         ))}
         <Button variant="secondary" size="sm" onClick={() => setForm((p) => ({ ...p, lines: [...p.lines, { inventoryItemId: "", quantity: "" }] }))}>+ Adicionar item</Button>

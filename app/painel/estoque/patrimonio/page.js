@@ -365,7 +365,11 @@ export default function PatrimonioPage() {
       <Card title="Buscar por QR Code / Tag" subtitle="Escaneie ou digite a tag impressa no patrimônio para localizá-lo na hora">
         <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
           <div style={{ flex: 1, maxWidth: 320 }}>
+            {/* FIX (auditoria de acessibilidade mobile, Marco 7): campo sem <label> visível
+               (só o título do Card dá contexto) e sem aria-label — leitor de tela anunciava só
+               "caixa de edição", sem saber que é a busca por tag de patrimônio. */}
             <Input
+              aria-label="Buscar patrimônio por QR Code ou tag"
               placeholder="Ex.: TOOL-00123"
               value={tagQuery}
               onChange={(e) => setTagQuery(e.target.value)}

@@ -34,6 +34,19 @@
 .md { height: 40px; padding: 0 var(--space-4); font-size: var(--text-body); }
 .lg { height: 48px; padding: 0 var(--space-6); font-size: var(--text-body-lg); }
 
+/* FIX (auditoria de acessibilidade mobile, Marco 7): botões size="sm" (32px) são usados em
+   ações críticas de toque único — Aprovar/Rejeitar/Confirmar/Vender/Descartar — nas telas de
+   estoque e compras (requisições, perdas, recebimentos, patrimônio, sugestões, compras). Em
+   telas de toque (mouse ausente ou tela estreita), 32px fica abaixo da área mínima recomendada
+   de 44x44px, dificultando o toque preciso. Em telas de ponteiro grosso (touch) ou mobile,
+   eleva a área de toque mantendo o tamanho visual do rótulo via padding vertical, sem alterar a
+   densidade do layout desktop com mouse.
+   REF: Modal.js acima já corrige um bug real de foco causado por dependência ruim de useEffect;
+   aqui aplicamos o mesmo cuidado de não quebrar o comportamento existente em desktop. */
+@media (pointer: coarse), (max-width: 640px) {
+  .sm { min-height: 44px; height: auto; padding: var(--space-2) var(--space-3); }
+}
+
 .primary {
   background: var(--color-cta-primary);
   color: var(--color-text-inverse);

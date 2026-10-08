@@ -335,14 +335,16 @@ export default function RecebimentosPage() {
         </FormField>
         {form.lines.map((line, idx) => (
           <div key={idx} style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-            <Select value={line.inventoryItemId} onChange={(e) => updateLine(idx, "inventoryItemId", e.target.value)} style={{ flex: 2 }}>
+            {/* FIX (auditoria de acessibilidade mobile, Marco 7): campos de linha repetida
+               dependiam só do placeholder — adicionado aria-label por linha. */}
+            <Select aria-label={`Item da linha ${idx + 1}`} value={line.inventoryItemId} onChange={(e) => updateLine(idx, "inventoryItemId", e.target.value)} style={{ flex: 2 }}>
               <option value="">Item...</option>
               {items.map((i) => (
                 <option key={i.id} value={i.id}>{i.name}</option>
               ))}
             </Select>
-            <DecimalInput placeholder="Qtd" value={line.quantity} onChange={(e) => updateLine(idx, "quantity", e.target.value)} style={{ flex: 1 }} />
-            <DecimalInput placeholder="Custo unit." value={line.unitCost} onChange={(e) => updateLine(idx, "unitCost", e.target.value)} style={{ flex: 1 }} />
+            <DecimalInput aria-label={`Quantidade da linha ${idx + 1}`} placeholder="Qtd" value={line.quantity} onChange={(e) => updateLine(idx, "quantity", e.target.value)} style={{ flex: 1 }} />
+            <DecimalInput aria-label={`Custo unitário da linha ${idx + 1}`} placeholder="Custo unit." value={line.unitCost} onChange={(e) => updateLine(idx, "unitCost", e.target.value)} style={{ flex: 1 }} />
             {form.lines.length > 1 ? (
               <Button size="sm" variant="secondary" onClick={() => removeLine(idx)} aria-label={`Remover linha ${idx + 1}`}>
                 <Icon name="close" size={14} />
