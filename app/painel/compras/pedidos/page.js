@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Table from "@/components/organisms/Table/Table";
@@ -14,13 +15,21 @@ import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import { useRouter } from "next/navigation";
-import { listPurchaseOrders, getPurchaseOrder, confirmGoodsReceipt, listGoodsReceipts, listDiscrepancies, resolveDiscrepancy, evaluateSupplier, listSupplierEvaluations } from "@/lib/api/procurement";
+import { listPurchaseOrders, getPurchaseOrder, confirmGoodsReceipt, listGoodsReceipts, listDiscrepancies, resolveDiscrepancy, evaluateSupplier, listSupplierEvaluations, cancelPurchaseOrder } from "@/lib/api/procurement";
 import { listInventoryLocations } from "@/lib/api/inventory";
 import { formatBRL, formatDateTime, formatQuantity, toNumber } from "@/lib/format";
+import { hasPermission } from "@/lib/rbac/permissions";
 import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
 
 const STATUS_LABELS = { OPEN: "Aberto", RECEIVED: "Recebido", CANCELED: "Cancelado" };
 const STATUS_TONE = { OPEN: "info", RECEIVED: "success", CANCELED: "neutral" };
+// Mesmo conjunto de CANCELABLE_STATUSES de procurement.service.js (cancelPurchaseOrder).
+const CANCELABLE_STATUSES = ["OPEN", "RECEIVED"];
+const DISCREPANCY_TYPE_LABELS = {
+  OVER_RECEIPT: "Recebido a mais",
+  UNDER_RECEIPT: "Saldo não recebido (cancelamento)",
+  PRICE_MISMATCH: "Divergência de preço (NF)",
+};
 
 export default function PedidosDeCompraPage() {
   const router = useRouter();
@@ -40,6 +49,16 @@ export default function PedidosDeCompraPage() {
   const [saving, setSaving] = useState(false);
   const [busyDiscId, setBusyDiscId] = useState(null);
   const { confirm, ConfirmDialog } = useConfirm();
+
+  // Auditoria contratual Marco 7 (2026-10-07) — "Cancel/return = compensação": o backend
+  // (cancelPurchaseOrder) já existia e era testado, mas nenhuma tela permitia cancelar uma PO.
+  // A permissão é lida no cliente (localStorage da sessão) só depois do mount, pra não divergir
+  // do HTML do SSR; a API continua sendo quem de fato recusa (403) sem procurement:approve.
+  const [canApprove, setCanApprove] = useState(false);
+  useEffect(() => { setCanApprove(hasPermission("procurement:approve")); }, []);
+  const [busyCancelId, setBusyCancelId] = useState(null);
+  const [cancelResult, setCancelResult] = useState(null); // { order, items, discrepancies }
+  const cancelReasonRef = useRef("");
 
   // BUG REAL CORRIGIDO (auditoria "loop até secar", rodada 32, 2026-10-05): a API já expõe
   // listSupplierEvaluations (R17) com nota média, mas nenhuma tela do front lia/exibia isso —
@@ -146,6 +165,65 @@ export default function PedidosDeCompraPage() {
     }
   }
 
+  async function handleCancelOrder(row) {
+    setActionError("");
+    let full;
+    try {
+      full = await getPurchaseOrder(row.id);
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível carregar o pedido para cancelar.");
+      return;
+    }
+    const pendingItems = (full.items || []).filter((it) => toNumber(it.receivedQuantity) < toNumber(it.quantity));
+    cancelReasonRef.current = "";
+    const ok = await confirm({
+      title: "Cancelar pedido de compra?",
+      tone: "danger",
+      confirmLabel: "Cancelar pedido",
+      cancelLabel: "Voltar",
+      message: (
+        <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)" }}>
+          <p style={{ margin: 0 }}>
+            O pedido de <strong>{row.supplierPersonName || "fornecedor"}</strong> ({formatBRL(row.committedAmount)} comprometidos) será
+            marcado como <strong>Cancelado</strong> e não poderá mais receber material. Esta ação não pode ser desfeita.
+          </p>
+          {pendingItems.length > 0 ? (
+            <Alert tone="warning" title="Saldo que não vai mais chegar">
+              <ul style={{ margin: "4px 0 0", paddingLeft: 18 }}>
+                {pendingItems.map((it) => (
+                  <li key={it.id}>
+                    {it.description}: pedido {formatQuantity(it.quantity)}, recebido {formatQuantity(it.receivedQuantity)} — falta{" "}
+                    {formatQuantity(toNumber(it.quantity) - toNumber(it.receivedQuantity))}
+                  </li>
+                ))}
+              </ul>
+              <div style={{ marginTop: 6 }}>
+                Para itens que já tiveram recebimento parcial, uma divergência <strong>Saldo não recebido</strong> é aberta
+                automaticamente como registro da compensação. O que já foi recebido/lançado no Financeiro não é estornado aqui.
+              </div>
+            </Alert>
+          ) : (
+            <Alert tone="info">Todos os itens já foram recebidos — nenhum saldo pendente será registrado.</Alert>
+          )}
+          <FormField label="Motivo do cancelamento (opcional — fica registrado na auditoria)">
+            <Input defaultValue="" maxLength={500} onChange={(e) => { cancelReasonRef.current = e.target.value; }} placeholder="Ex.: fornecedor não vai entregar o restante" />
+          </FormField>
+        </div>
+      ),
+    });
+    if (!ok) return;
+    setBusyCancelId(row.id);
+    try {
+      const result = await cancelPurchaseOrder(row.id, cancelReasonRef.current.trim());
+      setCancelResult({ order: { ...row, ...(result?.order || {}) }, items: pendingItems, discrepancies: result?.discrepancies || [] });
+      load();
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível cancelar o pedido de compra.");
+    } finally {
+      setBusyCancelId(null);
+    }
+  }
+
   const columns = [
     {
       key: "supplier",
@@ -153,7 +231,10 @@ export default function PedidosDeCompraPage() {
       width: "16%",
       // BUG REAL CORRIGIDO (auditoria "loop até secar", rodada 62, 2026-10-06): mostrava o UUID
       // cru — backend agora resolve supplierPersonName (mesmo fix já aplicado em compareOffers).
-      render: (row) => row.supplierPersonName || row.supplierPersonId,
+      // Link para a ficha do fornecedor (qualificação/due diligence/contas bancárias).
+      render: (row) => (row.supplierPersonId ? (
+        <Link href={`/painel/compras/fornecedores/${row.supplierPersonId}`}>{row.supplierPersonName || row.supplierPersonId}</Link>
+      ) : "—"),
     },
     {
       key: "score",
@@ -174,6 +255,9 @@ export default function PedidosDeCompraPage() {
           {row.status === "RECEIVED" ? (
             <Button size="sm" variant="secondary" onClick={() => setEvalTarget(row)}>Avaliar fornecedor</Button>
           ) : null}
+          {canApprove && CANCELABLE_STATUSES.includes(row.status) ? (
+            <Button size="sm" variant="danger" onClick={() => handleCancelOrder(row)} loading={busyCancelId === row.id}>Cancelar pedido</Button>
+          ) : null}
         </div>
       ),
     },
@@ -182,7 +266,7 @@ export default function PedidosDeCompraPage() {
   async function handleResolveDiscrepancy(row, resolution) {
     const ok = await confirm({
       title: resolution === "ACCEPTED" ? "Aceitar divergência" : "Rejeitar divergência",
-      message: `Confirma que quer marcar esta divergência (${row.discrepancyType}) como ${resolution === "ACCEPTED" ? "aceita" : "rejeitada"}?`,
+      message: `Confirma que quer marcar esta divergência (${DISCREPANCY_TYPE_LABELS[row.discrepancyType] || row.discrepancyType}) como ${resolution === "ACCEPTED" ? "aceita" : "rejeitada"}?`,
       tone: resolution === "ACCEPTED" ? "default" : "danger",
     });
     if (!ok) return;
@@ -199,7 +283,7 @@ export default function PedidosDeCompraPage() {
   }
 
   const discColumns = [
-    { key: "type", label: "Tipo", width: "18%", render: (row) => row.discrepancyType },
+    { key: "type", label: "Tipo", width: "18%", render: (row) => DISCREPANCY_TYPE_LABELS[row.discrepancyType] || row.discrepancyType },
     { key: "expected", label: "Esperado", width: "16%", render: (row) => (row.expectedValue != null ? formatQuantity(row.expectedValue) : "—") },
     { key: "received", label: "Recebido", width: "16%", render: (row) => (row.receivedValue != null ? formatQuantity(row.receivedValue) : "—") },
     { key: "status", label: "Status", width: "18%", render: (row) => <Badge tone={row.status === "OPEN" ? "warning" : row.status === "REJECTED" ? "danger" : "success"}>{row.status === "OPEN" ? "Em aberto" : row.status === "REJECTED" ? "Rejeitada" : "Aceita"}</Badge> },
@@ -323,6 +407,47 @@ export default function PedidosDeCompraPage() {
         <FormField label="Observações (opcional)">
           <Input value={evalForm.notes} onChange={(e) => setEvalForm((p) => ({ ...p, notes: e.target.value }))} />
         </FormField>
+      </Modal>
+
+      <Modal
+        open={Boolean(cancelResult)}
+        onClose={() => setCancelResult(null)}
+        title="Pedido de compra cancelado"
+        footer={<Button onClick={() => setCancelResult(null)}>Entendi</Button>}
+      >
+        {cancelResult ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)" }}>
+            <p style={{ margin: 0 }}>
+              Pedido de <strong>{cancelResult.order.supplierPersonName || "fornecedor"}</strong> ({formatBRL(cancelResult.order.committedAmount)}) agora está{" "}
+              <Badge tone={STATUS_TONE.CANCELED}>{STATUS_LABELS.CANCELED}</Badge>.
+            </p>
+            {cancelResult.discrepancies.length > 0 ? (
+              <Alert tone="warning" title={`${cancelResult.discrepancies.length} divergência(s) de compensação aberta(s)`}>
+                <ul style={{ margin: "4px 0 0", paddingLeft: 18 }}>
+                  {cancelResult.discrepancies.map((d) => {
+                    const item = cancelResult.items.find(
+                      (it) => toNumber(it.quantity) === toNumber(d.expectedValue) && toNumber(it.receivedQuantity) === toNumber(d.receivedValue)
+                    );
+                    return (
+                      <li key={d.id}>
+                        {DISCREPANCY_TYPE_LABELS[d.discrepancyType] || d.discrepancyType}
+                        {item ? ` — ${item.description}` : ""}: esperado {formatQuantity(d.expectedValue)}, recebido {formatQuantity(d.receivedValue)}
+                      </li>
+                    );
+                  })}
+                </ul>
+                <div style={{ marginTop: 6 }}>Elas aparecem em &quot;Divergências de recebimento&quot; abaixo para aceite ou rejeição.</div>
+              </Alert>
+            ) : cancelResult.items.length > 0 ? (
+              <Alert tone="info">
+                Nenhum item deste pedido chegou a ter recebimento — não há divergência a abrir. O cancelamento fica registrado no
+                status do pedido e na trilha de auditoria.
+              </Alert>
+            ) : (
+              <Alert tone="info">Todos os itens já tinham sido recebidos — nenhum saldo pendente a compensar.</Alert>
+            )}
+          </div>
+        ) : null}
       </Modal>
 
       <ConfirmDialog />

@@ -81,6 +81,7 @@ export const NAV_SECTIONS = [
         children: [
           { label: "Requisições de compra", href: "/painel/compras" },
           { label: "Pedidos de compra", href: "/painel/compras/pedidos" },
+          { label: "Fornecedores", href: "/painel/compras/fornecedores" },
           { label: "Seguros", href: "/painel/compras/seguros" },
         ],
       },
