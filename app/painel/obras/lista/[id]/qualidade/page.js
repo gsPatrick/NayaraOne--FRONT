@@ -59,6 +59,13 @@ export default function QualidadeObraPage({ params }) {
   const [qualityBusyId, setQualityBusyId] = useState(null);
   const [qualityRejecting, setQualityRejecting] = useState(null);
   const [qualityRejectNotes, setQualityRejectNotes] = useState("");
+  // BUG REAL CORRIGIDO (auditoria externa Nayara, 2026-10-07): reprovar um item de qualidade
+  // abre NC automaticamente no backend, que agora exige evidência "antes" (contrato) — sem
+  // campo de upload aqui, a reprovação ficava impossível de completar.
+  const [qualityRejectFileId, setQualityRejectFileId] = useState("");
+  const [qualityRejectFileName, setQualityRejectFileName] = useState("");
+  const [qualityRejectUploading, setQualityRejectUploading] = useState(false);
+  const [qualityRejectUploadError, setQualityRejectUploadError] = useState("");
   const [qualityForm, setQualityForm] = useState({ item: "", projectStageId: "", category: "OUTROS" });
   const [savingQuality, setSavingQuality] = useState(false);
 
@@ -167,12 +174,27 @@ export default function QualidadeObraPage({ params }) {
   // NOT_OK dispara createNonconformity automaticamente no backend (R19 — "falha abre
   // nonconformity"), mas a aba de Não Conformidades só era recarregada no load inicial da
   // página — a NC nova existia no banco mas ficava invisível na tela até um F5 manual.
-  async function handleQualityQuickAction(item, status, notes) {
+  async function handleUploadQualityRejectEvidence(file) {
+    if (!file) return;
+    setQualityRejectUploading(true);
+    setQualityRejectUploadError("");
+    try {
+      const uploaded = await uploadFile(file);
+      setQualityRejectFileId(uploaded.id);
+      setQualityRejectFileName(file.name);
+    } catch (err) {
+      setQualityRejectUploadError(err?.message || "Erro ao enviar evidência.");
+    } finally {
+      setQualityRejectUploading(false);
+    }
+  }
+
+  async function handleQualityQuickAction(item, status, notes, evidenceFileIds) {
     if (qualityBusyId) return;
     setActionError("");
     setQualityBusyId(item.id);
     try {
-      const updated = await checkQualityItem(item.id, { status, notes: notes || undefined });
+      const updated = await checkQualityItem(item.id, { status, notes: notes || undefined, evidenceFileIds });
       setQualityItems((prev) => prev.map((q) => (q.id === updated.id ? updated : q)));
       setQualityRejecting(null);
       setQualityRejectNotes("");
@@ -272,6 +294,18 @@ export default function QualidadeObraPage({ params }) {
     // duplo-clique nativo criando registro duplicado (sem checagem de duplicidade no backend).
     if (savingNc) return;
     if (!ncForm.description.trim()) return;
+    // BUG REAL CORRIGIDO (auditoria externa Nayara, 2026-10-07): contrato exige responsável e
+    // evidência "antes" já na abertura da NC — a API agora também bloqueia isso
+    // (NONCONFORMITY_RESPONSIBLE_REQUIRED / NONCONFORMITY_BEFORE_EVIDENCE_REQUIRED), mas o
+    // front precisa impedir o envio antes, não só mostrar o erro depois do POST.
+    if (!ncForm.responsibleUserId) {
+      setActionError("Selecione o responsável pela não conformidade.");
+      return;
+    }
+    if (!ncForm.beforeFileId) {
+      setActionError('Anexe ao menos uma evidência "antes" antes de registrar.');
+      return;
+    }
     setSavingNc(true);
     setActionError("");
     try {
@@ -544,16 +578,19 @@ export default function QualidadeObraPage({ params }) {
         onClose={() => {
           setQualityRejecting(null);
           setQualityRejectNotes("");
+          setQualityRejectFileId("");
+          setQualityRejectFileName("");
+          setQualityRejectUploadError("");
         }}
         title="Marcar item como Não OK"
         footer={
           <>
-            <Button variant="secondary" onClick={() => { setQualityRejecting(null); setQualityRejectNotes(""); }}>Cancelar</Button>
+            <Button variant="secondary" onClick={() => { setQualityRejecting(null); setQualityRejectNotes(""); setQualityRejectFileId(""); setQualityRejectFileName(""); }}>Cancelar</Button>
             <Button
               variant="danger"
               loading={qualityBusyId === qualityRejecting?.id}
-              disabled={!qualityRejectNotes.trim()}
-              onClick={() => handleQualityQuickAction(qualityRejecting, "NOT_OK", qualityRejectNotes.trim())}
+              disabled={!qualityRejectNotes.trim() || !qualityRejectFileId}
+              onClick={() => handleQualityQuickAction(qualityRejecting, "NOT_OK", qualityRejectNotes.trim(), [qualityRejectFileId])}
             >
               Confirmar Não OK
             </Button>
@@ -570,6 +607,19 @@ export default function QualidadeObraPage({ params }) {
                 onChange={(e) => setQualityRejectNotes(e.target.value)}
                 placeholder="Ex: infiltração visível na parede leste, precisa de correção antes de prosseguir"
                 rows={4}
+              />
+            </FormField>
+          </div>
+          <div className={styles.span2}>
+            <FormField label="Evidência 'antes'" htmlFor="m-quality-reject-evidence" required helper="Obrigatório — a reprovação abre uma não conformidade, que exige evidência.">
+              <FileDropInput
+                id="m-quality-reject-evidence"
+                accept="image/*,application/pdf"
+                uploading={qualityRejectUploading}
+                error={qualityRejectUploadError || undefined}
+                fileNames={qualityRejectFileName ? [qualityRejectFileName] : []}
+                onFiles={(files) => handleUploadQualityRejectEvidence(files[0])}
+                onRemove={() => { setQualityRejectFileId(""); setQualityRejectFileName(""); }}
               />
             </FormField>
           </div>
@@ -609,7 +659,7 @@ export default function QualidadeObraPage({ params }) {
               ))}
             </Select>
           </FormField>
-          <FormField label="Responsável" htmlFor="m-nc-responsible" helper="Opcional">
+          <FormField label="Responsável" htmlFor="m-nc-responsible" required>
             <Select id="m-nc-responsible" value={ncForm.responsibleUserId} onChange={(e) => setNcForm((p) => ({ ...p, responsibleUserId: e.target.value }))}>
               <option value="">Sem responsável</option>
               {users.map((u) => (
@@ -617,7 +667,7 @@ export default function QualidadeObraPage({ params }) {
               ))}
             </Select>
           </FormField>
-          <FormField label="Prazo (SLA)" htmlFor="m-nc-sla" helper="Opcional">
+          <FormField label="Prazo (SLA)" htmlFor="m-nc-sla" helper="Opcional — calculado automaticamente por severidade se não informado">
             <Input
               id="m-nc-sla"
               type="date"
@@ -638,7 +688,7 @@ export default function QualidadeObraPage({ params }) {
             </Select>
           </FormField>
           <div className={styles.span2}>
-            <FormField label="Evidência 'antes'" htmlFor="m-nc-before-file">
+            <FormField label="Evidência 'antes'" htmlFor="m-nc-before-file" required>
               <FileDropInput
                 id="m-nc-before-file"
                 accept="image/*,application/pdf"
