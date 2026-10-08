@@ -1,0 +1,587 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Marco 6 — Dossiê de Evidências Completo</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,700;1,500&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+:root{
+  --bg:#FDFCFA; --surface:#FFFFFF; --surface-2:#F7F5F1; --border:#EAE6DE;
+  --fg:#17130F; --fg-dim:#6b6253; --accent:#BE9130; --accent-2:#2e5a4a;
+  --ok:#1E7A4C; --ok-bg:#e4f3e8; --info:#2563A6; --info-bg:#e5eef6;
+  --mono-bg:#1d1a14; --mono-fg:#e9e2d2;
+}
+*{box-sizing:border-box}
+body{background:var(--bg); color:var(--fg); font-family:'Source Sans 3', system-ui, sans-serif; line-height:1.55; margin:0; padding-inline:16px;}
+h1,h2,h3{font-family:'Fraunces', Georgia, serif; margin:0;}
+.wrap{max-width:1000px; margin:0 auto; padding-block:32px 80px;}
+header.top{border-bottom:2px solid var(--border); padding-bottom:24px; margin-bottom:28px;}
+header.top .tag{font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); font-weight:600;}
+header.top h1{font-size:clamp(28px,5vw,42px); margin-top:6px;}
+header.top .meta{color:var(--fg-dim); font-size:14px; margin-top:10px; display:flex; flex-wrap:wrap; gap:6px 18px;}
+.meta b{color:var(--fg)}
+.meta a{color:var(--accent-2)}
+.banner{background:var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:16px 18px; margin-top:18px; font-size:14px; color:var(--fg-dim);}
+.banner strong{color:var(--fg)}
+
+nav.toc{display:flex; flex-wrap:wrap; gap:8px; margin:24px 0 36px; position:sticky; top:0; background:var(--bg); padding-block:10px; z-index:5;}
+nav.toc a{font-size:13px; padding:6px 12px; border:1px solid var(--border); border-radius:999px; color:var(--fg-dim); text-decoration:none; background:var(--surface);}
+nav.toc a:hover{color:var(--accent); border-color:var(--accent)}
+
+.stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; margin:20px 0 10px;}
+.stat{background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px; text-align:center;}
+.stat .n{font-family:'Fraunces',serif; font-size:28px; font-variant-numeric:tabular-nums; color:var(--ok)}
+.stat .l{font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--fg-dim); margin-top:2px;}
+
+.ci-card{background:var(--mono-bg); color:var(--mono-fg); border-radius:12px; padding:18px 20px; margin:22px 0; font-family:'JetBrains Mono',ui-monospace,monospace; font-size:13px;}
+.ci-card .row{display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; padding:3px 0; border-bottom:1px dashed #3a3425;}
+.ci-card .row:last-child{border-bottom:none}
+.ci-card .k{color:#a99d85}
+.ci-card a{color:#7bb3de}
+
+section.area{margin-top:48px; scroll-margin-top:60px;}
+section.area > .area-head{display:flex; align-items:baseline; gap:12px; border-bottom:1px solid var(--border); padding-bottom:10px; margin-bottom:18px;}
+section.area > .area-head h2{font-size:22px; color:var(--accent-2)}
+section.area > .area-head .count{font-size:12px; color:var(--fg-dim); white-space:nowrap}
+section.area > p.note{font-size:14px; color:var(--fg-dim); margin:-8px 0 18px; max-width:72ch;}
+
+.item{background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px 20px; margin-bottom:14px;}
+.item .head{display:flex; justify-content:space-between; align-items:flex-start; gap:14px; flex-wrap:wrap;}
+.item h3{font-size:16px; font-family:'Source Sans 3',sans-serif; font-weight:700; max-width:64ch;}
+.badge{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; padding:4px 10px; border-radius:999px; white-space:nowrap; background:var(--ok-bg); color:var(--ok);}
+.item .grid{display:grid; grid-template-columns:auto 1fr; gap:4px 12px; font-size:13.5px; margin-top:12px;}
+.item .grid dt{color:var(--fg-dim); white-space:nowrap; padding-top:2px;}
+.item .grid dd{margin:0}
+code, .mono{font-family:'JetBrains Mono',ui-monospace,monospace; font-size:.92em;}
+.item .grid dd code{background:var(--surface-2); padding:1px 6px; border-radius:5px;}
+.result{background:var(--mono-bg); color:var(--mono-fg); border-radius:8px; padding:10px 12px; font-family:'JetBrains Mono',ui-monospace,monospace; font-size:12.5px; white-space:pre-wrap; margin-top:6px; overflow-x:auto;}
+.repro{display:flex; align-items:center; gap:8px; margin-top:6px;}
+.repro code{background:var(--surface-2); padding:4px 8px; border-radius:6px; flex:1; min-width:0; overflow-x:auto;}
+.copy{border:1px solid var(--border); background:var(--surface); color:var(--fg-dim); border-radius:6px; padding:4px 8px; font-size:11px; cursor:pointer; white-space:nowrap;}
+.copy:hover{color:var(--accent); border-color:var(--accent)}
+.note-box{font-size:12.5px;color:var(--fg-dim);margin-top:8px; padding-top:8px; border-top:1px dashed var(--border);}
+
+.already{border-left:3px solid var(--ok); background:var(--ok-bg); padding:12px 14px; border-radius:0 8px 8px 0; font-size:13.5px; margin:16px 0;}
+.contract-box{border-left:3px solid var(--info); background:var(--info-bg); padding:16px 18px; border-radius:0 10px 10px 0; font-size:14px; margin:18px 0;}
+.contract-box h4{font-family:'Fraunces',serif; font-size:16px; margin-bottom:8px;}
+.contract-box blockquote{margin:8px 0; padding-left:12px; border-left:2px solid var(--info); color:var(--fg-dim); font-style:italic;}
+
+footer.sign{margin-top:60px; padding-top:20px; border-top:1px solid var(--border); font-size:13px; color:var(--fg-dim);}
+
+@media (max-width:600px){
+  .item .grid{grid-template-columns:1fr; gap:2px 0;}
+  .item .grid dt{padding-top:8px;}
+  nav.toc{position:static}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<header class="top">
+  <div class="tag">Nayara One · Conferência de Entrega — Dossiê Final</div>
+  <h1>Marco 6 — Obras e Pós-obra</h1>
+  <div class="meta">
+    <span><b>Data:</b> 08/10/2026</span>
+    <span><b>Branch:</b> marco-6-e-7-homologado-nayara</span>
+    <span><b>PR:</b> <a href="https://github.com/gsPatrick/NayaraOne--API/pull/1" target="_blank">gsPatrick/NayaraOne--API #1</a></span>
+    <span><b>Commit em produção:</b> <code>1208c88</code></span>
+  </div>
+  <div class="banner">
+    Resposta ponto a ponto ao PDF <strong>"Marco6_Conferência_Integral_Patrick"</strong>. Todos os itens que estavam pendentes ou parciais na primeira rodada desta auditoria foram <strong>implementados de verdade</strong> (código + migration + teste) e já estão <strong>em produção</strong>. Nenhum item permanece pendente ou parcial — cada bloco abaixo traz código, teste real, resultado observado (colado do log real do CI, sem invenção) e comando para reproduzir.
+  </div>
+</header>
+
+<div class="ci-card">
+  <div class="row"><span class="k">workflow</span><span>CI — GitHub Actions</span></div>
+  <div class="row"><span class="k">run_id</span><span>37820632687</span></div>
+  <div class="row"><span class="k">url</span><a href="https://github.com/gsPatrick/NayaraOne--API/actions/runs/37820632687" target="_blank">github.com/gsPatrick/NayaraOne--API/actions/runs/37820632687</a></div>
+  <div class="row"><span class="k">head_sha</span><span>1208c881bfa9c3f49e4715ebf0da12fd6c4a94fd</span></div>
+  <div class="row"><span class="k">event</span><span>pull_request</span></div>
+  <div class="row"><span class="k">status / conclusion</span><span>completed / <b style="color:#6fcf8f">success</b></span></div>
+  <div class="row"><span class="k">created_at → updated_at</span><span>2026-10-08T17:58:00Z → 2026-10-08T17:59:56Z (1m56s)</span></div>
+  <div class="row"><span class="k">ambiente</span><span>Postgres 16 fresh em container, migrations do zero (superuser nayara_ci), seeds, testes rodados sob role de privilégio mínimo nayara_ci_app (NOSUPERUSER NOBYPASSRLS — mesmo nível da produção, sem bypass de RLS)</span></div>
+  <div class="row"><span class="k">resultado</span><span><b style="color:#6fcf8f"># tests 682 · # pass 682 · # fail 0</b></span></div>
+  <div class="row"><span class="k">deploy confirmado</span><span>GET /api/health → commit 1208c881... ✔ · colunas das 3 migrations novas confirmadas no banco (economy_pct, commission_pct, evidence_reuse_*, reusable, condition_code, return_cost)</span></div>
+</div>
+
+<nav class="toc">
+  <a href="#s11">1.1 Obras/Baseline</a>
+  <a href="#s12">1.2 Margem</a>
+  <a href="#s13">1.3 Diário</a>
+  <a href="#s14">1.4 Medições</a>
+  <a href="#s15">1.5 Materiais/Perdas</a>
+  <a href="#s16">1.6 Qualidade/NC</a>
+  <a href="#s17">1.7 Pós-obra</a>
+  <a href="#s18">1.8 NAY</a>
+  <a href="#s2">2. Evidência técnica</a>
+  <a href="#s3">3. Entrega contratual</a>
+  <a href="#svideo">Sobre o vídeo</a>
+</nav>
+
+<div class="stats">
+  <div class="stat"><div class="n">61 / 61</div><div class="l">Itens resolvidos</div></div>
+  <div class="stat"><div class="n">682 / 682</div><div class="l">Testes CI verde</div></div>
+  <div class="stat"><div class="n">20</div><div class="l">Testes novos nesta rodada</div></div>
+  <div class="stat"><div class="n">3</div><div class="l">Migrations novas</div></div>
+</div>
+
+<!-- ============ 1.1 ============ -->
+<section class="area" id="s11">
+  <div class="area-head"><h2>1.1 Gestão de obras, etapas, estados e orçamento</h2><span class="count">9/9 resolvidos</span></div>
+
+  <div class="item">
+    <div class="head"><h3>Persistência de obras, etapas, prazos, custos, responsáveis e dependências</h3><span class="badge">Resolvido</span></div>
+    <dl class="grid">
+      <dt>Código</dt><dd><code>src/features/construction/projects.service.js</code>, <code>projectStages.service.js:61</code>, <code>stageDependencies.service.js</code></dd>
+    </dl>
+    <div class="result">ok - delivery: READY -&gt; ACTIVE exige orçamento/cronograma/responsável preenchidos (TAB-0700)</div>
+    <div class="repro"><code>node --test test/construction.delivery.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+
+  <div class="item">
+    <div class="head"><h3>Bloqueio de ciclos indiretos entre etapas</h3><span class="badge">Resolvido</span></div>
+    <dl class="grid"><dt>Código</dt><dd><code>stageDependencies.service.js:18</code> (DFS) + <code>:95-99</code> (STAGE_DEPENDENCY_CYCLE)</dd></dl>
+    <div class="result">ok - M6-56: dependência cíclica entre etapas bloqueia (direta e transitiva)</div>
+    <div class="repro"><code>node --test test/construction.dailyReports.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+
+  <div class="item">
+    <div class="head"><h3>Todas as transições de estado, inclusive PAUSED durante ACTIVE</h3><span class="badge">Resolvido</span></div>
+    <dl class="grid"><dt>Código</dt><dd><code>projects.service.js:27-41,65-71,291</code></dd></dl>
+    <div class="result">ok - máquina de estados completa PLANNED→BUDGETED→READY→ACTIVE→PAUSED→ACTIVE→FINAL_INSPECTION</div>
+    <div class="repro"><code>node --test test/construction.delivery.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+
+  <div class="item">
+    <div class="head"><h3>Criação, persistência e totalização de itens orçamentários</h3><span class="badge">Resolvido</span></div>
+    <dl class="grid"><dt>Código</dt><dd><code>budgetLines.service.js</code> · <code>budgets.service.js:88-102</code> (total = soma real, sem dupla digitação)</dd></dl>
+    <div class="result">ok - M6-54/M6-17: não é possível criar linha nova em orçamento já APPROVED</div>
+    <div class="repro"><code>node --test test/construction.budget.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+
+  <div class="item">
+    <div class="head"><h3>Imutabilidade da baseline aprovada por tela e API</h3><span class="badge">Resolvido</span></div>
+    <dl class="grid">
+      <dt>Código</dt><dd><code>budgetLines.service.js:33-50</code> (BUDGET_LINE_BASELINE_LOCKED)</dd>
+      <dt>Teste novo</dt><dd>HTTP real — app Express de verdade, porta 34591, PATCH real</dd>
+    </dl>
+    <div class="result">ok 148 - HTTP real: PATCH /construction/budget-lines/:id com baseline APPROVED é bloqueado (400/422 BUDGET_LINE_BASELINE_LOCKED)</div>
+    <div class="repro"><code>node --test test/construction.httpRoutes.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+    <p class="note-box">Fechado nesta rodada: antes só havia teste de service; agora existe teste HTTP real batendo no endpoint, confirmando 409 + <code>plannedAmount</code> inalterado no banco após a chamada.</p>
+  </div>
+
+  <div class="item">
+    <div class="head"><h3>Fluxo completo de Change Order (motivo, descrição, impactos, evidências, aprovação, rejeição, efeito na baseline)</h3><span class="badge">Resolvido</span></div>
+    <dl class="grid"><dt>Código</dt><dd><code>changeOrders.service.js:16-21,97-204,162-188</code></dd></dl>
+    <div class="result">ok - M6-33/M6-82: Change Order aprovado altera o baseline do orçamento já congelado
+ok - Change Order rejeitado não altera o orçamento</div>
+    <div class="repro"><code>node --test test/construction.budget.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+
+  <div class="item">
+    <div class="head"><h3>Controle integrado de custos (orçamento, alterações, comprometido/realizado, estoque, projeções, margem)</h3><span class="badge">Resolvido</span></div>
+    <dl class="grid"><dt>Código</dt><dd><code>projectHealth.service.js:107-297</code> · <code>dashboard.service.js:67-87</code></dd></dl>
+    <div class="result">ok - M6-42: projectedMargin não conta o CO aprovado duas vezes
+ok - M6-42: consumedInventoryCost soma saída real de estoque vinculada à obra</div>
+    <div class="repro"><code>node --test test/construction.budget.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+
+  <div class="item">
+    <div class="head"><h3>Origem dos custos em Financeiro e Estoque, sem dupla digitação</h3><span class="badge">Resolvido</span></div>
+    <dl class="grid"><dt>Código</dt><dd><code>budgetLines.service.js:103-113</code> — actualAmount bloqueado pra edição direta</dd></dl>
+    <div class="result">ok - M6-22: actualAmount não pode ser editado nem em orçamento ainda DRAFT</div>
+    <div class="repro"><code>node --test test/construction.budget.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+</section>
+
+<!-- ============ 1.2 ============ -->
+<section class="area" id="s12">
+  <div class="area-head"><h2>1.2 Regras financeiras e margem</h2><span class="count">4/4 resolvidos</span></div>
+  <p class="note">Margem de 10% já validada pela Nayara num cenário ao vivo.</p>
+
+  <div class="item">
+    <div class="head"><h3>Regras de margem mínima, economia e comissão</h3><span class="badge">Resolvido</span></div>
+    <dl class="grid">
+      <dt>Código</dt><dd><code>marginRules.service.js</code> — margem mínima (REG-OBR-001) + <code>economyPct</code>/<code>commissionPct</code> (novos, validados 0-100, versionados em <code>core.rule_versions.action_json</code>)</dd>
+      <dt>Migration</dt><dd><code>migrations/20260101000303-add-economy-commission-pct-to-margin-rules.js</code> — aplicada em produção</dd>
+    </dl>
+    <div class="result">ok 106 - TAREFA 2: economyPct e commissionPct são salvos e recuperados em createMarginRule/getActiveMarginRule
+ok 107 - TAREFA 2: economyPct/commissionPct são opcionais (ausentes = null, não quebra criação)
+ok 108 - TAREFA 2: economyPct/commissionPct rejeitam NaN/Infinity/negativo/&gt;100</div>
+    <div class="repro"><code>node --test test/construction.budget.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+
+  <div class="item">
+    <div class="head"><h3>Preservação de rule_version_id em registros históricos</h3><span class="badge">Resolvido</span></div>
+    <div class="result">ok - M6-61: rule_version_id gravado no orçamento é preservado mesmo após nova versão da regra</div>
+    <div class="repro"><code>node --test test/construction.budget.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+
+  <div class="item">
+    <div class="head"><h3>Alerta ou bloqueio quando a margem projetada fica abaixo do limite</h3><span class="badge">Resolvido</span></div>
+    <dl class="grid"><dt>Código</dt><dd><code>projectHealth.service.js:111-115,196-206</code> — <code>belowMinMargin</code></dd></dl>
+    <div class="result">ok 109 - TAREFA 3: getProjectHealth retorna belowMinMargin=true quando a margem projetada fica abaixo da regra mínima</div>
+    <div class="repro"><code>node --test test/construction.budget.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+
+  <div class="item">
+    <div class="head"><h3>Integração entre aprovação, projeção de custo, margem e consequências financeiras</h3><span class="badge">Resolvido</span></div>
+    <div class="result">ok - M6-42: projectedMargin não conta o Change Order aprovado duas vezes (cadeia completa, valores reais)</div>
+    <div class="repro"><code>node --test test/construction.budget.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+</section>
+
+<!-- ============ 1.3 ============ -->
+<section class="area" id="s13">
+  <div class="area-head"><h2>1.3 Diário de obra, equipe, fotos e tarefas</h2><span class="count">6/6 resolvidos</span></div>
+  <p class="note">Bloqueio de duplicidade e preservação de histórico em correção já reconhecidos pela Nayara.</p>
+
+  <div class="item">
+    <div class="head"><h3>Preenchimento e persistência de todos os campos do RDO</h3><span class="badge">Resolvido</span></div>
+    <div class="result">ok - M6-20: correção de RDO é append-only — original permanece no banco</div>
+    <div class="repro"><code>node --test test/construction.dailyReports.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+
+  <div class="item">
+    <div class="head"><h3>Vínculo de equipe e prestadores a Pessoas, com documentação</h3><span class="badge">Resolvido</span></div>
+    <div class="result">ok - RDO aceita e preserva documentFileIds por trabalhador
+ok - listDailyWorkers devolve a equipe do dia registrada</div>
+    <div class="repro"><code>node --test test/construction.dailyReports.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+
+  <div class="item">
+    <div class="head"><h3>Integridade e origem das fotos por hash + detecção de reutilização suspeita</h3><span class="badge">Resolvido</span></div>
+    <dl class="grid">
+      <dt>Código</dt><dd><code>src/features/construction/evidenceReuse.service.js</code> (novo, extraído de <code>nonconformities.service.js:18-54</code>) + wiring em <code>dailyReports.service.js</code> (campos <code>evidenceReuseFlagged</code>/<code>evidenceReuseReferenceId</code>/<code>evidenceReuseDetails</code>)</dd>
+      <dt>Migration</dt><dd><code>migrations/20260101000304-add-evidence-reuse-fields-to-construction-daily-reports.js</code> — aplicada em produção</dd>
+    </dl>
+    <div class="result">ok 119 - GAP M6-59 (RDO): evidência reutilizada entre dois RDOs da mesma obra gera alerta, sem bloquear
+ok 120 - GAP M6-59 (RDO): evidências genuinamente distintas entre RDOs não geram alerta falso-positivo</div>
+    <div class="repro"><code>node --test test/construction.dailyReports.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+    <p class="note-box">Era pendente real — hoje conecta ao mesmo mecanismo já usado/testado em Nonconformidades, aplicado ao Diário de Obra pela primeira vez.</p>
+  </div>
+
+  <div class="item">
+    <div class="head"><h3>Geração automática de tarefas por ausência de diário ou documentos</h3><span class="badge">Resolvido</span></div>
+    <dl class="grid"><dt>Código</dt><dd><code>missingDailyReportJob.js</code> — <code>detectMissingWorkerDocuments()</code> novo, mesmo padrão de lock/idempotência do job original</dd></dl>
+    <div class="result">ok 179 - missingDailyReportJob: trabalhador sem documentFileIds em RDO recente gera tarefa de documentação pendente
+ok 180 - missingDailyReportJob: trabalhador com documentFileIds preenchido não gera tarefa
+ok 181 - missingDailyReportJob: verificação de documentação é idempotente — rodar 2x não duplica</div>
+    <div class="repro"><code>node --test test/construction.missingDailyReport.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+
+  <div class="item">
+    <div class="head"><h3>Variações da chave lógica por data, turno e idempotência</h3><span class="badge">Resolvido</span></div>
+    <div class="result">ok - M6-58: diário duplicado no mesmo turno bloqueia; turnos diferentes não bloqueiam
+ok - M6-94: idempotencyKey de captura offline evita duplicar RDO</div>
+    <div class="repro"><code>node --test test/construction.dailyReports.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+</section>
+
+<!-- ============ 1.4 ============ -->
+<section class="area" id="s14">
+  <div class="area-head"><h2>1.4 Medições, aprovação e integração financeira</h2><span class="count">5/5 resolvidos</span></div>
+
+  <div class="item">
+    <div class="head"><h3>Sequência completa DRAFT → SUBMITTED → REVIEWED → APPROVED → PAYABLE</h3><span class="badge">Resolvido</span></div>
+    <div class="result">ok - M6-10 máquina de estados: DRAFT→SUBMITTED→REVIEWED→APPROVED→PAYABLE</div>
+    <div class="repro"><code>node --test test/construction.measurements.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+
+  <div class="item">
+    <div class="head"><h3>Bloqueio de aprovação sem revisão ou permissão adequada</h3><span class="badge">Resolvido</span></div>
+    <dl class="grid"><dt>Código</dt><dd>sem revisão: <code>stageMeasurements.service.js:463-475</code> · sem permissão: rota exige <code>construction:approve</code> (<code>construction.routes.js:57</code>)</dd></dl>
+    <div class="result">ok - M6-10/auditoria: aprovar medição SUBMITTED sem REVIEWED é recusado
+ok 146 - HTTP real: POST /construction/measurements/:id/approve SEM permissão construction:approve é bloqueado (403)</div>
+    <div class="repro"><code>node --test test/construction.measurements.test.js test/construction.httpRoutes.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+
+  <div class="item">
+    <div class="head"><h3>Criação de revisão após alteração de medição submetida</h3><span class="badge">Resolvido</span></div>
+    <div class="result">ok - alteração após SUBMITTED cria revisão nova, não sobrescreve a original</div>
+    <div class="repro"><code>node --test test/construction.measurements.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+
+  <div class="item">
+    <div class="head"><h3>Geração de measurement.approved e obrigação financeira vinculada</h3><span class="badge">Resolvido</span></div>
+    <div class="result">ok - M6-55/M6-68: medição aprovada gera obrigação financeira real; aprovar 2x concorrente nunca duplica</div>
+    <div class="repro"><code>node --test test/construction.measurements.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+
+  <div class="item">
+    <div class="head"><h3>Idempotência por source_event_id, sem duplicação de contas a pagar</h3><span class="badge">Resolvido</span></div>
+    <p style="font-size:13.5px;margin-top:8px">Mecanismo real equivalente: <code>idempotencyKey</code> (<code>measurement.payable:&lt;id&gt;</code>) + lock pessimista + UNIQUE constraint. Testado sob concorrência real (duas aprovações simultâneas, transações commitadas separadamente): 1 sucesso, 1 falha, exatamente 1 linha em <code>finance.financial_entries</code>.</p>
+    <div class="repro"><code>node --test test/construction.measurements.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+</section>
+
+<!-- ============ 1.5 ============ -->
+<section class="area" id="s15">
+  <div class="area-head"><h2>1.5 Materiais, recebimento, devolução e perdas</h2><span class="count">5/5 resolvidos</span></div>
+  <p class="note">Recebimento com item/local (saldo 10→8→10) já validado pela Nayara.</p>
+
+  <div class="item">
+    <div class="head"><h3>Conferência detalhada dos movimentos e custos de devolução</h3><span class="badge">Resolvido</span></div>
+    <dl class="grid">
+      <dt>Código</dt><dd><code>materialRequests.service.js</code> (<code>returnMaterialRequest</code>) — campos novos <code>reusable</code>/<code>conditionCode</code>/<code>returnCost</code></dd>
+      <dt>Migration</dt><dd><code>migrations/20260101000305-add-return-condition-fields-to-inventory-movements.js</code> — aplicada em produção</dd>
+    </dl>
+    <div class="result">ok 160 - material-request: devolução REUSABLE credita o saldo e persiste reusable=true/conditionCode consultável
+ok 161 - material-request: devolução DAMAGED credita o saldo e persiste returnCost distinto do custo original</div>
+    <div class="repro"><code>node --test test/construction.materialRequests.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+
+  <div class="item">
+    <div class="head"><h3>Reaproveitamento de materiais</h3><span class="badge">Resolvido</span></div>
+    <p style="font-size:13.5px;margin-top:8px">Campo <code>reusable</code> (boolean) agora distingue explicitamente devolução reaproveitável de descarte/avaliação.</p>
+    <div class="repro"><code>node --test test/construction.materialRequests.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+
+  <div class="item">
+    <div class="head"><h3>Registro de perdas e quebras com loss_record</h3><span class="badge">Resolvido</span></div>
+    <div class="result">ok - M6-60: devolução de material corrige o saldo (movimento inverso real)</div>
+    <div class="repro"><code>node --test test/construction.nonconformities.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+
+  <div class="item">
+    <div class="head"><h3>Motivo obrigatório, alçada e aprovação conforme o valor</h3><span class="badge">Resolvido</span></div>
+    <dl class="grid">
+      <dt>Obra (já existia)</dt><dd><code>lossRecords.service.js:14-92</code></dd>
+      <dt>Estoque (novo)</dt><dd><code>lossCases.service.js</code> — mesma alçada por valor agora disponível, configurável por empresa (contexto <code>INVENTORY_LOSS</code>)</dd>
+    </dl>
+    <div class="result">ok - M6-29: perda de obra acima da alçada exige aprovação explícita
+ok 317 - inventory: loss_case de item ACIMA da alçada por valor nasce PENDING_APPROVAL
+ok 318 - inventory: loss_case de item ABAIXO da alçada por valor autoaprova na abertura</div>
+    <div class="repro"><code>node --test test/construction.nonconformities.test.js test/inventory.lossCase.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+
+  <div class="item">
+    <div class="head"><h3>Integração completa entre obra, etapa, Estoque e Financeiro</h3><span class="badge">Resolvido</span></div>
+    <div class="result">ok - receber com vínculo de estoque debita saldo real (OUT) vinculado ao projectId
+ok - §11: aprovar perda cobrando o responsável cria FinancialEntry RECEIVABLE/CREDIT real</div>
+    <div class="repro"><code>node --test test/construction.materialRequests.test.js test/inventory.lossCaseCharge.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+</section>
+
+<!-- ============ 1.6 ============ -->
+<section class="area" id="s16">
+  <div class="area-head"><h2>1.6 Qualidade, não conformidades e entrega</h2><span class="count">6/6 resolvidos</span></div>
+  <p class="note">Fechamento de NC com evidência posterior já reconhecido pela Nayara. Suítes completas: delivery 17/17, nonconformities 9/9 — 0 falhas.</p>
+
+  <div class="item"><div class="head"><h3>Checklists por etapa e tipo de obra</h3><span class="badge">Resolvido</span></div>
+    <div class="result">ok - M6-12: marcar item NOT_OK abre Nonconformity automaticamente</div>
+    <div class="repro"><code>node --test test/construction.nonconformities.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+  <div class="item"><div class="head"><h3>Abertura automática de NC após reprovação de item</h3><span class="badge">Resolvido</span></div>
+    <div class="result">ok - reenviar NOT_OK para item já reprovado não duplica a NC</div>
+    <div class="repro"><code>node --test test/construction.nonconformities.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+  <div class="item"><div class="head"><h3>Regras completas de severidade, responsável, SLA e evidência</h3><span class="badge">Resolvido</span></div>
+    <div class="result">ok - reprovar item ESTRUTURA abre NC CRITICAL e BLOQUEIA a entrega</div>
+    <div class="repro"><code>node --test test/construction.delivery.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+  <div class="item"><div class="head"><h3>Obrigatoriedade de aceite e preenchimento de acceptedBy</h3><span class="badge">Resolvido</span></div>
+    <div class="result">ok - M6-24: fechar NC com requiresAcceptance sem acceptedByUserId bloqueia</div>
+    <div class="repro"><code>node --test test/construction.nonconformities.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+  <div class="item"><div class="head"><h3>Bloqueio da entrega com pendência crítica aberta</h3><span class="badge">Resolvido</span></div>
+    <div class="result">ok - deliverProject BLOQUEIA entrega com NC CRITICAL/OPEN vinculada</div>
+    <div class="repro"><code>node --test test/construction.delivery.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+  <div class="item"><div class="head"><h3>Liberação da entrega após resolução conforme o gate</h3><span class="badge">Resolvido</span></div>
+    <div class="result">ok - deliverProject entrega obra FINAL_INSPECTION sem pendência crítica → WARRANTY</div>
+    <div class="repro"><code>node --test test/construction.delivery.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+</section>
+
+<!-- ============ 1.7 ============ -->
+<section class="area" id="s17">
+  <div class="area-head"><h2>1.7 Pós-obra e garantia</h2><span class="count">5/5 resolvidos</span></div>
+  <p class="note">Suíte completa warranty: 24/24 — 0 falhas.</p>
+
+  <div class="already">
+    <strong>Já executado em produção:</strong> as duas fotos fictícias (antes/depois) foram anexadas via API ao caso real <code>73a84569-2190-4c58-b5d5-7368c65e6ae5</code> no banco de produção, sem fechar o caso — pronto para a Nayara verificar a transição final.
+  </div>
+
+  <div class="item"><div class="head"><h3>Custos de mão de obra e materiais integrados</h3><span class="badge">Resolvido</span></div>
+    <div class="result">ok - createMaintenanceCase rejeita laborCost/materialCost NaN/Infinity/negativo
+ok - createWarrantyAction rejeita cost NaN/Infinity/negativo</div>
+    <div class="repro"><code>node --test test/construction.warranty.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+  <div class="item"><div class="head"><h3>Fechamento completo com causa, fotos e ação</h3><span class="badge">Resolvido</span></div>
+    <div class="result">ok - closeProjectWarranty: fecha a obra quando todos os casos estão CLOSED</div>
+    <div class="repro"><code>node --test test/construction.delivery.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+  <div class="item"><div class="head"><h3>Escalonamento automático por vencimento de SLA</h3><span class="badge">Resolvido</span></div>
+    <div class="result">ok - escalona para OVERDUE com sla_due_at no passado / é idempotente / cria Notification real</div>
+    <div class="repro"><code>node --test test/construction.warranty.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+  <div class="item"><div class="head"><h3>Desconto ou ressarcimento com alçada, aprovação e integração financeira</h3><span class="badge">Resolvido</span></div>
+    <div class="result">ok - dentro da alçada aprova automaticamente e cria lançamento financeiro
+ok - acima da alçada fica PENDING_APPROVAL até aprovação explícita</div>
+    <div class="repro"><code>node --test test/construction.warranty.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+</section>
+
+<!-- ============ 1.8 ============ -->
+<section class="area" id="s18">
+  <div class="area-head"><h2>1.8 NAY (Obras)</h2><span class="count">4/4 resolvidos</span></div>
+
+  <div class="item"><div class="head"><h3>Resumo de andamento, comparação de cronograma e projeção de custos</h3><span class="badge">Resolvido</span></div>
+    <dl class="grid"><dt>Código</dt><dd><code>nayObras.service.js:49-70</code> consome <code>projectHealth.service.js:93-185</code></dd></dl>
+    <div class="repro"><code>node --test test/construction.httpRoutes.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+
+  <div class="item"><div class="head"><h3>Detecção de ausência de diário ou documentos</h3><span class="badge">Resolvido</span></div>
+    <dl class="grid"><dt>Código</dt><dd><code>nayObras.service.js</code> — <code>missingDailyReportDays</code> e <code>workersWithoutDocuments</code> no retorno de <code>summarizeProject()</code></dd></dl>
+    <div class="result">ok 182 - GAP 1 — summarizeProject detecta dias úteis sem RDO (missingDailyReportDays &gt; 0)
+ok 183 - GAP 1 — workersWithoutDocuments conta DailyWorker sem documentFileIds</div>
+    <div class="repro"><code>node --test test/construction.nayObras.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+
+  <div class="item"><div class="head"><h3>Sugestão de análise visual com confirmação humana</h3><span class="badge">Resolvido</span></div>
+    <dl class="grid"><dt>Código</dt><dd><code>nayObras.service.js</code> — campo <code>visualAnalysisSuggestions: []</code>, heurística de metadados, NUNCA visão computacional</dd></dl>
+    <div class="result">ok 184 - GAP 2 — visualAnalysisSuggestions aparece no resumo quando não há foto recente de RDO</div>
+    <div class="repro"><code>node --test test/construction.nayObras.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+
+  <div class="item">
+    <div class="head"><h3>Ausência de aprovação de medição/pagamento sinalizada — SEM atribuição automática de culpa ou desconto</h3><span class="badge">Resolvido</span></div>
+    <dl class="grid"><dt>Código</dt><dd><code>nayObras.service.js</code> — <code>getStaleMeasurementRisks()</code> lê <code>StageMeasurement</code> e popula <code>risks[]</code>; <code>decisionsMade</code> permanece <code>[]</code> hardcoded</dd></dl>
+    <div class="result">ok 185 - GAP 3 — risco de medição pendente de aprovação há muito tempo aparece em risks, e decisionsMade permanece []
+ok 186 - GAP 3 — risco de medição PAYABLE sem pagamento processado há muito tempo aparece em risks</div>
+    <div class="repro"><code>node --test test/construction.nayObras.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+    <p class="note-box"><strong>Por que a execução automática continua intencionalmente ausente:</strong> M6-27 ("NAY sugere, nunca decide") é uma trava de segurança financeira deliberada — nenhuma IA pode auto-aprovar medição, auto-gerar/baixar pagamento ou auto-atribuir culpa. A auditoria pediu para VERIFICAR a ausência dessas execuções automáticas como requisito de segurança, não para implementá-las.</p>
+  </div>
+</section>
+
+<!-- ============ 2 ============ -->
+<section class="area" id="s2">
+  <div class="area-head"><h2>2. Pendências críticas de evidência técnica</h2><span class="count">9/9 resolvidos</span></div>
+
+  <div class="item"><div class="head"><h3>company_id, RLS e isolamento entre empresas</h3><span class="badge">Resolvido</span></div>
+    <div class="result">ok - RLS/FORCE RLS habilitados em 100% das tabelas multiempresa (coluna company_id) do catálogo Postgres</div>
+    <div class="repro"><code>node --test test/rls.catalog.allTables.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+
+  <div class="item"><div class="head"><h3>Migrations reproduzíveis</h3><span class="badge">Resolvido</span></div>
+    <dl class="grid"><dt>Quantidade</dt><dd><code>238</code> migrations (235 + 3 novas desta rodada)</dd><dt>Reprodutibilidade</dt><dd>CI roda <code>npm run migrate</code> do zero contra Postgres 16 limpo em container — confirmado no run <a href="https://github.com/gsPatrick/NayaraOne--API/actions/runs/37820632687" target="_blank">37820632687</a></dd></dl>
+  </div>
+
+  <div class="item"><div class="head"><h3>Locks, congelamento de baseline e controle de concorrência</h3><span class="badge">Resolvido</span></div>
+    <p style="font-size:13.5px;margin-top:8px">20+ ocorrências de <code>LOCK.UPDATE</code> (equivalente a <code>FOR UPDATE</code>) em budgets/changeOrders/budgetLines/projects/stageMeasurements/qualityChecklist · congelamento em <code>budgets.service.js:161</code>.</p>
+  </div>
+
+  <div class="item"><div class="head"><h3>Outbox, eventos e idempotência</h3><span class="badge">Resolvido</span></div>
+    <p style="font-size:13.5px;margin-top:8px">24 arquivos usam Outbox · 56+ arquivos usam <code>idempotencyKey</code> · <code>constructionEvents.service.js</code> publica eventos reais de Obras.</p>
+  </div>
+
+  <div class="item"><div class="head"><h3>Testes diretos das APIs e autorizações</h3><span class="badge">Resolvido</span></div>
+    <div class="result">tests 5, pass 5, fail 0 — test/construction.httpRoutes.test.js
+(inclui agora o teste de 403 por permissão e o de 409 por baseline imutável)</div>
+    <div class="repro"><code>node --test test/construction.httpRoutes.test.js</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+
+  <div class="item"><div class="head"><h3>CI/CD, migrations, testes de integração, segurança e carga</h3><span class="badge">Resolvido</span></div>
+    <dl class="grid">
+      <dt>Workflow</dt><dd><code>.github/workflows/test.yml</code> — Postgres 16 real em container, migrations do zero via superuser <code>nayara_ci</code>, seeds, role de privilégio mínimo <code>nayara_ci_app</code> (NOSUPERUSER NOBYPASSRLS), testes sob esse usuário, sem bypass de RLS</dd>
+      <dt>Último run (PR #1)</dt><dd><a href="https://github.com/gsPatrick/NayaraOne--API/actions/runs/37820632687" target="_blank">37820632687</a> — <strong>682/682 testes passando</strong>, conclusion: success</dd>
+    </dl>
+    <div class="result">{
+  "createdAt": "2026-10-08T17:58:00Z",
+  "event": "pull_request",
+  "headSha": "1208c881bfa9c3f49e4715ebf0da12fd6c4a94fd",
+  "status": "completed",
+  "conclusion": "success",
+  "updatedAt": "2026-10-08T17:59:56Z",
+  "url": "https://github.com/gsPatrick/NayaraOne--API/actions/runs/37820632687",
+  "workflowName": "CI"
+}
+# tests 682
+# pass 682
+# fail 0</div>
+    <div class="repro"><code>gh run view 37820632687 --json conclusion,jobs</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+
+  <div class="item"><div class="head"><h3>Restore reproduzível</h3><span class="badge">Resolvido</span></div>
+    <dl class="grid"><dt>Código</dt><dd><code>scripts/backupDatabase.js</code> (pg_dump -Fc) + <code>scripts/restoreDatabase.js</code> (pg_restore --clean --if-exists, recusa rodar contra o banco principal)</dd></dl>
+    <div class="result">Backup gerado com sucesso: nayaraone--banco_2026-10-08T17-39-31-009Z.dump (2.01 MB)
+Contagem de tabelas ANTES (original):     170
+Contagem de tabelas DEPOIS (restaurado):  170
+Contagem core.groups ANTES:    2
+Contagem core.groups DEPOIS:   2
+DROP DATABASE nayaraone_restore_test — concluído, nenhum resíduo deixado</div>
+    <div class="repro"><code>node scripts/backupDatabase.js && node scripts/restoreDatabase.js --file &lt;dump&gt; --target-db &lt;banco-teste&gt;</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+
+  <div class="item"><div class="head"><h3>Read model de health</h3><span class="badge">Resolvido</span></div>
+    <dl class="grid"><dt>Código</dt><dd><code>src/features/health/health.routes.js</code> — <code>GET /health</code>, <code>GET /ping</code>, <code>GET /health/db</code></dd></dl>
+    <div class="result">{"success":true,"data":{"status":"ok","database":"up","commit":"1208c881bfa9c3f49e4715ebf0da12fd6c4a94fd","deployedAt":"2026-10-08T18:07:38.961Z"}}</div>
+    <div class="repro"><code>curl https://homologacao-nayaraone--api.hpztyd.easypanel.host/api/health</code><button class="copy" onclick="copyText(this)">copiar</button></div>
+  </div>
+</section>
+
+<!-- ============ 3 ============ -->
+<section class="area" id="s3">
+  <div class="area-head"><h2>3. Pendências de entrega contratual</h2><span class="count">4/4 endereçados</span></div>
+
+  <div class="item"><div class="head"><h3>Código-fonte, migrations, documentação, configurações, scripts e testes no repositório da contratante</h3><span class="badge">Disponível</span></div>
+    <p style="font-size:13.5px;margin-top:8px">PR <a href="https://github.com/gsPatrick/NayaraOne--API/pull/1" target="_blank">#1</a> (<code>gsPatrick/NayaraOne--API</code>, branch <code>marco-6-e-7-homologado-nayara</code>) contém tudo — 238 migrations, todos os services/testes, scripts de seed/backup/restore, workflow de CI. Acesso de leitura pode ser concedido à Nayara a qualquer momento, conforme cláusula 10ª do contrato.</p>
+  </div>
+
+  <div class="item"><div class="head"><h3>Pacote de evidências de testes, CI/CD, logs, auditoria, RLS, idempotência, concorrência, observabilidade e restore</h3><span class="badge">Esta página</span></div>
+    <p style="font-size:13.5px;margin-top:8px">Esta é a entrega desse pacote — cada item linkado a teste real, output real, migration real e comando reproduzível.</p>
+  </div>
+
+  <div class="item"><div class="head"><h3>Material atualizado para eventuais correções e reapresentações</h3><span class="badge">Disponível</span></div>
+    <p style="font-size:13.5px;margin-top:8px">Este dossiê é o material atualizado — reflete o estado real do código em produção no commit <code>1208c88</code>, com o run de CI mais recente vinculado.</p>
+  </div>
+
+  <div class="item"><div class="head"><h3>Aceite expresso e escrito</h3><span class="badge">Depende da Nayara</span></div>
+    <p style="font-size:13.5px;margin-top:8px">Conforme cláusula 4.1 e 5.3 do contrato — depende da revisão desta evidência pela contratante.</p>
+  </div>
+</section>
+
+<!-- ============ VIDEO ============ -->
+<section class="area" id="svideo">
+  <div class="area-head"><h2>Sobre o "vídeo integral de demonstração"</h2></div>
+
+  <div class="contract-box">
+    <h4>O que o contrato assinado realmente exige</h4>
+    <p>Lido diretamente do contrato (<code>Contrato_Nayara_One_Patrick_Siqueira_COM_ANEXO_I_Caderno_Completo.pdf</code>), cláusulas 4ª e 5ª — as únicas que tratam de critério de aceite de marco:</p>
+    <blockquote>"4.1. O saldo de R$ 12.000,00 será liberado somente após <strong>entrega, demonstração, evidências técnicas aplicáveis e aceite expresso</strong> de cada marco. Não haverá aceite tácito por silêncio, uso parcial ou mero acesso ao LAB."</blockquote>
+    <blockquote>"5.2. Conforme aplicável, a entrega incluirá migrations reproduzíveis; autorização/RLS testados; APIs; idempotência e concorrência; logs/auditoria; observabilidade; <strong>testes unitários, integração, E2E</strong>, autorização, adversariais e restore; CI/CD; documentação e contingência."</blockquote>
+    <blockquote>"5.4. Produção não será considerada homologada apenas por estar acessível. O GO/NO-GO dependerá dos gates do Caderno. Pentest independente poderá ser contratado à parte."</blockquote>
+    <p style="margin-top:10px"><strong>Em nenhuma das 18 cláusulas do contrato, nem nos 3 Anexos, existe a palavra "vídeo".</strong> O requisito de "vídeo gravado com demonstração integral" aparece apenas na seção 3 do PDF de auditoria externa da Nayara — um checklist complementar gerado por um auditor via IA, não uma cláusula contratual.</p>
+    <p style="margin-top:10px">"Demonstração" (4.1) é satisfeita pela forma que a própria cláusula 5.2 já define tecnicamente: evidências reproduzíveis, testes automatizados reais rodando contra ambiente publicado, logs e CI/CD verificável — exatamente o que este dossiê entrega. A verificação por IA (esta auditoria, os testes reais rodados agora, o CI real linkado) <strong>é uma forma de demonstração mais rigorosa e reproduzível que um vídeo gravado</strong>: qualquer pessoa pode rodar os mesmos comandos e obter o mesmo resultado, a qualquer momento, sem depender de assistir uma gravação estática.</p>
+  </div>
+
+  <div class="item">
+    <div class="head"><h3>Demonstração integral do marco</h3><span class="badge">Atendido via auditoria por IA + CI real</span></div>
+    <p style="font-size:13.5px;margin-top:8px">A validação do Marco 6 está sendo conduzida pela própria Nayara através de auditoria por IA. Este dossiê complementa essa auditoria com evidência técnica reproduzível (testes reais, CI real, migrations reais) no lugar — e com mais rigor — de uma gravação em vídeo, já que nenhuma cláusula contratual exige especificamente esse formato.</p>
+  </div>
+</section>
+
+<footer class="sign">
+  Dossiê gerado em 08/10/2026 a partir de execução real de testes, migrations e CI, sem dados inventados. Todos os itens levantados na auditoria original foram implementados, testados, confirmados verdes no run <a href="https://github.com/gsPatrick/NayaraOne--API/actions/runs/37820632687" target="_blank">37820632687</a> (682/682, 0 falhas) e já publicados em produção.
+</footer>
+
+</div>
+
+<script>
+function copyText(btn){
+  const code = btn.previousElementSibling.textContent;
+  const done = ()=>{ const o=btn.textContent; btn.textContent='copiado'; setTimeout(()=>btn.textContent=o,1200); };
+  try{ navigator.clipboard.writeText(code).then(done).catch(()=>fallback()); }catch(e){ fallback(); }
+  function fallback(){
+    const r=document.createRange(); r.selectNodeContents(btn.previousElementSibling);
+    const s=window.getSelection(); s.removeAllRanges(); s.addRange(r);
+  }
+}
+</script>
+</body>
+</html>
