@@ -367,8 +367,30 @@
 
 <div class="wrap">
 
+  <section style="background:#1f2937;color:#f9fafb;border-radius:14px;padding:24px 28px;margin-bottom:28px;border:2px solid #10b981;">
+    <p style="text-transform:uppercase;letter-spacing:.08em;font-size:12px;color:#34d399;font-weight:700;margin:0 0 10px;">Atualização mais recente — 07/10/2026 — leia antes do restante da página</p>
+    <p style="margin:0 0 14px;font-size:15px;line-height:1.5;">
+      Resposta ponto a ponto à sua última conferência (reclamação sem conclusão, lançamento sem centro de custo/resultado,
+      transições de contrato ausentes na tela). Os 3 pontos foram corrigidos — código, teste automatizado e roteiro de
+      reprodução na homologação publicada estão na matriz da seção <a href="#s6b" style="color:#34d399;">06 — Matriz dos pontos da última conferência</a> abaixo,
+      exatamente no formato que você pediu (item do Anexo I → implementação → teste e resultado → roteiro reproduzível).
+    </p>
+    <ul style="margin:0 0 14px;padding-left:20px;font-size:14px;line-height:1.6;">
+      <li><strong>Reclamação encerrada sem conclusão</strong> — a API agora recusa resolver um caso sem responsável atribuído e sem texto de conclusão (<code style="background:#111827;padding:2px 6px;border-radius:4px;">FEEDBACK_CASE_RESOLUTION_REQUIRED</code> / <code style="background:#111827;padding:2px 6px;border-radius:4px;">FEEDBACK_CASE_ASSIGNEE_REQUIRED</code>). O responsável fica registrado no campo "Responsável" do caso, visível na listagem e exigido já na abertura. Testado em CRM → Feedback.</li>
+      <li><strong>Despesa/receita sem centro de custo/resultado</strong> — a API agora bloqueia a criação (não só a tela): lançamento de despesa (PAYABLE) exige <code style="background:#111827;padding:2px 6px;border-radius:4px;">costCenterId</code>, lançamento de receita (RECEIVABLE) exige <code style="background:#111827;padding:2px 6px;border-radius:4px;">resultCenterId</code>. Os dois lançamentos fictícios que você usou como evidência (<code style="background:#111827;padding:2px 6px;border-radius:4px;">2a725361…</code> e <code style="background:#111827;padding:2px 6px;border-radius:4px;">fe39fa60…</code>) foram preservados exatamente como estavam — ledger é append-only, não voltamos neles; a validação nova impede que um terceiro igual seja criado dali pra frente.</li>
+      <li><strong>Transições de contrato (suspender/rescindir/encerrar)</strong> — já existiam na API desde antes desta rodada; o gap era só a tela nunca ter os botões. Agora aparecem no detalhe do contrato quando o status permite (Suspender/Rescindir em contrato Ativo, Reativar em Suspenso, Encerrar em Rescindido), com campo de motivo obrigatório. Confirmado ao vivo no próprio <strong>LOC-2026-0002</strong>.</li>
+    </ul>
+    <p style="margin:0;font-size:13px;color:#d1d5db;">
+      Commit publicado (API): <code style="background:#111827;padding:2px 6px;border-radius:4px;">242b10c</code> ·
+      Commit publicado (Front): <code style="background:#111827;padding:2px 6px;border-radius:4px;">46256a9</code> ·
+      Branch: <code style="background:#111827;padding:2px 6px;border-radius:4px;">marco-6-e-7-homologado-nayara</code> ·
+      492/492 testes automatizados da API aprovados após a correção ·
+      Para conferir o commit publicado a qualquer momento: <code style="background:#111827;padding:2px 6px;border-radius:4px;">GET /api/version</code> no Front.
+    </p>
+  </section>
+
   <section style="background:#1f2937;color:#f9fafb;border-radius:14px;padding:24px 28px;margin-bottom:28px;border:2px solid #f59e0b;">
-    <p style="text-transform:uppercase;letter-spacing:.08em;font-size:12px;color:#f59e0b;font-weight:700;margin:0 0 10px;">Atualização mais recente — leia antes do restante da página</p>
+    <p style="text-transform:uppercase;letter-spacing:.08em;font-size:12px;color:#f59e0b;font-weight:700;margin:0 0 10px;">Atualização anterior — 02/10/2026</p>
     <p style="margin:0 0 14px;font-size:15px;line-height:1.5;">
       No reteste de 01/10/2026 você reproduziu os mesmos dois sintomas de novo no contrato
       <strong>LOC-2026-0002</strong> e no contrato <strong>c00af665-98b9-47bc-8aa2-b7c7143ec894</strong>. Você estava certa:
@@ -411,16 +433,16 @@
     <div class="meta-row">
       <span class="meta-pill">Preparado por Patrick Gomes Siqueira</span>
       <span class="meta-pill">Relatório original: 02/09/2026 (histórico preservado abaixo)</span>
-      <span class="meta-pill">API 397e47c → 70adef5 (histórico)</span>
-      <span class="meta-pill">Front efff0ae → 8ce02b4 (histórico)</span>
+      <span class="meta-pill">API 397e47c → 242b10c (atual)</span>
+      <span class="meta-pill">Front efff0ae → 46256a9 (atual)</span>
     </div>
   </header>
 
   <div class="status-grid">
     <div class="status-card"><div class="num ok">6/6</div><div class="label">Defeitos do relatório de 28/08 corrigidos</div></div>
-    <div class="status-card"><div class="num ok">20/20</div><div class="label">Testes automatizados aprovados</div></div>
+    <div class="status-card"><div class="num ok">492/492</div><div class="label">Testes automatizados aprovados (API completa)</div></div>
     <div class="status-card"><div class="num ok">1/1</div><div class="label">Contrato de teste inválido corrigido</div></div>
-    <div class="status-card"><div class="num ok">3/3</div><div class="label">Decisões de engenharia documentadas, nenhuma extra</div></div>
+    <div class="status-card"><div class="num ok">3/3</div><div class="label">Pontos da conferência de 07/10 corrigidos</div></div>
   </div>
 
   <section id="s1">
@@ -583,9 +605,40 @@
     </div>
   </section>
 
+  <section id="s6b">
+    <h2 class="h"><span class="n">06</span> Matriz dos pontos da última conferência (07/10/2026)</h2>
+    <p class="lede">Formato exato solicitado: item do Anexo I → implementação → teste e resultado → roteiro reproduzível na homologação publicada.</p>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Item do Anexo I</th><th>Implementação</th><th>Teste e resultado</th><th>Roteiro reproduzível</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Pág. 135, "Reclamações, elogios e conflitos"</strong>: "Ocorrência possui responsável, SLA, severidade e conclusão."</td>
+            <td><code>src/features/crm/feedbackCases.service.js#resolveFeedbackCase</code> — exige <code>resolutionNotes</code> não vazio e <code>assignedToUserId</code> (próprio ou do caso) antes de permitir status RESOLVED. Tela: CRM → Feedback, campo "Responsável" na criação e na resolução.</td>
+            <td><code>test/marco3.crm.test.js</code> ("M3-20: resolver um caso marca RESOLVED e audita") e <code>test/adversarial.crm.test.js</code> (ADV-C11). 38/38 testes do CRM aprovados.</td>
+            <td>CRM → Feedback → Novo caso (preencher Responsável) → Resolver sem preencher Conclusão → esperado: bloqueado com aviso "Descreva a conclusão do caso." Preencher e confirmar → esperado: status muda para Resolvido e Responsável aparece na listagem.</td>
+          </tr>
+          <tr>
+            <td><strong>Pág. 119, "Plano de contas e dimensões"</strong>: "Centro de custo obrigatório para despesa. Centro de resultado obrigatório para receita e análise de margem."</td>
+            <td><code>src/features/finance/financialEntries.service.js#createFinancialEntry</code> — bloqueia na API (não só na tela) PAYABLE sem <code>costCenterId</code> e RECEIVABLE sem <code>resultCenterId</code>. Tela: Financeiro → Novo lançamento, campos marcados como obrigatórios conforme a natureza escolhida.</td>
+            <td><code>test/finance.entries.test.js</code>, <code>test/adversarial.finance.test.js</code>, <code>test/marco4.*.test.js</code> — suíte completa 492/492 aprovados, incluindo os fluxos automáticos (seguro, compras, garantia de obra, aluguel garantido/antecipado, reembolso de utilidades) que também geram lançamento e precisaram de um centro padrão por domínio.</td>
+            <td>Financeiro → Novo lançamento → Natureza "Despesa" → tentar salvar sem Centro de custo → esperado: bloqueado, campo some vermelho. Preencher Centro de custo → esperado: salva. Repetir trocando Natureza para "Receita" e Centro de resultado.</td>
+          </tr>
+          <tr>
+            <td><strong>Pág. 146, "5. Estado do contrato"</strong>: máquina de estados inclui SUSPENDED/TERMINATED/CLOSED além do fluxo linear.</td>
+            <td><code>src/features/legal/contracts.service.js#suspendContract/reactivateContract/terminateContract/closeContract</code> (API já existia). Gap era só a tela: <code>app/painel/contratos/lista/[id]/page.js</code> ganhou os botões Suspender/Reativar/Rescindir/Encerrar com modal de motivo obrigatório.</td>
+            <td>Rotas confirmadas em <code>legal.routes.js</code>; comportamento coberto pela suíte de contratos já existente (máquina de estados, gates de encerramento). Confirmado ao vivo via Playwright no contrato real LOC-2026-0002 (id <code>c1bcc22c-4ea4-4037-9772-2d55b02bff6b</code>) — botões "Suspender"/"Rescindir" visíveis no topo da tela.</td>
+            <td>Contratos → Lista → abrir <strong>LOC-2026-0002</strong> → esperado: botões "Suspender" e "Rescindir" visíveis (contrato Ativo). Clicar Suspender sem preencher motivo → esperado: bloqueado. Preencher e confirmar → esperado: status muda para Suspenso e os botões mudam para "Reativar"/"Rescindir".</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="lede" style="margin-top:20px;">Dois pontos adicionais da sua mensagem pertencem ao Marco 6 (não a este relatório de Marcos 3-5) e foram tratados na página dedicada <a href="/homologacao-marco6.html">/homologacao-marco6.html</a>: a margem mínima da obra de teste (regra ficou sem versão ativa publicada depois de uma rodada de testes automatizados concorrentes na mesma empresa de homologação — republicada, 10%, ativa) e o histórico do diário de obra (RDO) (o conteúdo original sempre foi preservado no banco — append-only via <code>supersedesId</code> — mas não existia endpoint nem tela para consultá-lo; agora há <code>GET /construction/daily-reports/:id/history</code> e um botão "Ver histórico" na tela de Diário).</p>
+  </section>
+
   <section id="s6" class="raw-section">
-    <h2 class="h" style="margin-bottom:6px;"><span class="n">06</span> Dados brutos</h2>
-    <p class="lede">Para conferência técnica direta ou para colar numa IA e pedir uma segunda opinião sobre o resultado. Página dedicada, com cada um dos 20 testes listado individualmente e a confirmação ao vivo do contrato corrigido: <a href="/testes.html">/testes.html</a>.</p>
+    <h2 class="h" style="margin-bottom:6px;"><span class="n">07</span> Dados brutos</h2>
+    <p class="lede">Para conferência técnica direta ou para colar numa IA e pedir uma segunda opinião sobre o resultado. Página dedicada, com os 20 testes originais listados individualmente e a confirmação ao vivo do contrato corrigido: <a href="/testes.html">/testes.html</a> (a suíte cresceu para 492 testes ao longo da homologação — ver resumo abaixo e matriz da seção 06 para a cobertura mais recente).</p>
 
     <div class="raw-block">
       <div class="raw-block-head"><h4>Resumo em JSON</h4><button class="copy-btn" data-copy="raw-json">Copiar</button></div>
@@ -612,11 +665,12 @@
     "visivel_em": "Administracao > Atividades"
   },
   "testes_automatizados": {
-    "total": 20,
-    "aprovados": 20,
+    "total": 492,
+    "aprovados": 492,
     "reprovados": 0,
     "repositorio": "NayaraOne--API",
-    "comando": "npm test"
+    "comando": "node --test test/*.test.js",
+    "nota": "Suite inicial de 20 testes (02/09) cresceu para 492 ao longo da homologacao; os 20 originais continuam aprovados dentro desse total."
   },
   "segundo_usuario_teste": {
     "email": "homo-qa-aprovador@nayaraone.dev",
@@ -635,6 +689,15 @@
     "contratos_retestados": ["c00af665-98b9-47bc-8aa2-b7c7143ec894"],
     "inspecoes_retestadas": ["6a5ff1c5-bd40-4527-b668-0a14881d580c"],
     "resultado": "ambos confirmados corrigidos via chamada real a API apos deploy"
+  },
+  "patch_07_10_2026": {
+    "motivo": "Conferencia independente (ChatGPT/Nayara): reclamacao resolvida sem conclusao, despesa/receita sem centro de custo/resultado, transicoes de contrato ausentes na tela",
+    "branch": "marco-6-e-7-homologado-nayara",
+    "commit_api": "242b10c461953e8344bcd4fc01f8f26f584ced16",
+    "commit_front": "46256a98734cf415c32146a1db74049f2aa99c73",
+    "lancamentos_ficticios_preservados": ["2a725361-4a61-48c0-8894-6b4f563c0c2b", "fe39fa60-9fc6-4cc8-a7bc-3c2ac5b8e9b9"],
+    "contrato_retestado": "LOC-2026-0002 (c1bcc22c-4ea4-4037-9772-2d55b02bff6b)",
+    "resultado": "492/492 testes automatizados aprovados apos a correcao; botoes de transicao confirmados ao vivo no contrato real"
   }
 }</pre>
     </div>
