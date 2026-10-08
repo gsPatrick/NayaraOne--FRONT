@@ -92,7 +92,7 @@ export default function ContagemPage() {
         </div>
       ) : null}
 
-      <Card title="Contagens" subtitle="Fechamento nunca altera saldo direto — ajuste é um ato separado e aprovado (EST-TS-09)">
+      <Card title="Contagens" subtitle="Local em contagem aberta fica congelado para movimentações. Fechamento nunca altera saldo direto — ajuste é um ato separado e aprovado (EST-TS-09)">
         <Table columns={columns} rows={loading ? [] : counts} loading={loading} emptyMessage="Nenhum inventário aberto." />
       </Card>
 
@@ -125,6 +125,12 @@ export default function ContagemPage() {
           </div>
         ) : (
         <>
+        {/* Caderno §10 — freeze lógico: enquanto a contagem estiver OPEN, a API bloqueia qualquer
+            movimento (entrada, saída, transferência, ajuste, baixa de requisição, recebimento)
+            que toque este local (INVENTORY_LOCATION_FROZEN_BY_COUNT). */}
+        <Alert tone="warning">
+          Enquanto este inventário estiver aberto, o local fica congelado: nenhuma movimentação de estoque nele é aceita até a contagem ser concluída.
+        </Alert>
         <FormField label="Local" required>
           <Select value={newLocationId} onChange={(e) => { setNewLocationId(e.target.value); setNewProjectId(""); }}>
             <option value="">Selecione...</option>
