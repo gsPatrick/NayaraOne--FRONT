@@ -18,7 +18,7 @@ import FormField from "@/components/molecules/FormField/FormField";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import { useRouter } from "next/navigation";
 import { listRequisitions, createRequisition, decideRequisition, issueRequisition, listInventoryItems, listInventoryLocations } from "@/lib/api/inventory";
-import { listProjects } from "@/lib/api/construction";
+import { listProjects, listProjectStages } from "@/lib/api/construction";
 import { formatDateTime, toNumber } from "@/lib/format";
 
 const STATUS_LABELS = { REQUESTED: "Solicitada", APPROVED: "Aprovada", REJECTED: "Rejeitada", ISSUED: "Entregue" };
@@ -38,7 +38,35 @@ export default function RequisicoesPage() {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ warehouseLocationId: "", projectLocationId: "", projectId: "", lines: [{ inventoryItemId: "", quantity: "" }] });
+  const EMPTY_FORM = { warehouseLocationId: "", projectLocationId: "", projectId: "", stageId: "", lines: [{ inventoryItemId: "", quantity: "" }] };
+  const [form, setForm] = useState(EMPTY_FORM);
+
+  // GAP REAL CORRIGIDO (auditoria de conformidade contratual Marco 7, 2026-10-07): EST-004 —
+  // "material atribuído à obra precisa de project_id/stage_id" — o backend aceitava stageId mas
+  // o formulário nunca o enviava. Etapas vêm da obra selecionada (mesma API do módulo Obras).
+  const [stages, setStages] = useState([]);
+  const [stagesLoading, setStagesLoading] = useState(false);
+  const [stagesError, setStagesError] = useState("");
+
+  useEffect(() => {
+    if (!form.projectId) {
+      setStages([]);
+      setStagesError("");
+      return undefined;
+    }
+    let cancelled = false;
+    setStagesLoading(true);
+    setStagesError("");
+    listProjectStages(form.projectId)
+      .then((s) => { if (!cancelled) setStages(s || []); })
+      .catch((err) => {
+        if (cancelled) return;
+        setStages([]);
+        setStagesError(err?.message || "Não foi possível carregar as etapas desta obra.");
+      })
+      .finally(() => { if (!cancelled) setStagesLoading(false); });
+    return () => { cancelled = true; };
+  }, [form.projectId]);
 
   function load() {
     setLoading(true);
@@ -63,7 +91,15 @@ export default function RequisicoesPage() {
     });
   }
 
-  const isValid = form.warehouseLocationId && (!form.projectLocationId || form.projectId) && form.lines.every((l) => l.inventoryItemId && !Number.isNaN(toNumber(l.quantity)) && toNumber(l.quantity) > 0);
+  // Obra com etapas cadastradas exige escolher a etapa (EST-004: project_id/stage_id). Obra sem
+  // nenhuma etapa ainda segue permitida (a API trata stageId como opcional nesse caso).
+  const stageRequired = Boolean(form.projectId) && stages.length > 0;
+  const isValid =
+    form.warehouseLocationId &&
+    (!form.projectLocationId || form.projectId) &&
+    (!stageRequired || form.stageId) &&
+    !stagesLoading &&
+    form.lines.every((l) => l.inventoryItemId && !Number.isNaN(toNumber(l.quantity)) && toNumber(l.quantity) > 0);
 
   async function handleCreate() {
     if (!isValid) return;
@@ -74,10 +110,11 @@ export default function RequisicoesPage() {
         warehouseLocationId: form.warehouseLocationId,
         projectLocationId: form.projectLocationId || undefined,
         projectId: form.projectId || undefined,
+        stageId: form.projectId && form.stageId ? form.stageId : undefined,
         items: form.lines.map((l) => ({ inventoryItemId: l.inventoryItemId, quantity: toNumber(l.quantity) })),
       });
       setModalOpen(false);
-      setForm({ warehouseLocationId: "", projectLocationId: "", projectId: "", lines: [{ inventoryItemId: "", quantity: "" }] });
+      setForm(EMPTY_FORM);
       load();
     } catch (err) {
       setActionError(err?.message || "Não foi possível criar a requisição.");
@@ -241,7 +278,15 @@ export default function RequisicoesPage() {
           </Select>
         </FormField>
         <FormField label="Canteiro (destino)" helper="Opcional — se informado, exige selecionar a obra abaixo (EST-004).">
-          <Select value={form.projectLocationId} onChange={(e) => setForm((p) => ({ ...p, projectLocationId: e.target.value }))}>
+          <Select
+            value={form.projectLocationId}
+            onChange={(e) => {
+              const value = e.target.value;
+              // Sem canteiro não há vínculo com obra — a API recusa projectId sem projectLocationId,
+              // então limpar o canteiro limpa obra/etapa junto.
+              setForm((p) => ({ ...p, projectLocationId: value, ...(value ? {} : { projectId: "", stageId: "" }) }));
+            }}
+          >
             <option value="">Nenhum</option>
             {locations.filter((l) => l.locationType === "PROJECT_SITE").map((l) => (
               <option key={l.id} value={l.id}>{l.name}</option>
@@ -250,10 +295,29 @@ export default function RequisicoesPage() {
         </FormField>
         {form.projectLocationId ? (
           <FormField label="Obra" required>
-            <Select value={form.projectId} onChange={(e) => setForm((p) => ({ ...p, projectId: e.target.value }))}>
+            <Select value={form.projectId} onChange={(e) => setForm((p) => ({ ...p, projectId: e.target.value, stageId: "" }))}>
               <option value="">Selecione...</option>
               {projects.map((pr) => (
                 <option key={pr.id} value={pr.id}>{pr.name}</option>
+              ))}
+            </Select>
+          </FormField>
+        ) : null}
+        {form.projectLocationId && form.projectId ? (
+          <FormField
+            label="Etapa da obra"
+            required={stageRequired}
+            error={stagesError || undefined}
+            helper={stagesLoading
+              ? "Carregando etapas..."
+              : stages.length === 0 && !stagesError
+                ? "Esta obra ainda não tem etapas cadastradas — a requisição fica vinculada só à obra."
+                : "Etapa que vai consumir o material (EST-004: project_id/stage_id)."}
+          >
+            <Select value={form.stageId} disabled={stagesLoading || stages.length === 0} onChange={(e) => setForm((p) => ({ ...p, stageId: e.target.value }))}>
+              <option value="">{stagesLoading ? "Carregando..." : "Selecione..."}</option>
+              {stages.map((s) => (
+                <option key={s.id} value={s.id}>{s.name}</option>
               ))}
             </Select>
           </FormField>
