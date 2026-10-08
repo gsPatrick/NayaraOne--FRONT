@@ -16,12 +16,21 @@ import StickyActionBar from "@/components/organisms/StickyActionBar/StickyAction
 import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
-import { listAssets, createAsset, updateAsset, transferAsset, listAssetMovements, loanTool, returnTool, listInventoryLocations, getAssetByTag } from "@/lib/api/inventory";
+import FileDropInput from "@/components/molecules/FileDropInput/FileDropInput";
+import { listAssets, createAsset, updateAsset, transferAsset, listAssetMovements, loanTool, returnTool, listInventoryLocations, getAssetByTag, disposeAsset, getAssetDisposal } from "@/lib/api/inventory";
+import { uploadFile } from "@/lib/api/legal";
 import { apiFetch } from "@/lib/api/client";
 import { formatBRL, formatDate, toNumber } from "@/lib/format";
 
-const STATUS_LABELS = { AVAILABLE: "Disponível", IN_USE: "Em uso", LOANED: "Emprestado", MAINTENANCE: "Em manutenção", LOST: "Perdido/extraviado" };
-const STATUS_TONE = { AVAILABLE: "success", IN_USE: "info", LOANED: "warning", MAINTENANCE: "danger", LOST: "danger" };
+const STATUS_LABELS = { AVAILABLE: "Disponível", IN_USE: "Em uso", LOANED: "Emprestado", MAINTENANCE: "Em manutenção", LOST: "Perdido/extraviado", DISPOSED: "Baixado" };
+const STATUS_TONE = { AVAILABLE: "success", IN_USE: "info", LOANED: "warning", MAINTENANCE: "danger", LOST: "danger", DISPOSED: "neutral" };
+
+// Caderno §9 — venda/descarte/doação de patrimônio (assets.service.js#disposeAsset).
+const DISPOSAL_TYPE_LABELS = { SALE: "Venda", DISCARD: "Descarte", DONATION: "Doação" };
+const EMPTY_DISPOSE_FORM = { disposalType: "SALE", disposalValue: "", counterpartyName: "", financialDueAt: "", reason: "", files: [] };
+// Só patrimônio fora de qualquer processo aberto pode ser baixado — a API recusa LOANED (devolver
+// antes), MAINTENANCE (fechar a OS antes), LOST e DISPOSED (terminais).
+const DISPOSABLE_STATUSES = ["AVAILABLE", "IN_USE"];
 
 export default function PatrimonioPage() {
   const router = useRouter();
@@ -72,7 +81,19 @@ export default function PatrimonioPage() {
 
   const [loanTarget, setLoanTarget] = useState(null);
   const [loanPersonId, setLoanPersonId] = useState("");
+  // GAP REAL CORRIGIDO (auditoria de conformidade contratual Marco 7, 2026-10-07): EST-006 —
+  // "Saída de ferramenta registra responsável, destino, data prevista de retorno e condição" — o
+  // modal não tinha campo de destino (a API agora exige destinationLocationId).
+  const [loanDestinationId, setLoanDestinationId] = useState("");
   const [loanDueAt, setLoanDueAt] = useState("");
+
+  // GAP REAL CORRIGIDO (auditoria de conformidade contratual Marco 7, 2026-10-07): Caderno §9 —
+  // não existia fluxo de venda/descarte de patrimônio.
+  const [disposeTarget, setDisposeTarget] = useState(null);
+  const [disposeForm, setDisposeForm] = useState(EMPTY_DISPOSE_FORM);
+  const [disposing, setDisposing] = useState(false);
+  const [disposalView, setDisposalView] = useState(null);
+  const [disposalViewError, setDisposalViewError] = useState("");
 
   const [returnTarget, setReturnTarget] = useState(null);
   const [returnCondition, setReturnCondition] = useState("OK");
@@ -163,9 +184,10 @@ export default function PatrimonioPage() {
     setBusyId(loanTarget.id);
     setActionError("");
     try {
-      await loanTool(loanTarget.id, { personUserId: loanPersonId, dueAt: loanDueAt || undefined });
+      await loanTool(loanTarget.id, { personUserId: loanPersonId, destinationLocationId: loanDestinationId, dueAt: loanDueAt || undefined });
       setLoanTarget(null);
       setLoanPersonId("");
+      setLoanDestinationId("");
       setLoanDueAt("");
       load();
     } catch (err) {
@@ -191,6 +213,63 @@ export default function PatrimonioPage() {
       setActionError(err?.message || "Não foi possível devolver a ferramenta.");
     } finally {
       setBusyId(null);
+    }
+  }
+
+  function openDispose(row) {
+    setDisposeForm(EMPTY_DISPOSE_FORM);
+    setDisposeTarget(row);
+  }
+
+  // Validação espelha assets.service.js#disposeAsset: SALE exige valor > 0, DONATION não aceita
+  // valor, motivo e ao menos 1 evidência sempre obrigatórios.
+  const disposeValueRaw = disposeForm.disposalValue.trim();
+  const disposeValue = disposeValueRaw ? toNumber(disposeValueRaw) : 0;
+  const disposeValueValid = !Number.isNaN(disposeValue) && disposeValue >= 0;
+  const disposeIsValid =
+    Boolean(disposeForm.reason.trim()) &&
+    disposeForm.files.length > 0 &&
+    disposeValueValid &&
+    (disposeForm.disposalType !== "SALE" || disposeValue > 0) &&
+    (disposeForm.disposalType !== "DONATION" || disposeValue === 0);
+
+  async function handleDispose() {
+    // Duplo clique não pode disparar duas baixas (a API recusa a segunda, mas evita upload duplicado).
+    if (disposing || !disposeIsValid) return;
+    setDisposing(true);
+    setActionError("");
+    try {
+      const evidenceFileIds = [];
+      for (const file of disposeForm.files) {
+        const uploaded = await uploadFile(file);
+        evidenceFileIds.push(uploaded.id);
+      }
+      await disposeAsset(disposeTarget.id, {
+        disposalType: disposeForm.disposalType,
+        disposalValue: disposeValue > 0 ? disposeValue : undefined,
+        reason: disposeForm.reason.trim(),
+        evidenceFileIds,
+        counterpartyName: disposeForm.counterpartyName.trim() || undefined,
+        financialDueAt: disposeValue > 0 && disposeForm.financialDueAt ? disposeForm.financialDueAt : undefined,
+      });
+      setDisposeTarget(null);
+      setDisposeForm(EMPTY_DISPOSE_FORM);
+      load();
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível registrar a baixa do patrimônio.");
+    } finally {
+      setDisposing(false);
+    }
+  }
+
+  async function openDisposalView(row) {
+    setDisposalViewError("");
+    setDisposalView({ asset: row, data: null });
+    try {
+      const data = await getAssetDisposal(row.id);
+      setDisposalView({ asset: row, data });
+    } catch (err) {
+      setDisposalViewError(err?.message || "Não foi possível carregar os dados da baixa.");
     }
   }
 
@@ -235,14 +314,28 @@ export default function PatrimonioPage() {
       width: "18%",
       render: (row) => (
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-          <Button size="sm" variant="secondary" onClick={() => openEdit(row)}>Editar</Button>
-          <Button size="sm" variant="secondary" onClick={() => openHistory(row)}>Histórico</Button>
-          <Button size="sm" variant="secondary" onClick={() => setTransferTarget(row)}>Transferir</Button>
-          {row.status === "AVAILABLE" ? (
-            <Button size="sm" onClick={() => setLoanTarget(row)}>Emprestar</Button>
-          ) : row.status === "LOANED" ? (
-            <Button size="sm" variant="secondary" onClick={() => setReturnTarget(row)}>Devolver</Button>
-          ) : null}
+          {row.status === "DISPOSED" ? (
+            <>
+              <Button size="sm" variant="secondary" onClick={() => openHistory(row)}>Histórico</Button>
+              <Button size="sm" variant="secondary" onClick={() => openDisposalView(row)}>Ver baixa</Button>
+            </>
+          ) : (
+            <>
+              <Button size="sm" variant="secondary" onClick={() => openEdit(row)}>Editar</Button>
+              <Button size="sm" variant="secondary" onClick={() => openHistory(row)}>Histórico</Button>
+              {row.status !== "LOST" ? (
+                <Button size="sm" variant="secondary" onClick={() => setTransferTarget(row)}>Transferir</Button>
+              ) : null}
+              {row.status === "AVAILABLE" ? (
+                <Button size="sm" onClick={() => setLoanTarget(row)}>Emprestar</Button>
+              ) : row.status === "LOANED" ? (
+                <Button size="sm" variant="secondary" onClick={() => setReturnTarget(row)}>Devolver</Button>
+              ) : null}
+              {DISPOSABLE_STATUSES.includes(row.status) ? (
+                <Button size="sm" variant="danger" onClick={() => openDispose(row)}>Vender/Descartar</Button>
+              ) : null}
+            </>
+          )}
         </div>
       ),
     },
@@ -377,10 +470,19 @@ export default function PatrimonioPage() {
           <ul style={{ margin: 0, paddingLeft: 0, listStyle: "none" }}>
             {historyMovements.map((m) => (
               <li key={m.id} style={{ padding: "8px 0", borderBottom: "1px solid var(--color-border)" }}>
-                <div>{formatDate(m.movedAt || m.moved_at)}</div>
+                <div>
+                  {formatDate(m.movedAt || m.moved_at)}
+                  {m.movementType === "DISPOSAL" ? <> {" "}<Badge tone="neutral">Baixa</Badge></> : null}
+                </div>
                 <div style={{ color: "var(--color-ink-muted)", fontSize: "var(--text-body-sm)" }}>
-                  Local: {locationName(m.sourceLocationId)} → {locationName(m.destinationLocationId)}
-                  {" · "}Custodiante: {m.sourceCustodianUserId ? userName(m.sourceCustodianUserId) : "—"} → {m.destinationCustodianUserId ? userName(m.destinationCustodianUserId) : "—"}
+                  {m.movementType === "DISPOSAL" ? (
+                    <>Saiu de: {locationName(m.sourceLocationId)} · Custodiante: {m.sourceCustodianUserId ? userName(m.sourceCustodianUserId) : "—"} → patrimônio baixado</>
+                  ) : (
+                    <>
+                      Local: {locationName(m.sourceLocationId)} → {locationName(m.destinationLocationId)}
+                      {" · "}Custodiante: {m.sourceCustodianUserId ? userName(m.sourceCustodianUserId) : "—"} → {m.destinationCustodianUserId ? userName(m.destinationCustodianUserId) : "—"}
+                    </>
+                  )}
                 </div>
               </li>
             ))}
@@ -426,18 +528,139 @@ export default function PatrimonioPage() {
         onClose={() => setLoanTarget(null)}
         title="Emprestar ferramenta"
         footer={
+          locations.length === 0 ? (
+            <Button variant="secondary" onClick={() => setLoanTarget(null)}>Fechar</Button>
+          ) : (
+            <>
+              <Button variant="secondary" onClick={() => setLoanTarget(null)}>Cancelar</Button>
+              <Button onClick={handleLoan} loading={busyId === loanTarget?.id} disabled={!loanPersonId.trim() || !loanDestinationId}>Emprestar</Button>
+            </>
+          )
+        }
+      >
+        {locations.length === 0 ? (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "var(--space-4)", padding: "var(--space-4) 0" }}>
+            <EmptyState icon="mapPin" title="Nenhum local de estoque cadastrado" description="O empréstimo precisa registrar o destino da ferramenta (EST-006). Cadastre pelo menos um local antes." />
+            <Button onClick={() => router.push("/painel/estoque")}>Cadastrar local agora</Button>
+          </div>
+        ) : (
           <>
-            <Button variant="secondary" onClick={() => setLoanTarget(null)}>Cancelar</Button>
-            <Button onClick={handleLoan} loading={busyId === loanTarget?.id} disabled={!loanPersonId.trim()}>Emprestar</Button>
+            <FormField label="Responsável" required>
+              <Select value={loanPersonId} onChange={(e) => setLoanPersonId(e.target.value)}>
+                <option value="">Selecione...</option>
+                {users.map((u) => (
+                  <option key={u.id} value={u.id}>{u.name || u.email}</option>
+                ))}
+              </Select>
+            </FormField>
+            <FormField label="Destino" required helper="Local para onde a ferramenta vai — o patrimônio passa a constar nesse local até a devolução.">
+              <Select value={loanDestinationId} onChange={(e) => setLoanDestinationId(e.target.value)}>
+                <option value="">Selecione...</option>
+                {locations.map((l) => (
+                  <option key={l.id} value={l.id}>{l.name}</option>
+                ))}
+              </Select>
+            </FormField>
+            <FormField label="Data prevista de devolução">
+              <Input type="date" value={loanDueAt} onChange={(e) => setLoanDueAt(e.target.value)} />
+            </FormField>
+          </>
+        )}
+      </Modal>
+
+      <Modal
+        size="lg"
+        open={Boolean(disposeTarget)}
+        onClose={() => { if (!disposing) setDisposeTarget(null); }}
+        title={`Vender/descartar — ${disposeTarget?.name || ""}`}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setDisposeTarget(null)} disabled={disposing}>Cancelar</Button>
+            <Button variant="danger" onClick={handleDispose} loading={disposing} disabled={!disposeIsValid}>Confirmar baixa</Button>
           </>
         }
       >
-        <FormField label="Responsável (ID do usuário)" required>
-          <Input value={loanPersonId} onChange={(e) => setLoanPersonId(e.target.value)} />
+        <Alert tone="warning">
+          A baixa é definitiva: o patrimônio sai de circulação (não pode mais ser emprestado, transferido ou ir para manutenção). Exige permissão de aprovação de estoque.
+        </Alert>
+        <FormField label="Tipo de baixa" required>
+          <Select
+            value={disposeForm.disposalType}
+            onChange={(e) => setDisposeForm((p) => ({ ...p, disposalType: e.target.value, disposalValue: e.target.value === "DONATION" ? "" : p.disposalValue }))}
+          >
+            {Object.entries(DISPOSAL_TYPE_LABELS).map(([value, label]) => (
+              <option key={value} value={value}>{label}</option>
+            ))}
+          </Select>
         </FormField>
-        <FormField label="Data prevista de devolução">
-          <Input type="date" value={loanDueAt} onChange={(e) => setLoanDueAt(e.target.value)} />
+        {disposeForm.disposalType !== "DONATION" ? (
+          <FormField
+            label={disposeForm.disposalType === "SALE" ? "Valor da venda (R$)" : "Valor recuperado (R$)"}
+            required={disposeForm.disposalType === "SALE"}
+            error={disposeValueRaw && !disposeValueValid ? "Informe um valor válido." : undefined}
+            helper={disposeForm.disposalType === "SALE"
+              ? "Gera um lançamento a receber no Financeiro (vínculo financeiro obrigatório da venda)."
+              : "Opcional — ex.: venda como sucata. Se informado, gera um lançamento a receber no Financeiro."}
+          >
+            <DecimalInput value={disposeForm.disposalValue} onChange={(e) => setDisposeForm((p) => ({ ...p, disposalValue: e.target.value }))} />
+          </FormField>
+        ) : null}
+        {disposeValue > 0 ? (
+          <FormField label="Vencimento do recebimento" helper="Opcional — padrão: hoje.">
+            <Input type="date" value={disposeForm.financialDueAt} onChange={(e) => setDisposeForm((p) => ({ ...p, financialDueAt: e.target.value }))} />
+          </FormField>
+        ) : null}
+        <FormField label={disposeForm.disposalType === "DONATION" ? "Donatário" : disposeForm.disposalType === "SALE" ? "Comprador" : "Destinatário (opcional)"}>
+          <Input value={disposeForm.counterpartyName} onChange={(e) => setDisposeForm((p) => ({ ...p, counterpartyName: e.target.value }))} />
         </FormField>
+        <FormField label="Motivo" htmlFor="m-dispose-reason" required helper="Obrigatório — fica registrado na trilha de auditoria do patrimônio.">
+          <textarea
+            id="m-dispose-reason"
+            rows={3}
+            value={disposeForm.reason}
+            onChange={(e) => setDisposeForm((p) => ({ ...p, reason: e.target.value }))}
+            placeholder="Ex.: equipamento obsoleto, vendido após avaliação"
+            style={{ width: "100%", padding: "var(--space-2) var(--space-3)", background: "var(--color-canvas-raised)", border: "1px solid var(--color-border-strong)", borderRadius: "var(--radius-md)", fontSize: "var(--text-body)", color: "var(--color-ink)", fontFamily: "inherit", resize: "vertical" }}
+          />
+        </FormField>
+        <FormField label="Evidências" htmlFor="m-dispose-files" required>
+          <FileDropInput
+            id="m-dispose-files"
+            multiple
+            uploading={disposing}
+            fileNames={disposeForm.files.map((f) => f.name)}
+            onFiles={(files) => setDisposeForm((p) => ({ ...p, files: [...p.files, ...files] }))}
+            onRemove={(idx) => setDisposeForm((p) => ({ ...p, files: p.files.filter((_, i) => i !== idx) }))}
+            helper="Obrigatório — nota/recibo de venda, laudo de descarte ou termo de doação."
+          />
+        </FormField>
+      </Modal>
+
+      <Modal
+        open={Boolean(disposalView)}
+        onClose={() => setDisposalView(null)}
+        title={`Baixa — ${disposalView?.asset?.name || ""}`}
+        footer={<Button variant="secondary" onClick={() => setDisposalView(null)}>Fechar</Button>}
+      >
+        {disposalViewError ? <Alert tone="danger">{disposalViewError}</Alert> : null}
+        {disposalView?.data ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <div><strong>Tipo:</strong> {DISPOSAL_TYPE_LABELS[disposalView.data.disposalType] || disposalView.data.disposalType}</div>
+            <div><strong>Data:</strong> {formatDate(disposalView.data.disposedAt)}</div>
+            <div><strong>Responsável pela baixa:</strong> {disposalView.data.disposedByUserId ? userName(disposalView.data.disposedByUserId) : "—"}</div>
+            {disposalView.data.counterpartyName ? <div><strong>Contraparte:</strong> {disposalView.data.counterpartyName}</div> : null}
+            <div><strong>Valor:</strong> {disposalView.data.disposalValue > 0 ? formatBRL(disposalView.data.disposalValue) : "Sem valor"}</div>
+            {disposalView.data.financialEntry ? (
+              <div>
+                <strong>Lançamento a receber:</strong> {formatBRL(disposalView.data.financialEntry.amount)} — vence {formatDate(disposalView.data.financialEntry.dueAt)} ({disposalView.data.financialEntry.status})
+              </div>
+            ) : null}
+            <div><strong>Motivo:</strong> {disposalView.data.reason}</div>
+            <div><strong>Evidências:</strong> {(disposalView.data.evidenceFileIds || []).length} arquivo(s)</div>
+          </div>
+        ) : !disposalViewError ? (
+          <p style={{ color: "var(--color-ink-muted)" }}>Carregando…</p>
+        ) : null}
       </Modal>
 
       <Modal
