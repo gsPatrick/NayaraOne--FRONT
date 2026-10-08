@@ -17,11 +17,15 @@ import StickyActionBar from "@/components/organisms/StickyActionBar/StickyAction
 import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
+import PersonPicker from "@/components/molecules/PersonPicker/PersonPicker";
+import Checkbox from "@/components/atoms/Checkbox/Checkbox";
 import { listLossCases, openLossCase, decideLossCase, listInventoryItems, listInventoryLocations, listAssets } from "@/lib/api/inventory";
+import { listPeople } from "@/lib/api/people";
 import { formatBRL, formatDateTime, toNumber } from "@/lib/format";
 
 const STATUS_LABELS = { OPEN: "Em análise", APPROVED: "Aprovada (baixa gerada)", REJECTED: "Rejeitada" };
 const STATUS_TONE = { OPEN: "warning", APPROVED: "danger", REJECTED: "neutral" };
+const EMPTY_DECISION_FORM = { chargeResponsible: false, responsiblePersonId: "", responsibleName: "", chargeAmount: "" };
 
 export default function PerdasPage() {
   const router = useRouter();
@@ -29,6 +33,7 @@ export default function PerdasPage() {
   const [items, setItems] = useState([]);
   const [assets, setAssets] = useState([]);
   const [locations, setLocations] = useState([]);
+  const [people, setPeople] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
@@ -42,17 +47,34 @@ export default function PerdasPage() {
   // LOST/limpar custodiante/fechar empréstimos (R28/R30) — mas esta tela só permitia perda de
   // item de estoque (inventoryItemId). "targetType" alterna o formulário entre os dois modos.
   const [targetType, setTargetType] = useState("ITEM"); // ITEM | ASSET
-  const [form, setForm] = useState({ inventoryItemId: "", assetId: "", locationId: "", quantity: "", context: "", evidenceFileIds: "", estimatedCost: "" });
+  const [form, setForm] = useState({ inventoryItemId: "", assetId: "", locationId: "", quantity: "", context: "", evidenceFileIds: "", estimatedCost: "", responsiblePersonId: "", responsibleName: "" });
+
+  // GAP CORRIGIDO (auditoria de conformidade Marco 7, contrato §11): "Investigação e decisão
+  // humana determinam responsabilidade. Qualquer desconto financeiro segue regra/aprovação e
+  // Financeiro." Aprovar agora abre um modal de decisão onde o aprovador decide SE cobra o
+  // responsável (nem toda perda gera cobrança), QUEM é o responsável e QUANTO (padrão = a
+  // estimativa do caso). Cobrar cria um lançamento a receber real no Financeiro.
+  const [decisionTarget, setDecisionTarget] = useState(null);
+  const [decisionForm, setDecisionForm] = useState(EMPTY_DECISION_FORM);
 
   function load() {
     setLoading(true);
     setLoadError("");
-    Promise.all([listLossCases(), listInventoryItems(), listInventoryLocations(), listAssets()])
-      .then(([c, i, l, a]) => {
+    Promise.all([
+      listLossCases(),
+      listInventoryItems(),
+      listInventoryLocations(),
+      listAssets(),
+      // Nome do responsável é só exibição — sem permissão de leitura de Contatos a tela continua
+      // funcionando (mostra "Responsável definido").
+      listPeople().catch(() => []),
+    ])
+      .then(([c, i, l, a, ppl]) => {
         setCases(c || []);
         setItems(i || []);
         setLocations(l || []);
         setAssets(a || []);
+        setPeople(ppl || []);
       })
       .catch((err) => setLoadError(err?.message || "Não foi possível carregar os casos de perda."))
       .finally(() => setLoading(false));
@@ -81,9 +103,10 @@ export default function PerdasPage() {
         context: form.context,
         evidenceFileIds: evidenceIds,
         estimatedCost: form.estimatedCost ? toNumber(form.estimatedCost) : undefined,
+        responsiblePersonId: form.responsiblePersonId || undefined,
       });
       setModalOpen(false);
-      setForm({ inventoryItemId: "", assetId: "", locationId: "", quantity: "", context: "", evidenceFileIds: "", estimatedCost: "" });
+      setForm({ inventoryItemId: "", assetId: "", locationId: "", quantity: "", context: "", evidenceFileIds: "", estimatedCost: "", responsiblePersonId: "", responsibleName: "" });
       setTargetType("ITEM");
       load();
     } catch (err) {
@@ -93,27 +116,68 @@ export default function PerdasPage() {
     }
   }
 
-  async function handleDecide(id, decision) {
-    const isApprove = decision === "APPROVED";
+  async function handleReject(id) {
     const ok = await confirm({
-      title: isApprove ? "Aprovar esta baixa de perda?" : "Rejeitar este caso de perda?",
-      message: isApprove
-        ? "O estoque será baixado definitivamente para este item."
-        : "O caso será rejeitado e o estoque não será baixado.",
-      confirmLabel: isApprove ? "Aprovar baixa" : "Rejeitar",
-      tone: isApprove ? "danger" : "primary",
+      title: "Rejeitar este caso de perda?",
+      message: "O caso será rejeitado, o estoque não será baixado e ninguém será cobrado.",
+      confirmLabel: "Rejeitar",
+      tone: "primary",
     });
     if (!ok) return;
     setBusyId(id);
     setActionError("");
     try {
-      await decideLossCase(id, decision);
+      await decideLossCase(id, "REJECTED");
       load();
     } catch (err) {
       setActionError(err?.message || "Não foi possível decidir o caso de perda.");
     } finally {
       setBusyId(null);
     }
+  }
+
+  function openApproveModal(row) {
+    setActionError("");
+    setDecisionTarget(row);
+    setDecisionForm({
+      chargeResponsible: false,
+      responsiblePersonId: row.responsiblePersonId || "",
+      responsibleName: personName(row.responsiblePersonId) || "",
+      chargeAmount: row.estimatedCost != null ? String(row.estimatedCost).replace(".", ",") : "",
+    });
+  }
+
+  const decisionAmount = toNumber(decisionForm.chargeAmount);
+  const decisionValid = !decisionForm.chargeResponsible
+    || (Boolean(decisionForm.responsiblePersonId) && !Number.isNaN(decisionAmount) && decisionAmount > 0);
+
+  async function handleApprove() {
+    if (!decisionTarget || !decisionValid) return;
+    setBusyId(decisionTarget.id);
+    setActionError("");
+    try {
+      await decideLossCase(decisionTarget.id, "APPROVED", decisionForm.chargeResponsible
+        ? { chargeResponsible: true, responsiblePersonId: decisionForm.responsiblePersonId, chargeAmount: decisionAmount }
+        : {
+          chargeResponsible: false,
+          // Só envia quando o aprovador trocou/atribuiu o responsável nesta decisão.
+          responsiblePersonId: decisionForm.responsiblePersonId && decisionForm.responsiblePersonId !== decisionTarget.responsiblePersonId
+            ? decisionForm.responsiblePersonId
+            : undefined,
+        });
+      setDecisionTarget(null);
+      setDecisionForm(EMPTY_DECISION_FORM);
+      load();
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível aprovar o caso de perda.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  function personName(id) {
+    if (!id) return "";
+    return people.find((p) => p.id === id)?.legalName || "";
   }
 
   function itemName(id) {
@@ -126,19 +190,30 @@ export default function PerdasPage() {
   }
 
   const columns = [
-    { key: "item", label: "Item", width: "17%", render: (row) => (row.inventoryItemId ? itemName(row.inventoryItemId) : assetName(row.assetId)) },
-    { key: "qty", label: "Quantidade", width: "10%", render: (row) => row.quantity || "—" },
-    { key: "context", label: "Contexto", width: "21%" },
-    { key: "estimate", label: "Estimativa", width: "12%", render: (row) => (row.estimatedCost != null ? formatBRL(row.estimatedCost) : "—") },
-    { key: "status", label: "Status", width: "26%", render: (row) => <Badge tone={STATUS_TONE[row.status]}>{STATUS_LABELS[row.status]}</Badge> },
+    { key: "item", label: "Item", width: "15%", render: (row) => (row.inventoryItemId ? itemName(row.inventoryItemId) : assetName(row.assetId)) },
+    { key: "qty", label: "Quantidade", width: "8%", render: (row) => row.quantity || "—" },
+    { key: "context", label: "Contexto", width: "17%" },
+    { key: "estimate", label: "Estimativa", width: "10%", render: (row) => (row.estimatedCost != null ? formatBRL(row.estimatedCost) : "—") },
+    { key: "responsible", label: "Responsável", width: "12%", render: (row) => (row.responsiblePersonId ? personName(row.responsiblePersonId) || "Responsável definido" : "—") },
+    {
+      key: "charge",
+      label: "Cobrança",
+      width: "12%",
+      render: (row) => (row.chargeFinancialEntry ? (
+        <span title="Lançamento a receber criado no Financeiro">
+          {formatBRL(row.chargeFinancialEntry.amount)} <Badge tone="info">A receber</Badge>
+        </span>
+      ) : row.status === "APPROVED" ? "Sem cobrança" : "—"),
+    },
+    { key: "status", label: "Status", width: "12%", render: (row) => <Badge tone={STATUS_TONE[row.status]}>{STATUS_LABELS[row.status]}</Badge> },
     {
       key: "actions",
       label: "",
       width: "14%",
       render: (row) => (row.status === "OPEN" ? (
         <div style={{ display: "flex", gap: 6 }}>
-          <Button size="sm" variant="danger" onClick={() => handleDecide(row.id, "APPROVED")} loading={busyId === row.id}>Aprovar baixa</Button>
-          <Button size="sm" variant="secondary" onClick={() => handleDecide(row.id, "REJECTED")} loading={busyId === row.id}>Rejeitar</Button>
+          <Button size="sm" variant="danger" onClick={() => openApproveModal(row)} loading={busyId === row.id}>Aprovar baixa</Button>
+          <Button size="sm" variant="secondary" onClick={() => handleReject(row.id)} loading={busyId === row.id}>Rejeitar</Button>
         </div>
       ) : null),
     },
@@ -244,6 +319,64 @@ export default function PerdasPage() {
             <FormField label="Estimativa de custo (R$)">
               <DecimalInput value={form.estimatedCost} onChange={(e) => setForm((p) => ({ ...p, estimatedCost: e.target.value }))} />
             </FormField>
+            <FormField label="Responsável (se identificado)" helper="Opcional — a responsabilidade final é definida na decisão do caso.">
+              <PersonPicker
+                id="loss-open-responsible"
+                value={form.responsibleName}
+                personId={form.responsiblePersonId}
+                placeholder="Buscar pessoa pelo nome..."
+                onSelect={({ name, personId }) => setForm((p) => ({ ...p, responsibleName: name, responsiblePersonId: personId || "" }))}
+              />
+            </FormField>
+          </>
+        ) : null}
+      </Modal>
+
+      <Modal
+        open={Boolean(decisionTarget)}
+        onClose={() => setDecisionTarget(null)}
+        title="Aprovar baixa de perda"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setDecisionTarget(null)}>Cancelar</Button>
+            <Button variant="danger" onClick={handleApprove} loading={Boolean(decisionTarget) && busyId === decisionTarget.id} disabled={!decisionValid}>
+              {decisionForm.chargeResponsible ? "Aprovar e cobrar" : "Aprovar baixa"}
+            </Button>
+          </>
+        }
+      >
+        {decisionTarget ? (
+          <>
+            <p style={{ marginBottom: "var(--space-4)" }}>
+              {decisionTarget.inventoryItemId
+                ? "O estoque será baixado definitivamente para este item (movimento LOSS)."
+                : "O patrimônio será marcado como perdido/extraviado e retirado de circulação."}
+              {decisionTarget.estimatedCost != null ? ` Estimativa registrada: ${formatBRL(decisionTarget.estimatedCost)}.` : ""}
+            </p>
+            <FormField label="Responsável" helper={decisionForm.chargeResponsible ? "Obrigatório para cobrar." : "Opcional — registra quem foi responsabilizado pela perda."}>
+              <PersonPicker
+                id="loss-decision-responsible"
+                value={decisionForm.responsibleName}
+                personId={decisionForm.responsiblePersonId}
+                placeholder="Buscar pessoa pelo nome..."
+                onSelect={({ name, personId }) => setDecisionForm((p) => ({ ...p, responsibleName: name, responsiblePersonId: personId || "" }))}
+              />
+            </FormField>
+            <FormField>
+              <Checkbox
+                id="loss-decision-charge"
+                label="Cobrar o responsável (gera lançamento a receber no Financeiro)"
+                checked={decisionForm.chargeResponsible}
+                onChange={(e) => setDecisionForm((p) => ({ ...p, chargeResponsible: e.target.checked }))}
+              />
+            </FormField>
+            {decisionForm.chargeResponsible ? (
+              <FormField label="Valor a cobrar (R$)" required helper="Padrão: a estimativa de custo do caso — ajuste se a investigação apurou outro valor.">
+                <DecimalInput value={decisionForm.chargeAmount} onChange={(e) => setDecisionForm((p) => ({ ...p, chargeAmount: e.target.value }))} />
+              </FormField>
+            ) : (
+              <p style={{ color: "var(--color-ink-muted)", fontSize: "var(--text-body-sm)" }}>Sem cobrança: a perda é baixada sem desconto financeiro a ninguém.</p>
+            )}
           </>
         ) : null}
       </Modal>
