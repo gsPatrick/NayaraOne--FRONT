@@ -32,8 +32,11 @@
 .brand   { background: var(--color-brand-soft); color: var(--color-brand); --badge-dot: var(--color-brand); }
 .neutral { background: var(--color-canvas-sunken); color: var(--color-ink-soft); --badge-dot: var(--color-ink-soft); }
 /* Tom laranja — usado, por exemplo, pelo escalationLevel=CRITICAL do pós-obra (Marco 6),
-   que precisa de uma cor visualmente distinta entre "warning" (amarelo) e "danger" (vermelho). */
-.critical { background: rgba(198, 93, 24, 0.14); color: #C65D18; --badge-dot: #C65D18; }
+   que precisa de uma cor visualmente distinta entre "warning" (amarelo) e "danger" (vermelho).
+   FIX (auditoria WCAG AA de contraste, 08/10/2026): #C65D18 sobre o fundo rgba(198,93,24,0.14)
+   dava ~3.5:1 (abaixo do mínimo de 4.5:1) — escurecido pra #A84F14 (mesmo tom laranja,
+   contraste ~4.6:1). */
+.critical { background: rgba(198, 93, 24, 0.14); color: #A84F14; --badge-dot: #A84F14; }
 
 .onMedia {
   background: rgba(24, 21, 19, 0.45);

@@ -52,7 +52,11 @@
   /* ── SEMANTIC (business status — separate from brand) ──── */
   --color-success:          #1E7A4C;
   --color-success-soft:     rgba(30, 122, 76, 0.12);
-  --color-warning:          #B8790C;
+  /* FIX (auditoria WCAG AA de contraste, 08/10/2026): #B8790C sobre --color-warning-soft
+     dava ~3.1:1 (abaixo do mínimo de 4.5:1 pra texto normal) — usado como cor de texto em
+     Badge/Alert/NatureBadge/StatTile. Escurecido pra manter o mesmo tom (âmbar) com
+     contraste >=4.5:1. */
+  --color-warning:          #93610A;
   --color-warning-soft:     rgba(184, 121, 12, 0.14);
   --color-danger:           #C0392B;
   --color-danger-soft:      rgba(192, 57, 43, 0.12);
