@@ -9,6 +9,8 @@ import Badge from "@/components/atoms/Badge/Badge";
 import Avatar from "@/components/atoms/Avatar/Avatar";
 import Icon from "@/components/atoms/Icon/Icon";
 import Select from "@/components/atoms/Select/Select";
+import Input from "@/components/atoms/Input/Input";
+import FormField from "@/components/molecules/FormField/FormField";
 import Card from "@/components/molecules/Card/Card";
 import Modal from "@/components/organisms/Modal/Modal";
 import Alert from "@/components/molecules/Alert/Alert";
@@ -33,6 +35,7 @@ import {
   createOccurrence,
   listPriceHistory,
   listProperties,
+  createOffer,
 } from "@/lib/api/properties";
 import { getPerson } from "@/lib/api/people";
 import { formatBRL } from "@/lib/format";
@@ -74,6 +77,16 @@ export default function PropertyDetailPage({ params }) {
   const [publishBlockedMessage, setPublishBlockedMessage] = useState("");
 
   const [occurrenceForm, setOccurrenceForm] = useState({ type: "OWNER_NOTE", description: "" });
+  // GAP REAL CORRIGIDO (auditoria externa Abacus AI, 11/10/2026 — Marco 3, CRMX-004 "Oferta
+  // separada"): a interface só permitia UMA finalidade por imóvel — tanto o card de detalhe
+  // só mostrava a 1ª oferta ativa encontrada (property.activeOffer), quanto não havia nenhum
+  // caminho para criar uma SEGUNDA oferta (ex.: RENT) num imóvel que já tinha uma oferta ativa
+  // (ex.: SALE). O backend já suporta isso nativamente (property/offer são entidades
+  // separadas, supersede só compete dentro do MESMO offerType) — faltava só a interface.
+  const [newOfferOpen, setNewOfferOpen] = useState(false);
+  const [newOfferSaving, setNewOfferSaving] = useState(false);
+  const [newOfferError, setNewOfferError] = useState("");
+  const [newOfferForm, setNewOfferForm] = useState({ offerType: "RENT", askingPrice: "" });
   const [mediaIndex, setMediaIndex] = useState(0);
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [addressCopied, setAddressCopied] = useState(false);
@@ -243,6 +256,36 @@ export default function PropertyDetailPage({ params }) {
   }
 
   const offer = property.activeOffer;
+  const activeOffers = (property.offers || []).filter((o) => o.status === "ACTIVE");
+  const activeOfferTypes = new Set(activeOffers.map((o) => o.offerType));
+  const availableOfferTypes = ["SALE", "RENT", "SEASONAL"].filter((t) => !activeOfferTypes.has(t));
+
+  async function handleCreateOffer(event) {
+    event.preventDefault();
+    setNewOfferError("");
+    if (!newOfferForm.askingPrice) {
+      setNewOfferError("Informe o preço da nova oferta.");
+      return;
+    }
+    setNewOfferSaving(true);
+    try {
+      const created = await createOffer(property.id, {
+        offerType: newOfferForm.offerType,
+        askingPrice: Number(newOfferForm.askingPrice),
+      });
+      setProperty((prev) => ({
+        ...prev,
+        offers: [created, ...(prev.offers || [])],
+        activeOffer: prev.activeOffer || created,
+      }));
+      setNewOfferOpen(false);
+      setNewOfferForm({ offerType: availableOfferTypes[0] || "RENT", askingPrice: "" });
+    } catch (err) {
+      setNewOfferError(err?.message || "Não foi possível criar a nova oferta.");
+    } finally {
+      setNewOfferSaving(false);
+    }
+  }
 
   return (
     <AppShell title={property.name} backHref="/painel/imoveis">
@@ -554,35 +597,56 @@ export default function PropertyDetailPage({ params }) {
           </div>
 
           <div className={styles.sideCol}>
-            <Card title="Oferta ativa">
-              {offer ? (
-                <div className={styles.offerBox}>
-                  <p className={styles.offerPrice}>
-                    {formatBRL(offer.askingPrice)}
-                    {offer.offerType !== "SALE" ? <span className={styles.offerSuffix}>/mês</span> : null}
-                  </p>
-                  <p className={styles.offerType}>{OFFER_TYPE_LABELS[offer.offerType]}</p>
-                  <Badge tone={OFFER_STATUS_TONE[offer.status] || "neutral"}>{OFFER_STATUS_LABELS[offer.status] || offer.status}</Badge>
+            <Card
+              title={activeOffers.length > 1 ? "Ofertas ativas" : "Oferta ativa"}
+              actions={
+                availableOfferTypes.length > 0 ? (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      setNewOfferForm({ offerType: availableOfferTypes[0], askingPrice: "" });
+                      setNewOfferError("");
+                      setNewOfferOpen(true);
+                    }}
+                  >
+                    <Icon name="plus" size={14} /> Nova oferta
+                  </Button>
+                ) : null
+              }
+            >
+              {activeOffers.length > 0 ? (
+                <div className={styles.offerList}>
+                  {activeOffers.map((o) => (
+                    <div className={styles.offerBox} key={o.id}>
+                      <p className={styles.offerPrice}>
+                        {formatBRL(o.askingPrice)}
+                        {o.offerType !== "SALE" ? <span className={styles.offerSuffix}>/mês</span> : null}
+                      </p>
+                      <p className={styles.offerType}>{OFFER_TYPE_LABELS[o.offerType]}</p>
+                      <Badge tone={OFFER_STATUS_TONE[o.status] || "neutral"}>{OFFER_STATUS_LABELS[o.status] || o.status}</Badge>
 
-                  {offer.confidentialMinPrice != null ? (
-                    <div className={styles.confidentialBox}>
-                      <Icon name="shield" size={12} />
-                      <span className={styles.confidentialLabel}>Confidencial</span>
-                      <span className={styles.confidentialValue}>{formatBRL(offer.confidentialMinPrice)}</span>
+                      {o.confidentialMinPrice != null ? (
+                        <div className={styles.confidentialBox}>
+                          <Icon name="shield" size={12} />
+                          <span className={styles.confidentialLabel}>Confidencial</span>
+                          <span className={styles.confidentialValue}>{formatBRL(o.confidentialMinPrice)}</span>
+                        </div>
+                      ) : null}
+
+                      <div className={styles.offerChips}>
+                        {o.acceptsFinancing ? <Badge tone="info">Aceita financiamento</Badge> : null}
+                        {o.acceptsTrade ? <Badge tone="info">Aceita permuta</Badge> : null}
+                      </div>
+
+                      {o.validFrom || o.validUntil ? (
+                        <p className={styles.offerValidity}>
+                          Vigência: {o.validFrom ? new Date(o.validFrom).toLocaleDateString("pt-BR") : "—"}
+                          {o.validUntil ? ` até ${new Date(o.validUntil).toLocaleDateString("pt-BR")}` : " (indeterminada)"}
+                        </p>
+                      ) : null}
                     </div>
-                  ) : null}
-
-                  <div className={styles.offerChips}>
-                    {offer.acceptsFinancing ? <Badge tone="info">Aceita financiamento</Badge> : null}
-                    {offer.acceptsTrade ? <Badge tone="info">Aceita permuta</Badge> : null}
-                  </div>
-
-                  {offer.validFrom || offer.validUntil ? (
-                    <p className={styles.offerValidity}>
-                      Vigência: {offer.validFrom ? new Date(offer.validFrom).toLocaleDateString("pt-BR") : "—"}
-                      {offer.validUntil ? ` até ${new Date(offer.validUntil).toLocaleDateString("pt-BR")}` : " (indeterminada)"}
-                    </p>
-                  ) : null}
+                  ))}
                 </div>
               ) : (
                 <EmptyState icon="money" title="Sem oferta ativa" description="Nenhuma oferta ativa cadastrada para este imóvel no momento." />
@@ -749,6 +813,55 @@ export default function PropertyDetailPage({ params }) {
         <p className={styles.description}>
           Você será redirecionado para a página de edição de <strong>{property.name}</strong>. Deseja continuar?
         </p>
+      </Modal>
+
+      <Modal
+        open={newOfferOpen}
+        onClose={() => setNewOfferOpen(false)}
+        title="Nova oferta"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setNewOfferOpen(false)}>Cancelar</Button>
+            <Button variant="primary" onClick={handleCreateOffer} loading={newOfferSaving}>Criar oferta</Button>
+          </>
+        }
+      >
+        <p className={styles.description}>
+          Venda e locação são ofertas separadas do mesmo imóvel — criar esta oferta não duplica
+          o cadastro de <strong>{property.name}</strong>, só adiciona outra finalidade ativa
+          (ex.: o imóvel pode estar à venda e para locação ao mesmo tempo).
+        </p>
+        {newOfferError ? (
+          <Alert tone="danger" title="Não foi possível criar a oferta">{newOfferError}</Alert>
+        ) : null}
+        {availableOfferTypes.length === 0 ? (
+          <Alert tone="info" title="Todas as finalidades já têm oferta ativa">
+            Este imóvel já tem uma oferta ativa para venda, locação e temporada.
+          </Alert>
+        ) : (
+          <form className={styles.formGrid} onSubmit={handleCreateOffer}>
+            <FormField label="Tipo de oferta" htmlFor="new-offer-type">
+              <Select
+                id="new-offer-type"
+                value={newOfferForm.offerType}
+                onChange={(e) => setNewOfferForm({ ...newOfferForm, offerType: e.target.value })}
+              >
+                {availableOfferTypes.map((value) => (
+                  <option key={value} value={value}>{OFFER_TYPE_LABELS[value]}</option>
+                ))}
+              </Select>
+            </FormField>
+            <FormField label={`Preço (R$${newOfferForm.offerType !== "SALE" ? "/mês" : ""})`} htmlFor="new-offer-price" required>
+              <Input
+                id="new-offer-price"
+                type="number"
+                placeholder="0,00"
+                value={newOfferForm.askingPrice}
+                onChange={(e) => setNewOfferForm({ ...newOfferForm, askingPrice: e.target.value })}
+              />
+            </FormField>
+          </form>
+        )}
       </Modal>
     </AppShell>
   );

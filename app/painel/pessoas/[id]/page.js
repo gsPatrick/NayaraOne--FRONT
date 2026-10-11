@@ -62,6 +62,15 @@ export default function PersonDetailPage({ params }) {
   const [deleting, setDeleting] = useState(false);
   const [mergeOpen, setMergeOpen] = useState(false);
   const [merging, setMerging] = useState(false);
+  // GAP REAL CORRIGIDO (auditoria externa Abacus AI, 11/10/2026 — Marco 3, CRMX-002): o botão
+  // de mesclagem só aparecia quando o detector automático de duplicata encontrava um par
+  // (duplicatePartner). Quando os dois cadastros não batiam na heurística de dedup (nome/CPF
+  // bem diferentes, mas mesmo cliente), não existia NENHUM caminho na interface para mesclar
+  // manualmente — exatamente o que a auditoria reportou ("nenhum botão, ação ou tela de
+  // Mesclar/Merge encontrado"). Este estado cobre a busca manual.
+  const [manualSearchOpen, setManualSearchOpen] = useState(false);
+  const [manualQuery, setManualQuery] = useState("");
+  const [manualPartner, setManualPartner] = useState(null);
 
   const [person, setPerson] = useState(null);
   const [people, setPeople] = useState([]);
@@ -122,8 +131,30 @@ export default function PersonDetailPage({ params }) {
   const duplicatePair = duplicatePairs.find((pair) => pair.includes(person.id));
   const duplicatePartnerId = duplicatePair ? duplicatePair.find((id) => id !== person.id) : null;
   const duplicatePartner = duplicatePartnerId ? people.find((p) => p.id === duplicatePartnerId) : null;
+  const mergePartner = duplicatePartner || manualPartner;
   const mergedIntoPerson = person.mergedInto ? people.find((p) => p.id === person.mergedInto) : null;
   const selectedCanonicalId = canonicalId || person.id;
+
+  const normalizedManualQuery = manualQuery.trim().toLowerCase();
+  const manualSearchResults =
+    normalizedManualQuery.length < 2
+      ? []
+      : people
+          .filter((p) => p.id !== person.id && p.status !== "MERGED")
+          .filter(
+            (p) =>
+              p.legalName?.toLowerCase().includes(normalizedManualQuery) ||
+              p.taxIdNormalized?.replace(/\D/g, "").includes(normalizedManualQuery.replace(/\D/g, ""))
+          )
+          .slice(0, 8);
+
+  function openManualMerge(candidate) {
+    setManualPartner(candidate);
+    setManualSearchOpen(false);
+    setManualQuery("");
+    setCanonicalId(person.id);
+    setMergeOpen(true);
+  }
 
   async function handleDelete() {
     setDeleting(true);
@@ -139,24 +170,32 @@ export default function PersonDetailPage({ params }) {
   }
 
   async function handleMerge() {
-    if (!duplicatePartner) return;
+    if (!mergePartner) return;
     setMerging(true);
     setActionError("");
     // POST /people/:canonicalId/merge — o operador escolhe qual cadastro fica como canônico
     // (decisão deliberada, não automática); a API remapeia as referências do absorvido,
-    // marca-o como MERGED e publica o evento person.merged.
-    const absorbedId = selectedCanonicalId === person.id ? duplicatePartner.id : person.id;
+    // marca-o como MERGED e publica o evento person.merged. Trata o erro de CPFs conflitantes
+    // (CRM-TS-002 — merge bloqueado pela API) com mensagem clara em vez de deixar passar genérico.
+    const absorbedId = selectedCanonicalId === person.id ? mergePartner.id : person.id;
     try {
       await mergePeople(selectedCanonicalId, absorbedId);
       if (absorbedId === person.id) {
         setPerson((prev) => ({ ...prev, status: "MERGED", mergedInto: selectedCanonicalId }));
-        setMergeOpen(false);
       } else {
         setDuplicatePairs((prev) => prev.filter((pair) => !pair.includes(absorbedId)));
-        setMergeOpen(false);
       }
+      setMergeOpen(false);
+      setManualPartner(null);
     } catch (err) {
-      setActionError(err?.message || "Não foi possível mesclar os cadastros.");
+      const code = err?.code;
+      const message =
+        code === "PERSON_MERGE_CONFLICT"
+          ? "Não é possível mesclar: os dois cadastros têm CPF/CNPJ diferentes e preenchidos — isso indicaria pessoas diferentes, não um duplicado. Revise antes de tentar de novo."
+          : code === "PERSON_MERGE_CONFLICT_ACTIVE_CONTRACT"
+            ? "Não é possível mesclar: um dos cadastros tem contrato ativo vinculado que impede a fusão. Resolva o contrato antes de tentar de novo."
+            : err?.message || "Não foi possível mesclar os cadastros.";
+      setActionError(message);
       setMergeOpen(false);
     } finally {
       setMerging(false);
@@ -176,8 +215,19 @@ export default function PersonDetailPage({ params }) {
           </div>
           <div className={styles.actions}>
             {duplicatePartner && person.status !== "MERGED" ? (
-              <Button variant="secondary" onClick={() => setMergeOpen(true)}>
-                <Icon name="layers" size={16} /> Mesclar cadastros
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setManualPartner(null);
+                  setMergeOpen(true);
+                }}
+              >
+                <Icon name="layers" size={16} /> Mesclar cadastros (duplicata detectada)
+              </Button>
+            ) : null}
+            {person.status !== "MERGED" ? (
+              <Button variant="secondary" onClick={() => setManualSearchOpen(true)}>
+                <Icon name="layers" size={16} /> Mesclar com outro cadastro
               </Button>
             ) : null}
             {person.status !== "MERGED" ? (
@@ -430,17 +480,70 @@ export default function PersonDetailPage({ params }) {
       </Modal>
 
       <Modal
+        open={manualSearchOpen}
+        onClose={() => {
+          setManualSearchOpen(false);
+          setManualQuery("");
+        }}
+        title="Mesclar com outro cadastro"
+      >
+        <p className={styles.description}>
+          Busque pelo nome ou CPF/CNPJ do outro cadastro que representa a mesma pessoa. O
+          sistema não mescla automaticamente — você confirma qual cadastro fica como canônico
+          na próxima etapa.
+        </p>
+        <input
+          type="text"
+          autoFocus
+          placeholder="Nome ou CPF/CNPJ..."
+          value={manualQuery}
+          onChange={(event) => setManualQuery(event.target.value)}
+          className={styles.manualSearchInput}
+        />
+        <div className={styles.manualSearchResults}>
+          {normalizedManualQuery.length < 2 ? (
+            <p className={styles.manualSearchHint}>Digite ao menos 2 caracteres para buscar.</p>
+          ) : manualSearchResults.length === 0 ? (
+            <p className={styles.manualSearchHint}>Nenhum cadastro encontrado para "{manualQuery}".</p>
+          ) : (
+            manualSearchResults.map((candidate) => (
+              <button
+                type="button"
+                key={candidate.id}
+                className={styles.manualSearchResultItem}
+                onClick={() => openManualMerge(candidate)}
+              >
+                <span className={styles.compareName}>{candidate.legalName}</span>
+                <span className={styles.compareMeta}>{candidate.taxIdNormalized || "Sem CPF/CNPJ cadastrado"}</span>
+              </button>
+            ))
+          )}
+        </div>
+      </Modal>
+
+      <Modal
         open={mergeOpen}
-        onClose={() => setMergeOpen(false)}
+        onClose={() => {
+          setMergeOpen(false);
+          setManualPartner(null);
+        }}
         title="Mesclar cadastros"
         footer={
           <>
-            <Button variant="secondary" onClick={() => setMergeOpen(false)}>Cancelar</Button>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setMergeOpen(false);
+                setManualPartner(null);
+              }}
+            >
+              Cancelar
+            </Button>
             <Button onClick={handleMerge} loading={merging}>Confirmar mesclagem</Button>
           </>
         }
       >
-        {duplicatePartner ? (
+        {mergePartner ? (
           <>
             <p className={styles.description}>
               Escolha qual cadastro deve permanecer como canônico. O outro será marcado como
@@ -448,7 +551,7 @@ export default function PersonDetailPage({ params }) {
               e um evento <code>person.merged</code> é registrado.
             </p>
             <div className={styles.compareGrid}>
-              {[person, duplicatePartner].map((p) => {
+              {[person, mergePartner].map((p) => {
                 const isSelected = p.id === selectedCanonicalId;
                 return (
                   <button
