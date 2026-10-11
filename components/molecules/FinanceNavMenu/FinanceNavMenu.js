@@ -10,6 +10,7 @@ const ITEMS = [
   { label: "Visão geral", href: "/painel/financeiro", icon: "money" },
   { label: "Lançamentos", href: "/painel/financeiro/lancamentos", icon: "document" },
   { label: "Contas bancárias", href: "/painel/financeiro/contas-bancarias", icon: "money" },
+  { label: "Extrato bancário", href: "/painel/financeiro/extrato", icon: "document" },
   { label: "Conciliação", href: "/painel/financeiro/conciliacao", icon: "check" },
   { label: "Aprovações", href: "/painel/financeiro/aprovacoes", icon: "shield" },
   { label: "Comissões & Repasses", href: "/painel/financeiro/comissoes-repasses", icon: "layers" },
