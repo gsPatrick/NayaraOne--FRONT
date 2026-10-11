@@ -13,6 +13,8 @@ const ITEMS = [
   { label: "Conciliação", href: "/painel/financeiro/conciliacao", icon: "check" },
   { label: "Aprovações", href: "/painel/financeiro/aprovacoes", icon: "shield" },
   { label: "Comissões & Repasses", href: "/painel/financeiro/comissoes-repasses", icon: "layers" },
+  { label: "Plano de contas", href: "/painel/financeiro/plano-de-contas", icon: "document" },
+  { label: "Relatório financeiro", href: "/painel/financeiro/relatorio", icon: "chart" },
 ];
 
 export default function FinanceNavMenu() {
