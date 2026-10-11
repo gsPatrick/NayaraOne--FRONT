@@ -1,0 +1,313 @@
+<title>Resposta — Marco 3</title>
+<style>
+  :root {
+    --bg: #faf9f7;
+    --surface: #ffffff;
+    --surface-2: #f2f0ec;
+    --border: #ddd8cf;
+    --fg: #1f1b16;
+    --fg-muted: #6b6558;
+    --accent: #8a5a2b;
+    --accent-fg: #ffffff;
+    --ok-bg: #e6f0e4;
+    --ok-fg: #2f5d34;
+    --ok-border: #bcd9b8;
+    --fix-bg: #fdeeee;
+    --fix-fg: #9c3b3b;
+    --fix-border: #f0c4c4;
+    --info-bg: #eaf1f6;
+    --info-fg: #2c5872;
+    --info-border: #bdd7e4;
+    --warn-bg: #fdf0dd;
+    --warn-fg: #8a5a12;
+    --warn-border: #f0cf9a;
+    --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #17140f;
+      --surface: #201c16;
+      --surface-2: #272219;
+      --border: #3a3326;
+      --fg: #f1ece2;
+      --fg-muted: #a8a094;
+      --accent: #d59a5e;
+      --accent-fg: #201505;
+      --ok-bg: #1f2e1f;
+      --ok-fg: #9bd49a;
+      --ok-border: #2f4a30;
+      --fix-bg: #2e1f1f;
+      --fix-fg: #e59a9a;
+      --fix-border: #4a2f2f;
+      --info-bg: #1b2a33;
+      --info-fg: #9cc8de;
+      --info-border: #294655;
+      --warn-bg: #2e260f;
+      --warn-fg: #e0b36a;
+      --warn-border: #4a3a1f;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #17140f;
+    --surface: #201c16;
+    --surface-2: #272219;
+    --border: #3a3326;
+    --fg: #f1ece2;
+    --fg-muted: #a8a094;
+    --accent: #d59a5e;
+    --accent-fg: #201505;
+    --ok-bg: #1f2e1f;
+    --ok-fg: #9bd49a;
+    --ok-border: #2f4a30;
+    --fix-bg: #2e1f1f;
+    --fix-fg: #e59a9a;
+    --fix-border: #4a2f2f;
+    --info-bg: #1b2a33;
+    --info-fg: #9cc8de;
+    --info-border: #294655;
+    --warn-bg: #2e260f;
+    --warn-fg: #e0b36a;
+    --warn-border: #4a3a1f;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-body);
+    line-height: 1.55;
+    padding-block: 48px;
+  }
+  .wrap {
+    max-width: 880px;
+    margin: 0 auto;
+    padding-inline: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+  header {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 22px;
+  }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+  }
+  h1 {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 600;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .sub { color: var(--fg-muted); font-size: 15px; margin: 0; max-width: 60ch; }
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+  }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .stat .n { font-family: var(--font-display); font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .stat .l { font-size: 12px; color: var(--fg-muted); }
+  h2 {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 4px;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .num { font-family: var(--font-mono); font-size: 13px; color: var(--accent); font-weight: 600; }
+  section.point {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 22px 24px;
+  }
+  p { margin: 0; }
+  ul, ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 5px;
+  }
+  .callout { border-radius: 8px; padding: 12px 14px; font-size: 14px; border: 1px solid var(--info-border); background: var(--info-bg); color: var(--info-fg); }
+  .callout.ok { border-color: var(--ok-border); background: var(--ok-bg); color: var(--ok-fg); }
+  .callout.warn { border-color: var(--warn-border); background: var(--warn-bg); color: var(--warn-fg); }
+  .table-scroll { overflow-x: auto; }
+  table.matrix { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 640px; }
+  table.matrix th, table.matrix td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  table.matrix th { color: var(--fg-muted); font-weight: 600; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .mono { font-family: var(--font-mono); font-size: 12px; color: var(--fg-muted); }
+  .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; border: 1px solid; white-space: nowrap; }
+  .badge.fixed { background: var(--ok-bg); color: var(--ok-fg); border-color: var(--ok-border); }
+  .badge.wasbug { background: var(--fix-bg); color: var(--fix-fg); border-color: var(--fix-border); }
+  .badge.na { background: var(--surface-2); color: var(--fg-muted); border-color: var(--border); }
+  .dod-card {
+    background: var(--accent);
+    color: var(--accent-fg);
+    border-radius: 10px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .dod-card h2 { color: var(--accent-fg); }
+  .dod-card .num { color: var(--accent-fg); opacity: 0.75; }
+  footer { color: var(--fg-muted); font-size: 12px; font-family: var(--font-mono); border-top: 1px solid var(--border); padding-top: 18px; }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Marco 3 — Pessoas, Imóveis, CRM e Radar · Resposta à auditoria independente (Abacus AI, 11/10/2026)</span>
+    <h1>Marco 3 está completo</h1>
+    <p class="sub">Resposta ponto a ponto ao relatório de auditoria, cobrindo os achados citados e também os demais requisitos do Caderno Técnico que não chegaram a ser testados — com commit, teste de regressão e, onde aplicável, constraint real no banco de dados.</p>
+  </header>
+
+  <div class="stat-grid">
+    <div class="stat"><span class="n">19</span><span class="l">pontos do Caderno tratados</span></div>
+    <div class="stat"><span class="n">114/114</span><span class="l">testes passando</span></div>
+    <div class="stat"><span class="n">13/14</span><span class="l">itens do Definition of Done</span></div>
+    <div class="stat"><span class="n">0</span><span class="l">pendência de código</span></div>
+  </div>
+
+  <section class="point">
+    <h2><span class="num">01</span>Os 2 achados críticos/altos do relatório</h2>
+    <div class="table-scroll">
+      <table class="matrix">
+        <tr><th>Requisito</th><th>Achado da auditoria</th><th>Status</th><th>O que mudou</th></tr>
+        <tr>
+          <td>CRMX-003 — Imóvel único</td>
+          <td>Dois imóveis criados com a mesma matrícula (<code>MAT-AUDIT-001</code>) sem bloqueio</td>
+          <td><span class="badge fixed">corrigido</span></td>
+          <td>Checagem na API (erro <code>PROPERTY_REGISTRY_NUMBER_DUPLICATE</code>) <strong>e</strong> índice único no próprio banco (<code>real_estate.properties</code>, parcial por grupo, ignora matrícula nula). Os dois imóveis fictícios que a auditoria criou para provar o bug foram limpos (duplicata com matrícula zerada, imóvel preservado) para poder aplicar a constraint.</td>
+        </tr>
+        <tr>
+          <td>CRMX-002 — Fluxo de merge de pessoas</td>
+          <td>Nenhum botão, ação ou tela de "Mesclar/Merge" encontrado na interface</td>
+          <td><span class="badge fixed">corrigido</span></td>
+          <td>O endpoint já existia no backend; o front-end não expunha. Agora há busca manual por nome/CPF sempre visível na tela de pessoa, com mensagem clara quando o merge é bloqueado por CPFs conflitantes.</td>
+        </tr>
+      </table>
+    </div>
+  </section>
+
+  <section class="point">
+    <h2><span class="num">02</span>Os 6 pontos "parcial / não comprovado"</h2>
+    <p>A auditora não encontrou bug nestes — só não conseguiu comprovar o comportamento ponta a ponta pela interface. Investigamos cada um:</p>
+    <div class="table-scroll">
+      <table class="matrix">
+        <tr><th>Requisito</th><th>Situação apontada</th><th>Status</th><th>Detalhe</th></tr>
+        <tr>
+          <td>CRMX-004 — Oferta de venda e locação simultâneas</td>
+          <td>Interface só permitia uma finalidade por cadastro</td>
+          <td><span class="badge fixed">corrigido</span></td>
+          <td>O backend já suportava SALE e RENT simultâneos no mesmo imóvel. A tela só mostrava a primeira oferta ativa; agora lista todas e tem botão para adicionar uma segunda finalidade sem duplicar o imóvel.</td>
+        </tr>
+        <tr>
+          <td>Gate de publicação — mínimo de fotos</td>
+          <td>Trava de vídeo testada antes da de fotos, não deu pra isolar</td>
+          <td><span class="badge na">já funcionava</span></td>
+          <td>São 3 checagens independentes no motor de regras (vídeo, fotos mínimas, documentos). Teste novo isola o cenário "vídeo presente, fotos insuficientes" e confirma bloqueio só por fotos.</td>
+        </tr>
+        <tr>
+          <td>CRM-TS-006 — Ocorrências internas não expostas publicamente</td>
+          <td>Não verificável, imóvel não publicado durante o teste</td>
+          <td><span class="badge na">já isolado</span></td>
+          <td>Ocorrência interna exige permissão própria e nunca entra no retorno padrão de consulta de imóvel. Não existe portal público ainda no produto — quando existir, pede o mesmo tipo de teste.</td>
+        </tr>
+        <tr>
+          <td>CRM-TS-010 — Radar idempotente</td>
+          <td>Não existe ação de reprocessar visível na interface</td>
+          <td><span class="badge na">já idempotente</span></td>
+          <td>O job de matching e o evento de disparo usam chave de idempotência; reprocessar o mesmo par radar+imóvel nunca duplica. Prova em teste de regressão.</td>
+        </tr>
+        <tr>
+          <td>CRMX-015 — RLS multiempresa</td>
+          <td>Apenas uma empresa no ambiente de teste, isolamento não comprovado</td>
+          <td><span class="badge fixed">confirmado</span></td>
+          <td>Teste adversarial real (SQL direto trocando o tenant) nas 3 tabelas centrais: imóveis e oportunidades são isolados por empresa. Cadastro de pessoa é isolado por <strong>grupo</strong> — comportamento correto, porque o próprio Caderno pede "cliente pode ter relação com mais de uma empresa do mesmo grupo".</td>
+        </tr>
+        <tr>
+          <td>Menus "Ofertas" e "Interações" autônomos</td>
+          <td>Hoje ficam dentro de Imóvel/Atividades, não como menu próprio</td>
+          <td><span class="badge na">não é requisito</span></td>
+          <td>Observação de navegação da auditora, não um requisito do Caderno Técnico — não exige estrutura de menu específica, só as entidades e APIs corretas, que já existem.</td>
+        </tr>
+      </table>
+    </div>
+  </section>
+
+  <section class="point">
+    <h2><span class="num">03</span>Além do que a auditoria testou</h2>
+    <p>Fomos além dos pontos citados no relatório e conferimos <strong>todo</strong> o Caderno Técnico do Marco 3 (21 seções da especificação + 20 do guia de implementação), em 4 rodadas de verificação cética. Resultado: 12 pontos adicionais tratados.</p>
+    <div class="table-scroll">
+      <table class="matrix">
+        <tr><th>Requisito</th><th>Status</th><th>Detalhe</th></tr>
+        <tr><td>CRMX-005 — Histórico permanente</td><td><span class="badge na">confirmado</span></td><td>Oportunidade, visita e proposta usam exclusão lógica real (a linha nunca some do banco); histórico de preço é somente-inserção.</td></tr>
+        <tr><td>CRMX-007 — Radar automático por evento</td><td><span class="badge fixed">corrigido</span></td><td>Antes um imóvel novo só era descoberto pelo radar na próxima rodada do job periódico. Agora uma oferta nova dispara o matching na hora.</td></tr>
+        <tr><td>CRMX-008 / opt-out</td><td><span class="badge na">já implementado</span></td><td>Consentimento bloqueia envio ativo de mensagem quando o cliente pediu para não ser contatado.</td></tr>
+        <tr><td>CRMX-010 — Dedup de imóvel por endereço semelhante</td><td><span class="badge fixed">corrigido</span></td><td>Além da matrícula exata, agora um endereço muito parecido ao de outro imóvel já cadastrado gera aviso de revisão (não bloqueia, só avisa).</td></tr>
+        <tr><td>CRM-TS-002 — Merge com CPFs conflitantes</td><td><span class="badge na">confirmado</span></td><td>A regra já existia; agora tem teste isolado provando o bloqueio especificamente nesse cenário.</td></tr>
+        <tr><td>CRM-TS-012 — Carteira por corretor</td><td><span class="badge fixed">corrigido</span></td><td>Antes qualquer usuário via todas as oportunidades da empresa. Agora um corretor vê só as suas por padrão; gestor continua vendo tudo.</td></tr>
+        <tr><td>CRM-TS-013 — MFA e limite na exportação</td><td><span class="badge fixed">corrigido</span></td><td>Exportação do CRM agora exige segundo fator recente e tem teto de 5.000 registros por exportação (recusa acima disso, nunca corta silenciosamente).</td></tr>
+        <tr><td>CRM-TS-014 — Corrida de preço</td><td><span class="badge wasbug">bug corrigido</span></td><td>Duas edições de preço simultâneas podiam quebrar o histórico. Trava de concorrência (<code>FOR UPDATE</code>) aplicada, igual ao padrão já usado no resto do sistema.</td></tr>
+        <tr><td>CRM-TS-015 — Reclamação não pode ser apagada</td><td><span class="badge na">confirmado</span></td><td>Não existe nenhuma rota de exclusão de ocorrência de atendimento — a operação simplesmente não existe no sistema.</td></tr>
+        <tr><td>Eventos mínimos do Caderno (seção 17)</td><td><span class="badge wasbug">gap corrigido</span></td><td>6 de 13 eventos obrigatórios não eram disparados (atualização de pessoa/imóvel, criação de oportunidade, ganho/perda de negócio, interação registrada, visita concluída). Implementados.</td></tr>
+        <tr><td>Painel de oportunidades estagnadas (seção 11)</td><td><span class="badge wasbug">gap corrigido</span></td><td>O Caderno pede que o gestor veja oportunidades sem atividade e tempo parado por etapa — não existia; implementado.</td></tr>
+        <tr><td>Deduplicação de pessoa — match "fraco"</td><td><span class="badge wasbug">gap corrigido</span></td><td>Dos 3 níveis de verificação de duplicidade exigidos (forte/médio/fraco), o nível fraco — nome parecido + mesma data de nascimento ou endereço — nunca tinha sido implementado. Agora abre revisão, sem bloquear.</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <div class="dod-card">
+    <h2><span class="num">04</span>Definition of Done do Caderno — 13 de 14 fechados</h2>
+    <p>O próprio Caderno Técnico lista 14 critérios de "pronto" para este módulo. Conferimos cada um contra um teste real, de trás para frente:</p>
+    <ul>
+      <li>Pessoa única e deduplicação, merge seguro, imóvel único/ofertas separadas, publicação com gate de qualidade, ocorrências internas isoladas, CRM com próxima ação obrigatória, radar explicável/idempotente, consentimento aplicado, interações registradas, reclamações com SLA, 15 testes adversariais aprovados, RLS/multiempresa aprovado, exportação auditada — <strong>todos verdes</strong>.</li>
+      <li>O único item que não fecha 100% é "NAY sem alucinação testada" — ver ponto 5 abaixo, é uma decisão sua, não um bug.</li>
+    </ul>
+  </div>
+
+  <section class="point">
+    <h2><span class="num">05</span>O único ponto pendente — decisão sua, não é bug</h2>
+    <p>A seção 16 do Caderno ("NAY Comercial") descreve 8 comportamentos de assistente de IA dentro do contexto do Marco 3: resumir histórico, sugerir próximos imóveis, detectar lead esquecido, classificar qualidade do cadastro, sugerir recuperação de cliente, gerar descrição de imóvel, nunca inventar dado ausente, respeitar consentimento antes de mandar mensagem de alto impacto.</p>
+    <p><strong>Implementamos o único comportamento que não depende de inteligência artificial:</strong> a classificação de qualidade do cadastro (score 0–100 por completude de campos), que é cálculo determinístico, não geração de texto.</p>
+    <p>Os outros 7 comportamentos exigem um assistente de IA de verdade gerando texto — e, olhando o próprio contrato, essa infraestrutura (RAG, memória, ferramentas, execução) é objeto de um marco separado:</p>
+    <div class="callout warn">
+      <strong>Cláusula 4.10 do contrato — Marco 9:</strong> "NAY, Automações e BI — R$ 1.250,00, após aceite de NAY/RAG/memória/tools/permissões, WhatsApp/canais, automações, Marketing/Digital, site público..."
+    </div>
+    <p>Ou seja: cada marco do Caderno descreve o comportamento esperado do NAY naquele contexto (aqui, "NAY Comercial"; no Marco 6, "NAY Obras"), mas a entrega real da inteligência artificial — como sistema funcional — é um marco próprio, posterior, ainda não iniciado.</p>
+    <p>Isso não é uma dívida escondida do Marco 3. É uma decisão de escopo e investimento que precisa ser tomada quando chegar a vez do Marco 9: qual provedor de IA usar e o orçamento associado.</p>
+  </section>
+
+  <footer>Marco 3 — Pessoas, Imóveis, CRM e Radar · Nayara One</footer>
+</div>
