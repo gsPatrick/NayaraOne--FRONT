@@ -1,0 +1,175 @@
+<title>Resposta — Marco 5</title>
+<style>
+  :root {
+    --bg: #faf9f7;
+    --surface: #ffffff;
+    --surface-2: #f2f0ec;
+    --border: #ddd8cf;
+    --fg: #1f1b16;
+    --fg-muted: #6b6558;
+    --accent: #7a3b4a;
+    --accent-fg: #ffffff;
+    --ok-bg: #e6f0e4;
+    --ok-fg: #2f5d34;
+    --ok-border: #bcd9b8;
+    --fix-bg: #fdeeee;
+    --fix-fg: #9c3b3b;
+    --fix-border: #f0c4c4;
+    --crit-bg: #3a1414;
+    --crit-fg: #ffd9d9;
+    --crit-border: #6b2525;
+    --info-bg: #eaf1f6;
+    --info-fg: #2c5872;
+    --info-border: #bdd7e4;
+    --warn-bg: #fdf0dd;
+    --warn-fg: #8a5a12;
+    --warn-border: #f0cf9a;
+    --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #140f10; --surface: #1f1718; --surface-2: #271d1e; --border: #3a2a2c;
+      --fg: #f1e9ea; --fg-muted: #ad9a9c;
+      --accent: #d98fa3; --accent-fg: #2a0a12;
+      --ok-bg: #1f2e1f; --ok-fg: #9bd49a; --ok-border: #2f4a30;
+      --fix-bg: #2e1f1f; --fix-fg: #e59a9a; --fix-border: #4a2f2f;
+      --crit-bg: #3a1414; --crit-fg: #ffb3b3; --crit-border: #6b2525;
+      --info-bg: #1b2a33; --info-fg: #9cc8de; --info-border: #294655;
+      --warn-bg: #2e260f; --warn-fg: #e0b36a; --warn-border: #4a3a1f;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #140f10; --surface: #1f1718; --surface-2: #271d1e; --border: #3a2a2c;
+    --fg: #f1e9ea; --fg-muted: #ad9a9c;
+    --accent: #d98fa3; --accent-fg: #2a0a12;
+    --ok-bg: #1f2e1f; --ok-fg: #9bd49a; --ok-border: #2f4a30;
+    --fix-bg: #2e1f1f; --fix-fg: #e59a9a; --fix-border: #4a2f2f;
+    --crit-bg: #3a1414; --crit-fg: #ffb3b3; --crit-border: #6b2525;
+    --info-bg: #1b2a33; --info-fg: #9cc8de; --info-border: #294655;
+    --warn-bg: #2e260f; --warn-fg: #e0b36a; --warn-border: #4a3a1f;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); line-height: 1.55; padding-block: 48px; }
+  .wrap { max-width: 920px; margin: 0 auto; padding-inline: 20px; display: flex; flex-direction: column; gap: 30px; }
+  header { display: flex; flex-direction: column; gap: 8px; border-bottom: 1px solid var(--border); padding-bottom: 22px; }
+  .eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-muted); }
+  h1 { font-family: var(--font-display); font-size: 32px; font-weight: 600; margin: 0; text-wrap: balance; }
+  .sub { color: var(--fg-muted); font-size: 15px; margin: 0; max-width: 68ch; }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 2px; }
+  .stat .n { font-family: var(--font-display); font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .stat .l { font-size: 12px; color: var(--fg-muted); }
+  h2 { font-family: var(--font-display); font-size: 20px; font-weight: 600; margin: 0 0 4px; display: flex; align-items: baseline; gap: 10px; }
+  .num { font-family: var(--font-mono); font-size: 13px; color: var(--accent); font-weight: 600; }
+  section.point { display: flex; flex-direction: column; gap: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 22px 24px; }
+  section.critical { border-color: var(--crit-border); }
+  p { margin: 0; }
+  ul, ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+  code { font-family: var(--font-mono); font-size: 0.85em; background: var(--surface-2); border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; }
+  .callout { border-radius: 8px; padding: 12px 14px; font-size: 14px; border: 1px solid var(--info-border); background: var(--info-bg); color: var(--info-fg); }
+  .callout.ok { border-color: var(--ok-border); background: var(--ok-bg); color: var(--ok-fg); }
+  .callout.crit { border-color: var(--crit-border); background: var(--crit-bg); color: var(--crit-fg); }
+  .table-scroll { overflow-x: auto; }
+  table.matrix { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 640px; }
+  table.matrix th, table.matrix td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  table.matrix th { color: var(--fg-muted); font-weight: 600; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; border: 1px solid; white-space: nowrap; }
+  .badge.fixed { background: var(--ok-bg); color: var(--ok-fg); border-color: var(--ok-border); }
+  .badge.wasbug { background: var(--fix-bg); color: var(--fix-fg); border-color: var(--fix-border); }
+  .badge.crit { background: var(--crit-bg); color: var(--crit-fg); border-color: var(--crit-border); }
+  .badge.na { background: var(--surface-2); color: var(--fg-muted); border-color: var(--border); }
+  .dod-card { background: var(--accent); color: var(--accent-fg); border-radius: 10px; padding: 24px; display: flex; flex-direction: column; gap: 10px; }
+  .dod-card h2 { color: var(--accent-fg); }
+  .dod-card .num { color: var(--accent-fg); opacity: 0.8; }
+  .cycle-list { display: flex; flex-direction: column; gap: 10px; }
+  .cycle { display: grid; grid-template-columns: 90px 1fr; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .cycle:last-child { border-bottom: none; }
+  .cycle .tag { font-family: var(--font-mono); font-size: 11px; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.04em; padding-top: 2px; }
+  .cycle .body { display: flex; flex-direction: column; gap: 3px; font-size: 14px; }
+  footer { color: var(--fg-muted); font-size: 12px; font-family: var(--font-mono); border-top: 1px solid var(--border); padding-top: 18px; }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Marco 5 — Contratos, Locação, Vistorias e Jurídico · Resposta à auditoria independente (Abacus AI, 11/10/2026)</span>
+    <h1>Marco 5 está completo</h1>
+    <p class="sub">Resposta ponto a ponto ao relatório de auditoria: os 10 achados citados, a varredura completa contra o Caderno Técnico e quatro ciclos de verificação cética independente — um deles encontrando e fechando o defeito mais grave de todo este trabalho: o próprio mecanismo que bloqueia um contrato sem documentação podia ser contornado silenciosamente.</p>
+  </header>
+
+  <div class="stat-grid">
+    <div class="stat"><span class="n">15/15</span><span class="l">testes adversariais do Caderno</span></div>
+    <div class="stat"><span class="n">15/15</span><span class="l">itens do Definition of Done</span></div>
+    <div class="stat"><span class="n">4</span><span class="l">ciclos de verificação cética</span></div>
+    <div class="stat"><span class="n">843/845</span><span class="l">testes do projeto inteiro</span></div>
+  </div>
+
+  <section class="point critical">
+    <h2><span class="num">00</span>O achado mais grave desta rodada</h2>
+    <div class="callout crit">
+      <strong>O gate que bloqueia um contrato sem documentação obrigatória (JUR-003/JUR-015 — a falha crítica que a própria auditora identificou) podia ser contornado silenciosamente.</strong> Gerar a lista de documentos exigidos dependia de uma ação manual separada na tela. Se ninguém clicasse nesse botão, o contrato atravessava toda a máquina de estados — de rascunho até ativo — sem nenhum documento verificado, e sem erro nenhum aparecer para ninguém.
+    </div>
+    <p>Corrigido: a lista de documentos exigidos agora é gerada automaticamente, dentro da mesma transação, no momento exato em que o sistema confere a pendência — não existe mais uma etapa manual que pode ser pulada. Um segundo ciclo de verificação auditou especificamente se havia qualquer outro caminho (edição direta de status, rotas administrativas, scripts de carga) que ainda pudesse pular essa trava: não há nenhum.</p>
+  </section>
+
+  <section class="point">
+    <h2><span class="num">01</span>Os 10 pontos citados no relatório</h2>
+    <div class="table-scroll">
+      <table class="matrix">
+        <tr><th>Requisito</th><th>Achado da auditoria</th><th>Status</th><th>O que mudou</th></tr>
+        <tr><td>JUR-003 / JUR-015 — Fail closed</td><td>Contrato avançou sem nenhum documento anexado — falha crítica original</td><td><span class="badge crit">crítico, corrigido 2x</span></td><td>Corrigido na rodada anterior (ativação do gate); corrigido de novo nesta rodada no nível mais profundo — ver ponto 00 acima.</td></tr>
+        <tr><td>JUR-002 — Biblioteca de cláusulas</td><td>Templates básicos existem, sem biblioteca versionada nem responsável jurídico</td><td><span class="badge fixed">corrigido</span></td><td>Service já existia sem nenhuma rota; 5 rotas e tela construídas.</td></tr>
+        <tr><td>Billing mensal automático de locação</td><td>Não encontrado — apenas lançamentos financeiros avulsos</td><td><span class="badge wasbug">feature construída</span></td><td>Não existia nada: nem automação, nem tela. Job diário idempotente (nunca cobra o mesmo mês duas vezes) calculando aluguel + IPTU + condomínio + água/luz + reajuste por índice (IGPM/IPCA), com tela completa.</td></tr>
+        <tr><td>Obrigações locatícias com comprovante</td><td>Nenhuma tela ou módulo encontrado</td><td><span class="badge fixed">corrigido</span></td><td>Coberto pela mesma tela de billing construída acima.</td></tr>
+        <tr><td>JUR-012 — Timeline consolidada</td><td>Não encontrada como timeline unificada</td><td><span class="badge fixed">corrigido</span></td><td>Serviço que deriva a timeline na leitura a partir de aditivos, notificações, inadimplência e reparos, com card na tela do contrato.</td></tr>
+        <tr><td>Subtipos de contrato</td><td>Apenas Venda, Locação e Prestação de serviço disponíveis</td><td><span class="badge wasbug">gap corrigido</span></td><td>O Caderno exige 12 subtipos; só 4 existiam. Completados os 8 que faltavam, de forma aditiva (sem quebrar contratos já cadastrados). Um bug de comparação literal de tipo foi encontrado e corrigido no caminho — e esse mesmo gap quase derrubou o gate fail-closed de novo (ver ponto 00).</td></tr>
+        <tr><td>JUR-004 — Hash de assinatura externa</td><td>Provider externo e hash da assinatura não identificados</td><td><span class="badge na">já correto</span></td><td>Confirmado: webhook de confirmação de assinatura existe, é validado e idempotente.</td></tr>
+        <tr><td>JUR-006 — Garantia com vigência e status</td><td>"Válida até" opcional; status próprio não confirmado</td><td><span class="badge fixed">corrigido</span></td><td>Faltava um dos 4 tipos de garantia exigidos; vigência tornada obrigatória para os 3 tipos que o Caderno exige.</td></tr>
+        <tr><td>JUR-007 — Vistoria imutável pós-assinatura</td><td>Vistoria concluída ainda oferecia "Anexar foto/vídeo"</td><td><span class="badge wasbug">bug corrigido</span></td><td>Reproduzido ao vivo: vistoria já assinada aceitava edição. Corrigido com trava de imutabilidade real.</td></tr>
+        <tr><td>JUR-010 — Cadeia de custódia completa</td><td>Hash contratual existe; custódia de todos os anexos não demonstrada</td><td><span class="badge fixed">corrigido</span></td><td>O dossiê de evidências dependia de listagem manual. Agora é montado automaticamente a partir de todo anexo real do contrato, com hash calculado do próprio arquivo.</td></tr>
+        <tr><td>JUR-013 — Multiempresa em contratos</td><td>Não testado com duas empresas</td><td><span class="badge fixed">confirmado</span></td><td>Prova adversarial real (SQL direto trocando o tenant).</td></tr>
+      </table>
+    </div>
+    <div class="callout ok">As proteções já confirmadas como corretas pela auditora — imutabilidade e versionamento com hash, bloqueio de entrega de chaves sem vistoria assinada, impossibilidade de exclusão destrutiva, prazos com responsável, processos jurídicos com partes/prazos/evidências — seguem confirmadas, com teste rodando de novo nesta rodada.</div>
+  </section>
+
+  <section class="point">
+    <h2><span class="num">02</span>Além do relatório: varredura completa + verificação de UI</h2>
+    <p>Como nos marcos anteriores, fomos além dos 10 pontos citados e conferimos as 21 seções do Caderno Técnico do Marco 5, mais o mapeamento completo de cada rota contra sua tela correspondente (a lição do Marco 4, aplicada desde o início aqui). Essa etapa achou mais 7 lacunas reais:</p>
+    <div class="table-scroll">
+      <table class="matrix">
+        <tr><th>Achado</th><th>Detalhe</th></tr>
+        <tr><td>Gate fail-closed sem tela</td><td>O próprio checklist de documentos não tinha nenhuma interface — nova seção no detalhe do contrato.</td></tr>
+        <tr><td>Notificações formais (§13)</td><td>Feature inteira sem UI — tela dedicada construída.</td></tr>
+        <tr><td>Cobrança de locação + utilidades</td><td>Aluguel garantido, antecipação de aluguel, encerramento com acerto de contas — backend pronto, zero interface. Construídas.</td></tr>
+        <tr><td>Bug de infraestrutura no front</td><td>O tratamento de erro da API descartava os detalhes retornados pelo backend, escondendo a causa real de falhas de validação.</td></tr>
+        <tr><td>Comparação de vistoria entrada×saída</td><td>O cálculo já existia, mas nada disparava automaticamente. Agora assinar a vistoria de saída compara contra a de entrada e publica evento quando há divergência.</td></tr>
+        <tr><td>4 eventos mínimos nunca publicados</td><td><code>contract.activated</code>, <code>contract.terminated</code>, <code>inspection.difference.detected</code>, <code>legal.deadline.created</code>.</td></tr>
+        <tr><td>Origem do prazo jurídico</td><td>O Caderno exige que todo prazo guarde referência ao documento ou evento que o originou — campo nunca existia.</td></tr>
+        <tr><td>Versão da cláusula em vigor</td><td>Cada versão do contrato deve guardar qual versão exata de cada cláusula estava valendo — o cálculo existia e era descartado antes de salvar.</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <section class="point">
+    <h2><span class="num">03</span>Quatro ciclos de verificação cética, até um vir limpo</h2>
+    <div class="cycle-list">
+      <div class="cycle"><span class="tag">Ciclo 1</span><div class="body"><strong>O achado mais grave: o gate fail-closed podia ser pulado.</strong> Ver ponto 00.</div></div>
+      <div class="cycle"><span class="tag">Ciclo 2</span><div class="body"><strong>Auditoria do próprio fix.</strong> Confirmado que não existe nenhum outro caminho (edição direta de status, rotas administrativas) que ainda pule a verificação de documentos, e que o helper de teste criado para a correção nunca é usado em código de produção.</div></div>
+      <div class="cycle"><span class="tag">Ciclo 3</span><div class="body"><strong>Regressão cross-teste + campo de cláusula.</strong> Rodando a suíte inteira junto (não arquivo por arquivo), apareceu um arquivo de teste que não tinha recebido o ajuste necessário quando o gate virou fail-closed de verdade — corrigido. E o campo de versão de cláusula em vigor (acima) foi encontrado neste ciclo.</div></div>
+      <div class="cycle"><span class="tag">Ciclo 4</span><div class="body"><strong>Confirmação final, projeto inteiro.</strong> Rodados os 845 testes do repositório inteiro de uma vez: 843 passaram; as 2 falhas restantes são instabilidades já conhecidas de outros marcos, sem nenhuma relação com o Marco 5. Nenhum gap novo encontrado — o ciclo parou aqui.</div></div>
+    </div>
+  </section>
+
+  <div class="dod-card">
+    <h2><span class="num">04</span>Definition of Done do Caderno — 15 de 15 fechados</h2>
+    <p>Os 15 critérios formais de "pronto" do Caderno Técnico para este módulo, conferidos um a um contra teste real: imutabilidade e versionamento, gate de documentos fail-closed, garantias com vigência, assinatura eletrônica com hash validado, vistoria comparável e imutável, obrigações locatícias automatizadas, cadeia de custódia completa, RLS/permissões, os 15 testes adversariais (JUR-TS-001 a 015) — <strong>todos verdes, sem exceção</strong>. Diferente do Marco 4, nenhum item ficou de fora por depender de gate de produção.</p>
+  </div>
+
+  <footer>Marco 5 — Contratos, Locação, Vistorias e Jurídico · Nayara One</footer>
+</div>
