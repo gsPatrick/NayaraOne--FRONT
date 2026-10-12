@@ -17,7 +17,8 @@ import StickyActionBar from "@/components/organisms/StickyActionBar/StickyAction
 import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu";
 import NatureBadge from "@/components/molecules/NatureBadge/NatureBadge";
 import Pagination from "@/components/molecules/Pagination/Pagination";
-import { listFinancialEntries, listBankTransactions, listBankAccounts, listReconciliations, matchReconciliation } from "@/lib/api/finance";
+import Badge from "@/components/atoms/Badge/Badge";
+import { listFinancialEntries, listBankTransactions, listBankAccounts, listReconciliations, matchReconciliation, suggestReconciliationMatches } from "@/lib/api/finance";
 import { apiFetch } from "@/lib/api/client";
 import { getCurrentUser } from "@/lib/auth/session";
 import { formatBRL, formatDate, formatDateTime } from "@/lib/format";
@@ -47,6 +48,7 @@ export default function ConciliacaoPage() {
   const [query, setQuery] = useState("");
   const [notice, setNotice] = useState(null);
   const [reconcileModal, setReconcileModal] = useState(null);
+  const [suggestions, setSuggestions] = useState({}); // bankTransactionId -> { finalClass, candidates }
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [page2, setPage2] = useState(1);
@@ -119,7 +121,45 @@ export default function ConciliacaoPage() {
     [entries, reconciliations]
   );
 
+  // GAP REAL (verificação cética adicional, Marco 4, 12/10/2026): a classificação exigida pelo
+  // Caderno §11 (EXATO/FORTE/PROVÁVEL/AMBÍGUO/SEM CORRESPONDÊNCIA) vinha da engine real do
+  // backend (`suggestReconciliationMatches`), não de um match ingênuo só por valor aqui no
+  // front. Busca a sugestão real pra cada transação não conciliada assim que a lista carrega.
+  useEffect(() => {
+    if (unreconciledTransactions.length === 0) return;
+    let cancelled = false;
+    Promise.all(
+      unreconciledTransactions.map((t) =>
+        suggestReconciliationMatches(t.id)
+          .then((s) => [t.id, s])
+          .catch(() => [t.id, { finalClass: "NO_MATCH", candidates: [] }])
+      )
+    ).then((pairs) => {
+      if (cancelled) return;
+      setSuggestions(Object.fromEntries(pairs));
+    });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [unreconciledTransactions.map((t) => t.id).join(",")]);
+
+  const MATCH_CLASS_LABEL = {
+    EXACT: { text: "Exato", tone: "success" },
+    STRONG: { text: "Forte", tone: "success" },
+    PROBABLE: { text: "Provável — confirmar", tone: "warning" },
+    AMBIGUOUS: { text: "Ambíguo — revisão manual", tone: "danger" },
+    NO_MATCH: { text: "Sem correspondência", tone: "neutral" },
+  };
+
   function candidatesFor(transaction) {
+    const suggestion = suggestions[transaction.id];
+    if (suggestion) {
+      const ids = new Set(suggestion.candidates.map((c) => c.financialEntryId));
+      return unreconciledEntries.filter((e) => ids.has(e.id));
+    }
+    // Enquanto a sugestão real ainda não voltou, usa o mesmo filtro por valor como fallback
+    // visual temporário — nunca decide classe nem auto-concilia nada sozinho.
     return unreconciledEntries.filter((e) => Number(e.amount) === Math.abs(Number(transaction.amount)));
   }
 
@@ -186,6 +226,13 @@ export default function ConciliacaoPage() {
                     {pageItems.map((t) => {
                       const account = bankAccountOf(bankAccounts, t.bankAccountId);
                       const candidates = candidatesFor(t);
+                      const suggestion = suggestions[t.id];
+                      const matchClass = suggestion?.finalClass;
+                      const classInfo = matchClass ? MATCH_CLASS_LABEL[matchClass] : null;
+                      // AMBÍGUO nunca auto-concilia, mesmo com 1 candidato aparente na lista
+                      // filtrada — a classe já veio resolvida pela engine real do backend
+                      // (§11 do Caderno: "ambíguo: várias possibilidades, nunca auto conciliar").
+                      const canAutoMatch = candidates.length === 1 && matchClass !== "AMBIGUOUS" && matchClass !== "NO_MATCH";
                       return (
                         <li key={t.id} className={styles.listRow}>
                           <span className={styles.bankIconSlot}>
@@ -195,14 +242,15 @@ export default function ConciliacaoPage() {
                             <span className={styles.listRowTitle}>{t.description}</span>
                             <span className={styles.listRowSubtitle}>{formatDate(t.transactionDate)} · {t.externalTransactionId} · {account?.bankCode || "—"}</span>
                           </div>
+                          {classInfo ? <Badge tone={classInfo.tone}>{classInfo.text}</Badge> : null}
                           <span className={styles.listRowRight}>{formatBRL(t.amount)}</span>
-                          {candidates.length === 1 ? (
+                          {canAutoMatch ? (
                             <Button size="sm" onClick={() => handleReconcile(candidates[0].id, t.id)}>
-                              <Icon name="check" size={14} /> Match automático
+                              <Icon name="check" size={14} /> Conciliar
                             </Button>
                           ) : (
                             <Button size="sm" variant="secondary" onClick={() => setReconcileModal(t)} disabled={candidates.length === 0}>
-                              {candidates.length === 0 ? "Sem candidato" : `Conciliar (${candidates.length})`}
+                              {candidates.length === 0 ? "Sem candidato" : `Revisar (${candidates.length})`}
                             </Button>
                           )}
                         </li>
@@ -312,6 +360,7 @@ export default function ConciliacaoPage() {
       <ReconcileModal
         transaction={reconcileModal}
         candidates={reconcileModal ? candidatesFor(reconcileModal) : []}
+        matchClass={reconcileModal ? suggestions[reconcileModal.id]?.finalClass : null}
         onClose={() => setReconcileModal(null)}
         onConfirm={(entryId) => handleReconcile(entryId, reconcileModal.id)}
       />
@@ -319,7 +368,7 @@ export default function ConciliacaoPage() {
   );
 }
 
-function ReconcileModal({ transaction, candidates, onClose, onConfirm }) {
+function ReconcileModal({ transaction, candidates, matchClass, onClose, onConfirm }) {
   const [entryId, setEntryId] = useState("");
 
   if (!transaction) return null;
@@ -339,6 +388,13 @@ function ReconcileModal({ transaction, candidates, onClose, onConfirm }) {
       <p className={styles.modalIntro}>
         {transaction.description} — {formatBRL(transaction.amount)} em {formatDate(transaction.transactionDate)}
       </p>
+      {matchClass === "AMBIGUOUS" ? (
+        <Alert tone="warning" className={styles.notice}>
+          Vários lançamentos batem igualmente bem com esta transação — a conciliação automática
+          foi desligada de propósito para este caso (Caderno §11: ambíguo nunca concilia sozinho).
+          Confira os dados abaixo e escolha manualmente o lançamento correto.
+        </Alert>
+      ) : null}
       {candidates.length === 0 ? (
         <Alert tone="warning" title="Nenhum lançamento com valor compatível">
           Só é possível conciliar lançamentos cujo valor bate exatamente com a transação.
