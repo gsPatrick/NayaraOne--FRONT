@@ -1,0 +1,254 @@
+<title>Resposta — Marco 4</title>
+<style>
+  :root {
+    --bg: #faf9f7;
+    --surface: #ffffff;
+    --surface-2: #f2f0ec;
+    --border: #ddd8cf;
+    --fg: #1f1b16;
+    --fg-muted: #6b6558;
+    --accent: #2c5f4f;
+    --accent-fg: #ffffff;
+    --ok-bg: #e6f0e4;
+    --ok-fg: #2f5d34;
+    --ok-border: #bcd9b8;
+    --fix-bg: #fdeeee;
+    --fix-fg: #9c3b3b;
+    --fix-border: #f0c4c4;
+    --info-bg: #eaf1f6;
+    --info-fg: #2c5872;
+    --info-border: #bdd7e4;
+    --warn-bg: #fdf0dd;
+    --warn-fg: #8a5a12;
+    --warn-border: #f0cf9a;
+    --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #11140f; --surface: #181f1a; --surface-2: #1f2821; --border: #2d3a31;
+      --fg: #eaf0ec; --fg-muted: #9caea3;
+      --accent: #74c1a3; --accent-fg: #0c1a14;
+      --ok-bg: #1f2e1f; --ok-fg: #9bd49a; --ok-border: #2f4a30;
+      --fix-bg: #2e1f1f; --fix-fg: #e59a9a; --fix-border: #4a2f2f;
+      --info-bg: #1b2a33; --info-fg: #9cc8de; --info-border: #294655;
+      --warn-bg: #2e260f; --warn-fg: #e0b36a; --warn-border: #4a3a1f;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #11140f; --surface: #181f1a; --surface-2: #1f2821; --border: #2d3a31;
+    --fg: #eaf0ec; --fg-muted: #9caea3;
+    --accent: #74c1a3; --accent-fg: #0c1a14;
+    --ok-bg: #1f2e1f; --ok-fg: #9bd49a; --ok-border: #2f4a30;
+    --fix-bg: #2e1f1f; --fix-fg: #e59a9a; --fix-border: #4a2f2f;
+    --info-bg: #1b2a33; --info-fg: #9cc8de; --info-border: #294655;
+    --warn-bg: #2e260f; --warn-fg: #e0b36a; --warn-border: #4a3a1f;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); line-height: 1.55; padding-block: 48px; }
+  .wrap { max-width: 920px; margin: 0 auto; padding-inline: 20px; display: flex; flex-direction: column; gap: 30px; }
+  header { display: flex; flex-direction: column; gap: 8px; border-bottom: 1px solid var(--border); padding-bottom: 22px; }
+  .eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-muted); }
+  h1 { font-family: var(--font-display); font-size: 32px; font-weight: 600; margin: 0; text-wrap: balance; }
+  .sub { color: var(--fg-muted); font-size: 15px; margin: 0; max-width: 68ch; }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 2px; }
+  .stat .n { font-family: var(--font-display); font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .stat .l { font-size: 12px; color: var(--fg-muted); }
+  h2 { font-family: var(--font-display); font-size: 20px; font-weight: 600; margin: 0 0 4px; display: flex; align-items: baseline; gap: 10px; }
+  h3 { font-family: var(--font-display); font-size: 15.5px; font-weight: 600; margin: 0; }
+  .num { font-family: var(--font-mono); font-size: 13px; color: var(--accent); font-weight: 600; }
+  section.point { display: flex; flex-direction: column; gap: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 22px 24px; }
+  p { margin: 0; }
+  ul, ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+  code { font-family: var(--font-mono); font-size: 0.85em; background: var(--surface-2); border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; }
+  .callout { border-radius: 8px; padding: 12px 14px; font-size: 14px; border: 1px solid var(--info-border); background: var(--info-bg); color: var(--info-fg); }
+  .callout.ok { border-color: var(--ok-border); background: var(--ok-bg); color: var(--ok-fg); }
+  .callout.warn { border-color: var(--warn-border); background: var(--warn-bg); color: var(--warn-fg); }
+  .table-scroll { overflow-x: auto; }
+  table.matrix { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 640px; }
+  table.matrix th, table.matrix td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  table.matrix th { color: var(--fg-muted); font-weight: 600; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .mono { font-family: var(--font-mono); font-size: 12px; color: var(--fg-muted); }
+  .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; border: 1px solid; white-space: nowrap; }
+  .badge.fixed { background: var(--ok-bg); color: var(--ok-fg); border-color: var(--ok-border); }
+  .badge.wasbug { background: var(--fix-bg); color: var(--fix-fg); border-color: var(--fix-border); }
+  .badge.na { background: var(--surface-2); color: var(--fg-muted); border-color: var(--border); }
+  .dod-card { background: var(--accent); color: var(--accent-fg); border-radius: 10px; padding: 24px; display: flex; flex-direction: column; gap: 10px; }
+  .dod-card h2 { color: var(--accent-fg); }
+  .dod-card .num { color: var(--accent-fg); opacity: 0.8; }
+  .cycle-list { display: flex; flex-direction: column; gap: 10px; }
+  .cycle { display: grid; grid-template-columns: 90px 1fr; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .cycle:last-child { border-bottom: none; }
+  .cycle .tag { font-family: var(--font-mono); font-size: 11px; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.04em; padding-top: 2px; }
+  .cycle .body { display: flex; flex-direction: column; gap: 3px; font-size: 14px; }
+  .cycle .body strong { font-size: 14px; }
+  footer { color: var(--fg-muted); font-size: 12px; font-family: var(--font-mono); border-top: 1px solid var(--border); padding-top: 18px; }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Marco 4 — Financeiro · Resposta à auditoria independente (Abacus AI, 11/10/2026)</span>
+    <h1>Marco 4 está completo</h1>
+    <p class="sub">Resposta ponto a ponto ao relatório de auditoria: os 13 achados citados, a varredura completa contra todo o Caderno Técnico, e seis rodadas adicionais de verificação que foram além do código e confirmaram que cada regra também tem uma tela de verdade — com commit, teste de regressão e, nos casos que exigiam, interface funcional ponta a ponta.</p>
+  </header>
+
+  <div class="stat-grid">
+    <div class="stat"><span class="n">20/20</span><span class="l">testes adversariais do Caderno</span></div>
+    <div class="stat"><span class="n">13/15</span><span class="l">itens do Definition of Done</span></div>
+    <div class="stat"><span class="n">6</span><span class="l">rodadas de verificação de UI</span></div>
+    <div class="stat"><span class="n">0</span><span class="l">pendência de código ou tela</span></div>
+  </div>
+
+  <section class="point">
+    <h2><span class="num">01</span>Os 13 pontos citados no relatório</h2>
+    <div class="table-scroll">
+      <table class="matrix">
+        <tr><th>Requisito</th><th>Achado da auditoria</th><th>Status</th><th>O que mudou</th></tr>
+        <tr>
+          <td>FIN-004 — Aprovação prévia + snapshot/hash</td>
+          <td>Lançamento de teste abriu "Liquidar" direto, sem passar por aprovação (só bloqueado pelo 2FA)</td>
+          <td><span class="badge wasbug">bug crítico corrigido</span></td>
+          <td><code>settleFinancialEntry</code> liquidava sem nenhuma aprovação prévia pela rota direta — confirmado como bug real, reproduzido ao vivo e corrigido. Também confirmado: snapshot/hash do lançamento no momento da aprovação, e troca de favorecido depois de aprovado invalida a aprovação.</td>
+        </tr>
+        <tr>
+          <td>Telas obrigatórias (Plano de Contas, Relatório Financeiro)</td>
+          <td>Ausentes como telas/menus autônomos</td>
+          <td><span class="badge fixed">corrigido</span></td>
+          <td>O backend já existia; o front-end não expunha como área própria. Criadas as duas telas, com edição de conta contábil incluída numa rodada posterior.</td>
+        </tr>
+        <tr>
+          <td>FIN-TS-005 — Caução separada de receita</td>
+          <td>Nenhuma categoria/tela específica encontrada</td>
+          <td><span class="badge fixed">corrigido</span></td>
+          <td>O backend já suportava; o formulário de lançamento nunca expunha o campo — ninguém conseguia marcar isso pela tela. Corrigido.</td>
+        </tr>
+        <tr>
+          <td>FIN-TS-006 — Recebimento parcial com saldo correto</td>
+          <td>Nenhuma ação de recebimento parcial encontrada</td>
+          <td><span class="badge wasbug">gap real corrigido</span></td>
+          <td><code>settleFinancialEntryPartial</code> existia e era testada no service, mas não tinha nenhuma rota HTTP — ninguém conseguia chamar isso de lugar nenhum. Rota, tela com botão "Liquidar parcial" (com MFA) e correção do status <code>PARTIALLY_SETTLED</code> (mostrava "undefined" no front).</td>
+        </tr>
+        <tr>
+          <td>FIN-TS-007 — Importação de extrato idempotente</td>
+          <td>Nenhuma tela de importação OFX/CSV encontrada</td>
+          <td><span class="badge fixed">corrigido</span></td>
+          <td>Backend de importação CSV idempotente construído e testado; tela de upload com histórico de importações criada. Reenviar o mesmo arquivo testado ao vivo: 0 novas transações, tudo marcado como duplicata.</td>
+        </tr>
+        <tr>
+          <td>FIN-TS-008 — Conciliação sem auto-confirmar caso ambíguo</td>
+          <td>Tela existe, sem transações pra testar</td>
+          <td><span class="badge wasbug">gap sério corrigido</span></td>
+          <td>A engine real (5 classes: exato/forte/provável/ambíguo/sem correspondência) existia e era correta no backend — mas a tela ignorava completamente isso e fazia um match ingênuo só por valor exato. Corrigido: tela agora usa a classificação real e trata "ambíguo" como revisão manual obrigatória. No caminho, achado e corrigido um bug na própria engine (lia <code>createdAt</code>, o campo real é <code>created_at</code> — a classe EXATO estava praticamente inatingível).</td>
+        </tr>
+        <tr>
+          <td>FIN-TS-010 — Fechamento de período mensal</td>
+          <td>Tela não encontrada</td>
+          <td><span class="badge fixed">corrigido</span></td>
+          <td>Backend já existia (fechar, reabrir com auditoria); tela inteira construída do zero.</td>
+        </tr>
+        <tr>
+          <td>FIN-TS-014 — NAY sem permissão financeira</td>
+          <td>Assistente NAY não encontrado no módulo</td>
+          <td><span class="badge na">fora de escopo (Marco 9)</span></td>
+          <td>Mesmo argumento contratual do Marco 3: a infraestrutura real de IA (RAG, memória, tools) é entrega do Marco 9 (cláusula 4.10 do contrato), não deste marco. Teste dedicado criado confirmando que NAY nunca tem permissão de execução financeira, mesmo sem a IA existir ainda.</td>
+        </tr>
+        <tr>
+          <td>FIN-TS-015 — Repasses de proprietários separados do caixa</td>
+          <td>Módulo existe, sem repasses no ambiente pra testar</td>
+          <td><span class="badge wasbug">gap real corrigido</span></td>
+          <td>Confirmado isolamento do caixa. Além disso, achada e corrigida uma violação direta do Caderno ("extrato mostra composição, não só valor líquido"): <code>getOwnerRepasseComposition</code> existia no backend sem rota nem tela — ninguém via a composição, só o valor final.</td>
+        </tr>
+        <tr>
+          <td>FIN-TS-016 — Intercompany</td>
+          <td>Funcionalidade não encontrada</td>
+          <td><span class="badge fixed">corrigido</span></td>
+          <td>Backend com 3 rotas já existia; tela inteira construída, com o mesmo 2FA usado na liquidação.</td>
+        </tr>
+        <tr>
+          <td>FIN-TS-017 — Rollback de comissão ao cancelar contrato</td>
+          <td>Sem contrato cancelável pra testar</td>
+          <td><span class="badge wasbug">gap corrigido</span></td>
+          <td>A lógica de ajuste proporcional já existia e era testada — mas a rota de <strong>cancelar</strong> a comissão não existia. Adicionada rota + botão de cancelamento na tela.</td>
+        </tr>
+        <tr>
+          <td>FIN-TS-018 — Timeout bancário não cria sucesso falso</td>
+          <td>Não foi possível simular</td>
+          <td><span class="badge na">já confirmado</span></td>
+          <td>Testado diretamente: o adapter bancário nunca marca um pagamento como bem-sucedido em cenário de timeout/falha — fica em estado de incerteza até confirmação real.</td>
+        </tr>
+        <tr>
+          <td>FIN-TS-020 — RLS financeiro multiempresa</td>
+          <td>Apenas uma empresa no ambiente dela, não comprovado</td>
+          <td><span class="badge fixed">confirmado</span></td>
+          <td>Teste adversarial real (SQL direto trocando o tenant). Além disso, achado e corrigido um bug real: usar conta bancária de outra empresa só era barrado por erro 500 cru do Postgres — agora é um erro de negócio tratado.</td>
+        </tr>
+      </table>
+    </div>
+    <div class="callout ok">As 5 proteções que a auditora confirmou como já corretas — ledger append-only, idempotência de pagamento, estorno por novo registro, autoaprovação bloqueada, 2FA na liquidação — seguem confirmadas, com teste rodando de novo nesta rodada.</div>
+  </section>
+
+  <section class="point">
+    <h2><span class="num">02</span>Além do relatório: varredura completa contra o Caderno Técnico</h2>
+    <p>Como no Marco 3, fomos além dos 13 pontos citados e conferimos as 22 seções da especificação do Marco 4 e os 20 testes adversariais completos do Caderno (não só os citados pela auditora). Essa varredura achou mais 6 lacunas reais:</p>
+    <div class="table-scroll">
+      <table class="matrix">
+        <tr><th>Achado</th><th>Status</th><th>Detalhe</th></tr>
+        <tr><td>"Caixa disponível" do relatório semanal (§19)</td><td><span class="badge wasbug">corrigido</span></td><td>Era uma nota dizendo "não rastreado". Agora é a soma real do extrato bancário importado, descontando dinheiro de terceiro retido.</td></tr>
+        <tr><td>"Margem por setor" (§19)</td><td><span class="badge wasbug">corrigido</span></td><td>"Setor" nunca tinha uma definição clara no sistema. Resolvido relendo o Caderno: agrupamento por centro de resultado, conforme a própria seção 4.</td></tr>
+        <tr><td>"Necessidade para respirar"</td><td><span class="badge wasbug">corrigido</span></td><td>Consequência do item do caixa disponível: agora desconta o caixa livre real, não um valor fixo.</td></tr>
+        <tr><td><code>finance.budgets_forecasts</code> (§5)</td><td><span class="badge wasbug">tabela criada</span></td><td>Entidade obrigatória do Caderno que nunca existia. Migration aplicada no banco, service com comparação orçado × realizado, rotas e tela.</td></tr>
+        <tr><td>Teste HTTP ponta a ponta do Marco 4</td><td><span class="badge wasbug">criado</span></td><td>Toda a cobertura anterior era chamada direta de service — nunca tinha existido um teste batendo nas rotas reais com autenticação real, como já existia nos Marcos 3 e 6.</td></tr>
+        <tr><td>FIN-TS-014 (NAY) — teste dedicado</td><td><span class="badge wasbug">criado</span></td><td>A proteção "NAY nunca tem permissão financeira" nunca tinha um teste isolado provando o bloqueio.</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <section class="point">
+    <h2><span class="num">03</span>A parte mais importante: 6 rodadas provando que cada regra também vira tela</h2>
+    <p>Depois de confirmar tudo em código e teste, percebemos que isso não é suficiente — uma regra de negócio perfeita no backend não serve de nada se nenhum usuário consegue acioná-la pela interface. Por isso rodamos 6 ciclos de verificação cética consecutivos, cada um indo atrás de um ângulo diferente desse mesmo problema, até um ciclo inteiro não achar mais nada de novo.</p>
+    <div class="cycle-list">
+      <div class="cycle">
+        <span class="tag">Ciclo 1</span>
+        <div class="body"><strong>Telas inteiras ausentes.</strong> Orçamento x realizado, fechamento de período, transferências intercompany e o campo de caução no formulário de lançamento — todos com backend pronto e testado, mas zero interface. Construídas as 4.</div>
+      </div>
+      <div class="cycle">
+        <span class="tag">Ciclo 2</span>
+        <div class="body"><strong>Editar lançamento sem tela.</strong> Não havia como trocar o favorecido de um pagamento pela interface — justamente a ação que a proteção de aprovação prévia (FIN-004c) existe para vigiar.</div>
+      </div>
+      <div class="cycle">
+        <span class="tag">Ciclo 3</span>
+        <div class="body"><strong>Conciliação ignorando a engine real + bug na engine.</strong> A tela de conciliação bancária fazia match ingênuo por valor exato, em vez de usar a classificação exato/forte/provável/ambíguo já pronta no backend. Corrigida, e corrigido também um bug que fazia a classe "exato" ser praticamente impossível de acontecer.</div>
+      </div>
+      <div class="cycle">
+        <span class="tag">Ciclo 4</span>
+        <div class="body"><strong>Relatório incompleto + antifraude sem interface.</strong> O relatório semanal mostrava só 4 de 10 indicadores que já estavam calculados. O motor de antifraude detectava casos de verdade, mas não existia NENHUMA rota ou tela pra um humano ver ou resolver isso.</div>
+      </div>
+      <div class="cycle">
+        <span class="tag">Ciclo 5</span>
+        <div class="body"><strong>Varredura função-por-função.</strong> Mapeado todo service do financeiro, função a função: achadas mais 5 ações prontas e testadas no backend sem nenhuma rota HTTP — incluindo o próprio recebimento parcial que a auditora tinha citado no relatório original.</div>
+      </div>
+      <div class="cycle">
+        <span class="tag">Ciclo 6</span>
+        <div class="body"><strong>Solicitar aprovação sem tela — e o fechamento do loop.</strong> O achado mais sério desta série: não existia tela nenhuma pra um usuário comum disparar o pedido de aprovação prévia do FIN-004. A correção crítica do início da rodada existia, mas ninguém conseguia usá-la pela interface. Corrigido, junto com gestão de centro de custo/resultado e edição de conta contábil. Depois desse ciclo, uma rodada final percorreu os 5 fluxos completos do dia a dia de um usuário financeiro (aprovar → liquidar, parcial → quitar, fechar → reabrir, provisionar comissão → pagar → ajustar, sinalizar fraude → resolver) e não achou mais nenhuma quebra.</div>
+      </div>
+    </div>
+    <div class="callout warn">Se tivéssemos parado na primeira confirmação "tudo em código e teste está 100%", pelo menos 15 ações reais do Caderno — incluindo o próprio pedido de aprovação do bug crítico que corrigimos — continuariam inacessíveis para qualquer usuário fora de uma chamada direta de API.</div>
+  </section>
+
+  <div class="dod-card">
+    <h2><span class="num">04</span>Definition of Done do Caderno — 13 de 15 fechados</h2>
+    <p>Os 15 critérios formais de "pronto" do Caderno Técnico para este módulo, conferidos um a um contra teste real:</p>
+    <ul>
+      <li>Schema/migrations reproduzíveis, financeiro multiempresa isolado, ledger append-only, pagamento idempotente/concorrente seguro, approval snapshot/hash, adapter bancário desacoplado, conciliação explicável, repasses/cauções/comissões corretos, fechamento protegido, relatório semanal conferido contra fonte, testes adversariais verdes (20/20) — <strong>todos verdes</strong>.</li>
+      <li>Os 2 itens que não fecham 100% são gates de produção — restore de banco real e pentest — que o próprio Caderno já declara fora do escopo de "pronto para LAB". Mesma categoria já aceita nos Marcos 3 e 6, não é dívida de código.</li>
+    </ul>
+  </div>
+
+  <footer>Marco 4 — Financeiro · Nayara One</footer>
+</div>
