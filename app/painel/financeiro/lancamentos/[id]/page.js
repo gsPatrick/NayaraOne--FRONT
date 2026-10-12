@@ -37,6 +37,7 @@ import {
   listReconciliations,
   listBankTransactions,
   settleFinancialEntry,
+  settleFinancialEntryPartial,
   reverseFinancialEntry,
   updateFinancialEntry,
 } from "@/lib/api/finance";
@@ -66,6 +67,9 @@ export default function LancamentoDetailPage({ params }) {
   const [notice, setNotice] = useState(null);
   const [busy, setBusy] = useState(false);
   const [mfaOpen, setMfaOpen] = useState(false);
+  const [mfaAction, setMfaAction] = useState("settle");
+  const [partialOpen, setPartialOpen] = useState(false);
+  const [partialAmount, setPartialAmount] = useState("");
   const { confirm, ConfirmDialog } = useConfirm();
 
   function load() {
@@ -130,6 +134,7 @@ export default function LancamentoDetailPage({ params }) {
       confirmLabel: "Liquidar",
     });
     if (!ok) return;
+    setMfaAction("settle");
     setMfaOpen(true);
   }
 
@@ -142,6 +147,39 @@ export default function LancamentoDetailPage({ params }) {
       setNotice({ tone: "success", text: "Lançamento liquidado com sucesso." });
     } catch (err) {
       setNotice({ tone: "danger", text: err?.message || "Não foi possível liquidar o lançamento." });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // GAP REAL CORRIGIDO (ciclo de verificação adicional, Marco 4, 12/10/2026): settleFinancialEntryPartial
+  // (FIN-TS-006, recebimento parcial) existia e era testada no backend desde sempre, mas sem
+  // rota HTTP nem tela — ninguém conseguia dar baixa parcial de um lançamento. Mesmo fluxo de
+  // step-up MFA do Liquidar total.
+  async function handleSettlePartial() {
+    const amount = Number(partialAmount);
+    if (!Number.isFinite(amount) || amount <= 0) return;
+    const ok = await confirm({
+      title: "Liquidar parcialmente?",
+      message: `Será registrada uma baixa de ${formatBRL(amount)} sobre o saldo de "${entry?.description || ""}".`,
+      confirmLabel: "Liquidar parcial",
+    });
+    if (!ok) return;
+    setMfaAction("settle-partial");
+    setMfaOpen(true);
+  }
+
+  async function runSettlePartial() {
+    setBusy(true);
+    setNotice(null);
+    try {
+      const updated = await settleFinancialEntryPartial(entry.id, Number(partialAmount));
+      setEntry(updated);
+      setPartialOpen(false);
+      setPartialAmount("");
+      setNotice({ tone: "success", text: "Baixa parcial registrada com sucesso." });
+    } catch (err) {
+      setNotice({ tone: "danger", text: err?.message || "Não foi possível registrar a baixa parcial." });
     } finally {
       setBusy(false);
     }
@@ -227,8 +265,13 @@ export default function LancamentoDetailPage({ params }) {
               {entry.status === "PENDING" ? (
                 <Button variant="secondary" onClick={openEdit} disabled={busy}><Icon name="document" size={16} /> Editar</Button>
               ) : null}
-              {entry.status === "PENDING" ? (
+              {entry.status === "PENDING" || entry.status === "PARTIALLY_SETTLED" ? (
                 <Button onClick={handleSettle} loading={busy}><Icon name="check" size={16} /> Liquidar</Button>
+              ) : null}
+              {entry.status === "PENDING" || entry.status === "PARTIALLY_SETTLED" ? (
+                <Button variant="secondary" onClick={() => setPartialOpen((v) => !v)} disabled={busy}>
+                  <Icon name="money" size={16} /> Liquidar parcial
+                </Button>
               ) : null}
               {entry.status === "SETTLED" ? (
                 <Button variant="secondary" onClick={handleReverse} loading={busy}><Icon name="settings" size={16} /> Estornar</Button>
@@ -237,6 +280,27 @@ export default function LancamentoDetailPage({ params }) {
           </div>
 
           {notice ? <Alert tone={notice.tone} className={styles.notice}>{notice.text}</Alert> : null}
+
+          {partialOpen ? (
+            <Card title="Liquidação parcial" className={styles.notice}>
+              <FormField label="Valor da baixa parcial">
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  value={partialAmount}
+                  onChange={(e) => setPartialAmount(e.target.value)}
+                  placeholder="0,00"
+                />
+              </FormField>
+              <div className={styles.actions}>
+                <Button variant="secondary" onClick={() => setPartialOpen(false)}>Cancelar</Button>
+                <Button onClick={handleSettlePartial} loading={busy} disabled={!partialAmount || Number(partialAmount) <= 0}>
+                  Confirmar baixa parcial
+                </Button>
+              </div>
+            </Card>
+          ) : null}
 
           {editOpen ? (
             <Card title="Editar lançamento" subtitle="Só é possível editar enquanto PENDING — ledger imutável após liquidar (FIN-003). Trocar a conta/favorecido depois de uma aprovação invalida a aprovação (FIN-004).">
@@ -358,10 +422,14 @@ export default function LancamentoDetailPage({ params }) {
       <MfaVerifyModal
         open={mfaOpen}
         onClose={() => setMfaOpen(false)}
-        actionLabel="liquidar este lançamento"
+        actionLabel={mfaAction === "settle-partial" ? "liquidar parcialmente este lançamento" : "liquidar este lançamento"}
         onVerified={async () => {
           setMfaOpen(false);
-          await runSettle();
+          if (mfaAction === "settle-partial") {
+            await runSettlePartial();
+          } else {
+            await runSettle();
+          }
         }}
       />
 

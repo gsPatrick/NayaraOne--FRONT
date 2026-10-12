@@ -38,6 +38,8 @@ import {
   payOwnerRepasse,
   createCommission,
   cancelCommission,
+  getCommissionAdjustments,
+  getOwnerRepasseComposition,
 } from "@/lib/api/finance";
 import { listPeople } from "@/lib/api/people";
 import { apiFetch } from "@/lib/api/client";
@@ -82,6 +84,28 @@ export default function ComissoesRepassesPage() {
   const [busyId, setBusyId] = useState(null);
   const [newCommissionModal, setNewCommissionModal] = useState(false);
   const [cancelModal, setCancelModal] = useState(null);
+  const [adjustmentsModal, setAdjustmentsModal] = useState(null);
+  const [compositionModal, setCompositionModal] = useState(null);
+
+  async function handleViewAdjustments(commission) {
+    setAdjustmentsModal({ commission, loading: true, items: [] });
+    try {
+      const items = await getCommissionAdjustments(commission.id);
+      setAdjustmentsModal({ commission, loading: false, items });
+    } catch (err) {
+      setAdjustmentsModal({ commission, loading: false, items: [], error: err?.message || "Não foi possível carregar os ajustes." });
+    }
+  }
+
+  async function handleViewComposition(repasse) {
+    setCompositionModal({ repasse, loading: true, data: null });
+    try {
+      const data = await getOwnerRepasseComposition(repasse.id);
+      setCompositionModal({ repasse, loading: false, data });
+    } catch (err) {
+      setCompositionModal({ repasse, loading: false, data: null, error: err?.message || "Não foi possível carregar a composição." });
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -302,6 +326,9 @@ export default function ComissoesRepassesPage() {
                               {c.status !== "CANCELLED" && c.status !== "PAID" ? (
                                 <Button size="sm" variant="danger" onClick={() => setCancelModal(c)}>Cancelar</Button>
                               ) : null}
+                              {c.status === "CANCELLED" ? (
+                                <Button size="sm" variant="secondary" onClick={() => handleViewAdjustments(c)}>Ver ajustes</Button>
+                              ) : null}
                             </div>
                           </div>
                           <div className={styles.installmentsList}>
@@ -352,6 +379,7 @@ export default function ComissoesRepassesPage() {
                         </div>
                         <div className={styles.listRowRight}>
                           <Badge tone={REPASSE_STATUS_TONE[r.status]}>{REPASSE_STATUS_LABELS[r.status]}</Badge>
+                          <Button size="sm" variant="secondary" onClick={() => handleViewComposition(r)}>Composição</Button>
                           {r.status === "PENDING" ? (
                             <Button
                               size="sm"
@@ -420,6 +448,9 @@ export default function ComissoesRepassesPage() {
         onConfirm={(reason) => handleCancelCommission(cancelModal, reason)}
         busy={cancelModal ? busyId === `cancel-${cancelModal.id}` : false}
       />
+
+      <AdjustmentsModal state={adjustmentsModal} onClose={() => setAdjustmentsModal(null)} />
+      <CompositionModal state={compositionModal} onClose={() => setCompositionModal(null)} />
     </AppShell>
   );
 }
@@ -560,6 +591,84 @@ function PayInstallmentModal({ installment, pendingEntries, onClose, onConfirm, 
                 <option key={e.id} value={e.id}>{e.description} — {formatBRL(e.amount)}</option>
               ))}
             </Select>
+          )}
+        </>
+      ) : null}
+    </Modal>
+  );
+}
+
+// GAP REAL CORRIGIDO (ciclo de verificação adicional, Marco 4, 12/10/2026): getCommissionAdjustments
+// existia no backend desde o cancelamento de comissão, sem nenhuma tela mostrando o histórico.
+function AdjustmentsModal({ state, onClose }) {
+  const open = Boolean(state);
+  const commission = state?.commission;
+  return (
+    <Modal open={open} onClose={onClose} title="Histórico de ajustes da comissão">
+      {commission ? (
+        <>
+          <p className={styles.modalSubtitle}>{commissionDescription(commission)}</p>
+          {state.loading ? (
+            <SkeletonDetail />
+          ) : state.error ? (
+            <Alert tone="danger">{state.error}</Alert>
+          ) : state.items.length === 0 ? (
+            <p className={styles.emptyText}>Nenhum ajuste registrado para esta comissão.</p>
+          ) : (
+            <ul className={styles.list}>
+              {state.items.map((adj, idx) => (
+                <li key={idx} className={styles.listRow}>
+                  <div className={styles.listRowInfo}>
+                    <span className={styles.listRowTitle}>{adj.adjustmentType === "CANCELLATION_REVERSAL" ? "Cancelamento" : adj.adjustmentType}</span>
+                    <span className={styles.listRowSubtitle}>
+                      Já pago {formatBRL(adj.paidAmountBefore)} de {formatBRL(adj.totalAmountBefore)} · Ajuste de {formatBRL(adj.adjustmentAmount)}
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
+      ) : null}
+    </Modal>
+  );
+}
+
+// GAP REAL CORRIGIDO: Caderno §12 — "extrato do proprietário mostra composição, não apenas
+// valor líquido". getOwnerRepasseComposition existia no backend, sem nenhuma tela.
+function CompositionModal({ state, onClose }) {
+  const open = Boolean(state);
+  const repasse = state?.repasse;
+  return (
+    <Modal open={open} onClose={onClose} title="Composição do repasse">
+      {repasse ? (
+        <>
+          <p className={styles.modalSubtitle}>
+            Ref. {repasse.referenceMonth} · Líquido {formatBRL(repasse.netAmount)}
+          </p>
+          {state.loading ? (
+            <SkeletonDetail />
+          ) : state.error ? (
+            <Alert tone="danger">{state.error}</Alert>
+          ) : !state.data?.composition?.length ? (
+            <p className={styles.emptyText}>Nenhum lançamento-fonte registrado para este repasse.</p>
+          ) : (
+            <>
+              <ul className={styles.list}>
+                {state.data.composition.map((src, idx) => (
+                  <li key={idx} className={styles.listRow}>
+                    <div className={styles.listRowInfo}>
+                      <span className={styles.listRowTitle}>{src.description || src.financialEntryId}</span>
+                      <span className={styles.listRowSubtitle}>Valor elegível: {formatBRL(src.eligibleAmount ?? src.amount)}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <p className={styles.modalSubtitle}>
+                Valor elegível total: <strong>{formatBRL(state.data.eligibleAmount)}</strong>
+                {state.data.formalAdjustment ? ` · Ajuste formal: ${formatBRL(state.data.formalAdjustment)}` : ""}
+              </p>
+            </>
           )}
         </>
       ) : null}

@@ -53,6 +53,7 @@
 }
 
 .emptyText { font-size: var(--text-body-sm); color: var(--color-ink-muted); }
+.modalSubtitle { font-size: var(--text-body-sm); color: var(--color-ink-muted); margin-bottom: var(--space-3); }
 
 .list { display: flex; flex-direction: column; gap: var(--space-2); }
 

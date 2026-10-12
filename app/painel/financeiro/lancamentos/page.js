@@ -28,7 +28,14 @@ import {
   ENTRY_STATUS_TONE,
   isEntryOverdue,
 } from "@/lib/mock/finance";
-import { listFinancialEntries, listBankAccounts, listCostCenters } from "@/lib/api/finance";
+import {
+  listFinancialEntries,
+  listBankAccounts,
+  listCostCenters,
+  listClassificationPendings,
+  resolveClassificationPending,
+} from "@/lib/api/finance";
+import FormField from "@/components/molecules/FormField/FormField";
 import { listPeople } from "@/lib/api/people";
 import { bankAccountLabel } from "@/lib/finance/labels";
 import { formatBRL, formatDate } from "@/lib/format";
@@ -53,6 +60,36 @@ export default function LancamentosPage() {
     setPage(1);
   }, [pageSize]);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  // GAP REAL CORRIGIDO (ciclo de verificação adicional, Marco 4, 12/10/2026): fila de
+  // pendências de classificação (M4-contrato §10) existia inteira no backend, sem tela —
+  // nenhum humano via nem resolvia um excedente aguardando classificação final.
+  const [pendings, setPendings] = useState([]);
+  const [resolveTarget, setResolveTarget] = useState(null);
+  const [resolveNature, setResolveNature] = useState("");
+  const [resolveBusy, setResolveBusy] = useState(false);
+  const [resolveError, setResolveError] = useState("");
+
+  function reloadPendings() {
+    listClassificationPendings({ status: "PENDING" })
+      .then((items) => setPendings(items || []))
+      .catch(() => {});
+  }
+
+  async function handleResolvePending() {
+    if (!resolveTarget || !resolveNature) return;
+    setResolveBusy(true);
+    setResolveError("");
+    try {
+      await resolveClassificationPending(resolveTarget.id, resolveNature);
+      setResolveTarget(null);
+      setResolveNature("");
+      reloadPendings();
+    } catch (err) {
+      setResolveError(err?.message || "Não foi possível resolver a pendência.");
+    } finally {
+      setResolveBusy(false);
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -72,6 +109,7 @@ export default function LancamentosPage() {
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
+    reloadPendings();
     return () => {
       cancelled = true;
     };
@@ -186,6 +224,27 @@ export default function LancamentosPage() {
       {loadError ? <Alert tone="danger" title="Não foi possível carregar os lançamentos">{loadError}</Alert> : null}
       {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
 
+      {pendings.length > 0 ? (
+        <Card
+          title="Pendências de classificação"
+          subtitle="Excedentes que precisam de um humano decidir a classificação final — nunca automático."
+        >
+          <ul className={styles.list}>
+            {pendings.map((p) => (
+              <li key={p.id} className={styles.listRow}>
+                <div className={styles.listRowInfo}>
+                  <span className={styles.listRowTitle}>{p.description}</span>
+                  <span className={styles.listRowSubtitle}>{formatBRL(p.amount)} · desde {formatDate(p.createdAt)}</span>
+                </div>
+                <Button size="sm" onClick={() => { setResolveTarget(p); setResolveNature(""); setResolveError(""); }}>
+                  Classificar
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      ) : null}
+
       <>
           <div className={styles.grid}>
             <StatTile label="A pagar (pendente)" value={formatBRL(totalPayable)} tone="warning" icon="document" />
@@ -277,6 +336,35 @@ export default function LancamentosPage() {
         }
       >
         <p>Tem certeza que deseja excluir <strong>{deleteTarget?.description}</strong>? Esta ação não pode ser desfeita.</p>
+      </Modal>
+
+      <Modal
+        open={Boolean(resolveTarget)}
+        onClose={() => setResolveTarget(null)}
+        title="Classificar pendência"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setResolveTarget(null)}>Cancelar</Button>
+            <Button onClick={handleResolvePending} loading={resolveBusy} disabled={!resolveNature}>Confirmar</Button>
+          </>
+        }
+      >
+        {resolveTarget ? (
+          <>
+            <p>
+              {resolveTarget.description} — <strong>{formatBRL(resolveTarget.amount)}</strong>
+            </p>
+            {resolveError ? <Alert tone="danger">{resolveError}</Alert> : null}
+            <FormField label="Classificação final">
+              <Select value={resolveNature} onChange={(e) => setResolveNature(e.target.value)}>
+                <option value="">Selecione...</option>
+                <option value="RECEIVABLE">Receita (RECEIVABLE)</option>
+                <option value="PAYABLE">Despesa (PAYABLE)</option>
+                <option value="ADJUSTMENT">Ajuste (ADJUSTMENT)</option>
+              </Select>
+            </FormField>
+          </>
+        ) : null}
       </Modal>
     </AppShell>
   );
