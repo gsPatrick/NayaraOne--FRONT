@@ -51,6 +51,7 @@
 }
 
 .danger { color: var(--color-danger); }
+.success { color: var(--color-success); }
 
 .count {
   font-size: 0.8em;
