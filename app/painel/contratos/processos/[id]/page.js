@@ -21,6 +21,7 @@ import {
   updateLegalDeadline,
   listEvidencePackages,
   createEvidencePackage,
+  createEvidencePackageAuto,
   exportEvidencePackage,
   listEvidencePackageAccessLog,
   updateLegalCase,
@@ -158,6 +159,21 @@ export default function ProcessoDetailPage({ params }) {
     }
   }
 
+  // JUR-010 ("custódia de todos os anexos"): monta o dossiê a partir de TODO anexo conhecido
+  // do contrato (versões, checklist, vistorias), sem depender de listar manualmente.
+  async function handleAutoAssembleEvidence() {
+    setActionError("");
+    setBusy(true);
+    try {
+      const pkg = await createEvidencePackageAuto(legalCase.id);
+      setEvidencePackages((prev) => [...prev, pkg]);
+    } catch (err) {
+      setActionError(err.message || "Erro ao montar dossiê automaticamente.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function handleExportEvidence(pkg) {
     setActionError("");
     try {
@@ -246,6 +262,13 @@ export default function ProcessoDetailPage({ params }) {
 
           <div className={styles.sideCol}>
             <Card title="Pacotes de evidência" subtitle="Append-only — cada pacote é imutável após criado">
+              {legalCase?.contractId ? (
+                <div className={styles.addEvidenceRow}>
+                  <Button size="sm" onClick={handleAutoAssembleEvidence} disabled={busy}>
+                    Montar dossiê automaticamente (todos os anexos do contrato)
+                  </Button>
+                </div>
+              ) : null}
               {evidencePackages.length === 0 ? (
                 <EmptyState icon="document" title="Sem pacotes de evidência" description="Nenhum pacote de evidência gerado para este processo." />
               ) : (

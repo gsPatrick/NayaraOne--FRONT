@@ -36,6 +36,7 @@ import {
   listContractAmendments,
   createContractAmendment,
   uploadFile,
+  getContractTimeline,
 } from "@/lib/api/legal";
 import {
   CONTRACT_TYPE_LABELS,
@@ -57,6 +58,9 @@ import {
 import { formatBRL, formatDate, formatDateTime, formatContractLabel } from "@/lib/format";
 import styles from "./page.module.css";
 
+const TIMELINE_TYPE_LABELS = { AMENDMENT: "Aditivo", NOTICE: "Notificação", DELINQUENCY: "Inadimplência", REPAIR: "Reparo", STATUS_CHANGE: "Mudança de status" };
+const TIMELINE_TYPE_TONE = { AMENDMENT: "info", NOTICE: "warning", DELINQUENCY: "danger", REPAIR: "neutral", STATUS_CHANGE: "brand" };
+
 export default function ContratoDetailPage({ params }) {
   const router = useRouter();
   const [contract, setContract] = useState(null);
@@ -67,6 +71,7 @@ export default function ContratoDetailPage({ params }) {
   const [signatures, setSignatures] = useState([]);
   const [guarantees, setGuarantees] = useState([]);
   const [amendments, setAmendments] = useState([]);
+  const [timeline, setTimeline] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
@@ -110,8 +115,9 @@ export default function ContratoDetailPage({ params }) {
       listGuarantees({ contractId: params.id }),
       listContractAmendments(params.id),
       listPeople(),
+      getContractTimeline(params.id).catch(() => ({ items: [] })),
     ])
-      .then(async ([contractRes, partiesRes, versionsRes, guaranteesRes, amendmentsRes, peopleRes]) => {
+      .then(async ([contractRes, partiesRes, versionsRes, guaranteesRes, amendmentsRes, peopleRes, timelineRes]) => {
         if (cancelled) return;
         setContract(contractRes);
         setParties(partiesRes || []);
@@ -119,6 +125,7 @@ export default function ContratoDetailPage({ params }) {
         setGuarantees(guaranteesRes || []);
         setAmendments(amendmentsRes || []);
         setPeople(peopleRes || []);
+        setTimeline((timelineRes && timelineRes.items) || []);
         if (contractRes?.propertyId) {
           try {
             const prop = await getProperty(contractRes.propertyId);
@@ -450,6 +457,22 @@ export default function ContratoDetailPage({ params }) {
                     </div>
                   );
                 })
+              )}
+            </Card>
+
+            <Card title="Linha do tempo" subtitle="Aditivos, notificações, inadimplência e reparos, em ordem cronológica">
+              {timeline.length === 0 ? (
+                <EmptyState icon="calendar" title="Sem eventos" description="Nenhum aditivo, notificação, inadimplência ou reparo registrado ainda." />
+              ) : (
+                <ul className={styles.timelineList}>
+                  {timeline.map((event, idx) => (
+                    <li key={`${event.type}-${event.referenceId}-${idx}`} className={styles.timelineItem}>
+                      <Badge tone={TIMELINE_TYPE_TONE[event.type] || "neutral"}>{TIMELINE_TYPE_LABELS[event.type] || event.type}</Badge>
+                      <span className={styles.timelineDate}>{event.occurredAt ? formatDateTime(event.occurredAt) : "—"}</span>
+                      <span className={styles.timelineSummary}>{event.summary}</span>
+                    </li>
+                  ))}
+                </ul>
               )}
             </Card>
 
