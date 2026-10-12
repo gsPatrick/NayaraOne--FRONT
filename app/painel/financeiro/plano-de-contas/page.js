@@ -17,7 +17,7 @@ import Alert from "@/components/molecules/Alert/Alert";
 import Modal from "@/components/organisms/Modal/Modal";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu";
-import { listChartAccounts, createChartAccount, deactivateChartAccount } from "@/lib/api/finance";
+import { listChartAccounts, createChartAccount, updateChartAccount, deactivateChartAccount } from "@/lib/api/finance";
 import styles from "./page.module.css";
 
 const ACCOUNT_TYPES = [
@@ -40,6 +40,7 @@ export default function PlanoDeContasPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ code: "", name: "", accountType: "EXPENSE", parentAccountId: "" });
+  const [editing, setEditing] = useState(null);
 
   function load() {
     setLoading(true);
@@ -74,22 +75,43 @@ export default function PlanoDeContasPage() {
     return (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
   }
 
+  function openEditModal(account) {
+    setEditing(account);
+    setForm({
+      code: account.code,
+      name: account.name,
+      accountType: account.accountType,
+      parentAccountId: account.parentAccountId || "",
+    });
+    setShowCreate(true);
+  }
+
   async function handleCreate() {
     if (!form.code || !form.name) return;
     setSubmitting(true);
     setActionError("");
     try {
-      await createChartAccount({
-        code: form.code.trim(),
-        name: form.name.trim(),
-        accountType: form.accountType,
-        parentAccountId: form.parentAccountId || null,
-      });
+      if (editing) {
+        await updateChartAccount(editing.id, {
+          code: form.code.trim(),
+          name: form.name.trim(),
+          accountType: form.accountType,
+          parentAccountId: form.parentAccountId || null,
+        });
+      } else {
+        await createChartAccount({
+          code: form.code.trim(),
+          name: form.name.trim(),
+          accountType: form.accountType,
+          parentAccountId: form.parentAccountId || null,
+        });
+      }
       setShowCreate(false);
+      setEditing(null);
       setForm({ code: "", name: "", accountType: "EXPENSE", parentAccountId: "" });
       load();
     } catch (err) {
-      setActionError(err?.message || "Não foi possível criar a conta contábil.");
+      setActionError(err?.message || `Não foi possível ${editing ? "salvar" : "criar"} a conta contábil.`);
     } finally {
       setSubmitting(false);
     }
@@ -114,9 +136,14 @@ export default function PlanoDeContasPage() {
           <Badge tone="neutral">{typeLabel(account.accountType)}</Badge>
           {!account.isActive && <Badge tone="warning">Inativa</Badge>}
           {account.isActive && (
-            <button type="button" className={styles.deactivateBtn} onClick={() => handleDeactivate(account.id)}>
-              Desativar
-            </button>
+            <>
+              <button type="button" className={styles.deactivateBtn} onClick={() => openEditModal(account)}>
+                Editar
+              </button>
+              <button type="button" className={styles.deactivateBtn} onClick={() => handleDeactivate(account.id)}>
+                Desativar
+              </button>
+            </>
           )}
         </div>
         {account.children.map((child) => (
@@ -137,7 +164,13 @@ export default function PlanoDeContasPage() {
         <Card
           title="Hierarquia de contas contábeis"
           actions={
-            <Button onClick={() => setShowCreate(true)}>
+            <Button
+              onClick={() => {
+                setEditing(null);
+                setForm({ code: "", name: "", accountType: "EXPENSE", parentAccountId: "" });
+                setShowCreate(true);
+              }}
+            >
               <Icon name="plus" /> Nova conta
             </Button>
           }
@@ -155,7 +188,15 @@ export default function PlanoDeContasPage() {
         </Card>
       )}
 
-      <Modal open={showCreate} onClose={() => setShowCreate(false)} title="Nova conta contábil">
+      <Modal
+        open={showCreate}
+        onClose={() => {
+          setShowCreate(false);
+          setEditing(null);
+          setForm({ code: "", name: "", accountType: "EXPENSE", parentAccountId: "" });
+        }}
+        title={editing ? "Editar conta contábil" : "Nova conta contábil"}
+      >
         <div className={styles.form}>
           <FormField label="Código">
             <Input value={form.code} onChange={update("code")} placeholder="Ex: 4.1.01" />
@@ -185,7 +226,7 @@ export default function PlanoDeContasPage() {
             </Select>
           </FormField>
           <Button onClick={handleCreate} disabled={submitting || !form.code || !form.name}>
-            {submitting ? "Criando..." : "Criar conta"}
+            {submitting ? "Salvando..." : editing ? "Salvar conta" : "Criar conta"}
           </Button>
         </div>
       </Modal>
