@@ -42,6 +42,8 @@ import {
   updateFinancialEntry,
   createApprovalRequest,
   listApprovalRequests,
+  createPaymentIntent,
+  listPaymentIntents,
 } from "@/lib/api/finance";
 import { formatBRL, formatDate, formatDateTime, dateOnlyInputToIso } from "@/lib/format";
 import styles from "./page.module.css";
@@ -73,6 +75,7 @@ export default function LancamentoDetailPage({ params }) {
   const [partialOpen, setPartialOpen] = useState(false);
   const [partialAmount, setPartialAmount] = useState("");
   const [approvalRequest, setApprovalRequest] = useState(null);
+  const [paymentIntent, setPaymentIntent] = useState(null);
   const { confirm, ConfirmDialog } = useConfirm();
 
   function load() {
@@ -94,8 +97,9 @@ export default function LancamentoDetailPage({ params }) {
       listReconciliations(),
       listBankTransactions(),
       listApprovalRequests(),
+      listPaymentIntents(),
     ])
-      .then(([e, bankAccounts, costCenters, resultCenters, allEntries, reconciliations, bankTransactions, approvalRequests]) => {
+      .then(([e, bankAccounts, costCenters, resultCenters, allEntries, reconciliations, bankTransactions, approvalRequests, paymentIntents]) => {
         if (cancelled || !e) return;
         setEntry(e);
         setAccount(bankAccounts.find((a) => a.id === e.bankAccountId) || null);
@@ -119,6 +123,14 @@ export default function LancamentoDetailPage({ params }) {
           .filter((r) => r.relatedEntityType === "FinancialEntry" && r.relatedEntityId === e.id)
           .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         setApprovalRequest(related[0] || null);
+        // GAP REAL CORRIGIDO (ciclo de verificação final, Marco 4, 12/10/2026): createPaymentIntent
+        // existia pronto no backend (snapshot/hash do lançamento, Caderno §8 ponto 4 — caminho
+        // alternativo e mais rigoroso a "Solicitar aprovação" + "Liquidar"), mas nenhuma tela
+        // chamava nenhuma das 6 rotas de /finance/payment-intents.
+        const relatedIntents = (paymentIntents || [])
+          .filter((p) => p.financialEntryId === e.id)
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setPaymentIntent(relatedIntents[0] || null);
       })
       .catch((err) => {
         if (!cancelled) setLoadError(err?.message || "Não foi possível carregar o lançamento.");
@@ -170,6 +182,26 @@ export default function LancamentoDetailPage({ params }) {
       setNotice({ tone: "success", text: "Aprovação solicitada. Acompanhe em Financeiro → Aprovações." });
     } catch (err) {
       setNotice({ tone: "danger", text: err?.message || "Não foi possível solicitar a aprovação." });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleCreatePaymentIntent() {
+    const ok = await confirm({
+      title: "Criar intenção de pagamento?",
+      message: `Será gravado um "retrato" (snapshot com hash) dos dados atuais de "${entry?.description || ""}". Se o lançamento mudar depois disso, aprovar ou executar a intenção será recusado por segurança.`,
+      confirmLabel: "Criar intenção",
+    });
+    if (!ok) return;
+    setBusy(true);
+    setNotice(null);
+    try {
+      const created = await createPaymentIntent({ financialEntryId: entry.id, approvalRequestId: approvalRequest?.id });
+      setPaymentIntent(created);
+      setNotice({ tone: "success", text: "Intenção de pagamento criada. Acompanhe em Financeiro → Intenções de pagamento." });
+    } catch (err) {
+      setNotice({ tone: "danger", text: err?.message || "Não foi possível criar a intenção de pagamento." });
     } finally {
       setBusy(false);
     }
@@ -311,6 +343,11 @@ export default function LancamentoDetailPage({ params }) {
                 >
                   <Icon name="shield" size={16} />
                   {approvalRequest?.status === "PENDING" ? "Aprovação pendente" : "Solicitar aprovação"}
+                </Button>
+              ) : null}
+              {entry.status === "PENDING" && entry.bankAccountId && !["PENDING", "APPROVED"].includes(paymentIntent?.status) ? (
+                <Button variant="secondary" onClick={handleCreatePaymentIntent} loading={busy}>
+                  <Icon name="shield" size={16} /> Criar intenção de pagamento
                 </Button>
               ) : null}
               {entry.status === "PENDING" || entry.status === "PARTIALLY_SETTLED" ? (
