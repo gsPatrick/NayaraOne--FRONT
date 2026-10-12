@@ -1,0 +1,247 @@
+"use client";
+
+// GAP REAL CORRIGIDO (varredura completa do Marco 5 contra o Caderno Técnico, 12/10/2026):
+// JUR-002 ("Modelo versionado — cláusulas/modelos possuem versão e responsável jurídico") teve
+// as 5 rotas criadas numa rodada anterior desta mesma sessão (createClause/createClauseVersion/
+// listClauses/listClauseVersions/deactivateClause), mas NENHUMA tela chamava — a função de
+// cliente nem existia em lib/api/legal.js. Igual aconteceu com várias features do Marco 4:
+// backend pronto e testado, mas invisível para qualquer usuário fora de uma chamada direta à
+// API. Cada cláusula é append-only — criar uma versão nova preserva a anterior.
+
+import { useEffect, useMemo, useState } from "react";
+import AppShell from "@/components/organisms/AppShell/AppShell";
+import Card from "@/components/molecules/Card/Card";
+import Badge from "@/components/atoms/Badge/Badge";
+import Button from "@/components/atoms/Button/Button";
+import Icon from "@/components/atoms/Icon/Icon";
+import SearchInput from "@/components/molecules/SearchInput/SearchInput";
+import FormField from "@/components/molecules/FormField/FormField";
+import Input from "@/components/atoms/Input/Input";
+import Select from "@/components/atoms/Select/Select";
+import Modal from "@/components/organisms/Modal/Modal";
+import Alert from "@/components/molecules/Alert/Alert";
+import EmptyState from "@/components/molecules/EmptyState/EmptyState";
+import { SkeletonList } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
+import ContractsNavMenu from "@/components/molecules/ContractsNavMenu/ContractsNavMenu";
+import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
+import {
+  listClauses,
+  createClause,
+  listClauseVersions,
+  createClauseVersion,
+  deactivateClause,
+} from "@/lib/api/legal";
+import { formatDateTime } from "@/lib/format";
+import styles from "./page.module.css";
+
+const CATEGORIES = ["GENERAL", "PAYMENT", "GUARANTEE", "TERMINATION", "PENALTY", "OBLIGATION", "OTHER"];
+const CATEGORY_LABELS = { GENERAL: "Geral", PAYMENT: "Pagamento", GUARANTEE: "Garantia", TERMINATION: "Rescisão", PENALTY: "Multa", OBLIGATION: "Obrigação", OTHER: "Outra" };
+
+export default function ClausulasPage() {
+  const [clauses, setClauses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [query, setQuery] = useState("");
+
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [createForm, setCreateForm] = useState({ code: "", title: "", bodyText: "", category: "GENERAL" });
+  const [createBusy, setCreateBusy] = useState(false);
+  const [createError, setCreateError] = useState("");
+
+  const [versionModal, setVersionModal] = useState(null); // clause
+  const [versions, setVersions] = useState([]);
+  const [versionsLoading, setVersionsLoading] = useState(false);
+  const [newVersionText, setNewVersionText] = useState("");
+  const [versionBusy, setVersionBusy] = useState(false);
+  const [versionError, setVersionError] = useState("");
+
+  const { confirm, ConfirmDialog } = useConfirm();
+
+  function load() {
+    setLoading(true);
+    setLoadError("");
+    listClauses()
+      .then((res) => setClauses(res || []))
+      .catch((err) => setLoadError(err.message || "Erro ao carregar a biblioteca de cláusulas."))
+      .finally(() => setLoading(false));
+  }
+
+  useEffect(() => { load(); }, []);
+
+  const filtered = useMemo(() => {
+    if (!query) return clauses;
+    const q = query.toLowerCase();
+    return clauses.filter((c) => c.code?.toLowerCase().includes(q) || c.title?.toLowerCase().includes(q));
+  }, [clauses, query]);
+
+  async function handleCreateClause() {
+    if (!createForm.code.trim() || !createForm.title.trim() || !createForm.bodyText.trim()) return;
+    setCreateBusy(true);
+    setCreateError("");
+    try {
+      const created = await createClause({
+        code: createForm.code.trim().toUpperCase(),
+        title: createForm.title.trim(),
+        bodyText: createForm.bodyText.trim(),
+        category: createForm.category,
+      });
+      setClauses((prev) => [created, ...prev]);
+      setCreateModalOpen(false);
+      setCreateForm({ code: "", title: "", bodyText: "", category: "GENERAL" });
+    } catch (err) {
+      setCreateError(err.message || "Erro ao criar cláusula.");
+    } finally {
+      setCreateBusy(false);
+    }
+  }
+
+  function openVersions(clause) {
+    setVersionModal(clause);
+    setNewVersionText(clause.bodyText || "");
+    setVersionError("");
+    setVersionsLoading(true);
+    listClauseVersions(clause.code)
+      .then((res) => setVersions(res || []))
+      .catch((err) => setVersionError(err.message || "Erro ao carregar versões."))
+      .finally(() => setVersionsLoading(false));
+  }
+
+  async function handleCreateVersion() {
+    if (!versionModal || !newVersionText.trim()) return;
+    setVersionBusy(true);
+    setVersionError("");
+    try {
+      const updated = await createClauseVersion(versionModal.code, { bodyText: newVersionText.trim() });
+      setClauses((prev) => prev.map((c) => (c.code === updated.code ? updated : c)));
+      openVersions(updated);
+    } catch (err) {
+      setVersionError(err.message || "Erro ao criar nova versão.");
+    } finally {
+      setVersionBusy(false);
+    }
+  }
+
+  async function handleDeactivate(clause) {
+    const ok = await confirm({
+      title: `Desativar "${clause.title}"?`,
+      message: "A cláusula para de ser oferecida para novos templates, mas o histórico de uso em contratos já assinados não muda — versões são append-only.",
+      confirmLabel: "Desativar",
+    });
+    if (!ok) return;
+    try {
+      await deactivateClause(clause.id);
+      setClauses((prev) => prev.map((c) => (c.id === clause.id ? { ...c, isActive: false } : c)));
+    } catch (err) {
+      setLoadError(err.message || "Erro ao desativar cláusula.");
+    }
+  }
+
+  return (
+    <AppShell title="Biblioteca de cláusulas" backHref="/painel/contratos">
+      {loadError ? <Alert tone="danger">{loadError}</Alert> : null}
+
+      <Card
+        title="Cláusulas"
+        subtitle="Componentes versionados e homologados, reutilizáveis em templates de contrato (JUR-002)"
+        actions={<Button size="sm" onClick={() => setCreateModalOpen(true)}><Icon name="plus" size={16} /> Nova cláusula</Button>}
+      >
+        <div className={styles.toolbar}>
+          <SearchInput placeholder="Buscar por código ou título..." value={query} onChange={(e) => setQuery(e.target.value)} />
+        </div>
+
+        {loading ? (
+          <SkeletonList />
+        ) : filtered.length === 0 ? (
+          <EmptyState icon="document" title="Nenhuma cláusula cadastrada" description="Crie a primeira cláusula da biblioteca." />
+        ) : (
+          <div className={styles.list}>
+            {filtered.map((c) => (
+              <div key={c.id} className={styles.row}>
+                <span className={styles.code}>{c.code}</span>
+                <div className={styles.name}>
+                  <div>{c.title}</div>
+                  <span className={styles.meta}>{CATEGORY_LABELS[c.category] || c.category} · v{c.versionNumber}</span>
+                </div>
+                <Badge tone={c.isActive ? "success" : "neutral"}>{c.isActive ? "Ativa" : "Inativa"}</Badge>
+                <Button size="sm" variant="secondary" onClick={() => openVersions(c)}>Versões</Button>
+                {c.isActive ? (
+                  <Button size="sm" variant="ghost" onClick={() => handleDeactivate(c)}>Desativar</Button>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+
+      <StickyActionBar>
+        <ContractsNavMenu />
+      </StickyActionBar>
+
+      <Modal
+        open={createModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+        title="Nova cláusula"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setCreateModalOpen(false)} disabled={createBusy}>Cancelar</Button>
+            <Button onClick={handleCreateClause} loading={createBusy} disabled={createBusy || !createForm.code.trim() || !createForm.title.trim() || !createForm.bodyText.trim()}>Criar</Button>
+          </>
+        }
+      >
+        {createError ? <Alert tone="danger" className={styles.notice}>{createError}</Alert> : null}
+        <div className={styles.form}>
+          <FormField label="Código" htmlFor="f-code" required helper="Identificador único, ex: PENALIDADE_ATRASO.">
+            <Input id="f-code" value={createForm.code} onChange={(e) => setCreateForm((p) => ({ ...p, code: e.target.value }))} />
+          </FormField>
+          <FormField label="Título" htmlFor="f-title" required>
+            <Input id="f-title" value={createForm.title} onChange={(e) => setCreateForm((p) => ({ ...p, title: e.target.value }))} />
+          </FormField>
+          <FormField label="Categoria" htmlFor="f-category">
+            <Select id="f-category" value={createForm.category} onChange={(e) => setCreateForm((p) => ({ ...p, category: e.target.value }))}>
+              {CATEGORIES.map((c) => <option key={c} value={c}>{CATEGORY_LABELS[c]}</option>)}
+            </Select>
+          </FormField>
+          <FormField label="Texto da cláusula" htmlFor="f-body" required>
+            <textarea id="f-body" className={styles.textarea} rows={6} value={createForm.bodyText} onChange={(e) => setCreateForm((p) => ({ ...p, bodyText: e.target.value }))} />
+          </FormField>
+        </div>
+      </Modal>
+
+      <Modal
+        open={Boolean(versionModal)}
+        onClose={() => setVersionModal(null)}
+        title={`Versões — ${versionModal?.code || ""}`}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setVersionModal(null)}>Fechar</Button>
+            <Button onClick={handleCreateVersion} loading={versionBusy} disabled={versionBusy || !newVersionText.trim()}>Criar nova versão</Button>
+          </>
+        }
+      >
+        {versionError ? <Alert tone="danger" className={styles.notice}>{versionError}</Alert> : null}
+        {versionsLoading ? (
+          <SkeletonList />
+        ) : (
+          <div className={styles.list}>
+            {versions.map((v) => (
+              <div key={v.id} className={styles.row}>
+                <span className={styles.code}>v{v.versionNumber}</span>
+                <div className={styles.name}>
+                  <div>{v.title}</div>
+                  <span className={styles.meta}>{formatDateTime(v.createdAt)}</span>
+                </div>
+                <Badge tone={v.isActive ? "success" : "neutral"}>{v.isActive ? "Vigente" : "Histórico"}</Badge>
+              </div>
+            ))}
+          </div>
+        )}
+        <FormField label="Texto da nova versão" htmlFor="f-new-version" required helper="A versão anterior é preservada, nunca sobrescrita (append-only).">
+          <textarea id="f-new-version" className={styles.textarea} rows={5} value={newVersionText} onChange={(e) => setNewVersionText(e.target.value)} />
+        </FormField>
+      </Modal>
+
+      <ConfirmDialog />
+    </AppShell>
+  );
+}

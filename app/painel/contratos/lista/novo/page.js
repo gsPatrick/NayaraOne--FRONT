@@ -14,7 +14,7 @@ import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/Skeleton
 import { listProperties } from "@/lib/api/properties";
 import { listPeople } from "@/lib/api/people";
 import { createContract, addContractParty, listContractTemplates, renderContractTemplate, createContractVersion } from "@/lib/api/legal";
-import { CONTRACT_TYPE_LABELS, PARTY_ROLE_LABELS } from "@/lib/mock/legal";
+import { CONTRACT_TYPE_LABELS, CONTRACT_TYPE_CREATE_OPTIONS, PARTY_ROLE_LABELS } from "@/lib/mock/legal";
 import { dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE, formatDate, formatBRL } from "@/lib/format";
 import styles from "./page.module.css";
 
@@ -65,7 +65,7 @@ export default function NovoContratoPage() {
   const [actionError, setActionError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
-    contractType: "LEASE",
+    contractType: "LEASE_RESIDENTIAL",
     propertyId: "",
     totalValue: "",
     startsAt: "",
@@ -235,8 +235,8 @@ export default function NovoContratoPage() {
           <div className={styles.formGrid}>
             <FormField label="Tipo de contrato" htmlFor="f-type">
               <Select id="f-type" value={form.contractType} onChange={update("contractType")}>
-                {Object.entries(CONTRACT_TYPE_LABELS).map(([k, v]) => (
-                  <option key={k} value={k}>{v}</option>
+                {CONTRACT_TYPE_CREATE_OPTIONS.map((k) => (
+                  <option key={k} value={k}>{CONTRACT_TYPE_LABELS[k]}</option>
                 ))}
               </Select>
             </FormField>

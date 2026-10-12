@@ -37,6 +37,9 @@ import {
   createContractAmendment,
   uploadFile,
   getContractTimeline,
+  listContractRequirements,
+  generateContractRequirements,
+  satisfyRequirement,
 } from "@/lib/api/legal";
 import {
   CONTRACT_TYPE_LABELS,
@@ -53,6 +56,8 @@ import {
   GUARANTEE_STATUS_TONE,
   AMENDMENT_STATUS_LABELS,
   AMENDMENT_STATUS_TONE,
+  REQUIREMENT_STATUS_LABELS,
+  REQUIREMENT_STATUS_TONE,
   nextContractStatus,
 } from "@/lib/mock/legal";
 import { formatBRL, formatDate, formatDateTime, formatContractLabel } from "@/lib/format";
@@ -97,7 +102,20 @@ export default function ContratoDetailPage({ params }) {
   const [pdfLoadingIds, setPdfLoadingIds] = useState(() => new Set());
   const [signedLoadingIds, setSignedLoadingIds] = useState(() => new Set());
   const [pdfError, setPdfError] = useState("");
-  // GAP CORRIGIDO (auditoria externa Nayara, 2026-10-07): suspender/reativar/encerrar/fechar
+
+  // GAP CORRIGIDO (varredura completa do Marco 5, 12/10/2026): o gate fail-closed de
+  // documentos obrigatórios (JUR-003/JUR-015, o próprio bug crítico que foi corrigido na API
+  // nesta mesma sessão) não tinha NENHUMA tela — ninguém conseguia ver o checklist nem marcar
+  // um documento como satisfeito/dispensado pela interface.
+  const [requirements, setRequirements] = useState([]);
+  const [requirementsBusy, setRequirementsBusy] = useState(false);
+  const [requirementModal, setRequirementModal] = useState(null); // { requirement, mode: "satisfy"|"waive" }
+  const [requirementFile, setRequirementFile] = useState(null);
+  const [requirementReason, setRequirementReason] = useState("");
+  const [requirementError, setRequirementError] = useState("");
+  const [requirementBusy, setRequirementBusy] = useState(false);
+
+  // GAP CORRIGIDO (varredura completa do Marco 5, 12/10/2026): suspender/reativar/encerrar/fechar
   // contrato (Anexo I "5. Estado do contrato") — backend já existia, tela nunca expunha.
   const [stateActionModal, setStateActionModal] = useState(null); // { action, label, tone }
   const [stateActionReason, setStateActionReason] = useState("");
@@ -116,8 +134,9 @@ export default function ContratoDetailPage({ params }) {
       listContractAmendments(params.id),
       listPeople(),
       getContractTimeline(params.id).catch(() => ({ items: [] })),
+      listContractRequirements(params.id).catch(() => []),
     ])
-      .then(async ([contractRes, partiesRes, versionsRes, guaranteesRes, amendmentsRes, peopleRes, timelineRes]) => {
+      .then(async ([contractRes, partiesRes, versionsRes, guaranteesRes, amendmentsRes, peopleRes, timelineRes, requirementsRes]) => {
         if (cancelled) return;
         setContract(contractRes);
         setParties(partiesRes || []);
@@ -126,6 +145,7 @@ export default function ContratoDetailPage({ params }) {
         setAmendments(amendmentsRes || []);
         setPeople(peopleRes || []);
         setTimeline((timelineRes && timelineRes.items) || []);
+        setRequirements(requirementsRes || []);
         if (contractRes?.propertyId) {
           try {
             const prop = await getProperty(contractRes.propertyId);
@@ -276,6 +296,53 @@ export default function ContratoDetailPage({ params }) {
       setVersionError(err.message || "Erro ao criar nova versão do contrato.");
     } finally {
       setVersionBusy(false);
+    }
+  }
+
+  async function handleGenerateRequirements() {
+    setRequirementsBusy(true);
+    setActionError("");
+    try {
+      const items = await generateContractRequirements(contract.id);
+      setRequirements(items || []);
+      setNotice({ tone: "info", text: "Checklist de documentos gerado a partir do tipo de contrato." });
+    } catch (err) {
+      setActionError(err.message || "Erro ao gerar o checklist de documentos.");
+    } finally {
+      setRequirementsBusy(false);
+    }
+  }
+
+  function openRequirementModal(requirement, mode) {
+    setRequirementModal({ requirement, mode });
+    setRequirementFile(null);
+    setRequirementReason("");
+    setRequirementError("");
+  }
+
+  async function handleResolveRequirement() {
+    if (!requirementModal) return;
+    const { requirement, mode } = requirementModal;
+    if (mode === "satisfy" && !requirementFile) return;
+    if (mode === "waive" && !requirementReason.trim()) return;
+    setRequirementError("");
+    setRequirementBusy(true);
+    try {
+      let payload;
+      if (mode === "satisfy") {
+        const uploaded = await uploadFile(requirementFile);
+        payload = { satisfiedByFileId: uploaded.id };
+      } else {
+        payload = { waivedReason: requirementReason.trim() };
+      }
+      const updated = await satisfyRequirement(requirement.id, payload);
+      setRequirements((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+      setRequirementModal(null);
+      setNotice({ tone: "info", text: mode === "satisfy" ? "Documento anexado — requirement marcado como satisfeito." : "Requirement dispensado, com justificativa registrada." });
+    } catch (err) {
+      setRequirementError(err.message || "Erro ao atualizar o requirement.");
+    } finally {
+      setRequirementBusy(false);
     }
   }
 
@@ -439,6 +506,36 @@ export default function ContratoDetailPage({ params }) {
                 <div className={styles.detailRow}><dt>Fim de vigência</dt><dd>{contract.endsAt ? formatDate(contract.endsAt) : "—"}</dd></div>
                 <div className={styles.detailRow}><dt>ID</dt><dd className={styles.mono}>{contract.id}</dd></div>
               </dl>
+            </Card>
+
+            <Card
+              title="Checklist de documentos"
+              subtitle="Etapa não avança com documento obrigatório pendente (JUR-003/JUR-015)"
+              actions={
+                requirements.length === 0 ? (
+                  <Button size="sm" variant="secondary" loading={requirementsBusy} onClick={handleGenerateRequirements}>Gerar checklist</Button>
+                ) : null
+              }
+            >
+              {requirements.length === 0 ? (
+                <EmptyState icon="document" title="Checklist ainda não gerado" description="Gere o checklist de documentos exigidos para este tipo de contrato." />
+              ) : (
+                requirements.map((r) => (
+                  <div key={r.id} className={styles.partyRow}>
+                    <div className={styles.partyInfo}>
+                      <span className={styles.partyName}>{r.description}</span>
+                      <span className={styles.partyRole}>{r.requirementCode}{r.waivedReason ? ` — dispensado: ${r.waivedReason}` : ""}</span>
+                    </div>
+                    <Badge tone={REQUIREMENT_STATUS_TONE[r.status] || "neutral"}>{REQUIREMENT_STATUS_LABELS[r.status] || r.status}</Badge>
+                    {r.status === "PENDING" ? (
+                      <div style={{ display: "flex", gap: 6 }}>
+                        <Button size="sm" variant="secondary" onClick={() => openRequirementModal(r, "satisfy")}>Anexar</Button>
+                        <Button size="sm" variant="ghost" onClick={() => openRequirementModal(r, "waive")}>Dispensar</Button>
+                      </div>
+                    ) : null}
+                  </div>
+                ))
+              )}
             </Card>
 
             <Card title="Partes do contrato" subtitle="Pessoas vinculadas ao contrato e seus papéis">
@@ -641,6 +738,40 @@ export default function ContratoDetailPage({ params }) {
             />
           </FormField>
         </div>
+      </Modal>
+
+      <Modal
+        open={Boolean(requirementModal)}
+        onClose={() => setRequirementModal(null)}
+        title={requirementModal?.mode === "waive" ? "Dispensar requirement" : "Anexar documento"}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setRequirementModal(null)} disabled={requirementBusy}>Cancelar</Button>
+            <Button
+              onClick={handleResolveRequirement}
+              loading={requirementBusy}
+              disabled={requirementBusy || (requirementModal?.mode === "satisfy" ? !requirementFile : !requirementReason.trim())}
+            >
+              {requirementModal?.mode === "waive" ? "Dispensar" : "Anexar"}
+            </Button>
+          </>
+        }
+      >
+        {requirementError ? <Alert tone="danger" className={styles.notice}>{requirementError}</Alert> : null}
+        <p className={styles.partyRole}>{requirementModal?.requirement?.description}</p>
+        {requirementModal?.mode === "waive" ? (
+          <div className={styles.formGrid}>
+            <FormField label="Motivo da dispensa" htmlFor="f-req-reason" required helper="Dispensa é uma decisão humana registrada, nunca uma omissão silenciosa.">
+              <Input id="f-req-reason" value={requirementReason} onChange={(e) => setRequirementReason(e.target.value)} placeholder="Ex.: inquilino isento por norma municipal." />
+            </FormField>
+          </div>
+        ) : (
+          <div className={styles.formGrid}>
+            <FormField label="Documento" htmlFor="f-req-file" required helper="Arquivo que comprova este requirement.">
+              <input id="f-req-file" type="file" onChange={(e) => setRequirementFile(e.target.files?.[0] || null)} />
+            </FormField>
+          </div>
+        )}
       </Modal>
 
       <Modal

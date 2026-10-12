@@ -14,6 +14,8 @@ const ITEMS = [
   { label: "Vistorias", href: "/painel/contratos/vistorias", icon: "eye" },
   { label: "Entrega de chaves", href: "/painel/contratos/entrega-chaves", icon: "key" },
   { label: "Processos jurídicos", href: "/painel/contratos/processos", icon: "scale" },
+  { label: "Biblioteca de cláusulas", href: "/painel/contratos/clausulas", icon: "document" },
+  { label: "Notificações", href: "/painel/contratos/notificacoes", icon: "document" },
 ];
 
 export default function ContractsNavMenu() {

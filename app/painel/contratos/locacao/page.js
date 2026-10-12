@@ -31,6 +31,17 @@ import {
   listUtilityObligations,
   createUtilityObligation,
   recordUtilityPayment,
+  listGuaranteedRentContracts,
+  enrollGuaranteedRent,
+  payGuaranteedRent,
+  listRentAdvances,
+  requestRentAdvance,
+  proposeRentAdvance,
+  acceptRentAdvance,
+  payRentAdvance,
+  recoverRentAdvance,
+  checkCloseoutEligibility,
+  closeoutContract,
 } from "@/lib/api/billing";
 import { formatBRL, formatDate, formatContractLabel } from "@/lib/format";
 import styles from "./page.module.css";
@@ -43,6 +54,10 @@ const ADJUSTMENT_STATUS_LABEL = { PENDING_SOURCE: "Aguardando índice", APPLIED:
 const UTILITY_TYPE_LABELS = { WATER: "Água", ELECTRICITY: "Energia", GAS: "Gás", CONDO: "Condomínio", IPTU: "IPTU", SPU: "SPU", OTHER: "Outra" };
 const UTILITY_STATUS_TONE = { ACTIVE: "success", TRANSFER_PENDING: "warning", TRANSFERRED: "info" };
 const UTILITY_STATUS_LABEL = { ACTIVE: "Ativa", TRANSFER_PENDING: "Transferência pendente", TRANSFERRED: "Transferida" };
+const GUARANTEED_RENT_STATUS_TONE = { ACTIVE: "success", SUSPENDED: "warning", CANCELLED: "neutral" };
+const GUARANTEED_RENT_STATUS_LABEL = { ACTIVE: "Ativo", SUSPENDED: "Suspenso", CANCELLED: "Cancelado" };
+const RENT_ADVANCE_STATUS_TONE = { ELIGIBLE: "neutral", PROPOSED: "warning", ACCEPTED: "info", PAID: "success", RECOVERING: "warning", RECOVERED: "success" };
+const RENT_ADVANCE_STATUS_LABEL = { ELIGIBLE: "Elegível", PROPOSED: "Proposto", ACCEPTED: "Aceito", PAID: "Pago", RECOVERING: "Recuperando", RECOVERED: "Recuperado" };
 
 function currentPeriod() {
   const now = new Date();
@@ -54,6 +69,8 @@ export default function LocacaoPage() {
   const [schedules, setSchedules] = useState([]);
   const [adjustments, setAdjustments] = useState([]);
   const [utilities, setUtilities] = useState([]);
+  const [guaranteedRents, setGuaranteedRents] = useState([]);
+  const [rentAdvances, setRentAdvances] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
@@ -71,15 +88,42 @@ export default function LocacaoPage() {
   const [adjustForm, setAdjustForm] = useState({ contractId: "", period: currentPeriod(), indexCode: "IGPM", oldRentAmount: "" });
   const [utilityForm, setUtilityForm] = useState({ contractId: "", utilityType: "WATER", responsibleParty: "TENANT", provider: "", transferRequired: false });
 
+  // GAP REAL CORRIGIDO (varredura completa do Marco 5 contra o addendum "Cobrança de locação +
+  // utilidades" do Caderno, 12/10/2026): aluguel garantido, antecipação de aluguel e
+  // encerramento (closeout) tinham backend completo desde a mesma rodada do billing mensal,
+  // mas nenhuma tela chamava nada — ver lib/api/billing.js.
+  const [guaranteedOpen, setGuaranteedOpen] = useState(false);
+  const [guaranteedForm, setGuaranteedForm] = useState({ contractId: "", coverageStartsAt: "" });
+  const [guaranteedPayTarget, setGuaranteedPayTarget] = useState(null);
+  const [guaranteedPayAmount, setGuaranteedPayAmount] = useState("");
+
+  const [advanceOpen, setAdvanceOpen] = useState(false);
+  const [advanceForm, setAdvanceForm] = useState({ contractId: "", monthsAdvanced: "", principalAmount: "", costAmount: "" });
+  const [recoverTarget, setRecoverTarget] = useState(null);
+  const [recoverAmount, setRecoverAmount] = useState("");
+
+  const [closeoutContractId, setCloseoutContractId] = useState("");
+  const [closeoutResult, setCloseoutResult] = useState(null);
+  const [closeoutBusy, setCloseoutBusy] = useState(false);
+
   function load() {
     setLoading(true);
     setLoadError("");
-    Promise.all([listContracts(), listBillingSchedules(), listRentAdjustments(), listUtilityObligations()])
-      .then(([c, s, a, u]) => {
+    Promise.all([
+      listContracts(),
+      listBillingSchedules(),
+      listRentAdjustments(),
+      listUtilityObligations(),
+      listGuaranteedRentContracts(),
+      listRentAdvances(),
+    ])
+      .then(([c, s, a, u, g, r]) => {
         setContracts(c || []);
         setSchedules(s || []);
         setAdjustments(a || []);
         setUtilities(u || []);
+        setGuaranteedRents(g || []);
+        setRentAdvances(r || []);
       })
       .catch((err) => setLoadError(err.message || "Erro ao carregar dados de locação."))
       .finally(() => setLoading(false));
@@ -87,7 +131,10 @@ export default function LocacaoPage() {
 
   useEffect(() => { load(); }, []);
 
-  const leaseContracts = useMemo(() => contracts.filter((c) => c.contractType === "LEASE"), [contracts]);
+  // Subtipos de locação (JUR, Caderno seção 3): LEASE genérico + LEASE_RESIDENTIAL/
+  // LEASE_COMMERCIAL/LEASE_SEASONAL/PROPERTY_ADMIN.
+  const LEASE_LIKE_TYPES = ["LEASE", "LEASE_RESIDENTIAL", "LEASE_COMMERCIAL", "LEASE_SEASONAL", "PROPERTY_ADMIN"];
+  const leaseContracts = useMemo(() => contracts.filter((c) => LEASE_LIKE_TYPES.includes(c.contractType)), [contracts]);
 
   async function handleGenerateSchedule() {
     setActionError("");
@@ -165,6 +212,103 @@ export default function LocacaoPage() {
     }
   }
 
+  async function handleEnrollGuaranteed() {
+    setActionError("");
+    try {
+      await enrollGuaranteedRent({ contractId: guaranteedForm.contractId, coverageStartsAt: guaranteedForm.coverageStartsAt });
+      setGuaranteedOpen(false);
+      setGuaranteedForm({ contractId: "", coverageStartsAt: "" });
+      load();
+    } catch (err) {
+      setActionError(err.message || "Erro ao matricular aluguel garantido.");
+    }
+  }
+
+  async function handleGuaranteedPay() {
+    setActionError("");
+    try {
+      await payGuaranteedRent(guaranteedPayTarget.id, { amount: Number(guaranteedPayAmount) });
+      setGuaranteedPayTarget(null);
+      setGuaranteedPayAmount("");
+      load();
+    } catch (err) {
+      setActionError(err.message || "Erro ao pagar repasse de aluguel garantido.");
+    }
+  }
+
+  async function handleRequestAdvance() {
+    setActionError("");
+    try {
+      await requestRentAdvance({
+        contractId: advanceForm.contractId,
+        monthsAdvanced: Number(advanceForm.monthsAdvanced),
+        principalAmount: Number(advanceForm.principalAmount),
+        costAmount: advanceForm.costAmount ? Number(advanceForm.costAmount) : undefined,
+      });
+      setAdvanceOpen(false);
+      setAdvanceForm({ contractId: "", monthsAdvanced: "", principalAmount: "", costAmount: "" });
+      load();
+    } catch (err) {
+      setActionError(err.message || "Erro ao solicitar antecipação de aluguel.");
+    }
+  }
+
+  async function handleAdvanceTransition(id, fn) {
+    setActionError("");
+    try {
+      await fn(id);
+      load();
+    } catch (err) {
+      setActionError(err.message || "Erro ao atualizar antecipação de aluguel.");
+    }
+  }
+
+  async function handleRecoverAdvance() {
+    setActionError("");
+    try {
+      await recoverRentAdvance(recoverTarget.id, Number(recoverAmount));
+      setRecoverTarget(null);
+      setRecoverAmount("");
+      load();
+    } catch (err) {
+      setActionError(err.message || "Erro ao registrar recuperação da antecipação.");
+    }
+  }
+
+  async function handleCheckCloseout() {
+    if (!closeoutContractId) return;
+    setCloseoutBusy(true);
+    setCloseoutResult(null);
+    setActionError("");
+    try {
+      const reasons = await checkCloseoutEligibility(closeoutContractId);
+      setCloseoutResult({ reasons: reasons || [] });
+    } catch (err) {
+      setActionError(err.message || "Erro ao checar elegibilidade de encerramento.");
+    } finally {
+      setCloseoutBusy(false);
+    }
+  }
+
+  async function handleCloseout() {
+    if (!closeoutContractId) return;
+    setCloseoutBusy(true);
+    setActionError("");
+    try {
+      await closeoutContract(closeoutContractId);
+      setCloseoutResult({ reasons: [], closed: true });
+      load();
+    } catch (err) {
+      if (err?.code === "CLOSEOUT_BLOCKED") {
+        setCloseoutResult({ reasons: err.details?.reasons || [], closed: false });
+      } else {
+        setActionError(err.message || "Erro ao encerrar contrato.");
+      }
+    } finally {
+      setCloseoutBusy(false);
+    }
+  }
+
   const scheduleColumns = [
     { key: "contractId", label: "Contrato", render: (row) => formatContractLabel(leaseContracts.find((c) => c.id === row.contractId)) || row.contractId.slice(0, 8) },
     { key: "period", label: "Competência" },
@@ -214,6 +358,41 @@ export default function LocacaoPage() {
     },
   ];
 
+  const guaranteedRentColumns = [
+    { key: "contractId", label: "Contrato", render: (row) => formatContractLabel(leaseContracts.find((c) => c.id === row.contractId)) || row.contractId.slice(0, 8) },
+    { key: "coverageStartsAt", label: "Cobertura desde", render: (row) => formatDate(row.coverageStartsAt) },
+    { key: "status", label: "Status", render: (row) => <Badge tone={GUARANTEED_RENT_STATUS_TONE[row.status] || "neutral"}>{GUARANTEED_RENT_STATUS_LABEL[row.status] || row.status}</Badge> },
+    {
+      key: "actions",
+      label: "",
+      render: (row) => (
+        row.status === "ACTIVE" ? (
+          <Button variant="secondary" size="sm" onClick={() => { setGuaranteedPayTarget(row); setGuaranteedPayAmount(""); }}>
+            Pagar repasse
+          </Button>
+        ) : null
+      ),
+    },
+  ];
+
+  const rentAdvanceColumns = [
+    { key: "contractId", label: "Contrato", render: (row) => formatContractLabel(leaseContracts.find((c) => c.id === row.contractId)) || row.contractId.slice(0, 8) },
+    { key: "monthsAdvanced", label: "Meses", render: (row) => row.monthsAdvanced },
+    { key: "principalAmount", label: "Principal", render: (row) => formatBRL(row.principalAmount) },
+    { key: "status", label: "Status", render: (row) => <Badge tone={RENT_ADVANCE_STATUS_TONE[row.status] || "neutral"}>{RENT_ADVANCE_STATUS_LABEL[row.status] || row.status}</Badge> },
+    {
+      key: "actions",
+      label: "",
+      render: (row) => {
+        if (row.status === "ELIGIBLE") return <Button variant="secondary" size="sm" onClick={() => handleAdvanceTransition(row.id, proposeRentAdvance)}>Propor</Button>;
+        if (row.status === "PROPOSED") return <Button variant="secondary" size="sm" onClick={() => handleAdvanceTransition(row.id, acceptRentAdvance)}>Aceitar</Button>;
+        if (row.status === "ACCEPTED") return <Button variant="secondary" size="sm" onClick={() => handleAdvanceTransition(row.id, payRentAdvance)}>Pagar</Button>;
+        if (row.status === "PAID" || row.status === "RECOVERING") return <Button variant="secondary" size="sm" onClick={() => { setRecoverTarget(row); setRecoverAmount(""); }}>Registrar recuperação</Button>;
+        return null;
+      },
+    },
+  ];
+
   return (
     <AppShell title="Locação" backHref="/painel/contratos">
       <div className={styles.wrap}>
@@ -258,6 +437,59 @@ export default function LocacaoPage() {
                     <Button onClick={() => setUtilityOpen(true)}>Nova obrigação</Button>
                   </div>
                   <Table columns={utilityColumns} rows={utilities} loading={loading} emptyMessage="Nenhuma obrigação cadastrada ainda." />
+                </Card>
+              ),
+            },
+            {
+              label: "Aluguel garantido",
+              content: (
+                <Card title="Aluguel garantido" subtitle="Obrigação da empresa ao proprietário + crédito a recuperar do locatário">
+                  <div className={styles.toolbarRow}>
+                    <Button onClick={() => setGuaranteedOpen(true)}>Matricular contrato</Button>
+                  </div>
+                  <Table columns={guaranteedRentColumns} rows={guaranteedRents} loading={loading} emptyMessage="Nenhum contrato matriculado em aluguel garantido." />
+                </Card>
+              ),
+            },
+            {
+              label: "Antecipação",
+              content: (
+                <Card title="Antecipação de aluguel" subtitle="Produto separado — principal e custo ficam separados no Financeiro">
+                  <div className={styles.toolbarRow}>
+                    <Button onClick={() => setAdvanceOpen(true)}>Solicitar antecipação</Button>
+                  </div>
+                  <Table columns={rentAdvanceColumns} rows={rentAdvances} loading={loading} emptyMessage="Nenhuma antecipação solicitada ainda." />
+                </Card>
+              ),
+            },
+            {
+              label: "Encerramento",
+              content: (
+                <Card title="Encerramento de contrato" subtitle="Bloqueado enquanto houver cobrança em aberto ou transferência de utilidade pendente">
+                  <div className={styles.form}>
+                    <FormField label="Contrato" required>
+                      <Select value={closeoutContractId} onChange={(e) => { setCloseoutContractId(e.target.value); setCloseoutResult(null); }}>
+                        <option value="">Selecione...</option>
+                        {leaseContracts.map((c) => <option key={c.id} value={c.id}>{formatContractLabel(c)}</option>)}
+                      </Select>
+                    </FormField>
+                    <div className={styles.toolbarRow}>
+                      <Button variant="secondary" onClick={handleCheckCloseout} loading={closeoutBusy} disabled={!closeoutContractId || closeoutBusy}>Checar elegibilidade</Button>
+                      <Button onClick={handleCloseout} loading={closeoutBusy} disabled={!closeoutContractId || closeoutBusy}>Encerrar contrato</Button>
+                    </div>
+                    {closeoutResult?.closed ? (
+                      <Alert tone="success">Contrato encerrado com sucesso.</Alert>
+                    ) : closeoutResult ? (
+                      closeoutResult.reasons.length === 0 ? (
+                        <Alert tone="success">Elegível para encerramento — nenhuma pendência crítica.</Alert>
+                      ) : (
+                        <Alert tone="warning">
+                          Bloqueado por {closeoutResult.reasons.length} pendência(s):
+                          <ul>{closeoutResult.reasons.map((r, i) => <li key={i}>{r.detail}</li>)}</ul>
+                        </Alert>
+                      )
+                    ) : null}
+                  </div>
                 </Card>
               ),
             },
@@ -402,6 +634,88 @@ export default function LocacaoPage() {
         </FormField>
         <FormField label="Valor" required>
           <Input type="number" min="0.01" step="0.01" value={utilityPayAmount} onChange={(e) => setUtilityPayAmount(e.target.value)} />
+        </FormField>
+      </Modal>
+
+      <Modal
+        open={guaranteedOpen}
+        onClose={() => setGuaranteedOpen(false)}
+        title="Matricular contrato em aluguel garantido"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setGuaranteedOpen(false)}>Cancelar</Button>
+            <Button onClick={handleEnrollGuaranteed} disabled={!guaranteedForm.contractId || !guaranteedForm.coverageStartsAt}>Matricular</Button>
+          </>
+        }
+      >
+        <FormField label="Contrato" required>
+          <Select value={guaranteedForm.contractId} onChange={(e) => setGuaranteedForm((f) => ({ ...f, contractId: e.target.value }))}>
+            <option value="">Selecione...</option>
+            {leaseContracts.map((c) => <option key={c.id} value={c.id}>{formatContractLabel(c)}</option>)}
+          </Select>
+        </FormField>
+        <FormField label="Início da cobertura" required>
+          <Input type="date" value={guaranteedForm.coverageStartsAt} onChange={(e) => setGuaranteedForm((f) => ({ ...f, coverageStartsAt: e.target.value }))} />
+        </FormField>
+      </Modal>
+
+      <Modal
+        open={Boolean(guaranteedPayTarget)}
+        onClose={() => setGuaranteedPayTarget(null)}
+        title="Pagar repasse ao proprietário"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setGuaranteedPayTarget(null)}>Cancelar</Button>
+            <Button onClick={handleGuaranteedPay} disabled={!guaranteedPayAmount}>Registrar</Button>
+          </>
+        }
+      >
+        <FormField label="Valor" required>
+          <Input type="number" min="0.01" step="0.01" value={guaranteedPayAmount} onChange={(e) => setGuaranteedPayAmount(e.target.value)} />
+        </FormField>
+      </Modal>
+
+      <Modal
+        open={advanceOpen}
+        onClose={() => setAdvanceOpen(false)}
+        title="Solicitar antecipação de aluguel"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setAdvanceOpen(false)}>Cancelar</Button>
+            <Button onClick={handleRequestAdvance} disabled={!advanceForm.contractId || !advanceForm.monthsAdvanced || !advanceForm.principalAmount}>Solicitar</Button>
+          </>
+        }
+      >
+        <FormField label="Contrato" required>
+          <Select value={advanceForm.contractId} onChange={(e) => setAdvanceForm((f) => ({ ...f, contractId: e.target.value }))}>
+            <option value="">Selecione...</option>
+            {leaseContracts.map((c) => <option key={c.id} value={c.id}>{formatContractLabel(c)}</option>)}
+          </Select>
+        </FormField>
+        <FormField label="Meses antecipados" required>
+          <Input type="number" min="1" step="1" value={advanceForm.monthsAdvanced} onChange={(e) => setAdvanceForm((f) => ({ ...f, monthsAdvanced: e.target.value }))} />
+        </FormField>
+        <FormField label="Valor principal" required>
+          <Input type="number" min="0.01" step="0.01" value={advanceForm.principalAmount} onChange={(e) => setAdvanceForm((f) => ({ ...f, principalAmount: e.target.value }))} />
+        </FormField>
+        <FormField label="Custo da operação" helper="Opcional — fica separado do principal no Financeiro.">
+          <Input type="number" min="0" step="0.01" value={advanceForm.costAmount} onChange={(e) => setAdvanceForm((f) => ({ ...f, costAmount: e.target.value }))} />
+        </FormField>
+      </Modal>
+
+      <Modal
+        open={Boolean(recoverTarget)}
+        onClose={() => setRecoverTarget(null)}
+        title="Registrar recuperação de antecipação"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setRecoverTarget(null)}>Cancelar</Button>
+            <Button onClick={handleRecoverAdvance} disabled={!recoverAmount}>Registrar</Button>
+          </>
+        }
+      >
+        <FormField label="Valor recuperado do locatário" required>
+          <Input type="number" min="0.01" step="0.01" value={recoverAmount} onChange={(e) => setRecoverAmount(e.target.value)} />
         </FormField>
       </Modal>
     </AppShell>
