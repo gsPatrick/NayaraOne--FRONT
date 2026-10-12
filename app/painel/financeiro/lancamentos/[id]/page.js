@@ -40,6 +40,8 @@ import {
   settleFinancialEntryPartial,
   reverseFinancialEntry,
   updateFinancialEntry,
+  createApprovalRequest,
+  listApprovalRequests,
 } from "@/lib/api/finance";
 import { formatBRL, formatDate, formatDateTime, dateOnlyInputToIso } from "@/lib/format";
 import styles from "./page.module.css";
@@ -70,6 +72,7 @@ export default function LancamentoDetailPage({ params }) {
   const [mfaAction, setMfaAction] = useState("settle");
   const [partialOpen, setPartialOpen] = useState(false);
   const [partialAmount, setPartialAmount] = useState("");
+  const [approvalRequest, setApprovalRequest] = useState(null);
   const { confirm, ConfirmDialog } = useConfirm();
 
   function load() {
@@ -90,8 +93,9 @@ export default function LancamentoDetailPage({ params }) {
       listFinancialEntries(),
       listReconciliations(),
       listBankTransactions(),
+      listApprovalRequests(),
     ])
-      .then(([e, bankAccounts, costCenters, resultCenters, allEntries, reconciliations, bankTransactions]) => {
+      .then(([e, bankAccounts, costCenters, resultCenters, allEntries, reconciliations, bankTransactions, approvalRequests]) => {
         if (cancelled || !e) return;
         setEntry(e);
         setAccount(bankAccounts.find((a) => a.id === e.bankAccountId) || null);
@@ -105,6 +109,16 @@ export default function LancamentoDetailPage({ params }) {
         const rec = reconciliations.find((r) => r.financialEntryId === e.id) || null;
         setReconciliation(rec);
         setReconciledTransaction(rec ? bankTransactions.find((t) => t.id === rec.bankTransactionId) || null : null);
+        // GAP REAL CORRIGIDO (ciclo de verificação adicional 5, Marco 4, 12/10/2026):
+        // createApprovalRequest existia no backend e no client (lib/api/finance.js), com rota
+        // HTTP própria (POST /finance/approval-requests), mas nenhuma tela chamava — um
+        // lançamento PAYABLE com conta bancária (FIN-004, settleFinancialEntry) exige uma
+        // ApprovalRequest aprovada antes de liquidar, e não havia como um usuário comum
+        // solicitar essa aprovação pela interface (só via chamada direta à API).
+        const related = (approvalRequests || [])
+          .filter((r) => r.relatedEntityType === "FinancialEntry" && r.relatedEntityId === e.id)
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setApprovalRequest(related[0] || null);
       })
       .catch((err) => {
         if (!cancelled) setLoadError(err?.message || "Não foi possível carregar o lançamento.");
@@ -136,6 +150,29 @@ export default function LancamentoDetailPage({ params }) {
     if (!ok) return;
     setMfaAction("settle");
     setMfaOpen(true);
+  }
+
+  async function handleRequestApproval() {
+    const ok = await confirm({
+      title: "Solicitar aprovação de pagamento?",
+      message: `Uma solicitação de aprovação será aberta para "${entry?.description || ""}". O lançamento só poderá ser liquidado depois que ela for aprovada.`,
+      confirmLabel: "Solicitar aprovação",
+    });
+    if (!ok) return;
+    setBusy(true);
+    setNotice(null);
+    try {
+      const created = await createApprovalRequest({
+        relatedEntityType: "FinancialEntry",
+        relatedEntityId: entry.id,
+      });
+      setApprovalRequest(created);
+      setNotice({ tone: "success", text: "Aprovação solicitada. Acompanhe em Financeiro → Aprovações." });
+    } catch (err) {
+      setNotice({ tone: "danger", text: err?.message || "Não foi possível solicitar a aprovação." });
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function runSettle() {
@@ -264,6 +301,17 @@ export default function LancamentoDetailPage({ params }) {
             <div className={styles.actions}>
               {entry.status === "PENDING" ? (
                 <Button variant="secondary" onClick={openEdit} disabled={busy}><Icon name="document" size={16} /> Editar</Button>
+              ) : null}
+              {entry.status === "PENDING" && entry.bankAccountId && approvalRequest?.status !== "APPROVED" ? (
+                <Button
+                  variant="secondary"
+                  onClick={handleRequestApproval}
+                  loading={busy}
+                  disabled={approvalRequest?.status === "PENDING"}
+                >
+                  <Icon name="shield" size={16} />
+                  {approvalRequest?.status === "PENDING" ? "Aprovação pendente" : "Solicitar aprovação"}
+                </Button>
               ) : null}
               {entry.status === "PENDING" || entry.status === "PARTIALLY_SETTLED" ? (
                 <Button onClick={handleSettle} loading={busy}><Icon name="check" size={16} /> Liquidar</Button>
