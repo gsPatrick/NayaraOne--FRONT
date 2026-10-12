@@ -12,7 +12,7 @@ import Alert from "@/components/molecules/Alert/Alert";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import { listPeople } from "@/lib/api/people";
 import { listContracts, createGuarantee } from "@/lib/api/legal";
-import { GUARANTEE_TYPE_LABELS } from "@/lib/mock/legal";
+import { GUARANTEE_TYPE_LABELS, GUARANTEE_TYPES_REQUIRING_VALIDITY } from "@/lib/mock/legal";
 import { formatContractLabel, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
 import styles from "./page.module.css";
 
@@ -54,9 +54,15 @@ export default function NovaGarantiaPage() {
   }, []);
 
   const isGuarantor = form.guaranteeType === "GUARANTOR";
+  const requiresValidity = GUARANTEE_TYPES_REQUIRING_VALIDITY.includes(form.guaranteeType);
   const [dateErrors, setDateErrors] = useState({});
   const isValid =
-    form.contractId && form.guaranteeType && (!isGuarantor || form.guarantorPersonId) && !dateErrors.startsAt && !dateErrors.endsAt;
+    form.contractId &&
+    form.guaranteeType &&
+    (!isGuarantor || form.guarantorPersonId) &&
+    (!requiresValidity || form.endsAt) &&
+    !dateErrors.startsAt &&
+    !dateErrors.endsAt;
 
   function update(field) {
     return (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
@@ -164,7 +170,8 @@ export default function NovaGarantiaPage() {
             <FormField
               label="Fim de vigência"
               htmlFor="f-ends"
-              helper={dateErrors.endsAt ? undefined : "Opcional"}
+              required={requiresValidity}
+              helper={dateErrors.endsAt ? undefined : requiresValidity ? "Obrigatório para este tipo de garantia" : "Opcional"}
               error={dateErrors.endsAt ? DATE_INPUT_ERROR_MESSAGE : undefined}
             >
               <Input
