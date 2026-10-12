@@ -76,3 +76,6 @@
 .accountBankRow { display: flex; align-items: center; gap: var(--space-3); }
 .listRowTitle { font-size: var(--text-body-sm); font-weight: 600; color: var(--color-ink); }
 .listRowSubtitle { font-size: var(--text-caption); color: var(--color-ink-muted); }
+
+.editGrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-4); }
+.editActions { display: flex; justify-content: flex-end; gap: var(--space-3); margin-top: var(--space-5); }

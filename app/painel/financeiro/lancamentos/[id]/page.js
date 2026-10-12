@@ -14,6 +14,10 @@ import NatureBadge from "@/components/molecules/NatureBadge/NatureBadge";
 import BankLogo from "@/components/atoms/BankLogo/BankLogo";
 import MfaVerifyModal from "@/components/organisms/MfaVerifyModal/MfaVerifyModal";
 import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
+import FormField from "@/components/molecules/FormField/FormField";
+import Input from "@/components/atoms/Input/Input";
+import Select from "@/components/atoms/Select/Select";
+import BankAccountSelect from "@/components/molecules/BankAccountSelect/BankAccountSelect";
 import { getBankName } from "@/lib/mock/banks";
 import { maskAccountNumber } from "@/lib/mask";
 import {
@@ -34,8 +38,9 @@ import {
   listBankTransactions,
   settleFinancialEntry,
   reverseFinancialEntry,
+  updateFinancialEntry,
 } from "@/lib/api/finance";
-import { formatBRL, formatDate, formatDateTime } from "@/lib/format";
+import { formatBRL, formatDate, formatDateTime, dateOnlyInputToIso } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function LancamentoDetailPage({ params }) {
@@ -44,6 +49,13 @@ export default function LancamentoDetailPage({ params }) {
   const [account, setAccount] = useState(null);
   const [costCenter, setCostCenter] = useState(null);
   const [resultCenter, setResultCenter] = useState(null);
+  const [allBankAccounts, setAllBankAccounts] = useState([]);
+  const [allCostCenters, setAllCostCenters] = useState([]);
+  const [allResultCenters, setAllResultCenters] = useState([]);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editForm, setEditForm] = useState(null);
+  const [editSaving, setEditSaving] = useState(false);
+  const [editError, setEditError] = useState("");
   const [reversalTarget, setReversalTarget] = useState(null);
   const [reversedBy, setReversedBy] = useState(null);
   const [reconciliation, setReconciliation] = useState(null);
@@ -81,6 +93,9 @@ export default function LancamentoDetailPage({ params }) {
         setAccount(bankAccounts.find((a) => a.id === e.bankAccountId) || null);
         setCostCenter(costCenters.find((c) => c.id === e.costCenterId) || null);
         setResultCenter(resultCenters.find((r) => r.id === e.resultCenterId) || null);
+        setAllBankAccounts(bankAccounts);
+        setAllCostCenters(costCenters);
+        setAllResultCenters(resultCenters);
         setReversalTarget(e.reversalOfEntryId ? allEntries.find((x) => x.id === e.reversalOfEntryId) || null : null);
         setReversedBy(allEntries.find((x) => x.reversalOfEntryId === e.id) || null);
         const rec = reconciliations.find((r) => r.financialEntryId === e.id) || null;
@@ -132,6 +147,47 @@ export default function LancamentoDetailPage({ params }) {
     }
   }
 
+  // GAP REAL (verificação cética adicional, Marco 4, 12/10/2026): updateFinancialEntry já
+  // existia no backend e no client da API (permite trocar bankAccountId/favorecido,
+  // costCenterId, resultCenterId, dueAt, description — só lançamento PENDING, ledger imutável
+  // após liquidar), mas nenhuma tela chamava essa função — não havia como um usuário editar o
+  // favorecido pela interface, justamente a ação que FIN-004(c)/FIN-TS-003/004 protegem.
+  function openEdit() {
+    setEditError("");
+    setEditForm({
+      description: entry.description || "",
+      bankAccountId: entry.bankAccountId || "",
+      costCenterId: entry.costCenterId || "",
+      resultCenterId: entry.resultCenterId || "",
+      dueAt: entry.dueAt ? entry.dueAt.slice(0, 10) : "",
+    });
+    setEditOpen(true);
+  }
+
+  async function handleSaveEdit() {
+    setEditSaving(true);
+    setEditError("");
+    try {
+      const updated = await updateFinancialEntry(entry.id, {
+        description: editForm.description.trim() || undefined,
+        bankAccountId: editForm.bankAccountId || undefined,
+        costCenterId: editForm.costCenterId || undefined,
+        resultCenterId: editForm.resultCenterId || undefined,
+        dueAt: editForm.dueAt ? dateOnlyInputToIso(editForm.dueAt) : undefined,
+      });
+      setEntry(updated);
+      setAccount(allBankAccounts.find((a) => a.id === updated.bankAccountId) || null);
+      setCostCenter(allCostCenters.find((c) => c.id === updated.costCenterId) || null);
+      setResultCenter(allResultCenters.find((r) => r.id === updated.resultCenterId) || null);
+      setEditOpen(false);
+      setNotice({ tone: "success", text: "Lançamento atualizado com sucesso." });
+    } catch (err) {
+      setEditError(err?.message || "Não foi possível salvar as alterações.");
+    } finally {
+      setEditSaving(false);
+    }
+  }
+
   async function handleReverse() {
     const ok = await confirm({
       title: "Estornar este lançamento?",
@@ -169,6 +225,9 @@ export default function LancamentoDetailPage({ params }) {
             </div>
             <div className={styles.actions}>
               {entry.status === "PENDING" ? (
+                <Button variant="secondary" onClick={openEdit} disabled={busy}><Icon name="document" size={16} /> Editar</Button>
+              ) : null}
+              {entry.status === "PENDING" ? (
                 <Button onClick={handleSettle} loading={busy}><Icon name="check" size={16} /> Liquidar</Button>
               ) : null}
               {entry.status === "SETTLED" ? (
@@ -178,6 +237,48 @@ export default function LancamentoDetailPage({ params }) {
           </div>
 
           {notice ? <Alert tone={notice.tone} className={styles.notice}>{notice.text}</Alert> : null}
+
+          {editOpen ? (
+            <Card title="Editar lançamento" subtitle="Só é possível editar enquanto PENDING — ledger imutável após liquidar (FIN-003). Trocar a conta/favorecido depois de uma aprovação invalida a aprovação (FIN-004).">
+              {editError ? <Alert tone="danger" className={styles.notice}>{editError}</Alert> : null}
+              <div className={styles.editGrid}>
+                <FormField label="Descrição" htmlFor="e-desc">
+                  <Input id="e-desc" value={editForm.description} onChange={(e) => setEditForm((p) => ({ ...p, description: e.target.value }))} />
+                </FormField>
+                <FormField label="Conta bancária / favorecido" htmlFor="e-account">
+                  <BankAccountSelect
+                    id="e-account"
+                    accounts={allBankAccounts}
+                    value={editForm.bankAccountId}
+                    onChange={(id) => setEditForm((p) => ({ ...p, bankAccountId: id }))}
+                  />
+                </FormField>
+                <FormField label="Vencimento" htmlFor="e-due">
+                  <Input id="e-due" type="date" value={editForm.dueAt} onChange={(e) => setEditForm((p) => ({ ...p, dueAt: e.target.value }))} />
+                </FormField>
+                <FormField label="Centro de custo" htmlFor="e-cc">
+                  <Select id="e-cc" value={editForm.costCenterId} onChange={(e) => setEditForm((p) => ({ ...p, costCenterId: e.target.value }))}>
+                    <option value="">—</option>
+                    {allCostCenters.map((c) => (
+                      <option key={c.id} value={c.id}>{c.code} — {c.name}</option>
+                    ))}
+                  </Select>
+                </FormField>
+                <FormField label="Centro de resultado" htmlFor="e-rc">
+                  <Select id="e-rc" value={editForm.resultCenterId} onChange={(e) => setEditForm((p) => ({ ...p, resultCenterId: e.target.value }))}>
+                    <option value="">—</option>
+                    {allResultCenters.map((r) => (
+                      <option key={r.id} value={r.id}>{r.code} — {r.name}</option>
+                    ))}
+                  </Select>
+                </FormField>
+              </div>
+              <div className={styles.editActions}>
+                <Button variant="ghost" onClick={() => setEditOpen(false)} disabled={editSaving}>Cancelar</Button>
+                <Button onClick={handleSaveEdit} loading={editSaving}>Salvar alterações</Button>
+              </div>
+            </Card>
+          ) : null}
 
           <div className={styles.grid}>
             <div className={styles.mainCol}>
