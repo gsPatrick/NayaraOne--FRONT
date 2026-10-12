@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import FormField from "@/components/molecules/FormField/FormField";
 import Input from "@/components/atoms/Input/Input";
 import Select from "@/components/atoms/Select/Select";
+import Checkbox from "@/components/atoms/Checkbox/Checkbox";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
@@ -14,6 +15,7 @@ import NatureBadge from "@/components/molecules/NatureBadge/NatureBadge";
 import BankAccountSelect from "@/components/molecules/BankAccountSelect/BankAccountSelect";
 import { ENTRY_NATURE_LABELS } from "@/lib/mock/finance";
 import { listBankAccounts, listCostCenters, listResultCenters, createFinancialEntry } from "@/lib/api/finance";
+import { generateIdempotencyKey } from "@/lib/offline/offlineQueue";
 import { dateOnlyInputToIso } from "@/lib/format";
 import styles from "./page.module.css";
 
@@ -36,6 +38,8 @@ export default function NovoLancamentoPage() {
     resultCenterId: "",
     dueAt: "",
     idempotencyKey: "",
+    isThirdPartyFunds: false,
+    thirdPartyReference: "",
   });
   // FIX (reportado pela cliente): digitar um ano fora do intervalo plausível (ex: "92026")
   // num <input type="date"> faz o navegador considerar o valor inválido e reportar
@@ -43,6 +47,16 @@ export default function NovoLancamentoPage() {
   // o lançamento com dueAt null, sem nenhum aviso. Agora detectamos a invalidez via
   // validity.badInput/rangeOverflow/rangeUnderflow e bloqueamos o submit com erro visível.
   const [dueAtInvalid, setDueAtInvalid] = useState(false);
+  // Idempotência client-side (achado da auditoria de idempotência, Marco 7): o campo
+  // "idempotencyKey" abaixo era só um texto livre OPCIONAL digitado manualmente pelo usuário —
+  // na prática, quase sempre fica em branco (vira `undefined` no payload) e createFinancialEntry
+  // é um INSERT simples. Se a resposta do POST se perde (timeout/rede) e o usuário clica em
+  // "Criar lançamento" de novo, sem chave nenhuma o backend (financialEntries.service.js,
+  // `assertNoDuplicatePayment`) não tem como saber que é o MESMO lançamento e cria um
+  // FinancialEntry duplicado. Gera um UUID automaticamente no primeiro clique e reenvia o MESMO
+  // UUID em qualquer retry deste envio; o campo manual continua disponível para quem quiser usar
+  // uma chave própria (ex. reprocessar import), e nesse caso ela tem prioridade.
+  const entryIdempotencyKeyRef = useRef(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -102,6 +116,10 @@ export default function NovoLancamentoPage() {
     if (!isValid) return;
     setSubmitting(true);
     setActionError("");
+    const manualKey = form.idempotencyKey.trim();
+    if (!manualKey && !entryIdempotencyKeyRef.current) {
+      entryIdempotencyKeyRef.current = generateIdempotencyKey();
+    }
     try {
       await createFinancialEntry({
         bankAccountId: form.bankAccountId || undefined,
@@ -112,8 +130,11 @@ export default function NovoLancamentoPage() {
         amount: Number(form.amount),
         description: form.description.trim(),
         dueAt: dateOnlyInputToIso(form.dueAt),
-        idempotencyKey: form.idempotencyKey.trim() || undefined,
+        idempotencyKey: manualKey || entryIdempotencyKeyRef.current,
+        isThirdPartyFunds: form.isThirdPartyFunds,
+        thirdPartyReference: form.isThirdPartyFunds ? form.thirdPartyReference.trim() || undefined : undefined,
       });
+      entryIdempotencyKeyRef.current = null;
       router.push("/painel/financeiro/lancamentos");
     } catch (err) {
       setActionError(err?.message || "Não foi possível criar o lançamento.");
@@ -220,6 +241,34 @@ export default function NovoLancamentoPage() {
               <FormField label="Chave de idempotência" htmlFor="f-idem" helper="Opcional — evita duplicidade se reenviado">
                 <Input id="f-idem" value={form.idempotencyKey} onChange={update("idempotencyKey")} placeholder="Ex: aluguel-prop-1-ago" />
               </FormField>
+            </div>
+          </Card>
+        )}
+
+        {/* FIN-TS-005 / M4-16 (auditoria externa Abacus AI, 11/10/2026): "Caução separada de
+            receita — nenhuma categoria ou tela específica encontrada". O backend já suportava
+            isThirdPartyFunds/thirdPartyReference (dinheiro que só transita, nunca é receita
+            própria), mas o formulário de lançamento nunca expôs esse campo — gap achado na
+            verificação cética final do Marco 4, 11/10/2026. */}
+        {!loading && (
+          <Card title="Dinheiro de terceiro (caução, repasse)">
+            <div className={styles.formGrid}>
+              <Checkbox
+                id="f-third-party"
+                label="Este lançamento é dinheiro de terceiro (ex: caução) — não é receita/despesa própria"
+                checked={form.isThirdPartyFunds}
+                onChange={(e) => setForm((prev) => ({ ...prev, isThirdPartyFunds: e.target.checked }))}
+              />
+              {form.isThirdPartyFunds ? (
+                <FormField label="Referência do titular/origem" htmlFor="f-third-party-ref" helper='Ex: "Caução contrato LOC-2026-0008"'>
+                  <Input
+                    id="f-third-party-ref"
+                    value={form.thirdPartyReference}
+                    onChange={update("thirdPartyReference")}
+                    placeholder="Caução contrato..."
+                  />
+                </FormField>
+              ) : null}
             </div>
           </Card>
         )}
