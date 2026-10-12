@@ -101,7 +101,8 @@
   <div class="stat-grid">
     <div class="stat"><span class="n">20/20</span><span class="l">testes adversariais do Caderno</span></div>
     <div class="stat"><span class="n">13/15</span><span class="l">itens do Definition of Done</span></div>
-    <div class="stat"><span class="n">6</span><span class="l">rodadas de verificação de UI</span></div>
+    <div class="stat"><span class="n">7</span><span class="l">rodadas de verificação de UI</span></div>
+    <div class="stat"><span class="n">66/66</span><span class="l">rotas do financeiro com tela real</span></div>
     <div class="stat"><span class="n">0</span><span class="l">pendência de código ou tela</span></div>
   </div>
 
@@ -235,10 +236,14 @@
       </div>
       <div class="cycle">
         <span class="tag">Ciclo 6</span>
-        <div class="body"><strong>Solicitar aprovação sem tela — e o fechamento do loop.</strong> O achado mais sério desta série: não existia tela nenhuma pra um usuário comum disparar o pedido de aprovação prévia do FIN-004. A correção crítica do início da rodada existia, mas ninguém conseguia usá-la pela interface. Corrigido, junto com gestão de centro de custo/resultado e edição de conta contábil. Depois desse ciclo, uma rodada final percorreu os 5 fluxos completos do dia a dia de um usuário financeiro (aprovar → liquidar, parcial → quitar, fechar → reabrir, provisionar comissão → pagar → ajustar, sinalizar fraude → resolver) e não achou mais nenhuma quebra.</div>
+        <div class="body"><strong>Solicitar aprovação sem tela.</strong> O achado mais sério até então: não existia tela nenhuma pra um usuário comum disparar o pedido de aprovação prévia do FIN-004. A correção crítica do início da rodada existia, mas ninguém conseguia usá-la pela interface. Corrigido, junto com gestão de centro de custo/resultado e edição de conta contábil. Depois desse ciclo, uma rodada percorreu os 5 fluxos completos do dia a dia de um usuário financeiro (aprovar → liquidar, parcial → quitar, fechar → reabrir, provisionar comissão → pagar → ajustar, sinalizar fraude → resolver) e não achou mais nenhuma quebra.</div>
+      </div>
+      <div class="cycle">
+        <span class="tag">Ciclo 7</span>
+        <div class="body"><strong>Verificação final, método invertido: de cada rota real para cada tela real.</strong> Em vez de procurar por função, listamos as 66 rotas reais do financeiro e cruzamos uma a uma com o que o front chama. Achado: as 6 rotas de "Intenções de pagamento" (§8 do Caderno — o caminho alternativo de snapshot/hash, mais rigoroso que o par aprovação+liquidação) não tinham nenhuma função de API nem tela. Criada a tela "Intenções de pagamento" (listar, aprovar, executar, cancelar) e o botão de criação no detalhe do lançamento. Depois desse fechamento, as 66 rotas foram conferidas uma a uma: todas com função de client e tela — nenhuma órfã.</div>
       </div>
     </div>
-    <div class="callout warn">Se tivéssemos parado na primeira confirmação "tudo em código e teste está 100%", pelo menos 15 ações reais do Caderno — incluindo o próprio pedido de aprovação do bug crítico que corrigimos — continuariam inacessíveis para qualquer usuário fora de uma chamada direta de API.</div>
+    <div class="callout warn">Se tivéssemos parado na primeira confirmação "tudo em código e teste está 100%", pelo menos 16 ações reais do Caderno — incluindo o próprio pedido de aprovação do bug crítico que corrigimos — continuariam inacessíveis para qualquer usuário fora de uma chamada direta de API.</div>
   </section>
 
   <div class="dod-card">
