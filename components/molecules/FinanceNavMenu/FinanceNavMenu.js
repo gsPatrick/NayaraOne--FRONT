@@ -15,6 +15,7 @@ const ITEMS = [
   { label: "Aprovações", href: "/painel/financeiro/aprovacoes", icon: "shield" },
   { label: "Comissões & Repasses", href: "/painel/financeiro/comissoes-repasses", icon: "layers" },
   { label: "Orçamento x realizado", href: "/painel/financeiro/orcamento", icon: "chart" },
+  { label: "Fechamento de período", href: "/painel/financeiro/fechamento", icon: "shield" },
   { label: "Plano de contas", href: "/painel/financeiro/plano-de-contas", icon: "document" },
   { label: "Relatório financeiro", href: "/painel/financeiro/relatorio", icon: "chart" },
 ];
