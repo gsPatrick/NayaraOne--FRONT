@@ -13,6 +13,7 @@ const ITEMS = [
   { label: "Extrato bancário", href: "/painel/financeiro/extrato", icon: "document" },
   { label: "Conciliação", href: "/painel/financeiro/conciliacao", icon: "check" },
   { label: "Aprovações", href: "/painel/financeiro/aprovacoes", icon: "shield" },
+  { label: "Antifraude", href: "/painel/financeiro/antifraude", icon: "shield" },
   { label: "Comissões & Repasses", href: "/painel/financeiro/comissoes-repasses", icon: "layers" },
   { label: "Orçamento x realizado", href: "/painel/financeiro/orcamento", icon: "chart" },
   { label: "Fechamento de período", href: "/painel/financeiro/fechamento", icon: "shield" },

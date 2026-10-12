@@ -37,6 +37,7 @@ import {
   payCommissionInstallment,
   payOwnerRepasse,
   createCommission,
+  cancelCommission,
 } from "@/lib/api/finance";
 import { listPeople } from "@/lib/api/people";
 import { apiFetch } from "@/lib/api/client";
@@ -80,6 +81,7 @@ export default function ComissoesRepassesPage() {
   const [payModal, setPayModal] = useState(null);
   const [busyId, setBusyId] = useState(null);
   const [newCommissionModal, setNewCommissionModal] = useState(false);
+  const [cancelModal, setCancelModal] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -147,6 +149,27 @@ export default function ComissoesRepassesPage() {
       showNotice("success", "Comissão criada", `Comissão de ${formatBRL(commission.totalAmount)} registrada para ${userName(users, commission.beneficiaryUserId)}.`);
     } catch (err) {
       showNotice("danger", "Não foi possível criar a comissão", err?.message || "Tente novamente.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  // GAP REAL CORRIGIDO (verificação cética adicional, Marco 4, 12/10/2026): cancelCommission
+  // (FIN-TS-017 — rollback de comissão ao cancelar contrato) já existia e era testado no
+  // backend, mas nenhum humano conseguia disparar isso pela interface — a única ação na tela
+  // era "Pagar parcela". Botão de cancelamento com motivo obrigatório adicionado.
+  async function handleCancelCommission(commission, reason) {
+    setBusyId(`cancel-${commission.id}`);
+    try {
+      const { commission: updated } = await cancelCommission(commission.id, reason);
+      setCommissions((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+      setInstallments((prev) =>
+        prev.map((i) => (i.commissionId === updated.id && i.status === "PENDING" ? { ...i, status: "CANCELLED" } : i))
+      );
+      setCancelModal(null);
+      showNotice("success", "Comissão cancelada", `Comissão de ${userName(users, updated.beneficiaryUserId)} cancelada — ajuste registrado em auditoria.`);
+    } catch (err) {
+      showNotice("danger", "Não foi possível cancelar a comissão", err?.message || "Tente novamente.");
     } finally {
       setBusyId(null);
     }
@@ -276,6 +299,9 @@ export default function ComissoesRepassesPage() {
                             <div className={styles.listRowRight}>
                               <Badge tone={COMMISSION_STATUS_TONE[c.status]}>{COMMISSION_STATUS_LABELS[c.status]}</Badge>
                               <strong className={styles.commissionTotal}>{formatBRL(c.totalAmount)}</strong>
+                              {c.status !== "CANCELLED" && c.status !== "PAID" ? (
+                                <Button size="sm" variant="danger" onClick={() => setCancelModal(c)}>Cancelar</Button>
+                              ) : null}
                             </div>
                           </div>
                           <div className={styles.installmentsList}>
@@ -386,7 +412,55 @@ export default function ComissoesRepassesPage() {
         onConfirm={handleCreateCommission}
         busy={busyId === "new-commission"}
       />
+
+      <CancelCommissionModal
+        commission={cancelModal}
+        users={users}
+        onClose={() => setCancelModal(null)}
+        onConfirm={(reason) => handleCancelCommission(cancelModal, reason)}
+        busy={cancelModal ? busyId === `cancel-${cancelModal.id}` : false}
+      />
     </AppShell>
+  );
+}
+
+function CancelCommissionModal({ commission, users, onClose, onConfirm, busy }) {
+  const [reason, setReason] = useState("");
+
+  useEffect(() => {
+    setReason("");
+  }, [commission]);
+
+  return (
+    <Modal
+      open={Boolean(commission)}
+      onClose={onClose}
+      title="Cancelar comissão"
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>Voltar</Button>
+          <Button variant="danger" disabled={!reason.trim()} loading={busy} onClick={() => onConfirm(reason.trim())}>
+            Confirmar cancelamento
+          </Button>
+        </>
+      }
+    >
+      {commission ? (
+        <>
+          <p className={styles.modalIntro}>
+            {commissionDescription(commission)} — {userName(users, commission.beneficiaryUserId)} —{" "}
+            {formatBRL(commission.totalAmount)}
+          </p>
+          <Alert tone="warning">
+            Parcelas já pagas permanecem pagas. Parcelas ainda não pagas serão canceladas e um ajuste auditável será
+            registrado (FIN-TS-017) — esta ação não pode ser desfeita.
+          </Alert>
+          <FormField label="Motivo do cancelamento" htmlFor="cancel-reason" required helper="Obrigatório — ex.: contrato cancelado, erro de lançamento">
+            <Input id="cancel-reason" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Descreva o motivo..." />
+          </FormField>
+        </>
+      ) : null}
+    </Modal>
   );
 }
 
