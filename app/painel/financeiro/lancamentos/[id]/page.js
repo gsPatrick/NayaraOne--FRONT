@@ -151,6 +151,16 @@ export default function LancamentoDetailPage({ params }) {
 
   if (notFoundFlag) return notFound();
 
+  // FIN-004: o gate de aprovação prévia só existe para PAYABLE com execução bancária real
+  // (entry.bankAccountId) — sem conta bancária vinculada, não há nada pra "aprovar antes de
+  // pagar", e o backend não exige (ver settleFinancialEntry). Com bankAccountId, satisfaz se
+  // a ApprovalRequest estiver APPROVED OU se o payment intent (caminho alternativo mais
+  // rigoroso) estiver APPROVED.
+  const approvalGateSatisfied =
+    !entry?.bankAccountId ||
+    approvalRequest?.status === "APPROVED" ||
+    paymentIntent?.status === "APPROVED";
+
   // Liquidar é step-up MFA obrigatório (Caderno §3.3/3.4: "aprovação de pagamento") — abre o
   // modal de verificação; a chamada real de negócio só acontece em runSettle, após confirmar.
   async function handleSettle() {
@@ -350,13 +360,26 @@ export default function LancamentoDetailPage({ params }) {
                   <Icon name="shield" size={16} /> Criar intenção de pagamento
                 </Button>
               ) : null}
+              {/* FIN-004 (Caderno §3.3/3.4): liquidar um PAYABLE com execução bancária real
+                  (bankAccountId) exige aprovação prévia (ApprovalRequest APPROVED) ou payment
+                  intent aprovado — mesmo gate que já é fail-closed no backend
+                  (settleFinancialEntry). O botão aqui só reflete isso visualmente; o backend
+                  continua sendo a fonte de verdade que bloqueia de qualquer jeito. */}
               {entry.status === "PENDING" || entry.status === "PARTIALLY_SETTLED" ? (
-                <Button onClick={handleSettle} loading={busy}><Icon name="check" size={16} /> Liquidar</Button>
+                approvalGateSatisfied ? (
+                  <Button onClick={handleSettle} loading={busy}><Icon name="check" size={16} /> Liquidar</Button>
+                ) : (
+                  <Button disabled title="Aguardando aprovação prévia antes de liquidar (FIN-004)">
+                    <Icon name="check" size={16} /> Aguardando aprovação
+                  </Button>
+                )
               ) : null}
               {entry.status === "PENDING" || entry.status === "PARTIALLY_SETTLED" ? (
-                <Button variant="secondary" onClick={() => setPartialOpen((v) => !v)} disabled={busy}>
-                  <Icon name="money" size={16} /> Liquidar parcial
-                </Button>
+                approvalGateSatisfied ? (
+                  <Button variant="secondary" onClick={() => setPartialOpen((v) => !v)} disabled={busy}>
+                    <Icon name="money" size={16} /> Liquidar parcial
+                  </Button>
+                ) : null
               ) : null}
               {entry.status === "SETTLED" ? (
                 <Button variant="secondary" onClick={handleReverse} loading={busy}><Icon name="settings" size={16} /> Estornar</Button>
