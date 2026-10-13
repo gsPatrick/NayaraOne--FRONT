@@ -105,8 +105,8 @@
   <div class="stat-grid">
     <div class="stat"><span class="n">15/15</span><span class="l">testes adversariais do Caderno</span></div>
     <div class="stat"><span class="n">15/15</span><span class="l">itens do Definition of Done</span></div>
-    <div class="stat"><span class="n">4</span><span class="l">ciclos de verificação cética</span></div>
-    <div class="stat"><span class="n">843/845</span><span class="l">testes do projeto inteiro</span></div>
+    <div class="stat"><span class="n">5</span><span class="l">ciclos de verificação cética</span></div>
+    <div class="stat"><span class="n">167</span><span class="l">tabelas conferidas contra o código</span></div>
   </div>
 
   <section class="point critical">
@@ -162,7 +162,8 @@
       <div class="cycle"><span class="tag">Ciclo 1</span><div class="body"><strong>O achado mais grave: o gate fail-closed podia ser pulado.</strong> Ver ponto 00.</div></div>
       <div class="cycle"><span class="tag">Ciclo 2</span><div class="body"><strong>Auditoria do próprio fix.</strong> Confirmado que não existe nenhum outro caminho (edição direta de status, rotas administrativas) que ainda pule a verificação de documentos, e que o helper de teste criado para a correção nunca é usado em código de produção.</div></div>
       <div class="cycle"><span class="tag">Ciclo 3</span><div class="body"><strong>Regressão cross-teste + campo de cláusula.</strong> Rodando a suíte inteira junto (não arquivo por arquivo), apareceu um arquivo de teste que não tinha recebido o ajuste necessário quando o gate virou fail-closed de verdade — corrigido. E o campo de versão de cláusula em vigor (acima) foi encontrado neste ciclo.</div></div>
-      <div class="cycle"><span class="tag">Ciclo 4</span><div class="body"><strong>Confirmação final, projeto inteiro.</strong> Rodados os 845 testes do repositório inteiro de uma vez: 843 passaram; as 2 falhas restantes são instabilidades já conhecidas de outros marcos, sem nenhuma relação com o Marco 5. Nenhum gap novo encontrado — o ciclo parou aqui.</div></div>
+      <div class="cycle"><span class="tag">Ciclo 4</span><div class="body"><strong>Mais um bug real de perda de dado silenciosa.</strong> Rodando a suíte ampla inteira junta (não arquivo por arquivo), achamos que o model de entrega de chaves nunca persistia quantidade de chaves, fotos obrigatórias e quem assinou o termo — o banco já tinha essas colunas prontas, mas o código não sabia delas. Mesmo padrão de um bug já corrigido no início deste trabalho (vínculo de substituição de garantia). Corrigido, com teste que relê direto do banco em vez de confiar na resposta em memória — foi exatamente essa confiança indevida que escondeu o bug antes.</div></div>
+      <div class="cycle"><span class="tag">Ciclo 5</span><div class="body"><strong>Caça sistemática ao mesmo padrão em todo o sistema — e o fechamento do loop.</strong> Como esse tipo de bug já tinha aparecido 2 vezes, comparamos as 167 tabelas do sistema inteiro contra o código, uma por uma, procurando mais algum campo real do banco que o código não soubesse que existia. Achamos mais 4 candidatos; todos investigados a fundo e confirmados como solução alternativa documentada e funcional, não o mesmo defeito. Nenhum problema novo — o ciclo fecha aqui.</div></div>
     </div>
   </section>
 
