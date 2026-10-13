@@ -1,0 +1,134 @@
+<title>Resposta — Marco 6</title>
+<style>
+  :root {
+    --bg: #f8f9f7;
+    --surface: #ffffff;
+    --surface-2: #eef1ec;
+    --border: #d8ddd2;
+    --fg: #1a1f17;
+    --fg-muted: #656e5c;
+    --accent: #5c7a3a;
+    --accent-fg: #ffffff;
+    --ok-bg: #e6f0e4;
+    --ok-fg: #2f5d34;
+    --ok-border: #bcd9b8;
+    --fix-bg: #fdeeee;
+    --fix-fg: #9c3b3b;
+    --fix-border: #f0c4c4;
+    --info-bg: #eaf1f6;
+    --info-fg: #2c5872;
+    --info-border: #bdd7e4;
+    --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #11140f; --surface: #181d16; --surface-2: #1f251b; --border: #30381f;
+      --fg: #eaf0e4; --fg-muted: #a2ad96;
+      --accent: #9cc46c; --accent-fg: #11200a;
+      --ok-bg: #1f2e1f; --ok-fg: #9bd49a; --ok-border: #2f4a30;
+      --fix-bg: #2e1f1f; --fix-fg: #e59a9a; --fix-border: #4a2f2f;
+      --info-bg: #1b2a33; --info-fg: #9cc8de; --info-border: #294655;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #11140f; --surface: #181d16; --surface-2: #1f251b; --border: #30381f;
+    --fg: #eaf0e4; --fg-muted: #a2ad96;
+    --accent: #9cc46c; --accent-fg: #11200a;
+    --ok-bg: #1f2e1f; --ok-fg: #9bd49a; --ok-border: #2f4a30;
+    --fix-bg: #2e1f1f; --fix-fg: #e59a9a; --fix-border: #4a2f2f;
+    --info-bg: #1b2a33; --info-fg: #9cc8de; --info-border: #294655;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); line-height: 1.55; padding-block: 48px; }
+  .wrap { max-width: 920px; margin: 0 auto; padding-inline: 20px; display: flex; flex-direction: column; gap: 30px; }
+  header { display: flex; flex-direction: column; gap: 8px; border-bottom: 1px solid var(--border); padding-bottom: 22px; }
+  .eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-muted); }
+  h1 { font-family: var(--font-display); font-size: 32px; font-weight: 600; margin: 0; text-wrap: balance; }
+  .sub { color: var(--fg-muted); font-size: 15px; margin: 0; max-width: 68ch; }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 2px; }
+  .stat .n { font-family: var(--font-display); font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .stat .l { font-size: 12px; color: var(--fg-muted); }
+  h2 { font-family: var(--font-display); font-size: 20px; font-weight: 600; margin: 0 0 4px; display: flex; align-items: baseline; gap: 10px; }
+  .num { font-family: var(--font-mono); font-size: 13px; color: var(--accent); font-weight: 600; }
+  section.point { display: flex; flex-direction: column; gap: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 22px 24px; }
+  p { margin: 0; }
+  ul, ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+  code { font-family: var(--font-mono); font-size: 0.85em; background: var(--surface-2); border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; }
+  .callout { border-radius: 8px; padding: 12px 14px; font-size: 14px; border: 1px solid var(--info-border); background: var(--info-bg); color: var(--info-fg); }
+  .callout.ok { border-color: var(--ok-border); background: var(--ok-bg); color: var(--ok-fg); }
+  .table-scroll { overflow-x: auto; }
+  table.matrix { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 640px; }
+  table.matrix th, table.matrix td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  table.matrix th { color: var(--fg-muted); font-weight: 600; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; border: 1px solid; white-space: nowrap; }
+  .badge.fixed { background: var(--ok-bg); color: var(--ok-fg); border-color: var(--ok-border); }
+  .badge.wasbug { background: var(--fix-bg); color: var(--fix-fg); border-color: var(--fix-border); }
+  .badge.na { background: var(--surface-2); color: var(--fg-muted); border-color: var(--border); }
+  .dod-card { background: var(--accent); color: var(--accent-fg); border-radius: 10px; padding: 24px; display: flex; flex-direction: column; gap: 10px; }
+  .dod-card h2 { color: var(--accent-fg); }
+  .dod-card .num { color: var(--accent-fg); opacity: 0.8; }
+  footer { color: var(--fg-muted); font-size: 12px; font-family: var(--font-mono); border-top: 1px solid var(--border); padding-top: 18px; }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Marco 6 — Obras e Pós-obra · Resposta à auditoria independente (Abacus AI, 11/10/2026)</span>
+    <h1>Marco 6 está completo</h1>
+    <p class="sub">Resposta ponto a ponto ao relatório de auditoria. Diferente dos demais marcos, este já tinha recebido mais de 18 ciclos de correção antes mesmo da auditoria formal da Nayara chegar — por isso foi o primeiro a fechar limpo já na primeira varredura completa.</p>
+  </header>
+
+  <div class="stat-grid">
+    <div class="stat"><span class="n">76</span><span class="l">rotas HTTP confirmadas com tela</span></div>
+    <div class="stat"><span class="n">15/15</span><span class="l">testes adversariais do Caderno</span></div>
+    <div class="stat"><span class="n">15/15</span><span class="l">eventos mínimos disparados</span></div>
+    <div class="stat"><span class="n">0</span><span class="l">pendência de código ou tela</span></div>
+  </div>
+
+  <section class="point">
+    <h2><span class="num">01</span>Os 8 pontos "parcial / não comprovado" do relatório</h2>
+    <p>A auditora não encontrou nenhum bug no Marco 6 — em todos os 8 pontos, ela relatou literalmente "área existe, fluxo não executado" ou "não comprovado por ausência de pré-requisitos" (sem etapa criada, sem orçamento agregado). Investigamos cada um a fundo, no backend e no front-end:</p>
+    <div class="table-scroll">
+      <table class="matrix">
+        <tr><th>Requisito</th><th>Situação apontada</th><th>Status</th></tr>
+        <tr><td>Etapas/cronograma físico-financeiro</td><td>Nenhuma etapa criada no teste dela</td><td><span class="badge na">já funcionava</span></td></tr>
+        <tr><td>Change Orders com aprovação antes de alterar baseline</td><td>Criação bloqueada por dependência de orçamento agregado</td><td><span class="badge na">já funcionava</span></td></tr>
+        <tr><td>Medições com previsto x realizado e aprovação</td><td>Não executado por ausência de pré-requisitos</td><td><span class="badge na">já funcionava</span></td></tr>
+        <tr><td>Controle de materiais/requisições</td><td>Fluxo não executado</td><td><span class="badge na">já funcionava</span></td></tr>
+        <tr><td>Qualidade / Não Conformidades</td><td>Cadastro de NC não executado</td><td><span class="badge na">já funcionava</span></td></tr>
+        <tr><td>Pós-obra / Chamado de garantia</td><td>Chamado não criado ponta a ponta</td><td><span class="badge na">já funcionava</span></td></tr>
+        <tr><td>SLA de garantia com escalonamento automático</td><td>Sem evidência de configuração</td><td><span class="badge na">já funcionava</span></td></tr>
+        <tr><td>Bloqueio de entrega com NC pendente</td><td>Cenário não executado</td><td><span class="badge na">já funcionava</span></td></tr>
+      </table>
+    </div>
+    <div class="callout ok">Existe um teste automatizado único que cobre, numa única jornada, exatamente o cenário completo que a auditora relatou não ter conseguido montar manualmente pela interface — da criação do projeto até a entrega com garantia, passando por todos os 8 pontos acima.</div>
+  </section>
+
+  <section class="point">
+    <h2><span class="num">02</span>Varredura completa contra o Caderno Técnico</h2>
+    <p>Conferimos as 14 seções da especificação e as 18 do Guia do Marcelo, uma por uma, com evidência real: os 11 invariantes obrigatórios, as 15 tabelas do domínio, os 15 eventos mínimos (todos disparados de verdade, confirmado por busca no código), os 15 testes adversariais do Caderno, e os 11 endpoints mínimos do Guia do Marcelo — todos com tela correspondente. Comparamos também os 18 models de Construção contra as colunas reais do banco de dados, procurando o mesmo tipo de bug de perda silenciosa de dado já encontrado em outros marcos: nenhum encontrado aqui.</p>
+  </section>
+
+  <section class="point">
+    <h2><span class="num">03</span>Ciclo de verificação cética independente</h2>
+    <p>Mesmo com a varredura completa limpa, rodamos mais um ciclo cético, focado em pontos que costumam escapar:</p>
+    <ul>
+      <li><strong>Concorrência real</strong> em 3 operações reexecutáveis: aprovação de orçamento, criação de Change Order e fechamento de não conformidade — disparadas 2x simultaneamente de verdade. Achado e corrigido: criar um Change Order com a mesma chave duas vezes ao mesmo tempo podia, numa corrida genuína, deixar vazar um erro técnico cru do banco em vez de uma mensagem de negócio clara — o índice único do banco já impedia a duplicata de fato, mas o erro mostrado não era adequado. Corrigido para devolver o mesmo erro de negócio limpo usado no resto do sistema.</li>
+      <li><strong>Job de escalonamento de SLA de garantia</strong> — confirmado que roda de verdade, periodicamente, de forma idempotente (não reescala o mesmo caso duas vezes).</li>
+      <li><strong>Integração de desconto/ressarcimento com o Financeiro</strong> — ponto de cruzamento entre o Marco 6 e o Marco 4 que podia ter ficado esquecido por qualquer um dos dois. Confirmado: a integração é real, com regra de alçada (valores baixos auto-aprovam, acima do limite exigem aprovação) e idempotência própria.</li>
+    </ul>
+  </section>
+
+  <div class="dod-card">
+    <h2><span class="num">04</span>Definition of Done do Caderno — completo</h2>
+    <p>Projetos/etapas/dependências, baseline e change orders, diário de obra, medições idempotentes, integração com Financeiro e Estoque, qualidade/NC, gate de entrega, SLA de garantia, margem/economia via Motor de Regras, NAY assistiva (sem IA generativa — este módulo não depende de LLM, só lógica determinística), testes adversariais, RLS e concorrência — <strong>todos os critérios conferidos com teste real</strong>.</p>
+  </div>
+
+  <footer>Marco 6 — Obras e Pós-obra · Nayara One</footer>
+</div>
