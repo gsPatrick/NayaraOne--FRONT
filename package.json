@@ -7,7 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:e2e:marco6": "node e2e/marco6-jornada-completa.spec.js"
+    "test:e2e:marco6": "node e2e/marco6-jornada-completa.spec.js",
+    "test:e2e:marco3": "node e2e/marco3-oportunidades-estagnadas.spec.js",
+    "test:e2e:marco4": "node e2e/marco4-liquidar-gate.spec.js",
+    "test:e2e:marco6-change-order": "node e2e/marco6-change-order.spec.js",
+    "test:e2e": "npm run test:e2e:marco3 && npm run test:e2e:marco4 && npm run test:e2e:marco6 && npm run test:e2e:marco6-change-order"
   },
   "dependencies": {
     "leaflet": "^1.9.4",
