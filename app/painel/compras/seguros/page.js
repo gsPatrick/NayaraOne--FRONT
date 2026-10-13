@@ -18,7 +18,7 @@ import FileViewerModal from "@/components/organisms/FileViewerModal/FileViewerMo
 import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
 import {
   listInsurancePolicies, getInsurancePolicy, createInsurancePolicy,
-  quoteInsurancePolicy, issueInsurancePolicy, openInsuranceClaim, submitInsuranceClaim,
+  quoteInsurancePolicy, issueInsurancePolicy, cancelInsurancePolicy, openInsuranceClaim, submitInsuranceClaim,
   attachInsurancePolicyDocument, listInsurancePolicyDocuments,
   listInsurancePolicyInstallments, payInsurancePolicyInstallment,
 } from "@/lib/api/procurement";
@@ -312,6 +312,25 @@ export default function SegurosPage() {
     }
   }
 
+  // GAP REAL CORRIGIDO (3ª verificação cética, Marco 7): rota de cancelamento existia na API
+  // sem nenhuma função de client nem botão correspondente.
+  const [cancelReason, setCancelReason] = useState("");
+  async function handleCancelPolicy() {
+    if (!detailModal || !cancelReason.trim()) return;
+    setSaving(true);
+    setActionError("");
+    try {
+      await cancelInsurancePolicy(detailModal.policy.id, { reason: cancelReason.trim() });
+      setCancelReason("");
+      setDetailModal(null);
+      load();
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível cancelar a apólice.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   const columns = [
     { key: "status", label: "Status", width: "14%", render: (row) => <PolicyStatusBadge policy={row} /> },
     { key: "provider", label: "Seguradora", width: "16%", render: (row) => row.provider || "sandbox" },
@@ -436,6 +455,23 @@ export default function SegurosPage() {
               {detailModal.policy.propertyId ? <p style={{ margin: "0 0 4px" }}>Imóvel vinculado: {properties.find((pr) => pr.id === detailModal.policy.propertyId)?.title || detailModal.policy.propertyId}</p> : null}
               {detailModal.policy.contractId ? <p style={{ margin: 0 }}>Contrato vinculado: {contracts.find((c) => c.id === detailModal.policy.contractId)?.code || detailModal.policy.contractId}</p> : null}
             </div>
+
+            {!["CANCELED", "EXPIRED"].includes(detailModal.policy.status) ? (
+              <div style={SECTION_STYLE}>
+                <strong>Cancelar apólice</strong>
+                <div style={{ display: "flex", gap: 8, marginTop: 8, alignItems: "flex-end" }}>
+                  <div style={{ flex: 1 }}>
+                    <Input
+                      aria-label="Motivo do cancelamento"
+                      placeholder="Motivo do cancelamento (obrigatório)"
+                      value={cancelReason}
+                      onChange={(e) => setCancelReason(e.target.value)}
+                    />
+                  </div>
+                  <Button variant="danger" onClick={handleCancelPolicy} loading={saving} disabled={!cancelReason.trim()}>Cancelar apólice</Button>
+                </div>
+              </div>
+            ) : null}
 
             <div style={SECTION_STYLE}>
               <strong>Segurados / beneficiários</strong>
