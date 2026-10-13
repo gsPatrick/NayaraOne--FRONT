@@ -1,0 +1,26 @@
+.helper {
+  font-size: var(--text-body-sm);
+  color: var(--color-ink-soft);
+  margin-bottom: var(--space-3);
+}
+
+.current {
+  font-size: var(--text-caption);
+  color: var(--color-ink-muted);
+  margin-bottom: var(--space-3);
+}
+
+.notice {
+  margin-bottom: var(--space-3);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+@media (max-width: 700px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+}

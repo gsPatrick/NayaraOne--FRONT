@@ -55,6 +55,7 @@ export const NAV_SECTIONS = [
           { label: "Visão geral", href: "/painel/obras" },
           { label: "Obras", href: "/painel/obras/lista" },
           { label: "Pós-obra", href: "/painel/obras/pos-obra" },
+          { label: "Configurações", href: "/painel/obras/configuracoes" },
         ],
       },
       {
