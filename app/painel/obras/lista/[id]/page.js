@@ -81,7 +81,7 @@ export default function ObraDetalhePage({ params }) {
   const [budgetApproved, setBudgetApproved] = useState(false);
 
   const [stageOpen, setStageOpen] = useState(false);
-  const [stageForm, setStageForm] = useState({ name: "", sequence: "1", plannedPct: "", startsAt: "", endsAt: "" });
+  const [stageForm, setStageForm] = useState({ name: "", sequence: "1", plannedPct: "", plannedCost: "", startsAt: "", endsAt: "" });
   // FIX (auditoria externa Marco 6, 2026-10-07): o caderno exige prazo (início/fim) por
   // etapa e o backend (projectStages.service.js) já valida/persiste startsAt/endsAt — o
   // formulário de etapa simplesmente não expunha esses campos. Mesmo padrão de validação de
@@ -289,7 +289,7 @@ export default function ObraDetalhePage({ params }) {
 
   function openStageModal() {
     setEditingStageId(null);
-    setStageForm({ name: "", sequence: String(stages.length + 1), plannedPct: "", startsAt: "", endsAt: "" });
+    setStageForm({ name: "", sequence: String(stages.length + 1), plannedPct: "", plannedCost: "", startsAt: "", endsAt: "" });
     setStageDateErrors({});
     setStageOpen(true);
   }
@@ -304,6 +304,7 @@ export default function ObraDetalhePage({ params }) {
       name: stage.name || "",
       sequence: stage.sequence != null ? String(stage.sequence) : "",
       plannedPct: stage.plannedPct != null ? String(Number(stage.plannedPct)) : "",
+      plannedCost: stage.plannedCost != null ? String(Number(stage.plannedCost)) : "",
       startsAt: stage.startsAt ? stage.startsAt.slice(0, 10) : "",
       endsAt: stage.endsAt ? stage.endsAt.slice(0, 10) : "",
     });
@@ -325,6 +326,7 @@ export default function ObraDetalhePage({ params }) {
         name: stageForm.name.trim(),
         sequence: Number(stageForm.sequence),
         plannedPct: stageForm.plannedPct !== "" ? toNumber(stageForm.plannedPct) : undefined,
+        plannedCost: stageForm.plannedCost !== "" ? toNumber(stageForm.plannedCost) : undefined,
         startsAt: dateOnlyInputToIso(stageForm.startsAt) || null,
         endsAt: dateOnlyInputToIso(stageForm.endsAt) || null,
       };
@@ -884,6 +886,9 @@ export default function ObraDetalhePage({ params }) {
           </FormField>
           <FormField label="Percentual planejado (%)" htmlFor="m-stage-pct" helper="Opcional">
             <DecimalInput id="m-stage-pct" value={stageForm.plannedPct} onChange={(e) => setStageForm((p) => ({ ...p, plannedPct: e.target.value }))} />
+          </FormField>
+          <FormField label="Valor previsto (R$)" htmlFor="m-stage-cost" helper="Cronograma físico-financeiro — Caderno §5">
+            <DecimalInput id="m-stage-cost" value={stageForm.plannedCost} onChange={(e) => setStageForm((p) => ({ ...p, plannedCost: e.target.value }))} />
           </FormField>
           <FormField
             label="Início previsto"
