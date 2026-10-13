@@ -21,6 +21,7 @@ import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/Skeleton
 import { CHANGE_ORDER_STATUS_LABELS, CHANGE_ORDER_STATUS_TONE, CHANGE_ORDER_REASON_LABELS } from "@/lib/mock/construction";
 import { getProject, listBudgets, listChangeOrders, createChangeOrder, decideChangeOrder } from "@/lib/api/construction";
 import { uploadFile } from "@/lib/api/legal";
+import { generateIdempotencyKey } from "@/lib/offline/offlineQueue";
 import { formatBRL, toNumber } from "@/lib/format";
 import styles from "./page.module.css";
 
@@ -113,9 +114,11 @@ export default function ChangeOrdersObraPage({ params }) {
     coForm.reasonCode !== "" && coForm.description.trim() !== "" && coForm.budgetImpact !== "" && !Number.isNaN(toNumber(coForm.budgetImpact));
 
   async function handleCreateChangeOrder() {
-    // BUG REAL CORRIGIDO (auditoria Marco 6, Ciclo 9): duplo-clique nativo criava 2 Change
-    // Orders duplicados — createChangeOrder é um INSERT simples, sem checagem de duplicidade
-    // no backend.
+    // BUG REAL CORRIGIDO (re-auditoria 13/10/2026, round 2, M6-R02): o backend exige
+    // "idempotencyKey" obrigatória em createChangeOrder (CHANGE_ORDER_IDEMPOTENCY_KEY_REQUIRED),
+    // mas este formulário nunca gerava/enviava o campo — criar um Change Order pela UI estava
+    // quebrado em produção. Gerado automaticamente aqui, mesmo helper (generateIdempotencyKey,
+    // UUID real) já usado em materiais/page.js.
     if (savingCo) return;
     if (!isChangeOrderValid) return;
     setSavingCo(true);
@@ -132,6 +135,7 @@ export default function ChangeOrdersObraPage({ params }) {
         budgetImpact: toNumber(coForm.budgetImpact),
         scheduleImpactDays: coForm.scheduleImpactDays !== "" ? Number(coForm.scheduleImpactDays) : undefined,
         evidenceFileIds,
+        idempotencyKey: generateIdempotencyKey(),
       });
       setChangeOrders((prev) => [created, ...prev]);
       setCoOpen(false);
