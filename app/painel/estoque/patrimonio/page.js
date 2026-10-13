@@ -23,6 +23,7 @@ import { apiFetch } from "@/lib/api/client";
 import { formatBRL, formatDate, toNumber } from "@/lib/format";
 
 const STATUS_LABELS = { AVAILABLE: "Disponível", IN_USE: "Em uso", LOANED: "Emprestado", MAINTENANCE: "Em manutenção", LOST: "Perdido/extraviado", DISPOSED: "Baixado" };
+const ASSET_MOVEMENT_LABELS = { TRANSFER: "Transferência", DISPOSAL: "Baixa" };
 const STATUS_TONE = { AVAILABLE: "success", IN_USE: "info", LOANED: "warning", MAINTENANCE: "danger", LOST: "danger", DISPOSED: "neutral" };
 
 // Caderno §9 — venda/descarte/doação de patrimônio (assets.service.js#disposeAsset).
@@ -316,6 +317,10 @@ export default function PatrimonioPage() {
     { key: "custodian", label: "Custodiante", width: "14%", render: (row) => (row.assignedToUserId ? userName(row.assignedToUserId) : "—") },
     { key: "location", label: "Local", width: "14%", render: (row) => (row.currentLocationId ? locationName(row.currentLocationId) : "—") },
     { key: "value", label: "Valor aquisição", width: "12%", render: (row) => (row.acquisitionValue != null ? formatBRL(row.acquisitionValue) : "—") },
+    // GAP REAL CORRIGIDO (3ª verificação cética, Marco 7, Caderno §9/EST-014 — "depreciação
+    // informativa"): o backend já calcula `estimatedCurrentValue` em toda listagem
+    // (assets.service.js#listAssets), mas nenhuma tela chegava a mostrar esse dado.
+    { key: "estimatedValue", label: "Valor estimado (depreciação)", width: "14%", render: (row) => (row.estimatedCurrentValue != null ? formatBRL(row.estimatedCurrentValue) : "—") },
     {
       key: "actions",
       label: "",
@@ -380,12 +385,24 @@ export default function PatrimonioPage() {
         </div>
         {tagSearchError ? <Alert tone="danger" style={{ marginTop: 12 }}>{tagSearchError}</Alert> : null}
         {tagSearchResult ? (
+          // BUG REAL CORRIGIDO (3ª verificação cética, Marco 7): GET /assets/by-tag devolve
+          // { asset, lastMovement, openMaintenance, activeLoan, estimatedCurrentValue } — a
+          // versão anterior lia os campos direto na raiz (tagSearchResult.name/.status/...),
+          // que nunca existiram ali (ficavam undefined), deixando a ficha do QR sempre vazia.
+          // O Caderno §8 exige explicitamente "item, serial, status, local, responsável,
+          // último movimento e manutenção" — os dois últimos nunca eram mostrados.
           <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 4 }}>
-            <strong>{tagSearchResult.name}</strong>
+            <strong>{tagSearchResult.asset?.name}</strong>
             <span>
-              <Badge tone={STATUS_TONE[tagSearchResult.status]}>{STATUS_LABELS[tagSearchResult.status] || tagSearchResult.status}</Badge>
-              {" — "}Custodiante: {tagSearchResult.assignedToUserId ? userName(tagSearchResult.assignedToUserId) : "—"}
-              {" — "}Local: {tagSearchResult.currentLocationId ? locationName(tagSearchResult.currentLocationId) : "—"}
+              <Badge tone={STATUS_TONE[tagSearchResult.asset?.status]}>{STATUS_LABELS[tagSearchResult.asset?.status] || tagSearchResult.asset?.status}</Badge>
+              {" — "}Custodiante: {tagSearchResult.asset?.assignedToUserId ? userName(tagSearchResult.asset.assignedToUserId) : "—"}
+              {" — "}Local: {tagSearchResult.asset?.currentLocationId ? locationName(tagSearchResult.asset.currentLocationId) : "—"}
+              {tagSearchResult.estimatedCurrentValue != null ? <> {" — "}Valor estimado: {formatBRL(tagSearchResult.estimatedCurrentValue)}</> : null}
+            </span>
+            <span style={{ color: "var(--color-ink-muted)", fontSize: "var(--text-body-sm)" }}>
+              Último movimento: {tagSearchResult.lastMovement ? `${ASSET_MOVEMENT_LABELS[tagSearchResult.lastMovement.movementType] || tagSearchResult.lastMovement.movementType} em ${formatDate(tagSearchResult.lastMovement.movedAt || tagSearchResult.lastMovement.moved_at)}` : "nenhum registrado"}
+              {" — "}Manutenção: {tagSearchResult.openMaintenance ? "aberta" : "nenhuma em aberto"}
+              {tagSearchResult.activeLoan ? <> {" — "}Empréstimo ativo com {tagSearchResult.activeLoan.personUserId ? userName(tagSearchResult.activeLoan.personUserId) : "—"}</> : null}
             </span>
           </div>
         ) : null}
