@@ -70,6 +70,19 @@
   min-width: 32px;
 }
 
+.stageTimeRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.staleCount {
+  font-size: var(--text-body-sm);
+  color: var(--color-ink-soft);
+  margin-bottom: var(--space-3);
+}
+
 .generatedAt {
   font-size: var(--text-caption);
   color: var(--color-ink-muted);

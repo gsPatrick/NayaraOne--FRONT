@@ -9,6 +9,7 @@ import Alert from "@/components/molecules/Alert/Alert";
 import Spinner from "@/components/atoms/Spinner/Spinner";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
+import Table from "@/components/organisms/Table/Table";
 import CrmNavMenu from "@/components/molecules/CrmNavMenu/CrmNavMenu";
 import { getCrmDashboard, fromApiStage, LOST_REASON_LABELS } from "@/lib/api/crm";
 import { STAGES } from "@/lib/mock/opportunities";
@@ -132,6 +133,45 @@ export default function CrmDashboardPage() {
                     <div className={styles.barRow} key={status}>
                       <span className={styles.barLabel}>{PROPOSAL_STATUS_LABELS[status] || status}</span>
                       <span className={styles.barValue}>{total}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+          </div>
+
+          <div className={styles.row}>
+            <Card
+              title="Oportunidades estagnadas"
+              subtitle="Abertas, com próxima ação vencida — Caderno Técnico §11"
+            >
+              {dashboard.staleOpportunities.count === 0 ? (
+                <EmptyState icon="check" title="Nenhuma estagnada" description="Toda oportunidade aberta tem próxima ação em dia." />
+              ) : (
+                <>
+                  <p className={styles.staleCount}>{dashboard.staleOpportunities.count} oportunidade(s) sem atividade</p>
+                  <Table
+                    columns={[
+                      { key: "stage", label: "Etapa", render: (r) => stageLabel(r.stage) },
+                      { key: "nextAction", label: "Próxima ação" },
+                      { key: "nextActionDueAt", label: "Venceu em", render: (r) => formatDateTime(r.nextActionDueAt) },
+                    ]}
+                    rows={dashboard.staleOpportunities.items}
+                    emptyMessage="Nenhuma oportunidade estagnada."
+                  />
+                </>
+              )}
+            </Card>
+
+            <Card title="Tempo médio parado por etapa" subtitle="Dias desde a última mudança de estágio — oportunidades abertas">
+              {Object.keys(dashboard.avgTimeInStageByStageDays).length === 0 ? (
+                <EmptyState icon="clock" title="Sem dados" description="Nenhuma oportunidade aberta no momento." />
+              ) : (
+                <div className={styles.barList}>
+                  {Object.entries(dashboard.avgTimeInStageByStageDays).map(([stage, info]) => (
+                    <div className={styles.stageTimeRow} key={stage}>
+                      <span className={styles.barLabel}>{stageLabel(stage)}</span>
+                      <span className={styles.barValue}>{info.avgDays.toFixed(1)}d ({info.total})</span>
                     </div>
                   ))}
                 </div>
