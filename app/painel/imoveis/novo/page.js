@@ -156,6 +156,15 @@ export default function NovoImovelPage() {
 
   async function goNext() {
     if (isLast) {
+      // FIX (auditoria externa Nayara, re-auditoria round 2, M3-R01): "Nome" era o único campo
+      // marcado required nesta etapa — o wizard deixava passar por todas as 8 etapas sem
+      // "Código interno" preenchido (obrigatório no backend) e o erro só aparecia no clique final,
+      // com mensagem genérica. Agora bloqueia antes de chamar a API, com mensagem clara.
+      if (!basic.name.trim() || !basic.internalCode.trim()) {
+        setSubmitError('Preencha "Nome / referência do imóvel" e "Código interno" (etapa Informações básicas) antes de concluir.');
+        setStepIndex(0);
+        return;
+      }
       setSubmitting(true);
       setSubmitError("");
       try {
@@ -233,7 +242,11 @@ export default function NovoImovelPage() {
 
   // Percentual de preenchimento dos campos obrigatórios de cada etapa — exibido no hover do StepHeader.
   const stepCompletion = STEPS.map((s) => {
-    if (s.id === "basico") return basic.name.trim() ? 100 : 0;
+    if (s.id === "basico") {
+      const required = [basic.name, basic.internalCode];
+      const done = required.filter((v) => String(v || "").trim()).length;
+      return Math.round((done / required.length) * 100);
+    }
     if (s.id === "localizacao") {
       const required = [address.zipCode, address.city, address.street, address.neighborhood, address.state];
       const done = required.filter((v) => String(v || "").trim()).length;
@@ -265,7 +278,7 @@ export default function NovoImovelPage() {
                   />
                 </FormField>
               </div>
-              <FormField label="Código interno" htmlFor="n-internal-code" helper="Código comercial usado internamente (ex.: AP-0231).">
+              <FormField label="Código interno" htmlFor="n-internal-code" required helper="Código comercial usado internamente (ex.: AP-0231).">
                 <Input
                   id="n-internal-code"
                   placeholder="Ex.: AP-0231"
