@@ -11,7 +11,7 @@ import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import Table from "@/components/organisms/Table/Table";
 import CrmNavMenu from "@/components/molecules/CrmNavMenu/CrmNavMenu";
-import { getCrmDashboard, fromApiStage, LOST_REASON_LABELS } from "@/lib/api/crm";
+import { getCrmDashboard, fromApiStage, stageLabelPt, LOST_REASON_LABELS } from "@/lib/api/crm";
 import { STAGES } from "@/lib/mock/opportunities";
 import { formatBRL, formatDateTime } from "@/lib/format";
 import styles from "./page.module.css";
@@ -27,7 +27,7 @@ const PROPOSAL_STATUS_LABELS = {
 
 function stageLabel(apiStage) {
   const key = fromApiStage(apiStage);
-  return STAGES.find((s) => s.key === key)?.label || apiStage;
+  return STAGES.find((s) => s.key === key)?.label || stageLabelPt(apiStage);
 }
 
 export default function CrmDashboardPage() {
@@ -67,7 +67,7 @@ export default function CrmDashboardPage() {
             <StatTile label="Em aberto" value={dashboard.opportunities.open} tone="info" icon="clock" />
             <StatTile
               label="Taxa de conversão"
-              value={dashboard.conversionRate != null ? `${(dashboard.conversionRate * 100).toFixed(1)}%` : "—"}
+              value={dashboard.conversionRate != null ? `${(dashboard.conversionRate * 100).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%` : "—"}
               tone="success"
               icon="check"
             />
@@ -171,7 +171,7 @@ export default function CrmDashboardPage() {
                   {Object.entries(dashboard.avgTimeInStageByStageDays).map(([stage, info]) => (
                     <div className={styles.stageTimeRow} key={stage}>
                       <span className={styles.barLabel}>{stageLabel(stage)}</span>
-                      <span className={styles.barValue}>{info.avgDays.toFixed(1)}d ({info.total})</span>
+                      <span className={styles.barValue}>{info.avgDays.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}d ({info.total})</span>
                     </div>
                   ))}
                 </div>
