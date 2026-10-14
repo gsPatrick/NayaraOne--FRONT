@@ -114,7 +114,7 @@ export default function ContasBancariasPage() {
           <div className={styles.nameCell}>
             <span className={styles.nameMain}>{bankAccountLabel(row, personName(row.ownerPersonId))}</span>
             <span className={styles.nameSub}>
-              {row.bankCode ? `${getBankName(row.bankCode)} · Ag. ${row.agency} · Conta ${maskAccountNumber(row.accountNumber)}` : "Chave PIX"} · {personName(row.ownerPersonId)}
+              {row.bankCode ? `${getBankName(row.bankCode)}${row.agency ? ` · Ag. ${row.agency}` : ""} · Conta ${maskAccountNumber(row.accountNumber)}` : "Chave PIX"} · {personName(row.ownerPersonId)}
             </span>
           </div>
         </div>

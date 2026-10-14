@@ -509,7 +509,7 @@ export default function LancamentoDetailPage({ params }) {
                       <div>
                         <span className={styles.listRowTitle}>{account.bankCode ? getBankName(account.bankCode) : "Chave PIX"}</span>
                         <span className={styles.listRowSubtitle}>
-                          {account.bankCode ? `${getBankName(account.bankCode)} · Ag. ${account.agency} · Conta ${maskAccountNumber(account.accountNumber)}` : "Chave PIX"}
+                          {account.bankCode ? `${getBankName(account.bankCode)}${account.agency ? ` · Ag. ${account.agency}` : ""} · Conta ${maskAccountNumber(account.accountNumber)}` : "Chave PIX"}
                         </span>
                       </div>
                     </div>
