@@ -143,7 +143,7 @@ export default function CrmDashboardPage() {
           <div className={styles.row}>
             <Card
               title="Oportunidades estagnadas"
-              subtitle="Abertas, com próxima ação vencida — Caderno Técnico §11"
+              subtitle="Abertas, com próxima ação vencida"
             >
               {dashboard.staleOpportunities.count === 0 ? (
                 <EmptyState icon="check" title="Nenhuma estagnada" description="Toda oportunidade aberta tem próxima ação em dia." />

@@ -91,7 +91,7 @@ export default function ObrasConfiguracoesPage() {
       ) : (
         <Card
           title="SLA de garantia por severidade"
-          subtitle="Prazo padrão de pós-obra (REG-OBR-002) — Motor de Regras, Caderno §9/§12"
+          subtitle="Prazo padrão de atendimento de pós-obra por severidade"
         >
           <p className={styles.helper}>
             Cada abertura de chamado de garantia calcula o prazo (SLA) a partir da severidade, usando a regra ativa abaixo.

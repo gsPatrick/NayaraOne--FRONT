@@ -143,7 +143,7 @@ export default function ClausulasPage() {
 
       <Card
         title="Cláusulas"
-        subtitle="Componentes versionados e homologados, reutilizáveis em templates de contrato (JUR-002)"
+        subtitle="Componentes versionados e homologados, reutilizáveis em templates de contrato"
         actions={<Button size="sm" onClick={() => setCreateModalOpen(true)}><Icon name="plus" size={16} /> Nova cláusula</Button>}
       >
         <div className={styles.toolbar}>

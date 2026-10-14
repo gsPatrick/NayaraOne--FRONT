@@ -238,9 +238,6 @@ export default function NovoLancamentoPage() {
                 </Select>
               </FormField>
 
-              <FormField label="Chave de idempotência" htmlFor="f-idem" helper="Opcional — evita duplicidade se reenviado">
-                <Input id="f-idem" value={form.idempotencyKey} onChange={update("idempotencyKey")} placeholder="Ex: aluguel-prop-1-ago" />
-              </FormField>
             </div>
           </Card>
         )}

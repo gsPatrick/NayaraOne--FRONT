@@ -489,7 +489,7 @@ export default function ObraDetalhePage({ params }) {
           </div>
         </Card>
 
-        <Card title="Saúde da obra" subtitle="Read model de custo e progresso (calculado em tempo real)">
+        <Card title="Saúde da obra" subtitle="Custo e progresso calculados em tempo real">
           {healthError ? (
             <Alert tone="danger">{healthError}</Alert>
           ) : !health ? (
@@ -580,7 +580,7 @@ export default function ObraDetalhePage({ params }) {
           )}
         </Card>
 
-        <Card title="NAY Obras" subtitle="Resumo determinístico (rule-based) de progresso, custos e riscos — NAY sugere, nunca decide">
+        <Card title="NAY Obras" subtitle="Resumo automático de progresso, custos e riscos — NAY sugere, nunca decide">
           {nayObrasError ? (
             <Alert tone="danger">{nayObrasError}</Alert>
           ) : !nayObras ? (
@@ -887,7 +887,7 @@ export default function ObraDetalhePage({ params }) {
           <FormField label="Percentual planejado (%)" htmlFor="m-stage-pct" helper="Opcional">
             <DecimalInput id="m-stage-pct" value={stageForm.plannedPct} onChange={(e) => setStageForm((p) => ({ ...p, plannedPct: e.target.value }))} />
           </FormField>
-          <FormField label="Valor previsto (R$)" htmlFor="m-stage-cost" helper="Cronograma físico-financeiro — Caderno §5">
+          <FormField label="Valor previsto (R$)" htmlFor="m-stage-cost" helper="Cronograma físico-financeiro da etapa">
             <DecimalInput id="m-stage-cost" value={stageForm.plannedCost} onChange={(e) => setStageForm((p) => ({ ...p, plannedCost: e.target.value }))} />
           </FormField>
           <FormField

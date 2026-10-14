@@ -369,7 +369,7 @@ export default function LancamentoDetailPage({ params }) {
                 approvalGateSatisfied ? (
                   <Button onClick={handleSettle} loading={busy}><Icon name="check" size={16} /> Liquidar</Button>
                 ) : (
-                  <Button disabled title="Aguardando aprovação prévia antes de liquidar (FIN-004)">
+                  <Button disabled title="Aguardando aprovação prévia antes de liquidar">
                     <Icon name="check" size={16} /> Aguardando aprovação
                   </Button>
                 )
@@ -411,7 +411,7 @@ export default function LancamentoDetailPage({ params }) {
           ) : null}
 
           {editOpen ? (
-            <Card title="Editar lançamento" subtitle="Só é possível editar enquanto PENDING — ledger imutável após liquidar (FIN-003). Trocar a conta/favorecido depois de uma aprovação invalida a aprovação (FIN-004).">
+            <Card title="Editar lançamento" subtitle="Só é possível editar enquanto estiver pendente — o lançamento vira imutável depois de liquidado. Trocar a conta/favorecido depois de uma aprovação cancela a aprovação já concedida.">
               {editError ? <Alert tone="danger" className={styles.notice}>{editError}</Alert> : null}
               <div className={styles.editGrid}>
                 <FormField label="Descrição" htmlFor="e-desc">
@@ -463,7 +463,6 @@ export default function LancamentoDetailPage({ params }) {
                   <div className={styles.detailRow}><dt>Liquidado em</dt><dd>{entry.settledAt ? formatDateTime(entry.settledAt) : "—"}</dd></div>
                   <div className={styles.detailRow}><dt>Centro de custo</dt><dd>{costCenter ? `${costCenter.code} — ${costCenter.name}` : "—"}</dd></div>
                   <div className={styles.detailRow}><dt>Centro de resultado</dt><dd>{resultCenter ? `${resultCenter.code} — ${resultCenter.name}` : "—"}</dd></div>
-                  <div className={styles.detailRow}><dt>Chave de idempotência</dt><dd>{entry.idempotencyKey || "—"}</dd></div>
                   <div className={styles.detailRow}><dt>ID</dt><dd className={styles.mono}>{entry.id}</dd></div>
                 </dl>
               </Card>
