@@ -27,6 +27,7 @@ import { listProjects } from "@/lib/api/construction";
 import { apiFetch } from "@/lib/api/client";
 import { uploadFile } from "@/lib/api/legal";
 import { formatDateTime, formatQuantity, toNumber } from "@/lib/format";
+import { getCurrentUser } from "@/lib/auth/session";
 import styles from "./page.module.css";
 
 const STATUS_LABELS = { OPEN: "Em contagem", COMPLETED: "Fechado" };
@@ -39,6 +40,7 @@ function userName(users, id) {
 export default function ContagemDetailPage() {
   const { id } = useParams();
   const { confirm, ConfirmDialog } = useConfirm();
+  const currentUser = getCurrentUser();
 
   const [count, setCount] = useState(null);
   const [items, setItems] = useState([]);
@@ -312,6 +314,10 @@ export default function ContagemDetailPage() {
                 {countLines.map((line) => {
                   const hasDivergence = line.expectedQuantity != null && Number(line.divergence) !== 0;
                   const isAdjusted = Boolean(line.adjustmentMovementId);
+                  // Quem abriu o inventário não pode aprovar o próprio ajuste (EST-008) — mesmo
+                  // padrão já usado em Financeiro/Compras: botão já vem desabilitado pra quem
+                  // solicitou, sem precisar clicar pra descobrir que vai ser bloqueado.
+                  const isSelfApproval = Boolean(count?.createdBy && currentUser?.id && count.createdBy === currentUser.id);
                   return (
                     <div key={line.id} className={styles.lineRow}>
                       <div className={styles.lineInfo}>
@@ -328,7 +334,11 @@ export default function ContagemDetailPage() {
                       ) : null}
                       <div className={styles.lineAction}>
                         {hasDivergence && !isAdjusted ? (
-                          <Button size="sm" variant="danger" onClick={() => handleAdjust(line)} loading={busyLineId === line.id}>Ajustar</Button>
+                          isSelfApproval ? (
+                            <span className={styles.lineMeta}>Você abriu — não pode aprovar</span>
+                          ) : (
+                            <Button size="sm" variant="danger" onClick={() => handleAdjust(line)} loading={busyLineId === line.id}>Ajustar</Button>
+                          )
                         ) : isAdjusted ? (
                           <Badge tone="success">Ajustado</Badge>
                         ) : null}
