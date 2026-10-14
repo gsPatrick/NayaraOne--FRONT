@@ -146,7 +146,7 @@ export default function NovoLancamentoPage() {
   return (
     <AppShell title="Novo lançamento" backHref="/painel/financeiro/lancamentos">
       <div className={styles.wrap}>
-        <Alert tone="info" title="Ledger imutável (FIN-003/FIN-010)">
+        <Alert tone="info" title="Ledger imutável">
           Após criado, um lançamento nunca é editado em valor — correções sempre geram um lançamento de estorno.
         </Alert>
 

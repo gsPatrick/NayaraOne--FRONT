@@ -100,9 +100,7 @@ export default function ObrasConfiguracoesPage() {
           </p>
 
           {current ? (
-            <p className={styles.current}>
-              Versão vigente: <code>{current.ruleVersionId}</code>
-            </p>
+            <p className={styles.current}>Esta é a regra vigente — já em uso nos chamados abertos a partir de agora.</p>
           ) : null}
 
           {notice ? <Alert tone="success" className={styles.notice}>{notice}</Alert> : null}
