@@ -79,7 +79,7 @@ export const NAV_SECTIONS = [
           { label: "Movimentos", href: "/painel/estoque/movimentos" },
           { label: "Recebimentos (NF)", href: "/painel/estoque/recebimentos" },
           { label: "Requisições", href: "/painel/estoque/requisicoes" },
-          { label: "Patrimônio & QR", href: "/painel/estoque/patrimonio" },
+          { label: "Patrimônio, Ferramentas & QR", href: "/painel/estoque/patrimonio" },
           { label: "Manutenção", href: "/painel/estoque/manutencao" },
           { label: "Perdas & Extravios", href: "/painel/estoque/perdas" },
           { label: "Inventário físico", href: "/painel/estoque/contagem" },
