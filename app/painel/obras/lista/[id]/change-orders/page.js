@@ -37,7 +37,7 @@ export default function ChangeOrdersObraPage({ params }) {
   const { confirm, ConfirmDialog } = useConfirm();
 
   const [coOpen, setCoOpen] = useState(false);
-  const [coForm, setCoForm] = useState({ reasonCode: "", description: "", budgetImpact: "", scheduleImpactDays: "", file: null });
+  const [coForm, setCoForm] = useState({ reasonCode: "", description: "", budgetImpact: "", scheduleImpactDays: "0", file: null });
   const [savingCo, setSavingCo] = useState(false);
   const [decidingCoId, setDecidingCoId] = useState(null);
 
@@ -106,7 +106,7 @@ export default function ChangeOrdersObraPage({ params }) {
   }
 
   function openChangeOrderModal() {
-    setCoForm({ reasonCode: "", description: "", budgetImpact: "", scheduleImpactDays: "", file: null });
+    setCoForm({ reasonCode: "", description: "", budgetImpact: "", scheduleImpactDays: "0", file: null });
     setCoOpen(true);
   }
 
@@ -142,7 +142,11 @@ export default function ChangeOrdersObraPage({ params }) {
         reasonCode: coForm.reasonCode,
         description: coForm.description.trim(),
         budgetImpact: toNumber(coForm.budgetImpact),
-        scheduleImpactDays: coForm.scheduleImpactDays !== "" ? Number(coForm.scheduleImpactDays) : undefined,
+        // BUG REAL CORRIGIDO (Claude Browser, 13/10/2026): o backend exige scheduleImpactDays
+        // numérico sempre (0 é um valor válido para "sem impacto de prazo", mas `undefined`
+        // não é) — com o campo vazio este formulário mandava `undefined` e o backend recusava
+        // com "scheduleImpactDays" é obrigatório. Agora sempre manda um número (0 por padrão).
+        scheduleImpactDays: coForm.scheduleImpactDays !== "" ? Number(coForm.scheduleImpactDays) : 0,
         evidenceFileIds,
         idempotencyKey: generateIdempotencyKey(),
       });
@@ -270,7 +274,7 @@ export default function ChangeOrdersObraPage({ params }) {
           <FormField label="Impacto financeiro (R$)" htmlFor="m-co-impact" required helper="Positivo aumenta o orçamento, negativo reduz">
             <DecimalInput id="m-co-impact" value={coForm.budgetImpact} onChange={(e) => setCoForm((p) => ({ ...p, budgetImpact: e.target.value }))} placeholder="0,00" />
           </FormField>
-          <FormField label="Impacto de prazo (dias)" htmlFor="m-co-schedule" helper="Opcional">
+          <FormField label="Impacto de prazo (dias)" htmlFor="m-co-schedule" helper="Use 0 se não houver impacto de prazo">
             <Input id="m-co-schedule" type="number" value={coForm.scheduleImpactDays} onChange={(e) => setCoForm((p) => ({ ...p, scheduleImpactDays: e.target.value }))} placeholder="0" />
           </FormField>
           <div className={styles.span2}>
