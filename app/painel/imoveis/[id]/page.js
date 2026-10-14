@@ -105,11 +105,15 @@ export default function PropertyDetailPage({ params }) {
       .then(async ([apiProperty, occurrences, priceHistory, allProperties]) => {
         if (cancelled || !apiProperty) return;
 
+        // BUG REAL CORRIGIDO (auditoria Claude Browser, rodada final, 13/10/2026): o cartão
+        // "Proprietários" aparecia com nome e avatar vazios — `getPerson` (mapPerson) devolve
+        // o nome no campo `legalName`, não `name` (que nunca existiu no objeto retornado pela
+        // API mapeada), então `person?.name` sempre resolvia para string vazia.
         const ownerNames = await Promise.all(
           (apiProperty.owners || []).map((owner) =>
             owner.personId
               ? getPerson(owner.personId)
-                  .then((person) => person?.name || "")
+                  .then((person) => person?.legalName || person?.preferredName || "")
                   .catch(() => "")
               : Promise.resolve("")
           )

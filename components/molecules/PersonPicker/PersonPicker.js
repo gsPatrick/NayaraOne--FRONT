@@ -16,7 +16,7 @@ import styles from "./PersonPicker.module.css";
 // memória do componente) e filtra localmente por nome, já que a API hoje não expõe busca por
 // texto em /people — filtro client-side é o caminho correto sem exigir mudança de contrato da
 // API para este fix.
-export default function PersonPicker({ id, value, personId, onSelect, placeholder = "Buscar contato pelo nome..." }) {
+export default function PersonPicker({ id, value, personId, onSelect, placeholder = "Buscar contato pelo nome...", unlinkedHint }) {
   const [query, setQuery] = useState(value || "");
   const [open, setOpen] = useState(false);
   const [people, setPeople] = useState([]);
@@ -87,7 +87,14 @@ export default function PersonPicker({ id, value, personId, onSelect, placeholde
       ) : personId ? (
         <span className={styles.linkedHint}>Vinculado ao cadastro de Contatos</span>
       ) : query.trim() ? (
-        <span className={styles.unlinkedHint}>Nenhum contato selecionado — será salvo apenas como texto.</span>
+        // BUG REAL CORRIGIDO (auditoria Claude Browser, rodada final, 13/10/2026): esta dica
+        // genérica ("será salvo apenas como texto") contradiz usos onde texto livre NÃO é
+        // aceito (ex: proprietário de imóvel, que exige personId real) — a tela mostrava as
+        // duas mensagens opostas ao mesmo tempo. `unlinkedHint` deixa o chamador sobrescrever
+        // o texto quando o comportamento real é diferente do padrão.
+        <span className={styles.unlinkedHint}>
+          {unlinkedHint || "Nenhum contato selecionado — será salvo apenas como texto."}
+        </span>
       ) : null}
     </div>
   );

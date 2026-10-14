@@ -293,10 +293,16 @@ export default function NovoImovelPage() {
 
         for (const o of owners) {
           if (!o.personId) continue;
+          // BUG REAL CORRIGIDO (auditoria Claude Browser, rodada final, 13/10/2026): "100" no
+          // campo Percentual era só placeholder visual (cinza), não um valor preenchido — ao
+          // deixar vazio, `o.percentage || undefined` mandava `undefined` pro backend, que
+          // persistia 0%. O cartão de detalhe então mostrava "0% de participação". Agora, se
+          // o usuário não digitar nada, assume-se 100% de verdade (dono único é o caso comum;
+          // para sociedade, o usuário já digita o percentual real de cada proprietário).
           await addPropertyOwner(created.id, {
             personId: o.personId,
             roleCode: o.roleCode,
-            ownershipPercent: o.percentage || undefined,
+            ownershipPercent: o.percentage.trim() !== "" ? o.percentage : "100",
           });
         }
 
@@ -631,6 +637,7 @@ export default function NovoImovelPage() {
                         value={owner.name}
                         personId={owner.personId}
                         onSelect={({ name, personId }) => updateOwnerFields(index, { name, personId })}
+                        unlinkedHint="Selecione um contato da lista — texto livre não é salvo como proprietário."
                       />
                     </FormField>
                     <FormField label="Papel" htmlFor={`n-owner-role-${index}`}>
@@ -783,7 +790,7 @@ export default function NovoImovelPage() {
                 <p className={styles.reviewTitle}>Proprietários</p>
                 {owners.map((o, i) => (
                   <p className={styles.reviewMeta} key={i}>
-                    {o.name || "—"} — {o.percentage || "0"}% · {OWNER_ROLE_LABELS[o.roleCode] || o.roleCode}
+                    {o.name || "—"} — {o.percentage || "100"}% · {OWNER_ROLE_LABELS[o.roleCode] || o.roleCode}
                   </p>
                 ))}
               </div>
