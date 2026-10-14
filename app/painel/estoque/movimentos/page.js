@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -16,13 +16,20 @@ import StickyActionBar from "@/components/organisms/StickyActionBar/StickyAction
 import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
-import { listInventoryItems, listInventoryLocations, recordInventoryMovement, getItemBalances } from "@/lib/api/inventory";
+import { listInventoryItems, listInventoryLocations, recordInventoryMovement, getItemBalances, listInventoryMovements } from "@/lib/api/inventory";
+import { generateIdempotencyKey } from "@/lib/offline/offlineQueue";
 import { formatQuantity, formatDateTime, toNumber } from "@/lib/format";
 import styles from "../../obras/lista/page.module.css";
 
 const MOVEMENT_TYPE_LABELS = { IN: "Entrada", OUT: "Saída", RETURN: "Devolução", TRANSFER: "Transferência", ADJUSTMENT: "Ajuste", LOSS: "Perda", DISPOSAL: "Descarte" };
 const MOVEMENT_TYPE_TONE = { IN: "success", OUT: "info", RETURN: "neutral", TRANSFER: "info", ADJUSTMENT: "warning", LOSS: "danger", DISPOSAL: "danger" };
 const SOURCE_REQUIRED = { OUT: "source", LOSS: "source", DISPOSAL: "source", IN: "destination", RETURN: "destination", TRANSFER: "both", ADJUSTMENT: "either" };
+// BUG REAL CORRIGIDO (auditoria Nayara, Marco 7, F1): "Perda" aparecia como tipo de movimento
+// registrável direto por aqui, mas o backend (EST-010) exige que toda perda venha de um caso de
+// perda já APROVADO em Perdas & Extravios — registrar LOSS direto por este formulário sempre
+// falha, por desenho. Removida dessa lista; o label/tone continuam existindo pra exibir no
+// histórico movimentos antigos/vindos de outro fluxo.
+const MOVEMENT_TYPE_OPTIONS = Object.entries(MOVEMENT_TYPE_LABELS).filter(([k]) => k !== "LOSS");
 
 export default function MovimentosPage() {
   const router = useRouter();
@@ -34,6 +41,20 @@ export default function MovimentosPage() {
   const [actionError, setActionError] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  // Idempotência client-side (achado da auditoria de idempotência, Marco 7): sem isso, um
+  // clique em "Registrar" cuja resposta se perde por falha de rede e é reenviado manualmente
+  // pelo usuário (novo clique) gerava um SEGUNDO movimento de estoque — recordInventoryMovement
+  // é um INSERT simples sem proteção de UI contra isso além do loading state. O backend
+  // (movements.service.js) já deduplica por `idempotencyKey` quando informado; o front não
+  // enviava nenhum. Gera um UUID no primeiro clique e reenvia o MESMO UUID em qualquer retry
+  // do mesmo envio, resetando só quando o modal é reaberto para um novo registro.
+  const movementIdempotencyKeyRef = useRef(null);
+  // BUG REAL CORRIGIDO (auditoria Nayara, Marco 7, F3): não existia histórico/ledger de
+  // movimentações em lugar nenhum — só saldo atual agregado. Seção própria, com filtros.
+  const [history, setHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(true);
+  const [historyError, setHistoryError] = useState("");
+  const [historyFilters, setHistoryFilters] = useState({ inventoryItemId: "", locationId: "", movementType: "" });
   const [form, setForm] = useState({
     inventoryItemId: "", movementType: "IN", quantity: "", sourceLocationId: "", destinationLocationId: "",
     responsiblePersonId: "", reason: "",
@@ -52,6 +73,16 @@ export default function MovimentosPage() {
   }
   useEffect(() => { load(); }, []);
 
+  function loadHistory() {
+    setHistoryLoading(true);
+    setHistoryError("");
+    listInventoryMovements(historyFilters)
+      .then((rows) => setHistory(rows || []))
+      .catch((err) => setHistoryError(err?.message || "Não foi possível carregar o histórico."))
+      .finally(() => setHistoryLoading(false));
+  }
+  useEffect(() => { loadHistory(); }, [historyFilters.inventoryItemId, historyFilters.locationId, historyFilters.movementType]);
+
   useEffect(() => {
     if (!form.inventoryItemId) {
       setBalances([]);
@@ -63,7 +94,12 @@ export default function MovimentosPage() {
   const requirement = SOURCE_REQUIRED[form.movementType];
   const needsReason = ["ADJUSTMENT", "LOSS", "DISPOSAL"].includes(form.movementType);
   const item = items.find((i) => i.id === form.inventoryItemId);
-  const needsResponsible = item && ["TOOL", "ASSET"].includes(item.itemType) && ["OUT", "TRANSFER"].includes(form.movementType);
+  // BUG REAL CORRIGIDO (auditoria Nayara, Marco 7, F17): responsável só era exigido pra
+  // ferramenta/patrimônio — qualquer "Saída" manual de consumível passava sem controle nenhum
+  // (risco "Baixa sem retirada", Caderno seção 13). Backend agora exige pra toda Saída manual.
+  const needsResponsible =
+    (form.movementType === "OUT") ||
+    (item && ["TOOL", "ASSET"].includes(item.itemType) && form.movementType === "TRANSFER");
 
   const isValid =
     form.inventoryItemId &&
@@ -81,6 +117,9 @@ export default function MovimentosPage() {
     if (!isValid) return;
     setSaving(true);
     setActionError("");
+    if (!movementIdempotencyKeyRef.current) {
+      movementIdempotencyKeyRef.current = generateIdempotencyKey();
+    }
     try {
       await recordInventoryMovement({
         inventoryItemId: form.inventoryItemId,
@@ -90,10 +129,13 @@ export default function MovimentosPage() {
         destinationLocationId: form.destinationLocationId || undefined,
         responsiblePersonId: form.responsiblePersonId || undefined,
         reason: form.reason || undefined,
+        idempotencyKey: movementIdempotencyKeyRef.current,
       });
+      movementIdempotencyKeyRef.current = null;
       setModalOpen(false);
       setForm({ inventoryItemId: "", movementType: "IN", quantity: "", sourceLocationId: "", destinationLocationId: "", responsiblePersonId: "", reason: "" });
       load();
+      loadHistory();
     } catch (err) {
       setActionError(err?.message || "Não foi possível registrar o movimento.");
     } finally {
@@ -104,6 +146,17 @@ export default function MovimentosPage() {
   const balanceColumns = [
     { key: "location", label: "Local", width: "60%", render: (row) => row.location?.name || row.locationId },
     { key: "qty", label: "Saldo", width: "40%", render: (row) => formatQuantity(row.quantityOnHand) },
+  ];
+
+  const historyColumns = [
+    { key: "movedAt", label: "Data", render: (row) => formatDateTime(row.movedAt) },
+    { key: "type", label: "Tipo", render: (row) => <Badge tone={MOVEMENT_TYPE_TONE[row.movementType]}>{MOVEMENT_TYPE_LABELS[row.movementType] || row.movementType}</Badge> },
+    { key: "item", label: "Item", render: (row) => row.inventoryItem?.name || "—" },
+    { key: "qty", label: "Quantidade", render: (row) => formatQuantity(row.quantity) },
+    { key: "from", label: "De", render: (row) => row.sourceLocation?.name || "—" },
+    { key: "to", label: "Para", render: (row) => row.destinationLocation?.name || "—" },
+    { key: "reason", label: "Motivo", render: (row) => row.reason || "—" },
+    { key: "by", label: "Responsável", render: (row) => row.movedByUser?.name || "—" },
   ];
 
   return (
@@ -133,8 +186,43 @@ export default function MovimentosPage() {
         ) : null}
       </Card>
 
+      <Card title="Histórico de movimentações" subtitle="Quem moveu o quê, quando, de onde pra onde e por quê">
+        <div className={styles.toolbar}>
+          <Select value={historyFilters.inventoryItemId} onChange={(e) => setHistoryFilters((p) => ({ ...p, inventoryItemId: e.target.value }))}>
+            <option value="">Todos os itens</option>
+            {items.map((i) => (
+              <option key={i.id} value={i.id}>{i.name}</option>
+            ))}
+          </Select>
+          <Select value={historyFilters.locationId} onChange={(e) => setHistoryFilters((p) => ({ ...p, locationId: e.target.value }))}>
+            <option value="">Todos os locais</option>
+            {locations.map((l) => (
+              <option key={l.id} value={l.id}>{l.name}</option>
+            ))}
+          </Select>
+          <Select value={historyFilters.movementType} onChange={(e) => setHistoryFilters((p) => ({ ...p, movementType: e.target.value }))}>
+            <option value="">Todos os tipos</option>
+            {Object.entries(MOVEMENT_TYPE_LABELS).map(([k, v]) => (
+              <option key={k} value={k}>{v}</option>
+            ))}
+          </Select>
+        </div>
+        {historyError ? <Alert tone="danger" title="Não foi possível carregar o histórico">{historyError}</Alert> : null}
+        <Table
+          columns={historyColumns}
+          rows={history}
+          loading={historyLoading}
+          emptyMessage="Nenhuma movimentação registrada ainda."
+        />
+      </Card>
+
       <StickyActionBar>
-        <Button onClick={() => setModalOpen(true)}>
+        <Button
+          onClick={() => {
+            movementIdempotencyKeyRef.current = null;
+            setModalOpen(true);
+          }}
+        >
           <Icon name="plus" size={18} /> Registrar movimento
         </Button>
       </StickyActionBar>
@@ -178,9 +266,9 @@ export default function MovimentosPage() {
             ))}
           </Select>
         </FormField>
-        <FormField label="Tipo de movimento" required>
+        <FormField label="Tipo de movimento" required helper="Para registrar uma perda, use a tela Perdas & Extravios — ela conduz pela aprovação necessária antes de dar baixa no estoque.">
           <Select value={form.movementType} onChange={(e) => setForm((p) => ({ ...p, movementType: e.target.value }))}>
-            {Object.entries(MOVEMENT_TYPE_LABELS).map(([k, v]) => (
+            {MOVEMENT_TYPE_OPTIONS.map(([k, v]) => (
               <option key={k} value={k}>{v}</option>
             ))}
           </Select>
