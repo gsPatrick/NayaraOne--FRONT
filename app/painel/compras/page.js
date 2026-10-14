@@ -23,6 +23,7 @@ import {
 import { listInventoryItems } from "@/lib/api/inventory";
 import { listProjects } from "@/lib/api/construction";
 import { formatDateTime, formatBRL, toNumber } from "@/lib/format";
+import { getCurrentUser } from "@/lib/auth/session";
 
 const STATUS_LABELS = { REQUESTED: "Solicitada", APPROVED: "Aprovada", REJECTED: "Rejeitada", AWARDED: "Adjudicada", CLOSED: "Fechada" };
 const STATUS_TONE = { REQUESTED: "neutral", APPROVED: "info", REJECTED: "danger", AWARDED: "success", CLOSED: "success" };
@@ -47,6 +48,12 @@ export default function ComprasPage() {
 
   const [quoteModal, setQuoteModal] = useState(null); // { request, quotation, offers }
   const [offerForm, setOfferForm] = useState({ supplierPersonId: "", supplierPersonName: "", prices: {} });
+  // F8 (auditoria Marco 7, Nayara): lista não mostrava obra/item/qtd nem tinha tela de detalhe,
+  // e o botão Aprovar/Rejeitar ficava clicável pra quem criou (erro só aparecia depois do clique).
+  const [search, setSearch] = useState("");
+  const [detailModal, setDetailModal] = useState(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const currentUser = getCurrentUser();
 
   function load() {
     setLoading(true);
@@ -174,26 +181,69 @@ export default function ComprasPage() {
     }
   }
 
+  async function openDetail(row) {
+    setDetailLoading(true);
+    setActionError("");
+    try {
+      const full = await getPurchaseRequest(row.id);
+      setDetailModal(full);
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível abrir o detalhe da requisição.");
+    } finally {
+      setDetailLoading(false);
+    }
+  }
+
+  function itemsSummary(row) {
+    if (!Array.isArray(row.items) || row.items.length === 0) return "—";
+    const first = row.items[0].description;
+    return row.items.length > 1 ? `${first} +${row.items.length - 1}` : first;
+  }
+
+  const filteredRequests = requests.filter((row) => {
+    if (!search.trim()) return true;
+    const needle = search.trim().toLowerCase();
+    const haystack = [
+      row.project?.name,
+      row.notes,
+      ...(Array.isArray(row.items) ? row.items.map((it) => it.description) : []),
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    return haystack.includes(needle);
+  });
+
   const columns = [
-    { key: "status", label: "Status", width: "18%", render: (row) => <Badge tone={STATUS_TONE[row.status]}>{STATUS_LABELS[row.status]}</Badge> },
-    { key: "created", label: "Criada em", width: "28%", render: (row) => formatDateTime(row.created_at) },
+    { key: "status", label: "Status", width: "14%", render: (row) => <Badge tone={STATUS_TONE[row.status]}>{STATUS_LABELS[row.status]}</Badge> },
+    { key: "project", label: "Obra", width: "16%", render: (row) => row.project?.name || "Sem obra vinculada" },
+    { key: "items", label: "Item(ns)", width: "22%", render: (row) => itemsSummary(row) },
+    { key: "created", label: "Criada em", width: "18%", render: (row) => formatDateTime(row.created_at) },
     {
       key: "actions",
       label: "",
       width: "30%",
-      render: (row) => (
-        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", flexWrap: "wrap" }}>
-          {row.status === "REQUESTED" ? (
-            <>
-              <Button size="sm" onClick={() => handleDecide(row.id, "APPROVED")} loading={busyId === row.id}>Aprovar</Button>
-              <Button size="sm" variant="danger" onClick={() => handleDecide(row.id, "REJECTED")} loading={busyId === row.id}>Rejeitar</Button>
-            </>
-          ) : null}
-          {row.status === "APPROVED" ? (
-            <Button size="sm" variant="secondary" onClick={() => openQuoteFlow(row)}>Cotar com fornecedores</Button>
-          ) : null}
-        </div>
-      ),
+      render: (row) => {
+        const isOwnRequest = currentUser?.id && row.requestedByUserId && currentUser.id === row.requestedByUserId;
+        return (
+          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", flexWrap: "wrap", alignItems: "center" }}>
+            <Button size="sm" variant="secondary" onClick={() => openDetail(row)} loading={detailLoading}>Ver detalhe</Button>
+            {row.status === "REQUESTED" ? (
+              isOwnRequest ? (
+                <span style={{ fontSize: "var(--text-body-sm)", color: "var(--color-ink-muted)" }}>Você solicitou — não pode decidir</span>
+              ) : (
+                <>
+                  <Button size="sm" onClick={() => handleDecide(row.id, "APPROVED")} loading={busyId === row.id}>Aprovar</Button>
+                  <Button size="sm" variant="danger" onClick={() => handleDecide(row.id, "REJECTED")} loading={busyId === row.id}>Rejeitar</Button>
+                </>
+              )
+            ) : null}
+            {row.status === "APPROVED" ? (
+              <Button size="sm" variant="secondary" onClick={() => openQuoteFlow(row)}>Cotar com fornecedores</Button>
+            ) : null}
+          </div>
+        );
+      },
     },
   ];
 
@@ -210,8 +260,20 @@ export default function ComprasPage() {
         </div>
       ) : null}
 
-      <Card title="Requisições de compra" subtitle="REQUEST → APPROVAL → RFQ → COMPARISON → AWARD → PO">
-        <Table columns={columns} rows={loading ? [] : requests} loading={loading} emptyMessage="Nenhuma requisição de compra registrada." />
+      <Card title="Requisições de compra" subtitle="Solicitação → Aprovação → Cotação → Comparação → Adjudicação → Pedido de compra">
+        <div style={{ marginBottom: 12, maxWidth: 360 }}>
+          <Input
+            placeholder="Buscar por obra, item ou observação..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <Table
+          columns={columns}
+          rows={loading ? [] : filteredRequests}
+          loading={loading}
+          emptyMessage={search.trim() ? "Nenhuma requisição encontrada para esta busca." : "Nenhuma requisição de compra registrada."}
+        />
       </Card>
 
       <StickyActionBar>
@@ -333,6 +395,32 @@ export default function ComprasPage() {
               </div>
             ) : null}
           </>
+        ) : null}
+      </Modal>
+
+      <Modal
+        open={Boolean(detailModal)}
+        onClose={() => setDetailModal(null)}
+        title="Detalhe da requisição de compra"
+        footer={<Button variant="secondary" onClick={() => setDetailModal(null)}>Fechar</Button>}
+      >
+        {detailModal ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <div>
+              <Badge tone={STATUS_TONE[detailModal.status]}>{STATUS_LABELS[detailModal.status]}</Badge>
+            </div>
+            <div><strong>Obra:</strong> {detailModal.project?.name || "Sem obra vinculada"}</div>
+            <div><strong>Criada em:</strong> {formatDateTime(detailModal.created_at)}</div>
+            {detailModal.notes ? <div><strong>Observações:</strong> {detailModal.notes}</div> : null}
+            <div>
+              <strong>Itens:</strong>
+              <ul style={{ margin: "6px 0 0", paddingLeft: 18 }}>
+                {(detailModal.items || []).map((it) => (
+                  <li key={it.id}>{it.description} — quantidade {it.quantity}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
         ) : null}
       </Modal>
 

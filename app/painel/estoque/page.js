@@ -16,7 +16,8 @@ import Alert from "@/components/molecules/Alert/Alert";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
-import { listInventoryItems, createInventoryItem, listInventoryLocations, createInventoryLocation, getItemMinStockRule, createItemMinStockRule } from "@/lib/api/inventory";
+import { listInventoryItems, createInventoryItem, updateInventoryItem, listInventoryLocations, createInventoryLocation, updateInventoryLocation, getItemMinStockRule, createItemMinStockRule } from "@/lib/api/inventory";
+import { listProjects } from "@/lib/api/construction";
 import { formatQuantity, formatBRL, toNumber } from "@/lib/format";
 import styles from "../obras/lista/page.module.css";
 
@@ -38,8 +39,19 @@ export default function EstoqueItensPage() {
   const [savingItem, setSavingItem] = useState(false);
 
   const [locationModalOpen, setLocationModalOpen] = useState(false);
-  const [locationForm, setLocationForm] = useState({ name: "", locationType: "WAREHOUSE" });
+  const [locationForm, setLocationForm] = useState({ name: "", locationType: "WAREHOUSE", projectId: "" });
   const [savingLocation, setSavingLocation] = useState(false);
+
+  // F4 (auditoria Marco 7, Nayara, 14/10/2026): item e local de estoque não podiam ser editados
+  // depois de criados — nem erro, nem ação de "Editar" em lugar nenhum. editingItem/editingLocation
+  // reusam os mesmos modais de criação, só pré-preenchidos e chamando update em vez de create.
+  const [editingItem, setEditingItem] = useState(null);
+  const [editingLocation, setEditingLocation] = useState(null);
+  // BUG REAL CORRIGIDO (auditoria Nayara, Marco 7, F2): sem a lista de obras aqui, era impossível
+  // vincular um canteiro (PROJECT_SITE) a uma obra no cadastro — e sem essa obra, a API passou a
+  // rejeitar (corretamente) qualquer movimento tocando esse local, tornando a transferência pra
+  // canteiro de obra impossível na prática.
+  const [projects, setProjects] = useState([]);
 
   // GAP CORRIGIDO (auditoria de conformidade Marco 7, EST-012: "Estoque mínimo e reposição vêm
   // do Motor de Regras"): a política de mínimo/reposição de cada item é a regra REG-EST-001 do
@@ -61,6 +73,7 @@ export default function EstoqueItensPage() {
       })
       .catch((err) => setLoadError(err?.message || "Não foi possível carregar o estoque."))
       .finally(() => setLoading(false));
+    listProjects().then(setProjects).catch(() => setProjects([]));
   }
 
   useEffect(() => { load(); }, []);
@@ -83,37 +96,86 @@ export default function EstoqueItensPage() {
     setSavingItem(true);
     setActionError("");
     try {
-      await createInventoryItem({
-        name: itemForm.name,
-        sku: itemForm.sku || undefined,
-        unitOfMeasure: itemForm.unitOfMeasure || undefined,
-        itemType: itemForm.itemType,
-        minimumQuantity: itemForm.minimumQuantity ? toNumber(itemForm.minimumQuantity) : undefined,
-      });
+      if (editingItem) {
+        await updateInventoryItem(editingItem.id, {
+          name: itemForm.name,
+          unitOfMeasure: itemForm.unitOfMeasure || undefined,
+          minimumQuantity: itemForm.minimumQuantity ? toNumber(itemForm.minimumQuantity) : null,
+          sku: itemForm.sku !== editingItem.sku ? itemForm.sku : undefined,
+        });
+      } else {
+        await createInventoryItem({
+          name: itemForm.name,
+          sku: itemForm.sku || undefined,
+          unitOfMeasure: itemForm.unitOfMeasure || undefined,
+          itemType: itemForm.itemType,
+          minimumQuantity: itemForm.minimumQuantity ? toNumber(itemForm.minimumQuantity) : undefined,
+        });
+      }
       setItemModalOpen(false);
+      setEditingItem(null);
       setItemForm({ name: "", sku: "", unitOfMeasure: "", itemType: "CONSUMABLE", minimumQuantity: "" });
       load();
     } catch (err) {
-      setActionError(err?.message || "Não foi possível criar o item.");
+      setActionError(err?.message || `Não foi possível ${editingItem ? "salvar" : "criar"} o item.`);
     } finally {
       setSavingItem(false);
     }
   }
 
+  function openEditItem(item) {
+    setEditingItem(item);
+    setItemForm({
+      name: item.name || "",
+      sku: item.sku || "",
+      unitOfMeasure: item.unitOfMeasure || "",
+      itemType: item.itemType || "CONSUMABLE",
+      minimumQuantity: item.minimumQuantity != null ? toInputValue(item.minimumQuantity) : "",
+    });
+    setActionError("");
+    setItemModalOpen(true);
+  }
+
+  const locationNeedsProject = locationForm.locationType === "PROJECT_SITE";
+  const isLocationValid = locationForm.name.trim() && (!locationNeedsProject || locationForm.projectId);
+
   async function handleCreateLocation() {
-    if (!locationForm.name.trim()) return;
+    if (!isLocationValid) return;
     setSavingLocation(true);
     setActionError("");
     try {
-      await createInventoryLocation(locationForm);
+      if (editingLocation) {
+        await updateInventoryLocation(editingLocation.id, {
+          name: locationForm.name,
+          projectId: locationNeedsProject ? locationForm.projectId : null,
+        });
+      } else {
+        await createInventoryLocation({
+          name: locationForm.name,
+          locationType: locationForm.locationType,
+          projectId: locationNeedsProject ? locationForm.projectId : undefined,
+        });
+      }
       setLocationModalOpen(false);
-      setLocationForm({ name: "", locationType: "WAREHOUSE" });
+      setEditingLocation(null);
+      setLocationForm({ name: "", locationType: "WAREHOUSE", projectId: "" });
       load();
     } catch (err) {
-      setActionError(err?.message || "Não foi possível criar o local.");
+      setActionError(err?.message || `Não foi possível ${editingLocation ? "salvar" : "criar"} o local.`);
     } finally {
       setSavingLocation(false);
     }
+  }
+
+  function openEditLocation(location) {
+    setEditingLocation(location);
+    setLocationForm({
+      name: location.name || "",
+      locationType: location.locationType || "WAREHOUSE",
+      projectId: location.projectId || "",
+    });
+    setActionError("");
+    setLocationModalOpen(true);
   }
 
   function toInputValue(value) {
@@ -183,17 +245,28 @@ export default function EstoqueItensPage() {
     {
       key: "policy",
       label: "",
-      width: "14%",
-      render: (row) => (row.itemType === "SERVICE_ITEM" ? null : (
-        <Button size="sm" variant="secondary" onClick={() => openPolicyModal(row)}>Política de mínimo</Button>
-      )),
+      width: "20%",
+      render: (row) => (
+        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+          <Button size="sm" variant="secondary" onClick={() => openEditItem(row)}>Editar</Button>
+          {row.itemType !== "SERVICE_ITEM" ? (
+            <Button size="sm" variant="secondary" onClick={() => openPolicyModal(row)}>Política de mínimo</Button>
+          ) : null}
+        </div>
+      ),
     },
   ];
 
   const locationColumns = [
-    { key: "name", label: "Nome", width: "40%" },
-    { key: "type", label: "Tipo", width: "30%", render: (row) => LOCATION_TYPE_LABELS[row.locationType] || row.locationType },
-    { key: "status", label: "Status", width: "30%", render: (row) => <Badge tone={row.isActive ? "success" : "neutral"}>{row.isActive ? "Ativo" : "Inativo"}</Badge> },
+    { key: "name", label: "Nome", width: "35%" },
+    { key: "type", label: "Tipo", width: "25%", render: (row) => LOCATION_TYPE_LABELS[row.locationType] || row.locationType },
+    { key: "status", label: "Status", width: "20%", render: (row) => <Badge tone={row.isActive ? "success" : "neutral"}>{row.isActive ? "Ativo" : "Inativo"}</Badge> },
+    {
+      key: "actions",
+      label: "",
+      width: "20%",
+      render: (row) => <Button size="sm" variant="secondary" onClick={() => openEditLocation(row)}>Editar</Button>,
+    },
   ];
 
   return (
@@ -244,26 +317,26 @@ export default function EstoqueItensPage() {
 
       <Modal
         open={itemModalOpen}
-        onClose={() => setItemModalOpen(false)}
-        title="Novo item de estoque"
+        onClose={() => { setItemModalOpen(false); setEditingItem(null); }}
+        title={editingItem ? `Editar item — ${editingItem.name}` : "Novo item de estoque"}
         footer={
           <>
-            <Button variant="secondary" onClick={() => setItemModalOpen(false)}>Cancelar</Button>
-            <Button onClick={handleCreateItem} loading={savingItem} disabled={!itemForm.name.trim() || !itemForm.sku.trim() || !itemForm.unitOfMeasure.trim()}>Criar</Button>
+            <Button variant="secondary" onClick={() => { setItemModalOpen(false); setEditingItem(null); }}>Cancelar</Button>
+            <Button onClick={handleCreateItem} loading={savingItem} disabled={!itemForm.name.trim() || !itemForm.sku.trim() || !itemForm.unitOfMeasure.trim()}>{editingItem ? "Salvar" : "Criar"}</Button>
           </>
         }
       >
         <FormField label="Nome" required>
           <Input value={itemForm.name} onChange={(e) => setItemForm((p) => ({ ...p, name: e.target.value }))} placeholder="Ex.: Cimento CP-II 50kg" />
         </FormField>
-        <FormField label="SKU" required>
+        <FormField label="SKU" required helper={editingItem ? "Só pode ser alterado se o item ainda não tiver nenhuma movimentação registrada." : undefined}>
           <Input value={itemForm.sku} onChange={(e) => setItemForm((p) => ({ ...p, sku: e.target.value }))} placeholder="Ex.: CIM-CPII-50" />
         </FormField>
         <FormField label="Unidade de medida" required>
           <Input value={itemForm.unitOfMeasure} onChange={(e) => setItemForm((p) => ({ ...p, unitOfMeasure: e.target.value }))} placeholder="Ex.: SC, UN, M3" />
         </FormField>
-        <FormField label="Tipo" required>
-          <Select value={itemForm.itemType} onChange={(e) => setItemForm((p) => ({ ...p, itemType: e.target.value }))}>
+        <FormField label="Tipo" required helper={editingItem ? "O tipo não pode ser alterado depois de criado." : undefined}>
+          <Select value={itemForm.itemType} onChange={(e) => setItemForm((p) => ({ ...p, itemType: e.target.value }))} disabled={Boolean(editingItem)}>
             {Object.entries(ITEM_TYPE_LABELS).map(([k, v]) => (
               <option key={k} value={k}>{v}</option>
             ))}
@@ -317,25 +390,43 @@ export default function EstoqueItensPage() {
 
       <Modal
         open={locationModalOpen}
-        onClose={() => setLocationModalOpen(false)}
-        title="Novo local"
+        onClose={() => { setLocationModalOpen(false); setEditingLocation(null); }}
+        title={editingLocation ? `Editar local — ${editingLocation.name}` : "Novo local"}
         footer={
           <>
-            <Button variant="secondary" onClick={() => setLocationModalOpen(false)}>Cancelar</Button>
-            <Button onClick={handleCreateLocation} loading={savingLocation} disabled={!locationForm.name.trim()}>Criar</Button>
+            <Button variant="secondary" onClick={() => { setLocationModalOpen(false); setEditingLocation(null); }}>Cancelar</Button>
+            <Button onClick={handleCreateLocation} loading={savingLocation} disabled={!isLocationValid}>{editingLocation ? "Salvar" : "Criar"}</Button>
           </>
         }
       >
         <FormField label="Nome" required>
           <Input value={locationForm.name} onChange={(e) => setLocationForm((p) => ({ ...p, name: e.target.value }))} placeholder="Ex.: Almoxarifado Central" />
         </FormField>
-        <FormField label="Tipo" required>
-          <Select value={locationForm.locationType} onChange={(e) => setLocationForm((p) => ({ ...p, locationType: e.target.value }))}>
+        <FormField label="Tipo" required helper={editingLocation ? "O tipo não pode ser alterado depois de criado." : undefined}>
+          <Select
+            value={locationForm.locationType}
+            onChange={(e) => setLocationForm((p) => ({ ...p, locationType: e.target.value, projectId: e.target.value === "PROJECT_SITE" ? p.projectId : "" }))}
+            disabled={Boolean(editingLocation)}
+          >
             {Object.entries(LOCATION_TYPE_LABELS).map(([k, v]) => (
               <option key={k} value={k}>{v}</option>
             ))}
           </Select>
         </FormField>
+        {locationNeedsProject ? (
+          // BUG REAL CORRIGIDO (auditoria Nayara, Marco 7, F2): um canteiro de obra sem obra
+          // vinculada ficava impossível de movimentar depois (API exige a obra do local, nunca do
+          // movimento — um canteiro pertence a UMA obra fixa). Campo obrigatório só quando o tipo
+          // é "Canteiro de obra".
+          <FormField label="Obra" required helper="Um canteiro de obra precisa estar vinculado a uma obra — isso é o que permite transferir estoque pra ele.">
+            <Select value={locationForm.projectId} onChange={(e) => setLocationForm((p) => ({ ...p, projectId: e.target.value }))}>
+              <option value="">Selecione a obra...</option>
+              {projects.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </Select>
+          </FormField>
+        ) : null}
       </Modal>
     </AppShell>
   );
