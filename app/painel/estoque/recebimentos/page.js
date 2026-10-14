@@ -18,9 +18,9 @@ import FormField from "@/components/molecules/FormField/FormField";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import RowActions from "@/components/molecules/RowActions/RowActions";
 import FileDropInput from "@/components/molecules/FileDropInput/FileDropInput";
-import { listReceipts, createReceipt, reviewReceipt, confirmReceipt, suggestReceiptFromInvoice } from "@/lib/api/inventory";
+import { listReceipts, createReceipt, reviewReceipt, confirmReceipt, suggestReceiptFromInvoice, getReceipt } from "@/lib/api/inventory";
 import { listInventoryItems, listInventoryLocations } from "@/lib/api/inventory";
-import { formatDateTime, toNumber } from "@/lib/format";
+import { formatDateTime, formatBRL, toNumber } from "@/lib/format";
 import styles from "../../obras/lista/page.module.css";
 
 const STATUS_LABELS = { DRAFT: "Rascunho", REVIEWED: "Revisado", COMPLETED: "Confirmado" };
@@ -56,6 +56,15 @@ export default function RecebimentosPage() {
   // Só a resposta do envio mais recente vale: remover/fechar/trocar de NF durante o upload
   // invalida respostas antigas (evita anexar a NF errada ao recebimento).
   const ocrRequestRef = useRef(0);
+
+  // GAP REAL CORRIGIDO (auditoria real Nayara, Marco 7, 2026-10-14, achado F16): "Revisar" mudava
+  // direto pro status REVIEWED sem mostrar os itens/quantidades/custos da NF pro usuário conferir
+  // — o Caderno exige explicitamente "usuário confere antes de confirmar". "Confirmar entrada"
+  // também executava sem nenhum diálogo de confirmação.
+  const [reviewTarget, setReviewTarget] = useState(null);
+  const [reviewItems, setReviewItems] = useState([]);
+  const [reviewError, setReviewError] = useState("");
+  const [confirmTarget, setConfirmTarget] = useState(null);
 
   function load() {
     setLoading(true);
@@ -173,11 +182,28 @@ export default function RecebimentosPage() {
     }
   }
 
-  async function handleReview(id) {
+  async function openReview(id) {
+    setBusyId(id);
+    setReviewError("");
+    try {
+      const full = await getReceipt(id);
+      setReviewItems(full?.items || []);
+      setReviewTarget(full || { id });
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível carregar os itens do recebimento.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function handleReview() {
+    const id = reviewTarget?.id;
     setBusyId(id);
     setActionError("");
     try {
       await reviewReceipt(id);
+      setReviewTarget(null);
+      setReviewItems([]);
       load();
     } catch (err) {
       setActionError(err?.message || "Não foi possível revisar o recebimento.");
@@ -186,17 +212,23 @@ export default function RecebimentosPage() {
     }
   }
 
-  async function handleConfirm(id) {
+  async function handleConfirm() {
+    const id = confirmTarget?.id;
     setBusyId(id);
     setActionError("");
     try {
       await confirmReceipt(id);
+      setConfirmTarget(null);
       load();
     } catch (err) {
       setActionError(err?.message || "Não foi possível confirmar o recebimento.");
     } finally {
       setBusyId(null);
     }
+  }
+
+  function itemName(id) {
+    return items.find((i) => i.id === id)?.name || "—";
   }
 
   function locationName(id) {
@@ -215,10 +247,10 @@ export default function RecebimentosPage() {
       render: (row) => (
         <div style={{ display: "flex", gap: 8 }}>
           {row.status === "DRAFT" ? (
-            <Button size="sm" variant="secondary" onClick={() => handleReview(row.id)} loading={busyId === row.id}>Revisar</Button>
+            <Button size="sm" variant="secondary" onClick={() => openReview(row.id)} loading={busyId === row.id}>Revisar</Button>
           ) : null}
           {row.status === "REVIEWED" ? (
-            <Button size="sm" onClick={() => handleConfirm(row.id)} loading={busyId === row.id}>Confirmar entrada</Button>
+            <Button size="sm" onClick={() => setConfirmTarget(row)} loading={busyId === row.id}>Confirmar entrada</Button>
           ) : null}
         </div>
       ),
@@ -355,6 +387,57 @@ export default function RecebimentosPage() {
         <Button variant="secondary" size="sm" onClick={addLine}>+ Adicionar item</Button>
         </>
         )}
+      </Modal>
+
+      <Modal
+        open={Boolean(reviewTarget)}
+        onClose={() => { setReviewTarget(null); setReviewItems([]); }}
+        title="Conferir recebimento antes de revisar"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => { setReviewTarget(null); setReviewItems([]); }}>Cancelar</Button>
+            <Button onClick={handleReview} loading={busyId === reviewTarget?.id}>Confirmar conferência</Button>
+          </>
+        }
+      >
+        {reviewError ? <Alert tone="danger">{reviewError}</Alert> : null}
+        <p style={{ color: "var(--color-ink-muted)" }}>
+          Confira os itens, quantidades e custos abaixo antes de marcar como revisado.
+        </p>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr style={{ textAlign: "left", borderBottom: "1px solid var(--color-border)" }}>
+              <th style={{ padding: "4px 8px" }}>Item</th>
+              <th style={{ padding: "4px 8px" }}>Quantidade</th>
+              <th style={{ padding: "4px 8px" }}>Custo unitário</th>
+            </tr>
+          </thead>
+          <tbody>
+            {reviewItems.map((it) => (
+              <tr key={it.id} style={{ borderBottom: "1px solid var(--color-border)" }}>
+                <td style={{ padding: "4px 8px" }}>{itemName(it.inventoryItemId)}</td>
+                <td style={{ padding: "4px 8px" }}>{it.quantity}</td>
+                <td style={{ padding: "4px 8px" }}>{it.unitCost != null ? formatBRL(it.unitCost) : "—"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Modal>
+
+      <Modal
+        open={Boolean(confirmTarget)}
+        onClose={() => setConfirmTarget(null)}
+        title="Confirmar entrada no estoque?"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setConfirmTarget(null)}>Cancelar</Button>
+            <Button onClick={handleConfirm} loading={busyId === confirmTarget?.id}>Confirmar entrada</Button>
+          </>
+        }
+      >
+        <p>
+          Confirmar a entrada da NF <strong>{confirmTarget?.invoiceNumber || "—"}</strong> vai atualizar o saldo e o custo médio do estoque. Essa ação não pode ser desfeita pela tela.
+        </p>
       </Modal>
     </AppShell>
   );

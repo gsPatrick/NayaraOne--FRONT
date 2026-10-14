@@ -17,13 +17,14 @@ import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import FileDropInput from "@/components/molecules/FileDropInput/FileDropInput";
-import { listAssets, createAsset, updateAsset, transferAsset, listAssetMovements, loanTool, returnTool, listInventoryLocations, getAssetByTag, disposeAsset, getAssetDisposal } from "@/lib/api/inventory";
+import { listAssets, createAsset, updateAsset, transferAsset, listAssetMovements, loanTool, returnTool, listToolLoans, listInventoryLocations, getAssetByTag, disposeAsset, getAssetDisposal } from "@/lib/api/inventory";
 import { uploadFile } from "@/lib/api/legal";
 import { apiFetch } from "@/lib/api/client";
 import { formatBRL, formatDate, toNumber } from "@/lib/format";
 
 const STATUS_LABELS = { AVAILABLE: "Disponível", IN_USE: "Em uso", LOANED: "Emprestado", MAINTENANCE: "Em manutenção", LOST: "Perdido/extraviado", DISPOSED: "Baixado" };
-const ASSET_MOVEMENT_LABELS = { TRANSFER: "Transferência", DISPOSAL: "Baixa" };
+const ASSET_MOVEMENT_LABELS = { TRANSFER: "Transferência", DISPOSAL: "Baixa", LOAN: "Empréstimo", RETURN: "Devolução" };
+const CONDITION_LABELS = { OK: "Boa", DAMAGED: "Danificada" };
 const STATUS_TONE = { AVAILABLE: "success", IN_USE: "info", LOANED: "warning", MAINTENANCE: "danger", LOST: "danger", DISPOSED: "neutral" };
 
 // Caderno §9 — venda/descarte/doação de patrimônio (assets.service.js#disposeAsset).
@@ -91,6 +92,7 @@ export default function PatrimonioPage() {
   // modal não tinha campo de destino (a API agora exige destinationLocationId).
   const [loanDestinationId, setLoanDestinationId] = useState("");
   const [loanDueAt, setLoanDueAt] = useState("");
+  const [loanConditionOut, setLoanConditionOut] = useState("");
 
   // GAP REAL CORRIGIDO (auditoria de conformidade contratual Marco 7, 2026-10-07): Caderno §9 —
   // não existia fluxo de venda/descarte de patrimônio.
@@ -103,14 +105,20 @@ export default function PatrimonioPage() {
   const [returnTarget, setReturnTarget] = useState(null);
   const [returnCondition, setReturnCondition] = useState("OK");
 
+  // GAP REAL CORRIGIDO (auditoria real Nayara, Marco 7, 2026-10-14, achado F11): não existia
+  // nenhuma tela/seção que listasse empréstimos em aberto ou atrasados — só dava pra saber "quem
+  // está com o quê" abrindo o histórico item por item.
+  const [openLoans, setOpenLoans] = useState([]);
+
   function load() {
     setLoading(true);
     setLoadError("");
-    Promise.all([listAssets(), listInventoryLocations(), apiFetch("/users")])
-      .then(([a, l, u]) => {
+    Promise.all([listAssets(), listInventoryLocations(), apiFetch("/users"), listToolLoans({ status: "OPEN" }), listToolLoans({ status: "OVERDUE" })])
+      .then(([a, l, u, openList, overdueList]) => {
         setAssets(a || []);
         setLocations(l || []);
         setUsers(u || []);
+        setOpenLoans([...(openList || []), ...(overdueList || [])]);
       })
       .catch((err) => setLoadError(err?.message || "Não foi possível carregar o patrimônio."))
       .finally(() => setLoading(false));
@@ -193,11 +201,12 @@ export default function PatrimonioPage() {
     setBusyId(loanTarget.id);
     setActionError("");
     try {
-      await loanTool(loanTarget.id, { personUserId: loanPersonId, destinationLocationId: loanDestinationId, dueAt: loanDueAt || undefined });
+      await loanTool(loanTarget.id, { personUserId: loanPersonId, destinationLocationId: loanDestinationId, dueAt: loanDueAt || undefined, conditionOutCode: loanConditionOut || undefined });
       setLoanTarget(null);
       setLoanPersonId("");
       setLoanDestinationId("");
       setLoanDueAt("");
+      setLoanConditionOut("");
       load();
     } catch (err) {
       setActionError(err?.message || "Não foi possível emprestar a ferramenta.");
@@ -211,7 +220,6 @@ export default function PatrimonioPage() {
     setActionError("");
     try {
       // returnTarget aqui é o asset — na API o return é pelo loanId, então buscamos via lista de loans.
-      const { listToolLoans } = await import("@/lib/api/inventory");
       const loans = await listToolLoans({ assetId: returnTarget.id });
       const openLoan = loans.find((l) => l.status === "OPEN" || l.status === "OVERDUE");
       if (!openLoan) throw new Error("Nenhum empréstimo aberto encontrado para este patrimônio.");
@@ -408,6 +416,27 @@ export default function PatrimonioPage() {
         ) : null}
       </Card>
 
+      {openLoans.length > 0 ? (
+        <Card title="Empréstimos em aberto" subtitle="Ferramentas emprestadas ainda não devolvidas">
+          <ul style={{ margin: 0, paddingLeft: 0, listStyle: "none" }}>
+            {openLoans.map((loan) => {
+              const asset = assets.find((a) => a.id === loan.assetId);
+              const overdue = loan.status === "OVERDUE" || (loan.dueAt && loan.dueAt < new Date().toISOString().slice(0, 10));
+              return (
+                <li key={loan.id} style={{ padding: "8px 0", borderBottom: "1px solid var(--color-border)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "var(--space-2)" }}>
+                  <div>
+                    <strong>{asset?.name || "Patrimônio"}</strong>
+                    {" — "}com {userName(loan.personUserId)}
+                    {loan.dueAt ? <> · devolução prevista {formatDate(loan.dueAt)}</> : null}
+                  </div>
+                  {overdue ? <Badge tone="danger">Atrasado</Badge> : <Badge tone="warning">Em aberto</Badge>}
+                </li>
+              );
+            })}
+          </ul>
+        </Card>
+      ) : null}
+
       <Card title="Patrimônio" subtitle="Ferramentas e ativos individualizáveis por QR Code">
         <Table columns={columns} rows={loading ? [] : assets} loading={loading} emptyMessage="Nenhum patrimônio cadastrado." />
       </Card>
@@ -494,18 +523,31 @@ export default function PatrimonioPage() {
       >
         {historyError ? <Alert tone="danger">{historyError}</Alert> : null}
         {historyMovements.length === 0 ? (
-          <p style={{ color: "var(--color-ink-muted)" }}>Nenhuma transferência registrada ainda.</p>
+          <p style={{ color: "var(--color-ink-muted)" }}>Nenhuma movimentação registrada ainda.</p>
         ) : (
           <ul style={{ margin: 0, paddingLeft: 0, listStyle: "none" }}>
             {historyMovements.map((m) => (
               <li key={m.id} style={{ padding: "8px 0", borderBottom: "1px solid var(--color-border)" }}>
                 <div>
                   {formatDate(m.movedAt || m.moved_at)}
-                  {m.movementType === "DISPOSAL" ? <> {" "}<Badge tone="neutral">Baixa</Badge></> : null}
+                  {" "}<Badge tone={m.movementType === "DISPOSAL" ? "neutral" : m.movementType === "LOAN" ? "warning" : m.movementType === "RETURN" ? "success" : "info"}>
+                    {ASSET_MOVEMENT_LABELS[m.movementType] || m.movementType}
+                  </Badge>
                 </div>
                 <div style={{ color: "var(--color-ink-muted)", fontSize: "var(--text-body-sm)" }}>
                   {m.movementType === "DISPOSAL" ? (
                     <>Saiu de: {locationName(m.sourceLocationId)} · Custodiante: {m.sourceCustodianUserId ? userName(m.sourceCustodianUserId) : "—"} → patrimônio baixado</>
+                  ) : m.movementType === "LOAN" ? (
+                    <>
+                      Responsável: {m.assignedToUserId ? userName(m.assignedToUserId) : "—"} · Destino: {locationName(m.destinationLocationId)}
+                      {m.dueAt ? <> · Devolução prevista: {formatDate(m.dueAt)}</> : null}
+                      {m.conditionCode ? <> · Condição na saída: {CONDITION_LABELS[m.conditionCode] || m.conditionCode}</> : null}
+                    </>
+                  ) : m.movementType === "RETURN" ? (
+                    <>
+                      Devolvido por: {m.assignedToUserId ? userName(m.assignedToUserId) : "—"}
+                      {" · "}Condição na devolução: {CONDITION_LABELS[m.conditionCode] || m.conditionCode || "—"}
+                    </>
                   ) : (
                     <>
                       Local: {locationName(m.sourceLocationId)} → {locationName(m.destinationLocationId)}
@@ -595,6 +637,18 @@ export default function PatrimonioPage() {
             </FormField>
             <FormField label="Data prevista de devolução">
               <Input type="date" value={loanDueAt} onChange={(e) => setLoanDueAt(e.target.value)} />
+              {loanDueAt && loanDueAt < new Date().toISOString().slice(0, 10) ? (
+                <Alert tone="warning" style={{ marginTop: "var(--space-2)" }}>
+                  Essa data já passou — a ferramenta já nasceria "atrasada". Confirme se é isso mesmo.
+                </Alert>
+              ) : null}
+            </FormField>
+            <FormField label="Condição na saída" helper="Opcional — registre o estado da ferramenta no momento da saída.">
+              <Select value={loanConditionOut} onChange={(e) => setLoanConditionOut(e.target.value)}>
+                <option value="">Não registrar</option>
+                <option value="OK">Boa</option>
+                <option value="DAMAGED">Danificada</option>
+              </Select>
             </FormField>
           </>
         )}
