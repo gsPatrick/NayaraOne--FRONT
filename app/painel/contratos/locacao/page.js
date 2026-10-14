@@ -394,7 +394,7 @@ export default function LocacaoPage() {
   ];
 
   return (
-    <AppShell title="Locação" backHref="/painel/contratos">
+    <AppShell title="Locação (cobrança e reajuste)" backHref="/painel/contratos">
       <div className={styles.wrap}>
         {loadError ? <Alert tone="danger">{loadError}</Alert> : null}
         {actionError ? <Alert tone="danger">{actionError}</Alert> : null}

@@ -140,7 +140,7 @@ export default function AppSidebar({ collapsed, onToggle }) {
                         <ul className={styles.subList}>
                           {item.children.map((child) => (
                             <li key={child.label}>
-                              <Link href={child.href} className={[styles.subItem, pathname === child.href.split("?")[0] ? styles.active : ""].filter(Boolean).join(" ")}>
+                              <Link href={child.href} className={[styles.subItem, pathname === child.href.split("?")[0] ? styles.active : ""].filter(Boolean).join(" ")} title={child.label}>
                                 <span className={styles.itemLabel}>{child.label}</span>
                               </Link>
                             </li>
