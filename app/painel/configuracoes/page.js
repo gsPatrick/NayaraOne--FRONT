@@ -462,6 +462,8 @@ const INTEGRACOES_KEYS = {
   portoSeguroClientSecret: "procurement.porto_seguro_client_secret",
   yelumEnvironment: "procurement.yelum_environment",
   yelumApiKey: "procurement.yelum_api_key",
+  financingProvider: "correspondent.financing_provider",
+  financingSandboxWebhookSecret: "correspondent.sandbox_webhook_secret",
 };
 
 // Todos os campos desta aba são string no SETTINGS_SCHEMA (enum ou token) — nenhuma
@@ -486,6 +488,7 @@ const INTEGRACOES_SECRET_FIELDS = new Set([
   "portoSeguroClientId",
   "portoSeguroClientSecret",
   "yelumApiKey",
+  "financingSandboxWebhookSecret",
 ]);
 
 function IntegracoesTab() {
@@ -516,6 +519,10 @@ function IntegracoesTab() {
     portoSeguroClientSecret: "",
     yelumEnvironment: "sandbox",
     yelumApiKey: "",
+    // Correspondente Bancário/Financiamentos (Marco 8) — mesmo padrão seguro dos demais: default
+    // "sandbox" sem nenhum dado real, nenhum banco de verdade integrado ainda nesta fase.
+    financingProvider: "sandbox",
+    financingSandboxWebhookSecret: "",
   });
   const [configuredFlags, setConfiguredFlags] = useState({});
   const [original, setOriginal] = useState(null);
@@ -542,14 +549,15 @@ function IntegracoesTab() {
     setLoading(true);
     setError("");
     setForbidden(false);
-    Promise.all([listSettings("legal."), listSettings("billing."), listSettings("finance."), listSettings("procurement.")])
-      .then(([legalData, billingData, financeData, procurementData]) => {
+    Promise.all([listSettings("legal."), listSettings("billing."), listSettings("finance."), listSettings("procurement."), listSettings("correspondent.")])
+      .then(([legalData, billingData, financeData, procurementData, correspondentData]) => {
         if (cancelled) return;
         const list = [
           ...(Array.isArray(legalData) ? legalData : Object.values(legalData || {})),
           ...(Array.isArray(billingData) ? billingData : Object.values(billingData || {})),
           ...(Array.isArray(financeData) ? financeData : Object.values(financeData || {})),
           ...(Array.isArray(procurementData) ? procurementData : Object.values(procurementData || {})),
+          ...(Array.isArray(correspondentData) ? correspondentData : Object.values(correspondentData || {})),
         ];
         const byKey = {};
         list.forEach((item) => {
@@ -578,6 +586,8 @@ function IntegracoesTab() {
           portoSeguroClientSecret: "",
           yelumEnvironment: byKey[INTEGRACOES_KEYS.yelumEnvironment] || "sandbox",
           yelumApiKey: "",
+          financingProvider: byKey[INTEGRACOES_KEYS.financingProvider] || "sandbox",
+          financingSandboxWebhookSecret: "",
         };
         setValues(next);
         setOriginal(next);
@@ -602,6 +612,7 @@ function IntegracoesTab() {
           portoSeguroClientId: Boolean(byKey[INTEGRACOES_KEYS.portoSeguroClientId]),
           portoSeguroClientSecret: Boolean(byKey[INTEGRACOES_KEYS.portoSeguroClientSecret]),
           yelumApiKey: Boolean(byKey[INTEGRACOES_KEYS.yelumApiKey]),
+          financingSandboxWebhookSecret: Boolean(byKey[INTEGRACOES_KEYS.financingSandboxWebhookSecret]),
         });
       })
       .catch((err) => {
@@ -1101,6 +1112,74 @@ function IntegracoesTab() {
                   placeholder="API Key emitida pela Yelum Seguros"
                 />
               </>
+            ) : null}
+          </div>
+
+          {/* Integrações · Correspondente Bancário — Financiamentos (Marco 8, contrato Anexo I
+              "CORRESPONDENTE BANCÁRIO + NC + FINANCIAMENTOS"). Nenhum banco real está integrado
+              ainda nesta fase — só o modo Sandbox (simulação determinística, sem envio real a
+              nenhum banco) e o modo Manual (workflow conduzido por um corretor/analista humano,
+              sem chamada a nenhuma API externa). Quando a Nayara formalizar parceria com um banco,
+              um novo adapter entra aqui do mesmo jeito que Porto Seguro/Yelum entraram acima. */}
+          <div className={styles.brandCard} style={brandCardStyle(FGV_BRAND_COLOR)}>
+            <div className={styles.brandCardHeader}>
+              <span className={styles.brandCardLogo}>
+                <span className={styles.brandCardName} style={{ fontSize: 28 }}>🏦</span>
+              </span>
+              <span className={styles.brandCardMeta}>
+                <span className={styles.brandCardCategory}>Integrações · Correspondente bancário</span>
+                <span className={styles.brandCardName}>Financiamento imobiliário</span>
+              </span>
+            </div>
+
+            <FormField
+              className="formGridFull"
+              label="Modo de envio de propostas de financiamento"
+              htmlFor="integracoes-financing-provider"
+            >
+              <Select
+                id="integracoes-financing-provider"
+                value={values.financingProvider}
+                onChange={(e) => handleChange("financingProvider", e.target.value)}
+              >
+                <option value="sandbox">Sandbox (simulação, sem envio real a nenhum banco)</option>
+                <option value="manual">Manual (corretor conduz o caso com o banco por fora do sistema)</option>
+              </Select>
+            </FormField>
+
+            {values.financingProvider === "sandbox" ? (
+              <>
+                <div className="formGridFull">
+                  <Alert tone="warning" title="Nenhum banco real integrado ainda">
+                    Este modo simula a resposta de um banco fictício, de forma determinística, sem
+                    nenhuma chamada a um banco de verdade — serve para testar o fluxo completo de
+                    financiamento (simulação, envio do caso, acompanhamento de status) antes de
+                    qualquer parceria bancária real existir. Quando a Nayara formalizar convênio de
+                    correspondente com um banco, a integração real é adicionada aqui.
+                  </Alert>
+                </div>
+                <SecretField
+                  id="integracoes-financing-sandbox-secret"
+                  label="Segredo do webhook de simulação"
+                  configured={configuredFlags.financingSandboxWebhookSecret}
+                  editing={Boolean(editingSecrets.financingSandboxWebhookSecret)}
+                  value={values.financingSandboxWebhookSecret}
+                  onChange={(v) => handleChange("financingSandboxWebhookSecret", v)}
+                  onStartEdit={() => startEditSecret("financingSandboxWebhookSecret")}
+                  onCancelEdit={() => cancelEditSecret("financingSandboxWebhookSecret")}
+                  placeholder="Valor usado para validar as notificações de status simuladas"
+                />
+              </>
+            ) : null}
+
+            {values.financingProvider === "manual" ? (
+              <div className="formGridFull">
+                <Alert tone="warning" title="Sem integração automática">
+                  Neste modo, o corretor ou analista responsável acompanha o caso diretamente com
+                  o banco (telefone, e-mail, portal do banco) e atualiza o status manualmente no
+                  sistema. Não há nenhuma chamada automática a um banco externo.
+                </Alert>
+              </div>
             ) : null}
           </div>
         </div>
