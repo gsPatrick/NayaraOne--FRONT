@@ -25,6 +25,10 @@ import {
   getFinancingCaseStatus,
   listAppraisals,
   createAppraisal,
+  listCommissionEntitlements,
+  createCommissionEntitlement,
+  confirmCommissionEntitlement,
+  chargebackCommissionEntitlement,
 } from "@/lib/api/correspondent";
 import { uploadFile } from "@/lib/api/legal";
 import { formatDateTime, formatBRL, formatPercent, toNumber } from "@/lib/format";
@@ -66,6 +70,21 @@ const PROVIDER_LABELS = {
   manual: "Manual (corretor conduz o caso com o banco por fora do sistema)",
 };
 const PROVIDER_SHORT_LABELS = { sandbox: "Sandbox", manual: "Manual" };
+
+const COMMISSION_STATUS_LABELS = {
+  EXPECTED: "Prevista",
+  CONFIRMED: "Confirmada",
+  RECEIVABLE: "A receber (lançamento criado)",
+  RECEIVED: "Recebida",
+  ADJUSTED: "Estornada/ajustada",
+};
+const COMMISSION_STATUS_TONE = {
+  EXPECTED: "neutral",
+  CONFIRMED: "info",
+  RECEIVABLE: "info",
+  RECEIVED: "success",
+  ADJUSTED: "danger",
+};
 
 const APPLICANT_ROLE_LABELS = { PRINCIPAL: "Proponente principal", CO_APPLICANT: "Co-proponente" };
 
@@ -126,6 +145,24 @@ export default function FinancingCaseDetailPage() {
   const [requestingAppraisal, setRequestingAppraisal] = useState(false);
   const [appraisalFormError, setAppraisalFormError] = useState("");
 
+  const [commissions, setCommissions] = useState([]);
+  const [commissionsLoading, setCommissionsLoading] = useState(true);
+  const [commissionsError, setCommissionsError] = useState("");
+  const [commissionBaseAmount, setCommissionBaseAmount] = useState("");
+  const [creatingCommission, setCreatingCommission] = useState(false);
+  const [commissionFormError, setCommissionFormError] = useState("");
+  const [confirmingCommissionId, setConfirmingCommissionId] = useState(null);
+  const [chargebackCommissionId, setChargebackCommissionId] = useState(null);
+
+  function loadCommissions() {
+    setCommissionsLoading(true);
+    setCommissionsError("");
+    listCommissionEntitlements(id)
+      .then(setCommissions)
+      .catch((err) => setCommissionsError(err?.message || "Não foi possível carregar as comissões deste caso."))
+      .finally(() => setCommissionsLoading(false));
+  }
+
   function loadAppraisals() {
     setAppraisalsLoading(true);
     setAppraisalsError("");
@@ -182,6 +219,7 @@ export default function FinancingCaseDetailPage() {
     loadSubmissions();
     loadStatus();
     loadAppraisals();
+    loadCommissions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
@@ -247,6 +285,57 @@ export default function FinancingCaseDetailPage() {
       setAppraisalFormError(err?.message || "Não foi possível solicitar a avaliação.");
     } finally {
       setRequestingAppraisal(false);
+    }
+  }
+
+  async function handleCreateCommission() {
+    setCommissionFormError("");
+    const baseAmount = toNumber(commissionBaseAmount);
+    if (!baseAmount || baseAmount <= 0) {
+      setCommissionFormError("Informe um valor-base maior que zero.");
+      return;
+    }
+    setCreatingCommission(true);
+    try {
+      await createCommissionEntitlement(id, { baseAmount });
+      setCommissionBaseAmount("");
+      loadCommissions();
+    } catch (err) {
+      setCommissionFormError(err?.message || "Não foi possível registrar o direito à comissão.");
+    } finally {
+      setCreatingCommission(false);
+    }
+  }
+
+  async function handleConfirmCommission(entitlementId) {
+    const externalConfirmationId = window.prompt(
+      "Identificação da confirmação (vem do banco/financeira — garante que confirmar duas vezes não duplica o recebível):"
+    );
+    if (!externalConfirmationId) return;
+    setConfirmingCommissionId(entitlementId);
+    setCommissionFormError("");
+    try {
+      await confirmCommissionEntitlement(id, entitlementId, { externalConfirmationId });
+      loadCommissions();
+    } catch (err) {
+      setCommissionFormError(err?.message || "Não foi possível confirmar esta comissão.");
+    } finally {
+      setConfirmingCommissionId(null);
+    }
+  }
+
+  async function handleChargebackCommission(entitlementId) {
+    const reason = window.prompt("Motivo do estorno/chargeback (obrigatório):");
+    if (!reason) return;
+    setChargebackCommissionId(entitlementId);
+    setCommissionFormError("");
+    try {
+      await chargebackCommissionEntitlement(id, entitlementId, { reason });
+      loadCommissions();
+    } catch (err) {
+      setCommissionFormError(err?.message || "Não foi possível estornar esta comissão.");
+    } finally {
+      setChargebackCommissionId(null);
     }
   }
 
@@ -583,6 +672,82 @@ export default function FinancingCaseDetailPage() {
                         </Badge>
                       </td>
                       <td style={{ padding: "8px 12px" }}>{ap.requestedValue != null ? formatBRL(ap.requestedValue) : "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </Card>
+
+      <Card
+        title="Comissão"
+        subtitle="Direito a comissão de correspondente bancário sobre este caso. O percentual vem configurado no Motor de Regras, não é digitado aqui."
+        style={{ marginTop: 16 }}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div style={{ display: "flex", gap: 12, alignItems: "flex-end", flexWrap: "wrap" }}>
+            <FormField label="Valor-base (R$)" htmlFor="commission-base-amount">
+              <DecimalInput id="commission-base-amount" value={commissionBaseAmount} onChange={setCommissionBaseAmount} placeholder="0,00" />
+            </FormField>
+            <Button onClick={handleCreateCommission} loading={creatingCommission}>
+              Registrar direito à comissão
+            </Button>
+          </div>
+          {commissionFormError ? <Alert tone="danger">{commissionFormError}</Alert> : null}
+
+          {commissionsLoading ? (
+            <p>Carregando comissões…</p>
+          ) : commissionsError ? (
+            <Alert tone="danger">{commissionsError}</Alert>
+          ) : commissions.length === 0 ? (
+            <p>Nenhuma comissão registrada ainda para este caso.</p>
+          ) : (
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                <thead>
+                  <tr style={{ textAlign: "left", borderBottom: "1px solid var(--color-border)" }}>
+                    <th style={{ padding: "8px 12px" }}>Data</th>
+                    <th style={{ padding: "8px 12px" }}>Base</th>
+                    <th style={{ padding: "8px 12px" }}>Percentual</th>
+                    <th style={{ padding: "8px 12px" }}>Valor</th>
+                    <th style={{ padding: "8px 12px" }}>Status</th>
+                    <th style={{ padding: "8px 12px" }}>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {commissions.map((c) => (
+                    <tr key={c.id} style={{ borderBottom: "1px solid var(--color-border)" }}>
+                      <td style={{ padding: "8px 12px" }}>{formatDateTime(c.created_at || c.createdAt)}</td>
+                      <td style={{ padding: "8px 12px" }}>{formatBRL(c.baseAmount)}</td>
+                      <td style={{ padding: "8px 12px" }}>{formatPercent(c.percentage)}</td>
+                      <td style={{ padding: "8px 12px" }}>{formatBRL(c.amount)}</td>
+                      <td style={{ padding: "8px 12px" }}>
+                        <Badge tone={COMMISSION_STATUS_TONE[c.status] || "neutral"}>
+                          {COMMISSION_STATUS_LABELS[c.status] || c.status}
+                        </Badge>
+                      </td>
+                      <td style={{ padding: "8px 12px", display: "flex", gap: 8 }}>
+                        {c.status === "EXPECTED" ? (
+                          <Button
+                            variant="secondary"
+                            onClick={() => handleConfirmCommission(c.id)}
+                            loading={confirmingCommissionId === c.id}
+                          >
+                            Confirmar
+                          </Button>
+                        ) : null}
+                        {c.status === "RECEIVABLE" || c.status === "CONFIRMED" ? (
+                          <Button
+                            variant="secondary"
+                            onClick={() => handleChargebackCommission(c.id)}
+                            loading={chargebackCommissionId === c.id}
+                          >
+                            Estornar
+                          </Button>
+                        ) : null}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
