@@ -26,7 +26,7 @@ import { uploadFile, listContracts } from "@/lib/api/legal";
 import { listProperties } from "@/lib/api/properties";
 import { listFinancialEntries } from "@/lib/api/finance";
 import { listPeople } from "@/lib/api/people";
-import { formatDateTime, formatBRL, toNumber } from "@/lib/format";
+import { formatDate, formatDateTime, formatBRL, toNumber } from "@/lib/format";
 
 const POLICY_STATUS_LABELS = { DRAFT: "Rascunho", QUOTED: "Cotada", ISSUED: "Emitida", ACTIVE: "Ativa", EXPIRED: "Expirada", CANCELED: "Cancelada" };
 const POLICY_STATUS_TONE = { DRAFT: "neutral", QUOTED: "info", ISSUED: "info", ACTIVE: "success", EXPIRED: "warning", CANCELED: "danger" };
@@ -56,6 +56,7 @@ function PolicyStatusBadge({ policy }) {
 
 const CLAIM_STATUS_LABELS = { OPEN: "Aberto", SUBMITTED: "Submetido", UNDER_REVIEW: "Em análise", APPROVED: "Aprovado", REJECTED: "Rejeitado", SETTLED: "Liquidado" };
 const CLAIM_STATUS_TONE = { OPEN: "neutral", SUBMITTED: "info", UNDER_REVIEW: "warning", APPROVED: "success", REJECTED: "danger", SETTLED: "success" };
+const CLAIM_EVENT_LABELS = { OPENED: "Sinistro aberto", SUBMITTED: "Submetido", REJECTED: "Rejeitado", SETTLED: "Liquidado" };
 
 // Modais desta tela usam mais respiro que o padrão (size="lg" + gap maior entre campos) —
 // o conteúdo de apólice (cobertura, vínculos, sinistros, parcelas, documentos) é denso o
@@ -222,12 +223,15 @@ export default function SegurosPage() {
 
   async function handleQuote() {
     const id = quoteTarget;
+    const estimatedValue = quoteForm.estimatedValue ? toNumber(quoteForm.estimatedValue) : null;
+    if (!estimatedValue || estimatedValue <= 0) {
+      setActionError('O campo "Valor estimado" é obrigatório e precisa ser maior que zero para cotar.');
+      return;
+    }
     setBusyId(id);
     setActionError("");
     try {
-      await quoteInsurancePolicy(id, {
-        estimatedValue: quoteForm.estimatedValue ? toNumber(quoteForm.estimatedValue) : undefined,
-      });
+      await quoteInsurancePolicy(id, { estimatedValue });
       setQuoteTarget(null);
       const policy = await getInsurancePolicy(id);
       setDetailModal({ policy });
@@ -317,6 +321,13 @@ export default function SegurosPage() {
   const [cancelReason, setCancelReason] = useState("");
   async function handleCancelPolicy() {
     if (!detailModal || !cancelReason.trim()) return;
+    const ok = await confirm({
+      title: "Cancelar apólice?",
+      message: "Essa ação não pode ser desfeita. A apólice ficará com status Cancelada.",
+      confirmLabel: "Cancelar apólice",
+      tone: "danger",
+    });
+    if (!ok) return;
     setSaving(true);
     setActionError("");
     try {
@@ -331,16 +342,39 @@ export default function SegurosPage() {
     }
   }
 
+  const [listSearch, setListSearch] = useState("");
+  const filteredPolicies = listSearch.trim()
+    ? policies.filter((p) => {
+        const needle = listSearch.trim().toLowerCase();
+        const insuredName = (p.parties || []).map((party) => people.find((person) => person.id === party.personId)?.legalName || "").join(" ");
+        return [p.coverageSummary, p.externalPolicyNumber, insuredName].filter(Boolean).some((v) => String(v).toLowerCase().includes(needle));
+      })
+    : policies;
+
   const columns = [
-    { key: "status", label: "Status", width: "14%", render: (row) => <PolicyStatusBadge policy={row} /> },
-    { key: "provider", label: "Seguradora", width: "16%", render: (row) => row.provider || "sandbox" },
-    { key: "number", label: "Nº da apólice", width: "18%", render: (row) => row.externalPolicyNumber || "—" },
-    { key: "premium", label: "Prêmio", width: "14%", render: (row) => (row.premiumAmount ? formatBRL(row.premiumAmount) : "—") },
-    { key: "created", label: "Criada em", width: "18%", render: (row) => formatDateTime(row.created_at) },
+    { key: "status", label: "Status", width: "12%", render: (row) => <PolicyStatusBadge policy={row} /> },
+    {
+      key: "coverage",
+      label: "Cobertura / segurado",
+      width: "26%",
+      render: (row) => {
+        const insuredName = (row.parties || []).map((party) => people.find((person) => person.id === party.personId)?.legalName).filter(Boolean)[0];
+        return (
+          <span>
+            {row.coverageSummary || "sem resumo de cobertura"}
+            {insuredName ? <><br /><span style={{ color: "var(--color-ink-muted)", fontSize: "var(--text-body-sm)" }}>Segurado: {insuredName}</span></> : null}
+          </span>
+        );
+      },
+    },
+    { key: "provider", label: "Seguradora", width: "12%", render: (row) => row.provider || "sandbox" },
+    { key: "number", label: "Nº da apólice", width: "14%", render: (row) => row.externalPolicyNumber || "—" },
+    { key: "premium", label: "Prêmio", width: "12%", render: (row) => (row.premiumAmount ? formatBRL(row.premiumAmount) : "—") },
+    { key: "created", label: "Criada em", width: "12%", render: (row) => formatDateTime(row.created_at) },
     {
       key: "actions",
       label: "",
-      width: "20%",
+      width: "12%",
       render: (row) => (
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
           <Button size="sm" variant="secondary" onClick={() => openDetail(row)}>Ver</Button>
@@ -364,8 +398,11 @@ export default function SegurosPage() {
         </div>
       ) : null}
 
-      <Card title="Apólices de seguro" subtitle="Insurance Hub — cotação → emissão → sinistro → liquidação, integrado ao Financeiro.">
-        <Table columns={columns} rows={loading ? [] : policies} loading={loading} emptyMessage="Nenhuma apólice registrada." />
+      <Card title="Apólices de seguro" subtitle="Cotação → emissão → sinistro → liquidação, integrado ao Financeiro.">
+        <div style={{ marginBottom: "var(--space-4)", maxWidth: 360 }}>
+          <Input placeholder="Buscar por cobertura, nº da apólice ou segurado..." value={listSearch} onChange={(e) => setListSearch(e.target.value)} />
+        </div>
+        <Table columns={columns} rows={loading ? [] : filteredPolicies} loading={loading} emptyMessage="Nenhuma apólice encontrada." />
       </Card>
 
       <StickyActionBar>
@@ -398,16 +435,18 @@ export default function SegurosPage() {
             <Select value={form.propertyId} onChange={(e) => setForm((p) => ({ ...p, propertyId: e.target.value }))}>
               <option value="">Nenhum</option>
               {properties.map((pr) => (
-                <option key={pr.id} value={pr.id}>{pr.title || pr.internalCode || pr.id}</option>
+                <option key={pr.id} value={pr.id}>{pr.title || pr.internalCode || "imóvel sem título"}</option>
               ))}
             </Select>
           </FormField>
           <FormField label="Contrato de locação vinculado (opcional)">
             <Select value={form.contractId} onChange={(e) => setForm((p) => ({ ...p, contractId: e.target.value }))}>
               <option value="">Nenhum</option>
-              {contracts.map((c) => (
-                <option key={c.id} value={c.id}>{c.code || c.id}</option>
-              ))}
+              {contracts.map((c) => {
+                const prop = properties.find((pr) => pr.id === c.propertyId);
+                const label = [c.contractNumber ? `Nº ${c.contractNumber}` : "contrato sem número", prop?.title].filter(Boolean).join(" — ");
+                return <option key={c.id} value={c.id}>{label}</option>;
+              })}
             </Select>
           </FormField>
           <FormField label="Segurado / beneficiário (opcional)">
@@ -450,10 +489,15 @@ export default function SegurosPage() {
                 {detailModal.policy.externalPolicyNumber ? ` — Nº ${detailModal.policy.externalPolicyNumber}` : ""}
               </p>
               {detailModal.policy.premiumAmount ? <p style={{ margin: "0 0 4px" }}>Prêmio: {formatBRL(detailModal.policy.premiumAmount)}</p> : null}
-              {detailModal.policy.effectiveDate ? <p style={{ margin: "0 0 4px" }}>Vigência: {detailModal.policy.effectiveDate} a {detailModal.policy.expiryDate || "—"}</p> : null}
+              {detailModal.policy.effectiveDate ? <p style={{ margin: "0 0 4px" }}>Vigência: {formatDate(detailModal.policy.effectiveDate)} a {detailModal.policy.expiryDate ? formatDate(detailModal.policy.expiryDate) : "—"}</p> : null}
               {detailModal.policy.coverageSummary ? <p style={{ margin: "0 0 4px" }}>Cobertura: {detailModal.policy.coverageSummary}</p> : null}
-              {detailModal.policy.propertyId ? <p style={{ margin: "0 0 4px" }}>Imóvel vinculado: {properties.find((pr) => pr.id === detailModal.policy.propertyId)?.title || detailModal.policy.propertyId}</p> : null}
-              {detailModal.policy.contractId ? <p style={{ margin: 0 }}>Contrato vinculado: {contracts.find((c) => c.id === detailModal.policy.contractId)?.code || detailModal.policy.contractId}</p> : null}
+              {detailModal.policy.propertyId ? <p style={{ margin: "0 0 4px" }}>Imóvel vinculado: {properties.find((pr) => pr.id === detailModal.policy.propertyId)?.title || "imóvel não encontrado"}</p> : null}
+              {detailModal.policy.contractId ? <p style={{ margin: 0 }}>Contrato vinculado: {(() => { const c = contracts.find((x) => x.id === detailModal.policy.contractId); return c ? (c.contractNumber ? `Nº ${c.contractNumber}` : "contrato sem número") : "contrato não encontrado"; })()}</p> : null}
+              {detailModal.policy.status === "CANCELED" && detailModal.policy.cancelInfo ? (
+                <p style={{ margin: "8px 0 0", color: "var(--color-ink-muted)" }}>
+                  Cancelada em {formatDateTime(detailModal.policy.cancelInfo.occurredAt)} — motivo: {detailModal.policy.cancelInfo.reason}
+                </p>
+              ) : null}
             </div>
 
             {!["CANCELED", "EXPIRED"].includes(detailModal.policy.status) ? (
@@ -510,7 +554,7 @@ export default function SegurosPage() {
                     {(claim.events || []).length > 0 ? (
                       <ul style={{ margin: "8px 0 0", paddingLeft: 18, color: "var(--color-ink-muted)", fontSize: "var(--text-body-sm)" }}>
                         {claim.events.map((ev) => (
-                          <li key={ev.id} style={{ padding: "2px 0" }}>{formatDateTime(ev.occurredAt)} — {ev.eventType}{ev.notes ? `: ${ev.notes}` : ""}</li>
+                          <li key={ev.id} style={{ padding: "2px 0" }}>{formatDateTime(ev.occurredAt)} — {CLAIM_EVENT_LABELS[ev.eventType] || ev.eventType}{ev.notes ? `: ${ev.notes}` : ""}</li>
                         ))}
                       </ul>
                     ) : null}
@@ -547,7 +591,7 @@ export default function SegurosPage() {
                 installments.map((inst) => (
                   <div key={inst.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid var(--color-border)", gap: 12 }}>
                     <span>
-                      {formatDateTime(inst.dueDate || inst.due_date)} — {formatBRL(inst.amount)}{" "}
+                      {formatDate(inst.dueDate || inst.due_date)} — {formatBRL(inst.amount)}{" "}
                       <Badge tone={inst.status === "PAID" ? "success" : inst.status === "OVERDUE" ? "danger" : "neutral"}>
                         {inst.status === "PAID" ? "Paga" : inst.status === "OVERDUE" ? "Vencida" : "Pendente"}
                       </Badge>
@@ -608,12 +652,12 @@ export default function SegurosPage() {
         footer={
           <>
             <Button variant="secondary" onClick={() => setQuoteTarget(null)}>Cancelar</Button>
-            <Button onClick={handleQuote} loading={busyId === quoteTarget}>Cotar</Button>
+            <Button onClick={handleQuote} loading={busyId === quoteTarget} disabled={!toNumber(quoteForm.estimatedValue || "0")}>Cotar</Button>
           </>
         }
       >
         <p style={{ color: "var(--color-ink-muted)", marginTop: 0 }}>
-          Vai consultar a seguradora configurada em Configurações → Integrações pra obter um prêmio. Essa chamada é real, não um teste.
+          Vai consultar a seguradora configurada em Configurações → Integrações pra obter um prêmio. Enquanto nenhuma seguradora real estiver configurada, o resultado é uma simulação (sandbox), sem envio efetivo.
         </p>
         <FormField label="Valor estimado do bem/aluguel segurado (R$)" helper="Usado pelo provider pra calcular o prêmio (ex.: valor do imóvel no seguro-fiança).">
           <DecimalInput value={quoteForm.estimatedValue} onChange={(e) => setQuoteForm((p) => ({ ...p, estimatedValue: e.target.value }))} />
