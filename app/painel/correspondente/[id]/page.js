@@ -19,12 +19,45 @@ import {
   uploadCaseDocument,
   listSimulations,
   createSimulation,
+  listSubmissions,
+  submitFinancingCase,
+  acknowledgeUnknownSubmission,
+  getFinancingCaseStatus,
 } from "@/lib/api/correspondent";
 import { uploadFile } from "@/lib/api/legal";
 import { formatDateTime, formatBRL, formatPercent, toNumber } from "@/lib/format";
 
-const STATUS_LABELS = { DRAFT: "Rascunho" };
-const STATUS_TONE = { DRAFT: "neutral" };
+const STATUS_LABELS = {
+  DRAFT: "Rascunho",
+  DOCUMENTS_PENDING: "Aguardando documentos",
+  READY_TO_SUBMIT: "Pronto para enviar",
+  SUBMITTED: "Enviado ao provider",
+  UNDER_ANALYSIS: "Em análise",
+  PENDING_CUSTOMER: "Aguardando documentos do cliente",
+  PENDING_PROPERTY: "Aguardando dados do imóvel",
+  APPROVED: "Aprovado",
+  REJECTED: "Rejeitado",
+  CONTRACTING: "Em contratação",
+  COMPLETED: "Concluído",
+  CANCELED: "Cancelado",
+};
+const STATUS_TONE = {
+  DRAFT: "neutral",
+  DOCUMENTS_PENDING: "warning",
+  READY_TO_SUBMIT: "info",
+  SUBMITTED: "info",
+  UNDER_ANALYSIS: "info",
+  PENDING_CUSTOMER: "warning",
+  PENDING_PROPERTY: "warning",
+  APPROVED: "success",
+  REJECTED: "danger",
+  CONTRACTING: "info",
+  COMPLETED: "success",
+  CANCELED: "danger",
+};
+
+const SUBMISSION_STATUS_LABELS = { PENDING: "Enviando…", SUBMITTED: "Enviado", UNKNOWN: "Status indeterminado", FAILED: "Falhou" };
+const SUBMISSION_STATUS_TONE = { PENDING: "neutral", SUBMITTED: "success", UNKNOWN: "warning", FAILED: "danger" };
 
 const PROVIDER_LABELS = {
   sandbox: "Sandbox (simulação, sem envio real a nenhum banco)",
@@ -75,6 +108,33 @@ export default function FinancingCaseDetailPage() {
   const [creatingSimulation, setCreatingSimulation] = useState(false);
   const [simulationFormError, setSimulationFormError] = useState("");
 
+  const [submissions, setSubmissions] = useState([]);
+  const [submissionsLoading, setSubmissionsLoading] = useState(true);
+  const [submissionsError, setSubmissionsError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [acknowledgingId, setAcknowledgingId] = useState(null);
+
+  const [statusHistory, setStatusHistory] = useState([]);
+  const [statusLoading, setStatusLoading] = useState(true);
+
+  function loadSubmissions() {
+    setSubmissionsLoading(true);
+    setSubmissionsError("");
+    listSubmissions(id)
+      .then(setSubmissions)
+      .catch((err) => setSubmissionsError(err?.message || "Não foi possível carregar o histórico de envios."))
+      .finally(() => setSubmissionsLoading(false));
+  }
+
+  function loadStatus() {
+    setStatusLoading(true);
+    getFinancingCaseStatus(id)
+      .then((data) => setStatusHistory(data.history || []))
+      .catch(() => setStatusHistory([]))
+      .finally(() => setStatusLoading(false));
+  }
+
   function loadSimulations() {
     setSimulationsLoading(true);
     setSimulationsError("");
@@ -102,8 +162,38 @@ export default function FinancingCaseDetailPage() {
       .finally(() => setLoading(false));
     loadRequirements();
     loadSimulations();
+    loadSubmissions();
+    loadStatus();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  async function handleSubmitToProvider() {
+    setSubmitError("");
+    setSubmitting(true);
+    try {
+      await submitFinancingCase(id);
+      loadSubmissions();
+      loadStatus();
+      getFinancingCase(id).then(setFinancingCase).catch(() => {});
+    } catch (err) {
+      setSubmitError(err?.message || "Não foi possível enviar o caso ao provider.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleAcknowledgeUnknown(submissionId) {
+    setAcknowledgingId(submissionId);
+    setSubmitError("");
+    try {
+      await acknowledgeUnknownSubmission(id, submissionId);
+      loadSubmissions();
+    } catch (err) {
+      setSubmitError(err?.message || "Não foi possível confirmar a consulta de status.");
+    } finally {
+      setAcknowledgingId(null);
+    }
+  }
 
   async function handleCreateSimulation() {
     setSimulationFormError("");
@@ -331,6 +421,93 @@ export default function FinancingCaseDetailPage() {
               </table>
             </div>
           )}
+        </div>
+      </Card>
+      <Card
+        title="Envio ao provider"
+        subtitle="Envia o caso para o banco/financeira configurado. Enviar de novo com os mesmos dados nunca cria um segundo envio — o sistema reconhece quando já existe uma tentativa igual."
+        style={{ marginTop: 16 }}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {(() => {
+            const latestSubmission = submissions[0];
+            const isUnknown = latestSubmission && latestSubmission.status === "UNKNOWN";
+            return (
+              <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+                <Button onClick={handleSubmitToProvider} loading={submitting} disabled={isUnknown}>
+                  Enviar ao provider
+                </Button>
+                {isUnknown ? (
+                  <Button
+                    variant="secondary"
+                    onClick={() => handleAcknowledgeUnknown(latestSubmission.id)}
+                    loading={acknowledgingId === latestSubmission.id}
+                  >
+                    Confirmar consulta de status e liberar novo envio
+                  </Button>
+                ) : null}
+              </div>
+            );
+          })()}
+          {submitError ? <Alert tone="danger">{submitError}</Alert> : null}
+          {submissions[0]?.status === "UNKNOWN" ? (
+            <Alert tone="warning" title="Status indeterminado no último envio">
+              Não foi possível confirmar se o provider recebeu este caso (tempo esgotado ou erro de comunicação). Para
+              sua segurança, o sistema não reenvia automaticamente — confirme acima que você está ciente antes de
+              tentar um novo envio, assim não corremos o risco de duplicar a proposta no banco.
+            </Alert>
+          ) : null}
+
+          {submissionsLoading ? (
+            <p>Carregando histórico de envios…</p>
+          ) : submissionsError ? (
+            <Alert tone="danger">{submissionsError}</Alert>
+          ) : submissions.length === 0 ? (
+            <p>Nenhum envio realizado ainda para este caso.</p>
+          ) : (
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                <thead>
+                  <tr style={{ textAlign: "left", borderBottom: "1px solid var(--color-border)" }}>
+                    <th style={{ padding: "8px 12px" }}>Data</th>
+                    <th style={{ padding: "8px 12px" }}>Provider</th>
+                    <th style={{ padding: "8px 12px" }}>Status</th>
+                    <th style={{ padding: "8px 12px" }}>Identificador no provider</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {submissions.map((sub) => (
+                    <tr key={sub.id} style={{ borderBottom: "1px solid var(--color-border)" }}>
+                      <td style={{ padding: "8px 12px" }}>{formatDateTime(sub.created_at || sub.createdAt)}</td>
+                      <td style={{ padding: "8px 12px" }}>{PROVIDER_SHORT_LABELS[sub.providerCode] || sub.providerCode}</td>
+                      <td style={{ padding: "8px 12px" }}>
+                        <Badge tone={SUBMISSION_STATUS_TONE[sub.status] || "neutral"}>{SUBMISSION_STATUS_LABELS[sub.status] || sub.status}</Badge>
+                      </td>
+                      <td style={{ padding: "8px 12px" }}>{sub.externalCaseId || "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          <div>
+            <strong>Histórico de status</strong>
+            {statusLoading ? (
+              <p>Carregando histórico…</p>
+            ) : statusHistory.length === 0 ? (
+              <p style={{ marginTop: 8, fontSize: 13, color: "var(--color-ink-soft)" }}>Nenhuma atualização de status recebida ainda.</p>
+            ) : (
+              <ul style={{ marginTop: 8, paddingLeft: 20, display: "flex", flexDirection: "column", gap: 6 }}>
+                {statusHistory.map((entry) => (
+                  <li key={entry.id} style={{ fontSize: 13, color: entry.applied ? "var(--color-ink)" : "var(--color-ink-soft)" }}>
+                    {formatDateTime(entry.occurred_at || entry.occurredAt)} — {entry.normalizedStatus ? (STATUS_LABELS[entry.normalizedStatus] || entry.normalizedStatus) : "Status não reconhecido"}
+                    {!entry.applied ? " (recebido fora de ordem, não alterou o status atual)" : ""}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
       </Card>
     </AppShell>
