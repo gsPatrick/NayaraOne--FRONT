@@ -14,6 +14,7 @@ import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import { getSession, isMfaSetupRequired } from "@/lib/auth/session";
 import { hasPermission } from "@/lib/rbac/permissions";
 import { getRequiredPermission } from "@/lib/rbac/routePermissions";
+import useSessionKeeper from "@/lib/auth/useSessionKeeper";
 import styles from "./AuthGuard.module.css";
 
 const MFA_SETUP_PATH = "/painel/perfil";
@@ -22,6 +23,10 @@ export default function AuthGuard({ children }) {
   const router = useRouter();
   const pathname = usePathname();
   const [status, setStatus] = useState("checking"); // checking | allowed | denied
+
+  // Renova a sessão silenciosamente em segundo plano enquanto o usuário estiver no painel —
+  // evita a expulsão sem aviso depois de ~15 min parado numa tela (ver useSessionKeeper.js).
+  useSessionKeeper();
 
   useEffect(() => {
     const session = getSession();
