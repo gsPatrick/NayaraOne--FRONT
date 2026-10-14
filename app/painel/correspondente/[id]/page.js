@@ -23,6 +23,8 @@ import {
   submitFinancingCase,
   acknowledgeUnknownSubmission,
   getFinancingCaseStatus,
+  listAppraisals,
+  createAppraisal,
 } from "@/lib/api/correspondent";
 import { uploadFile } from "@/lib/api/legal";
 import { formatDateTime, formatBRL, formatPercent, toNumber } from "@/lib/format";
@@ -118,6 +120,21 @@ export default function FinancingCaseDetailPage() {
   const [statusHistory, setStatusHistory] = useState([]);
   const [statusLoading, setStatusLoading] = useState(true);
 
+  const [appraisals, setAppraisals] = useState([]);
+  const [appraisalsLoading, setAppraisalsLoading] = useState(true);
+  const [appraisalsError, setAppraisalsError] = useState("");
+  const [requestingAppraisal, setRequestingAppraisal] = useState(false);
+  const [appraisalFormError, setAppraisalFormError] = useState("");
+
+  function loadAppraisals() {
+    setAppraisalsLoading(true);
+    setAppraisalsError("");
+    listAppraisals(id)
+      .then(setAppraisals)
+      .catch((err) => setAppraisalsError(err?.message || "Não foi possível carregar as avaliações deste caso."))
+      .finally(() => setAppraisalsLoading(false));
+  }
+
   function loadSubmissions() {
     setSubmissionsLoading(true);
     setSubmissionsError("");
@@ -164,6 +181,7 @@ export default function FinancingCaseDetailPage() {
     loadSimulations();
     loadSubmissions();
     loadStatus();
+    loadAppraisals();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
@@ -216,6 +234,19 @@ export default function FinancingCaseDetailPage() {
       setSimulationFormError(err?.message || "Não foi possível criar a simulação.");
     } finally {
       setCreatingSimulation(false);
+    }
+  }
+
+  async function handleRequestAppraisal() {
+    setAppraisalFormError("");
+    setRequestingAppraisal(true);
+    try {
+      await createAppraisal(id, {});
+      loadAppraisals();
+    } catch (err) {
+      setAppraisalFormError(err?.message || "Não foi possível solicitar a avaliação.");
+    } finally {
+      setRequestingAppraisal(false);
     }
   }
 
@@ -508,6 +539,56 @@ export default function FinancingCaseDetailPage() {
               </ul>
             )}
           </div>
+        </div>
+      </Card>
+
+      <Card
+        title="Avaliação do imóvel"
+        subtitle="Avaliação feita pelo banco/financeira — é só informativa. Ela nunca altera o preço ou a oferta cadastrada do imóvel; qualquer ajuste de preço continua sendo uma decisão manual, separada daqui."
+        style={{ marginTop: 16 }}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div>
+            <Button variant="secondary" onClick={handleRequestAppraisal} loading={requestingAppraisal}>
+              Solicitar avaliação
+            </Button>
+          </div>
+          {appraisalFormError ? <Alert tone="danger">{appraisalFormError}</Alert> : null}
+
+          {appraisalsLoading ? (
+            <p>Carregando avaliações…</p>
+          ) : appraisalsError ? (
+            <Alert tone="danger">{appraisalsError}</Alert>
+          ) : appraisals.length === 0 ? (
+            <p>Nenhuma avaliação solicitada ainda para este caso.</p>
+          ) : (
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                <thead>
+                  <tr style={{ textAlign: "left", borderBottom: "1px solid var(--color-border)" }}>
+                    <th style={{ padding: "8px 12px" }}>Data</th>
+                    <th style={{ padding: "8px 12px" }}>Provider</th>
+                    <th style={{ padding: "8px 12px" }}>Status</th>
+                    <th style={{ padding: "8px 12px" }}>Valor avaliado (informativo)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {appraisals.map((ap) => (
+                    <tr key={ap.id} style={{ borderBottom: "1px solid var(--color-border)" }}>
+                      <td style={{ padding: "8px 12px" }}>{formatDateTime(ap.created_at || ap.createdAt)}</td>
+                      <td style={{ padding: "8px 12px" }}>{PROVIDER_SHORT_LABELS[ap.providerCode] || ap.providerCode}</td>
+                      <td style={{ padding: "8px 12px" }}>
+                        <Badge tone={ap.status === "COMPLETED" ? "success" : "warning"}>
+                          {ap.status === "COMPLETED" ? "Concluída" : "Solicitada"}
+                        </Badge>
+                      </td>
+                      <td style={{ padding: "8px 12px" }}>{ap.requestedValue != null ? formatBRL(ap.requestedValue) : "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </Card>
     </AppShell>
