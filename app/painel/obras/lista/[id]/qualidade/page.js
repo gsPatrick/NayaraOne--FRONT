@@ -633,7 +633,7 @@ export default function QualidadeObraPage({ params }) {
         footer={
           <>
             <Button variant="secondary" onClick={() => setNcOpen(false)}>Cancelar</Button>
-            <Button onClick={handleCreateNonconformity} loading={savingNc} disabled={!ncForm.description.trim()}>
+            <Button onClick={handleCreateNonconformity} loading={savingNc} disabled={!ncForm.description.trim() || !ncForm.beforeFileId}>
               Registrar
             </Button>
           </>
@@ -697,7 +697,7 @@ export default function QualidadeObraPage({ params }) {
                 fileNames={ncForm.beforeFileName ? [ncForm.beforeFileName] : []}
                 onFiles={(files) => handleUploadBeforeEvidence(files[0])}
                 onRemove={() => setNcForm((p) => ({ ...p, beforeFileId: "", beforeFileName: "" }))}
-                helper="Foto do problema encontrado (opcional)."
+                helper="Obrigatório — foto do problema encontrado."
               />
             </FormField>
           </div>
