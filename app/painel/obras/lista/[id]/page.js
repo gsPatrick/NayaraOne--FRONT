@@ -756,7 +756,7 @@ export default function ObraDetalhePage({ params }) {
               ))}
             </Select>
           </FormField>
-          <FormField label="Responsável" htmlFor="e-responsible" helper="Opcional">
+          <FormField label="Responsável" htmlFor="e-responsible" helper="Opcional agora — obrigatório para iniciar a execução da obra">
             <Select id="e-responsible" value={editForm.responsibleUserId} onChange={(e) => setEditForm((p) => ({ ...p, responsibleUserId: e.target.value }))}>
               <option value="">Sem responsável</option>
               {users.map((u) => (
@@ -775,7 +775,7 @@ export default function ObraDetalhePage({ params }) {
           <FormField
             label="Orçamento (R$)"
             htmlFor="e-budget"
-            helper={budgetApproved ? "Baseline já aprovada — valor só muda via Change Order." : "Opcional"}
+            helper={budgetApproved ? "Baseline já aprovada — valor só muda via Change Order." : "Opcional agora — obrigatório para iniciar a execução da obra"}
           >
             <DecimalInput
               id="e-budget"
@@ -787,7 +787,7 @@ export default function ObraDetalhePage({ params }) {
           <FormField
             label="Início"
             htmlFor="e-starts"
-            helper={editDateErrors.startsAt ? undefined : "Opcional"}
+            helper={editDateErrors.startsAt ? undefined : "Opcional agora — obrigatório para iniciar a execução da obra"}
             error={editDateErrors.startsAt ? DATE_INPUT_ERROR_MESSAGE : undefined}
           >
             <Input
@@ -807,7 +807,7 @@ export default function ObraDetalhePage({ params }) {
           <FormField
             label="Previsão de término"
             htmlFor="e-ends"
-            helper={editDateErrors.endsAtPlanned ? undefined : "Opcional"}
+            helper={editDateErrors.endsAtPlanned ? undefined : "Opcional agora — obrigatório para iniciar a execução da obra"}
             error={editDateErrors.endsAtPlanned ? DATE_INPUT_ERROR_MESSAGE : undefined}
           >
             <Input
