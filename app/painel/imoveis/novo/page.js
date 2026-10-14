@@ -130,6 +130,49 @@ export default function NovoImovelPage() {
   const isLast = stepIndex === STEPS.length - 1;
   const isFirst = stepIndex === 0;
 
+  // BUG REAL CORRIGIDO (auditoria Claude Browser, 13/10/2026 — item 1, achado §3.1): a
+  // correção anterior (commit f3f7909) só validava "Código interno" no clique final. Mas
+  // "Preço (R$/mês)" (etapa Oferta) e "Proprietário" (etapa Proprietários) também têm
+  // asterisco de obrigatório e o assistente deixava avançar por TODAS as 8 etapas vazios,
+  // salvando o imóvel sem oferta e sem proprietário. Agora cada etapa com campo obrigatório
+  // é validada ao clicar "Continuar", com o campo destacado (prop `error` do FormField),
+  // não só uma mensagem genérica no final.
+  const [stepErrors, setStepErrors] = useState({});
+
+  function validateCurrentStep() {
+    if (step.id === "basico") {
+      const errors = {};
+      if (!basic.name.trim()) errors.name = "Obrigatório.";
+      if (!basic.internalCode.trim()) errors.internalCode = "Obrigatório.";
+      setStepErrors(errors);
+      return Object.keys(errors).length === 0;
+    }
+    if (step.id === "localizacao") {
+      const errors = {};
+      if (!address.zipCode.trim()) errors.zipCode = "Obrigatório.";
+      if (!address.city.trim()) errors.city = "Obrigatório.";
+      if (!address.street.trim()) errors.street = "Obrigatório.";
+      if (!address.neighborhood.trim()) errors.neighborhood = "Obrigatório.";
+      if (!address.state.trim()) errors.state = "Obrigatório.";
+      setStepErrors(errors);
+      return Object.keys(errors).length === 0;
+    }
+    if (step.id === "oferta") {
+      const errors = {};
+      if (!offer.askingPrice) errors.askingPrice = "Obrigatório.";
+      setStepErrors(errors);
+      return Object.keys(errors).length === 0;
+    }
+    if (step.id === "proprietarios") {
+      const errors = {};
+      if (!owners.some((o) => o.personId || o.name.trim())) errors.owner0 = "Obrigatório.";
+      setStepErrors(errors);
+      return Object.keys(errors).length === 0;
+    }
+    setStepErrors({});
+    return true;
+  }
+
   function updateOwner(index, field, value) {
     setOwners((prev) => prev.map((o, i) => (i === index ? { ...o, [field]: value } : o)));
   }
@@ -155,6 +198,11 @@ export default function NovoImovelPage() {
   }
 
   async function goNext() {
+    if (!isLast && !validateCurrentStep()) {
+      setSubmitError(`Preencha os campos obrigatórios desta etapa (${step.label}) antes de continuar.`);
+      return;
+    }
+    setSubmitError("");
     if (isLast) {
       // FIX (auditoria externa Nayara, re-auditoria round 2, M3-R01): "Nome" era o único campo
       // marcado required nesta etapa — o wizard deixava passar por todas as 8 etapas sem
@@ -269,7 +317,7 @@ export default function NovoImovelPage() {
           {step.id === "basico" ? (
             <div className={styles.formGrid}>
               <div className={styles.span2}>
-                <FormField label="Nome / referência do imóvel" htmlFor="n-name" required>
+                <FormField label="Nome / referência do imóvel" htmlFor="n-name" required error={stepErrors.name}>
                   <Input
                     id="n-name"
                     placeholder="Ex.: Edifício Aurora — Apto 302"
@@ -278,7 +326,7 @@ export default function NovoImovelPage() {
                   />
                 </FormField>
               </div>
-              <FormField label="Código interno" htmlFor="n-internal-code" required helper="Código comercial usado internamente (ex.: AP-0231).">
+              <FormField label="Código interno" htmlFor="n-internal-code" required error={stepErrors.internalCode} helper={stepErrors.internalCode ? undefined : "Código comercial usado internamente (ex.: AP-0231)."}>
                 <Input
                   id="n-internal-code"
                   placeholder="Ex.: AP-0231"
@@ -324,7 +372,7 @@ export default function NovoImovelPage() {
 
           {step.id === "localizacao" ? (
             <div className={styles.formGrid}>
-              <FormField label="CEP" htmlFor="n-zip" required helper={cepMessage || "Preenche o endereço automaticamente."}>
+              <FormField label="CEP" htmlFor="n-zip" required error={stepErrors.zipCode} helper={stepErrors.zipCode ? undefined : (cepMessage || "Preenche o endereço automaticamente.")}>
                 <div className={styles.cepField}>
                   <Input
                     id="n-zip"
@@ -336,11 +384,11 @@ export default function NovoImovelPage() {
                   {cepLoading ? <Spinner size="sm" className={styles.cepSpinner} /> : null}
                 </div>
               </FormField>
-              <FormField label="Cidade" htmlFor="n-addr-city" required>
+              <FormField label="Cidade" htmlFor="n-addr-city" required error={stepErrors.city}>
                 <Input id="n-addr-city" placeholder="Preenchida pelo CEP" value={address.city} onChange={(e) => setAddress({ ...address, city: e.target.value })} />
               </FormField>
               <div className={styles.span2}>
-                <FormField label="Logradouro" htmlFor="n-street" required>
+                <FormField label="Logradouro" htmlFor="n-street" required error={stepErrors.street}>
                   <Input id="n-street" placeholder="Rua, avenida..." value={address.street} onChange={(e) => setAddress({ ...address, street: e.target.value })} />
                 </FormField>
               </div>
@@ -350,10 +398,10 @@ export default function NovoImovelPage() {
               <FormField label="Complemento" htmlFor="n-complement">
                 <Input id="n-complement" placeholder="Apto, bloco..." value={address.complement} onChange={(e) => setAddress({ ...address, complement: e.target.value })} />
               </FormField>
-              <FormField label="Bairro" htmlFor="n-addr-neighborhood" required>
+              <FormField label="Bairro" htmlFor="n-addr-neighborhood" required error={stepErrors.neighborhood}>
                 <Input id="n-addr-neighborhood" value={address.neighborhood} onChange={(e) => setAddress({ ...address, neighborhood: e.target.value })} />
               </FormField>
-              <FormField label="UF" htmlFor="n-addr-state" required>
+              <FormField label="UF" htmlFor="n-addr-state" required error={stepErrors.state}>
                 <Input id="n-addr-state" maxLength={2} placeholder="SP" value={address.state} onChange={(e) => setAddress({ ...address, state: e.target.value.toUpperCase() })} />
               </FormField>
               <div className={styles.span2}>
@@ -442,7 +490,7 @@ export default function NovoImovelPage() {
                   ))}
                 </Select>
               </FormField>
-              <FormField label={`Preço (R$${offer.offerType !== "SALE" ? "/mês" : ""})`} htmlFor="n-offer-price" required>
+              <FormField label={`Preço (R$${offer.offerType !== "SALE" ? "/mês" : ""})`} htmlFor="n-offer-price" required error={stepErrors.askingPrice}>
                 <Input id="n-offer-price" type="number" placeholder="0,00" value={offer.askingPrice} onChange={(e) => setOffer({ ...offer, askingPrice: e.target.value })} />
               </FormField>
               <FormField
@@ -540,7 +588,7 @@ export default function NovoImovelPage() {
                   </div>
 
                   <div className={styles.ownerRow}>
-                    <FormField label="Proprietário" htmlFor={`n-owner-name-${index}`} required>
+                    <FormField label="Proprietário" htmlFor={`n-owner-name-${index}`} required error={index === 0 ? stepErrors.owner0 : undefined}>
                       <PersonPicker
                         id={`n-owner-name-${index}`}
                         value={owner.name}
