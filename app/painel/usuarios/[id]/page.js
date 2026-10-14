@@ -50,8 +50,18 @@ export default function UserDetailPage({ params }) {
   const [revokingId, setRevokingId] = useState(null);
   // Vincular/revogar papel exige MFA recente — guarda a ação pendente pra reabrir depois que
   // o usuário confirmar o código, em vez de só mostrar o erro cru da API.
-  const [pendingMfaAction, setPendingMfaAction] = useState(null); // "assign" | { revoke: membershipId }
+  const [pendingMfaAction, setPendingMfaAction] = useState(null); // "assign" | { revoke: membershipId } | "setPassword"
   const [mfaSetupNeeded, setMfaSetupNeeded] = useState(false);
+
+  // ACHADO REAL (auditoria Nayara, rodada 4, 14/10/2026, M4-R01): não existia NENHUM jeito de um
+  // usuário recém-criado receber uma senha — nem o admin definia uma, nem havia convite por
+  // e-mail — então nenhum segundo usuário conseguia logar de verdade. "Definir senha" fecha essa
+  // lacuna via PATCH /users/:id/set-password, que exige MFA recente (ação sensível, mesmo nível
+  // de risco de conceder um papel).
+  const [passwordModalOpen, setPasswordModalOpen] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [settingPassword, setSettingPassword] = useState(false);
+  const [passwordSetMessage, setPasswordSetMessage] = useState("");
 
   function loadAll() {
     setLoading(true);
@@ -142,6 +152,39 @@ export default function UserDetailPage({ params }) {
     }
   }
 
+  function openPasswordModal() {
+    setNewPassword("");
+    setPasswordSetMessage("");
+    setActionError("");
+    setPasswordModalOpen(true);
+  }
+
+  async function handleSetPassword() {
+    if (newPassword.length < 8) return;
+    setSettingPassword(true);
+    setActionError("");
+    setMfaSetupNeeded(false);
+    try {
+      await apiFetch(`/users/${params.id}/set-password`, { method: "PATCH", body: { password: newPassword } });
+      setPasswordSetMessage("Senha definida. O usuário já pode entrar com a nova senha.");
+      setNewPassword("");
+    } catch (err) {
+      if (err?.code === "MFA_STEP_UP_REQUIRED") {
+        setPasswordModalOpen(false);
+        setPendingMfaAction("setPassword");
+        return;
+      }
+      if (err?.code === "MFA_REQUIRED_NOT_ENABLED") {
+        setPasswordModalOpen(false);
+        setMfaSetupNeeded(true);
+        return;
+      }
+      setActionError(err?.message || "Não foi possível definir a senha deste usuário.");
+    } finally {
+      setSettingPassword(false);
+    }
+  }
+
   async function handleRevoke(membershipId) {
     setRevokingId(membershipId);
     setActionError("");
@@ -199,6 +242,9 @@ export default function UserDetailPage({ params }) {
             <Badge tone={STATUS_TONE[user.status] || "neutral"}>{STATUS_LABEL[user.status] || user.status}</Badge>
             <Button variant="secondary" onClick={openEditModal}>
               <Icon name="pencil" size={16} /> Editar
+            </Button>
+            <Button variant="secondary" onClick={openPasswordModal}>
+              <Icon name="key" size={16} /> Definir senha
             </Button>
             <Button variant="secondary" onClick={toggleStatus} loading={togglingStatus}>
               <Icon name={user.status === "ACTIVE" ? "ban" : "check"} size={16} />
@@ -343,15 +389,53 @@ export default function UserDetailPage({ params }) {
         </FormField>
       </Modal>
 
+      <Modal
+        open={passwordModalOpen}
+        onClose={() => setPasswordModalOpen(false)}
+        title="Definir senha"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setPasswordModalOpen(false)}>Cancelar</Button>
+            <Button onClick={handleSetPassword} loading={settingPassword} disabled={newPassword.length < 8}>
+              Definir senha
+            </Button>
+          </>
+        }
+      >
+        <FormField
+          label="Nova senha"
+          htmlFor="u-new-password"
+          required
+          helper="Pelo menos 8 caracteres. O usuário poderá entrar com esta senha a partir de agora; todas as sessões ativas dele serão encerradas."
+        >
+          <Input
+            id="u-new-password"
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            autoComplete="new-password"
+          />
+        </FormField>
+        {passwordSetMessage ? <Alert tone="success">{passwordSetMessage}</Alert> : null}
+      </Modal>
+
       <MfaVerifyModal
         open={Boolean(pendingMfaAction)}
         onClose={() => setPendingMfaAction(null)}
-        actionLabel={pendingMfaAction && pendingMfaAction.revoke ? "revogar este vínculo" : "vincular este papel"}
+        actionLabel={
+          pendingMfaAction && pendingMfaAction.revoke
+            ? "revogar este vínculo"
+            : pendingMfaAction === "setPassword"
+            ? "definir a senha deste usuário"
+            : "vincular este papel"
+        }
         onVerified={async () => {
           const action = pendingMfaAction;
           setPendingMfaAction(null);
           if (action && action.revoke) {
             await handleRevoke(action.revoke);
+          } else if (action === "setPassword") {
+            await handleSetPassword();
           } else {
             await handleAssignRole();
           }
