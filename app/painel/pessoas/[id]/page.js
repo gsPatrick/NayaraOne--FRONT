@@ -131,21 +131,38 @@ export default function PersonDetailPage({ params }) {
   const duplicatePair = duplicatePairs.find((pair) => pair.includes(person.id));
   const duplicatePartnerId = duplicatePair ? duplicatePair.find((id) => id !== person.id) : null;
   const duplicatePartner = duplicatePartnerId ? people.find((p) => p.id === duplicatePartnerId) : null;
-  const mergePartner = duplicatePartner || manualPartner;
+  // BUG REAL CORRIGIDO (auditoria externa, 14/10/2026): a ordem estava invertida —
+  // "duplicatePartner || manualPartner" fazia a sugestão automática de duplicata SEMPRE
+  // vencer, mesmo quando o usuário tinha acabado de escolher outra pessoa pela busca manual
+  // ("Mesclar com outro cadastro"). Resultado: a tela de confirmação podia mostrar uma pessoa
+  // diferente da que o usuário selecionou. manualPartner só é setado por uma ação explícita do
+  // usuário (openManualMerge, ou limpo para null pelo botão de duplicata automática), então ele
+  // tem que vencer quando presente.
+  const mergePartner = manualPartner || duplicatePartner;
   const mergedIntoPerson = person.mergedInto ? people.find((p) => p.id === person.mergedInto) : null;
   const selectedCanonicalId = canonicalId || person.id;
 
   const normalizedManualQuery = manualQuery.trim().toLowerCase();
+  // BUG REAL CORRIGIDO (auditoria externa, 14/10/2026): quando a busca não tinha nenhum
+  // dígito (busca por nome puro), "normalizedManualQuery.replace(/\D/g, "")" virava string
+  // vazia, e "qualquerTexto.includes("")" é SEMPRE verdadeiro em JS — isso fazia a condição do
+  // CPF/CNPJ "casar" com todo mundo que tivesse documento cadastrado, mascarando o filtro por
+  // nome (a busca por nome "funcionava" só quando coincidia por acidente com o que o OR do CPF
+  // já tinha liberado). Agora só compara dígito contra dígito quando a busca realmente tem
+  // algum dígito.
+  const normalizedManualQueryDigits = normalizedManualQuery.replace(/\D/g, "");
   const manualSearchResults =
     normalizedManualQuery.length < 2
       ? []
       : people
           .filter((p) => p.id !== person.id && p.status !== "MERGED")
-          .filter(
-            (p) =>
-              p.legalName?.toLowerCase().includes(normalizedManualQuery) ||
-              p.taxIdNormalized?.replace(/\D/g, "").includes(normalizedManualQuery.replace(/\D/g, ""))
-          )
+          .filter((p) => {
+            const nameMatch = p.legalName?.toLowerCase().includes(normalizedManualQuery);
+            const docMatch =
+              normalizedManualQueryDigits.length > 0 &&
+              p.taxIdNormalized?.replace(/\D/g, "").includes(normalizedManualQueryDigits);
+            return nameMatch || docMatch;
+          })
           .slice(0, 8);
 
   function openManualMerge(candidate) {
@@ -547,8 +564,8 @@ export default function PersonDetailPage({ params }) {
           <>
             <p className={styles.description}>
               Escolha qual cadastro deve permanecer como canônico. O outro será marcado como
-              mesclado; documentos, contatos e demais referências são remapeados para o canônico
-              e um evento <code>person.merged</code> é registrado.
+              mesclado; documentos, contatos e demais referências são remapeados para o canônico,
+              e a ação fica registrada no histórico de auditoria.
             </p>
             <div className={styles.compareGrid}>
               {[person, mergePartner].map((p) => {
