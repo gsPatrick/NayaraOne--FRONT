@@ -317,7 +317,7 @@ export default function PedidosDeCompraPage() {
         <Table columns={columns} rows={loading ? [] : orders} loading={loading} emptyMessage="Nenhum pedido de compra registrado." />
       </Card>
 
-      <Card title="Divergências de recebimento" subtitle="Three-way match PO x recebido">
+      <Card title="Divergências de recebimento" subtitle="Conferência entre pedido de compra e o que foi recebido">
         <Table columns={discColumns} rows={loading ? [] : discrepancies} loading={loading} emptyMessage="Nenhuma divergência registrada." />
       </Card>
 

@@ -19,7 +19,7 @@ import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import { useRouter } from "next/navigation";
 import { listRequisitions, createRequisition, decideRequisition, issueRequisition, listInventoryItems, listInventoryLocations } from "@/lib/api/inventory";
 import { listProjects, listProjectStages } from "@/lib/api/construction";
-import { formatDateTime, toNumber } from "@/lib/format";
+import { formatDateTime, formatQuantity, toNumber } from "@/lib/format";
 
 const STATUS_LABELS = { REQUESTED: "Solicitada", APPROVED: "Aprovada", REJECTED: "Rejeitada", ISSUED: "Entregue" };
 const STATUS_TONE = { REQUESTED: "neutral", APPROVED: "info", REJECTED: "danger", ISSUED: "success" };
@@ -191,7 +191,7 @@ export default function RequisicoesPage() {
       width: "22%",
       render: (row) => (
         <span style={{ fontSize: "var(--text-body-sm)" }}>
-          {(row.items || []).map((it) => `${itemName(it.inventoryItemId)} (${it.quantity})`).join(", ") || "—"}
+          {(row.items || []).map((it) => `${itemName(it.inventoryItemId)} (${formatQuantity(it.quantity)})`).join(", ") || "—"}
         </span>
       ),
     },

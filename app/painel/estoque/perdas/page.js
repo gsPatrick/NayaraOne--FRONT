@@ -24,7 +24,7 @@ import FileDropInput from "@/components/molecules/FileDropInput/FileDropInput";
 import { listLossCases, openLossCase, decideLossCase, listInventoryItems, listInventoryLocations, listAssets, listLossCaseAnomalies } from "@/lib/api/inventory";
 import { listPeople } from "@/lib/api/people";
 import { uploadFile } from "@/lib/api/legal";
-import { formatBRL, formatDateTime, toNumber } from "@/lib/format";
+import { formatBRL, formatDateTime, formatQuantity, toNumber } from "@/lib/format";
 
 const STATUS_LABELS = { OPEN: "Em análise", APPROVED: "Aprovada (baixa gerada)", REJECTED: "Rejeitada" };
 const STATUS_TONE = { OPEN: "warning", APPROVED: "danger", REJECTED: "neutral" };
@@ -221,7 +221,7 @@ export default function PerdasPage() {
 
   const columns = [
     { key: "item", label: "Item", width: "14%", render: (row) => (row.inventoryItemId ? itemName(row.inventoryItemId) : assetName(row.assetId)) },
-    { key: "qty", label: "Quantidade", width: "7%", render: (row) => row.quantity || "—" },
+    { key: "qty", label: "Quantidade", width: "7%", render: (row) => (row.quantity != null ? formatQuantity(row.quantity) : "—") },
     { key: "context", label: "Contexto", width: "15%" },
     { key: "estimate", label: "Estimativa", width: "9%", render: (row) => (row.estimatedCost != null ? formatBRL(row.estimatedCost) : "—") },
     { key: "responsible", label: "Responsável", width: "10%", render: (row) => (row.responsiblePersonId ? personName(row.responsiblePersonId) || "Responsável definido" : "—") },
