@@ -139,6 +139,30 @@ export default function NovoImovelPage() {
   // não só uma mensagem genérica no final.
   const [stepErrors, setStepErrors] = useState({});
 
+  // BUG REAL CORRIGIDO (auditoria Claude Browser, rodada 3, 13/10/2026): `stepErrors` só era
+  // recalculado ao clicar "Continuar" de novo — depois de um bloqueio, se o usuário preenchia
+  // só PARTE dos campos (ex.: Bairro, deixando CEP/Cidade/Logradouro/UF já preenchidos de
+  // antes), o "Obrigatório." continuava aparecendo embaixo dos campos JÁ preenchidos, porque
+  // o objeto de erros não era atualizado campo a campo. Agora cada campo "some" do erro assim
+  // que passa a ter valor, sem esperar o próximo clique em "Continuar".
+  useEffect(() => {
+    setStepErrors((prev) => {
+      if (Object.keys(prev).length === 0) return prev;
+      const next = { ...prev };
+      if (next.name && basic.name.trim()) delete next.name;
+      if (next.internalCode && basic.internalCode.trim()) delete next.internalCode;
+      if (next.zipCode && address.zipCode.trim()) delete next.zipCode;
+      if (next.city && address.city.trim()) delete next.city;
+      if (next.street && address.street.trim()) delete next.street;
+      if (next.neighborhood && address.neighborhood.trim()) delete next.neighborhood;
+      if (next.state && address.state.trim()) delete next.state;
+      if (next.askingPrice && Number(offer.askingPrice) > 0) delete next.askingPrice;
+      if (next.owner0 && owners.some((o) => o.personId)) delete next.owner0;
+      return next;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [basic.name, basic.internalCode, address.zipCode, address.city, address.street, address.neighborhood, address.state, offer.askingPrice, owners]);
+
   function validateCurrentStep() {
     if (step.id === "basico") {
       const errors = {};
@@ -158,14 +182,24 @@ export default function NovoImovelPage() {
       return Object.keys(errors).length === 0;
     }
     if (step.id === "oferta") {
+      // BUG REAL CORRIGIDO (auditoria Claude Browser, rodada 3): Preço = 0 passava na
+      // validação (`!0` é falsy só pra string vazia/zero não-digitado, mas o valor "0"
+      // digitado passava) e o imóvel ficava com "Oferta ativa R$ 0,00/mês" — preço de
+      // oferta precisa ser maior que zero.
       const errors = {};
-      if (!offer.askingPrice) errors.askingPrice = "Obrigatório.";
+      if (!offer.askingPrice || Number(offer.askingPrice) <= 0) errors.askingPrice = "Obrigatório, maior que zero.";
       setStepErrors(errors);
       return Object.keys(errors).length === 0;
     }
     if (step.id === "proprietarios") {
+      // BUG REAL CORRIGIDO (auditoria Claude Browser, rodada 3, 13/10/2026): a validação
+      // aceitava texto livre (sem personId) como "preenchido", mas o salvamento real
+      // (`for (const o of owners) { if (!o.personId) continue; ... }`, mais abaixo) ignora
+      // silenciosamente qualquer proprietário sem contato vinculado de verdade — o imóvel
+      // era salvo com "Sem proprietários" mesmo a etapa tendo "passado". Agora exige
+      // personId de verdade (um contato real selecionado), não só texto digitado.
       const errors = {};
-      if (!owners.some((o) => o.personId || o.name.trim())) errors.owner0 = "Obrigatório.";
+      if (!owners.some((o) => o.personId)) errors.owner0 = "Selecione um contato da lista — texto livre não é salvo como proprietário.";
       setStepErrors(errors);
       return Object.keys(errors).length === 0;
     }
@@ -301,7 +335,7 @@ export default function NovoImovelPage() {
       return Math.round((done / required.length) * 100);
     }
     if (s.id === "oferta") return offer.askingPrice ? 100 : 0;
-    if (s.id === "proprietarios") return owners.some((o) => o.name.trim()) ? 100 : 0;
+    if (s.id === "proprietarios") return owners.some((o) => o.personId) ? 100 : 0;
     return 100;
   });
 
@@ -322,6 +356,7 @@ export default function NovoImovelPage() {
                     id="n-name"
                     placeholder="Ex.: Edifício Aurora — Apto 302"
                     value={basic.name}
+                    error={!!stepErrors.name}
                     onChange={(e) => setBasic({ ...basic, name: e.target.value })}
                   />
                 </FormField>
@@ -331,6 +366,7 @@ export default function NovoImovelPage() {
                   id="n-internal-code"
                   placeholder="Ex.: AP-0231"
                   value={basic.internalCode}
+                  error={!!stepErrors.internalCode}
                   onChange={(e) => setBasic({ ...basic, internalCode: e.target.value })}
                 />
               </FormField>
@@ -378,6 +414,7 @@ export default function NovoImovelPage() {
                     id="n-zip"
                     placeholder="00000-000"
                     value={address.zipCode}
+                    error={!!stepErrors.zipCode}
                     onChange={(e) => handleCepChange(e.target.value)}
                     onBlur={(e) => handleCepBlur(e.target.value)}
                   />
@@ -385,11 +422,11 @@ export default function NovoImovelPage() {
                 </div>
               </FormField>
               <FormField label="Cidade" htmlFor="n-addr-city" required error={stepErrors.city}>
-                <Input id="n-addr-city" placeholder="Preenchida pelo CEP" value={address.city} onChange={(e) => setAddress({ ...address, city: e.target.value })} />
+                <Input id="n-addr-city" placeholder="Preenchida pelo CEP" value={address.city} error={!!stepErrors.city} onChange={(e) => setAddress({ ...address, city: e.target.value })} />
               </FormField>
               <div className={styles.span2}>
                 <FormField label="Logradouro" htmlFor="n-street" required error={stepErrors.street}>
-                  <Input id="n-street" placeholder="Rua, avenida..." value={address.street} onChange={(e) => setAddress({ ...address, street: e.target.value })} />
+                  <Input id="n-street" placeholder="Rua, avenida..." value={address.street} error={!!stepErrors.street} onChange={(e) => setAddress({ ...address, street: e.target.value })} />
                 </FormField>
               </div>
               <FormField label="Número" htmlFor="n-number">
@@ -399,10 +436,10 @@ export default function NovoImovelPage() {
                 <Input id="n-complement" placeholder="Apto, bloco..." value={address.complement} onChange={(e) => setAddress({ ...address, complement: e.target.value })} />
               </FormField>
               <FormField label="Bairro" htmlFor="n-addr-neighborhood" required error={stepErrors.neighborhood}>
-                <Input id="n-addr-neighborhood" value={address.neighborhood} onChange={(e) => setAddress({ ...address, neighborhood: e.target.value })} />
+                <Input id="n-addr-neighborhood" value={address.neighborhood} error={!!stepErrors.neighborhood} onChange={(e) => setAddress({ ...address, neighborhood: e.target.value })} />
               </FormField>
               <FormField label="UF" htmlFor="n-addr-state" required error={stepErrors.state}>
-                <Input id="n-addr-state" maxLength={2} placeholder="SP" value={address.state} onChange={(e) => setAddress({ ...address, state: e.target.value.toUpperCase() })} />
+                <Input id="n-addr-state" maxLength={2} placeholder="SP" value={address.state} error={!!stepErrors.state} onChange={(e) => setAddress({ ...address, state: e.target.value.toUpperCase() })} />
               </FormField>
               <div className={styles.span2}>
                 <FormField label="Geolocalização" helper="O mapa segue o endereço digitado — clique nele para marcar o ponto exato, se precisar ajustar.">
@@ -491,7 +528,7 @@ export default function NovoImovelPage() {
                 </Select>
               </FormField>
               <FormField label={`Preço (R$${offer.offerType !== "SALE" ? "/mês" : ""})`} htmlFor="n-offer-price" required error={stepErrors.askingPrice}>
-                <Input id="n-offer-price" type="number" placeholder="0,00" value={offer.askingPrice} onChange={(e) => setOffer({ ...offer, askingPrice: e.target.value })} />
+                <Input id="n-offer-price" type="number" min="0.01" placeholder="0,00" value={offer.askingPrice} error={!!stepErrors.askingPrice} onChange={(e) => setOffer({ ...offer, askingPrice: e.target.value })} />
               </FormField>
               <FormField
                 label="Preço mínimo confidencial"
