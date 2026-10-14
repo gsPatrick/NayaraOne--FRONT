@@ -49,7 +49,7 @@ export const NAV_SECTIONS = [
         children: [
           { label: "Visão geral", href: "/painel/contratos" },
           { label: "Contratos", href: "/painel/contratos/lista" },
-          { label: "Locação", href: "/painel/contratos/locacao" },
+          { label: "Locação (cobrança e reajuste)", href: "/painel/contratos/locacao" },
           { label: "Garantias", href: "/painel/contratos/garantias" },
           { label: "Vistorias", href: "/painel/contratos/vistorias" },
           { label: "Entrega de chaves", href: "/painel/contratos/entrega-chaves" },

@@ -10,7 +10,7 @@ const ITEMS = [
   { label: "Visão geral", href: "/painel/contratos", icon: "document" },
   { label: "Contratos", href: "/painel/contratos/lista", icon: "signature" },
   { label: "Garantias", href: "/painel/contratos/garantias", icon: "shield" },
-  { label: "Locação", href: "/painel/contratos/locacao", icon: "money" },
+  { label: "Locação (cobrança e reajuste)", href: "/painel/contratos/locacao", icon: "money" },
   { label: "Vistorias", href: "/painel/contratos/vistorias", icon: "eye" },
   { label: "Entrega de chaves", href: "/painel/contratos/entrega-chaves", icon: "key" },
   { label: "Processos jurídicos", href: "/painel/contratos/processos", icon: "scale" },
