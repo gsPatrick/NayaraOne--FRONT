@@ -552,11 +552,11 @@ export default function ObraDetalhePage({ params }) {
                 </div>
                 <div>
                   <p className={styles.infoLabel}>Progresso planejado</p>
-                  <p className={styles.infoValue}>{health.kpis?.plannedProgressPct != null ? `${health.kpis.plannedProgressPct}%` : "—"}</p>
+                  <p className={styles.infoValue}>{formatPercent(health.kpis?.plannedProgressPct)}</p>
                 </div>
                 <div>
                   <p className={styles.infoLabel}>Progresso do cronograma</p>
-                  <p className={styles.infoValue}>{health.kpis?.scheduleProgressPct != null ? `${health.kpis.scheduleProgressPct}%` : "—"}</p>
+                  <p className={styles.infoValue}>{formatPercent(health.kpis?.scheduleProgressPct)}</p>
                 </div>
                 <div>
                   <p className={styles.infoLabel}>Situação de prazo</p>
