@@ -104,7 +104,16 @@ export default function CorrespondentePage() {
       key: "status",
       label: "Status",
       width: "14%",
-      render: (row) => <Badge tone={STATUS_TONE[row.status] || "neutral"}>{STATUS_LABELS[row.status] || row.status}</Badge>,
+      render: (row) => (
+        <>
+          <Badge tone={STATUS_TONE[row.status] || "neutral"}>{STATUS_LABELS[row.status] || row.status}</Badge>
+          {row.possibleDuplicateOfCaseId ? (
+            <div style={{ marginTop: 4 }}>
+              <Badge tone="warning">Possível duplicata</Badge>
+            </div>
+          ) : null}
+        </>
+      ),
     },
     {
       key: "principal",
