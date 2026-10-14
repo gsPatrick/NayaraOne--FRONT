@@ -105,6 +105,7 @@ export const NAV_SECTIONS = [
         permission: "correspondent:read",
         children: [
           { label: "Financiamentos", href: "/painel/correspondente" },
+          { label: "Fiscal", href: "/painel/correspondente/fiscal", permission: "correspondent:fiscal" },
         ],
       },
     ],

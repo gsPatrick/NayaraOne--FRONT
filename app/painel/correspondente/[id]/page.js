@@ -29,6 +29,7 @@ import {
   createCommissionEntitlement,
   confirmCommissionEntitlement,
   chargebackCommissionEntitlement,
+  requestInvoice,
 } from "@/lib/api/correspondent";
 import { uploadFile } from "@/lib/api/legal";
 import { formatDateTime, formatBRL, formatPercent, toNumber } from "@/lib/format";
@@ -153,6 +154,7 @@ export default function FinancingCaseDetailPage() {
   const [commissionFormError, setCommissionFormError] = useState("");
   const [confirmingCommissionId, setConfirmingCommissionId] = useState(null);
   const [chargebackCommissionId, setChargebackCommissionId] = useState(null);
+  const [invoicingCommissionId, setInvoicingCommissionId] = useState(null);
 
   function loadCommissions() {
     setCommissionsLoading(true);
@@ -336,6 +338,25 @@ export default function FinancingCaseDetailPage() {
       setCommissionFormError(err?.message || "Não foi possível estornar esta comissão.");
     } finally {
       setChargebackCommissionId(null);
+    }
+  }
+
+  async function handleRequestInvoiceForCommission(entitlement) {
+    setInvoicingCommissionId(entitlement.id);
+    setCommissionFormError("");
+    try {
+      await requestInvoice({
+        sourceType: "COMMISSION_ENTITLEMENT",
+        sourceId: entitlement.id,
+        amount: entitlement.amount,
+        description: `Comissão de correspondente bancário — caso ${id}`,
+      });
+      setCommissionFormError("");
+      window.alert('NFS-e solicitada. Acompanhe o status em Correspondente → Fiscal.');
+    } catch (err) {
+      setCommissionFormError(err?.message || "Não foi possível solicitar a NFS-e desta comissão.");
+    } finally {
+      setInvoicingCommissionId(null);
     }
   }
 
@@ -759,6 +780,15 @@ export default function FinancingCaseDetailPage() {
                             loading={chargebackCommissionId === c.id}
                           >
                             Estornar
+                          </Button>
+                        ) : null}
+                        {c.status === "RECEIVABLE" || c.status === "RECEIVED" ? (
+                          <Button
+                            variant="secondary"
+                            onClick={() => handleRequestInvoiceForCommission(c)}
+                            loading={invoicingCommissionId === c.id}
+                          >
+                            Emitir NFS-e
                           </Button>
                         ) : null}
                       </td>
