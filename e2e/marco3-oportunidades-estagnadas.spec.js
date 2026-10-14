@@ -44,8 +44,10 @@ async function main() {
     record('1. login', true, EMAIL);
 
     // --- 2. Painel do CRM ---
-    await page.goto(`${BASE_URL}/painel/crm/dashboard`, { waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(1500);
+    // O dashboard agrega várias consultas pesadas (contagens, motivos de perda, oportunidades
+    // estagnadas) — "domcontentloaded" + 1500ms não bastava, a seção carregava depois.
+    await page.goto(`${BASE_URL}/painel/crm/dashboard`, { waitUntil: 'networkidle' });
+    await page.waitForTimeout(1000);
 
     const staleSection = page.getByText('Oportunidades estagnadas', { exact: false });
     const found = await staleSection.count();

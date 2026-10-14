@@ -85,13 +85,13 @@ async function main() {
       if (m) entryId = m[1];
     }
     if (entryId) {
-      await page.goto(`${BASE_URL}/painel/financeiro/lancamentos/${entryId}`, { waitUntil: 'domcontentloaded' });
+      await page.goto(`${BASE_URL}/painel/financeiro/lancamentos/${entryId}`, { waitUntil: 'networkidle' });
     }
     const entryUrl = page.url();
     record('2. criar lançamento pendente', !!entryId, entryUrl);
 
     // --- 3. Confirmar estado do gate ANTES de qualquer aprovação ---
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(2000);
     const liquidarBtn = page.getByRole('button', { name: 'Liquidar', exact: true });
     const liquidarVisible = (await liquidarBtn.count()) > 0;
     const liquidarEnabled = liquidarVisible && (await liquidarBtn.isEnabled().catch(() => false));
