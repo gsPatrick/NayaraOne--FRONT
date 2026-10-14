@@ -16,6 +16,7 @@ import Alert from "@/components/molecules/Alert/Alert";
 import LocationPicker from "@/components/molecules/LocationPicker/LocationPicker";
 import PhotoUpload from "@/components/molecules/PhotoUpload/PhotoUpload";
 import Avatar from "@/components/atoms/Avatar/Avatar";
+import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
 import {
   ROLE_LABELS,
   CONTACT_TYPE_LABELS,
@@ -51,6 +52,7 @@ const EMPTY_DOCUMENT = { type: "RG", fileId: "", fileName: "", uploading: false,
 
 export default function NovaPessoaPage() {
   const router = useRouter();
+  const { confirm, ConfirmDialog } = useConfirm();
   const [stepIndex, setStepIndex] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [duplicateError, setDuplicateError] = useState("");
@@ -268,7 +270,31 @@ export default function NovaPessoaPage() {
       };
 
       try {
-        const created = await createPerson(payload);
+        let created;
+        try {
+          created = await createPerson(payload);
+        } catch (err) {
+          // BUG REAL CORRIGIDO (auditoria Claude Browser, 13/10/2026, §3.2): o backend
+          // bloqueava contato/telefone repetido e a mensagem instruía o usuário a "enviar
+          // allowDuplicate: true", um parâmetro de API que não existe na tela. Esse é o caso
+          // de "match médio" do Caderno (contato igual, não documento) — abre revisão, não
+          // bloqueia de verdade. Agora a própria tela oferece a opção, sem jargão técnico.
+          if (err?.code === "PERSON_DUPLICATE") {
+            const ok = await confirm({
+              title: "Pode já existir um cadastro parecido",
+              message: "Encontramos uma pessoa com o mesmo telefone ou contato principal. Isso pode ser um cadastro duplicado — revise antes de continuar. Quer criar este cadastro mesmo assim?",
+              confirmLabel: "Criar mesmo assim",
+              tone: "primary",
+            });
+            if (!ok) {
+              setSubmitting(false);
+              return;
+            }
+            created = await createPerson({ ...payload, allowDuplicate: true });
+          } else {
+            throw err;
+          }
+        }
         // O vínculo com imóveis é um recurso do módulo de Imóveis
         // (POST /properties/:id/owners), então acontece depois da criação da pessoa.
         for (const link of linkedProperties) {
@@ -682,6 +708,7 @@ export default function NovaPessoaPage() {
           </Button>
         </div>
       </div>
+      <ConfirmDialog />
     </AppShell>
   );
 }
