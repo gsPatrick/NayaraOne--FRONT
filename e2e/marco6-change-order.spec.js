@@ -12,10 +12,23 @@
  * botões reais, confirmando que não aparece nenhum erro de idempotência e que o registro é
  * criado com sucesso.
  *
+ * BUG REAL #2 CORRIGIDO (Claude Browser, 13/10/2026, mesma rodada de re-auditoria): o
+ * backend também exige `evidenceFileIds` com pelo menos 1 arquivo
+ * ("evidenceFileIds" é obrigatório e precisa ter pelo menos 1 arquivo de evidência
+ * sustentando o aditivo — changeOrders.service.js, citando o Guia do Marcelo do Caderno),
+ * mas o campo "Evidência" do formulário estava rotulado como "Opcional" e o botão "Criar
+ * Change Order" não bloqueava o envio sem arquivo — só o backend recusava, com erro cru.
+ * Este script antigo nunca anexava evidência e só checava erro de idempotencyKey, por isso
+ * não pegou esse segundo bug. Agora testa os dois lados: (a) sem arquivo, o botão fica
+ * desabilitado; (b) com arquivo, o Change Order é criado com sucesso.
+ *
  * Uso: `node e2e/marco6-change-order.spec.js` (ou `npm run test:e2e:marco6-change-order`).
  */
 
 const { chromium } = require('playwright');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
 
 const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
 const EMAIL = process.env.E2E_EMAIL || 'admin@nayaraone.dev';
@@ -109,6 +122,18 @@ async function main() {
     await page.fill('#m-co-schedule', '3');
 
     const createBtn = page.getByRole('button', { name: 'Criar Change Order', exact: true });
+
+    // --- 3a. Sem evidência: botão tem que ficar desabilitado (evidenceFileIds é obrigatório) ---
+    const disabledWithoutFile = await createBtn.isDisabled();
+    record('3a. botão "Criar Change Order" desabilitado sem evidência anexada', disabledWithoutFile,
+      disabledWithoutFile ? 'bloqueado corretamente antes de chamar a API' : 'REGRESSÃO: deixa enviar sem evidência obrigatória');
+
+    // --- 3b. Anexa evidência fictícia e cria de verdade ---
+    const fixturePath = path.join(os.tmpdir(), `co-evidencia-${suffix}.txt`);
+    fs.writeFileSync(fixturePath, 'Evidência fictícia de teste E2E — Change Order.');
+    await page.setInputFiles('#m-co-file', fixturePath);
+    await page.waitForTimeout(800);
+
     await createBtn.click();
     await page.waitForTimeout(2000);
 
@@ -120,6 +145,11 @@ async function main() {
     const consoleIdemError = consoleErrors.some((e) => e.toLowerCase().includes('idempotencykey'));
     record('4. nenhum erro de idempotencyKey no console do navegador', !consoleIdemError,
       consoleIdemError ? consoleErrors.find((e) => e.toLowerCase().includes('idempotencykey')) : 'limpo');
+
+    const evidenceError = page.getByText('evidenceFileIds', { exact: false });
+    const hasEvidenceError = (await evidenceError.count()) > 0;
+    record('4b. nenhum erro de evidenceFileIds após anexar evidência', !hasEvidenceError,
+      hasEvidenceError ? 'REGRESSÃO: erro de evidência obrigatória apareceu mesmo com arquivo anexado' : 'sem erro de evidência');
 
     // Confirma que o CO aparece listado (criação realmente persistiu, não só fechou o modal).
     await page.waitForTimeout(1000);

@@ -110,8 +110,17 @@ export default function ChangeOrdersObraPage({ params }) {
     setCoOpen(true);
   }
 
+  // BUG REAL CORRIGIDO (Claude Browser, 13/10/2026): o backend exige evidenceFileIds com pelo
+  // menos 1 arquivo (changeOrders.service.js, citando o Caderno Técnico — "Objeto obrigatório
+  // ... evidenceFileIds"), mas este formulário rotulava o campo como "Opcional" e deixava
+  // enviar sem anexo, estourando o erro cru do backend só depois do clique. Agora é obrigatório
+  // de verdade, igual ao resto dos campos.
   const isChangeOrderValid =
-    coForm.reasonCode !== "" && coForm.description.trim() !== "" && coForm.budgetImpact !== "" && !Number.isNaN(toNumber(coForm.budgetImpact));
+    coForm.reasonCode !== "" &&
+    coForm.description.trim() !== "" &&
+    coForm.budgetImpact !== "" &&
+    !Number.isNaN(toNumber(coForm.budgetImpact)) &&
+    !!coForm.file;
 
   async function handleCreateChangeOrder() {
     // BUG REAL CORRIGIDO (re-auditoria 13/10/2026, round 2, M6-R02): o backend exige
@@ -277,13 +286,13 @@ export default function ChangeOrdersObraPage({ params }) {
             </FormField>
           </div>
           <div className={styles.span2}>
-            <FormField label="Evidência" htmlFor="m-co-file">
+            <FormField label="Evidência *" htmlFor="m-co-file">
               <FileDropInput
                 id="m-co-file"
                 fileNames={coForm.file ? [coForm.file.name] : []}
                 onFiles={(files) => setCoForm((p) => ({ ...p, file: files[0] || null }))}
                 onRemove={() => setCoForm((p) => ({ ...p, file: null }))}
-                helper="Opcional — foto, documento ou planilha que sustente o pedido"
+                helper="Obrigatório — foto, documento ou planilha que sustente o pedido"
               />
             </FormField>
           </div>
