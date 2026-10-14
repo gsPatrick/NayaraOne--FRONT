@@ -10,10 +10,18 @@ import Button from "@/components/atoms/Button/Button";
 import FormField from "@/components/molecules/FormField/FormField";
 import Select from "@/components/atoms/Select/Select";
 import FileDropInput from "@/components/molecules/FileDropInput/FileDropInput";
+import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
-import { getFinancingCase, listCaseRequirements, createCaseRequirement, uploadCaseDocument } from "@/lib/api/correspondent";
+import {
+  getFinancingCase,
+  listCaseRequirements,
+  createCaseRequirement,
+  uploadCaseDocument,
+  listSimulations,
+  createSimulation,
+} from "@/lib/api/correspondent";
 import { uploadFile } from "@/lib/api/legal";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTime, formatBRL, formatPercent, toNumber } from "@/lib/format";
 
 const STATUS_LABELS = { DRAFT: "Rascunho" };
 const STATUS_TONE = { DRAFT: "neutral" };
@@ -22,6 +30,7 @@ const PROVIDER_LABELS = {
   sandbox: "Sandbox (simulação, sem envio real a nenhum banco)",
   manual: "Manual (corretor conduz o caso com o banco por fora do sistema)",
 };
+const PROVIDER_SHORT_LABELS = { sandbox: "Sandbox", manual: "Manual" };
 
 const APPLICANT_ROLE_LABELS = { PRINCIPAL: "Proponente principal", CO_APPLICANT: "Co-proponente" };
 
@@ -58,6 +67,23 @@ export default function FinancingCaseDetailPage() {
   const [actionError, setActionError] = useState("");
   const [uploadingRequirementId, setUploadingRequirementId] = useState(null);
 
+  const [simulations, setSimulations] = useState([]);
+  const [simulationsLoading, setSimulationsLoading] = useState(true);
+  const [simulationsError, setSimulationsError] = useState("");
+  const [simAmount, setSimAmount] = useState("");
+  const [simTermMonths, setSimTermMonths] = useState("360");
+  const [creatingSimulation, setCreatingSimulation] = useState(false);
+  const [simulationFormError, setSimulationFormError] = useState("");
+
+  function loadSimulations() {
+    setSimulationsLoading(true);
+    setSimulationsError("");
+    listSimulations(id)
+      .then(setSimulations)
+      .catch((err) => setSimulationsError(err?.message || "Não foi possível carregar as simulações deste caso."))
+      .finally(() => setSimulationsLoading(false));
+  }
+
   function loadRequirements() {
     setRequirementsLoading(true);
     setRequirementsError("");
@@ -75,8 +101,33 @@ export default function FinancingCaseDetailPage() {
       .catch((err) => setLoadError(err?.message || "Não foi possível carregar o caso de financiamento."))
       .finally(() => setLoading(false));
     loadRequirements();
+    loadSimulations();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  async function handleCreateSimulation() {
+    setSimulationFormError("");
+    const amount = toNumber(simAmount);
+    const termMonths = Number(simTermMonths);
+    if (!amount || amount <= 0) {
+      setSimulationFormError("Informe o valor financiado, maior que zero.");
+      return;
+    }
+    if (!termMonths || termMonths <= 0 || !Number.isInteger(termMonths)) {
+      setSimulationFormError("Informe o prazo em meses, um número inteiro maior que zero.");
+      return;
+    }
+    setCreatingSimulation(true);
+    try {
+      await createSimulation(id, { amount, termMonths });
+      setSimAmount("");
+      loadSimulations();
+    } catch (err) {
+      setSimulationFormError(err?.message || "Não foi possível criar a simulação.");
+    } finally {
+      setCreatingSimulation(false);
+    }
+  }
 
   async function handleAddRequirement() {
     setAddingRequirement(true);
@@ -218,6 +269,66 @@ export default function FinancingCaseDetailPage() {
                   </div>
                 );
               })}
+            </div>
+          )}
+        </div>
+      </Card>
+
+      <Card
+        title="Simulações"
+        subtitle="Cada simulação fica registrada à parte — simular de novo não apaga nem substitui as anteriores, para comparar propostas lado a lado."
+        style={{ marginTop: 16 }}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div style={{ display: "flex", gap: 12, alignItems: "flex-end", flexWrap: "wrap" }}>
+            <FormField label="Valor financiado (R$)" htmlFor="sim-amount">
+              <DecimalInput id="sim-amount" value={simAmount} onChange={setSimAmount} placeholder="0,00" />
+            </FormField>
+            <FormField label="Prazo (meses)" htmlFor="sim-term">
+              <Select id="sim-term" value={simTermMonths} onChange={(e) => setSimTermMonths(e.target.value)}>
+                {[60, 120, 180, 240, 300, 360].map((months) => (
+                  <option key={months} value={months}>{months} meses</option>
+                ))}
+              </Select>
+            </FormField>
+            <Button onClick={handleCreateSimulation} loading={creatingSimulation}>
+              Nova simulação
+            </Button>
+          </div>
+          {simulationFormError ? <Alert tone="danger">{simulationFormError}</Alert> : null}
+
+          {simulationsLoading ? (
+            <p>Carregando simulações…</p>
+          ) : simulationsError ? (
+            <Alert tone="danger">{simulationsError}</Alert>
+          ) : simulations.length === 0 ? (
+            <p>Nenhuma simulação feita ainda para este caso.</p>
+          ) : (
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                <thead>
+                  <tr style={{ textAlign: "left", borderBottom: "1px solid var(--color-border)" }}>
+                    <th style={{ padding: "8px 12px" }}>Data</th>
+                    <th style={{ padding: "8px 12px" }}>Provider</th>
+                    <th style={{ padding: "8px 12px" }}>Valor financiado</th>
+                    <th style={{ padding: "8px 12px" }}>Prazo</th>
+                    <th style={{ padding: "8px 12px" }}>Taxa (a.m.)</th>
+                    <th style={{ padding: "8px 12px" }}>Parcela estimada</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {simulations.map((sim) => (
+                    <tr key={sim.id} style={{ borderBottom: "1px solid var(--color-border)" }}>
+                      <td style={{ padding: "8px 12px" }}>{formatDateTime(sim.created_at || sim.createdAt)}</td>
+                      <td style={{ padding: "8px 12px" }}>{PROVIDER_SHORT_LABELS[sim.providerCode] || sim.providerCode}</td>
+                      <td style={{ padding: "8px 12px" }}>{formatBRL(sim.amount)}</td>
+                      <td style={{ padding: "8px 12px" }}>{sim.termMonths} meses</td>
+                      <td style={{ padding: "8px 12px" }}>{formatPercent(Number(sim.rate) * 100)}</td>
+                      <td style={{ padding: "8px 12px" }}>{formatBRL(sim.monthlyPayment)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
