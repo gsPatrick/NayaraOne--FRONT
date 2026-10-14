@@ -98,6 +98,15 @@ export const NAV_SECTIONS = [
           { label: "Seguros", href: "/painel/compras/seguros" },
         ],
       },
+      {
+        label: "Correspondente",
+        href: "/painel/correspondente",
+        icon: "money",
+        permission: "correspondent:read",
+        children: [
+          { label: "Financiamentos", href: "/painel/correspondente" },
+        ],
+      },
     ],
   },
   {
