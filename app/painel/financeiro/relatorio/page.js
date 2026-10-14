@@ -76,7 +76,7 @@ export default function RelatorioFinanceiroPage() {
             />
             <StatTile
               label="Inadimplência"
-              value={`${(report.delinquencyRatio * 100).toFixed(1)}%`}
+              value={`${(report.delinquencyRatio * 100).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`}
               delta="Vencido ÷ total elegível (próprio)"
               tone={report.delinquencyRatio > 0.1 ? "danger" : "neutral"}
             />
