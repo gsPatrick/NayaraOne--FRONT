@@ -14,7 +14,7 @@ import StickyActionBar from "@/components/organisms/StickyActionBar/StickyAction
 import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
 import PersonPicker from "@/components/molecules/PersonPicker/PersonPicker";
-import { listFinancingCases, createFinancingCase } from "@/lib/api/correspondent";
+import { listFinancingCases, createFinancingCase, getNayStalledCases } from "@/lib/api/correspondent";
 import { listProperties } from "@/lib/api/properties";
 import { formatDateTime } from "@/lib/format";
 
@@ -43,6 +43,7 @@ export default function CorrespondentePage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
+  const [stalled, setStalled] = useState(null);
 
   const [createOpen, setCreateOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -60,6 +61,12 @@ export default function CorrespondentePage() {
       .finally(() => setLoading(false));
   }
   useEffect(() => { load(); }, []);
+
+  useEffect(() => {
+    // NAY Correspondente: só sinaliza casos sem atividade recente, nunca decide ou altera nada —
+    // falha silenciosa aqui é aceitável (é um aviso complementar, não dado essencial da tela).
+    getNayStalledCases().then(setStalled).catch(() => setStalled(null));
+  }, []);
 
   function openCreateModal() {
     setForm(EMPTY_FORM);
@@ -147,6 +154,12 @@ export default function CorrespondentePage() {
         <div style={{ position: "fixed", top: "var(--space-4)", left: "50%", transform: "translateX(-50%)", zIndex: 200, width: "min(560px, calc(100vw - 2 * var(--space-4)))" }}>
           <Alert tone="danger">{actionError}</Alert>
         </div>
+      ) : null}
+
+      {stalled && stalled.cases?.length > 0 ? (
+        <Alert tone="warning" title={`${stalled.cases.length} caso(s) sem atividade há mais de ${stalled.thresholdDays} dia(s)`}>
+          Sinalização automática de acompanhamento — não decide nem altera nenhum caso. {stalled.cases.map((c) => c.reason).slice(0, 3).join(" ")}
+        </Alert>
       ) : null}
 
       <Card title="Casos de financiamento" subtitle="Correspondente bancário — proponentes vinculados ao cadastro real de contatos.">

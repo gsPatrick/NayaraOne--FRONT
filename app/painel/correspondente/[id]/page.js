@@ -515,6 +515,11 @@ export default function FinancingCaseDetailPage() {
             <p>Nenhuma simulação feita ainda para este caso.</p>
           ) : (
             <div style={{ overflowX: "auto" }}>
+              {simulations.length > 1 ? (
+                <p style={{ fontSize: 12, color: "var(--color-text-secondary)", marginBottom: 8 }}>
+                  Comparação objetiva pela menor parcela — não é promessa de aprovação, taxa ou prazo.
+                </p>
+              ) : null}
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                 <thead>
                   <tr style={{ textAlign: "left", borderBottom: "1px solid var(--color-border)" }}>
@@ -524,19 +529,28 @@ export default function FinancingCaseDetailPage() {
                     <th style={{ padding: "8px 12px" }}>Prazo</th>
                     <th style={{ padding: "8px 12px" }}>Taxa (a.m.)</th>
                     <th style={{ padding: "8px 12px" }}>Parcela estimada</th>
+                    <th style={{ padding: "8px 12px" }}></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {simulations.map((sim) => (
-                    <tr key={sim.id} style={{ borderBottom: "1px solid var(--color-border)" }}>
-                      <td style={{ padding: "8px 12px" }}>{formatDateTime(sim.created_at || sim.createdAt)}</td>
-                      <td style={{ padding: "8px 12px" }}>{PROVIDER_SHORT_LABELS[sim.providerCode] || sim.providerCode}</td>
-                      <td style={{ padding: "8px 12px" }}>{formatBRL(sim.amount)}</td>
-                      <td style={{ padding: "8px 12px" }}>{sim.termMonths} meses</td>
-                      <td style={{ padding: "8px 12px" }}>{formatPercent(Number(sim.rate) * 100)}</td>
-                      <td style={{ padding: "8px 12px" }}>{formatBRL(sim.monthlyPayment)}</td>
-                    </tr>
-                  ))}
+                  {(() => {
+                    const lowestId = simulations.reduce((best, s) =>
+                      !best || Number(s.monthlyPayment) < Number(best.monthlyPayment) ? s : best
+                    , null)?.id;
+                    return simulations.map((sim) => (
+                      <tr key={sim.id} style={{ borderBottom: "1px solid var(--color-border)" }}>
+                        <td style={{ padding: "8px 12px" }}>{formatDateTime(sim.created_at || sim.createdAt)}</td>
+                        <td style={{ padding: "8px 12px" }}>{PROVIDER_SHORT_LABELS[sim.providerCode] || sim.providerCode}</td>
+                        <td style={{ padding: "8px 12px" }}>{formatBRL(sim.amount)}</td>
+                        <td style={{ padding: "8px 12px" }}>{sim.termMonths} meses</td>
+                        <td style={{ padding: "8px 12px" }}>{formatPercent(Number(sim.rate) * 100)}</td>
+                        <td style={{ padding: "8px 12px" }}>{formatBRL(sim.monthlyPayment)}</td>
+                        <td style={{ padding: "8px 12px" }}>
+                          {simulations.length > 1 && sim.id === lowestId ? <Badge tone="success">Menor parcela</Badge> : null}
+                        </td>
+                      </tr>
+                    ));
+                  })()}
                 </tbody>
               </table>
             </div>
