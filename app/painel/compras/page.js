@@ -22,7 +22,7 @@ import {
 } from "@/lib/api/procurement";
 import { listInventoryItems } from "@/lib/api/inventory";
 import { listProjects } from "@/lib/api/construction";
-import { formatDateTime, formatBRL, toNumber } from "@/lib/format";
+import { formatDateTime, formatBRL, formatQuantity, toNumber } from "@/lib/format";
 import { getCurrentUser } from "@/lib/auth/session";
 
 const STATUS_LABELS = { REQUESTED: "Solicitada", APPROVED: "Aprovada", REJECTED: "Rejeitada", AWARDED: "Adjudicada", CLOSED: "Fechada" };
@@ -36,6 +36,11 @@ export default function ComprasPage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
+  // N4 (revalidação Marco 7 v2, Nayara): o aviso de saldo já existente em estoque não é um erro —
+  // a requisição é criada normalmente mesmo assim. Usar o mesmo state/tone "danger" do erro real
+  // confundia o usuário (parecia que a ação tinha falhado). Separado num state próprio, tom
+  // "warning".
+  const [actionWarning, setActionWarning] = useState("");
   const [busyId, setBusyId] = useState(null);
 
   const [createOpen, setCreateOpen] = useState(false);
@@ -75,6 +80,7 @@ export default function ComprasPage() {
     if (!isValid) return;
     setSaving(true);
     setActionError("");
+    setActionWarning("");
     try {
       const created = await createPurchaseRequest({
         projectId: form.projectId || undefined,
@@ -84,7 +90,7 @@ export default function ComprasPage() {
       setCreateOpen(false);
       setForm({ projectId: "", notes: "", lines: [{ description: "", inventoryItemId: "", quantity: "" }] });
       if (created?.stockWarnings?.length) {
-        setActionError(
+        setActionWarning(
           "Aviso: já há saldo em estoque para " +
             created.stockWarnings.map((w) => `"${w.description}" (disponível: ${w.availableQuantity})`).join(", ") +
             " — confirme se a compra é mesmo necessária antes de prosseguir."
@@ -259,6 +265,11 @@ export default function ComprasPage() {
           <Alert tone="danger">{actionError}</Alert>
         </div>
       ) : null}
+      {actionWarning ? (
+        <div style={{ position: "fixed", top: "var(--space-4)", left: "50%", transform: "translateX(-50%)", zIndex: 200, width: "min(560px, calc(100vw - 2 * var(--space-4)))" }}>
+          <Alert tone="warning">{actionWarning}</Alert>
+        </div>
+      ) : null}
 
       <Card title="Requisições de compra" subtitle="Solicitação → Aprovação → Cotação → Comparação → Adjudicação → Pedido de compra">
         <div style={{ marginBottom: 12, maxWidth: 360 }}>
@@ -416,7 +427,7 @@ export default function ComprasPage() {
               <strong>Itens:</strong>
               <ul style={{ margin: "6px 0 0", paddingLeft: 18 }}>
                 {(detailModal.items || []).map((it) => (
-                  <li key={it.id}>{it.description} — quantidade {it.quantity}</li>
+                  <li key={it.id}>{it.description} — quantidade {formatQuantity(it.quantity)}</li>
                 ))}
               </ul>
             </div>

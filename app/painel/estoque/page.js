@@ -179,7 +179,10 @@ export default function EstoqueItensPage() {
   }
 
   function toInputValue(value) {
-    return value == null ? "" : String(value).replace(".", ",");
+    if (value == null) return "";
+    const num = Number(value);
+    if (Number.isNaN(num)) return "";
+    return String(num).replace(".", ",");
   }
 
   async function openPolicyModal(item) {
@@ -258,9 +261,10 @@ export default function EstoqueItensPage() {
   ];
 
   const locationColumns = [
-    { key: "name", label: "Nome", width: "35%" },
-    { key: "type", label: "Tipo", width: "25%", render: (row) => LOCATION_TYPE_LABELS[row.locationType] || row.locationType },
-    { key: "status", label: "Status", width: "20%", render: (row) => <Badge tone={row.isActive ? "success" : "neutral"}>{row.isActive ? "Ativo" : "Inativo"}</Badge> },
+    { key: "name", label: "Nome", width: "28%" },
+    { key: "type", label: "Tipo", width: "18%", render: (row) => LOCATION_TYPE_LABELS[row.locationType] || row.locationType },
+    { key: "project", label: "Obra", width: "18%", render: (row) => row.project?.name || (row.locationType === "PROJECT_SITE" ? "—" : "") },
+    { key: "status", label: "Status", width: "16%", render: (row) => <Badge tone={row.isActive ? "success" : "neutral"}>{row.isActive ? "Ativo" : "Inativo"}</Badge> },
     {
       key: "actions",
       label: "",
@@ -342,7 +346,7 @@ export default function EstoqueItensPage() {
             ))}
           </Select>
         </FormField>
-        <FormField label="Estoque mínimo" helper="Vira a versão 1 da política de mínimo do item no Motor de Regras (REG-EST-001). Dispara aviso (inventory.stock.low) quando o saldo cruzar este valor; ajuste por local depois em “Política de mínimo”.">
+        <FormField label="Estoque mínimo" helper="Vira a política de mínimo do item. Gera um aviso quando o saldo cruzar este valor; ajuste por local depois em “Política de mínimo”.">
           <DecimalInput value={itemForm.minimumQuantity} onChange={(e) => setItemForm((p) => ({ ...p, minimumQuantity: e.target.value }))} />
         </FormField>
       </Modal>
@@ -360,7 +364,7 @@ export default function EstoqueItensPage() {
         }
       >
         <p style={{ marginBottom: "var(--space-4)", color: "var(--color-ink-muted)", fontSize: "var(--text-body-sm)" }}>
-          Regra REG-EST-001 do Motor de Regras.{" "}
+          Política de estoque mínimo deste item.{" "}
           {policyInfo
             ? policyInfo.source === "ITEM"
               ? "Este item tem política própria vigente — salvar publica uma nova versão (a anterior é preservada no histórico)."
