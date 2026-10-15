@@ -202,17 +202,35 @@ export default function PatrimonioPage() {
     }
   }
 
+  // BUG REAL CORRIGIDO (auditoria final Marco 7, Claude Browser, 14/10/2026): o card de resultado
+  // da busca por QR/Tag não se atualizava depois de emprestar/devolver o mesmo item — continuava
+  // mostrando "Disponível" mesmo já emprestado. Re-busca o card se o item afetado é o que está
+  // sendo exibido ali.
+  async function refreshTagResultIfShowing(assetId) {
+    if (tagSearchResult && tagSearchResult.id === assetId) {
+      try {
+        const asset = await getAssetByTag(tagSearchResult.assetTag || tagQuery.trim());
+        setTagSearchResult(asset);
+      } catch {
+        // se a re-busca falhar, mantém o card antigo em vez de quebrar a tela — o usuário ainda
+        // pode buscar de novo manualmente.
+      }
+    }
+  }
+
   async function handleLoan() {
     setBusyId(loanTarget.id);
     setActionError("");
     try {
       await loanTool(loanTarget.id, { personUserId: loanPersonId, destinationLocationId: loanDestinationId, dueAt: loanDueAt || undefined, conditionOutCode: loanConditionOut || undefined });
+      const loanedId = loanTarget.id;
       setLoanTarget(null);
       setLoanPersonId("");
       setLoanDestinationId("");
       setLoanDueAt("");
       setLoanConditionOut("");
       load();
+      await refreshTagResultIfShowing(loanedId);
     } catch (err) {
       setActionError(err?.message || "Não foi possível emprestar a ferramenta.");
     } finally {
@@ -229,8 +247,10 @@ export default function PatrimonioPage() {
       const openLoan = loans.find((l) => l.status === "OPEN" || l.status === "OVERDUE");
       if (!openLoan) throw new Error("Nenhum empréstimo aberto encontrado para este patrimônio.");
       await returnTool(openLoan.id, { conditionCode: returnCondition });
+      const returnedId = returnTarget.id;
       setReturnTarget(null);
       load();
+      await refreshTagResultIfShowing(returnedId);
     } catch (err) {
       setActionError(err?.message || "Não foi possível devolver a ferramenta.");
     } finally {
@@ -368,7 +388,7 @@ export default function PatrimonioPage() {
   ];
 
   return (
-    <AppShell title="Patrimônio & QR Code" backHref="/painel/estoque">
+    <AppShell title="Patrimônio, Ferramentas & QR" backHref="/painel/estoque">
       {loadError ? <Alert tone="danger" title="Não foi possível carregar o patrimônio">{loadError}</Alert> : null}
       {actionError ? (
         /* BUG REAL CORRIGIDO (auditoria E2E Marco 7, ciclo 4) — mesma classe sistêmica já

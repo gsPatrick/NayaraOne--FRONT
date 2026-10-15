@@ -74,6 +74,15 @@ export default function ComprasPage() {
   }
   useEffect(() => { load(); }, []);
 
+  // BUG REAL CORRIGIDO (auditoria final Marco 7, Claude Browser, 14/10/2026): o aviso de "já há
+  // saldo em estoque" ficava preso na tela indefinidamente, cobrindo o título da página, até o
+  // usuário fechar outra coisa. Some sozinho depois de alguns segundos.
+  useEffect(() => {
+    if (!actionWarning) return undefined;
+    const timer = setTimeout(() => setActionWarning(""), 8000);
+    return () => clearTimeout(timer);
+  }, [actionWarning]);
+
   const isValid = form.lines.every((l) => l.description.trim() && !Number.isNaN(toNumber(l.quantity)) && toNumber(l.quantity) > 0);
 
   async function handleCreate() {
@@ -266,7 +275,10 @@ export default function ComprasPage() {
         </div>
       ) : null}
       {actionWarning ? (
-        <div style={{ position: "fixed", top: "var(--space-4)", left: "50%", transform: "translateX(-50%)", zIndex: 200, width: "min(560px, calc(100vw - 2 * var(--space-4)))" }}>
+        // Aviso aparece DEPOIS do modal de criação já ter fechado (setCreateOpen(false) roda
+        // antes), então não precisa do mesmo z-index "acima de qualquer modal" do erro — fica
+        // mais abaixo, sem cobrir o título da página, e some sozinho (ver useEffect acima).
+        <div style={{ position: "fixed", top: "calc(var(--space-4) + 64px)", left: "50%", transform: "translateX(-50%)", zIndex: 150, width: "min(560px, calc(100vw - 2 * var(--space-4)))" }}>
           <Alert tone="warning">{actionWarning}</Alert>
         </div>
       ) : null}

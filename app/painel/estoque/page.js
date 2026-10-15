@@ -86,7 +86,11 @@ export default function EstoqueItensPage() {
     });
   }, [items, query, typeFilter]);
 
-  const totalAvgValue = items.reduce((s, i) => s + (Number(i.averageCost) || 0), 0);
+  // BUG REAL CORRIGIDO (auditoria final Marco 7, Claude Browser, 14/10/2026): somava só o custo
+  // UNITÁRIO de cada item, nunca multiplicava pelo saldo — "Valor em custo médio" não
+  // representava nenhum valor real de estoque. A API agora já manda `totalValue` pronto
+  // (saldo total × custo médio) por item; só somamos.
+  const totalAvgValue = items.reduce((s, i) => s + (Number(i.totalValue) || 0), 0);
 
   // BUG REAL CORRIGIDO (auditoria "loop até secar", Marco 7, ciclo 1, 2026-10-07): a API exige
   // sku e unitOfMeasure (TAB-0750) mas o form só validava "name", deixando o usuário clicar em
@@ -238,19 +242,24 @@ export default function EstoqueItensPage() {
     }
   }
 
+  // BUG REAL CORRIGIDO (auditoria final Marco 7, Claude Browser, 14/10/2026): a soma das larguras
+  // das colunas passava de 100% (22+12+14+10+14+14+20 = 106%), empurrando a coluna de ações
+  // (botão "Editar") pra fora da área visível em larguras de tela normais — o botão ficava
+  // coberto pela coluna "Custo médio" e não dava pra clicar nele. Redistribuído pra somar 100%,
+  // com min-width na coluna de ações pra garantir espaço pros 2 botões.
   const columns = [
-    { key: "name", label: "Nome", width: "22%", render: (row) => <span className={styles.nameMain}>{row.name}</span> },
-    { key: "sku", label: "SKU", width: "12%", render: (row) => row.sku || "—" },
-    { key: "itemType", label: "Tipo", width: "14%", render: (row) => <Badge tone={ITEM_TYPE_TONE[row.itemType]}>{ITEM_TYPE_LABELS[row.itemType]}</Badge> },
-    { key: "unit", label: "Unidade", width: "10%", render: (row) => row.unitOfMeasure || "—" },
-    { key: "min", label: "Estoque mínimo", width: "14%", render: (row) => (row.minimumQuantity != null ? formatQuantity(row.minimumQuantity) : "—") },
-    { key: "avgCost", label: "Custo médio", width: "14%", render: (row) => (row.averageCost != null ? formatBRL(row.averageCost) : "—") },
+    { key: "name", label: "Nome", width: "18%", render: (row) => <span className={styles.nameMain}>{row.name}</span> },
+    { key: "sku", label: "SKU", width: "10%", render: (row) => row.sku || "—" },
+    { key: "itemType", label: "Tipo", width: "12%", render: (row) => <Badge tone={ITEM_TYPE_TONE[row.itemType]}>{ITEM_TYPE_LABELS[row.itemType]}</Badge> },
+    { key: "unit", label: "Unidade", width: "8%", render: (row) => row.unitOfMeasure || "—" },
+    { key: "min", label: "Estoque mínimo", width: "12%", render: (row) => (row.minimumQuantity != null ? formatQuantity(row.minimumQuantity) : "—") },
+    { key: "avgCost", label: "Custo médio", width: "12%", render: (row) => (row.averageCost != null ? formatBRL(row.averageCost) : "—") },
     {
       key: "policy",
       label: "",
-      width: "20%",
+      width: "28%",
       render: (row) => (
-        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", flexWrap: "wrap", minWidth: 180 }}>
           <Button size="sm" variant="secondary" onClick={() => openEditItem(row)}>Editar</Button>
           {row.itemType !== "SERVICE_ITEM" ? (
             <Button size="sm" variant="secondary" onClick={() => openPolicyModal(row)}>Política de mínimo</Button>
@@ -287,10 +296,15 @@ export default function EstoqueItensPage() {
       ) : null}
 
       <div className={styles.grid}>
-        <StatTile label="Itens cadastrados" value={items.length} tone="neutral" icon="building" />
-        <StatTile label="Ferramentas" value={items.filter((i) => i.itemType === "TOOL").length} tone="info" icon="chart" />
-        <StatTile label="Locais cadastrados" value={locations.length} tone="success" icon="check" />
-        <StatTile label="Valor em custo médio" value={formatBRL(totalAvgValue)} tone="neutral" icon="money" />
+        {/* BUG REAL CORRIGIDO (auditoria final Marco 7, Claude Browser, 14/10/2026): os cards
+            mostravam "0" por alguns segundos enquanto a lista ainda carregava, antes da resposta
+            real chegar — mesmo padrão de flash de vazio já corrigido no histórico do Patrimônio
+            nesta sessão. Agora mostram "—" durante o loading, nunca um "0" que pode ser confundido
+            com o valor real. */}
+        <StatTile label="Itens cadastrados" value={loading ? "—" : items.length} tone="neutral" icon="building" />
+        <StatTile label="Ferramentas" value={loading ? "—" : items.filter((i) => i.itemType === "TOOL").length} tone="info" icon="chart" />
+        <StatTile label="Locais cadastrados" value={loading ? "—" : locations.length} tone="success" icon="check" />
+        <StatTile label="Valor em custo médio" value={loading ? "—" : formatBRL(totalAvgValue)} tone="neutral" icon="money" />
       </div>
 
       <Card title="Itens de estoque" subtitle="Catálogo mestre — materiais, ferramentas, patrimônio e serviços">
