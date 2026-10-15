@@ -16,6 +16,7 @@ import StickyActionBar from "@/components/organisms/StickyActionBar/StickyAction
 import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
+import PersonPicker from "@/components/molecules/PersonPicker/PersonPicker";
 import { listInventoryItems, listInventoryLocations, recordInventoryMovement, getItemBalances, listInventoryMovements } from "@/lib/api/inventory";
 import { generateIdempotencyKey } from "@/lib/offline/offlineQueue";
 import { formatQuantity, formatDateTime, toNumber } from "@/lib/format";
@@ -57,7 +58,7 @@ export default function MovimentosPage() {
   const [historyFilters, setHistoryFilters] = useState({ inventoryItemId: "", locationId: "", movementType: "" });
   const [form, setForm] = useState({
     inventoryItemId: "", movementType: "IN", quantity: "", sourceLocationId: "", destinationLocationId: "",
-    responsiblePersonId: "", reason: "",
+    responsiblePersonId: "", responsibleName: "", reason: "",
   });
 
   function load() {
@@ -133,7 +134,7 @@ export default function MovimentosPage() {
       });
       movementIdempotencyKeyRef.current = null;
       setModalOpen(false);
-      setForm({ inventoryItemId: "", movementType: "IN", quantity: "", sourceLocationId: "", destinationLocationId: "", responsiblePersonId: "", reason: "" });
+      setForm({ inventoryItemId: "", movementType: "IN", quantity: "", sourceLocationId: "", destinationLocationId: "", responsiblePersonId: "", responsibleName: "", reason: "" });
       load();
       loadHistory();
     } catch (err) {
@@ -246,7 +247,11 @@ export default function MovimentosPage() {
         {/* BUG REAL CORRIGIDO: sem nenhum item/local cadastrado, o modal abria com os dois
             selects vazios ("Selecione...") sem nenhuma explicação do porquê, nem como resolver —
             o usuário não tinha como saber que precisava cadastrar Item/Local primeiro. */}
-        {items.length === 0 ? (
+        {loading ? (
+          <div style={{ display: "flex", justifyContent: "center", padding: "var(--space-4) 0", color: "var(--color-ink-muted)" }}>
+            Carregando itens e locais...
+          </div>
+        ) : items.length === 0 ? (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "var(--space-4)", padding: "var(--space-4) 0" }}>
             <EmptyState icon="layers" title="Nenhum item de estoque cadastrado" description="Você precisa cadastrar pelo menos um item antes de registrar um movimento." />
             <Button onClick={() => router.push("/painel/estoque")}>Cadastrar item agora</Button>
@@ -277,7 +282,11 @@ export default function MovimentosPage() {
           <DecimalInput value={form.quantity} onChange={(e) => setForm((p) => ({ ...p, quantity: e.target.value }))} />
         </FormField>
         {(requirement === "source" || requirement === "both" || requirement === "either") ? (
-          <FormField label="Local de origem" required={requirement !== "either"}>
+          <FormField
+            label="Local de origem"
+            required={requirement !== "either"}
+            helper={form.movementType === "ADJUSTMENT" ? "Preencha para DIMINUIR o saldo neste local." : undefined}
+          >
             <Select value={form.sourceLocationId} onChange={(e) => setForm((p) => ({ ...p, sourceLocationId: e.target.value }))}>
               <option value="">Selecione...</option>
               {locations.map((l) => (
@@ -287,7 +296,11 @@ export default function MovimentosPage() {
           </FormField>
         ) : null}
         {(requirement === "destination" || requirement === "both" || requirement === "either") ? (
-          <FormField label="Local de destino" required={requirement !== "either"}>
+          <FormField
+            label="Local de destino"
+            required={requirement !== "either"}
+            helper={form.movementType === "ADJUSTMENT" ? "Preencha para AUMENTAR o saldo neste local." : undefined}
+          >
             <Select value={form.destinationLocationId} onChange={(e) => setForm((p) => ({ ...p, destinationLocationId: e.target.value }))}>
               <option value="">Selecione...</option>
               {locations.map((l) => (
@@ -297,12 +310,23 @@ export default function MovimentosPage() {
           </FormField>
         ) : null}
         {needsResponsible ? (
-          <FormField label="Responsável (ID do usuário)" required helper="Item é ferramenta/patrimônio — exige responsável na saída.">
-            <Input value={form.responsiblePersonId} onChange={(e) => setForm((p) => ({ ...p, responsiblePersonId: e.target.value }))} />
+          <FormField label="Responsável" required helper="Quem está retirando ou recebendo o item.">
+            <PersonPicker
+              id="movement-responsible"
+              value={form.responsibleName}
+              personId={form.responsiblePersonId}
+              placeholder="Buscar pessoa pelo nome..."
+              onSelect={({ name, personId }) => setForm((p) => ({ ...p, responsibleName: name, responsiblePersonId: personId || "" }))}
+            />
           </FormField>
         ) : null}
         {needsReason ? (
-          <FormField label="Motivo" required helper="Ajuste, perda e descarte exigem motivo.">
+          <FormField label="Motivo" required helper="Ajuste e descarte exigem motivo.">
+            <Input value={form.reason} onChange={(e) => setForm((p) => ({ ...p, reason: e.target.value }))} />
+          </FormField>
+        ) : null}
+        {!needsReason && (form.movementType === "IN" || form.movementType === "TRANSFER") ? (
+          <FormField label="Motivo" helper="Opcional — ajuda a identificar esta movimentação no histórico depois.">
             <Input value={form.reason} onChange={(e) => setForm((p) => ({ ...p, reason: e.target.value }))} />
           </FormField>
         ) : null}
