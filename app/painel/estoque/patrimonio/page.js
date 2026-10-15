@@ -68,15 +68,20 @@ export default function PatrimonioPage() {
   const [historyTarget, setHistoryTarget] = useState(null);
   const [historyMovements, setHistoryMovements] = useState([]);
   const [historyError, setHistoryError] = useState("");
+  const [historyLoading, setHistoryLoading] = useState(false);
 
   async function openHistory(row) {
     setHistoryTarget(row);
     setHistoryError("");
+    setHistoryMovements([]);
+    setHistoryLoading(true);
     try {
       const movements = await listAssetMovements(row.id);
       setHistoryMovements(movements || []);
     } catch (err) {
       setHistoryError(err?.message || "Não foi possível carregar o histórico.");
+    } finally {
+      setHistoryLoading(false);
     }
   }
   const [transferLocationId, setTransferLocationId] = useState("");
@@ -522,7 +527,9 @@ export default function PatrimonioPage() {
         footer={<Button variant="secondary" onClick={() => { setHistoryTarget(null); setHistoryMovements([]); }}>Fechar</Button>}
       >
         {historyError ? <Alert tone="danger">{historyError}</Alert> : null}
-        {historyMovements.length === 0 ? (
+        {historyLoading ? (
+          <p style={{ color: "var(--color-ink-muted)" }}>Carregando histórico...</p>
+        ) : historyMovements.length === 0 ? (
           <p style={{ color: "var(--color-ink-muted)" }}>Nenhuma movimentação registrada ainda.</p>
         ) : (
           <ul style={{ margin: 0, paddingLeft: 0, listStyle: "none" }}>
@@ -760,10 +767,10 @@ export default function PatrimonioPage() {
           </>
         }
       >
-        <FormField label="Condição" required helper="DANIFICADA abre ordem de manutenção automaticamente.">
+        <FormField label="Condição" required helper="Escolher 'Danificada' abre uma ordem de manutenção automaticamente.">
           <Select value={returnCondition} onChange={(e) => setReturnCondition(e.target.value)}>
-            <option value="OK">OK</option>
-            <option value="DAMAGED">Danificada</option>
+            <option value="OK">{CONDITION_LABELS.OK}</option>
+            <option value="DAMAGED">{CONDITION_LABELS.DAMAGED}</option>
           </Select>
         </FormField>
       </Modal>
