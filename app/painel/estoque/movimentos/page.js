@@ -157,7 +157,7 @@ export default function MovimentosPage() {
     { key: "from", label: "De", render: (row) => row.sourceLocation?.name || "—" },
     { key: "to", label: "Para", render: (row) => row.destinationLocation?.name || "—" },
     { key: "reason", label: "Motivo", render: (row) => row.reason || "—" },
-    { key: "by", label: "Responsável", render: (row) => row.movedByUser?.name || "—" },
+    { key: "by", label: "Responsável", render: (row) => row.responsiblePerson?.legalName || row.movedByUser?.name || "—" },
   ];
 
   return (
@@ -285,9 +285,21 @@ export default function MovimentosPage() {
           <FormField
             label="Local de origem"
             required={requirement !== "either"}
-            helper={form.movementType === "ADJUSTMENT" ? "Preencha para DIMINUIR o saldo neste local." : undefined}
+            helper={form.movementType === "ADJUSTMENT" ? "Preencha para DIMINUIR o saldo neste local (ou preencha só o destino, nunca os dois — ajuste corrige um local por vez)." : undefined}
           >
-            <Select value={form.sourceLocationId} onChange={(e) => setForm((p) => ({ ...p, sourceLocationId: e.target.value }))}>
+            <Select
+              value={form.sourceLocationId}
+              onChange={(e) => {
+                const value = e.target.value;
+                setForm((p) => ({
+                  ...p,
+                  sourceLocationId: value,
+                  // Ajuste corrige UM local por vez — nunca os dois ao mesmo tempo (bug real: isso
+                  // creditava o destino sem debitar a origem, criando saldo do nada).
+                  destinationLocationId: p.movementType === "ADJUSTMENT" && value ? "" : p.destinationLocationId,
+                }));
+              }}
+            >
               <option value="">Selecione...</option>
               {locations.map((l) => (
                 <option key={l.id} value={l.id}>{l.name}</option>
@@ -299,9 +311,19 @@ export default function MovimentosPage() {
           <FormField
             label="Local de destino"
             required={requirement !== "either"}
-            helper={form.movementType === "ADJUSTMENT" ? "Preencha para AUMENTAR o saldo neste local." : undefined}
+            helper={form.movementType === "ADJUSTMENT" ? "Preencha para AUMENTAR o saldo neste local (ou preencha só a origem, nunca os dois — ajuste corrige um local por vez)." : undefined}
           >
-            <Select value={form.destinationLocationId} onChange={(e) => setForm((p) => ({ ...p, destinationLocationId: e.target.value }))}>
+            <Select
+              value={form.destinationLocationId}
+              onChange={(e) => {
+                const value = e.target.value;
+                setForm((p) => ({
+                  ...p,
+                  destinationLocationId: value,
+                  sourceLocationId: p.movementType === "ADJUSTMENT" && value ? "" : p.sourceLocationId,
+                }));
+              }}
+            >
               <option value="">Selecione...</option>
               {locations.map((l) => (
                 <option key={l.id} value={l.id}>{l.name}</option>
@@ -316,6 +338,7 @@ export default function MovimentosPage() {
               value={form.responsibleName}
               personId={form.responsiblePersonId}
               placeholder="Buscar pessoa pelo nome..."
+              unlinkedHint="Selecione um contato da lista — texto livre não é aceito, é preciso um cadastro vinculado."
               onSelect={({ name, personId }) => setForm((p) => ({ ...p, responsibleName: name, responsiblePersonId: personId || "" }))}
             />
           </FormField>
