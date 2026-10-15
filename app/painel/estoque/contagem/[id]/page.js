@@ -306,7 +306,7 @@ export default function ContagemDetailPage() {
             </Card>
           ) : null}
 
-          <Card title="Itens contados" subtitle="Fechamento calcula divergência; ajuste é um ato separado e aprovado (EST-TS-09)">
+          <Card title="Itens contados" subtitle="Fechamento calcula divergência; ajuste é um ato separado e aprovado">
             {countLines.length === 0 ? (
               <EmptyState icon="document" title="Nenhum item contado ainda" description="Lance a contagem dos itens acima." />
             ) : (

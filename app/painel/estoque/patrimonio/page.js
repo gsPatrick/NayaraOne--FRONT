@@ -462,7 +462,7 @@ export default function PatrimonioPage() {
         <FormField label="Nome" required>
           <Input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} />
         </FormField>
-        <FormField label="Tag / QR Code" required helper="Código único — bloqueia duplicidade (EST-TS-04).">
+        <FormField label="Tag / QR Code" required helper="Código único — bloqueia duplicidade.">
           <Input value={form.assetTag} onChange={(e) => setForm((p) => ({ ...p, assetTag: e.target.value }))} />
         </FormField>
         <FormField
@@ -614,7 +614,7 @@ export default function PatrimonioPage() {
       >
         {locations.length === 0 ? (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "var(--space-4)", padding: "var(--space-4) 0" }}>
-            <EmptyState icon="mapPin" title="Nenhum local de estoque cadastrado" description="O empréstimo precisa registrar o destino da ferramenta (EST-006). Cadastre pelo menos um local antes." />
+            <EmptyState icon="mapPin" title="Nenhum local de estoque cadastrado" description="O empréstimo precisa registrar o destino da ferramenta. Cadastre pelo menos um local antes." />
             <Button onClick={() => router.push("/painel/estoque")}>Cadastrar local agora</Button>
           </div>
         ) : (

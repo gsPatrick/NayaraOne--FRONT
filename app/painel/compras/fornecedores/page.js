@@ -100,7 +100,7 @@ export default function FornecedoresPage() {
     { key: "docs", label: "Documentos", width: "10%", render: (row) => (row.qualification ? (row.qualification.documentFileIds || []).length : "—") },
     {
       key: "award",
-      label: "Pode receber PO?",
+      label: "Pode receber pedido de compra?",
       width: "12%",
       render: (row) => (row.qualification && awardBlockReason(row.qualification) ? <Badge tone="danger">Bloqueado</Badge> : <Badge tone="success">Sim</Badge>),
     },

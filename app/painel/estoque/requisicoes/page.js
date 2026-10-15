@@ -277,7 +277,7 @@ export default function RequisicoesPage() {
             ))}
           </Select>
         </FormField>
-        <FormField label="Canteiro (destino)" helper="Opcional — se informado, exige selecionar a obra abaixo (EST-004).">
+        <FormField label="Canteiro (destino)" helper="Opcional — se informado, exige selecionar a obra abaixo.">
           <Select
             value={form.projectLocationId}
             onChange={(e) => {
@@ -312,7 +312,7 @@ export default function RequisicoesPage() {
               ? "Carregando etapas..."
               : stages.length === 0 && !stagesError
                 ? "Esta obra ainda não tem etapas cadastradas — a requisição fica vinculada só à obra."
-                : "Etapa que vai consumir o material (EST-004: project_id/stage_id)."}
+                : "Etapa que vai consumir o material."}
           >
             <Select value={form.stageId} disabled={stagesLoading || stages.length === 0} onChange={(e) => setForm((p) => ({ ...p, stageId: e.target.value }))}>
               <option value="">{stagesLoading ? "Carregando..." : "Selecione..."}</option>

@@ -20,7 +20,7 @@ import RowActions from "@/components/molecules/RowActions/RowActions";
 import FileDropInput from "@/components/molecules/FileDropInput/FileDropInput";
 import { listReceipts, createReceipt, reviewReceipt, confirmReceipt, suggestReceiptFromInvoice, getReceipt } from "@/lib/api/inventory";
 import { listInventoryItems, listInventoryLocations } from "@/lib/api/inventory";
-import { formatDateTime, formatBRL, toNumber } from "@/lib/format";
+import { formatDateTime, formatBRL, formatQuantity, toNumber } from "@/lib/format";
 import styles from "../../obras/lista/page.module.css";
 
 const STATUS_LABELS = { DRAFT: "Rascunho", REVIEWED: "Revisado", COMPLETED: "Confirmado" };
@@ -362,7 +362,7 @@ export default function RecebimentosPage() {
         <FormField label="Número da NF">
           <Input value={form.invoiceNumber} onChange={(e) => setForm((p) => ({ ...p, invoiceNumber: e.target.value }))} />
         </FormField>
-        <FormField label="Chave/fingerprint da NF" helper="Usado para detectar NF duplicada.">
+        <FormField label="Identificador único da nota fiscal" helper="Usado para detectar nota fiscal duplicada.">
           <Input value={form.invoiceFingerprint} onChange={(e) => setForm((p) => ({ ...p, invoiceFingerprint: e.target.value }))} />
         </FormField>
         {form.lines.map((line, idx) => (
@@ -416,7 +416,7 @@ export default function RecebimentosPage() {
             {reviewItems.map((it) => (
               <tr key={it.id} style={{ borderBottom: "1px solid var(--color-border)" }}>
                 <td style={{ padding: "4px 8px" }}>{itemName(it.inventoryItemId)}</td>
-                <td style={{ padding: "4px 8px" }}>{it.quantity}</td>
+                <td style={{ padding: "4px 8px" }}>{formatQuantity(it.quantity)}</td>
                 <td style={{ padding: "4px 8px" }}>{it.unitCost != null ? formatBRL(it.unitCost) : "—"}</td>
               </tr>
             ))}

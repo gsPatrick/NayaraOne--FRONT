@@ -302,7 +302,7 @@ export default function MovimentosPage() {
           </FormField>
         ) : null}
         {needsReason ? (
-          <FormField label="Motivo" required helper="Ajuste, perda e descarte exigem motivo (EST-008).">
+          <FormField label="Motivo" required helper="Ajuste, perda e descarte exigem motivo.">
             <Input value={form.reason} onChange={(e) => setForm((p) => ({ ...p, reason: e.target.value }))} />
           </FormField>
         ) : null}

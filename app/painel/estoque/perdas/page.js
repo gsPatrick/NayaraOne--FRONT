@@ -277,7 +277,7 @@ export default function PerdasPage() {
         </div>
       ) : null}
 
-      <Card title="Casos de perda" subtitle="Perda não é baixa comum — exige evidência e decisão separada (EST-010)">
+      <Card title="Casos de perda" subtitle="Perda não é baixa comum — exige evidência e decisão separada">
         <Table columns={columns} rows={loading ? [] : cases} loading={loading} emptyMessage="Nenhum caso de perda registrado." />
       </Card>
 
@@ -331,7 +331,7 @@ export default function PerdasPage() {
                 ))}
               </Select>
             </FormField>
-            <FormField label="Local" required helper="Obrigatório — necessário para aprovar a baixa depois (gera o movimento LOSS nesse local).">
+            <FormField label="Local" required helper="Obrigatório — necessário para aprovar a baixa depois (gera a saída por perda nesse local).">
               <Select value={form.locationId} onChange={(e) => setForm((p) => ({ ...p, locationId: e.target.value }))}>
                 <option value="">Selecione...</option>
                 {locations.map((l) => (
@@ -358,7 +358,7 @@ export default function PerdasPage() {
             <FormField label="Contexto" required helper="O que aconteceu — obrigatório para auditoria.">
               <Input value={form.context} onChange={(e) => setForm((p) => ({ ...p, context: e.target.value }))} />
             </FormField>
-            <FormField label="Evidência (arquivo)" required helper="Pelo menos um arquivo de evidência é obrigatório (EST-TS-10).">
+            <FormField label="Evidência (arquivo)" required helper="Pelo menos um arquivo de evidência é obrigatório.">
               {evidenceUploadError ? <Alert tone="danger">{evidenceUploadError}</Alert> : null}
               <FileDropInput
                 id="loss-evidence"
@@ -407,7 +407,7 @@ export default function PerdasPage() {
           <>
             <p style={{ marginBottom: "var(--space-4)" }}>
               {decisionTarget.inventoryItemId
-                ? "O estoque será baixado definitivamente para este item (movimento LOSS)."
+                ? "O estoque será baixado definitivamente para este item."
                 : "O patrimônio será marcado como perdido/extraviado e retirado de circulação."}
               {decisionTarget.estimatedCost != null ? ` Estimativa registrada: ${formatBRL(decisionTarget.estimatedCost)}.` : ""}
             </p>

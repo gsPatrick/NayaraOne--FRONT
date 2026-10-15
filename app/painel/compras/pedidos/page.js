@@ -313,7 +313,7 @@ export default function PedidosDeCompraPage() {
         </div>
       ) : null}
 
-      <Card title="Pedidos de compra (PO)" subtitle="Custo comprometido — recebimento delega ao Estoque (saldo + custo médio)">
+      <Card title="Pedidos de compra" subtitle="Custo comprometido — recebimento delega ao Estoque (saldo + custo médio)">
         <Table columns={columns} rows={loading ? [] : orders} loading={loading} emptyMessage="Nenhum pedido de compra registrado." />
       </Card>
 
@@ -371,7 +371,7 @@ export default function PedidosDeCompraPage() {
                 ))}
               </Select>
             </FormField>
-            <FormField label="Chave/fingerprint da NF">
+            <FormField label="Identificador único da nota fiscal">
               <Input value={invoiceFingerprint} onChange={(e) => setInvoiceFingerprint(e.target.value)} />
             </FormField>
             <FormField label="Valor total da NF (opcional — confere three-way match e gera o contas a pagar)">

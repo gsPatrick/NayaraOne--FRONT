@@ -92,7 +92,7 @@ export default function ContagemPage() {
         </div>
       ) : null}
 
-      <Card title="Contagens" subtitle="Local em contagem aberta fica congelado para movimentações. Fechamento nunca altera saldo direto — ajuste é um ato separado e aprovado (EST-TS-09)">
+      <Card title="Contagens" subtitle="Local em contagem aberta fica congelado para movimentações. Fechamento nunca altera saldo direto — ajuste é um ato separado e aprovado">
         <Table columns={columns} rows={loading ? [] : counts} loading={loading} emptyMessage="Nenhum inventário aberto." />
       </Card>
 
@@ -140,7 +140,7 @@ export default function ContagemPage() {
           </Select>
         </FormField>
         {newLocationNeedsProject ? (
-          <FormField label="Obra" required helper="Local de obra (canteiro) exige vincular a uma obra (EST-004).">
+          <FormField label="Obra" required helper="Local de obra (canteiro) exige vincular a uma obra.">
             <Select value={newProjectId} onChange={(e) => setNewProjectId(e.target.value)}>
               <option value="">Selecione...</option>
               {projects.map((p) => (
