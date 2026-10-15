@@ -435,7 +435,7 @@ export default function SegurosPage() {
             <Select value={form.propertyId} onChange={(e) => setForm((p) => ({ ...p, propertyId: e.target.value }))}>
               <option value="">Nenhum</option>
               {properties.map((pr) => (
-                <option key={pr.id} value={pr.id}>{pr.title || pr.internalCode || "imóvel sem título"}</option>
+                <option key={pr.id} value={pr.id}>{pr.name || pr.internalCode || "imóvel sem título"}</option>
               ))}
             </Select>
           </FormField>
@@ -491,8 +491,8 @@ export default function SegurosPage() {
               {detailModal.policy.premiumAmount ? <p style={{ margin: "0 0 4px" }}>Prêmio: {formatBRL(detailModal.policy.premiumAmount)}</p> : null}
               {detailModal.policy.effectiveDate ? <p style={{ margin: "0 0 4px" }}>Vigência: {formatDate(detailModal.policy.effectiveDate)} a {detailModal.policy.expiryDate ? formatDate(detailModal.policy.expiryDate) : "—"}</p> : null}
               {detailModal.policy.coverageSummary ? <p style={{ margin: "0 0 4px" }}>Cobertura: {detailModal.policy.coverageSummary}</p> : null}
-              {detailModal.policy.propertyId ? <p style={{ margin: "0 0 4px" }}>Imóvel vinculado: {properties.find((pr) => pr.id === detailModal.policy.propertyId)?.title || "imóvel não encontrado"}</p> : null}
-              {detailModal.policy.contractId ? <p style={{ margin: 0 }}>Contrato vinculado: {(() => { const c = contracts.find((x) => x.id === detailModal.policy.contractId); return c ? (c.contractNumber ? `Nº ${c.contractNumber}` : "contrato sem número") : "contrato não encontrado"; })()}</p> : null}
+              {detailModal.policy.propertyId ? <p style={{ margin: "0 0 4px" }}>Imóvel vinculado: {properties.find((pr) => pr.id === detailModal.policy.propertyId)?.name || "imóvel não encontrado"}</p> : null}
+              {detailModal.policy.contractId ? <p style={{ margin: 0 }}>Contrato vinculado: {(() => { const c = contracts.find((x) => x.id === detailModal.policy.contractId); if (!c) return "contrato não encontrado"; const prop = properties.find((pr) => pr.id === c.propertyId); return [c.contractNumber ? `Nº ${c.contractNumber}` : "contrato sem número", prop?.name].filter(Boolean).join(" — "); })()}</p> : null}
               {detailModal.policy.status === "CANCELED" && detailModal.policy.cancelInfo ? (
                 <p style={{ margin: "8px 0 0", color: "var(--color-ink-muted)" }}>
                   Cancelada em {formatDateTime(detailModal.policy.cancelInfo.occurredAt)} — motivo: {detailModal.policy.cancelInfo.reason}
