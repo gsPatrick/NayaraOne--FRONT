@@ -25,12 +25,14 @@ import { listLossCases, openLossCase, decideLossCase, listInventoryItems, listIn
 import { listPeople } from "@/lib/api/people";
 import { uploadFile } from "@/lib/api/legal";
 import { formatBRL, formatDateTime, formatQuantity, toNumber } from "@/lib/format";
+import { getCurrentUser } from "@/lib/auth/session";
 
 const STATUS_LABELS = { OPEN: "Em análise", APPROVED: "Aprovada (baixa gerada)", REJECTED: "Rejeitada" };
 const STATUS_TONE = { OPEN: "warning", APPROVED: "danger", REJECTED: "neutral" };
 const EMPTY_DECISION_FORM = { chargeResponsible: false, responsiblePersonId: "", responsibleName: "", chargeAmount: "" };
 
 export default function PerdasPage() {
+  const currentUser = getCurrentUser();
   const router = useRouter();
   const [cases, setCases] = useState([]);
   const [items, setItems] = useState([]);
@@ -255,12 +257,19 @@ export default function PerdasPage() {
       key: "actions",
       label: "",
       width: "14%",
-      render: (row) => (row.status === "OPEN" ? (
-        <div style={{ display: "flex", gap: 6 }}>
-          <Button size="sm" variant="danger" onClick={() => openApproveModal(row)} loading={busyId === row.id}>Aprovar baixa</Button>
-          <Button size="sm" variant="secondary" onClick={() => handleReject(row.id)} loading={busyId === row.id}>Rejeitar</Button>
-        </div>
-      ) : null),
+      render: (row) => {
+        if (row.status !== "OPEN") return null;
+        const isOwnCase = currentUser?.id && row.createdBy && currentUser.id === row.createdBy;
+        if (isOwnCase) {
+          return <span style={{ fontSize: "var(--text-body-sm)", color: "var(--color-ink-muted)" }}>Você registrou — não pode decidir</span>;
+        }
+        return (
+          <div style={{ display: "flex", gap: 6 }}>
+            <Button size="sm" variant="danger" onClick={() => openApproveModal(row)} loading={busyId === row.id}>Aprovar baixa</Button>
+            <Button size="sm" variant="secondary" onClick={() => handleReject(row.id)} loading={busyId === row.id}>Rejeitar</Button>
+          </div>
+        );
+      },
     },
   ];
 

@@ -20,12 +20,14 @@ import { useRouter } from "next/navigation";
 import { listRequisitions, createRequisition, decideRequisition, issueRequisition, listInventoryItems, listInventoryLocations } from "@/lib/api/inventory";
 import { listProjects, listProjectStages } from "@/lib/api/construction";
 import { formatDateTime, formatQuantity, toNumber } from "@/lib/format";
+import { getCurrentUser } from "@/lib/auth/session";
 
 const STATUS_LABELS = { REQUESTED: "Solicitada", APPROVED: "Aprovada", REJECTED: "Rejeitada", ISSUED: "Entregue" };
 const STATUS_TONE = { REQUESTED: "neutral", APPROVED: "info", REJECTED: "danger", ISSUED: "success" };
 
 export default function RequisicoesPage() {
   const router = useRouter();
+  const currentUser = getCurrentUser();
   const [requisitions, setRequisitions] = useState([]);
   const [items, setItems] = useState([]);
   const [locations, setLocations] = useState([]);
@@ -183,8 +185,9 @@ export default function RequisicoesPage() {
   // itens/quantidades foram solicitados, só o status. Agora o backend inclui "items" e a tela
   // exibe um resumo por linha.
   const columns = [
-    { key: "warehouse", label: "Almoxarifado", width: "16%", render: (row) => locationName(row.warehouseLocationId) },
-    { key: "project", label: "Canteiro", width: "16%", render: (row) => (row.projectLocationId ? locationName(row.projectLocationId) : "—") },
+    { key: "warehouse", label: "Almoxarifado", width: "14%", render: (row) => locationName(row.warehouseLocationId) },
+    { key: "site", label: "Canteiro", width: "14%", render: (row) => (row.projectLocationId ? locationName(row.projectLocationId) : "—") },
+    { key: "obra", label: "Obra", width: "14%", render: (row) => row.project?.name || "—" },
     {
       key: "items",
       label: "Itens",
@@ -201,19 +204,26 @@ export default function RequisicoesPage() {
       key: "actions",
       label: "",
       width: "18%",
-      render: (row) => (
-        <div style={{ display: "flex", gap: 8 }}>
+      render: (row) => {
+        const isOwnRequest = currentUser?.id && row.requestedByUserId && currentUser.id === row.requestedByUserId;
+        return (
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           {row.status === "REQUESTED" ? (
-            <>
-              <Button size="sm" onClick={() => handleDecide(row.id, "APPROVED")} loading={busyId === row.id}>Aprovar</Button>
-              <Button size="sm" variant="danger" onClick={() => handleDecide(row.id, "REJECTED")} loading={busyId === row.id}>Rejeitar</Button>
-            </>
+            isOwnRequest ? (
+              <span style={{ fontSize: "var(--text-body-sm)", color: "var(--color-ink-muted)" }}>Você solicitou — não pode decidir</span>
+            ) : (
+              <>
+                <Button size="sm" onClick={() => handleDecide(row.id, "APPROVED")} loading={busyId === row.id}>Aprovar</Button>
+                <Button size="sm" variant="danger" onClick={() => handleDecide(row.id, "REJECTED")} loading={busyId === row.id}>Rejeitar</Button>
+              </>
+            )
           ) : null}
           {row.status === "APPROVED" ? (
             <Button size="sm" onClick={() => handleIssue(row.id)} loading={busyId === row.id}>Entregar (baixa)</Button>
           ) : null}
         </div>
-      ),
+        );
+      },
     },
   ];
 
