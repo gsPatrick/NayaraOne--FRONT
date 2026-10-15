@@ -367,7 +367,7 @@ export default function SegurosPage() {
         );
       },
     },
-    { key: "provider", label: "Seguradora", width: "12%", render: (row) => row.provider || "sandbox" },
+    { key: "provider", label: "Seguradora", width: "12%", render: (row) => row.provider || "Simulação" },
     { key: "number", label: "Nº da apólice", width: "14%", render: (row) => row.externalPolicyNumber || "—" },
     { key: "premium", label: "Prêmio", width: "12%", render: (row) => (row.premiumAmount ? formatBRL(row.premiumAmount) : "—") },
     { key: "created", label: "Criada em", width: "12%", render: (row) => formatDateTime(row.created_at) },
@@ -485,7 +485,7 @@ export default function SegurosPage() {
               <p style={{ margin: "0 0 8px" }}>
                 <PolicyStatusBadge policy={detailModal.policy} />
                 {" — "}
-                {detailModal.policy.provider || "sandbox"}
+                {detailModal.policy.provider || "Simulação"}
                 {detailModal.policy.externalPolicyNumber ? ` — Nº ${detailModal.policy.externalPolicyNumber}` : ""}
               </p>
               {detailModal.policy.premiumAmount ? <p style={{ margin: "0 0 4px" }}>Prêmio: {formatBRL(detailModal.policy.premiumAmount)}</p> : null}
@@ -657,9 +657,9 @@ export default function SegurosPage() {
         }
       >
         <p style={{ color: "var(--color-ink-muted)", marginTop: 0 }}>
-          Vai consultar a seguradora configurada em Configurações → Integrações pra obter um prêmio. Enquanto nenhuma seguradora real estiver configurada, o resultado é uma simulação (sandbox), sem envio efetivo.
+          Vai consultar a seguradora configurada em Configurações → Integrações pra obter um prêmio. Enquanto nenhuma seguradora real estiver configurada, o resultado é uma simulação, sem envio efetivo.
         </p>
-        <FormField label="Valor estimado do bem/aluguel segurado (R$)" helper="Usado pelo provider pra calcular o prêmio (ex.: valor do imóvel no seguro-fiança).">
+        <FormField label="Valor estimado do bem/aluguel segurado (R$)" helper="Usado pela seguradora pra calcular o prêmio (ex.: valor do imóvel no seguro-fiança).">
           <DecimalInput value={quoteForm.estimatedValue} onChange={(e) => setQuoteForm((p) => ({ ...p, estimatedValue: e.target.value }))} />
         </FormField>
       </Modal>

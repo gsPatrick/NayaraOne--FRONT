@@ -230,7 +230,7 @@ export default function RequisicoesPage() {
         </div>
       ) : null}
 
-      <Card title="Requisições" subtitle="Solicitação → aprovação → baixa (OUT) por obra">
+      <Card title="Requisições" subtitle="Solicitação → aprovação → saída do estoque por obra">
         <Table columns={columns} rows={loading ? [] : requisitions} loading={loading} emptyMessage="Nenhuma requisição registrada." />
       </Card>
 
