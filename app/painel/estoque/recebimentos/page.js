@@ -18,6 +18,7 @@ import FormField from "@/components/molecules/FormField/FormField";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import RowActions from "@/components/molecules/RowActions/RowActions";
 import FileDropInput from "@/components/molecules/FileDropInput/FileDropInput";
+import PersonPicker from "@/components/molecules/PersonPicker/PersonPicker";
 import { listReceipts, createReceipt, reviewReceipt, confirmReceipt, suggestReceiptFromInvoice, getReceipt } from "@/lib/api/inventory";
 import { listInventoryItems, listInventoryLocations } from "@/lib/api/inventory";
 import { formatDateTime, formatBRL, formatQuantity, toNumber } from "@/lib/format";
@@ -31,7 +32,7 @@ const STATUS_TONE = { DRAFT: "neutral", REVIEWED: "info", COMPLETED: "success" }
 // recebimento sozinha, e o painel só aparece quando o adapter de fato devolveu uma sugestão.
 const OCR_STATUS_LABELS = { SUGGESTED: "Sugestão gerada", LOW_CONFIDENCE: "Confiança baixa", NOT_CONFIGURED: "OCR não configurado", ILLEGIBLE: "Nota ilegível" };
 const OCR_STATUS_TONE = { SUGGESTED: "success", LOW_CONFIDENCE: "warning", NOT_CONFIGURED: "neutral", ILLEGIBLE: "warning" };
-const EMPTY_FORM = { destinationLocationId: "", invoiceNumber: "", invoiceFingerprint: "", invoiceFileId: "", lines: [{ inventoryItemId: "", quantity: "", unitCost: "" }] };
+const EMPTY_FORM = { destinationLocationId: "", supplierPersonId: "", supplierPersonName: "", invoiceNumber: "", invoiceFingerprint: "", invoiceFileId: "", lines: [{ inventoryItemId: "", quantity: "", unitCost: "" }] };
 const EMPTY_OCR = { uploading: false, fileName: "", result: null, error: "", applied: false };
 
 function toBrDecimalString(value) {
@@ -163,6 +164,7 @@ export default function RecebimentosPage() {
     try {
       await createReceipt({
         destinationLocationId: form.destinationLocationId,
+        supplierPersonId: form.supplierPersonId || undefined,
         invoiceNumber: form.invoiceNumber || undefined,
         invoiceFingerprint: form.invoiceFingerprint || undefined,
         invoiceFileId: form.invoiceFileId || undefined,
@@ -236,10 +238,11 @@ export default function RecebimentosPage() {
   }
 
   const columns = [
-    { key: "invoice", label: "NF", width: "16%", render: (row) => row.invoiceNumber || "—" },
-    { key: "dest", label: "Destino", width: "22%", render: (row) => locationName(row.destinationLocationId) },
-    { key: "status", label: "Status", width: "16%", render: (row) => <Badge tone={STATUS_TONE[row.status]}>{STATUS_LABELS[row.status]}</Badge> },
-    { key: "created", label: "Criado em", width: "20%", render: (row) => formatDateTime(row.created_at) },
+    { key: "invoice", label: "NF", width: "12%", render: (row) => row.invoiceNumber || "—" },
+    { key: "supplier", label: "Fornecedor", width: "14%", render: (row) => row.supplier?.legalName || "—" },
+    { key: "dest", label: "Destino", width: "16%", render: (row) => locationName(row.destinationLocationId) },
+    { key: "status", label: "Status", width: "12%", render: (row) => <Badge tone={STATUS_TONE[row.status]}>{STATUS_LABELS[row.status]}</Badge> },
+    { key: "created", label: "Criado em", width: "16%", render: (row) => formatDateTime(row.created_at) },
     {
       key: "actions",
       label: "",
@@ -358,6 +361,14 @@ export default function RecebimentosPage() {
               <option key={l.id} value={l.id}>{l.name}</option>
             ))}
           </Select>
+        </FormField>
+        <FormField label="Fornecedor" helper="Opcional — ajuda a rastrear de onde veio a mercadoria.">
+          <PersonPicker
+            value={form.supplierPersonName}
+            personId={form.supplierPersonId}
+            onSelect={({ name, personId }) => setForm((p) => ({ ...p, supplierPersonId: personId || "", supplierPersonName: name || "" }))}
+            placeholder="Buscar fornecedor pelo nome..."
+          />
         </FormField>
         <FormField label="Número da NF">
           <Input value={form.invoiceNumber} onChange={(e) => setForm((p) => ({ ...p, invoiceNumber: e.target.value }))} />

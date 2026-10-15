@@ -207,9 +207,13 @@ export default function PatrimonioPage() {
   // mostrando "Disponível" mesmo já emprestado. Re-busca o card se o item afetado é o que está
   // sendo exibido ali.
   async function refreshTagResultIfShowing(assetId) {
-    if (tagSearchResult && tagSearchResult.id === assetId) {
+    // ACHADO REAL (auditoria Marco 7, rodada "check"): `tagSearchResult` é o objeto de resposta
+    // inteiro ({asset, lastMovement, ...}), nunca teve `.id` na raiz — só `.asset.id`. A
+    // comparação `tagSearchResult.id === assetId` nunca batia (undefined !== uuid real), então
+    // esta função nunca re-buscava de verdade, mesmo parecendo correta por fora.
+    if (tagSearchResult?.asset && tagSearchResult.asset.id === assetId) {
       try {
-        const asset = await getAssetByTag(tagSearchResult.assetTag || tagQuery.trim());
+        const asset = await getAssetByTag(tagSearchResult.asset.assetTag || tagQuery.trim());
         setTagSearchResult(asset);
       } catch {
         // se a re-busca falhar, mantém o card antigo em vez de quebrar a tela — o usuário ainda
@@ -463,7 +467,12 @@ export default function PatrimonioPage() {
       ) : null}
 
       <Card title="Patrimônio" subtitle="Ferramentas e ativos individualizáveis por QR Code">
-        <Table columns={columns} rows={loading ? [] : assets} loading={loading} emptyMessage="Nenhum patrimônio cadastrado." />
+        <Table
+          columns={columns}
+          rows={loading ? [] : assets}
+          loading={loading}
+          emptyMessage={loadError ? "Não foi possível carregar — veja o erro acima e tente novamente." : "Nenhum patrimônio cadastrado."}
+        />
       </Card>
 
       <StickyActionBar>

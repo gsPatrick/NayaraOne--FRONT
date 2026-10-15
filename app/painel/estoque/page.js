@@ -270,14 +270,14 @@ export default function EstoqueItensPage() {
   ];
 
   const locationColumns = [
-    { key: "name", label: "Nome", width: "28%" },
-    { key: "type", label: "Tipo", width: "18%", render: (row) => LOCATION_TYPE_LABELS[row.locationType] || row.locationType },
-    { key: "project", label: "Obra", width: "18%", render: (row) => row.project?.name || (row.locationType === "PROJECT_SITE" ? "—" : "") },
-    { key: "status", label: "Status", width: "16%", render: (row) => <Badge tone={row.isActive ? "success" : "neutral"}>{row.isActive ? "Ativo" : "Inativo"}</Badge> },
+    { key: "name", label: "Nome", width: "24%" },
+    { key: "type", label: "Tipo", width: "16%", render: (row) => LOCATION_TYPE_LABELS[row.locationType] || row.locationType },
+    { key: "project", label: "Obra", width: "16%", render: (row) => row.project?.name || (row.locationType === "PROJECT_SITE" ? "—" : "") },
+    { key: "status", label: "Status", width: "14%", render: (row) => <Badge tone={row.isActive ? "success" : "neutral"}>{row.isActive ? "Ativo" : "Inativo"}</Badge> },
     {
       key: "actions",
       label: "",
-      width: "20%",
+      width: "14%",
       render: (row) => <Button size="sm" variant="secondary" onClick={() => openEditLocation(row)}>Editar</Button>,
     },
   ];

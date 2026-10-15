@@ -8,6 +8,7 @@ import Table from "@/components/organisms/Table/Table";
 import Badge from "@/components/atoms/Badge/Badge";
 import Button from "@/components/atoms/Button/Button";
 import Select from "@/components/atoms/Select/Select";
+import Input from "@/components/atoms/Input/Input";
 import Icon from "@/components/atoms/Icon/Icon";
 import Alert from "@/components/molecules/Alert/Alert";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
@@ -15,7 +16,6 @@ import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import { listCounts, openCount, listInventoryLocations } from "@/lib/api/inventory";
-import { listProjects } from "@/lib/api/construction";
 import { formatDateTime } from "@/lib/format";
 
 const STATUS_LABELS = { OPEN: "Em contagem", COMPLETED: "Fechado" };
@@ -31,18 +31,15 @@ export default function ContagemPage() {
 
   const [openModalOpen, setOpenModalOpen] = useState(false);
   const [newLocationId, setNewLocationId] = useState("");
-  const [newProjectId, setNewProjectId] = useState("");
-  const [projects, setProjects] = useState([]);
   const [saving, setSaving] = useState(false);
 
   function load() {
     setLoading(true);
     setLoadError("");
-    Promise.all([listCounts(), listInventoryLocations(), listProjects().catch(() => [])])
-      .then(([c, l, p]) => {
+    Promise.all([listCounts(), listInventoryLocations()])
+      .then(([c, l]) => {
         setCounts(c || []);
         setLocations(l || []);
-        setProjects(p || []);
       })
       .catch((err) => setLoadError(err?.message || "Não foi possível carregar os inventários."))
       .finally(() => setLoading(false));
@@ -53,14 +50,13 @@ export default function ContagemPage() {
   const newLocationNeedsProject = newLocation?.locationType === "PROJECT_SITE";
 
   async function handleOpenCount() {
-    if (!newLocationId || (newLocationNeedsProject && !newProjectId)) return;
+    if (!newLocationId || (newLocationNeedsProject && !newLocation?.project)) return;
     setSaving(true);
     setActionError("");
     try {
-      await openCount({ locationId: newLocationId, projectId: newLocationNeedsProject ? newProjectId : undefined });
+      await openCount({ locationId: newLocationId });
       setOpenModalOpen(false);
       setNewLocationId("");
-      setNewProjectId("");
       load();
     } catch (err) {
       setActionError(err?.message || "Não foi possível abrir o inventário.");
@@ -113,7 +109,7 @@ export default function ContagemPage() {
           ) : (
             <>
               <Button variant="secondary" onClick={() => setOpenModalOpen(false)}>Cancelar</Button>
-              <Button onClick={handleOpenCount} loading={saving} disabled={!newLocationId || (newLocationNeedsProject && !newProjectId)}>Abrir</Button>
+              <Button onClick={handleOpenCount} loading={saving} disabled={!newLocationId || (newLocationNeedsProject && !newLocation?.project)}>Abrir</Button>
             </>
           )
         }
@@ -132,7 +128,7 @@ export default function ContagemPage() {
           Enquanto este inventário estiver aberto, o local fica congelado: nenhuma movimentação de estoque nele é aceita até a contagem ser concluída.
         </Alert>
         <FormField label="Local" required>
-          <Select value={newLocationId} onChange={(e) => { setNewLocationId(e.target.value); setNewProjectId(""); }}>
+          <Select value={newLocationId} onChange={(e) => setNewLocationId(e.target.value)}>
             <option value="">Selecione...</option>
             {locations.map((l) => (
               <option key={l.id} value={l.id}>{l.name}</option>
@@ -140,14 +136,18 @@ export default function ContagemPage() {
           </Select>
         </FormField>
         {newLocationNeedsProject ? (
-          <FormField label="Obra" required helper="Local de obra (canteiro) exige vincular a uma obra.">
-            <Select value={newProjectId} onChange={(e) => setNewProjectId(e.target.value)}>
-              <option value="">Selecione...</option>
-              {projects.map((p) => (
-                <option key={p.id} value={p.id}>{p.name}</option>
-              ))}
-            </Select>
-          </FormField>
+          newLocation?.project ? (
+            // Achado real (auditoria Marco 7, rodada final): a obra era pedida de novo aqui,
+            // podendo divergir da obra real já vinculada ao canteiro no cadastro. A obra do
+            // canteiro é sempre a fonte de verdade — mostramos, não pedimos de novo.
+            <FormField label="Obra" helper="Preenchida automaticamente pelo cadastro do canteiro.">
+              <Input value={newLocation.project.name} disabled readOnly />
+            </FormField>
+          ) : (
+            <Alert tone="danger">
+              Este canteiro ainda não está vinculado a uma obra no cadastro. Vincule a obra no cadastro do local antes de abrir o inventário aqui.
+            </Alert>
+          )
         ) : null}
         </>
         )}

@@ -287,14 +287,23 @@ export default function RequisicoesPage() {
             ))}
           </Select>
         </FormField>
-        <FormField label="Canteiro (destino)" helper="Opcional — se informado, exige selecionar a obra abaixo.">
+        <FormField label="Canteiro (destino)" helper="Opcional — se informado, a obra é preenchida automaticamente pelo cadastro do canteiro.">
           <Select
             value={form.projectLocationId}
             onChange={(e) => {
               const value = e.target.value;
-              // Sem canteiro não há vínculo com obra — a API recusa projectId sem projectLocationId,
-              // então limpar o canteiro limpa obra/etapa junto.
-              setForm((p) => ({ ...p, projectLocationId: value, ...(value ? {} : { projectId: "", stageId: "" }) }));
+              // Achado real (auditoria Marco 7, rodada final): o campo "Obra" ficava editável
+              // mesmo quando o canteiro já tem uma obra vinculada no cadastro — o backend sempre
+              // usa a obra REAL do canteiro como fonte de verdade (ignora silenciosamente
+              // qualquer valor divergente enviado), então deixar o campo editável aqui só
+              // confundia o usuário. Preenche e trava automaticamente com a obra do canteiro.
+              const loc = locations.find((l) => l.id === value);
+              const lockedProjectId = loc?.project?.id || "";
+              setForm((p) => ({
+                ...p,
+                projectLocationId: value,
+                ...(value ? { projectId: lockedProjectId } : { projectId: "", stageId: "" }),
+              }));
             }}
           >
             <option value="">Nenhum</option>
@@ -304,14 +313,24 @@ export default function RequisicoesPage() {
           </Select>
         </FormField>
         {form.projectLocationId ? (
-          <FormField label="Obra" required>
-            <Select value={form.projectId} onChange={(e) => setForm((p) => ({ ...p, projectId: e.target.value, stageId: "" }))}>
-              <option value="">Selecione...</option>
-              {projects.map((pr) => (
-                <option key={pr.id} value={pr.id}>{pr.name}</option>
-              ))}
-            </Select>
-          </FormField>
+          (() => {
+            const selectedLocation = locations.find((l) => l.id === form.projectLocationId);
+            const lockedProject = selectedLocation?.project;
+            return lockedProject ? (
+              <FormField label="Obra" helper="Preenchida automaticamente pelo cadastro do canteiro — não editável aqui.">
+                <Input value={lockedProject.name} disabled readOnly />
+              </FormField>
+            ) : (
+              <FormField label="Obra" required helper="Este canteiro ainda não tem obra cadastrada — escolha manualmente.">
+                <Select value={form.projectId} onChange={(e) => setForm((p) => ({ ...p, projectId: e.target.value, stageId: "" }))}>
+                  <option value="">Selecione...</option>
+                  {projects.map((pr) => (
+                    <option key={pr.id} value={pr.id}>{pr.name}</option>
+                  ))}
+                </Select>
+              </FormField>
+            );
+          })()
         ) : null}
         {form.projectLocationId && form.projectId ? (
           <FormField
