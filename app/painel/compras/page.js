@@ -433,6 +433,7 @@ export default function ComprasPage() {
               <Badge tone={STATUS_TONE[detailModal.status]}>{STATUS_LABELS[detailModal.status]}</Badge>
             </div>
             <div><strong>Obra:</strong> {detailModal.project?.name || "Sem obra vinculada"}</div>
+            <div><strong>Solicitante:</strong> {detailModal.requestedByUser?.name || "—"}</div>
             <div><strong>Criada em:</strong> {formatDateTime(detailModal.created_at)}</div>
             {detailModal.notes ? <div><strong>Observações:</strong> {detailModal.notes}</div> : null}
             <div>
