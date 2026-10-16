@@ -1,12 +1,13 @@
+/* BUG REAL CORRIGIDO (auditoria Marco 7 "final/reconfirmação", 16/10/2026): 4 colunas fixas só
+   quebravam pra 2 abaixo de 700px — em larguras intermediárias (ex.: ~930px, comuns em laptop
+   com sidebar aberta ou zoom do navegador) os 4 cards espremiam até o último ("Valor em custo
+   médio") ficar cortado, sem nenhuma forma de ver o conteúdo. auto-fit com minmax deixa o grid
+   genuinamente responsivo em qualquer largura, sem depender de breakpoints fixos. */
 .grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: var(--space-4);
   margin-bottom: var(--space-5);
-}
-
-@media (max-width: 700px) {
-  .grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 .toolbar {

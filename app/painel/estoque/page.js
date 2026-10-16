@@ -258,6 +258,7 @@ export default function EstoqueItensPage() {
       key: "policy",
       label: "",
       width: "28%",
+      sticky: true,
       render: (row) => (
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", flexWrap: "wrap", minWidth: 180 }}>
           <Button size="sm" variant="secondary" onClick={() => openEditItem(row)}>Editar</Button>

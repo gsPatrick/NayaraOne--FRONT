@@ -51,6 +51,33 @@
   overflow: hidden;
 }
 
+/* BUG REAL CORRIGIDO (auditoria Marco 7 "final/reconfirmação", 16/10/2026): numa tabela larga
+   com scroll horizontal (ex.: tabela de Itens do Estoque em telas ~930px), a coluna de AÇÕES
+   (Editar/Política de mínimo) é a última e fica fora da área visível — só alcançável rolando a
+   tabela inteira pro lado, o que não é óbvio e esconde a ação mais usada da tabela. Colunas
+   marcadas com `col.sticky` ficam fixas na borda direita do container de scroll, sempre
+   visíveis, com sombra sutil indicando que há mais conteúdo rolável à esquerda. Opt-in por
+   coluna (`sticky: true` no objeto de coluna) — nenhuma tabela existente muda de comportamento
+   sem pedir explicitamente. */
+.stickyRight {
+  position: sticky;
+  right: 0;
+  z-index: 1;
+  box-shadow: -6px 0 8px -6px rgba(0, 0, 0, 0.18);
+}
+
+.table thead th.stickyRight {
+  background: var(--color-canvas-sunken);
+}
+
+.table tbody td.stickyRight {
+  background: var(--color-canvas-raised);
+}
+
+.table tbody tr:hover td.stickyRight {
+  background: var(--color-canvas-sunken);
+}
+
 .table tbody tr {
   transition: background-color var(--duration-base) var(--ease-out-expo);
 }

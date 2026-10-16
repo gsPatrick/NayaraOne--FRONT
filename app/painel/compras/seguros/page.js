@@ -390,7 +390,12 @@ export default function SegurosPage() {
           {row.status === "DRAFT" ? (
             <Button size="sm" onClick={() => openQuote(row.id)} loading={busyId === row.id}>Cotar</Button>
           ) : null}
-          {["DRAFT", "QUOTED"].includes(row.status) ? (
+          {/* BUG GRAVE REAL CORRIGIDO (auditoria Marco 7 "final/reconfirmação", 2026-10-16):
+              "Emitir" aparecia já em DRAFT, antes de cotar — permitindo emitir uma apólice sem
+              premiumAmount definido, que gerava ZERO parcelas silenciosamente (sem aviso). Só
+              QUOTED tem prêmio definido (requestQuote é quem seta premiumAmount); a API agora
+              também recusa (INSURANCE_POLICY_MISSING_PREMIUM) como segunda camada de defesa. */}
+          {row.status === "QUOTED" ? (
             <Button size="sm" onClick={() => openIssue(row.id)} loading={busyId === row.id}>Emitir</Button>
           ) : null}
         </div>

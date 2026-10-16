@@ -9,7 +9,13 @@ export default function Table({ columns = [], rows = [], loading = false, emptyM
         <thead>
           <tr>
             {columns.map((col) => (
-              <th key={col.key} style={col.width ? { width: col.width } : undefined}>{col.label}</th>
+              <th
+                key={col.key}
+                className={col.sticky ? styles.stickyRight : undefined}
+                style={col.width ? { width: col.width } : undefined}
+              >
+                {col.label}
+              </th>
             ))}
           </tr>
         </thead>
@@ -34,7 +40,9 @@ export default function Table({ columns = [], rows = [], loading = false, emptyM
             rows.map((row, i) => (
               <tr key={row.id || i}>
                 {columns.map((col) => (
-                  <td key={col.key}>{col.render ? col.render(row) : row[col.key]}</td>
+                  <td key={col.key} className={col.sticky ? styles.stickyRight : undefined}>
+                    {col.render ? col.render(row) : row[col.key]}
+                  </td>
                 ))}
               </tr>
             ))
