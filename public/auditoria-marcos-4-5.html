@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Conferência complementar — Marcos 4 e 5</title>
+<style>
+  :root {
+    --color-brand: #BE9130;
+    --color-brand-hover: #A97D28;
+    --color-brand-active: #8A6620;
+    --color-brand-soft: rgba(190, 145, 48, 0.12);
+    --color-brand-border: rgba(190, 145, 48, 0.34);
+    --color-canvas: #FDFCFA;
+    --color-canvas-raised: #FFFFFF;
+    --color-canvas-sunken: #F7F5F1;
+    --color-ink: #17130F;
+    --color-ink-soft: #4A4033;
+    --color-ink-muted: #8C7F68;
+    --color-border: #EAE6DE;
+    --color-border-strong: #D9D2C4;
+    --color-success: #1E7A4C;
+    --color-success-soft: rgba(30, 122, 76, 0.12);
+    --color-warning: #B8790C;
+    --color-warning-soft: rgba(184, 121, 12, 0.14);
+    --color-danger: #C0392B;
+    --color-danger-soft: rgba(192, 57, 43, 0.12);
+    --color-info: #2563A6;
+    --color-info-soft: rgba(37, 99, 166, 0.12);
+    --color-code-bg: #17130F;
+    --color-code-ink: #F2EFE8;
+    --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+    --font-body: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --color-canvas: #16130E; --color-canvas-raised: #1D1913; --color-canvas-sunken: #100D09;
+      --color-ink: #F2EEE5; --color-ink-soft: #CFC6B5; --color-ink-muted: #9A8C71;
+      --color-border: #332C21; --color-border-strong: #443A2B;
+      --color-brand: #D6A845; --color-brand-hover: #E3B75B; --color-brand-active: #F0C670;
+      --color-brand-soft: rgba(214, 168, 69, 0.14); --color-brand-border: rgba(214, 168, 69, 0.32);
+      --color-success-soft: rgba(30, 122, 76, 0.2); --color-warning-soft: rgba(184, 121, 12, 0.22);
+      --color-danger-soft: rgba(192, 57, 43, 0.2); --color-info-soft: rgba(37, 99, 166, 0.22);
+      --color-code-bg: #0D0B08; --color-code-ink: #EDE8DC;
+    }
+  }
+  :root[data-theme="dark"] {
+    --color-canvas: #16130E; --color-canvas-raised: #1D1913; --color-canvas-sunken: #100D09;
+    --color-ink: #F2EEE5; --color-ink-soft: #CFC6B5; --color-ink-muted: #9A8C71;
+    --color-border: #332C21; --color-border-strong: #443A2B;
+    --color-brand: #D6A845; --color-brand-hover: #E3B75B; --color-brand-active: #F0C670;
+    --color-brand-soft: rgba(214, 168, 69, 0.14); --color-brand-border: rgba(214, 168, 69, 0.32);
+    --color-success-soft: rgba(30, 122, 76, 0.2); --color-warning-soft: rgba(184, 121, 12, 0.22);
+    --color-danger-soft: rgba(192, 57, 43, 0.2); --color-info-soft: rgba(37, 99, 166, 0.22);
+    --color-code-bg: #0D0B08; --color-code-ink: #EDE8DC;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--color-canvas); color: var(--color-ink); font-family: var(--font-body); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  a { color: var(--color-brand-active); }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 0 24px 96px; }
+  header.cover { padding: 72px 0 40px; border-bottom: 1px solid var(--color-border); margin-bottom: 40px; }
+  .eyebrow { font-family: var(--font-mono); font-size: 12.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-brand-active); margin: 0 0 14px; }
+  h1.title { font-family: var(--font-display); font-weight: 700; font-size: clamp(2rem, 1.5rem + 2vw, 3rem); line-height: 1.1; margin: 0 0 10px; text-wrap: balance; }
+  .subtitle { font-size: 18px; color: var(--color-ink-soft); margin: 0 0 28px; max-width: 60ch; }
+  .meta-row { display: flex; flex-wrap: wrap; gap: 10px; }
+  .meta-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: var(--color-canvas-sunken); border: 1px solid var(--color-border); font-size: 13px; color: var(--color-ink-soft); font-family: var(--font-mono); }
+  .status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 48px; }
+  .status-card { padding: 18px; border-radius: 12px; background: var(--color-canvas-raised); border: 1px solid var(--color-border); }
+  .status-card .num { font-family: var(--font-display); font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; margin-bottom: 6px; }
+  .status-card .num.ok { color: var(--color-success); }
+  .status-card .num.warn { color: var(--color-warning); }
+  .status-card .label { font-size: 13px; color: var(--color-ink-muted); }
+  section { margin-bottom: 56px; }
+  h2.h { font-family: var(--font-display); font-size: 26px; font-weight: 700; margin: 0 0 6px; display: flex; align-items: baseline; gap: 10px; }
+  h2.h .n { color: var(--color-brand-active); font-size: 16px; font-family: var(--font-mono); }
+  h3.h3 { font-family: var(--font-display); font-size: 19px; font-weight: 700; margin: 28px 0 12px; }
+  .lede { color: var(--color-ink-soft); margin: 0 0 20px; max-width: 68ch; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+  .pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .pill.ok { background: var(--color-success-soft); color: var(--color-success); }
+  .pill.warn { background: var(--color-warning-soft); color: var(--color-warning); }
+  .pill.bad { background: var(--color-danger-soft); color: var(--color-danger); }
+  .pill.info { background: var(--color-info-soft); color: var(--color-info); }
+  .tbl-wrap { overflow-x: auto; border: 1px solid var(--color-border); border-radius: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14.5px; background: var(--color-canvas-raised); }
+  th, td { text-align: left; padding: 12px 14px; vertical-align: top; }
+  thead th { background: var(--color-canvas-sunken); font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-ink-muted); font-weight: 600; border-bottom: 1px solid var(--color-border); }
+  tbody tr + tr td { border-top: 1px solid var(--color-border); }
+  td.narrow, th.narrow { white-space: nowrap; }
+  .fix-card { border: 1px solid var(--color-border); border-radius: 12px; padding: 18px 20px; margin-bottom: 12px; background: var(--color-canvas-raised); }
+  .fix-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+  .fix-code { font-family: var(--font-mono); font-size: 13px; color: var(--color-ink-muted); }
+  .fix-title { font-weight: 700; }
+  .fix-body { color: var(--color-ink-soft); font-size: 14.5px; margin: 0; }
+  .cred-card { border: 1px solid var(--color-brand-border); background: var(--color-brand-soft); border-radius: 12px; padding: 20px 22px; }
+  .cred-row { display: flex; justify-content: space-between; gap: 16px; padding: 8px 0; border-bottom: 1px dashed var(--color-brand-border); }
+  .cred-row:last-child { border-bottom: none; }
+  .cred-k { font-size: 13px; color: var(--color-ink-muted); }
+  .cred-v { font-family: var(--font-mono); font-size: 14.5px; font-weight: 600; text-align: right; }
+  .commit-list { font-family: var(--font-mono); font-size: 13px; color: var(--color-ink-muted); line-height: 2; word-break: break-all; }
+  footer { margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--color-border); color: var(--color-ink-muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="cover">
+    <p class="eyebrow">Nayara One — Resposta à conferência complementar</p>
+    <h1 class="title">Marcos 4 (Financeiro) e 5 (Contratos/Locação/Jurídico)</h1>
+    <p class="subtitle">Resposta ponto a ponto ao relatório de auditoria independente de 14/10/2026 — os 10 achados reproduzidos, a matriz de cobertura do restante do caderno e os pedidos de evidência/infraestrutura.</p>
+    <div class="meta-row">
+      <span class="meta-pill">Relatório original: 14/10/2026</span>
+      <span class="meta-pill">Esta resposta: 16/10/2026</span>
+      <span class="meta-pill">Branch marco-6-e-7-homologado-nayara</span>
+    </div>
+  </header>
+
+  <section>
+    <div class="status-grid">
+      <div class="status-card"><div class="num ok">10/10</div><div class="label">Achados A01-A10 corrigidos, com teste reproduzível contra Postgres real</div></div>
+      <div class="status-card"><div class="num ok">37/39</div><div class="label">Grupos da matriz de cobertura (Marcos 4+5) fechados com prova real em banco</div></div>
+      <div class="status-card"><div class="num ok">4/6</div><div class="label">Pedidos de evidência/infraestrutura da Seção 5 atendidos</div></div>
+      <div class="status-card"><div class="num warn">2</div><div class="label">Pendências conscientes em aberto — detalhadas abaixo, não escondidas</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="h"><span class="n">01</span> Os 10 achados reproduzidos (A01-A10)</h2>
+    <p class="lede">Todos os achados da Seção 3 do relatório — cada um reproduzido pela própria auditoria em lógica de serviço isolada — foram corrigidos nesta API, com teste de integração real (<code>node --test</code> contra PostgreSQL de verdade, RLS ativo, não fixture em memória) provando o comportamento antes e depois.</p>
+
+    <div class="fix-card"><div class="fix-head"><span class="pill ok">corrigido</span><span class="fix-code">financialEntries.service.js</span></div><p class="fix-body"><strong>A01</strong> — Baixa parcial de PAYABLE contornava a exigência de aprovação que a baixa integral já tinha. Agora as duas exigem a mesma aprovação.</p></div>
+    <div class="fix-card"><div class="fix-head"><span class="pill ok">corrigido</span><span class="fix-code">financialEntries.service.js</span></div><p class="fix-body"><strong>A02</strong> — Baixa integral não consultava se o período estava fechado (a parcial já consultava). Agora as duas respeitam o fechamento.</p></div>
+    <div class="fix-card"><div class="fix-head"><span class="pill ok">corrigido</span><span class="fix-code">billingSchedule.service.js</span></div><p class="fix-body"><strong>A03</strong> — Aritmética de centavos quebrada por ponto flutuante (0,10 + 0,20 ≠ 0,30 em JS) na recomposição de saldo de cobrança. Corrigido para aritmética decimal exata.</p></div>
+    <div class="fix-card"><div class="fix-head"><span class="pill ok">corrigido</span><span class="fix-code">keyDeliveries.service.js</span></div><p class="fix-body"><strong>A04</strong> — Garantia vencida por data, mas ainda com status ACTIVE, liberava a entrega de chaves (só checava o status, nunca a data).</p></div>
+    <div class="fix-card"><div class="fix-head"><span class="pill ok">corrigido</span><span class="fix-code">utilities.service.js</span></div><p class="fix-body"><strong>A05</strong> — Transferência de titularidade de água/luz concluía sem exigir comprovante (evidenceFileId podia ser nulo).</p></div>
+    <div class="fix-card"><div class="fix-head"><span class="pill ok">corrigido</span><span class="fix-code">periodClosures.service.js</span></div><p class="fix-body"><strong>A06</strong> — Fechamento de período pulava a etapa de revisão/aprovação (REVIEW), indo direto para CLOSED.</p></div>
+    <div class="fix-card"><div class="fix-head"><span class="pill ok">corrigido</span><span class="fix-code">legalDeadlines.service.js</span></div><p class="fix-body"><strong>A07</strong> — Prazo jurídico crítico podia ser criado sem responsável designado.</p></div>
+    <div class="fix-card"><div class="fix-head"><span class="pill ok">corrigido</span><span class="fix-code">legalDeadlines.service.js</span></div><p class="fix-body"><strong>A08</strong> — Prazo podia ser concluído só com <code>{status:'DONE'}</code>, sem evidência nem nota.</p></div>
+    <div class="fix-card"><div class="fix-head"><span class="pill ok">corrigido</span><span class="fix-code">legalDeadlines.service.js</span></div><p class="fix-body"><strong>A09</strong> — Mudança de vencimento de prazo era aceita sem exigir justificativa do usuário (usava motivo genérico).</p></div>
+    <div class="fix-card"><div class="fix-head"><span class="pill ok">corrigido</span><span class="fix-code">approvals.service.js</span></div><p class="fix-body"><strong>A10</strong> — Solicitação genérica de aprovação podia dispensar a versão revisada (campo omitido era tratado como aceito, deveria ser recusado).</p></div>
+
+    <h3 class="h3">Reforço adicional encontrado durante a correção</h3>
+    <p class="lede">Ao corrigir o A01, também testamos reentrega de confirmação bancária duplicada (cenário comum em webhooks reais de banco) — <strong>não estava coberto antes</strong>. Confirmado que uma confirmação <code>CONFIRMED</code> reenviada duas vezes não duplica a liquidação no ledger.</p>
+  </section>
+
+  <section>
+    <h2 class="h"><span class="n">02</span> Matriz de cobertura do restante do caderno</h2>
+    <p class="lede">A Seção 4 do relatório listou 19 grupos contratuais do Marco 4 e 20 do Marco 5 como "não comprovado" ou "parcial" — não bugs, mas falta de prova independente com o método de teste usado na auditoria (sem banco, sem HTTP, sem RLS). Atacamos os 39 grupos com testes de integração reais contra Postgres, RLS ativo, usando o mesmo caminho que a aplicação usa em runtime.</p>
+
+    <div class="status-grid">
+      <div class="status-card"><div class="num ok">37</div><div class="label">Grupos fechados com prova reproduzível em banco real</div></div>
+      <div class="status-card"><div class="num warn">2</div><div class="label">Grupos em aberto (restore/replay/segurança de fluxo) — ver Seção 4 desta página</div></div>
+    </div>
+
+    <h3 class="h3">3 bugs reais novos encontrados durante esta rodada (não estavam na lista de achados A01-A10)</h3>
+    <div class="fix-card"><div class="fix-head"><span class="pill ok">corrigido</span><span class="fix-code">financialEntries.service.js / repasses</span></div><p class="fix-body">Repasse de proprietário recalculava o teto elegível do zero a cada chamada, sem descontar o que repasses anteriores já tinham consumido do mesmo recebimento — dois repasses sobre o mesmo lançamento passavam os dois, repassando o valor cheio duas vezes.</p></div>
+    <div class="fix-card"><div class="fix-head"><span class="pill ok">corrigido</span><span class="fix-code">migration — trigger de banco</span></div><p class="fix-body">A imutabilidade do ledger financeiro (append-only) era garantida só na camada de serviço — um UPDATE ou DELETE direto via SQL cru não encontrava nenhuma barreira no banco. Adicionado trigger PostgreSQL real que bloqueia incondicionalmente DELETE e UPDATE de campos que definem o fato financeiro já ocorrido, independente da aplicação.</p></div>
+    <div class="fix-card"><div class="fix-head"><span class="pill ok">corrigido</span><span class="fix-code">legal — legal hold</span></div><p class="fix-body">Não existia nenhum mecanismo de "legal hold" (retenção legal obrigatória) em processos jurídicos — criado do zero: campo, motivo obrigatório, bloqueio de mudança de status/fase enquanto em hold, rota dedicada.</p></div>
+
+    <h3 class="h3">Grupos ainda em aberto (honestamente, não comprovados)</h3>
+    <table>
+      <thead><tr><th>Grupo</th><th>Situação</th><th>Por quê</th></tr></thead>
+      <tbody>
+        <tr><td>Restore/replay/runbooks/segurança (Marco 4)</td><td><span class="pill warn">parcial</span></td><td>SAST/npm audit e replay de idempotência pós-restore já provados a nível de aplicação. Falta restore de banco campo a campo e teste de segurança de fluxo real — mesma lacuna de infraestrutura do item 2/5 abaixo.</td></tr>
+        <tr><td>Restore/export/segurança (Marco 5)</td><td><span class="pill warn">parcial</span></td><td>Mesma lacuna: falta restaurar contratos/versões/assinaturas com hash e testar exportação/permissão de prova restaurada.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2 class="h"><span class="n">03</span> Os 6 pedidos de evidência/infraestrutura</h2>
+    <table>
+      <thead><tr><th>#</th><th>Pedido</th><th>Status</th><th>Detalhe</th></tr></thead>
+      <tbody>
+        <tr><td class="narrow">1</td><td>Hash verificável do deploy (API+Front)</td><td><span class="pill ok">feito</span></td><td>Rota <code>GET /api/version</code> criada na API, expõe commit/timestamp de build verificável.</td></tr>
+        <tr><td class="narrow">2</td><td>Banco/ambiente descartável e separado</td><td><span class="pill bad">adiado</span></td><td>Decisão consciente: montar um ambiente isolado do zero (migrations/seeds reproduzíveis, 2 tenants, perfis maker/checker) é cerca de um dia de trabalho de infraestrutura — desproporcional a esta rodada. Fica como próxima etapa dedicada, não foi ignorado.</td></tr>
+        <tr><td class="narrow">3</td><td>Logs/artefatos de CI individuais</td><td><span class="pill ok">feito</span></td><td>CI real (Postgres isolado, RLS sem bypass) ajustado para rodar na branch de trabalho, não só na principal; publica log de teste individual como artifact baixável por execução.</td></tr>
+        <tr><td class="narrow">4</td><td>Provider sandbox bancário/assinatura</td><td><span class="pill ok">feito</span></td><td>Sandbox bancário já existia por padrão (sem credencial real = sandbox); provado com teste cobrindo submit sem liquidar, confirmação liberando ledger, falha/timeout sem liquidar, callback duplicado idempotente, callback forjado rejeitado.</td></tr>
+        <tr><td class="narrow">5</td><td>Evidência reproduzível de restore/replay</td><td><span class="pill bad">adiado</span></td><td>Mesma decisão do item 2 — exige a mesma infraestrutura de ambiente dedicado.</td></tr>
+        <tr><td class="narrow">6</td><td>Gate adicional reproduzível para A01-A10</td><td><span class="pill ok">feito</span></td><td>Satisfeito pelos próprios commits/testes dos 10 achados — cada um com antes/depois reproduzível via <code>node --test</code> contra Postgres real.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2 class="h"><span class="n">04</span> Commits desta rodada</h2>
+    <p class="lede">Sequência de commits na API cobrindo os pontos acima (ordem cronológica):</p>
+    <div class="tbl-wrap">
+      <div class="commit-list" style="padding: 16px 18px;">
+        fab5fdd — A03/A06 (centavos, fechamento sem REVIEW)<br/>
+        f3b54d7 — recebimento com arquivo anexado não é mais recusado por engano<br/>
+        92488ab — A07/A08/A09 (prazo crítico)<br/>
+        38e0c54 — A04/A05 (garantia, utilidades)<br/>
+        268c8d2 — A01/A02/A10 (baixa parcial, período fechado, staleness de aprovação)<br/>
+        0db2114 — CI rodando na branch de trabalho, log individual como artifact<br/>
+        33b07f4 — GET /api/version<br/>
+        9c5bef5 — prova de reentrega de webhook CONFIRMED<br/>
+        7c46f26 — repasse de proprietário não reutiliza saldo já consumido<br/>
+        a3786a9 — trigger de banco para append-only do ledger financeiro<br/>
+        2db6b52 — legal hold em processos jurídicos<br/>
+        2e8851f — garantias/reajuste/utilidades da matriz de cobertura<br/>
+        d292bf8 — matriz de cobertura Marco 5 (tipos contratuais, templates, vistorias, aditivos)<br/>
+        6c38072 — prova E2E de confirmação bancária<br/>
+        bb6bd69 — ajuste de testes pro trigger append-only do ledger
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="h"><span class="n">05</span> Acesso para validação</h2>
+    <div class="cred-card">
+      <div class="cred-row"><span class="cred-k">URL</span><span class="cred-v">homologacao-nayaraone--front.hpztyd.easypanel.host/entrar</span></div>
+      <div class="cred-row"><span class="cred-k">Usuário</span><span class="cred-v">admin@nayaraone.dev</span></div>
+      <div class="cred-row"><span class="cred-k">Senha</span><span class="cred-v">DevAdmin#2026</span></div>
+      <div class="cred-row"><span class="cred-k">Verificação de versão</span><span class="cred-v">/api/version</span></div>
+    </div>
+  </section>
+
+  <footer>
+    Documento gerado a partir da resposta técnica a esta rodada de auditoria. Os 2 itens em aberto (Seção 3 e 4) são decisões conscientes de priorização, não lacunas escondidas — detalhados acima com o motivo exato. Qualquer divergência encontrada na validação deve ser reportada para correção antes do aceite formal.
+  </footer>
+
+</div>
+</body>
+</html>
