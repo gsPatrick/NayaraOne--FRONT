@@ -15,6 +15,11 @@
   margin: var(--space-4) var(--space-4) var(--space-4) var(--space-2);
   z-index: 5;
   transition: width var(--duration-slow) var(--ease-out-expo), background-color var(--duration-base) var(--ease-out-expo);
+  /* FIX (auditoria de acessibilidade — foco visível, Marco 7): o anel de foco
+     global usa --color-accent (quase preto), invisível sobre o fundo escuro
+     da sidebar no tema Onyx. Troca pela cor de texto da própria sidebar
+     (clara no Onyx, escura no tema padrão), que já garante contraste aqui. */
+  --color-focus-ring: var(--color-sidebar-ink);
 }
 
 .collapsed { width: 76px; }

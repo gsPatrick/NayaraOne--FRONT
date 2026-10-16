@@ -17,6 +17,11 @@
   --color-accent:           #17130F; /* preto quente — painéis/superfícies escuras da marca */
   --color-accent-soft:      rgba(23, 19, 16, 0.06);
 
+  /* Anel de foco global — token separado do --color-accent para permitir que
+     superfícies escuras (sidebar no tema Onyx) troquem por uma cor clara sem
+     afetar o resto da interface. Ver fallback de :focus-visible mais abaixo. */
+  --color-focus-ring:       var(--color-accent);
+
   /* CTA primário — token separado do dourado de marca para permitir o tema
      "Onyx" (referência da cliente, preto+dourado com botões pretos) sem
      precisar reescrever cada componente. Por padrão é igual ao dourado atual. */
@@ -235,6 +240,22 @@ ul, ol { list-style: none; }
 ::selection {
   background: var(--color-brand-soft);
   color: var(--color-brand-active);
+}
+
+/* FIX (auditoria de acessibilidade — foco visível, Marco 7): fallback global de
+   :focus-visible para qualquer elemento interativo que não defina seu próprio
+   estilo de foco (ex.: links/botões do AppSidebar, botões-ícone do AppHeader,
+   ações de linha de tabela). Componentes com :focus-visible próprio (Button,
+   Input, Select, Checkbox, Radio, PropertyCard...) continuam prevalecendo por
+   especificidade de seletor. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: -2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
