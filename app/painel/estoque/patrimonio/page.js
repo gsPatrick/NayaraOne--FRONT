@@ -191,6 +191,11 @@ export default function PatrimonioPage() {
         destinationLocationId: transferLocationId || undefined,
         destinationCustodianUserId: transferCustodianId || undefined,
       });
+      // BUG REAL CORRIGIDO (auditoria Marco 7, rodada "check", 15/10/2026, achado 3): só
+      // empréstimo/devolução chamavam refreshTagResultIfShowing — transferência nunca atualizava
+      // o card de busca por QR/Tag, que continuava mostrando local/custodiante antigos mesmo após
+      // a transferência ter sido confirmada com sucesso.
+      await refreshTagResultIfShowing(transferTarget.id);
       setTransferTarget(null);
       setTransferLocationId("");
       setTransferCustodianId("");
