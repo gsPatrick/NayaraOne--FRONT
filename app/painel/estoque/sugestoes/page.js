@@ -141,7 +141,7 @@ export default function SugestoesNayPage() {
       setApproveTarget(null);
       setNotice({
         tone: "success",
-        text: `Requisição de compra criada (${result?.purchaseRequest?.id?.slice(0, 8) || "—"}) e enviada para aprovação em Compras.`,
+        text: "Requisição de compra criada e enviada para aprovação em Compras.",
         link: "/painel/compras",
       });
       load();

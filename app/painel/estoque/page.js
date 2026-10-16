@@ -388,7 +388,7 @@ export default function EstoqueItensPage() {
         <FormField label="Estoque mínimo padrão" helper="Vale para todos os locais sem valor próprio abaixo. Vazio = sem aviso de estoque baixo.">
           <DecimalInput value={policyForm.minimumQuantity} onChange={(e) => setPolicyForm((p) => ({ ...p, minimumQuantity: e.target.value }))} />
         </FormField>
-        <FormField label="Quantidade de reposição" helper="Opcional — quanto repor quando o saldo cruzar o mínimo (segue no aviso inventory.stock.low).">
+        <FormField label="Quantidade de reposição" helper="Opcional — quanto repor quando o saldo cruzar o mínimo (entra no aviso de estoque baixo).">
           <DecimalInput value={policyForm.reorderQuantity} onChange={(e) => setPolicyForm((p) => ({ ...p, reorderQuantity: e.target.value }))} />
         </FormField>
         {locations.length > 0 ? (

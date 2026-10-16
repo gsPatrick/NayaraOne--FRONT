@@ -246,7 +246,7 @@ export default function FornecedorDetailPage({ params }) {
           {blockReason ? <Alert tone="danger" title="Bloqueado para adjudicação">{blockReason}</Alert> : null}
           {notice ? <Alert tone={notice.tone}>{notice.text}</Alert> : null}
 
-          <Card title="Qualificação e risco" subtitle="Marcar como alto risco exige due diligence aprovada antes de qualquer PO">
+          <Card title="Qualificação e risco" subtitle="Marcar como alto risco exige due diligence aprovada antes de qualquer pedido de compra">
             <div style={SECTION_GAP}>
               <Checkbox
                 id="q-high-risk"
@@ -335,7 +335,7 @@ export default function FornecedorDetailPage({ params }) {
             )}
           </Card>
 
-          <Card title="Contas bancárias do fornecedor" subtitle="Cadastro e alteração só pelo Financeiro (step-up MFA + resfriamento antifraude)">
+          <Card title="Contas bancárias do fornecedor" subtitle="Cadastro e alteração só pelo Financeiro (confirmação extra de identidade + período de carência antifraude)">
             {bankAccountsError ? (
               <p style={{ margin: 0, color: "var(--color-ink-muted)" }}>{bankAccountsError}</p>
             ) : bankAccounts.length === 0 ? (
