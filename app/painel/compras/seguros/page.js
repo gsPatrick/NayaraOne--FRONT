@@ -32,6 +32,15 @@ const POLICY_STATUS_LABELS = { DRAFT: "Rascunho", QUOTED: "Cotada", ISSUED: "Emi
 const POLICY_STATUS_TONE = { DRAFT: "neutral", QUOTED: "info", ISSUED: "info", ACTIVE: "success", EXPIRED: "warning", CANCELED: "danger" };
 const CLAIM_ELIGIBLE_STATUSES = ["ACTIVE", "ISSUED"];
 
+// BUG GRAVE REAL CORRIGIDO (auditoria Marco 7 "reval", 2026-10-16): o nome interno do adapter
+// simulado ("sandbox") vazava direto pra UI porque row.provider vinha preenchido com esse valor
+// técnico (nunca falsy, então o fallback "Simulação" nunca era usado). Mapeia nomes técnicos de
+// provider pra rótulo legível em português.
+function providerLabel(provider) {
+  if (!provider || provider === "sandbox") return "Simulação";
+  return provider;
+}
+
 // GAP REAL CORRIGIDO (auditoria contrato Marco 7, 2026-10-07 — vigência da apólice): a API agora
 // bloqueia sinistro novo em apólice vencida (INSURANCE_POLICY_EXPIRED) e um job marca a apólice
 // como EXPIRED. Entre o vencimento e a próxima execução do job o status gravado ainda pode ser
@@ -367,7 +376,7 @@ export default function SegurosPage() {
         );
       },
     },
-    { key: "provider", label: "Seguradora", width: "12%", render: (row) => row.provider || "Simulação" },
+    { key: "provider", label: "Seguradora", width: "12%", render: (row) => providerLabel(row.provider) },
     { key: "number", label: "Nº da apólice", width: "14%", render: (row) => row.externalPolicyNumber || "—" },
     { key: "premium", label: "Prêmio", width: "12%", render: (row) => (row.premiumAmount ? formatBRL(row.premiumAmount) : "—") },
     { key: "created", label: "Criada em", width: "12%", render: (row) => formatDateTime(row.created_at) },
@@ -485,7 +494,7 @@ export default function SegurosPage() {
               <p style={{ margin: "0 0 8px" }}>
                 <PolicyStatusBadge policy={detailModal.policy} />
                 {" — "}
-                {detailModal.policy.provider || "Simulação"}
+                {providerLabel(detailModal.policy.provider)}
                 {detailModal.policy.externalPolicyNumber ? ` — Nº ${detailModal.policy.externalPolicyNumber}` : ""}
               </p>
               {detailModal.policy.premiumAmount ? <p style={{ margin: "0 0 4px" }}>Prêmio: {formatBRL(detailModal.policy.premiumAmount)}</p> : null}
@@ -604,9 +613,16 @@ export default function SegurosPage() {
                           style={{ width: 320 }}
                         >
                           <option value="">Selecione o lançamento liquidado...</option>
-                          {settledEntries.map((e) => (
-                            <option key={e.id} value={e.id}>{e.description} — {formatBRL(e.amount)}</option>
-                          ))}
+                          {/* BUG GRAVE REAL CORRIGIDO (auditoria Marco 7 "reval", 2026-10-16): o
+                              dropdown listava TODOS os lançamentos liquidados da empresa (inclusive
+                              de valor diferente, que o backend sempre rejeitava na confirmação) —
+                              ruído e cliques perdidos. Filtra só pelos que batem com o valor exato
+                              da parcela, a mesma regra que o backend já exige. */}
+                          {settledEntries
+                            .filter((e) => Math.round(toNumber(e.amount) * 100) === Math.round(toNumber(inst.amount) * 100))
+                            .map((e) => (
+                              <option key={e.id} value={e.id}>{e.description} — {formatBRL(e.amount)}</option>
+                            ))}
                         </Select>
                         <Button size="sm" onClick={() => handlePayInstallment(inst.id)} loading={busyId === inst.id}>Dar baixa</Button>
                       </div>

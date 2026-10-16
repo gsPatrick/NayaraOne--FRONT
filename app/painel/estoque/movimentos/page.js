@@ -272,7 +272,16 @@ export default function MovimentosPage() {
           </Select>
         </FormField>
         <FormField label="Tipo de movimento" required helper="Para registrar uma perda, use a tela Perdas & Extravios — ela conduz pela aprovação necessária antes de dar baixa no estoque.">
-          <Select value={form.movementType} onChange={(e) => setForm((p) => ({ ...p, movementType: e.target.value }))}>
+          <Select
+            value={form.movementType}
+            onChange={(e) =>
+              // BUG MÉDIO REAL CORRIGIDO (auditoria Marco 7 "reval", 2026-10-16): trocar o tipo
+              // de movimento não limpava "reason" nem origem/destino — motivo digitado para um
+              // Ajuste (ex.: "contagem física") ficava gravado silenciosamente num movimento de
+              // Saída depois, sem relação com o motivo real da saída.
+              setForm((p) => ({ ...p, movementType: e.target.value, reason: "", sourceLocationId: "", destinationLocationId: "" }))
+            }
+          >
             {MOVEMENT_TYPE_OPTIONS.map(([k, v]) => (
               <option key={k} value={k}>{v}</option>
             ))}
