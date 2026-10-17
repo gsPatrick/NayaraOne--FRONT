@@ -93,23 +93,46 @@ export default function NovoUsuarioPage() {
 
     setSubmitting(true);
     setSubmitError("");
+    let createdUser = null;
     try {
-      const user = await apiFetch("/users", {
+      createdUser = await apiFetch("/users", {
         method: "POST",
         body: { name: name.trim(), email: email.trim(), password: activePassword, status: "ACTIVE" },
       });
       await apiFetch("/memberships", {
         method: "POST",
         body: {
-          userId: user.id,
+          userId: createdUser.id,
           companyId,
           ...(unitId ? { unitId } : {}),
           roleId,
         },
       });
-      setCreated({ name: user.name, email: user.email, password: activePassword });
+      setCreated({ name: createdUser.name, email: createdUser.email, password: activePassword });
     } catch (err) {
-      setSubmitError(err?.message || "Não foi possível criar o usuário.");
+      // GAP REAL CORRIGIDO (achado 16/10/2026, auditoria Marco 7 "completo"): criar usuário e
+      // vincular papel são duas chamadas HTTP separadas (a segunda exige MFA recente). Sem este
+      // catch, uma falha na segunda deixava um usuário órfão — gravado de verdade, sem nenhum
+      // vínculo de empresa/papel — enquanto a tela dizia "não foi possível criar o usuário",
+      // como se nada tivesse acontecido. Agora, se o vínculo falhar depois do usuário já ter
+      // sido criado, desfazemos o usuário (compensação best-effort) antes de mostrar o erro.
+      if (createdUser?.id) {
+        try {
+          await apiFetch(`/users/${createdUser.id}`, { method: "DELETE" });
+          setSubmitError(
+            (err?.message || "Não foi possível vincular o papel.") +
+              " O usuário criado foi desfeito automaticamente — nada ficou pendente."
+          );
+        } catch (rollbackErr) {
+          setSubmitError(
+            `${err?.message || "Não foi possível vincular o papel."} ATENÇÃO: o usuário "${createdUser.name}" ` +
+              `(${createdUser.email}) já foi criado mas NÃO pôde ser desfeito automaticamente ` +
+              `(${rollbackErr?.message || "erro desconhecido"}). Verifique manualmente em Usuários antes de tentar de novo.`
+          );
+        }
+      } else {
+        setSubmitError(err?.message || "Não foi possível criar o usuário.");
+      }
     } finally {
       setSubmitting(false);
     }
