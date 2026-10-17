@@ -623,7 +623,13 @@ export default function SegurosPage() {
                               de valor diferente, que o backend sempre rejeitava na confirmação) —
                               ruído e cliques perdidos. Filtra só pelos que batem com o valor exato
                               da parcela, a mesma regra que o backend já exige. */}
+                          {/* BUG GRAVE REAL CORRIGIDO (auditoria Marco 7 "r2", 2026-10-17): valor
+                              igual não basta — a lista incluía RECEBIMENTOS de aluguel de outros
+                              contratos. Prêmio de seguro é despesa: só lançamentos de pagamento
+                              (nature PAYABLE) entram; o backend agora também rejeita (defesa em
+                              profundidade, INSURANCE_INSTALLMENT_ENTRY_WRONG_NATURE). */}
                           {settledEntries
+                            .filter((e) => e.nature === "PAYABLE")
                             .filter((e) => Math.round(toNumber(e.amount) * 100) === Math.round(toNumber(inst.amount) * 100))
                             .map((e) => (
                               <option key={e.id} value={e.id}>{e.description} — {formatBRL(e.amount)}</option>

@@ -199,7 +199,11 @@ export default function RequisicoesPage() {
       ),
     },
     { key: "status", label: "Status", width: "12%", render: (row) => <Badge tone={STATUS_TONE[row.status]}>{STATUS_LABELS[row.status]}</Badge> },
-    { key: "created", label: "Criada em", width: "16%", render: (row) => formatDateTime(row.created_at) },
+    // ACHADO REAL (auditoria Marco 7 "r2", 2026-10-17): a obra aparecia, mas o nome de quem
+    // pediu não aparecia em lugar nenhum — mesmo padrão já corrigido antes em Requisições de
+    // compra. O backend agora inclui requestedByUser na listagem.
+    { key: "requester", label: "Solicitante", width: "12%", render: (row) => row.requestedByUser?.name || "—" },
+    { key: "created", label: "Criada em", width: "14%", render: (row) => formatDateTime(row.created_at) },
     {
       key: "actions",
       label: "",

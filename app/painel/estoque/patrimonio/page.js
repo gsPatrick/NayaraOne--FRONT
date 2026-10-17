@@ -39,6 +39,11 @@ export default function PatrimonioPage() {
   const [assets, setAssets] = useState([]);
   const [locations, setLocations] = useState([]);
   const [users, setUsers] = useState([]);
+  // Seleção de responsável/custodiante só oferece usuários ATIVOS — um usuário suspenso/
+  // inativado (ex.: desativado pela gestão) não pode receber custódia nova. A lista completa
+  // (`users`) continua sendo usada para RESOLVER nomes em registros antigos, que podem
+  // legitimamente referenciar alguém hoje inativo.
+  const activeUsers = users.filter((u) => u.status === "ACTIVE");
   // BUG REAL CORRIGIDO (auditoria "loop até secar", rodada 34, 2026-10-05): GET /assets/by-tag
   // existia na API (e no client) mas nenhuma tela chamava — a própria finalidade do QR Code
   // (escanear/digitar a tag e localizar o ativo na hora) nunca estava disponível na UI.
@@ -631,7 +636,7 @@ export default function PatrimonioPage() {
         <FormField label="Novo responsável/custodiante">
           <Select value={transferCustodianId} onChange={(e) => setTransferCustodianId(e.target.value)}>
             <option value="">Sem alteração</option>
-            {users.map((u) => (
+            {activeUsers.map((u) => (
               <option key={u.id} value={u.id}>{u.name || u.email}</option>
             ))}
           </Select>
@@ -663,7 +668,7 @@ export default function PatrimonioPage() {
             <FormField label="Responsável" required>
               <Select value={loanPersonId} onChange={(e) => setLoanPersonId(e.target.value)}>
                 <option value="">Selecione...</option>
-                {users.map((u) => (
+                {activeUsers.map((u) => (
                   <option key={u.id} value={u.id}>{u.name || u.email}</option>
                 ))}
               </Select>
