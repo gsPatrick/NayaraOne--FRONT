@@ -12,7 +12,10 @@ import StatTile from "@/components/molecules/StatTile/StatTile";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu";
 import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
+import FormField from "@/components/molecules/FormField/FormField";
+import Input from "@/components/atoms/Input/Input";
 import { listPaymentIntents, approvePaymentIntent, executePaymentIntent, cancelPaymentIntent, listFinancialEntries } from "@/lib/api/finance";
+import { uploadFile } from "@/lib/api/legal";
 import { formatBRL, formatDateTime } from "@/lib/format";
 import { getCurrentUser } from "@/lib/auth/session";
 import styles from "./page.module.css";
@@ -39,6 +42,11 @@ export default function IntencoesPagamentoPage() {
   const [loadError, setLoadError] = useState("");
   const [notice, setNotice] = useState(null);
   const [busyId, setBusyId] = useState(null);
+  // F03 — executar a intenção aqui é pagar FORA da integração bancária: exige comprovante + motivo.
+  const [executeTarget, setExecuteTarget] = useState(null);
+  const [executeFile, setExecuteFile] = useState(null);
+  const [executeReason, setExecuteReason] = useState("");
+  const [executeError, setExecuteError] = useState("");
   const { confirm, ConfirmDialog } = useConfirm();
 
   function load() {
@@ -97,22 +105,40 @@ export default function IntencoesPagamentoPage() {
     }
   }
 
-  async function handleExecute(intent) {
+  function handleExecute(intent) {
+    setExecuteTarget(intent);
+    setExecuteFile(null);
+    setExecuteReason("");
+    setExecuteError("");
+  }
+
+  async function confirmExecute() {
+    const intent = executeTarget;
+    if (!executeFile) {
+      setExecuteError("Anexe o comprovante do pagamento.");
+      return;
+    }
+    if (!executeReason.trim()) {
+      setExecuteError("Informe o motivo de o pagamento ter sido feito fora da integração bancária.");
+      return;
+    }
     const ok = await confirm({
-      title: "Executar este pagamento?",
-      message: "O lançamento será liquidado conforme o snapshot aprovado. Esta ação não pode ser desfeita pelo mesmo fluxo.",
-      confirmLabel: "Executar",
+      title: "Registrar pagamento com comprovante?",
+      message: "O lançamento será dado como pago por baixa manual com comprovante — não como confirmação do banco. A conciliação com o extrato continua necessária.",
+      confirmLabel: "Registrar",
       tone: "primary",
     });
     if (!ok) return;
     setBusyId(intent.id);
     try {
-      const result = await executePaymentIntent(intent.id);
+      const uploaded = await uploadFile(executeFile);
+      const result = await executePaymentIntent(intent.id, { evidenceFileId: uploaded.id, reason: executeReason.trim() });
       const updated = result.intent || result;
       setIntents((prev) => prev.map((i) => (i.id === intent.id ? updated : i)));
-      showNotice("success", "Pagamento executado — lançamento liquidado.");
+      setExecuteTarget(null);
+      showNotice("success", "Pagamento registrado com o comprovante.");
     } catch (err) {
-      showNotice("danger", err?.message || "Não foi possível executar.");
+      setExecuteError(err?.message || "Não foi possível registrar o pagamento.");
     } finally {
       setBusyId(null);
     }
@@ -167,6 +193,25 @@ export default function IntencoesPagamentoPage() {
             <StatTile label="Executadas" value={executedCount} tone="success" icon="money" />
           </div>
 
+          {executeTarget ? (
+            <Card
+              title="Registrar pagamento feito fora do banco integrado"
+              subtitle="Sem a confirmação do banco, o pagamento só é registrado com comprovante e motivo — fica marcado como baixa manual, nunca como confirmação bancária."
+            >
+              {executeError ? <Alert tone="danger">{executeError}</Alert> : null}
+              <FormField label="Comprovante do pagamento" required>
+                <input type="file" accept="application/pdf,image/*" onChange={(e) => setExecuteFile(e.target.files?.[0] || null)} />
+              </FormField>
+              <FormField label="Motivo" required>
+                <Input value={executeReason} onChange={(e) => setExecuteReason(e.target.value)} placeholder="Ex.: TED feita no internet banking em 18/10" />
+              </FormField>
+              <div style={{ display: "flex", gap: "var(--space-2)" }}>
+                <Button variant="secondary" onClick={() => setExecuteTarget(null)}>Cancelar</Button>
+                <Button onClick={confirmExecute} loading={busyId === executeTarget.id}>Registrar pagamento</Button>
+              </div>
+            </Card>
+          ) : null}
+
           <Card title="Intenções de pagamento" subtitle="Quem criou a intenção não pode aprová-la (maker-checker)">
             {sorted.length === 0 ? (
               <p className={styles.emptyText}>Nenhuma intenção de pagamento criada ainda — crie uma a partir do detalhe de um lançamento PENDING com conta bancária.</p>
@@ -193,7 +238,7 @@ export default function IntencoesPagamentoPage() {
                         {intent.status === "APPROVED" ? (
                           <>
                             <Button size="sm" onClick={() => handleExecute(intent)} loading={busyId === intent.id}>
-                              <Icon name="check" size={14} /> Executar
+                              <Icon name="check" size={14} /> Registrar pagamento
                             </Button>
                             <Button size="sm" variant="secondary" onClick={() => handleCancel(intent)} loading={busyId === intent.id}>Cancelar</Button>
                           </>

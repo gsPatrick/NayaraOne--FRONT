@@ -17,7 +17,14 @@ import Input from "@/components/atoms/Input/Input";
 import Alert from "@/components/molecules/Alert/Alert";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu";
-import { listPeriodClosures, closePeriod, reopenPeriod } from "@/lib/api/finance";
+import {
+  listPeriodClosures,
+  closePeriod,
+  reopenPeriod,
+  getPeriodPreconditions,
+  confirmPeriodCheck,
+  approvePeriodClosure,
+} from "@/lib/api/finance";
 import { formatDateTime } from "@/lib/format";
 import styles from "./page.module.css";
 
@@ -25,6 +32,14 @@ function currentReferenceMonth() {
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 }
+
+const STATUS_LABEL = { OPEN: "Aberto", REVIEW: "Em revisão", CLOSED: "Fechado" };
+const STATUS_TONE = { OPEN: "success", REVIEW: "warning", CLOSED: "danger" };
+// Conferências humanas do Caderno §16 — as outras três o sistema verifica sozinho.
+const HUMAN_CHECKS = {
+  THIRD_PARTY_CASH_CHECKED: { checkType: "THIRD_PARTY_CASH", placeholder: "Ex.: saldo da conta de cauções conferido com o extrato do mês." },
+  COMMISSIONS_REPASSES_REVIEWED: { checkType: "COMMISSIONS_REPASSES", placeholder: "Ex.: comissões e repasses do mês revisados com o financeiro." },
+};
 
 export default function FechamentoPage() {
   const [closures, setClosures] = useState([]);
@@ -34,6 +49,13 @@ export default function FechamentoPage() {
   const [monthToClose, setMonthToClose] = useState(currentReferenceMonth());
   const [closing, setClosing] = useState(false);
   const [closeError, setCloseError] = useState("");
+
+  const [checklist, setChecklist] = useState(null);
+  const [checklistLoading, setChecklistLoading] = useState(false);
+  const [checklistError, setChecklistError] = useState("");
+  const [checkNotes, setCheckNotes] = useState({});
+  const [savingCheck, setSavingCheck] = useState("");
+  const [approving, setApproving] = useState(false);
 
   const [reopenTarget, setReopenTarget] = useState(null);
   const [reopenReason, setReopenReason] = useState("");
@@ -52,9 +74,27 @@ export default function FechamentoPage() {
     }
   }
 
+  async function loadChecklist(month) {
+    if (!month) return;
+    setChecklistLoading(true);
+    setChecklistError("");
+    try {
+      setChecklist(await getPeriodPreconditions(month));
+    } catch (err) {
+      setChecklist(null);
+      setChecklistError(err?.message || "Não foi possível carregar as pré-condições do fechamento.");
+    } finally {
+      setChecklistLoading(false);
+    }
+  }
+
   useEffect(() => {
     reload();
   }, []);
+
+  useEffect(() => {
+    loadChecklist(monthToClose);
+  }, [monthToClose]);
 
   async function handleClose(e) {
     e.preventDefault();
@@ -62,13 +102,49 @@ export default function FechamentoPage() {
     setClosing(true);
     try {
       await closePeriod(monthToClose);
-      await reload();
+      await Promise.all([reload(), loadChecklist(monthToClose)]);
     } catch (err) {
-      setCloseError(err?.message || "Falha ao fechar o período.");
+      setCloseError(err?.message || "Falha ao pedir o fechamento do período.");
     } finally {
       setClosing(false);
     }
   }
+
+  async function handleConfirmCheck(code) {
+    const note = (checkNotes[code] || "").trim();
+    setCloseError("");
+    if (!note) {
+      setCloseError("Descreva o que foi conferido — a observação é obrigatória e fica registrada no fechamento.");
+      return;
+    }
+    setSavingCheck(code);
+    try {
+      await confirmPeriodCheck(monthToClose, HUMAN_CHECKS[code].checkType, note);
+      setCheckNotes((prev) => ({ ...prev, [code]: "" }));
+      await Promise.all([reload(), loadChecklist(monthToClose)]);
+    } catch (err) {
+      setCloseError(err?.message || "Falha ao registrar a conferência.");
+    } finally {
+      setSavingCheck("");
+    }
+  }
+
+  async function handleApprove() {
+    setCloseError("");
+    setApproving(true);
+    try {
+      await approvePeriodClosure(monthToClose);
+      await Promise.all([reload(), loadChecklist(monthToClose)]);
+    } catch (err) {
+      setCloseError(err?.message || "Falha ao aprovar o fechamento.");
+    } finally {
+      setApproving(false);
+    }
+  }
+
+  const periodStatus = checklist?.status || "OPEN";
+  const preconditions = checklist?.preconditions;
+  const allOk = Boolean(preconditions?.allOk);
 
   async function handleReopen(e) {
     e.preventDefault();
@@ -95,7 +171,7 @@ export default function FechamentoPage() {
     {
       key: "status",
       label: "Status",
-      render: (row) => <Badge tone={row.status === "CLOSED" ? "danger" : "success"}>{row.status === "CLOSED" ? "Fechado" : "Aberto"}</Badge>,
+      render: (row) => <Badge tone={STATUS_TONE[row.status] || "neutral"}>{STATUS_LABEL[row.status] || row.status}</Badge>,
     },
     { key: "closedAt", label: "Fechado em", render: (row) => (row.closedAt ? formatDateTime(row.closedAt) : "—") },
     { key: "reopenedAt", label: "Última reabertura", render: (row) => (row.reopenedAt ? formatDateTime(row.reopenedAt) : "—") },
@@ -124,17 +200,83 @@ export default function FechamentoPage() {
         <Card className={styles.formCard}>
           <h2 className={styles.sectionTitle}>Fechar um mês</h2>
           <p className={styles.helper}>
+            Antes de fechar, o mês precisa estar conferido: extratos importados, conciliação e
+            excedentes resolvidos, caixa de terceiros conferido e comissões/repasses revisados.
             Depois de fechado, nenhum lançamento daquele mês pode ser criado ou editado até o
             período ser reaberto com motivo.
           </p>
-          <form onSubmit={handleClose} className={styles.inlineForm}>
+          <div className={styles.monthRow}>
             <FormField label="Mês de referência" htmlFor="monthToClose">
               <Input id="monthToClose" type="month" value={monthToClose} onChange={(e) => setMonthToClose(e.target.value)} />
             </FormField>
-            <Button type="submit" disabled={closing}>
-              {closing ? "Fechando..." : "Fechar período"}
-            </Button>
-          </form>
+            <Badge tone={STATUS_TONE[periodStatus] || "neutral"}>{STATUS_LABEL[periodStatus] || periodStatus}</Badge>
+          </div>
+
+          {checklistError ? <Alert tone="danger">{checklistError}</Alert> : null}
+          {checklistLoading && !preconditions ? <p className={styles.helper}>Carregando as pré-condições...</p> : null}
+
+          {preconditions ? (
+            <ul className={styles.checklist}>
+              {preconditions.items.map((item) => {
+                const human = HUMAN_CHECKS[item.code];
+                const canConfirm = human && !item.ok && periodStatus === "OPEN";
+                return (
+                  <li key={item.code} className={styles.checkItem}>
+                    <div className={styles.checkHeader}>
+                      <span className={styles.checkLabel}>{item.label}</span>
+                      <Badge tone={item.ok ? "success" : "warning"}>{item.ok ? "Ok" : "Pendente"}</Badge>
+                    </div>
+                    <p className={styles.checkDetail}>{item.detail}</p>
+                    {canConfirm ? (
+                      <div className={styles.checkForm}>
+                        <textarea
+                          className={styles.textarea}
+                          rows={2}
+                          placeholder={human.placeholder}
+                          value={checkNotes[item.code] || ""}
+                          onChange={(e) => setCheckNotes((prev) => ({ ...prev, [item.code]: e.target.value }))}
+                          aria-label={`Observação — ${item.label}`}
+                        />
+                        <Button type="button" size="sm" variant="secondary" disabled={savingCheck === item.code} onClick={() => handleConfirmCheck(item.code)}>
+                          {savingCheck === item.code ? "Registrando..." : "Registrar conferência"}
+                        </Button>
+                      </div>
+                    ) : null}
+                  </li>
+                );
+              })}
+            </ul>
+          ) : null}
+
+          {periodStatus === "OPEN" ? (
+            <form onSubmit={handleClose} className={styles.inlineForm}>
+              <Button type="submit" disabled={closing || !allOk}>
+                {closing ? "Enviando..." : "Pedir fechamento"}
+              </Button>
+              {!allOk && preconditions ? (
+                <p className={styles.helper}>Resolva os itens pendentes acima para pedir o fechamento.</p>
+              ) : null}
+            </form>
+          ) : null}
+
+          {periodStatus === "REVIEW" ? (
+            <div className={styles.inlineForm}>
+              <p className={styles.helper}>
+                Fechamento pedido. A aprovação precisa ser feita por outra pessoa, com verificação em duas etapas recente.
+              </p>
+              <Button type="button" disabled={approving || !allOk} onClick={handleApprove}>
+                {approving ? "Aprovando..." : "Aprovar fechamento"}
+              </Button>
+            </div>
+          ) : null}
+
+          {periodStatus === "CLOSED" && checklist?.snapshot ? (
+            <p className={styles.helper}>
+              Fechado com retrato do mês gravado em {formatDateTime(checklist.snapshot.created_at || checklist.snapshot.createdAt)} —
+              código de verificação {checklist.snapshot.snapshotHash.slice(0, 16)}.
+            </p>
+          ) : null}
+
           {closeError ? <Alert tone="danger">{closeError}</Alert> : null}
         </Card>
 
