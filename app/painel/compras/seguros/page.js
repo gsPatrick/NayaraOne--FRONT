@@ -141,8 +141,8 @@ export default function SegurosPage() {
     }
   }
 
-  async function handlePayInstallment(installmentId) {
-    const financialEntryId = (payForm[installmentId] || "").trim();
+  async function handlePayInstallment(installmentId, linkedEntryId) {
+    const financialEntryId = linkedEntryId || (payForm[installmentId] || "").trim();
     if (!financialEntryId) return;
     setBusyId(installmentId);
     setActionError("");
@@ -611,32 +611,47 @@ export default function SegurosPage() {
                       </Badge>
                     </span>
                     {inst.status !== "PAID" ? (
-                      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                        <Select
-                          value={payForm[inst.id] || ""}
-                          onChange={(e) => setPayForm((p) => ({ ...p, [inst.id]: e.target.value }))}
-                          style={{ width: 320 }}
-                        >
-                          <option value="">Selecione o lançamento liquidado...</option>
-                          {/* BUG GRAVE REAL CORRIGIDO (auditoria Marco 7 "reval", 2026-10-16): o
-                              dropdown listava TODOS os lançamentos liquidados da empresa (inclusive
-                              de valor diferente, que o backend sempre rejeitava na confirmação) —
-                              ruído e cliques perdidos. Filtra só pelos que batem com o valor exato
-                              da parcela, a mesma regra que o backend já exige. */}
-                          {/* BUG GRAVE REAL CORRIGIDO (auditoria Marco 7 "r2", 2026-10-17): valor
-                              igual não basta — a lista incluía RECEBIMENTOS de aluguel de outros
-                              contratos. Prêmio de seguro é despesa: só lançamentos de pagamento
-                              (nature PAYABLE) entram; o backend agora também rejeita (defesa em
-                              profundidade, INSURANCE_INSTALLMENT_ENTRY_WRONG_NATURE). */}
-                          {settledEntries
-                            .filter((e) => e.nature === "PAYABLE")
-                            .filter((e) => Math.round(toNumber(e.amount) * 100) === Math.round(toNumber(inst.amount) * 100))
-                            .map((e) => (
-                              <option key={e.id} value={e.id}>{e.description} — {formatBRL(e.amount)}</option>
-                            ))}
-                        </Select>
-                        <Button size="sm" onClick={() => handlePayInstallment(inst.id)} loading={busyId === inst.id}>Dar baixa</Button>
-                      </div>
+                      /* BUG GRAVE REAL CORRIGIDO (auditoria Marco 7 Compras E2E, 2026-10-18): o
+                         dropdown de "qualquer despesa liquidada de mesmo valor" ainda misturava
+                         lançamentos de outros contextos (8 opções idênticas de centro de custo de
+                         teste). Agora cada parcela nasce com o PRÓPRIO payable de prêmio vinculado
+                         (linkedEntry, gerado na emissão) — a baixa usa exatamente esse lançamento,
+                         sem seleção; o backend rejeita qualquer outro id
+                         (INSURANCE_INSTALLMENT_ENTRY_NOT_LINKED). Parcelas legadas (sem vínculo)
+                         mantêm o seletor antigo filtrado por natureza+valor. */
+                      inst.linkedEntry ? (
+                        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                          <span style={{ color: "var(--color-ink-muted)", fontSize: 13, maxWidth: 320 }}>
+                            {inst.linkedEntry.description}
+                            {inst.linkedEntry.status !== "SETTLED" ? " — liquide este lançamento no Financeiro antes de dar baixa" : ""}
+                          </span>
+                          <Button
+                            size="sm"
+                            disabled={inst.linkedEntry.status !== "SETTLED"}
+                            onClick={() => handlePayInstallment(inst.id, inst.linkedEntry.id)}
+                            loading={busyId === inst.id}
+                          >
+                            Dar baixa
+                          </Button>
+                        </div>
+                      ) : (
+                        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                          <Select
+                            value={payForm[inst.id] || ""}
+                            onChange={(e) => setPayForm((p) => ({ ...p, [inst.id]: e.target.value }))}
+                            style={{ width: 320 }}
+                          >
+                            <option value="">Selecione o lançamento liquidado...</option>
+                            {settledEntries
+                              .filter((e) => e.nature === "PAYABLE")
+                              .filter((e) => Math.round(toNumber(e.amount) * 100) === Math.round(toNumber(inst.amount) * 100))
+                              .map((e) => (
+                                <option key={e.id} value={e.id}>{e.description} — {formatBRL(e.amount)}</option>
+                              ))}
+                          </Select>
+                          <Button size="sm" onClick={() => handlePayInstallment(inst.id)} loading={busyId === inst.id}>Dar baixa</Button>
+                        </div>
+                      )
                     ) : null}
                   </div>
                 ))

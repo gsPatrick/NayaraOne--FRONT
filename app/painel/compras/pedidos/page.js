@@ -237,10 +237,18 @@ export default function PedidosDeCompraPage() {
       ) : "—"),
     },
     {
+      // FIX (auditoria Marco 7 Compras E2E, 18/10): "Nota do fornecedor" era a AVALIAÇÃO (1-5),
+      // mas lia como "nota fiscal" — renomeado, e a NF real do recebimento ganhou coluna própria.
       key: "score",
-      label: "Nota do fornecedor",
-      width: "14%",
+      label: "Avaliação do fornecedor",
+      width: "12%",
       render: (row) => (supplierScores[row.supplierPersonId] != null ? `${supplierScores[row.supplierPersonId]} / 5` : "—"),
+    },
+    {
+      key: "nf",
+      label: "NF",
+      width: "12%",
+      render: (row) => (Array.isArray(row.invoiceNumbers) && row.invoiceNumbers.length > 0 ? row.invoiceNumbers.join(", ") : "—"),
     },
     { key: "amount", label: "Custo comprometido", width: "16%", render: (row) => formatBRL(row.committedAmount) },
     { key: "status", label: "Status", width: "12%", render: (row) => <Badge tone={STATUS_TONE[row.status]}>{STATUS_LABELS[row.status]}</Badge> },

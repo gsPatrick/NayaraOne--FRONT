@@ -25,8 +25,8 @@ import { listProjects } from "@/lib/api/construction";
 import { formatDateTime, formatBRL, formatQuantity, toNumber } from "@/lib/format";
 import { getCurrentUser } from "@/lib/auth/session";
 
-const STATUS_LABELS = { REQUESTED: "Solicitada", APPROVED: "Aprovada", REJECTED: "Rejeitada", AWARDED: "Adjudicada", CLOSED: "Fechada" };
-const STATUS_TONE = { REQUESTED: "neutral", APPROVED: "info", REJECTED: "danger", AWARDED: "success", CLOSED: "success" };
+const STATUS_LABELS = { REQUESTED: "Solicitada", APPROVED: "Aprovada", REJECTED: "Rejeitada", AWARDED: "Adjudicada", DELIVERED: "Entregue", CLOSED: "Fechada" };
+const STATUS_TONE = { REQUESTED: "neutral", APPROVED: "info", REJECTED: "danger", AWARDED: "success", DELIVERED: "success", CLOSED: "success" };
 
 export default function ComprasPage() {
   const { confirm, ConfirmDialog } = useConfirm();
