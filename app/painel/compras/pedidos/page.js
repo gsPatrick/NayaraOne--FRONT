@@ -59,6 +59,7 @@ export default function PedidosDeCompraPage() {
   const [busyCancelId, setBusyCancelId] = useState(null);
   const [cancelResult, setCancelResult] = useState(null); // { order, items, discrepancies }
   const cancelReasonRef = useRef("");
+  const rejectReasonRef = useRef("");
 
   // BUG REAL CORRIGIDO (auditoria "loop até secar", rodada 32, 2026-10-05): a API já expõe
   // listSupplierEvaluations (R17) com nota média, mas nenhuma tela do front lia/exibia isso —
@@ -272,16 +273,35 @@ export default function PedidosDeCompraPage() {
   ];
 
   async function handleResolveDiscrepancy(row, resolution) {
+    // FIX (auditoria "reconf" 18/10): rejeitar exige justificativa — o backend recusa sem
+    // "notes" (RECEIPT_DISCREPANCY_REJECTION_REASON_REQUIRED); a tela pede antes de enviar.
+    rejectReasonRef.current = "";
     const ok = await confirm({
       title: resolution === "ACCEPTED" ? "Aceitar divergência" : "Rejeitar divergência",
-      message: `Confirma que quer marcar esta divergência (${DISCREPANCY_TYPE_LABELS[row.discrepancyType] || row.discrepancyType}) como ${resolution === "ACCEPTED" ? "aceita" : "rejeitada"}?`,
       tone: resolution === "ACCEPTED" ? "default" : "danger",
+      message: (
+        <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)" }}>
+          <p style={{ margin: 0 }}>
+            Confirma que quer marcar esta divergência ({DISCREPANCY_TYPE_LABELS[row.discrepancyType] || row.discrepancyType}
+            {row.itemName ? ` — ${row.itemName}` : ""}) como {resolution === "ACCEPTED" ? "aceita" : "rejeitada"}?
+          </p>
+          {resolution === "REJECTED" ? (
+            <FormField label="Justificativa da rejeição (obrigatória — fica registrada na trilha)" required>
+              <Input defaultValue="" maxLength={500} onChange={(e) => { rejectReasonRef.current = e.target.value; }} placeholder="Ex.: excedente devolvido ao fornecedor na própria entrega" />
+            </FormField>
+          ) : null}
+        </div>
+      ),
     });
     if (!ok) return;
+    if (resolution === "REJECTED" && !rejectReasonRef.current.trim()) {
+      setActionError("Rejeitar uma divergência exige uma justificativa.");
+      return;
+    }
     setBusyDiscId(row.id);
     setActionError("");
     try {
-      await resolveDiscrepancy(row.id, { resolution });
+      await resolveDiscrepancy(row.id, { resolution, notes: rejectReasonRef.current.trim() || undefined });
       load();
     } catch (err) {
       setActionError(err?.message || "Não foi possível resolver a divergência.");
@@ -291,14 +311,41 @@ export default function PedidosDeCompraPage() {
   }
 
   const discColumns = [
-    { key: "type", label: "Tipo", width: "18%", render: (row) => DISCREPANCY_TYPE_LABELS[row.discrepancyType] || row.discrepancyType },
-    { key: "expected", label: "Esperado", width: "16%", render: (row) => (row.expectedValue != null ? formatQuantity(row.expectedValue) : "—") },
-    { key: "received", label: "Recebido", width: "16%", render: (row) => (row.receivedValue != null ? formatQuantity(row.receivedValue) : "—") },
-    { key: "status", label: "Status", width: "18%", render: (row) => <Badge tone={row.status === "OPEN" ? "warning" : row.status === "REJECTED" ? "danger" : "success"}>{row.status === "OPEN" ? "Em aberto" : row.status === "REJECTED" ? "Rejeitada" : "Aceita"}</Badge> },
+    { key: "type", label: "Tipo", width: "14%", render: (row) => DISCREPANCY_TYPE_LABELS[row.discrepancyType] || row.discrepancyType },
+    // FIX (auditoria "reconf" 18/10): duas linhas "25/30 Em aberto" eram indistinguíveis —
+    // identifica item, NF e fornecedor de onde a divergência veio.
+    {
+      key: "origin",
+      label: "Item / origem",
+      width: "24%",
+      render: (row) => (
+        <div>
+          <div>{row.itemName || "—"}</div>
+          <div style={{ fontSize: 12, color: "var(--color-ink-muted)" }}>
+            {[row.supplierName, row.invoiceNumber ? `NF ${row.invoiceNumber}` : null].filter(Boolean).join(" · ") || "—"}
+          </div>
+        </div>
+      ),
+    },
+    { key: "expected", label: "Esperado", width: "10%", render: (row) => (row.expectedValue != null ? formatQuantity(row.expectedValue) : "—") },
+    { key: "received", label: "Recebido", width: "10%", render: (row) => (row.receivedValue != null ? formatQuantity(row.receivedValue) : "—") },
+    {
+      key: "status",
+      label: "Status",
+      width: "20%",
+      render: (row) => (
+        <div>
+          <Badge tone={row.status === "OPEN" ? "warning" : row.status === "REJECTED" ? "danger" : "success"}>{row.status === "OPEN" ? "Em aberto" : row.status === "REJECTED" ? "Rejeitada" : "Aceita"}</Badge>
+          {row.status !== "OPEN" && row.resolutionNotes ? (
+            <div style={{ fontSize: 12, color: "var(--color-ink-muted)", marginTop: 4 }}>{row.resolutionNotes}</div>
+          ) : null}
+        </div>
+      ),
+    },
     {
       key: "actions",
       label: "",
-      width: "32%",
+      width: "22%",
       render: (row) => (row.status === "OPEN" ? (
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
           <Button size="sm" onClick={() => handleResolveDiscrepancy(row, "ACCEPTED")} loading={busyDiscId === row.id}>Aceitar</Button>

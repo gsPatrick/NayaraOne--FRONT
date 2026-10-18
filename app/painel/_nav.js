@@ -114,9 +114,14 @@ export const NAV_SECTIONS = [
     label: "Administração",
     admin: true,
     items: [
-      { label: "Empresas & Unidades", href: "/painel/empresas", icon: "layers", permission: "companies:read" },
-      { label: "Usuários & Acessos", href: "/painel/usuarios", icon: "shield", permission: "users:read" },
-      { label: "Papéis & Permissões", href: "/painel/papeis", icon: "shield", permission: "roles:read" },
+      // FIX (auditoria Marco 7 "reconf", 18/10/2026): o menu de ADMINISTRAÇÃO era gateado por
+      // permissões de LEITURA (users:read/companies:read) — mas essas leituras também são
+      // exigidas pelo Painel inicial (dropdowns de responsável, resumo de empresas), então
+      // qualquer papel operacional com acesso ao Painel ganhava o menu administrativo junto.
+      // Gerir usuários/empresas é escrita: o menu passa a exigir a permissão de ALTERAÇÃO.
+      { label: "Empresas & Unidades", href: "/painel/empresas", icon: "layers", permission: "companies:update" },
+      { label: "Usuários & Acessos", href: "/painel/usuarios", icon: "shield", permission: "users:update" },
+      { label: "Papéis & Permissões", href: "/painel/papeis", icon: "shield", permission: "roles:update" },
       { label: "Atividades", href: "/painel/atividades", icon: "clock", permission: "audit:read" },
       { label: "Configurações", href: "/painel/configuracoes", icon: "settings", permission: "settings:read" },
     ],
