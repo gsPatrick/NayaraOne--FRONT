@@ -31,7 +31,14 @@ import {
   listClauseVersions,
   createClauseVersion,
   deactivateClause,
+  approveClauseCondition,
 } from "@/lib/api/legal";
+import ClauseConditionEditor, {
+  toConditionPayload,
+  fromConditionJson,
+  isConditionStateValid,
+  describeCondition,
+} from "./ClauseConditionEditor";
 import { formatDateTime } from "@/lib/format";
 import styles from "./page.module.css";
 
@@ -46,6 +53,7 @@ export default function ClausulasPage() {
 
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [createForm, setCreateForm] = useState({ code: "", title: "", bodyText: "", category: "GENERAL" });
+  const [createCondition, setCreateCondition] = useState(fromConditionJson(null));
   const [createBusy, setCreateBusy] = useState(false);
   const [createError, setCreateError] = useState("");
 
@@ -53,6 +61,7 @@ export default function ClausulasPage() {
   const [versions, setVersions] = useState([]);
   const [versionsLoading, setVersionsLoading] = useState(false);
   const [newVersionText, setNewVersionText] = useState("");
+  const [versionCondition, setVersionCondition] = useState(fromConditionJson(null));
   const [versionBusy, setVersionBusy] = useState(false);
   const [versionError, setVersionError] = useState("");
 
@@ -77,6 +86,7 @@ export default function ClausulasPage() {
 
   async function handleCreateClause() {
     if (!createForm.code.trim() || !createForm.title.trim() || !createForm.bodyText.trim()) return;
+    if (!isConditionStateValid(createCondition)) return;
     setCreateBusy(true);
     setCreateError("");
     try {
@@ -85,10 +95,12 @@ export default function ClausulasPage() {
         title: createForm.title.trim(),
         bodyText: createForm.bodyText.trim(),
         category: createForm.category,
+        condition: toConditionPayload(createCondition),
       });
       setClauses((prev) => [created, ...prev]);
       setCreateModalOpen(false);
       setCreateForm({ code: "", title: "", bodyText: "", category: "GENERAL" });
+      setCreateCondition(fromConditionJson(null));
     } catch (err) {
       setCreateError(err.message || "Erro ao criar cláusula.");
     } finally {
@@ -99,6 +111,7 @@ export default function ClausulasPage() {
   function openVersions(clause) {
     setVersionModal(clause);
     setNewVersionText(clause.bodyText || "");
+    setVersionCondition(fromConditionJson(clause.conditionJson));
     setVersionError("");
     setVersionsLoading(true);
     listClauseVersions(clause.code)
@@ -108,17 +121,36 @@ export default function ClausulasPage() {
   }
 
   async function handleCreateVersion() {
-    if (!versionModal || !newVersionText.trim()) return;
+    if (!versionModal || !newVersionText.trim() || !isConditionStateValid(versionCondition)) return;
     setVersionBusy(true);
     setVersionError("");
     try {
-      const updated = await createClauseVersion(versionModal.code, { bodyText: newVersionText.trim() });
+      const updated = await createClauseVersion(versionModal.code, {
+        bodyText: newVersionText.trim(),
+        condition: toConditionPayload(versionCondition),
+      });
       setClauses((prev) => prev.map((c) => (c.code === updated.code ? updated : c)));
       openVersions(updated);
     } catch (err) {
       setVersionError(err.message || "Erro ao criar nova versão.");
     } finally {
       setVersionBusy(false);
+    }
+  }
+
+  async function handleApproveCondition(clause) {
+    const ok = await confirm({
+      title: `Aprovar a condição de "${clause.title}" v${clause.versionNumber}?`,
+      message: `Regra: ${describeCondition(clause.conditionJson)}. Depois de aprovada, ela passa a decidir se a cláusula entra nos contratos gerados.`,
+      confirmLabel: "Aprovar condição",
+    });
+    if (!ok) return;
+    try {
+      const approved = await approveClauseCondition(clause.id);
+      setClauses((prev) => prev.map((c) => (c.id === approved.id ? approved : c)));
+      setVersions((prev) => prev.map((v) => (v.id === approved.id ? approved : v)));
+    } catch (err) {
+      setLoadError(err.message || "Erro ao aprovar a condição.");
     }
   }
 
@@ -162,8 +194,17 @@ export default function ClausulasPage() {
                 <div className={styles.name}>
                   <div>{c.title}</div>
                   <span className={styles.meta}>{CATEGORY_LABELS[c.category] || c.category} · v{c.versionNumber}</span>
+                  {c.conditionJson ? <span className={styles.meta}>Condição: {describeCondition(c.conditionJson)}</span> : null}
                 </div>
+                {c.conditionJson ? (
+                  <Badge tone={c.conditionStatus === "APPROVED" ? "success" : "warning"}>
+                    {c.conditionStatus === "APPROVED" ? "Condição aprovada" : "Condição pendente"}
+                  </Badge>
+                ) : null}
                 <Badge tone={c.isActive ? "success" : "neutral"}>{c.isActive ? "Ativa" : "Inativa"}</Badge>
+                {c.conditionJson && c.conditionStatus !== "APPROVED" ? (
+                  <Button size="sm" variant="secondary" onClick={() => handleApproveCondition(c)}>Aprovar condição</Button>
+                ) : null}
                 <Button size="sm" variant="secondary" onClick={() => openVersions(c)}>Versões</Button>
                 {c.isActive ? (
                   <Button size="sm" variant="ghost" onClick={() => handleDeactivate(c)}>Desativar</Button>
@@ -185,7 +226,7 @@ export default function ClausulasPage() {
         footer={
           <>
             <Button variant="secondary" onClick={() => setCreateModalOpen(false)} disabled={createBusy}>Cancelar</Button>
-            <Button onClick={handleCreateClause} loading={createBusy} disabled={createBusy || !createForm.code.trim() || !createForm.title.trim() || !createForm.bodyText.trim()}>Criar</Button>
+            <Button onClick={handleCreateClause} loading={createBusy} disabled={createBusy || !createForm.code.trim() || !createForm.title.trim() || !createForm.bodyText.trim() || !isConditionStateValid(createCondition)}>Criar</Button>
           </>
         }
       >
@@ -205,6 +246,7 @@ export default function ClausulasPage() {
           <FormField label="Texto da cláusula" htmlFor="f-body" required>
             <textarea id="f-body" className={styles.textarea} rows={6} value={createForm.bodyText} onChange={(e) => setCreateForm((p) => ({ ...p, bodyText: e.target.value }))} />
           </FormField>
+          <ClauseConditionEditor value={createCondition} onChange={setCreateCondition} idPrefix="f-create-cond" />
         </div>
       </Modal>
 
@@ -215,7 +257,7 @@ export default function ClausulasPage() {
         footer={
           <>
             <Button variant="secondary" onClick={() => setVersionModal(null)}>Fechar</Button>
-            <Button onClick={handleCreateVersion} loading={versionBusy} disabled={versionBusy || !newVersionText.trim()}>Criar nova versão</Button>
+            <Button onClick={handleCreateVersion} loading={versionBusy} disabled={versionBusy || !newVersionText.trim() || !isConditionStateValid(versionCondition)}>Criar nova versão</Button>
           </>
         }
       >
@@ -230,8 +272,17 @@ export default function ClausulasPage() {
                 <div className={styles.name}>
                   <div>{v.title}</div>
                   <span className={styles.meta}>{formatDateTime(v.createdAt)}</span>
+                  {v.conditionJson ? <span className={styles.meta}>Condição: {describeCondition(v.conditionJson)}</span> : null}
                 </div>
+                {v.conditionJson ? (
+                  <Badge tone={v.conditionStatus === "APPROVED" ? "success" : "warning"}>
+                    {v.conditionStatus === "APPROVED" ? "Condição aprovada" : "Condição pendente"}
+                  </Badge>
+                ) : null}
                 <Badge tone={v.isActive ? "success" : "neutral"}>{v.isActive ? "Vigente" : "Histórico"}</Badge>
+                {v.conditionJson && v.conditionStatus !== "APPROVED" ? (
+                  <Button size="sm" variant="secondary" onClick={() => handleApproveCondition(v)}>Aprovar condição</Button>
+                ) : null}
               </div>
             ))}
           </div>
@@ -239,6 +290,7 @@ export default function ClausulasPage() {
         <FormField label="Texto da nova versão" htmlFor="f-new-version" required helper="A versão anterior é preservada, nunca sobrescrita (append-only).">
           <textarea id="f-new-version" className={styles.textarea} rows={5} value={newVersionText} onChange={(e) => setNewVersionText(e.target.value)} />
         </FormField>
+        <ClauseConditionEditor value={versionCondition} onChange={setVersionCondition} idPrefix="f-version-cond" />
       </Modal>
 
       <ConfirmDialog />
