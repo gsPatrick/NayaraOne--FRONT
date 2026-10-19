@@ -48,6 +48,17 @@ const STATUS_TONE = {
   CANCELLED: "neutral",
 };
 
+const RECONCILE_OUTCOME_LABELS = {
+  CONFIRMED: "o banco confirmou o pagamento e o lançamento foi liquidado.",
+  NOT_UNCERTAIN: "esta intenção não estava mais em trânsito.",
+  STILL_UNCERTAIN: "o banco ainda não deu resposta definitiva.",
+  BANK_UNREACHABLE: "o banco não respondeu — tente de novo mais tarde.",
+  PENDING_EXTERNAL: "o banco informa que o pagamento ainda está em processamento.",
+  PROCESSING: "o banco informa que o pagamento ainda está em processamento.",
+  REJECTED: "o banco recusou o pagamento.",
+  FAILED: "o banco informou falha no pagamento.",
+};
+
 export default function IntencoesPagamentoPage() {
   const currentUser = getCurrentUser();
   const [intents, setIntents] = useState([]);
@@ -57,6 +68,7 @@ export default function IntencoesPagamentoPage() {
   const [statusFilter, setStatusFilter] = useState("");
   const [notice, setNotice] = useState(null);
   const [busyId, setBusyId] = useState(null);
+  const [rowResult, setRowResult] = useState({});
   // B2 — resolver a incerteza de um envio ao banco exige motivo (e só dá como falha com
   // resposta final do banco).
   const [resolveTarget, setResolveTarget] = useState(null);
@@ -133,7 +145,7 @@ export default function IntencoesPagamentoPage() {
     }
     const ok = await confirm({
       title: "Registrar pagamento com o comprovante anexado?",
-      message: `O lançamento será dado como pago por baixa manual com o comprovante anexado (motivo: ${entry.settlementReason || "—"}) — não como confirmação do banco. A conciliação com o extrato continua necessária.`,
+      message: `O lançamento será dado como pago por baixa manual com o comprovante anexado (motivo: ${entry.settlementReason || "não informado"}) — não como confirmação do banco. A conciliação com o extrato continua necessária.`,
       confirmLabel: "Registrar",
       tone: "primary",
     });
@@ -151,17 +163,29 @@ export default function IntencoesPagamentoPage() {
     }
   }
 
+  // M45-RECONF F2: a consulta devolvia 404 (roteamento do id externo ausente) e o aviso só
+  // aparecia no topo da página, fora da vista. Agora o resultado aparece também na própria linha
+  // e o aviso do topo é trazido para a vista.
   async function handleReconcile(intent) {
     setBusyId(intent.id);
     try {
       const result = await reconcilePaymentIntent(intent.id);
       const updated = result?.intent || intent;
       setIntents((prev) => prev.map((i) => (i.id === intent.id ? updated : i)));
-      showNotice("info", `Banco consultado — situação: ${STATUS_LABELS[updated.status] || updated.status}.`);
+      const label = STATUS_LABELS[updated.status] || "situação não reconhecida";
+      const outcomeText = RECONCILE_OUTCOME_LABELS[result?.outcome] || "O banco respondeu.";
+      const text = `Banco consultado em ${formatDateTime(new Date())}: ${outcomeText} Situação atual: ${label}.`;
+      const tone = updated.status === "EXECUTED" ? "success" : updated.status === "FAILED" ? "danger" : "info";
+      setRowResult((prev) => ({ ...prev, [intent.id]: { tone, text } }));
+      showNotice(tone, text);
+      if (updated.status === "EXECUTED") load();
     } catch (err) {
-      showNotice("danger", err?.message || "Não foi possível consultar o banco.");
+      const text = err?.message || "Não foi possível consultar o banco.";
+      setRowResult((prev) => ({ ...prev, [intent.id]: { tone: "danger", text } }));
+      showNotice("danger", text);
     } finally {
       setBusyId(null);
+      if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
     }
   }
 
@@ -288,8 +312,11 @@ export default function IntencoesPagamentoPage() {
                       <div className={styles.rowInfo}>
                         <span className={styles.rowTitle}>{humanizeText(entry?.description) || "Lançamento"}</span>
                         <span className={styles.rowSubtitle}>
-                          {entry ? formatBRL(entry.amount) : "—"} · hash {intent.snapshotHash?.slice(0, 10)}… · criada em {formatDateTime(intent.createdAt || intent.created_at)}
+                          {entry ? formatBRL(entry.amount) : "valor no lançamento de outra empresa"} · hash {intent.snapshotHash?.slice(0, 10)}… · criada em {formatDateTime(intent.createdAt || intent.created_at)}
                         </span>
+                        {rowResult[intent.id] ? (
+                          <Alert tone={rowResult[intent.id].tone}>{rowResult[intent.id].text}</Alert>
+                        ) : null}
                       </div>
                       <div className={styles.rowRight}>
                         <Badge tone={STATUS_TONE[intent.status]}>{STATUS_LABELS[intent.status] || intent.status}</Badge>
