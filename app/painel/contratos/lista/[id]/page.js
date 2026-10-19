@@ -61,7 +61,7 @@ import {
   REQUIREMENT_STATUS_TONE,
   nextContractStatus,
 } from "@/lib/mock/legal";
-import { formatBRL, formatDate, formatDateTime, formatContractLabel } from "@/lib/format";
+import { formatBRL, formatDate, formatDateTime, formatContractLabel, humanizeText } from "@/lib/format";
 import styles from "./page.module.css";
 
 const TIMELINE_TYPE_LABELS = { AMENDMENT: "Aditivo", NOTICE: "Notificação", DELINQUENCY: "Inadimplência", REPAIR: "Reparo", STATUS_CHANGE: "Mudança de status" };
@@ -341,7 +341,7 @@ export default function ContratoDetailPage({ params }) {
       setRequirementModal(null);
       setNotice({ tone: "info", text: mode === "satisfy" ? "Documento anexado — item do checklist marcado como satisfeito." : "Item do checklist dispensado, com justificativa registrada." });
     } catch (err) {
-      setRequirementError(err.message || "Erro ao atualizar o requirement.");
+      setRequirementError(err.message || "Erro ao atualizar o item do checklist.");
     } finally {
       setRequirementBusy(false);
     }
@@ -503,15 +503,15 @@ export default function ContratoDetailPage({ params }) {
               <dl className={styles.detailList}>
                 <div className={styles.detailRow}><dt>Valor total</dt><dd className={styles.amount}>{formatBRL(contract.totalValue)}</dd></div>
                 <div className={styles.detailRow}><dt>Imóvel</dt><dd>{property?.name || "Sem imóvel vinculado"}</dd></div>
-                <div className={styles.detailRow}><dt>Início de vigência</dt><dd>{contract.startsAt ? formatDate(contract.startsAt) : "—"}</dd></div>
-                <div className={styles.detailRow}><dt>Fim de vigência</dt><dd>{contract.endsAt ? formatDate(contract.endsAt) : "—"}</dd></div>
-                <div className={styles.detailRow}><dt>ID</dt><dd className={styles.mono}>{contract.id}</dd></div>
+                <div className={styles.detailRow}><dt>Início de vigência</dt><dd>{contract.startsAt ? formatDate(contract.startsAt) : "Não definido"}</dd></div>
+                <div className={styles.detailRow}><dt>Fim de vigência</dt><dd>{contract.endsAt ? formatDate(contract.endsAt) : "Prazo indeterminado"}</dd></div>
+                <div className={styles.detailRow}><dt>Número</dt><dd>{contract.contractNumber || `Sem número (criado em ${formatDate(contract.createdAt)})`}</dd></div>
               </dl>
             </Card>
 
             <Card
               title="Checklist de documentos"
-              subtitle="Etapa não avança com documento obrigatório pendente (JUR-003/JUR-015)"
+              subtitle="A etapa só avança quando todo documento obrigatório foi anexado ou dispensado com justificativa"
               actions={
                 requirements.length === 0 ? (
                   <Button size="sm" variant="secondary" loading={requirementsBusy} onClick={handleGenerateRequirements}>Gerar checklist</Button>
@@ -524,8 +524,8 @@ export default function ContratoDetailPage({ params }) {
                 requirements.map((r) => (
                   <div key={r.id} className={styles.partyRow}>
                     <div className={styles.partyInfo}>
-                      <span className={styles.partyName}>{r.description}</span>
-                      <span className={styles.partyRole}>{r.requirementCode}{r.waivedReason ? ` — dispensado: ${r.waivedReason}` : ""}</span>
+                      <span className={styles.partyName}>{humanizeText(r.description)}</span>
+                      <span className={styles.partyRole}>{r.status === "WAIVED" ? `Dispensado — motivo: ${r.waivedReason || "não informado"}` : r.status === "SATISFIED" ? `Documento anexado${r.satisfiedAt ? ` em ${formatDate(r.satisfiedAt)}` : ""}` : "Aguardando documento"}</span>
                     </div>
                     <Badge tone={REQUIREMENT_STATUS_TONE[r.status] || "neutral"}>{REQUIREMENT_STATUS_LABELS[r.status] || r.status}</Badge>
                     {r.status === "PENDING" ? (
@@ -549,7 +549,7 @@ export default function ContratoDetailPage({ params }) {
                     <div key={party.id} className={styles.partyRow}>
                       <Avatar name={person?.legalName || "?"} size="sm" />
                       <div className={styles.partyInfo}>
-                        <span className={styles.partyName}>{person?.legalName || "—"}</span>
+                        <span className={styles.partyName}>{person?.legalName || "Pessoa não encontrada"}</span>
                         <span className={styles.partyRole}>{PARTY_ROLE_LABELS[party.partyRole]}</span>
                       </div>
                     </div>
@@ -566,7 +566,7 @@ export default function ContratoDetailPage({ params }) {
                   {timeline.map((event, idx) => (
                     <li key={`${event.type}-${event.referenceId}-${idx}`} className={styles.timelineItem}>
                       <Badge tone={TIMELINE_TYPE_TONE[event.type] || "neutral"}>{TIMELINE_TYPE_LABELS[event.type] || event.type}</Badge>
-                      <span className={styles.timelineDate}>{event.occurredAt ? formatDateTime(event.occurredAt) : "—"}</span>
+                      <span className={styles.timelineDate}>{event.occurredAt ? formatDateTime(event.occurredAt) : "Data não registrada"}</span>
                       <span className={styles.timelineSummary}>{event.summary}</span>
                     </li>
                   ))}
@@ -597,7 +597,7 @@ export default function ContratoDetailPage({ params }) {
                         </span>
                         <span className={styles.versionTemplate}>{version.template?.name || "Sem template (conteúdo manual)"}</span>
                         <span className={styles.versionHash} title={`Hash de integridade (SHA-256 do conteúdo): ${version.contentHash}`}>
-                          hash de integridade: {version.contentHash ? `${version.contentHash.slice(0, 12)}…` : "—"}
+                          hash de integridade: {version.contentHash ? `${version.contentHash.slice(0, 12)}…` : "não calculado"}
                         </span>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -694,7 +694,7 @@ export default function ContratoDetailPage({ params }) {
                     <div className={styles.guaranteeInfo}>
                       <span className={styles.guaranteeTitle}>{GUARANTEE_TYPE_LABELS[g.guaranteeType]}</span>
                       <span className={styles.guaranteeMeta}>
-                        {g.guarantorPersonId ? personOf(g.guarantorPersonId)?.legalName : g.value != null ? formatBRL(g.value) : "—"}
+                        {g.guarantorPersonId ? personOf(g.guarantorPersonId)?.legalName : g.value != null ? formatBRL(g.value) : "Sem valor informado"}
                       </span>
                     </div>
                     <Badge tone={GUARANTEE_STATUS_TONE[g.status] || "neutral"}>{GUARANTEE_STATUS_LABELS[g.status] || g.status}</Badge>
@@ -744,7 +744,7 @@ export default function ContratoDetailPage({ params }) {
       <Modal
         open={Boolean(requirementModal)}
         onClose={() => setRequirementModal(null)}
-        title={requirementModal?.mode === "waive" ? "Dispensar requirement" : "Anexar documento"}
+        title={requirementModal?.mode === "waive" ? "Dispensar item do checklist" : "Anexar documento"}
         footer={
           <>
             <Button variant="secondary" onClick={() => setRequirementModal(null)} disabled={requirementBusy}>Cancelar</Button>
@@ -768,7 +768,7 @@ export default function ContratoDetailPage({ params }) {
           </div>
         ) : (
           <div className={styles.formGrid}>
-            <FormField label="Documento" htmlFor="f-req-file" required helper="Arquivo que comprova este requirement.">
+            <FormField label="Documento" htmlFor="f-req-file" required helper="Arquivo que comprova este item do checklist.">
               <input id="f-req-file" type="file" onChange={(e) => setRequirementFile(e.target.files?.[0] || null)} />
             </FormField>
           </div>

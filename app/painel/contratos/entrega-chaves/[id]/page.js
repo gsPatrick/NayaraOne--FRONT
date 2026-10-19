@@ -30,6 +30,12 @@ import {
 import { formatDateTime, formatContractLabel } from "@/lib/format";
 import styles from "./page.module.css";
 
+// M45-RECONF F7: "KD-TERM-v2" é código interno do modelo — na tela, "Modelo versão 2".
+function termVersionLabel(version) {
+  const m = /v(\d+)$/i.exec(String(version || "KD-TERM-v1"));
+  return `Modelo versão ${m ? m[1] : "1"}`;
+}
+
 export default function EntregaChavesDetailPage({ params }) {
   const router = useRouter();
   const [delivery, setDelivery] = useState(null);
@@ -219,7 +225,7 @@ export default function EntregaChavesDetailPage({ params }) {
         ) : null}
         {delivery.status === "CANCELLED" ? (
           <Alert tone="info" title="Entrega cancelada" className={styles.notice}>
-            Cancelada em {delivery.cancelledAt ? formatDateTime(delivery.cancelledAt) : "—"}. Motivo: {delivery.cancelReason || "não informado"}
+            Cancelada em {delivery.cancelledAt ? formatDateTime(delivery.cancelledAt) : "data não registrada"}. Motivo: {delivery.cancelReason || "não informado"}
           </Alert>
         ) : null}
         {actionError ? <Alert tone="danger" title="Ação bloqueada" className={styles.notice}>{actionError}</Alert> : null}
@@ -229,16 +235,16 @@ export default function EntregaChavesDetailPage({ params }) {
           <div className={styles.mainCol}>
             <Card title="Detalhes da entrega">
               <dl className={styles.detailList}>
-                <div className={styles.detailRow}><dt>Entregue para</dt><dd>{deliveredTo?.legalName || "—"}</dd></div>
-                <div className={styles.detailRow}><dt>Entregue em</dt><dd>{delivery.deliveredAt ? formatDateTime(delivery.deliveredAt) : "—"}</dd></div>
-                <div className={styles.detailRow}><dt>Observações</dt><dd>{delivery.notes || "—"}</dd></div>
-                <div className={styles.detailRow}><dt>Chaves/controles</dt><dd>{delivery.keysCount ?? "—"}{delivery.keysIdentification ? ` (${delivery.keysIdentification})` : ""}</dd></div>
+                <div className={styles.detailRow}><dt>Entregue para</dt><dd>{deliveredTo?.legalName || "Pessoa não encontrada"}</dd></div>
+                <div className={styles.detailRow}><dt>Entregue em</dt><dd>{delivery.deliveredAt ? formatDateTime(delivery.deliveredAt) : "Ainda não entregue"}</dd></div>
+                <div className={styles.detailRow}><dt>Observações</dt><dd>{delivery.notes || "Sem observações"}</dd></div>
+                <div className={styles.detailRow}><dt>Chaves/controles</dt><dd>{delivery.keysCount ?? "Não informado"}{delivery.keysIdentification ? ` (${delivery.keysIdentification})` : ""}</dd></div>
                 <div className={styles.detailRow}><dt>Política de fotos</dt><dd>{{ REQUIRED_USED_PROPERTY: "Fotos obrigatórias (imóvel usado)", REQUIRED_SALE_DELIVERY: "Fotos obrigatórias (entrega de venda)", NOT_REQUIRED_LEASE_CHECKIN_SIGNED: "Fotos dispensadas (locação com vistoria de entrada assinada)" }[delivery.photoPolicy || termPreview?.photoPolicy] || "definida na liberação"}</dd></div>
-                <div className={styles.detailRow}><dt>Termo</dt><dd>{delivery.status === "RELEASED" ? `Modelo ${delivery.termVersion || "KD-TERM-v1"} — gerado e assinado` : delivery.status === "CANCELLED" ? "Não gerado (entrega cancelada)" : "Modelo KD-TERM-v2 — gerado pelo servidor na liberação (veja a prévia)"}</dd></div>
+                <div className={styles.detailRow}><dt>Termo</dt><dd>{delivery.status === "RELEASED" ? `${termVersionLabel(delivery.termVersion)} — gerado e assinado` : delivery.status === "CANCELLED" ? "Não gerado (entrega cancelada)" : "Gerado pelo sistema na liberação (veja a prévia)"}</dd></div>
               </dl>
             </Card>
             {delivery.termText ? (
-              <Card title={`Termo de entrega (modelo ${delivery.termVersion || "KD-TERM-v1"})`}>
+              <Card title={`Termo de entrega (${termVersionLabel(delivery.termVersion).toLowerCase()})`}>
                 <pre className={styles.mono} style={{ whiteSpace: "pre-wrap" }}>{delivery.termText}</pre>
                 <p className={styles.mono}>Código de integridade (SHA-256): {delivery.termHash}</p>
               </Card>
@@ -316,7 +322,7 @@ export default function EntregaChavesDetailPage({ params }) {
         <FormField label="Fotos" htmlFor="f-kd-photos" helper="Obrigatórias quando a política do sistema exigir (imóvel usado, entrega de venda).">
           <input id="f-kd-photos" type="file" accept="image/*" multiple onChange={(e) => setReleasePhotos(Array.from(e.target.files || []))} />
         </FormField>
-        <FormField label={`Prévia do termo (modelo ${termPreview?.termVersion || "KD-TERM-v2"})`} htmlFor="f-kd-term">
+        <FormField label="Prévia do termo" htmlFor="f-kd-term">
           {termPreview?.termText
             ? <pre id="f-kd-term" className={styles.mono} style={{ whiteSpace: "pre-wrap", maxHeight: 220, overflow: "auto" }}>{termPreview.termText}</pre>
             : <p>{termPreviewError || "Gerando prévia…"}</p>}
