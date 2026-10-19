@@ -17,6 +17,7 @@ const ITEMS = [
   { label: "Antifraude", href: "/painel/financeiro/antifraude", icon: "shield" },
   { label: "Comissões & Repasses", href: "/painel/financeiro/comissoes-repasses", icon: "layers" },
   { label: "Orçamento x realizado", href: "/painel/financeiro/orcamento", icon: "chart" },
+  { label: "Régua de cobrança", href: "/painel/financeiro/regua-cobranca", icon: "clock" },
   { label: "Fechamento de período", href: "/painel/financeiro/fechamento", icon: "shield" },
   { label: "Intercompany", href: "/painel/financeiro/intercompany", icon: "layers" },
   { label: "Plano de contas", href: "/painel/financeiro/plano-de-contas", icon: "document" },

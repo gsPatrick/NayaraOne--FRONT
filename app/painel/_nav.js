@@ -34,6 +34,7 @@ export const NAV_SECTIONS = [
           { label: "Antifraude", href: "/painel/financeiro/antifraude" },
           { label: "Comissões & Repasses", href: "/painel/financeiro/comissoes-repasses" },
           { label: "Orçamento x realizado", href: "/painel/financeiro/orcamento" },
+          { label: "Régua de cobrança", href: "/painel/financeiro/regua-cobranca" },
           { label: "Fechamento de período", href: "/painel/financeiro/fechamento" },
           { label: "Intercompany", href: "/painel/financeiro/intercompany" },
           { label: "Plano de contas", href: "/painel/financeiro/plano-de-contas" },
