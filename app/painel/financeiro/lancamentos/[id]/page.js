@@ -38,6 +38,7 @@ import {
   listBankTransactions,
   settleFinancialEntry,
   settleFinancialEntryPartial,
+  attachSettlementEvidence,
   reverseFinancialEntry,
   updateFinancialEntry,
   createApprovalRequest,
@@ -157,30 +158,59 @@ export default function LancamentoDetailPage({ params }) {
 
   if (notFoundFlag) return notFound();
 
-  // FIN-004: o gate de aprovação prévia só existe para PAYABLE com execução bancária real
-  // (entry.bankAccountId) — sem conta bancária vinculada, não há nada pra "aprovar antes de
-  // pagar", e o backend não exige (ver settleFinancialEntry). Com bankAccountId, satisfaz se
-  // a ApprovalRequest estiver APPROVED OU se o payment intent (caminho alternativo mais
-  // rigoroso) estiver APPROVED.
+  // Revisão independente 18/10/2026 (A1): TODO pagamento (PAYABLE) exige aprovação prévia —
+  // com ou sem conta bancária (antes, sem conta, liquidava direto). Satisfaz se a
+  // ApprovalRequest estiver APPROVED ou se a intenção de pagamento estiver APPROVED. O backend
+  // continua sendo a fonte de verdade.
+  const isPayable = entry?.nature === "PAYABLE";
+  // Compensação de caução (abate dívida do titular) não move caixa: não leva comprovante.
+  const isCompensation = entry?.thirdPartyReleaseType === "COMPENSATION";
+  const evidenceAttached = Boolean(entry?.settlementEvidenceFileId);
+  const needsManualEvidence = isPayable && !isCompensation;
+  // A2: com intenção em trânsito no banco, a baixa só pode acontecer pela resposta do banco.
+  const intentInTransit = ["SUBMITTING", "SUBMITTED"].includes(paymentIntent?.status);
   const approvalGateSatisfied =
-    !entry?.bankAccountId ||
+    !isPayable ||
     approvalRequest?.status === "APPROVED" ||
     paymentIntent?.status === "APPROVED";
 
-  // Liquidar é step-up MFA obrigatório (Caderno §3.3/3.4: "aprovação de pagamento") — abre o
-  // modal de verificação; a chamada real de negócio só acontece em runSettle, após confirmar.
-  const isBankPayable = entry?.nature === "PAYABLE" && Boolean(entry?.bankAccountId);
-
+  // A4: comprovante + motivo são ANEXADOS antes da aprovação (quem aprova vê o arquivo).
   function validateManualEvidence() {
-    if (!manualFile) return "Anexe o comprovante do pagamento.";
+    if (!manualFile) return "Selecione o comprovante do pagamento (PDF ou imagem).";
     if (!manualReason.trim()) return "Informe o motivo da baixa manual (por que o pagamento foi feito fora da integração bancária).";
     return "";
   }
 
-  async function buildManualEvidence() {
-    if (!isBankPayable) return null;
-    const uploaded = await uploadFile(manualFile);
-    return { evidenceFileId: uploaded.id, reason: manualReason.trim() };
+  async function handleAttachEvidence() {
+    const problem = validateManualEvidence();
+    setManualError(problem);
+    if (problem) return;
+    const ok = await confirm({
+      title: "Anexar comprovante?",
+      message: "O comprovante e o motivo ficam vinculados a este pagamento. Aprovações já concedidas são invalidadas: a aprovação precisa ser feita depois, por outra pessoa, vendo o comprovante.",
+      confirmLabel: "Anexar comprovante",
+    });
+    if (!ok) return;
+    setBusy(true);
+    setNotice(null);
+    try {
+      const uploaded = await uploadFile(manualFile);
+      await attachSettlementEvidence(entry.id, { evidenceFileId: uploaded.id, reason: manualReason.trim() });
+      resetManualEvidence();
+      load();
+      setNotice({ tone: "success", text: "Comprovante anexado. Agora solicite a aprovação — ela precisa ser feita por outra pessoa." });
+    } catch (err) {
+      setManualError(err?.message || "Não foi possível anexar o comprovante.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function requireAttachedEvidence() {
+    if (!needsManualEvidence || evidenceAttached) return false;
+    setPartialOpen(false);
+    setManualOpen(true);
+    return true;
   }
 
   function resetManualEvidence() {
@@ -191,20 +221,11 @@ export default function LancamentoDetailPage({ params }) {
   }
 
   async function handleSettle() {
-    if (isBankPayable && !manualOpen) {
-      setPartialOpen(false);
-      setManualOpen(true);
-      return;
-    }
-    if (isBankPayable) {
-      const problem = validateManualEvidence();
-      setManualError(problem);
-      if (problem) return;
-    }
+    if (requireAttachedEvidence()) return;
     const ok = await confirm({
       title: "Liquidar este lançamento?",
-      message: isBankPayable
-        ? `O pagamento "${entry?.description || ""}" (${formatBRL(entry?.amount)}) será registrado como baixa manual com comprovante — não como confirmação do banco. A conciliação com o extrato continua necessária.`
+      message: needsManualEvidence
+        ? `O pagamento "${entry?.description || ""}" (${formatBRL(entry?.amount)}) será registrado como baixa manual com o comprovante anexado — não como confirmação do banco. A conciliação com o extrato continua necessária.`
         : `O lançamento "${entry?.description || ""}" (${formatBRL(entry?.amount)}) será marcado como liquidado.`,
       confirmLabel: "Liquidar",
     });
@@ -260,11 +281,9 @@ export default function LancamentoDetailPage({ params }) {
     setBusy(true);
     setNotice(null);
     try {
-      const manual = await buildManualEvidence();
-      const updated = await settleFinancialEntry(entry.id, manual);
+      const updated = await settleFinancialEntry(entry.id);
       setEntry(updated);
-      resetManualEvidence();
-      setNotice({ tone: "success", text: manual ? "Baixa manual registrada com o comprovante." : "Lançamento liquidado com sucesso." });
+      setNotice({ tone: "success", text: needsManualEvidence ? "Baixa manual registrada com o comprovante anexado." : "Lançamento liquidado com sucesso." });
     } catch (err) {
       setNotice({ tone: "danger", text: err?.message || "Não foi possível liquidar o lançamento." });
     } finally {
@@ -279,11 +298,7 @@ export default function LancamentoDetailPage({ params }) {
   async function handleSettlePartial() {
     const amount = Number(partialAmount);
     if (!Number.isFinite(amount) || amount <= 0) return;
-    if (isBankPayable) {
-      const problem = validateManualEvidence();
-      setManualError(problem);
-      if (problem) return;
-    }
+    if (requireAttachedEvidence()) return;
     const ok = await confirm({
       title: "Liquidar parcialmente?",
       message: `Será registrada uma baixa de ${formatBRL(amount)} sobre o saldo de "${entry?.description || ""}".`,
@@ -298,12 +313,10 @@ export default function LancamentoDetailPage({ params }) {
     setBusy(true);
     setNotice(null);
     try {
-      const manual = await buildManualEvidence();
-      const updated = await settleFinancialEntryPartial(entry.id, Number(partialAmount), manual);
+      const updated = await settleFinancialEntryPartial(entry.id, Number(partialAmount));
       setEntry(updated.original || updated);
       setPartialOpen(false);
       setPartialAmount("");
-      resetManualEvidence();
       setNotice({ tone: "success", text: "Baixa parcial registrada com sucesso." });
     } catch (err) {
       setNotice({ tone: "danger", text: err?.message || "Não foi possível registrar a baixa parcial." });
@@ -392,7 +405,7 @@ export default function LancamentoDetailPage({ params }) {
               {entry.status === "PENDING" ? (
                 <Button variant="secondary" onClick={openEdit} disabled={busy}><Icon name="document" size={16} /> Editar</Button>
               ) : null}
-              {entry.status === "PENDING" && entry.bankAccountId && approvalRequest?.status !== "APPROVED" ? (
+              {entry.status === "PENDING" && isPayable && approvalRequest?.status !== "APPROVED" ? (
                 <Button
                   variant="secondary"
                   onClick={handleRequestApproval}
@@ -403,7 +416,7 @@ export default function LancamentoDetailPage({ params }) {
                   {approvalRequest?.status === "PENDING" ? "Aprovação pendente" : "Solicitar aprovação"}
                 </Button>
               ) : null}
-              {entry.status === "PENDING" && entry.bankAccountId && !["PENDING", "APPROVED"].includes(paymentIntent?.status) ? (
+              {entry.status === "PENDING" && entry.bankAccountId && !["PENDING", "APPROVED", "SUBMITTING", "SUBMITTED"].includes(paymentIntent?.status) ? (
                 <Button variant="secondary" onClick={handleCreatePaymentIntent} loading={busy}>
                   <Icon name="shield" size={16} /> Criar intenção de pagamento
                 </Button>
@@ -413,7 +426,16 @@ export default function LancamentoDetailPage({ params }) {
                   intent aprovado — mesmo gate que já é fail-closed no backend
                   (settleFinancialEntry). O botão aqui só reflete isso visualmente; o backend
                   continua sendo a fonte de verdade que bloqueia de qualquer jeito. */}
-              {entry.status === "PENDING" || entry.status === "PARTIALLY_SETTLED" ? (
+              {needsManualEvidence && (entry.status === "PENDING" || entry.status === "PARTIALLY_SETTLED") && !intentInTransit ? (
+                <Button variant="secondary" onClick={() => { setPartialOpen(false); setManualOpen((v) => !v); }} disabled={busy}>
+                  <Icon name="document" size={16} /> {evidenceAttached ? "Trocar comprovante" : "Anexar comprovante"}
+                </Button>
+              ) : null}
+              {(entry.status === "PENDING" || entry.status === "PARTIALLY_SETTLED") && intentInTransit ? (
+                <Button disabled title="Há uma intenção de pagamento em trânsito no banco — a baixa só acontece pela resposta do banco">
+                  <Icon name="check" size={16} /> Pagamento em trânsito no banco
+                </Button>
+              ) : entry.status === "PENDING" || entry.status === "PARTIALLY_SETTLED" ? (
                 approvalGateSatisfied ? (
                   <Button onClick={handleSettle} loading={busy}><Icon name="check" size={16} /> Liquidar</Button>
                 ) : (
@@ -422,7 +444,7 @@ export default function LancamentoDetailPage({ params }) {
                   </Button>
                 )
               ) : null}
-              {entry.status === "PENDING" || entry.status === "PARTIALLY_SETTLED" ? (
+              {(entry.status === "PENDING" || entry.status === "PARTIALLY_SETTLED") && !intentInTransit && !isCompensation ? (
                 approvalGateSatisfied ? (
                   <Button variant="secondary" onClick={() => { setManualOpen(false); setPartialOpen((v) => !v); }} disabled={busy}>
                     <Icon name="money" size={16} /> Liquidar parcial
@@ -437,10 +459,10 @@ export default function LancamentoDetailPage({ params }) {
 
           {notice ? <Alert tone={notice.tone} className={styles.notice}>{notice.text}</Alert> : null}
 
-          {manualOpen && isBankPayable ? (
+          {manualOpen && needsManualEvidence ? (
             <Card
-              title="Baixa manual com comprovante"
-              subtitle="Este pagamento usa conta bancária: sem a confirmação do banco, ele só pode ser dado como pago com o comprovante e o motivo. Fica registrado como baixa manual, nunca como confirmação bancária."
+              title="Comprovante da baixa manual"
+              subtitle="Sem a confirmação do banco, o pagamento só pode ser dado como pago com comprovante e motivo. Anexe primeiro: a aprovação precisa ser feita depois, por outra pessoa, vendo o comprovante. Cada comprovante serve para uma única baixa."
               className={styles.notice}
             >
               {manualError ? <Alert tone="danger" className={styles.notice}>{manualError}</Alert> : null}
@@ -452,14 +474,13 @@ export default function LancamentoDetailPage({ params }) {
               </FormField>
               <div className={styles.actions}>
                 <Button variant="secondary" onClick={resetManualEvidence}>Cancelar</Button>
-                <Button onClick={handleSettle} loading={busy}>Confirmar baixa manual</Button>
+                <Button onClick={handleAttachEvidence} loading={busy}>Anexar comprovante</Button>
               </div>
             </Card>
           ) : null}
 
           {partialOpen ? (
             <Card title="Liquidação parcial" className={styles.notice}>
-              {manualError && isBankPayable ? <Alert tone="danger" className={styles.notice}>{manualError}</Alert> : null}
               <FormField label="Valor da baixa parcial">
                 <Input
                   type="number"
@@ -470,15 +491,8 @@ export default function LancamentoDetailPage({ params }) {
                   placeholder="0,00"
                 />
               </FormField>
-              {isBankPayable ? (
-                <>
-                  <FormField label="Comprovante do pagamento" required>
-                    <input type="file" accept="application/pdf,image/*" onChange={(e) => setManualFile(e.target.files?.[0] || null)} />
-                  </FormField>
-                  <FormField label="Motivo da baixa manual" required>
-                    <Input value={manualReason} onChange={(e) => setManualReason(e.target.value)} placeholder="Ex.: TED parcial feita no internet banking" />
-                  </FormField>
-                </>
+              {needsManualEvidence ? (
+                <Alert tone="info" className={styles.notice}>A baixa parcial usa o comprovante anexado a este pagamento.</Alert>
               ) : null}
               <div className={styles.actions}>
                 <Button variant="secondary" onClick={() => setPartialOpen(false)}>Cancelar</Button>
@@ -546,7 +560,20 @@ export default function LancamentoDetailPage({ params }) {
                       <dd>
                         {entry.settlementMethod === "BANK_CONFIRMED"
                           ? "Confirmada pelo banco"
-                          : `Baixa manual com comprovante — ${entry.settlementReason || "sem motivo informado"}`}
+                          : entry.settlementMethod === "SANDBOX_CONFIRMED"
+                            ? "Confirmada pelo provedor de simulação (sandbox) — não é confirmação de banco real"
+                            : entry.settlementMethod === "COMPENSATION"
+                              ? "Compensação com dívida do titular — sem movimento de caixa"
+                              : `Baixa manual com comprovante — ${entry.settlementReason || "sem motivo informado"}`}
+                      </dd>
+                    </div>
+                  ) : null}
+                  {entry.status !== "SETTLED" && entry.settlementEvidenceFileId ? (
+                    <div className={styles.detailRow}>
+                      <dt>Comprovante anexado</dt>
+                      <dd>
+                        {entry.settlementEvidenceAttachedAt ? `${formatDateTime(entry.settlementEvidenceAttachedAt)} — ` : ""}
+                        {entry.settlementReason || "sem motivo informado"}
                       </dd>
                     </div>
                   ) : null}

@@ -14,8 +14,15 @@ import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu
 import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
 import FormField from "@/components/molecules/FormField/FormField";
 import Input from "@/components/atoms/Input/Input";
-import { listPaymentIntents, approvePaymentIntent, executePaymentIntent, cancelPaymentIntent, listFinancialEntries } from "@/lib/api/finance";
-import { uploadFile } from "@/lib/api/legal";
+import {
+  listPaymentIntents,
+  approvePaymentIntent,
+  executePaymentIntent,
+  cancelPaymentIntent,
+  listFinancialEntries,
+  reconcilePaymentIntent,
+  resolveUncertainPaymentIntent,
+} from "@/lib/api/finance";
 import { formatBRL, formatDateTime } from "@/lib/format";
 import { getCurrentUser } from "@/lib/auth/session";
 import styles from "./page.module.css";
@@ -23,14 +30,21 @@ import styles from "./page.module.css";
 const STATUS_LABELS = {
   PENDING: "Pendente",
   APPROVED: "Aprovada",
+  // B1/B2 (revisão 18/10/2026): SUBMITTING = enviada ao banco sem resposta confiável (incerta).
+  SUBMITTING: "Envio ao banco incerto",
+  SUBMITTED: "Em trânsito no banco",
   EXECUTED: "Executada",
+  FAILED: "Falhou no banco",
   CANCELLED: "Cancelada",
 };
 
 const STATUS_TONE = {
   PENDING: "warning",
   APPROVED: "info",
+  SUBMITTING: "danger",
+  SUBMITTED: "warning",
   EXECUTED: "success",
+  FAILED: "danger",
   CANCELLED: "neutral",
 };
 
@@ -42,11 +56,11 @@ export default function IntencoesPagamentoPage() {
   const [loadError, setLoadError] = useState("");
   const [notice, setNotice] = useState(null);
   const [busyId, setBusyId] = useState(null);
-  // F03 — executar a intenção aqui é pagar FORA da integração bancária: exige comprovante + motivo.
-  const [executeTarget, setExecuteTarget] = useState(null);
-  const [executeFile, setExecuteFile] = useState(null);
-  const [executeReason, setExecuteReason] = useState("");
-  const [executeError, setExecuteError] = useState("");
+  // B2 — resolver a incerteza de um envio ao banco exige motivo (e só dá como falha com
+  // resposta final do banco).
+  const [resolveTarget, setResolveTarget] = useState(null);
+  const [resolveReason, setResolveReason] = useState("");
+  const [resolveError, setResolveError] = useState("");
   const { confirm, ConfirmDialog } = useConfirm();
 
   function load() {
@@ -105,40 +119,66 @@ export default function IntencoesPagamentoPage() {
     }
   }
 
-  function handleExecute(intent) {
-    setExecuteTarget(intent);
-    setExecuteFile(null);
-    setExecuteReason("");
-    setExecuteError("");
-  }
-
-  async function confirmExecute() {
-    const intent = executeTarget;
-    if (!executeFile) {
-      setExecuteError("Anexe o comprovante do pagamento.");
-      return;
-    }
-    if (!executeReason.trim()) {
-      setExecuteError("Informe o motivo de o pagamento ter sido feito fora da integração bancária.");
+  // A4 (revisão 18/10/2026): registrar o pagamento feito fora do banco usa o comprovante
+  // ANEXADO ao lançamento antes da aprovação da intenção — quem aprova vê o arquivo.
+  async function handleExecute(intent) {
+    const entry = entryFor(intent);
+    if (!entry?.settlementEvidenceFileId) {
+      showNotice(
+        "danger",
+        "Anexe o comprovante no detalhe do lançamento antes. A intenção precisa ser aprovada depois do comprovante — cancele esta e crie outra após anexar."
+      );
       return;
     }
     const ok = await confirm({
-      title: "Registrar pagamento com comprovante?",
-      message: "O lançamento será dado como pago por baixa manual com comprovante — não como confirmação do banco. A conciliação com o extrato continua necessária.",
+      title: "Registrar pagamento com o comprovante anexado?",
+      message: `O lançamento será dado como pago por baixa manual com o comprovante anexado (motivo: ${entry.settlementReason || "—"}) — não como confirmação do banco. A conciliação com o extrato continua necessária.`,
       confirmLabel: "Registrar",
       tone: "primary",
     });
     if (!ok) return;
     setBusyId(intent.id);
     try {
-      const uploaded = await uploadFile(executeFile);
-      const result = await executePaymentIntent(intent.id, { evidenceFileId: uploaded.id, reason: executeReason.trim() });
+      const result = await executePaymentIntent(intent.id);
       const updated = result.intent || result;
       setIntents((prev) => prev.map((i) => (i.id === intent.id ? updated : i)));
-      setExecuteTarget(null);
-      showNotice("success", "Pagamento registrado com o comprovante.");
+      showNotice("success", "Pagamento registrado com o comprovante anexado.");
     } catch (err) {
-      setExecuteError(err?.message || "Não foi possível registrar o pagamento.");
+      showNotice("danger", err?.message || "Não foi possível registrar o pagamento.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function handleReconcile(intent) {
+    setBusyId(intent.id);
+    try {
+      const result = await reconcilePaymentIntent(intent.id);
+      const updated = result?.intent || intent;
+      setIntents((prev) => prev.map((i) => (i.id === intent.id ? updated : i)));
+      showNotice("info", `Banco consultado — situação: ${STATUS_LABELS[updated.status] || updated.status}.`);
+    } catch (err) {
+      showNotice("danger", err?.message || "Não foi possível consultar o banco.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function confirmResolve() {
+    const intent = resolveTarget;
+    if (!resolveReason.trim()) {
+      setResolveError("Informe o motivo.");
+      return;
+    }
+    setBusyId(intent.id);
+    try {
+      const result = await resolveUncertainPaymentIntent(intent.id, resolveReason.trim());
+      const updated = result?.intent || intent;
+      setIntents((prev) => prev.map((i) => (i.id === intent.id ? updated : i)));
+      setResolveTarget(null);
+      showNotice("info", `Situação resolvida com o banco: ${STATUS_LABELS[updated.status] || updated.status}.`);
+    } catch (err) {
+      setResolveError(err?.message || "Não foi possível resolver a incerteza.");
     } finally {
       setBusyId(null);
     }
@@ -193,21 +233,18 @@ export default function IntencoesPagamentoPage() {
             <StatTile label="Executadas" value={executedCount} tone="success" icon="money" />
           </div>
 
-          {executeTarget ? (
+          {resolveTarget ? (
             <Card
-              title="Registrar pagamento feito fora do banco integrado"
-              subtitle="Sem a confirmação do banco, o pagamento só é registrado com comprovante e motivo — fica marcado como baixa manual, nunca como confirmação bancária."
+              title="Resolver envio incerto ao banco"
+              subtitle="O banco é consultado de novo. A intenção só é dada como falha se o banco responder falha ou não conhecer o pagamento — nunca sem resposta do banco."
             >
-              {executeError ? <Alert tone="danger">{executeError}</Alert> : null}
-              <FormField label="Comprovante do pagamento" required>
-                <input type="file" accept="application/pdf,image/*" onChange={(e) => setExecuteFile(e.target.files?.[0] || null)} />
-              </FormField>
+              {resolveError ? <Alert tone="danger">{resolveError}</Alert> : null}
               <FormField label="Motivo" required>
-                <Input value={executeReason} onChange={(e) => setExecuteReason(e.target.value)} placeholder="Ex.: TED feita no internet banking em 18/10" />
+                <Input value={resolveReason} onChange={(e) => setResolveReason(e.target.value)} placeholder="Ex.: banco fora do ar no envio de 18/10, conferido com o gerente" />
               </FormField>
               <div style={{ display: "flex", gap: "var(--space-2)" }}>
-                <Button variant="secondary" onClick={() => setExecuteTarget(null)}>Cancelar</Button>
-                <Button onClick={confirmExecute} loading={busyId === executeTarget.id}>Registrar pagamento</Button>
+                <Button variant="secondary" onClick={() => setResolveTarget(null)}>Cancelar</Button>
+                <Button onClick={confirmResolve} loading={busyId === resolveTarget.id}>Consultar banco e resolver</Button>
               </div>
             </Card>
           ) : null}
@@ -233,6 +270,19 @@ export default function IntencoesPagamentoPage() {
                           <>
                             <Button size="sm" onClick={() => handleApprove(intent)} loading={busyId === intent.id}>Aprovar</Button>
                             <Button size="sm" variant="secondary" onClick={() => handleCancel(intent)} loading={busyId === intent.id}>Cancelar</Button>
+                          </>
+                        ) : null}
+                        {["SUBMITTING", "SUBMITTED"].includes(intent.status) ? (
+                          <>
+                            <Button size="sm" variant="secondary" onClick={() => handleReconcile(intent)} loading={busyId === intent.id}>Consultar banco</Button>
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onClick={() => { setResolveTarget(intent); setResolveReason(""); setResolveError(""); }}
+                              loading={busyId === intent.id}
+                            >
+                              Resolver incerteza
+                            </Button>
                           </>
                         ) : null}
                         {intent.status === "APPROVED" ? (

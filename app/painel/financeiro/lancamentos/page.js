@@ -66,6 +66,8 @@ export default function LancamentosPage() {
   const [pendings, setPendings] = useState([]);
   const [resolveTarget, setResolveTarget] = useState(null);
   const [resolveNature, setResolveNature] = useState("");
+  // A3 (revisão 18/10/2026): classificar como despesa cria uma obrigação a pagar e exige centro de custo.
+  const [resolveCostCenterId, setResolveCostCenterId] = useState("");
   const [resolveBusy, setResolveBusy] = useState(false);
   const [resolveError, setResolveError] = useState("");
 
@@ -77,12 +79,19 @@ export default function LancamentosPage() {
 
   async function handleResolvePending() {
     if (!resolveTarget || !resolveNature) return;
+    if (resolveNature === "PAYABLE" && !resolveCostCenterId) {
+      setResolveError("Classificar como despesa exige o centro de custo.");
+      return;
+    }
     setResolveBusy(true);
     setResolveError("");
     try {
-      await resolveClassificationPending(resolveTarget.id, resolveNature);
+      await resolveClassificationPending(resolveTarget.id, resolveNature, {
+        costCenterId: resolveNature === "PAYABLE" ? resolveCostCenterId : undefined,
+      });
       setResolveTarget(null);
       setResolveNature("");
+      setResolveCostCenterId("");
       reloadPendings();
     } catch (err) {
       setResolveError(err?.message || "Não foi possível resolver a pendência.");
@@ -236,7 +245,7 @@ export default function LancamentosPage() {
                   <span className={styles.listRowTitle}>{p.description}</span>
                   <span className={styles.listRowSubtitle}>{formatBRL(p.amount)} · desde {formatDate(p.createdAt)}</span>
                 </div>
-                <Button size="sm" onClick={() => { setResolveTarget(p); setResolveNature(""); setResolveError(""); }}>
+                <Button size="sm" onClick={() => { setResolveTarget(p); setResolveNature(""); setResolveCostCenterId(""); setResolveError(""); }}>
                   Classificar
                 </Button>
               </li>
@@ -363,6 +372,21 @@ export default function LancamentosPage() {
                 <option value="ADJUSTMENT">Ajuste (ADJUSTMENT)</option>
               </Select>
             </FormField>
+            {resolveNature === "PAYABLE" ? (
+              <>
+                <FormField label="Centro de custo" required>
+                  <Select value={resolveCostCenterId} onChange={(e) => setResolveCostCenterId(e.target.value)}>
+                    <option value="">Selecione...</option>
+                    {costCenters.map((c) => (
+                      <option key={c.id} value={c.id}>{c.code} — {c.name}</option>
+                    ))}
+                  </Select>
+                </FormField>
+                <Alert tone="info">
+                  Vira uma obrigação a pagar (pendente), que segue o fluxo normal de pagamento: aprovação e confirmação do banco ou comprovante.
+                </Alert>
+              </>
+            ) : null}
           </>
         ) : null}
       </Modal>
