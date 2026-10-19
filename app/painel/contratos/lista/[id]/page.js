@@ -40,6 +40,7 @@ import {
   listContractRequirements,
   generateContractRequirements,
   satisfyRequirement,
+  waiveRequirement,
 } from "@/lib/api/legal";
 import {
   CONTRACT_TYPE_LABELS,
@@ -328,14 +329,14 @@ export default function ContratoDetailPage({ params }) {
     setRequirementError("");
     setRequirementBusy(true);
     try {
-      let payload;
+      let updated;
       if (mode === "satisfy") {
         const uploaded = await uploadFile(requirementFile);
-        payload = { satisfiedByFileId: uploaded.id };
+        updated = await satisfyRequirement(requirement.id, { satisfiedByFileId: uploaded.id });
       } else {
-        payload = { waivedReason: requirementReason.trim() };
+        // Dispensa tem permissão própria (legal:waive) — a API responde 403 sem ela.
+        updated = await waiveRequirement(requirement.id, requirementReason.trim());
       }
-      const updated = await satisfyRequirement(requirement.id, payload);
       setRequirements((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
       setRequirementModal(null);
       setNotice({ tone: "info", text: mode === "satisfy" ? "Documento anexado — requirement marcado como satisfeito." : "Requirement dispensado, com justificativa registrada." });

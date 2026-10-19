@@ -16,7 +16,7 @@ import RowActions from "@/components/molecules/RowActions/RowActions";
 import Modal from "@/components/organisms/Modal/Modal";
 import Pagination from "@/components/molecules/Pagination/Pagination";
 import { listPeople } from "@/lib/api/people";
-import { listKeyDeliveries, listContracts, releaseKeyDelivery } from "@/lib/api/legal";
+import { listKeyDeliveries, listContracts } from "@/lib/api/legal";
 import {
   KEY_DELIVERY_STATUS_LABELS,
   KEY_DELIVERY_STATUS_TONE,
@@ -75,17 +75,10 @@ export default function EntregaChavesPage() {
   const pendingCount = deliveries.filter((d) => d.status === "PENDING").length;
   const releasedCount = deliveries.filter((d) => d.status === "RELEASED").length;
 
-  async function handleRelease(delivery) {
-    setReleaseError((prev) => ({ ...prev, [delivery.id]: null }));
-    setBusyId(delivery.id);
-    try {
-      const updated = await releaseKeyDelivery(delivery.id);
-      setDeliveries((prev) => prev.map((d) => (d.id === delivery.id ? updated : d)));
-    } catch (err) {
-      setReleaseError((prev) => ({ ...prev, [delivery.id]: err.message || "Erro ao liberar chaves." }));
-    } finally {
-      setBusyId(null);
-    }
+  // A liberação exige quantidade de chaves, signatário do termo e (quando a política do
+  // servidor exigir) fotos — o formulário fica na tela de detalhe.
+  function handleRelease(delivery) {
+    router.push(`/painel/contratos/entrega-chaves/${delivery.id}?liberar=1`);
   }
 
   return (

@@ -13,7 +13,10 @@ import RowActions from "@/components/molecules/RowActions/RowActions";
 import Modal from "@/components/organisms/Modal/Modal";
 import Button from "@/components/atoms/Button/Button";
 import { listPeople } from "@/lib/api/people";
-import { getKeyDelivery, getContract, getInspection, releaseKeyDelivery } from "@/lib/api/legal";
+import { getKeyDelivery, getContract, getInspection, releaseKeyDelivery, uploadFile } from "@/lib/api/legal";
+import FormField from "@/components/molecules/FormField/FormField";
+import Input from "@/components/atoms/Input/Input";
+import Select from "@/components/atoms/Select/Select";
 import {
   KEY_DELIVERY_STATUS_LABELS,
   KEY_DELIVERY_STATUS_TONE,
@@ -37,6 +40,15 @@ export default function EntregaChavesDetailPage({ params }) {
   const [notice, setNotice] = useState(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [releaseOpen, setReleaseOpen] = useState(false);
+  const [releaseForm, setReleaseForm] = useState({ keysCount: "", keysIdentification: "", termSignedByPersonId: "" });
+  const [releasePhotos, setReleasePhotos] = useState([]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("liberar") === "1") {
+      setReleaseOpen(true);
+    }
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -93,15 +105,29 @@ export default function EntregaChavesDetailPage({ params }) {
 
   const deliveredTo = personOf(delivery.deliveredToPersonId);
 
+  // Política de fotos e texto do termo são decididos pelo servidor; aqui só vão os fatos da
+  // entrega (quantidade, identificação, quem assinou o termo e as fotos, se houver).
   async function handleRelease() {
     setActionError("");
     setBusy(true);
     try {
-      const updated = await releaseKeyDelivery(delivery.id);
+      const photosFileIds = [];
+      for (const file of releasePhotos) {
+        const uploaded = await uploadFile(file);
+        photosFileIds.push(uploaded.id);
+      }
+      const updated = await releaseKeyDelivery(delivery.id, {
+        keysCount: Number(releaseForm.keysCount),
+        keysIdentification: releaseForm.keysIdentification.trim() || undefined,
+        termSignedByPersonId: releaseForm.termSignedByPersonId || delivery.deliveredToPersonId,
+        photosFileIds: photosFileIds.length > 0 ? photosFileIds : undefined,
+      });
       setDelivery(updated);
-      setNotice({ tone: "success", text: "Chaves liberadas com sucesso." });
+      setReleaseOpen(false);
+      setNotice({ tone: "success", text: "Chaves liberadas com sucesso. Termo gerado pelo sistema." });
     } catch (err) {
       setActionError(err.message || "Erro ao liberar chaves.");
+      setReleaseOpen(false);
     } finally {
       setBusy(false);
     }
@@ -122,7 +148,7 @@ export default function EntregaChavesDetailPage({ params }) {
           </div>
           <div className={styles.actionsWrap}>
             {delivery.status === "PENDING" ? (
-              <Button onClick={handleRelease} disabled={busy}>
+              <Button onClick={() => setReleaseOpen(true)} disabled={busy}>
                 <Icon name="key" size={16} /> Liberar chaves
               </Button>
             ) : null}
@@ -144,9 +170,17 @@ export default function EntregaChavesDetailPage({ params }) {
                 <div className={styles.detailRow}><dt>Entregue para</dt><dd>{deliveredTo?.legalName || "—"}</dd></div>
                 <div className={styles.detailRow}><dt>Entregue em</dt><dd>{delivery.deliveredAt ? formatDateTime(delivery.deliveredAt) : "—"}</dd></div>
                 <div className={styles.detailRow}><dt>Observações</dt><dd>{delivery.notes || "—"}</dd></div>
+                <div className={styles.detailRow}><dt>Chaves/controles</dt><dd>{delivery.keysCount ?? "—"}{delivery.keysIdentification ? ` (${delivery.keysIdentification})` : ""}</dd></div>
+                <div className={styles.detailRow}><dt>Política de fotos</dt><dd>{delivery.photoPolicy || "definida na liberação"}</dd></div>
                 <div className={styles.detailRow}><dt>ID</dt><dd className={styles.mono}>{delivery.id}</dd></div>
               </dl>
             </Card>
+            {delivery.termText ? (
+              <Card title={`Termo de entrega (${delivery.termVersion || ""})`}>
+                <pre className={styles.mono} style={{ whiteSpace: "pre-wrap" }}>{delivery.termText}</pre>
+                <p className={styles.mono}>SHA-256: {delivery.termHash}</p>
+              </Card>
+            ) : null}
           </div>
 
           <div className={styles.sideCol}>
@@ -180,6 +214,36 @@ export default function EntregaChavesDetailPage({ params }) {
           </div>
         </div>
       </div>
+
+      <Modal
+        open={releaseOpen}
+        onClose={() => setReleaseOpen(false)}
+        title="Liberar chaves"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setReleaseOpen(false)}>Cancelar</Button>
+            <Button onClick={handleRelease} disabled={busy || !(Number(releaseForm.keysCount) > 0)}>Liberar</Button>
+          </>
+        }
+      >
+        <FormField label="Quantidade de chaves/controles" htmlFor="f-kd-count" required>
+          <Input id="f-kd-count" type="number" min="1" value={releaseForm.keysCount} onChange={(e) => setReleaseForm((f) => ({ ...f, keysCount: e.target.value }))} />
+        </FormField>
+        <FormField label="Identificação" htmlFor="f-kd-ident">
+          <Input id="f-kd-ident" value={releaseForm.keysIdentification} onChange={(e) => setReleaseForm((f) => ({ ...f, keysIdentification: e.target.value }))} placeholder="Ex.: 2 chaves da porta, 1 controle do portão" />
+        </FormField>
+        <FormField label="Quem assina o termo" htmlFor="f-kd-signer" required helper="Recebedor das chaves ou parte do contrato. O texto do termo é gerado pelo sistema.">
+          <Select id="f-kd-signer" value={releaseForm.termSignedByPersonId} onChange={(e) => setReleaseForm((f) => ({ ...f, termSignedByPersonId: e.target.value }))}>
+            <option value="">{deliveredTo?.legalName ? `${deliveredTo.legalName} (recebedor)` : "Recebedor das chaves"}</option>
+            {people.filter((p) => p.id !== delivery.deliveredToPersonId).map((p) => (
+              <option key={p.id} value={p.id}>{p.legalName}</option>
+            ))}
+          </Select>
+        </FormField>
+        <FormField label="Fotos" htmlFor="f-kd-photos" helper="Obrigatórias quando a política do sistema exigir (imóvel usado, entrega de venda).">
+          <input id="f-kd-photos" type="file" accept="image/*" multiple onChange={(e) => setReleasePhotos(Array.from(e.target.files || []))} />
+        </FormField>
+      </Modal>
 
       <Modal
         open={deleteOpen}
