@@ -14,8 +14,10 @@ import Alert from "@/components/molecules/Alert/Alert";
 import MfaVerifyModal from "@/components/organisms/MfaVerifyModal/MfaVerifyModal";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu";
-import { getCommissionRule, publishCommissionRule } from "@/lib/api/finance";
-import { formatDate, formatPercent } from "@/lib/format";
+import { getCommissionRule, publishCommissionRule, listCommissionRuleVersions } from "@/lib/api/finance";
+import Table from "@/components/organisms/Table/Table";
+import Badge from "@/components/atoms/Badge/Badge";
+import { formatDate, formatDateTime, formatPercent } from "@/lib/format";
 import styles from "./page.module.css";
 
 const COMPONENTS = [
@@ -32,8 +34,25 @@ export default function CommissionRulePage() {
   const [success, setSuccess] = useState("");
   const [mfaOpen, setMfaOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [versions, setVersions] = useState([]);
+  const [versionsError, setVersionsError] = useState("");
+  const [versionsLoading, setVersionsLoading] = useState(true);
+
+  async function loadVersions() {
+    setVersionsLoading(true);
+    setVersionsError("");
+    try {
+      const list = await listCommissionRuleVersions();
+      setVersions(Array.isArray(list) ? list : []);
+    } catch (err) {
+      setVersionsError(err?.message || "Não foi possível carregar o histórico de versões.");
+    } finally {
+      setVersionsLoading(false);
+    }
+  }
 
   async function load() {
+    loadVersions();
     setRuleMessage("");
     try {
       const current = await getCommissionRule();
@@ -98,15 +117,43 @@ export default function CommissionRulePage() {
     <AppShell title="Regra de comissão" backHref="/painel/financeiro">
       <div className={styles.wrap}>
         <Card className={styles.formCard}>
-          <h2 className={styles.sectionTitle}>Versão vigente (REG-FIN-002)</h2>
+          <h2 className={styles.sectionTitle}>Versão vigente</h2>
           {rule ? (
             <p className={styles.helper}>
               Versão {rule.versionNumber ?? "vigente"}{rule.effectiveFrom ? ` (desde ${formatDate(rule.effectiveFrom)})` : ""} · base: valor do recebimento ·{" "}
-              {COMPONENTS.map(({ key, label }) => `${label.replace(" (%)", "")}: ${rule.components?.[key] != null ? formatPercent(rule.components[key]) : "—"}`).join(" · ")}
+              {COMPONENTS.map(({ key, label }) => `${label.replace(" (%)", "")}: ${rule.components?.[key] != null ? formatPercent(rule.components[key]) : "não se aplica"}`).join(" · ")}
             </p>
           ) : (
             <p className={styles.helper}>{ruleMessage || "Carregando..."}</p>
           )}
+        </Card>
+
+        <Card className={styles.formCard}>
+          <h2 className={styles.sectionTitle}>Histórico de versões</h2>
+          <p className={styles.helper}>Todas as versões publicadas, da mais nova para a mais antiga. Comissões já calculadas guardam a versão que usaram.</p>
+          {versionsError ? <Alert tone="danger">{versionsError}</Alert> : null}
+          <Table
+            loading={versionsLoading}
+            rows={versions}
+            emptyMessage="Nenhuma versão publicada ainda."
+            columns={[
+              { key: "versionNumber", label: "Versão", render: (v) => (
+                <span>Versão {v.versionNumber} {v.current ? <Badge tone="success">Vigente</Badge> : null}</span>
+              ) },
+              ...COMPONENTS.map(({ key, label }) => ({
+                key,
+                label: label.replace(" (%)", ""),
+                render: (v) => (v.components?.[key] != null ? formatPercent(v.components[key]) : "Não se aplica"),
+              })),
+              { key: "vigencia", label: "Vigência", render: (v) => (
+                v.effectiveUntil
+                  ? `De ${formatDateTime(v.effectiveFrom)} até ${formatDateTime(v.effectiveUntil)}`
+                  : `Desde ${formatDateTime(v.effectiveFrom)} (em vigor)`
+              ) },
+              { key: "publishedByName", label: "Publicada por", render: (v) => v.publishedByName },
+              { key: "publishedAt", label: "Publicada em", render: (v) => formatDateTime(v.publishedAt) },
+            ]}
+          />
         </Card>
 
         <Card className={styles.formCard}>
