@@ -1,0 +1,68 @@
+name: CI Front
+
+# Guia §13 (CI/CD): lint → build (checagem de compilação de todas as telas) → deploy LAB (push na
+# branch de trabalho) → produção só com aprovação manual (GitHub environment "production" com
+# required reviewers). Passo a passo para ligar os environments/secrets:
+# NayaraOne--API/docs/runbooks/CI_CD.md.
+on:
+  push:
+    branches: [main, marco-6-e-7-homologado-nayara]
+  pull_request:
+    branches: [main, marco-6-e-7-homologado-nayara]
+  workflow_dispatch:
+
+jobs:
+  lint-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      # ESLint (next/core-web-vitals) em modo não interativo; falha com qualquer erro novo fora
+      # da linha de base documentada em scripts/lint-baseline.json.
+      - name: Lint
+        run: npm run lint
+      # Projeto em JavaScript: o "typecheck" possível é compilar todas as rotas — o next build
+      # falha com import quebrado, JSX inválido ou erro de módulo.
+      - name: Build (checagem de compilação)
+        run: npm run build
+
+  deploy-lab:
+    needs: lint-build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/marco-6-e-7-homologado-nayara'
+    runs-on: ubuntu-latest
+    environment: lab
+    steps:
+      - name: Disparar deploy no LAB
+        env:
+          DEPLOY_HOOK_URL: ${{ secrets.LAB_FRONT_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$DEPLOY_HOOK_URL" ]; then
+            echo "::notice::LAB_FRONT_DEPLOY_HOOK_URL não configurado no environment 'lab' — deploy pulado (ver docs/runbooks/CI_CD.md na API)."
+            exit 0
+          fi
+          curl -fsS -X POST "$DEPLOY_HOOK_URL" -H 'Content-Type: application/json' \
+            -d "{\"ref\":\"${GITHUB_SHA}\",\"source\":\"github-actions\"}"
+          echo "Deploy LAB disparado para ${GITHUB_SHA}"
+
+  deploy-production:
+    needs: lint-build
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+    # Required reviewers configurados no environment "production" seguram este job até alguém
+    # aprovar na página do run.
+    environment: production
+    steps:
+      - name: Disparar deploy de produção (após aprovação manual)
+        env:
+          DEPLOY_HOOK_URL: ${{ secrets.PRODUCTION_FRONT_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$DEPLOY_HOOK_URL" ]; then
+            echo "::notice::PRODUCTION_FRONT_DEPLOY_HOOK_URL não configurado no environment 'production' — deploy pulado."
+            exit 0
+          fi
+          curl -fsS -X POST "$DEPLOY_HOOK_URL" -H 'Content-Type: application/json' \
+            -d "{\"ref\":\"${GITHUB_SHA}\",\"source\":\"github-actions\"}"

@@ -740,7 +740,7 @@ function ReasonPromptModal({ prompt, stages, onClose, onConfirm }) {
         </Select>
       </FormField>
       <p className={styles.nextActionDue}>
-        Mover para "{stageLabel}" exige um motivo estruturado (usado nos relatórios de motivos mais comuns).
+        Mover para “{stageLabel}” exige um motivo estruturado (usado nos relatórios de motivos mais comuns).
       </p>
     </Modal>
   );

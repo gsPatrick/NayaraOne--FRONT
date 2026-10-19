@@ -521,7 +521,7 @@ export default function PersonDetailPage({ params }) {
           {normalizedManualQuery.length < 2 ? (
             <p className={styles.manualSearchHint}>Digite ao menos 2 caracteres para buscar.</p>
           ) : manualSearchResults.length === 0 ? (
-            <p className={styles.manualSearchHint}>Nenhum cadastro encontrado para "{manualQuery}".</p>
+            <p className={styles.manualSearchHint}>Nenhum cadastro encontrado para “{manualQuery}”.</p>
           ) : (
             manualSearchResults.map((candidate) => (
               <button

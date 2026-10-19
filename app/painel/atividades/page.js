@@ -303,7 +303,7 @@ function ActivityDetailModal({ entry, actor, onClose, onBlocked, onReverted }) {
             )
           ) : (
             <p className={styles.emptyText}>
-              Não existe reversão automática para "{entityTypeLabel(entry.entityType)}" — correções para este tipo de registro
+              Não existe reversão automática para “{entityTypeLabel(entry.entityType)}” — correções para este tipo de registro
               precisam ser feitas diretamente na tela do módulo correspondente.
             </p>
           )}

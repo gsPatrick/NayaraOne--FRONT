@@ -724,7 +724,7 @@ export default function QualidadeObraPage({ params }) {
         <div className={styles.formGrid}>
           <div className={styles.span2}>
             <Alert tone="warning">
-              Para fechar esta não conformidade é obrigatório enviar uma evidência "depois" —
+              Para fechar esta não conformidade é obrigatório enviar uma evidência “depois” —
               o botão de confirmar só habilita depois do envio ser concluído com sucesso.
             </Alert>
           </div>

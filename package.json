@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "node scripts/lintRatchet.js",
     "test:e2e:marco6": "node e2e/marco6-jornada-completa.spec.js",
     "test:e2e:marco3": "node e2e/marco3-oportunidades-estagnadas.spec.js",
     "test:e2e:marco4": "node e2e/marco4-liquidar-gate.spec.js",
@@ -21,6 +21,9 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^2.1.4",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^14.2.35",
     "playwright": "^1.63.0"
   }
 }

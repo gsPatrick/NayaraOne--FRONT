@@ -685,7 +685,7 @@ export default function PatrimonioPage() {
               <Input type="date" value={loanDueAt} onChange={(e) => setLoanDueAt(e.target.value)} />
               {loanDueAt && loanDueAt < new Date().toISOString().slice(0, 10) ? (
                 <Alert tone="warning" style={{ marginTop: "var(--space-2)" }}>
-                  Essa data já passou — a ferramenta já nasceria "atrasada". Confirme se é isso mesmo.
+                  Essa data já passou — a ferramenta já nasceria “atrasada”. Confirme se é isso mesmo.
                 </Alert>
               ) : null}
             </FormField>

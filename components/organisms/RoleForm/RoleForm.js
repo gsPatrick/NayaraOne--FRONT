@@ -129,7 +129,7 @@ export default function RoleForm({ mode, role, catalog, onSubmit, onCancel, subm
             <button type="button" className={styles.quickBtn} onClick={markAll}>Marcar tudo</button>
             <button type="button" className={styles.quickBtn} onClick={clearAll}>Limpar tudo</button>
             <span className={styles.quickHint}>
-              "Ver" precisa estar marcado para liberar as demais ações do módulo.
+              “Ver” precisa estar marcado para liberar as demais ações do módulo.
             </span>
           </div>
         ) : null}
