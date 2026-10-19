@@ -13,7 +13,7 @@ import RowActions from "@/components/molecules/RowActions/RowActions";
 import Modal from "@/components/organisms/Modal/Modal";
 import Button from "@/components/atoms/Button/Button";
 import { listPeople } from "@/lib/api/people";
-import { getKeyDelivery, getContract, getInspection, releaseKeyDelivery, uploadFile, listContractParties, getKeyDeliveryTermPreview } from "@/lib/api/legal";
+import { getKeyDelivery, getContract, getInspection, releaseKeyDelivery, cancelKeyDelivery, uploadFile, listContractParties, getKeyDeliveryTermPreview } from "@/lib/api/legal";
 import FormField from "@/components/molecules/FormField/FormField";
 import Input from "@/components/atoms/Input/Input";
 import Select from "@/components/atoms/Select/Select";
@@ -48,6 +48,8 @@ export default function EntregaChavesDetailPage({ params }) {
   const [parties, setParties] = useState([]);
   const [termPreview, setTermPreview] = useState(null);
   const [termPreviewError, setTermPreviewError] = useState("");
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
 
   useEffect(() => {
     if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("liberar") === "1") {
@@ -161,6 +163,23 @@ export default function EntregaChavesDetailPage({ params }) {
     }
   }
 
+  async function handleCancel() {
+    setActionError("");
+    setBusy(true);
+    try {
+      const updated = await cancelKeyDelivery(delivery.id, cancelReason.trim());
+      setDelivery(updated);
+      setCancelOpen(false);
+      setCancelReason("");
+      setNotice({ tone: "success", text: "Entrega de chaves cancelada. O motivo ficou registrado na auditoria." });
+    } catch (err) {
+      setActionError(err.message || "Erro ao cancelar a entrega de chaves.");
+      setCancelOpen(false);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   function handleDelete() {
     setDeleteOpen(false);
   }
@@ -180,6 +199,11 @@ export default function EntregaChavesDetailPage({ params }) {
                 <Icon name="key" size={16} /> Liberar chaves
               </Button>
             ) : null}
+            {delivery.status === "PENDING" ? (
+              <Button variant="secondary" onClick={() => setCancelOpen(true)} disabled={busy}>
+                Cancelar entrega
+              </Button>
+            ) : null}
             <RowActions
               onView={() => setNotice({ tone: "info", text: "Você já está vendo os detalhes desta entrega." })}
               onEdit={() => setNotice({ tone: "info", text: "Edição de entregas de chave ainda não implementada nesta versão." })}
@@ -193,7 +217,12 @@ export default function EntregaChavesDetailPage({ params }) {
             {deliveredTo?.legalName || "O recebedor"} não está entre as partes deste contrato. A liberação será recusada — cadastre-o como parte do contrato ou registre uma nova entrega para uma das partes.
           </Alert>
         ) : null}
-        {actionError ? <Alert tone="danger" title="Liberação bloqueada" className={styles.notice}>{actionError}</Alert> : null}
+        {delivery.status === "CANCELLED" ? (
+          <Alert tone="info" title="Entrega cancelada" className={styles.notice}>
+            Cancelada em {delivery.cancelledAt ? formatDateTime(delivery.cancelledAt) : "—"}. Motivo: {delivery.cancelReason || "não informado"}
+          </Alert>
+        ) : null}
+        {actionError ? <Alert tone="danger" title="Ação bloqueada" className={styles.notice}>{actionError}</Alert> : null}
         {notice ? <Alert tone={notice.tone} className={styles.notice}>{notice.text}</Alert> : null}
 
         <div className={styles.grid}>
@@ -205,15 +234,15 @@ export default function EntregaChavesDetailPage({ params }) {
                 <div className={styles.detailRow}><dt>Observações</dt><dd>{delivery.notes || "—"}</dd></div>
                 <div className={styles.detailRow}><dt>Chaves/controles</dt><dd>{delivery.keysCount ?? "—"}{delivery.keysIdentification ? ` (${delivery.keysIdentification})` : ""}</dd></div>
                 <div className={styles.detailRow}><dt>Política de fotos</dt><dd>{{ REQUIRED_USED_PROPERTY: "Fotos obrigatórias (imóvel usado)", REQUIRED_SALE_DELIVERY: "Fotos obrigatórias (entrega de venda)", NOT_REQUIRED_LEASE_CHECKIN_SIGNED: "Fotos dispensadas (locação com vistoria de entrada assinada)" }[delivery.photoPolicy || termPreview?.photoPolicy] || "definida na liberação"}</dd></div>
-                <div className={styles.detailRow}><dt>Termo</dt><dd>{delivery.termVersion || "KD-TERM-v1"} — {delivery.status === "RELEASED" ? "gerado e assinado" : "gerado pelo servidor na liberação (veja a prévia)"}</dd></div>
+                <div className={styles.detailRow}><dt>Termo</dt><dd>{delivery.status === "RELEASED" ? `Modelo ${delivery.termVersion || "KD-TERM-v1"} — gerado e assinado` : delivery.status === "CANCELLED" ? "Não gerado (entrega cancelada)" : "Modelo KD-TERM-v2 — gerado pelo servidor na liberação (veja a prévia)"}</dd></div>
               </dl>
             </Card>
             {delivery.termText ? (
-              <Card title={`Termo de entrega (${delivery.termVersion || ""})`}>
+              <Card title={`Termo de entrega (modelo ${delivery.termVersion || "KD-TERM-v1"})`}>
                 <pre className={styles.mono} style={{ whiteSpace: "pre-wrap" }}>{delivery.termText}</pre>
-                <p className={styles.mono}>SHA-256: {delivery.termHash}</p>
+                <p className={styles.mono}>Código de integridade (SHA-256): {delivery.termHash}</p>
               </Card>
-            ) : (
+            ) : delivery.status === "CANCELLED" ? null : (
               <Card title="Prévia do termo de entrega">
                 {termPreview?.termText ? (
                   <pre className={styles.mono} style={{ whiteSpace: "pre-wrap" }}>{termPreview.termText}</pre>
@@ -287,10 +316,27 @@ export default function EntregaChavesDetailPage({ params }) {
         <FormField label="Fotos" htmlFor="f-kd-photos" helper="Obrigatórias quando a política do sistema exigir (imóvel usado, entrega de venda).">
           <input id="f-kd-photos" type="file" accept="image/*" multiple onChange={(e) => setReleasePhotos(Array.from(e.target.files || []))} />
         </FormField>
-        <FormField label={`Prévia do termo (${termPreview?.termVersion || "KD-TERM-v1"})`} htmlFor="f-kd-term">
+        <FormField label={`Prévia do termo (modelo ${termPreview?.termVersion || "KD-TERM-v2"})`} htmlFor="f-kd-term">
           {termPreview?.termText
             ? <pre id="f-kd-term" className={styles.mono} style={{ whiteSpace: "pre-wrap", maxHeight: 220, overflow: "auto" }}>{termPreview.termText}</pre>
             : <p>{termPreviewError || "Gerando prévia…"}</p>}
+        </FormField>
+      </Modal>
+
+      <Modal
+        open={cancelOpen}
+        onClose={() => setCancelOpen(false)}
+        title="Cancelar entrega de chaves"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setCancelOpen(false)}>Voltar</Button>
+            <Button variant="danger" onClick={handleCancel} disabled={busy || cancelReason.trim().length < 5}>Cancelar entrega</Button>
+          </>
+        }
+      >
+        <p>A entrega fica registrada como cancelada (nada é apagado). Informe o motivo — ele vai para a auditoria.</p>
+        <FormField label="Motivo" htmlFor="f-kd-cancel-reason" required helper="Mínimo de 5 caracteres.">
+          <Input id="f-kd-cancel-reason" value={cancelReason} onChange={(e) => setCancelReason(e.target.value)} placeholder="Ex.: recebedor não é parte do contrato" />
         </FormField>
       </Modal>
 
