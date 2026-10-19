@@ -38,7 +38,7 @@ import {
 import FormField from "@/components/molecules/FormField/FormField";
 import { listPeople } from "@/lib/api/people";
 import { bankAccountLabel } from "@/lib/finance/labels";
-import { formatBRL, formatBRLCompact, formatDate } from "@/lib/format";
+import { formatBRL, formatBRLCompact, formatDate, humanizeText } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function LancamentosPage() {
@@ -193,7 +193,7 @@ export default function LancamentosPage() {
             </span>
             {owner ? <Avatar name={owner.legalName} size="sm" className={styles.ownerAvatar} /> : null}
             <div className={styles.nameCell}>
-              <span className={styles.nameMain} title={row.description}>{row.description}</span>
+              <span className={styles.nameMain} title={humanizeText(row.description)}>{humanizeText(row.description)}</span>
               <span className={styles.nameSub}>{bankAccountLabel(account, owner?.legalName)}</span>
             </div>
           </div>
@@ -250,7 +250,7 @@ export default function LancamentosPage() {
                       <>
                         Origem:{" "}
                         <a href={`/painel/financeiro/lancamentos/${p.parentEntryId}`} onClick={(ev) => { ev.preventDefault(); router.push(`/painel/financeiro/lancamentos/${p.parentEntryId}`); }}>
-                          {p.parentEntry?.description || "lançamento de origem"}
+                          {humanizeText(p.parentEntry?.description) || "lançamento de origem"}
                           {p.parentEntry?.amount != null ? ` (${formatBRL(p.parentEntry.amount)})` : ""}
                         </a>
                         {" · "}
@@ -329,7 +329,7 @@ export default function LancamentosPage() {
                     {overdueEntries.map((e) => (
                       <li key={e.id} className={styles.sideListRow}>
                         <Icon name="document" size={14} />
-                        <span className={styles.sideListLabel}>{e.description}</span>
+                        <span className={styles.sideListLabel}>{humanizeText(e.description)}</span>
                         <strong className={styles.sideListValue}>{formatBRL(e.amount)}</strong>
                       </li>
                     ))}
@@ -358,7 +358,7 @@ export default function LancamentosPage() {
           </>
         }
       >
-        <p>Tem certeza que deseja excluir <strong>{deleteTarget?.description}</strong>? Esta ação não pode ser desfeita.</p>
+        <p>Tem certeza que deseja excluir <strong>{humanizeText(deleteTarget?.description)}</strong>? Esta ação não pode ser desfeita.</p>
       </Modal>
 
       <Modal
@@ -375,7 +375,7 @@ export default function LancamentosPage() {
         {resolveTarget ? (
           <>
             <p>
-              {resolveTarget.description} — <strong>{formatBRL(resolveTarget.amount)}</strong>
+              {humanizeText(resolveTarget.description)} — <strong>{formatBRL(resolveTarget.amount)}</strong>
             </p>
             {resolveError ? <Alert tone="danger">{resolveError}</Alert> : null}
             <FormField label="Classificação final">

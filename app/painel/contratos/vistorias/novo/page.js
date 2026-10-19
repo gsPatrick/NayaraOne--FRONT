@@ -15,8 +15,9 @@ import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/Skeleton
 import { listProperties } from "@/lib/api/properties";
 import { listContracts, createInspectionWithItems } from "@/lib/api/legal";
 import { INSPECTION_TYPE_LABELS, CONDITION_LABELS, CONDITION_TONE, RESPONSIBLE_PARTY_LABELS } from "@/lib/mock/legal";
-import { formatContractLabel } from "@/lib/format";
+import { formatContractLabel, toNumber, formatBRL } from "@/lib/format";
 import styles from "./page.module.css";
+import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 
 export default function NovaVistoriaPage() {
   const router = useRouter();
@@ -129,7 +130,7 @@ export default function NovaVistoriaPage() {
         setNewItemError('Descreva o dano ("Descrição do dano" é obrigatória para itens com condição "Danificado").');
         return;
       }
-      const budgetNumber = Number(newItem.estimatedBudget);
+      const budgetNumber = toNumber(newItem.estimatedBudget);
       if (newItem.estimatedBudget === "" || !Number.isFinite(budgetNumber) || budgetNumber < 0) {
         setNewItemError('Informe um "Orçamento estimado" numérico (>= 0) para itens com condição "Danificado".');
         return;
@@ -165,7 +166,7 @@ export default function NovaVistoriaPage() {
           notes: item.notes || undefined,
           damageDescription: item.damageDescription || undefined,
           responsibleParty: item.responsibleParty || undefined,
-          estimatedBudget: item.estimatedBudget !== "" ? item.estimatedBudget : undefined,
+          estimatedBudget: item.estimatedBudget !== "" ? toNumber(item.estimatedBudget) : undefined,
         })),
       });
       router.push(`/painel/contratos/vistorias/${inspection.id}`);
@@ -191,7 +192,7 @@ export default function NovaVistoriaPage() {
         {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
         {!loading && !loadError && properties.length === 0 ? (
           <Alert tone="danger" title="Nenhum imóvel disponível">
-            Não há imóveis cadastrados para vincular a esta vistoria — cadastre um imóvel antes de continuar. Sem isso o botão "Criar vistoria" fica desabilitado, mesmo com os outros campos preenchidos.
+            Não há imóveis cadastrados para vincular a esta vistoria — cadastre um imóvel antes de continuar. Sem isso o botão “Criar vistoria” fica desabilitado, mesmo com os outros campos preenchidos.
           </Alert>
         ) : null}
 
@@ -260,7 +261,7 @@ export default function NovaVistoriaPage() {
                       <span className={styles.itemNotes}>
                         Dano: {item.damageDescription}
                         {item.responsibleParty ? ` — Responsável: ${RESPONSIBLE_PARTY_LABELS[item.responsibleParty] || item.responsibleParty}` : ""}
-                        {item.estimatedBudget !== "" ? ` — Orçamento: R$ ${Number(item.estimatedBudget).toFixed(2)}` : ""}
+                        {item.estimatedBudget !== "" ? ` — Orçamento: ${formatBRL(toNumber(item.estimatedBudget))}` : ""}
                       </span>
                     ) : null}
                   </div>
@@ -312,14 +313,11 @@ export default function NovaVistoriaPage() {
                 </Select>
               </FormField>
               <FormField label="Orçamento estimado (R$)" htmlFor="f-item-budget">
-                <Input
+                <DecimalInput
                   id="f-item-budget"
-                  type="number"
-                  min="0"
-                  step="0.01"
                   value={newItem.estimatedBudget}
                   onChange={(e) => setNewItem((prev) => ({ ...prev, estimatedBudget: e.target.value }))}
-                  placeholder="Ex: 350.00"
+                  placeholder="Ex.: 350,00"
                 />
               </FormField>
             </div>

@@ -238,9 +238,9 @@ export default function ReguaCobrancaPage() {
 
   const stepColumns = [
     { key: "businessDate", label: "Data", render: (row) => formatDate(row.businessDate) },
-    { key: "period", label: "Competência", render: (row) => row.period || "—" },
+    { key: "period", label: "Competência", render: (row) => (row.period && /^\d{4}-\d{2}$/.test(row.period) ? `${row.period.slice(5)}/${row.period.slice(0, 4)}` : row.period || "—") },
     { key: "dueDate", label: "Vencimento", render: (row) => (row.dueDate ? formatDate(row.dueDate) : "—") },
-    { key: "stepCode", label: "Etapa", render: (row) => `${row.stepCode} (${describeOffset(row.offsetDays)})` },
+    { key: "stepCode", label: "Etapa", render: (row) => describeOffset(row.offsetDays) },
     { key: "action", label: "Ação", render: (row) => ACTION_LABELS[row.action] || row.action },
     { key: "balanceAtStep", label: "Saldo na etapa", render: (row) => formatBRL(row.balanceAtStep) },
     {

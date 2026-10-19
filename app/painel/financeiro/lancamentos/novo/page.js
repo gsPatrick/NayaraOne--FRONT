@@ -16,8 +16,9 @@ import BankAccountSelect from "@/components/molecules/BankAccountSelect/BankAcco
 import { ENTRY_NATURE_LABELS } from "@/lib/mock/finance";
 import { listBankAccounts, listCostCenters, listResultCenters, createFinancialEntry } from "@/lib/api/finance";
 import { generateIdempotencyKey } from "@/lib/offline/offlineQueue";
-import { dateOnlyInputToIso } from "@/lib/format";
+import { dateOnlyInputToIso, toNumber } from "@/lib/format";
 import styles from "./page.module.css";
+import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 
 export default function NovoLancamentoPage() {
   const router = useRouter();
@@ -91,7 +92,7 @@ export default function NovoLancamentoPage() {
   const resultCenterMissing = form.nature === "RECEIVABLE" && !form.resultCenterId;
   const isValid =
     form.description.trim() &&
-    Number(form.amount) > 0 &&
+    toNumber(form.amount) > 0 &&
     form.bankAccountId &&
     !dueAtInvalid &&
     !costCenterMissing &&
@@ -127,7 +128,7 @@ export default function NovoLancamentoPage() {
         resultCenterId: form.resultCenterId || undefined,
         entryType: form.entryType,
         nature: form.nature,
-        amount: Number(form.amount),
+        amount: toNumber(form.amount),
         description: form.description.trim(),
         dueAt: dateOnlyInputToIso(form.dueAt),
         idempotencyKey: manualKey || entryIdempotencyKeyRef.current,
@@ -163,7 +164,7 @@ export default function NovoLancamentoPage() {
               </FormField>
 
               <FormField label="Valor (R$)" htmlFor="f-amount" required>
-                <Input id="f-amount" type="number" min="0" step="0.01" value={form.amount} onChange={update("amount")} placeholder="0,00" />
+                <DecimalInput id="f-amount" value={form.amount} onChange={update("amount")} placeholder="0,00" />
               </FormField>
 
               <FormField label="Natureza" htmlFor="f-nature">

@@ -22,9 +22,9 @@ import {
 } from "@/lib/mock/finance";
 import { listFinancialEntries, listBankAccounts, listApprovalRequests, listCommissions, listOwnerRepasses } from "@/lib/api/finance";
 import { apiFetch } from "@/lib/api/client";
-import { formatBRL, formatBRLCompact, formatDate } from "@/lib/format";
+import { formatBRL, formatBRLCompact, formatDate, humanizeText } from "@/lib/format";
 import { buildMonthlyChartData } from "@/lib/monthlyChartData";
-import { bankAccountLabel } from "@/lib/finance/labels";
+import { bankAccountLabel, approvalRequestLabel } from "@/lib/finance/labels";
 import styles from "./page.module.css";
 
 export default function FinanceiroPage() {
@@ -162,7 +162,7 @@ export default function FinanceiroPage() {
                       <Link href={`/painel/financeiro/lancamentos/${e.id}`} className={styles.listRow}>
                         <span className={styles.listRowIcon}><Icon name="document" size={16} /></span>
                         <div className={styles.listRowInfo}>
-                          <span className={styles.listRowTitle}>{e.description}</span>
+                          <span className={styles.listRowTitle}>{humanizeText(e.description)}</span>
                           <span className={styles.listRowSubtitle}>Venceu em {formatDate(e.dueAt)}</span>
                         </div>
                         <span className={styles.listRowRight}>{formatBRL(e.amount)}</span>
@@ -185,7 +185,7 @@ export default function FinanceiroPage() {
                     <li key={r.id} className={styles.listRow}>
                       <span className={styles.listRowIcon}><Icon name="shield" size={16} /></span>
                       <div className={styles.listRowInfo}>
-                        <span className={styles.listRowTitle}>{r.relatedEntityType} · {r.relatedEntityId}</span>
+                        <span className={styles.listRowTitle}>{approvalRequestLabel(r)}</span>
                         <span className={styles.listRowSubtitle}>Risco {RISK_LEVEL_LABELS[r.riskLevel]} · {userName(r.requestedByUserId)}</span>
                       </div>
                       <Badge tone={RISK_LEVEL_TONE[r.riskLevel]}>{RISK_LEVEL_LABELS[r.riskLevel]}</Badge>

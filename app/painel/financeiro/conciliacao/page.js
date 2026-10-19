@@ -21,7 +21,7 @@ import Badge from "@/components/atoms/Badge/Badge";
 import { listFinancialEntries, listBankTransactions, listBankAccounts, listReconciliations, matchReconciliation, suggestReconciliationMatches } from "@/lib/api/finance";
 import { apiFetch } from "@/lib/api/client";
 import { getCurrentUser } from "@/lib/auth/session";
-import { formatBRL, formatDate, formatDateTime } from "@/lib/format";
+import { formatBRL, formatDate, formatDateTime, humanizeText } from "@/lib/format";
 import styles from "./page.module.css";
 
 // Gap conhecido: não existe endpoint de importação de extrato em lote na API
@@ -239,7 +239,7 @@ export default function ConciliacaoPage() {
                             <BankLogo bankCode={account?.bankCode} size={30} square />
                           </span>
                           <div className={styles.listRowInfo}>
-                            <span className={styles.listRowTitle}>{t.description}</span>
+                            <span className={styles.listRowTitle}>{humanizeText(t.description)}</span>
                             <span className={styles.listRowSubtitle}>{formatDate(t.transactionDate)} · {t.externalTransactionId} · {account?.bankCode || "—"}</span>
                           </div>
                           {classInfo ? <Badge tone={classInfo.tone}>{classInfo.text}</Badge> : null}
@@ -283,7 +283,7 @@ export default function ConciliacaoPage() {
                             <BankLogo bankCode={account?.bankCode} size={30} square />
                           </span>
                           <div className={styles.listRowInfo}>
-                            <span className={styles.listRowTitle}>{e.description}</span>
+                            <span className={styles.listRowTitle}>{humanizeText(e.description)}</span>
                             <span className={styles.listRowSubtitle}>{e.dueAt ? formatDate(e.dueAt) : "Sem vencimento"}</span>
                           </div>
                           <NatureBadge nature={e.nature} />
@@ -319,7 +319,7 @@ export default function ConciliacaoPage() {
                             <BankLogo bankCode={account?.bankCode} size={30} square />
                           </span>
                           <div className={styles.listRowInfo}>
-                            <span className={styles.listRowTitle}>{entry?.description || r.financialEntryId}</span>
+                            <span className={styles.listRowTitle}>{humanizeText(entry?.description) || "Lançamento"}</span>
                             <span className={styles.listRowSubtitle}>Conciliado em {formatDateTime(r.matchedAt)} por {userName(users, r.matchedByUserId)}</span>
                           </div>
                           <Icon name="check" size={16} className={styles.checkIcon} />
@@ -386,7 +386,7 @@ function ReconcileModal({ transaction, candidates, matchClass, onClose, onConfir
       }
     >
       <p className={styles.modalIntro}>
-        {transaction.description} — {formatBRL(transaction.amount)} em {formatDate(transaction.transactionDate)}
+        {humanizeText(transaction.description)} — {formatBRL(transaction.amount)} em {formatDate(transaction.transactionDate)}
       </p>
       {matchClass === "AMBIGUOUS" ? (
         <Alert tone="warning" className={styles.notice}>
@@ -403,7 +403,7 @@ function ReconcileModal({ transaction, candidates, matchClass, onClose, onConfir
         <Select value={entryId} onChange={(e) => setEntryId(e.target.value)}>
           <option value="">Selecione o lançamento...</option>
           {candidates.map((e) => (
-            <option key={e.id} value={e.id}>{e.description} — {formatBRL(e.amount)}</option>
+            <option key={e.id} value={e.id}>{humanizeText(e.description)} — {formatBRL(e.amount)}</option>
           ))}
         </Select>
       )}

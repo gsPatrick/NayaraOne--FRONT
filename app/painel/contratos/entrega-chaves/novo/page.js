@@ -148,7 +148,7 @@ export default function NovaEntregaChavesPage() {
         {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
 
         <Alert tone="info" title="Trava de liberação">
-          A liberação efetiva das chaves só é permitida quando o contrato estiver assinado (SIGNED) ou ativo (ACTIVE) e, se houver vistoria de entrada vinculada, ela precisa estar concluída.
+          A liberação efetiva das chaves só é permitida quando o contrato estiver assinado ou ativo e, se houver vistoria de entrada vinculada, ela precisa estar concluída.
         </Alert>
 
         <Card title="Dados da entrega">

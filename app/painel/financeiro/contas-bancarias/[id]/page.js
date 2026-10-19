@@ -33,7 +33,7 @@ import {
   updateBankAccount,
   blockBankAccount,
 } from "@/lib/api/finance";
-import { formatBRL, formatDate, formatDateTime } from "@/lib/format";
+import { formatBRL, formatDate, formatDateTime, humanizeText } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function ContaBancariaDetailPage({ params }) {
@@ -206,7 +206,7 @@ export default function ContaBancariaDetailPage({ params }) {
                       <li key={e.id} className={styles.listRow} onClick={() => router.push(`/painel/financeiro/lancamentos/${e.id}`)}>
                         <Icon name="document" size={16} />
                         <div className={styles.listRowInfo}>
-                          <span className={styles.listRowTitle}>{e.description}</span>
+                          <span className={styles.listRowTitle}>{humanizeText(e.description)}</span>
                           <span className={styles.listRowSubtitle}>{e.dueAt ? formatDate(e.dueAt) : "Sem vencimento"}</span>
                         </div>
                         <Badge tone={ENTRY_STATUS_TONE[e.status]}>{ENTRY_STATUS_LABELS[e.status]}</Badge>

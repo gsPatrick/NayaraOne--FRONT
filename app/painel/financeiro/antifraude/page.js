@@ -26,6 +26,8 @@ import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu
 import { listAnomalyCases, resolveAnomalyCase } from "@/lib/api/finance";
 import { formatDate } from "@/lib/format";
 import styles from "./page.module.css";
+import { ANOMALY_CASE_TYPE_LABELS } from "@/lib/mock/finance";
+import { humanizeText } from "@/lib/format";
 
 const RISK_LABELS = { LOW: "Baixo", MEDIUM: "Médio", HIGH: "Alto", CRITICAL: "Crítico" };
 const RISK_TONE = { LOW: "neutral", MEDIUM: "warning", HIGH: "danger", CRITICAL: "danger" };
@@ -121,9 +123,9 @@ export default function AntifraudePage() {
                   <div className={styles.rowTop}>
                     <Badge tone={RISK_TONE[c.riskLevel]}>{RISK_LABELS[c.riskLevel] || c.riskLevel}</Badge>
                     <Badge tone={STATUS_TONE[c.status]}>{STATUS_LABELS[c.status] || c.status}</Badge>
-                    <span className={styles.caseType}>{c.caseType}</span>
+                    <span className={styles.caseType}>{ANOMALY_CASE_TYPE_LABELS[c.caseType] || "Outro tipo de alerta"}</span>
                   </div>
-                  <p className={styles.reason}>{c.reason}</p>
+                  <p className={styles.reason}>{humanizeText(c.reason)}</p>
                   <span className={styles.meta}>
                     Aberto em {formatDate(c.createdAt)}
                     {c.resolvedAt ? ` · Resolvido em ${formatDate(c.resolvedAt)}` : ""}

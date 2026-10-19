@@ -26,8 +26,9 @@ import {
   listCostCenters,
   listResultCenters,
 } from "@/lib/api/finance";
-import { formatBRL } from "@/lib/format";
+import { formatBRL, toNumber } from "@/lib/format";
 import styles from "./page.module.css";
+import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 
 function currentCompetenceMonth() {
   const now = new Date();
@@ -96,7 +97,7 @@ export default function OrcamentoPage() {
       setFormError(nature === "PAYABLE" ? "Selecione o centro de custo." : "Selecione o centro de resultado.");
       return;
     }
-    const amountNumeric = Number(forecastedAmount);
+    const amountNumeric = toNumber(forecastedAmount);
     if (!Number.isFinite(amountNumeric) || amountNumeric <= 0) {
       setFormError("Informe um valor projetado maior que zero.");
       return;
@@ -195,11 +196,8 @@ export default function OrcamentoPage() {
             </FormField>
 
             <FormField label="Valor projetado" htmlFor="forecastedAmount">
-              <Input
+              <DecimalInput
                 id="forecastedAmount"
-                type="number"
-                min="0.01"
-                step="0.01"
                 value={forecastedAmount}
                 onChange={(e) => setForecastedAmount(e.target.value)}
               />

@@ -9,6 +9,8 @@ import Button from "@/components/atoms/Button/Button";
 import Input from "@/components/atoms/Input/Input";
 import Select from "@/components/atoms/Select/Select";
 import styles from "./page.module.css";
+import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
+import { toNumber } from "@/lib/format";
 
 const CONTRACT_TYPE_LABELS = {
   SALE: "Venda", SALE_CASH: "Venda à vista", SALE_FINANCED: "Venda financiada", SALE_TRADE: "Venda com permuta",
@@ -62,7 +64,7 @@ export function toConditionPayload(state) {
     match: state.match,
     rules: state.rules.map((r) => {
       const def = CONDITION_VARIABLES[r.variable];
-      if (r.operator !== "exists" && def.type === "number") return { ...r, value: Number(r.value) };
+      if (r.operator !== "exists" && def.type === "number") return { ...r, value: toNumber(r.value) };
       return r;
     }),
   };
@@ -80,7 +82,7 @@ export function isConditionStateValid(state) {
     const def = CONDITION_VARIABLES[r.variable];
     if (r.operator === "exists") return true;
     if (r.operator === "in" || r.operator === "not_in") return Array.isArray(r.value) && r.value.length > 0;
-    if (def.type === "number") return r.value !== "" && Number.isFinite(Number(r.value));
+    if (def.type === "number") return r.value !== "" && Number.isFinite(toNumber(r.value));
     return r.value !== undefined && r.value !== "";
   });
 }
@@ -179,7 +181,7 @@ export default function ClauseConditionEditor({ value, onChange, idPrefix }) {
                     <option value="no">Não</option>
                   </Select>
                 ) : (
-                  <Input aria-label="Valor" type="number" min="0" value={rule.value} onChange={(e) => updateRule(index, { value: e.target.value })} />
+                  <DecimalInput aria-label="Valor" value={rule.value} onChange={(e) => updateRule(index, { value: e.target.value })} />
                 )}
 
                 <Button size="sm" variant="ghost" onClick={() => update({ rules: value.rules.filter((_, i) => i !== index) })} disabled={value.rules.length === 1}>

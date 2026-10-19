@@ -53,7 +53,7 @@ import { listContracts } from "@/lib/api/legal";
 import { listPeople } from "@/lib/api/people";
 import { apiFetch } from "@/lib/api/client";
 import { commissionDescription } from "@/lib/finance/labels";
-import { formatBRL, formatDate, formatPercent, formatContractLabel, toNumber } from "@/lib/format";
+import { formatBRL, formatDate, formatPercent, formatContractLabel, toNumber, humanizeText } from "@/lib/format";
 import { buildMonthlyChartData } from "@/lib/monthlyChartData";
 import styles from "./page.module.css";
 
@@ -696,7 +696,7 @@ function NewRepasseModal({ open, people, bankAccounts, onClose, onConfirm, busy 
               <label key={e.id} style={{ display: "flex", gap: 8, alignItems: "center" }}>
                 <input type="checkbox" checked={form.sourceEntryIds.includes(e.id)} onChange={() => toggleSource(e.id)} />
                 <span>
-                  {e.description || "Recebimento"} — disponível {formatBRL(e.availableAmount)}
+                  {humanizeText(e.description) || "Recebimento"} — disponível {formatBRL(e.availableAmount)}
                   {Number(e.alreadyAllocatedAmount) > 0 ? ` de ${formatBRL(e.amount)}` : ""}
                   {e.competenceMonth ? ` · competência ${formatMonthBR(e.competenceMonth)}` : ""}
                   {e.settledAt ? ` · recebido em ${formatDate(e.settledAt)}` : ""}
@@ -852,7 +852,7 @@ function NewCommissionModal({ open, users, onClose, onConfirm, busy }) {
         <Select id="nc-source" value={form.sourceEntryId} onChange={update("sourceEntryId")}>
           <option value="">Selecionar…</option>
           {receivables.map((e) => (
-            <option key={e.id} value={e.id}>{(e.description || "Recebimento")} · {formatBRL(e.amount)} · {ENTRY_STATUS_LABELS[e.status] || e.status}</option>
+            <option key={e.id} value={e.id}>{humanizeText(e.description) || "Recebimento"} · {formatBRL(e.amount)} · {ENTRY_STATUS_LABELS[e.status] || e.status}</option>
           ))}
         </Select>
       </FormField>
@@ -901,7 +901,7 @@ function PayInstallmentModal({ installment, pendingEntries, onClose, onConfirm, 
             <Select value={entryId} onChange={(e) => setEntryId(e.target.value)}>
               <option value="">Selecione o lançamento...</option>
               {pendingEntries.map((e) => (
-                <option key={e.id} value={e.id}>{e.description} — {formatBRL(e.amount)}</option>
+                <option key={e.id} value={e.id}>{humanizeText(e.description)} — {formatBRL(e.amount)}</option>
               ))}
             </Select>
           )}
@@ -971,7 +971,7 @@ function CompositionModal({ state, onClose }) {
                 {state.data.composition.map((src, idx) => (
                   <li key={idx} className={styles.listRow}>
                     <div className={styles.listRowInfo}>
-                      <span className={styles.listRowTitle}>{src.description || src.financialEntryId}</span>
+                      <span className={styles.listRowTitle}>{humanizeText(src.description) || "Recebimento"}</span>
                       <span className={styles.listRowSubtitle}>Valor elegível: {formatBRL(src.eligibleAmount ?? src.amount)}</span>
                     </div>
                   </li>

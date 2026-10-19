@@ -16,9 +16,10 @@ import { listPeople } from "@/lib/api/people";
 import { listProjects } from "@/lib/api/construction";
 import { createContract, addContractParty, listContractTemplates, renderContractTemplate, createContractVersion } from "@/lib/api/legal";
 import { CONTRACT_TYPE_LABELS, CONTRACT_TYPE_CREATE_OPTIONS, PARTY_ROLE_LABELS } from "@/lib/mock/legal";
-import { dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE, formatDate, formatBRL } from "@/lib/format";
+import { dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE, formatDate, formatBRL, toNumber } from "@/lib/format";
 import { describeCondition } from "@/app/painel/contratos/clausulas/ClauseConditionEditor";
 import styles from "./page.module.css";
+import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 
 // Detecta placeholders "{{chave}}" que sobraram sem substituir no texto renderizado — o backend
 // (contractTemplates.service.js#applyTemplateVariables) deixa o placeholder intacto quando não
@@ -51,7 +52,7 @@ function buildKnownVariables({ parties, people, property, form }) {
     vars.doc_locatario = tenant.taxIdNormalized || "(documento não cadastrado)";
   }
   if (property) vars.endereco_imovel = property.addressLine || property.name;
-  if (form.totalValue) vars.valor_aluguel = formatBRL(Number(form.totalValue)).replace("R$", "").trim();
+  if (form.totalValue) vars.valor_aluguel = formatBRL(toNumber(form.totalValue)).replace("R$", "").trim();
   if (form.startsAt) vars.data_inicio = formatDate(dateOnlyInputToIso(form.startsAt));
   if (form.endsAt) vars.data_fim = formatDate(dateOnlyInputToIso(form.endsAt));
   return vars;
@@ -120,7 +121,7 @@ export default function NovoContratoPage() {
 
   const [dateErrors, setDateErrors] = useState({});
   const isValid =
-    form.propertyId && Number(form.totalValue) > 0 && parties.length > 0 && !dateErrors.startsAt && !dateErrors.endsAt &&
+    form.propertyId && toNumber(form.totalValue) > 0 && parties.length > 0 && !dateErrors.startsAt && !dateErrors.endsAt &&
     (!isConstruction || Boolean(form.constructionProjectId));
 
   function update(field) {
@@ -164,7 +165,7 @@ export default function NovoContratoPage() {
   function getDraftContract() {
     return {
       contractType: form.contractType,
-      totalValue: Number(form.totalValue),
+      totalValue: toNumber(form.totalValue),
       startsAt: dateOnlyInputToIso(form.startsAt),
       endsAt: dateOnlyInputToIso(form.endsAt),
       propertyId: form.propertyId,
@@ -208,7 +209,7 @@ export default function NovoContratoPage() {
       const contract = await createContract({
         propertyId: form.propertyId,
         contractType: form.contractType,
-        totalValue: Number(form.totalValue),
+        totalValue: toNumber(form.totalValue),
         startsAt: dateOnlyInputToIso(form.startsAt),
         endsAt: dateOnlyInputToIso(form.endsAt),
         ...(isConstruction ? { constructionProjectId: form.constructionProjectId } : {}),
@@ -265,7 +266,7 @@ export default function NovoContratoPage() {
         {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
 
         <Alert tone="info" title="Máquina de estados">
-          O contrato nasce em DRAFT e avança etapa por etapa (Documentos pendentes → Análise jurídica → Aprovado → Em assinatura → Assinado → Ativo) — a transição é feita na página de detalhe.
+          O contrato nasce como rascunho e avança etapa por etapa (Documentos pendentes → Análise jurídica → Aprovado → Em assinatura → Assinado → Ativo) — a transição é feita na página de detalhe.
         </Alert>
 
         <Card title="Dados do contrato">
@@ -312,7 +313,7 @@ export default function NovoContratoPage() {
             </FormField>
 
             <FormField label="Valor total (R$)" htmlFor="f-value" required>
-              <Input id="f-value" type="number" min="0" step="0.01" value={form.totalValue} onChange={update("totalValue")} placeholder="0,00" />
+              <DecimalInput id="f-value" value={form.totalValue} onChange={update("totalValue")} placeholder="0,00" />
             </FormField>
 
             <FormField

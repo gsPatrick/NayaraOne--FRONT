@@ -37,6 +37,8 @@ import {
 } from "@/lib/mock/legal";
 import { formatDate, formatDateTime, formatContractLabel } from "@/lib/format";
 import styles from "./page.module.css";
+import { EVIDENCE_MANIFEST_TYPE_LABELS, EVIDENCE_ACCESS_ACTION_LABELS } from "@/lib/mock/legal";
+import { humanizeText } from "@/lib/format";
 
 const STATUS_OPTIONS = ["OPEN", "CLOSED"];
 
@@ -283,9 +285,9 @@ export default function ProcessoDetailPage({ params }) {
                       <div className={styles.manifestList}>
                         {(pkg.manifestJson || []).map((item, idx) => (
                           <div key={idx} className={styles.manifestItem}>
-                            <span className={styles.manifestType}>{item.type}</span>
+                            <span className={styles.manifestType}>{EVIDENCE_MANIFEST_TYPE_LABELS[item.type] || "Documento"}</span>
                             <div className={styles.manifestBody}>
-                              <span className={styles.manifestDesc}>{item.description}</span>
+                              <span className={styles.manifestDesc}>{humanizeText(item.description)}</span>
                               {item.hash ? <span className={styles.manifestHash} title={item.hash}>{item.hash}</span> : null}
                             </div>
                           </div>
@@ -323,7 +325,7 @@ export default function ProcessoDetailPage({ params }) {
                           ) : (
                             custody.log.map((entry) => (
                               <div key={entry.id} className={styles.manifestItem}>
-                                <span className={styles.manifestType}>{entry.action}</span>
+                                <span className={styles.manifestType}>{EVIDENCE_ACCESS_ACTION_LABELS[entry.action] || "Acesso"}</span>
                                 <div className={styles.manifestBody}>
                                   <span className={styles.manifestDesc}>
                                     {entry.accessedByUserId ? userName(entry.accessedByUserId) : "—"}

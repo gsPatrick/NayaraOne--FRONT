@@ -18,7 +18,7 @@ import StatTile from "@/components/molecules/StatTile/StatTile";
 import Alert from "@/components/molecules/Alert/Alert";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu";
-import { getWeeklyHealthReport } from "@/lib/api/finance";
+import { getWeeklyHealthReport, listResultCenters } from "@/lib/api/finance";
 import { formatBRL, formatDate } from "@/lib/format";
 import styles from "./page.module.css";
 
@@ -26,10 +26,12 @@ export default function RelatorioFinanceiroPage() {
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const [resultCenters, setResultCenters] = useState([]);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
+    listResultCenters().then((rc) => { if (!cancelled) setResultCenters(Array.isArray(rc) ? rc : rc?.items || []); }).catch(() => {});
     getWeeklyHealthReport()
       .then((r) => {
         if (!cancelled) setReport(r);
@@ -174,7 +176,7 @@ export default function RelatorioFinanceiroPage() {
                 <ul className={styles.list}>
                   {report.marginBySector.map((s) => (
                     <li key={s.resultCenterId || "sem-centro"}>
-                      <span>{s.resultCenterId || "Sem centro de resultado"}</span>
+                      <span>{s.resultCenterId ? (resultCenters.find((c) => c.id === s.resultCenterId)?.name || "Centro de resultado") : "Sem centro de resultado"}</span>
                       <strong className={s.margin >= 0 ? styles.success : styles.danger}>{formatBRL(s.margin)}</strong>
                       <span className={styles.count}>
                         receita {formatBRL(s.revenueRealized)} − custo {formatBRL(s.costsAttributed)}

@@ -23,7 +23,7 @@ import {
   reconcilePaymentIntent,
   resolveUncertainPaymentIntent,
 } from "@/lib/api/finance";
-import { formatBRL, formatDateTime } from "@/lib/format";
+import { formatBRL, formatDateTime, humanizeText } from "@/lib/format";
 import { getCurrentUser } from "@/lib/auth/session";
 import styles from "./page.module.css";
 
@@ -286,7 +286,7 @@ export default function IntencoesPagamentoPage() {
                   return (
                     <li key={intent.id} className={styles.row}>
                       <div className={styles.rowInfo}>
-                        <span className={styles.rowTitle}>{entry?.description || "Lançamento"}</span>
+                        <span className={styles.rowTitle}>{humanizeText(entry?.description) || "Lançamento"}</span>
                         <span className={styles.rowSubtitle}>
                           {entry ? formatBRL(entry.amount) : "—"} · hash {intent.snapshotHash?.slice(0, 10)}… · criada em {formatDateTime(intent.createdAt || intent.created_at)}
                         </span>

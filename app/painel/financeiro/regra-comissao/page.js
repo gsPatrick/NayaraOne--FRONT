@@ -15,6 +15,7 @@ import MfaVerifyModal from "@/components/organisms/MfaVerifyModal/MfaVerifyModal
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu";
 import { getCommissionRule, publishCommissionRule } from "@/lib/api/finance";
+import { formatDate, formatPercent } from "@/lib/format";
 import styles from "./page.module.css";
 
 const COMPONENTS = [
@@ -100,8 +101,8 @@ export default function CommissionRulePage() {
           <h2 className={styles.sectionTitle}>Versão vigente (REG-FIN-002)</h2>
           {rule ? (
             <p className={styles.helper}>
-              Versão {rule.ruleVersionId} · base: valor do recebimento ·{" "}
-              {COMPONENTS.map(({ key, label }) => `${label.replace(" (%)", "")}: ${rule.components?.[key] ?? "—"}%`).join(" · ")}
+              Versão {rule.versionNumber ?? "vigente"}{rule.effectiveFrom ? ` (desde ${formatDate(rule.effectiveFrom)})` : ""} · base: valor do recebimento ·{" "}
+              {COMPONENTS.map(({ key, label }) => `${label.replace(" (%)", "")}: ${rule.components?.[key] != null ? formatPercent(rule.components[key]) : "—"}`).join(" · ")}
             </p>
           ) : (
             <p className={styles.helper}>{ruleMessage || "Carregando..."}</p>

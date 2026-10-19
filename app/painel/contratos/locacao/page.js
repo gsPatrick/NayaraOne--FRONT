@@ -43,8 +43,9 @@ import {
   checkCloseoutEligibility,
   closeoutContract,
 } from "@/lib/api/billing";
-import { formatBRL, formatDate, formatContractLabel } from "@/lib/format";
+import { formatBRL, formatDate, formatContractLabel, toNumber } from "@/lib/format";
 import styles from "./page.module.css";
+import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 
 const COMPONENT_LABELS = { RENT: "Aluguel", CONDO: "Condomínio", IPTU: "IPTU", OTHER: "Outro" };
 const SCHEDULE_STATUS_TONE = { OPEN: "warning", PARTIALLY_PAID: "info", PAID: "success" };
@@ -143,7 +144,7 @@ export default function LocacaoPage() {
         contractId: scheduleForm.contractId,
         period: scheduleForm.period,
         dueDate: scheduleForm.dueDate,
-        items: [{ componentType: scheduleForm.componentType, amount: Number(scheduleForm.amount) }],
+        items: [{ componentType: scheduleForm.componentType, amount: toNumber(scheduleForm.amount) }],
       });
       setGenerateOpen(false);
       setScheduleForm({ contractId: "", period: currentPeriod(), dueDate: "", componentType: "RENT", amount: "" });
@@ -156,7 +157,7 @@ export default function LocacaoPage() {
   async function handlePay() {
     setActionError("");
     try {
-      await registerBillingSchedulePayment(payTarget.id, Number(payAmount));
+      await registerBillingSchedulePayment(payTarget.id, toNumber(payAmount));
       setPayTarget(null);
       setPayAmount("");
       load();
@@ -172,7 +173,7 @@ export default function LocacaoPage() {
         contractId: adjustForm.contractId,
         period: adjustForm.period,
         indexCode: adjustForm.indexCode,
-        oldRentAmount: Number(adjustForm.oldRentAmount),
+        oldRentAmount: toNumber(adjustForm.oldRentAmount),
       });
       setAdjustOpen(false);
       setAdjustForm({ contractId: "", period: currentPeriod(), indexCode: "IGPM", oldRentAmount: "" });
@@ -203,7 +204,7 @@ export default function LocacaoPage() {
   async function handleUtilityPay() {
     setActionError("");
     try {
-      await recordUtilityPayment(utilityPayTarget.id, { amount: Number(utilityPayAmount), paidByParty: utilityPaidBy });
+      await recordUtilityPayment(utilityPayTarget.id, { amount: toNumber(utilityPayAmount), paidByParty: utilityPaidBy });
       setUtilityPayTarget(null);
       setUtilityPayAmount("");
       load();
@@ -227,7 +228,7 @@ export default function LocacaoPage() {
   async function handleGuaranteedPay() {
     setActionError("");
     try {
-      await payGuaranteedRent(guaranteedPayTarget.id, { amount: Number(guaranteedPayAmount) });
+      await payGuaranteedRent(guaranteedPayTarget.id, { amount: toNumber(guaranteedPayAmount) });
       setGuaranteedPayTarget(null);
       setGuaranteedPayAmount("");
       load();
@@ -242,8 +243,8 @@ export default function LocacaoPage() {
       await requestRentAdvance({
         contractId: advanceForm.contractId,
         monthsAdvanced: Number(advanceForm.monthsAdvanced),
-        principalAmount: Number(advanceForm.principalAmount),
-        costAmount: advanceForm.costAmount ? Number(advanceForm.costAmount) : undefined,
+        principalAmount: toNumber(advanceForm.principalAmount),
+        costAmount: advanceForm.costAmount ? toNumber(advanceForm.costAmount) : undefined,
       });
       setAdvanceOpen(false);
       setAdvanceForm({ contractId: "", monthsAdvanced: "", principalAmount: "", costAmount: "" });
@@ -266,7 +267,7 @@ export default function LocacaoPage() {
   async function handleRecoverAdvance() {
     setActionError("");
     try {
-      await recoverRentAdvance(recoverTarget.id, Number(recoverAmount));
+      await recoverRentAdvance(recoverTarget.id, toNumber(recoverAmount));
       setRecoverTarget(null);
       setRecoverAmount("");
       load();
@@ -402,7 +403,7 @@ export default function LocacaoPage() {
         <p className={styles.helper}>
           Cobrança mensal (aluguel + IPTU + condomínio), reajuste por índice (IGPM/IPCA) e obrigações de água/luz com
           comprovante de transferência. A competência do mês corrente é gerada automaticamente todo dia para contratos
-          de locação ativos — use "Gerar cobrança" aqui só para competências adicionais ou itens extras (IPTU/condomínio).
+          de locação ativos — use “Gerar cobrança” aqui só para competências adicionais ou itens extras (IPTU/condomínio).
         </p>
 
         <Tabs
@@ -530,7 +531,7 @@ export default function LocacaoPage() {
           </Select>
         </FormField>
         <FormField label="Valor" required>
-          <Input type="number" min="0.01" step="0.01" value={scheduleForm.amount} onChange={(e) => setScheduleForm((f) => ({ ...f, amount: e.target.value }))} />
+          <DecimalInput value={scheduleForm.amount} onChange={(e) => setScheduleForm((f) => ({ ...f, amount: e.target.value }))} />
         </FormField>
       </Modal>
 
@@ -547,7 +548,7 @@ export default function LocacaoPage() {
       >
         <p className={styles.helper}>Saldo atual: {payTarget ? formatBRL(payTarget.balance) : ""}</p>
         <FormField label="Valor pago" required>
-          <Input type="number" min="0.01" step="0.01" value={payAmount} onChange={(e) => setPayAmount(e.target.value)} />
+          <DecimalInput value={payAmount} onChange={(e) => setPayAmount(e.target.value)} />
         </FormField>
       </Modal>
 
@@ -578,7 +579,7 @@ export default function LocacaoPage() {
           </Select>
         </FormField>
         <FormField label="Aluguel atual" required>
-          <Input type="number" min="0.01" step="0.01" value={adjustForm.oldRentAmount} onChange={(e) => setAdjustForm((f) => ({ ...f, oldRentAmount: e.target.value }))} />
+          <DecimalInput value={adjustForm.oldRentAmount} onChange={(e) => setAdjustForm((f) => ({ ...f, oldRentAmount: e.target.value }))} />
         </FormField>
       </Modal>
 
@@ -633,7 +634,7 @@ export default function LocacaoPage() {
           </Select>
         </FormField>
         <FormField label="Valor" required>
-          <Input type="number" min="0.01" step="0.01" value={utilityPayAmount} onChange={(e) => setUtilityPayAmount(e.target.value)} />
+          <DecimalInput value={utilityPayAmount} onChange={(e) => setUtilityPayAmount(e.target.value)} />
         </FormField>
       </Modal>
 
@@ -671,7 +672,7 @@ export default function LocacaoPage() {
         }
       >
         <FormField label="Valor" required>
-          <Input type="number" min="0.01" step="0.01" value={guaranteedPayAmount} onChange={(e) => setGuaranteedPayAmount(e.target.value)} />
+          <DecimalInput value={guaranteedPayAmount} onChange={(e) => setGuaranteedPayAmount(e.target.value)} />
         </FormField>
       </Modal>
 
@@ -696,10 +697,10 @@ export default function LocacaoPage() {
           <Input type="number" min="1" step="1" value={advanceForm.monthsAdvanced} onChange={(e) => setAdvanceForm((f) => ({ ...f, monthsAdvanced: e.target.value }))} />
         </FormField>
         <FormField label="Valor principal" required>
-          <Input type="number" min="0.01" step="0.01" value={advanceForm.principalAmount} onChange={(e) => setAdvanceForm((f) => ({ ...f, principalAmount: e.target.value }))} />
+          <DecimalInput value={advanceForm.principalAmount} onChange={(e) => setAdvanceForm((f) => ({ ...f, principalAmount: e.target.value }))} />
         </FormField>
         <FormField label="Custo da operação" helper="Opcional — fica separado do principal no Financeiro.">
-          <Input type="number" min="0" step="0.01" value={advanceForm.costAmount} onChange={(e) => setAdvanceForm((f) => ({ ...f, costAmount: e.target.value }))} />
+          <DecimalInput value={advanceForm.costAmount} onChange={(e) => setAdvanceForm((f) => ({ ...f, costAmount: e.target.value }))} />
         </FormField>
       </Modal>
 
@@ -715,7 +716,7 @@ export default function LocacaoPage() {
         }
       >
         <FormField label="Valor recuperado do locatário" required>
-          <Input type="number" min="0.01" step="0.01" value={recoverAmount} onChange={(e) => setRecoverAmount(e.target.value)} />
+          <DecimalInput value={recoverAmount} onChange={(e) => setRecoverAmount(e.target.value)} />
         </FormField>
       </Modal>
     </AppShell>

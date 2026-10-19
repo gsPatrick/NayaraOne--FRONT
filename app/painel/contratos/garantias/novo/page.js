@@ -13,8 +13,9 @@ import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/Skeleton
 import { listPeople } from "@/lib/api/people";
 import { listContracts, createGuarantee } from "@/lib/api/legal";
 import { GUARANTEE_TYPE_LABELS, GUARANTEE_TYPES_REQUIRING_VALIDITY } from "@/lib/mock/legal";
-import { formatContractLabel, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
+import { formatContractLabel, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE, toNumber } from "@/lib/format";
 import styles from "./page.module.css";
+import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 
 export default function NovaGarantiaPage() {
   const router = useRouter();
@@ -87,7 +88,7 @@ export default function NovaGarantiaPage() {
       await createGuarantee(form.contractId, {
         guaranteeType: form.guaranteeType,
         guarantorPersonId: isGuarantor ? form.guarantorPersonId : undefined,
-        value: form.value ? Number(form.value) : undefined,
+        value: form.value ? toNumber(form.value) : undefined,
         startsAt: form.startsAt || undefined,
         endsAt: form.endsAt || undefined,
       });
@@ -114,7 +115,7 @@ export default function NovaGarantiaPage() {
         {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
 
         <Alert tone="info" title="Fiador exige pessoa vinculada">
-          Quando o tipo de garantia for "Fiador", é necessário indicar a pessoa que responde como fiadora do contrato.
+          Quando o tipo de garantia for “Fiador”, é necessário indicar a pessoa que responde como fiadora do contrato.
         </Alert>
 
         <Card title="Dados da garantia">
@@ -145,7 +146,7 @@ export default function NovaGarantiaPage() {
               </FormField>
             ) : (
               <FormField label="Valor (R$)" htmlFor="f-value" helper="Opcional — relevante para seguro-fiança, caução e título de capitalização">
-                <Input id="f-value" type="number" min="0" step="0.01" value={form.value} onChange={update("value")} placeholder="0,00" />
+                <DecimalInput id="f-value" value={form.value} onChange={update("value")} placeholder="0,00" />
               </FormField>
             )}
 
@@ -188,7 +189,7 @@ export default function NovaGarantiaPage() {
 
             {isGuarantor ? (
               <FormField label="Valor (R$)" htmlFor="f-value-2" helper="Opcional">
-                <Input id="f-value-2" type="number" min="0" step="0.01" value={form.value} onChange={update("value")} placeholder="0,00" />
+                <DecimalInput id="f-value-2" value={form.value} onChange={update("value")} placeholder="0,00" />
               </FormField>
             ) : null}
           </div>

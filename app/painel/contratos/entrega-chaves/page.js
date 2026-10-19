@@ -90,7 +90,7 @@ export default function EntregaChavesPage() {
         <StatTile label="Outros status" value={deliveries.length - pendingCount - releasedCount} tone="neutral" icon="shield" />
       </div>
 
-      <Card title="Entregas de chave" subtitle="A liberação só é permitida com contrato SIGNED/ACTIVE e vistoria de entrada concluída">
+      <Card title="Entregas de chave" subtitle="A liberação só é permitida com contrato assinado ou ativo e vistoria de entrada concluída">
         <div className={styles.list}>
           {loading ? <SkeletonList /> : pageItems.map((delivery) => {
             const contract = contractOf(delivery.contractId);

@@ -47,8 +47,9 @@ import {
   listPaymentIntents,
 } from "@/lib/api/finance";
 import { uploadFile } from "@/lib/api/legal";
-import { formatBRL, formatDate, formatDateTime, dateOnlyInputToIso } from "@/lib/format";
+import { formatBRL, formatDate, formatDateTime, dateOnlyInputToIso, humanizeText, toNumber } from "@/lib/format";
 import styles from "./page.module.css";
+import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 
 export default function LancamentoDetailPage({ params }) {
   const router = useRouter();
@@ -225,8 +226,8 @@ export default function LancamentoDetailPage({ params }) {
     const ok = await confirm({
       title: "Liquidar este lançamento?",
       message: needsManualEvidence
-        ? `O pagamento "${entry?.description || ""}" (${formatBRL(entry?.amount)}) será registrado como baixa manual com o comprovante anexado — não como confirmação do banco. A conciliação com o extrato continua necessária.`
-        : `O lançamento "${entry?.description || ""}" (${formatBRL(entry?.amount)}) será marcado como liquidado.`,
+        ? `O pagamento "${humanizeText(entry?.description) || ""}" (${formatBRL(entry?.amount)}) será registrado como baixa manual com o comprovante anexado — não como confirmação do banco. A conciliação com o extrato continua necessária.`
+        : `O lançamento "${humanizeText(entry?.description) || ""}" (${formatBRL(entry?.amount)}) será marcado como liquidado.`,
       confirmLabel: "Liquidar",
     });
     if (!ok) return;
@@ -237,7 +238,7 @@ export default function LancamentoDetailPage({ params }) {
   async function handleRequestApproval() {
     const ok = await confirm({
       title: "Solicitar aprovação de pagamento?",
-      message: `Uma solicitação de aprovação será aberta para "${entry?.description || ""}". O lançamento só poderá ser liquidado depois que ela for aprovada.`,
+      message: `Uma solicitação de aprovação será aberta para "${humanizeText(entry?.description) || ""}". O lançamento só poderá ser liquidado depois que ela for aprovada.`,
       confirmLabel: "Solicitar aprovação",
     });
     if (!ok) return;
@@ -260,7 +261,7 @@ export default function LancamentoDetailPage({ params }) {
   async function handleCreatePaymentIntent() {
     const ok = await confirm({
       title: "Criar intenção de pagamento?",
-      message: `Será gravado um "retrato" (snapshot com hash) dos dados atuais de "${entry?.description || ""}". Se o lançamento mudar depois disso, aprovar ou executar a intenção será recusado por segurança.`,
+      message: `Será gravado um "retrato" (snapshot com hash) dos dados atuais de "${humanizeText(entry?.description) || ""}". Se o lançamento mudar depois disso, aprovar ou executar a intenção será recusado por segurança.`,
       confirmLabel: "Criar intenção",
     });
     if (!ok) return;
@@ -296,12 +297,12 @@ export default function LancamentoDetailPage({ params }) {
   // rota HTTP nem tela — ninguém conseguia dar baixa parcial de um lançamento. Mesmo fluxo de
   // step-up MFA do Liquidar total.
   async function handleSettlePartial() {
-    const amount = Number(partialAmount);
+    const amount = toNumber(partialAmount);
     if (!Number.isFinite(amount) || amount <= 0) return;
     if (requireAttachedEvidence()) return;
     const ok = await confirm({
       title: "Liquidar parcialmente?",
-      message: `Será registrada uma baixa de ${formatBRL(amount)} sobre o saldo de "${entry?.description || ""}".`,
+      message: `Será registrada uma baixa de ${formatBRL(amount)} sobre o saldo de "${humanizeText(entry?.description) || ""}".`,
       confirmLabel: "Liquidar parcial",
     });
     if (!ok) return;
@@ -313,7 +314,7 @@ export default function LancamentoDetailPage({ params }) {
     setBusy(true);
     setNotice(null);
     try {
-      const updated = await settleFinancialEntryPartial(entry.id, Number(partialAmount));
+      const updated = await settleFinancialEntryPartial(entry.id, toNumber(partialAmount));
       setEntry(updated.original || updated);
       setPartialOpen(false);
       setPartialAmount("");
@@ -369,7 +370,7 @@ export default function LancamentoDetailPage({ params }) {
   async function handleReverse() {
     const ok = await confirm({
       title: "Estornar este lançamento?",
-      message: `Um lançamento compensatório será criado para reverter "${entry?.description || ""}" (${formatBRL(entry?.amount)}). O lançamento original nunca é editado (ledger imutável) — esta ação não pode ser desfeita.`,
+      message: `Um lançamento compensatório será criado para reverter "${humanizeText(entry?.description) || ""}" (${formatBRL(entry?.amount)}). O lançamento original nunca é editado (ledger imutável) — esta ação não pode ser desfeita.`,
       confirmLabel: "Estornar",
       tone: "danger",
     });
@@ -388,7 +389,7 @@ export default function LancamentoDetailPage({ params }) {
   }
 
   return (
-    <AppShell title={entry?.description || "Lançamento"} backHref="/painel/financeiro/lancamentos">
+    <AppShell title={humanizeText(entry?.description) || "Lançamento"} backHref="/painel/financeiro/lancamentos">
       {loadError ? <Alert tone="danger" title="Não foi possível carregar o lançamento">{loadError}</Alert> : null}
 
       {loading ? (
@@ -482,10 +483,7 @@ export default function LancamentoDetailPage({ params }) {
           {partialOpen ? (
             <Card title="Liquidação parcial" className={styles.notice}>
               <FormField label="Valor da baixa parcial">
-                <Input
-                  type="number"
-                  step="0.01"
-                  min="0.01"
+                <DecimalInput
                   value={partialAmount}
                   onChange={(e) => setPartialAmount(e.target.value)}
                   placeholder="0,00"
@@ -496,7 +494,7 @@ export default function LancamentoDetailPage({ params }) {
               ) : null}
               <div className={styles.actions}>
                 <Button variant="secondary" onClick={() => setPartialOpen(false)}>Cancelar</Button>
-                <Button onClick={handleSettlePartial} loading={busy} disabled={!partialAmount || Number(partialAmount) <= 0}>
+                <Button onClick={handleSettlePartial} loading={busy} disabled={!partialAmount || toNumber(partialAmount) <= 0}>
                   Confirmar baixa parcial
                 </Button>
               </div>
@@ -579,7 +577,6 @@ export default function LancamentoDetailPage({ params }) {
                   ) : null}
                   <div className={styles.detailRow}><dt>Centro de custo</dt><dd>{costCenter ? `${costCenter.code} — ${costCenter.name}` : "—"}</dd></div>
                   <div className={styles.detailRow}><dt>Centro de resultado</dt><dd>{resultCenter ? `${resultCenter.code} — ${resultCenter.name}` : "—"}</dd></div>
-                  <div className={styles.detailRow}><dt>ID</dt><dd className={styles.mono}>{entry.id}</dd></div>
                 </dl>
               </Card>
 
@@ -588,13 +585,13 @@ export default function LancamentoDetailPage({ params }) {
                   {reversalTarget ? (
                     <div className={styles.linkRow} onClick={() => router.push(`/painel/financeiro/lancamentos/${reversalTarget.id}`)}>
                       <Icon name="document" size={16} />
-                      <span>Este lançamento é o estorno de <strong>{reversalTarget.description}</strong> ({formatBRL(reversalTarget.amount)})</span>
+                      <span>Este lançamento é o estorno de <strong>{humanizeText(reversalTarget.description)}</strong> ({formatBRL(reversalTarget.amount)})</span>
                     </div>
                   ) : null}
                   {reversedBy ? (
                     <div className={styles.linkRow} onClick={() => router.push(`/painel/financeiro/lancamentos/${reversedBy.id}`)}>
                       <Icon name="document" size={16} />
-                      <span>Foi estornado por <strong>{reversedBy.description}</strong> em {formatDateTime(reversedBy.settledAt)}</span>
+                      <span>Foi estornado por <strong>{humanizeText(reversedBy.description)}</strong> em {formatDateTime(reversedBy.settledAt)}</span>
                     </div>
                   ) : null}
                 </Card>
@@ -605,7 +602,7 @@ export default function LancamentoDetailPage({ params }) {
                   <div className={styles.linkRow}>
                     <Icon name="check" size={16} />
                     <div>
-                      <p className={styles.reconLine}>Conciliado com <strong>{reconciledTransaction.description}</strong> ({formatBRL(reconciledTransaction.amount)})</p>
+                      <p className={styles.reconLine}>Conciliado com <strong>{humanizeText(reconciledTransaction.description)}</strong> ({formatBRL(reconciledTransaction.amount)})</p>
                       <p className={styles.reconMeta}>em {formatDateTime(reconciliation.matchedAt)}</p>
                     </div>
                   </div>
