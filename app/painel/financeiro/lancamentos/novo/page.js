@@ -169,7 +169,7 @@ export default function NovoLancamentoPage() {
               <FormField label="Natureza" htmlFor="f-nature">
                 <div className={styles.natureRow}>
                   <Select id="f-nature" value={form.nature} onChange={update("nature")}>
-                    {Object.entries(ENTRY_NATURE_LABELS).map(([k, v]) => (
+                    {Object.entries(ENTRY_NATURE_LABELS).filter(([k]) => k !== "PENDING_CLASSIFICATION").map(([k, v]) => (
                       <option key={k} value={k}>{v}</option>
                     ))}
                   </Select>

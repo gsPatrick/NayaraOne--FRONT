@@ -22,7 +22,7 @@ import {
 } from "@/lib/mock/finance";
 import { listFinancialEntries, listBankAccounts, listApprovalRequests, listCommissions, listOwnerRepasses } from "@/lib/api/finance";
 import { apiFetch } from "@/lib/api/client";
-import { formatBRL, formatDate } from "@/lib/format";
+import { formatBRL, formatBRLCompact, formatDate } from "@/lib/format";
 import { buildMonthlyChartData } from "@/lib/monthlyChartData";
 import { bankAccountLabel } from "@/lib/finance/labels";
 import styles from "./page.module.css";
@@ -87,19 +87,19 @@ export default function FinanceiroPage() {
   const byNature = useMemo(() => {
     const counts = {};
     entries.forEach((e) => { counts[e.nature] = (counts[e.nature] || 0) + Number(e.amount); });
-    return Object.entries(counts).map(([nature, value]) => ({ label: ENTRY_NATURE_LABELS[nature] || nature, value, displayValue: formatBRL(value) }));
+    return Object.entries(counts).map(([nature, value]) => ({ label: ENTRY_NATURE_LABELS[nature] || nature, value, displayValue: formatBRLCompact(value), title: formatBRL(value) }));
   }, [entries]);
 
   const byStatus = useMemo(() => {
     const counts = {};
     entries.forEach((e) => { counts[e.status] = (counts[e.status] || 0) + Number(e.amount); });
-    return Object.entries(counts).map(([status, value]) => ({ label: ENTRY_STATUS_LABELS[status] || status, value, displayValue: formatBRL(value) }));
+    return Object.entries(counts).map(([status, value]) => ({ label: ENTRY_STATUS_LABELS[status] || status, value, displayValue: formatBRLCompact(value), title: formatBRL(value) }));
   }, [entries]);
 
   const byBankAccount = useMemo(() => {
     const counts = {};
     entries.forEach((e) => { counts[e.bankAccountId] = (counts[e.bankAccountId] || 0) + Number(e.amount); });
-    return Object.entries(counts).map(([id, value]) => ({ label: bankAccountLabel(bankAccountOf(id)) || id, value, displayValue: formatBRL(value) }));
+    return Object.entries(counts).map(([id, value]) => ({ label: bankAccountLabel(bankAccountOf(id)) || id, value, displayValue: formatBRLCompact(value), title: formatBRL(value) }));
   }, [entries, bankAccounts]);
 
   const byMonth = useMemo(

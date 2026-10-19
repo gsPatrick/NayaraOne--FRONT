@@ -26,6 +26,7 @@ import {
   REPASSE_STATUS_TONE,
   isBankAccountEligibleForPayment,
   bankAccountCooldownRemainingHours,
+  ENTRY_STATUS_LABELS,
 } from "@/lib/mock/finance";
 import Input from "@/components/atoms/Input/Input";
 import FormField from "@/components/molecules/FormField/FormField";
@@ -637,7 +638,7 @@ function NewCommissionModal({ open, users, onClose, onConfirm, busy }) {
         <Select id="nc-source" value={form.sourceEntryId} onChange={update("sourceEntryId")}>
           <option value="">Selecionar…</option>
           {receivables.map((e) => (
-            <option key={e.id} value={e.id}>{(e.description || "Recebimento")} · {formatBRL(e.amount)} · {e.status}</option>
+            <option key={e.id} value={e.id}>{(e.description || "Recebimento")} · {formatBRL(e.amount)} · {ENTRY_STATUS_LABELS[e.status] || e.status}</option>
           ))}
         </Select>
       </FormField>
