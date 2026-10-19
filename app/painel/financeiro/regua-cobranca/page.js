@@ -198,6 +198,16 @@ export default function ReguaCobrancaPage() {
     }
   }
 
+  // O8 (M45): mudar um select (ou o mês) já aplica o filtro — sem precisar clicar em "Filtrar".
+  function changeFilter(key, value) {
+    setFilters((prev) => {
+      const next = { ...prev, [key]: value };
+      setPage(1);
+      setAppliedFilters(next);
+      return next;
+    });
+  }
+
   function applyFilters(e) {
     e.preventDefault();
     setPage(1);
@@ -334,10 +344,10 @@ export default function ReguaCobrancaPage() {
           <h2 className={styles.sectionTitle}>Etapas executadas</h2>
           <form onSubmit={applyFilters} className={styles.filters}>
             <FormField label="Competência" htmlFor="f-period">
-              <Input id="f-period" type="month" value={filters.period} onChange={(e) => setFilters((p) => ({ ...p, period: e.target.value }))} />
+              <Input id="f-period" type="month" value={filters.period} onChange={(e) => changeFilter("period", e.target.value)} />
             </FormField>
             <FormField label="Resultado" htmlFor="f-outcome">
-              <Select id="f-outcome" value={filters.outcome} onChange={(e) => setFilters((p) => ({ ...p, outcome: e.target.value }))}>
+              <Select id="f-outcome" value={filters.outcome} onChange={(e) => changeFilter("outcome", e.target.value)}>
                 <option value="">Todos</option>
                 {Object.entries(OUTCOME_LABELS).map(([value, label]) => (
                   <option key={value} value={value}>
@@ -347,7 +357,7 @@ export default function ReguaCobrancaPage() {
               </Select>
             </FormField>
             <FormField label="Ação" htmlFor="f-action">
-              <Select id="f-action" value={filters.action} onChange={(e) => setFilters((p) => ({ ...p, action: e.target.value }))}>
+              <Select id="f-action" value={filters.action} onChange={(e) => changeFilter("action", e.target.value)}>
                 <option value="">Todas</option>
                 {Object.entries(ACTION_LABELS).map(([value, label]) => (
                   <option key={value} value={value}>
@@ -357,7 +367,7 @@ export default function ReguaCobrancaPage() {
               </Select>
             </FormField>
             <FormField label="Contrato" htmlFor="f-contract">
-              <Select id="f-contract" value={filters.contractId} onChange={(e) => setFilters((p) => ({ ...p, contractId: e.target.value }))}>
+              <Select id="f-contract" value={filters.contractId} onChange={(e) => changeFilter("contractId", e.target.value)}>
                 <option value="">Todos</option>
                 {contracts.map((c) => (
                   <option key={c.id} value={c.id}>
