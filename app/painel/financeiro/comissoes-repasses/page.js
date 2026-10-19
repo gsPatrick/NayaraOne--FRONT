@@ -18,6 +18,7 @@ import BankLogo from "@/components/atoms/BankLogo/BankLogo";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu";
 import Pagination from "@/components/molecules/Pagination/Pagination";
+import MfaVerifyModal from "@/components/organisms/MfaVerifyModal/MfaVerifyModal";
 import {
   COMMISSION_STATUS_LABELS,
   COMMISSION_STATUS_TONE,
@@ -40,6 +41,8 @@ import {
   cancelCommission,
   getCommissionAdjustments,
   getOwnerRepasseComposition,
+  approveOwnerRepasse,
+  listCostCenters,
 } from "@/lib/api/finance";
 import { listPeople } from "@/lib/api/people";
 import { apiFetch } from "@/lib/api/client";
@@ -86,6 +89,9 @@ export default function ComissoesRepassesPage() {
   const [cancelModal, setCancelModal] = useState(null);
   const [adjustmentsModal, setAdjustmentsModal] = useState(null);
   const [compositionModal, setCompositionModal] = useState(null);
+  // §12 (Frente 3): aprovação do repasse por outra pessoa (centro de custo + MFA recente).
+  const [approveModal, setApproveModal] = useState(null);
+  const [approveMfa, setApproveMfa] = useState(null);
 
   async function handleViewAdjustments(commission) {
     setAdjustmentsModal({ commission, loading: true, items: [] });
@@ -199,8 +205,21 @@ export default function ComissoesRepassesPage() {
     }
   }
 
+  async function runApproveRepasse({ repasse, costCenterId }) {
+    setBusyId(repasse.id);
+    try {
+      const { repasse: updated } = await approveOwnerRepasse(repasse.id, { costCenterId });
+      setRepasses((prev) => prev.map((r) => (r.id === repasse.id ? updated : r)));
+      showNotice("success", "Repasse aprovado", "Lançamento a pagar criado — pague pelo banco (ou baixa com comprovante) e depois confirme o pagamento aqui.");
+    } catch (err) {
+      showNotice("danger", "Não foi possível aprovar o repasse", err?.message || "Tente novamente.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   async function handlePayRepasse(repasse) {
-    if (repasse.status !== "PENDING") return;
+    if (repasse.status !== "APPROVED") return;
     const account = bankAccountOf(repasse.bankAccountId);
     if (account && !isBankAccountEligibleForPayment({ ...account, updatedAt: account.updatedAt || account.updated_at })) {
       if (account.status === "BLOCKED") showNotice("danger", "Bloqueado (antifraude)", "A conta deste repasse está bloqueada.");
@@ -211,7 +230,7 @@ export default function ComissoesRepassesPage() {
     try {
       const updated = await payOwnerRepasse(repasse.id);
       setRepasses((prev) => prev.map((r) => (r.id === repasse.id ? updated : r)));
-      showNotice("success", "Repasse pago", `Repasse de ${formatBRL(updated.netAmount)} pago ao proprietário.`);
+      showNotice("success", "Pagamento confirmado", `Repasse de ${formatBRL(updated.netAmount)} confirmado como pago (com comprovante/confirmação bancária).`);
     } catch (err) {
       showNotice("danger", "Não foi possível pagar o repasse", err?.message || "Tente novamente.");
     } finally {
@@ -384,11 +403,16 @@ export default function ComissoesRepassesPage() {
                             <Button
                               size="sm"
                               variant="secondary"
-                              onClick={() => handlePayRepasse(r)}
+                              onClick={() => setApproveModal(r)}
                               loading={busyId === r.id}
                               disabled={account && !isBankAccountEligibleForPayment({ ...account, updatedAt: account.updatedAt || account.updated_at })}
                             >
-                              Pagar
+                              Aprovar
+                            </Button>
+                          ) : null}
+                          {r.status === "APPROVED" ? (
+                            <Button size="sm" variant="secondary" onClick={() => handlePayRepasse(r)} loading={busyId === r.id}>
+                              Confirmar pagamento
                             </Button>
                           ) : null}
                         </div>
@@ -449,6 +473,25 @@ export default function ComissoesRepassesPage() {
         busy={cancelModal ? busyId === `cancel-${cancelModal.id}` : false}
       />
 
+      <ApproveRepasseModal
+        repasse={approveModal}
+        onClose={() => setApproveModal(null)}
+        onConfirm={(costCenterId) => {
+          setApproveMfa({ repasse: approveModal, costCenterId });
+          setApproveModal(null);
+        }}
+      />
+      <MfaVerifyModal
+        open={Boolean(approveMfa)}
+        onClose={() => setApproveMfa(null)}
+        actionLabel="aprovar este repasse ao proprietário"
+        onVerified={async () => {
+          const pending = approveMfa;
+          setApproveMfa(null);
+          await runApproveRepasse(pending);
+        }}
+      />
+
       <AdjustmentsModal state={adjustmentsModal} onClose={() => setAdjustmentsModal(null)} />
       <CompositionModal state={compositionModal} onClose={() => setCompositionModal(null)} />
     </AppShell>
@@ -495,17 +538,62 @@ function CancelCommissionModal({ commission, users, onClose, onConfirm, busy }) 
   );
 }
 
+function ApproveRepasseModal({ repasse, onClose, onConfirm }) {
+  const [costCenters, setCostCenters] = useState([]);
+  const [costCenterId, setCostCenterId] = useState("");
+  useEffect(() => {
+    if (!repasse) return;
+    setCostCenterId("");
+    listCostCenters().then((list) => setCostCenters(list || [])).catch(() => setCostCenters([]));
+  }, [repasse]);
+  return (
+    <Modal
+      open={Boolean(repasse)}
+      onClose={onClose}
+      title="Aprovar repasse"
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>Cancelar</Button>
+          <Button disabled={!costCenterId} onClick={() => onConfirm(costCenterId)}>Aprovar</Button>
+        </>
+      }
+    >
+      <p>
+        A aprovação precisa ser de outra pessoa (não de quem registrou o repasse) e cria o lançamento a pagar de{" "}
+        <strong>{repasse ? formatBRL(repasse.netAmount) : ""}</strong> (período {repasse?.referenceMonth}).
+      </p>
+      <FormField label="Centro de custo do pagamento" htmlFor="ar-cc" required>
+        <Select id="ar-cc" value={costCenterId} onChange={(e) => setCostCenterId(e.target.value)}>
+          <option value="">Selecionar…</option>
+          {costCenters.map((c) => (
+            <option key={c.id} value={c.id}>{c.code ? `${c.code} — ${c.name}` : c.name}</option>
+          ))}
+        </Select>
+      </FormField>
+    </Modal>
+  );
+}
+
+// Frente 3 (§14): percentual e base vêm da regra de comissão vigente (Motor de Regras) e do
+// recebimento que gera o direito — a tela só escolhe o fato gerador e o componente.
 function NewCommissionModal({ open, users, onClose, onConfirm, busy }) {
-  const [form, setForm] = useState({ beneficiaryUserId: "", baseAmount: "", percentage: "", installmentsCount: "1" });
+  const empty = { beneficiaryUserId: "", sourceEntryId: "", component: "BROKER", installmentsCount: "1" };
+  const [form, setForm] = useState(empty);
+  const [receivables, setReceivables] = useState([]);
 
   // FIX (reportado pela cliente): o seletor de beneficiário vinha PRÉ-SELECIONADO com o
   // primeiro usuário da lista (podendo ser um usuário de teste/QA) sem nenhum clique — agora
   // o campo sempre abre vazio, forçando escolha explícita.
   useEffect(() => {
-    if (open) setForm({ beneficiaryUserId: "", baseAmount: "", percentage: "", installmentsCount: "1" });
+    if (!open) return;
+    setForm(empty);
+    listFinancialEntries({ nature: "RECEIVABLE" })
+      .then((list) => setReceivables((list || []).filter((e) => e.nature === "RECEIVABLE" && !e.isThirdPartyFunds && !e.parentEntryId && !["CANCELLED", "REVERSED"].includes(e.status))))
+      .catch(() => setReceivables([]));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  const isValid = form.beneficiaryUserId && Number(form.baseAmount) > 0 && Number(form.percentage) > 0 && Number(form.percentage) <= 100;
+  const isValid = form.beneficiaryUserId && form.sourceEntryId && form.component;
 
   function update(field) {
     return (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
@@ -525,9 +613,10 @@ function NewCommissionModal({ open, users, onClose, onConfirm, busy }) {
             onClick={() =>
               onConfirm({
                 beneficiaryUserId: form.beneficiaryUserId,
-                baseAmount: Number(form.baseAmount),
-                percentage: Number(form.percentage),
+                sourceEntryId: form.sourceEntryId,
+                component: form.component,
                 installmentsCount: Number(form.installmentsCount) || 1,
+                idempotencyKey: `commission-${form.sourceEntryId}-${form.component}-${form.beneficiaryUserId}`,
               })
             }
           >
@@ -544,11 +633,20 @@ function NewCommissionModal({ open, users, onClose, onConfirm, busy }) {
           ))}
         </Select>
       </FormField>
-      <FormField label="Valor base (R$)" htmlFor="nc-base" required helper="Valor sobre o qual o percentual é calculado (ex.: valor da venda/locação)">
-        <Input id="nc-base" type="number" min="0" step="0.01" value={form.baseAmount} onChange={update("baseAmount")} />
+      <FormField label="Recebimento que gera o direito (fato gerador)" htmlFor="nc-source" required helper="A base é o valor deste recebimento; o pagamento é liberado na proporção do que já foi recebido">
+        <Select id="nc-source" value={form.sourceEntryId} onChange={update("sourceEntryId")}>
+          <option value="">Selecionar…</option>
+          {receivables.map((e) => (
+            <option key={e.id} value={e.id}>{(e.description || "Recebimento")} · {formatBRL(e.amount)} · {e.status}</option>
+          ))}
+        </Select>
       </FormField>
-      <FormField label="Percentual (%)" htmlFor="nc-pct" required>
-        <Input id="nc-pct" type="number" min="0" max="100" step="0.01" value={form.percentage} onChange={update("percentage")} />
+      <FormField label="Componente" htmlFor="nc-component" required helper="O percentual vem da regra de comissão vigente para o componente">
+        <Select id="nc-component" value={form.component} onChange={update("component")}>
+          <option value="BROKER">Corretor</option>
+          <option value="MANAGER">Gerente</option>
+          <option value="CORRESPONDENT">Correspondente</option>
+        </Select>
       </FormField>
       <FormField label="Número de parcelas" htmlFor="nc-installments" helper="A última parcela absorve a diferença de arredondamento — a soma sempre fecha com o total">
         <Input id="nc-installments" type="number" min="1" step="1" value={form.installmentsCount} onChange={update("installmentsCount")} />

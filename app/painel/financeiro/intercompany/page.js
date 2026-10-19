@@ -22,7 +22,12 @@ import {
   listIntercompanyTransfers,
   createIntercompanyTransfer,
   reconcileIntercompanyTransfer,
+  approveIntercompanyTransfer,
+  rejectIntercompanyTransfer,
+  listIntercompanyDestinationAccounts,
+  listBankAccounts,
 } from "@/lib/api/finance";
+import { uploadFile } from "@/lib/api/legal";
 import { listCompanies } from "@/lib/api/companies";
 import { useCompany } from "@/lib/context/CompanyContext";
 import { formatBRL, formatDateTime } from "@/lib/format";
@@ -39,16 +44,25 @@ export default function IntercompanyPage() {
   const [toCompanyId, setToCompanyId] = useState("");
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
+  const [evidenceFile, setEvidenceFile] = useState(null);
+  const [fromBankAccountId, setFromBankAccountId] = useState("");
+  const [toBankAccountId, setToBankAccountId] = useState("");
+  const [ownAccounts, setOwnAccounts] = useState([]);
+  const [destAccounts, setDestAccounts] = useState([]);
+  const [destError, setDestError] = useState("");
   const [formError, setFormError] = useState("");
   const [mfaOpen, setMfaOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  // §15 maker-checker: aprovar exige MFA recente; guarda qual transferência está sendo aprovada.
+  const [approveId, setApproveId] = useState(null);
 
   async function reload() {
     setLoading(true);
     try {
-      const [companyList, transferList] = await Promise.all([listCompanies(), listIntercompanyTransfers()]);
+      const [companyList, transferList, accountList] = await Promise.all([listCompanies(), listIntercompanyTransfers(), listBankAccounts()]);
       setCompanies(companyList || []);
       setTransfers(transferList || []);
+      setOwnAccounts((accountList || []).filter((a) => a.status !== "BLOCKED"));
     } catch (err) {
       setLoadError(err?.message || "Não foi possível carregar as transferências intercompany.");
     } finally {
@@ -62,6 +76,20 @@ export default function IntercompanyPage() {
 
   const otherCompanies = companies.filter((c) => c.id !== company?.id);
 
+  useEffect(() => {
+    setToBankAccountId("");
+    setDestAccounts([]);
+    setDestError("");
+    if (!toCompanyId) return;
+    listIntercompanyDestinationAccounts(toCompanyId)
+      .then((list) => setDestAccounts(list || []))
+      .catch((err) => setDestError(err?.message || "Não foi possível carregar as contas da empresa de destino."));
+  }, [toCompanyId]);
+
+  function accountLabel(a) {
+    return `${a.bankCode} · ag. ${a.agency || "—"} · ${a.accountNumber}`;
+  }
+
   function handleCreateClick(e) {
     e.preventDefault();
     setFormError("");
@@ -74,6 +102,18 @@ export default function IntercompanyPage() {
       setFormError("Informe um valor maior que zero.");
       return;
     }
+    if (!reason.trim()) {
+      setFormError("Informe o motivo da transferência.");
+      return;
+    }
+    if (!evidenceFile) {
+      setFormError("Anexe o documento comprobatório da transferência.");
+      return;
+    }
+    if (!fromBankAccountId || !toBankAccountId) {
+      setFormError("Selecione a conta de saída (esta empresa) e a conta de entrada (destino).");
+      return;
+    }
     // Criar transferência intercompany é step-up MFA obrigatório no backend — mesmo padrão já
     // usado em liquidar lançamento (lancamentos/[id]/page.js).
     setMfaOpen(true);
@@ -82,19 +122,45 @@ export default function IntercompanyPage() {
   async function runCreate() {
     setSaving(true);
     try {
+      const uploaded = await uploadFile(evidenceFile);
       await createIntercompanyTransfer({
         toCompanyId,
         amount: Number(amount),
-        reason: reason || undefined,
+        reason: reason.trim(),
+        evidenceFileId: uploaded.id,
+        fromBankAccountId,
+        toBankAccountId,
       });
       setAmount("");
       setReason("");
+      setEvidenceFile(null);
+      setFromBankAccountId("");
       setToCompanyId("");
       await reload();
     } catch (err) {
       setFormError(err?.message || "Falha ao criar a transferência.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function runApprove(id) {
+    try {
+      await approveIntercompanyTransfer(id);
+      await reload();
+    } catch (err) {
+      setLoadError(err?.message || "Falha ao aprovar a transferência.");
+    }
+  }
+
+  async function handleReject(id) {
+    const why = typeof window !== "undefined" ? window.prompt("Motivo da recusa:") : "";
+    if (!why || !why.trim()) return;
+    try {
+      await rejectIntercompanyTransfer(id, why.trim());
+      await reload();
+    } catch (err) {
+      setLoadError(err?.message || "Falha ao recusar a transferência.");
     }
   }
 
@@ -120,17 +186,42 @@ export default function IntercompanyPage() {
     {
       key: "status",
       label: "Status",
-      render: (row) => <Badge tone={row.status === "RECONCILED" ? "success" : "neutral"}>{row.status === "RECONCILED" ? "Conciliada" : "Pendente"}</Badge>,
+      render: (row) => {
+        const map = {
+          PENDING_APPROVAL: ["warning", "Aguardando aprovação"],
+          REJECTED: ["danger", "Recusada"],
+          PENDING: ["neutral", "Aprovada — a conciliar"],
+          RECONCILED: ["success", "Conciliada"],
+        };
+        const [tone, label] = map[row.status] || ["neutral", row.status];
+        return <Badge tone={tone}>{label}</Badge>;
+      },
     },
     {
       key: "actions",
       label: "",
-      render: (row) =>
-        row.status !== "RECONCILED" ? (
-          <Button type="button" size="sm" variant="ghost" onClick={() => handleReconcile(row.id)}>
-            Conciliar
-          </Button>
-        ) : null,
+      render: (row) => {
+        if (row.status === "PENDING_APPROVAL") {
+          return (
+            <span style={{ display: "inline-flex", gap: "var(--space-2)" }}>
+              <Button type="button" size="sm" variant="ghost" onClick={() => setApproveId(row.id)}>
+                Aprovar
+              </Button>
+              <Button type="button" size="sm" variant="ghost" onClick={() => handleReject(row.id)}>
+                Recusar
+              </Button>
+            </span>
+          );
+        }
+        if (row.status === "PENDING") {
+          return (
+            <Button type="button" size="sm" variant="ghost" onClick={() => handleReconcile(row.id)}>
+              Conciliar
+            </Button>
+          );
+        }
+        return null;
+      },
     },
   ];
 
@@ -145,7 +236,10 @@ export default function IntercompanyPage() {
 
         <Card className={styles.formCard}>
           <h2 className={styles.sectionTitle}>Nova transferência</h2>
-          <p className={styles.helper}>Move dinheiro desta empresa para outra do mesmo grupo — cria um lançamento vinculado em cada lado.</p>
+          <p className={styles.helper}>
+            Pede a transferência desta empresa para outra do mesmo grupo. Motivo, documento e as contas dos dois lados são obrigatórios; os
+            lançamentos só são criados quando outra pessoa aprova.
+          </p>
           <form onSubmit={handleCreateClick} className={styles.form}>
             <FormField label="Empresa de destino" htmlFor="toCompanyId">
               <Select id="toCompanyId" value={toCompanyId} onChange={(e) => setToCompanyId(e.target.value)}>
@@ -162,14 +256,41 @@ export default function IntercompanyPage() {
               <Input id="amount" type="number" min="0.01" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} />
             </FormField>
 
-            <FormField label="Motivo (opcional)" htmlFor="reason">
+            <FormField label="Conta de saída (esta empresa)" htmlFor="fromBankAccountId">
+              <Select id="fromBankAccountId" value={fromBankAccountId} onChange={(e) => setFromBankAccountId(e.target.value)}>
+                <option value="">Selecione...</option>
+                {ownAccounts.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {accountLabel(a)}
+                  </option>
+                ))}
+              </Select>
+            </FormField>
+
+            <FormField label="Conta de entrada (empresa de destino)" htmlFor="toBankAccountId">
+              <Select id="toBankAccountId" value={toBankAccountId} onChange={(e) => setToBankAccountId(e.target.value)} disabled={!toCompanyId}>
+                <option value="">{toCompanyId ? "Selecione..." : "Escolha a empresa de destino primeiro"}</option>
+                {destAccounts.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {accountLabel(a)}
+                  </option>
+                ))}
+              </Select>
+            </FormField>
+            {destError ? <Alert tone="danger">{destError}</Alert> : null}
+
+            <FormField label="Motivo" htmlFor="reason">
               <Input id="reason" value={reason} onChange={(e) => setReason(e.target.value)} />
+            </FormField>
+
+            <FormField label="Documento comprobatório (PDF ou imagem)" htmlFor="evidence">
+              <input id="evidence" type="file" accept="application/pdf,image/*" onChange={(e) => setEvidenceFile(e.target.files?.[0] || null)} />
             </FormField>
 
             {formError ? <Alert tone="danger">{formError}</Alert> : null}
 
             <Button type="submit" disabled={saving}>
-              {saving ? "Transferindo..." : "Transferir"}
+              {saving ? "Enviando..." : "Pedir transferência"}
             </Button>
           </form>
         </Card>
@@ -187,6 +308,17 @@ export default function IntercompanyPage() {
         onVerified={async () => {
           setMfaOpen(false);
           await runCreate();
+        }}
+      />
+
+      <MfaVerifyModal
+        open={Boolean(approveId)}
+        onClose={() => setApproveId(null)}
+        actionLabel="aprovar esta transferência intercompany"
+        onVerified={async () => {
+          const id = approveId;
+          setApproveId(null);
+          await runApprove(id);
         }}
       />
 
