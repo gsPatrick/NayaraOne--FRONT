@@ -38,7 +38,7 @@ import {
 import FormField from "@/components/molecules/FormField/FormField";
 import { listPeople } from "@/lib/api/people";
 import { bankAccountLabel } from "@/lib/finance/labels";
-import { formatBRL, formatDate } from "@/lib/format";
+import { formatBRL, formatBRLCompact, formatDate } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function LancamentosPage() {
@@ -165,7 +165,7 @@ export default function LancamentosPage() {
   const byStatus = useMemo(() => {
     const counts = {};
     entries.forEach((e) => { counts[e.status] = (counts[e.status] || 0) + Number(e.amount); });
-    return Object.entries(counts).map(([status, value]) => ({ label: ENTRY_STATUS_LABELS[status] || status, value, displayValue: formatBRL(value) }));
+    return Object.entries(counts).map(([status, value]) => ({ label: ENTRY_STATUS_LABELS[status] || status, value, displayValue: formatBRLCompact(value), title: formatBRL(value) }));
   }, [entries]);
 
   const byCostCenter = useMemo(() => {
@@ -175,7 +175,7 @@ export default function LancamentosPage() {
       const key = cc ? cc.name : "Sem centro";
       counts[key] = (counts[key] || 0) + Number(e.amount);
     });
-    return Object.entries(counts).map(([label, value]) => ({ label, value, displayValue: formatBRL(value) }));
+    return Object.entries(counts).map(([label, value]) => ({ label, value, displayValue: formatBRLCompact(value), title: formatBRL(value) }));
   }, [entries, costCenters]);
 
   const columns = [
@@ -242,8 +242,22 @@ export default function LancamentosPage() {
             {pendings.map((p) => (
               <li key={p.id} className={styles.listRow}>
                 <div className={styles.listRowInfo}>
-                  <span className={styles.listRowTitle}>{p.description}</span>
-                  <span className={styles.listRowSubtitle}>{formatBRL(p.amount)} · desde {formatDate(p.createdAt)}</span>
+                  <span className={styles.listRowTitle}>
+                    Valor recebido a mais: {formatBRL(p.amount)}
+                  </span>
+                  <span className={styles.listRowSubtitle}>
+                    {p.parentEntryId ? (
+                      <>
+                        Origem:{" "}
+                        <a href={`/painel/financeiro/lancamentos/${p.parentEntryId}`} onClick={(ev) => { ev.preventDefault(); router.push(`/painel/financeiro/lancamentos/${p.parentEntryId}`); }}>
+                          {p.parentEntry?.description || "lançamento de origem"}
+                          {p.parentEntry?.amount != null ? ` (${formatBRL(p.parentEntry.amount)})` : ""}
+                        </a>
+                        {" · "}
+                      </>
+                    ) : null}
+                    aberta em {formatDate(p.createdAt || p.created_at)}
+                  </span>
                 </div>
                 <Button size="sm" onClick={() => { setResolveTarget(p); setResolveNature(""); setResolveCostCenterId(""); setResolveError(""); }}>
                   Classificar
