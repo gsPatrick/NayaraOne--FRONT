@@ -79,7 +79,7 @@ export default function NovaContaBancariaPage() {
     <AppShell title="Nova conta bancária" backHref="/painel/financeiro/contas-bancarias">
       <div className={styles.wrap}>
         <Alert tone="warning" title="Resfriamento antifraude de 48h">
-          Toda conta nova nasce com status "Em resfriamento" e só fica elegível para pagamentos após 48h — essa regra é aplicada automaticamente, sem exceção.
+          Toda conta nova nasce com status “Em resfriamento” e só fica elegível para pagamentos após 48h — essa regra é aplicada automaticamente, sem exceção.
         </Alert>
 
         {loadError ? <Alert tone="danger" title="Não foi possível carregar os proprietários">{loadError}</Alert> : null}
