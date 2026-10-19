@@ -9,7 +9,7 @@ export default function ColumnChart({ items }) {
     <div className={styles.wrap}>
       <div className={styles.plot}>
         {items.map((item) => (
-          <div key={item.label} className={styles.colGroup}>
+          <div key={item.label} className={styles.colGroup} title={item.title || undefined}>
             <span className={[styles.colValue, item.ghost ? styles.colValueGhost : ""].filter(Boolean).join(" ")}>
               {item.ghost ? "—" : item.displayValue !== undefined ? item.displayValue : item.value}
             </span>

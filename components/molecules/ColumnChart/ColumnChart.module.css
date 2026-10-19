@@ -25,6 +25,9 @@
   font-weight: 700;
   color: var(--color-ink);
   white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .colValueGhost {
