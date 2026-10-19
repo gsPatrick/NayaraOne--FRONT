@@ -9,6 +9,9 @@
  *   - ENUM em maiúsculas com sublinhado (PENDING_CLASSIFICATION, SANDBOX_CONFIRMED...) ou códigos
  *     de status soltos conhecidos (PENDING, SETTLED, ACTIVE...)
  *   - número em formato americano (1,234.56 / 1234.56 em contexto de valor)
+ *   - (M45-RECONF) competência AAAA-MM, palavras em inglês ("requirement"...), códigos de regra
+ *     entre parênteses ("(JUR-003/JUR-015)"), "undefined"/"null"/"NaN", célula de tabela vazia
+ *     ou "—", e erros de JavaScript no console. Clica em cada aba (role=tab) e varre o conteúdo.
  * Não escreve nada; não chama MFA. Salva print de cada tela e um JSON com os achados.
  *
  * Uso: node e2e/m45-varredura-codigo-cru.spec.js  (E2E_SHOTS = pasta dos prints)
@@ -36,6 +39,8 @@ const ROUTES = [
   '/painel/contratos/garantias', '/painel/contratos/garantias/novo', '/painel/contratos/lista', '/painel/contratos/lista/novo',
   '/painel/contratos/locacao', '/painel/contratos/notificacoes', '/painel/contratos/processos', '/painel/contratos/processos/novo',
   '/painel/contratos/vistorias', '/painel/contratos/vistorias/novo',
+  // Contratos usados na reconferência ao vivo (checklist de venda e massa de repasse HOMO M45).
+  ...(process.env.E2E_EXTRA_ROUTES ? process.env.E2E_EXTRA_ROUTES.split(',') : []),
 ];
 const DETAIL_FROM = {
   '/painel/financeiro/lancamentos': /\/painel\/financeiro\/lancamentos\/[0-9a-f-]{36}$/,
@@ -53,9 +58,22 @@ const PATTERNS = [
   { kind: 'ENUM', re: /\b[A-Z]{2,}(?:_[A-Z0-9]+)+\b/g },
   { kind: 'STATUS_CRU', re: /\b(?:PENDING|SETTLED|PARTIALLY|CANCELLED|CANCELED|ACTIVE|INACTIVE|DRAFT|SIGNED|RELEASED|APPROVED|REJECTED|SUBMITTED|SUBMITTING|EXECUTED|FAILED|PAID|OPEN|CLOSED|COMPLETED|RECEIVABLE|PAYABLE|CREDIT|DEBIT|LEASE|SALE|LANDLORD|TENANT|BUYER|SELLER|GUARANTOR|EXPIRED|BLOCKED|MANUAL|SANDBOX)\b/g },
   { kind: 'NUMERO_EUA', re: /(?:R\$\s?)?\b\d{1,3}(?:,\d{3})+\.\d{2}\b|R\$\s?\d+\.\d{2}\b/g },
+  { kind: 'COMPETENCIA_ISO', re: /\b20\d{2}-(?:0[1-9]|1[0-2])\b(?!-\d)/g },
+  { kind: 'INGLES', re: /\b(?:requirement|requirements|undefined|null|NaN|Invalid Date|pending|settled|approved|draft|closeout|payload|entity|status code)\b/gi },
+  { kind: 'CODIGO_REGRA', re: /\((?:[A-Z]{2,}-[A-Z]*-?\d{2,}[^)]*)\)/g },
+  // Traço como VALOR (placeholder), não como pontuação "A — B": linha só com o traço, "Campo: —",
+  // "· — ·", "(—)" ou traço seguido de tab (célula).
+  { kind: 'TRACO_VAZIO', re: /^\s*[—–-]\s*$|:\s*—\s*$|·\s*—\s*(?:·|$)|\(—\)|\t—(?:\t|$)|^—\t/g },
 ];
 // Siglas legítimas que não são código cru.
 const ALLOW = new Set(['CPF', 'CNPJ', 'PIX', 'TED', 'DOC', 'CEP', 'SLA', 'PDF', 'CSV', 'MFA', 'DRE', 'IGPM', 'IPCA', 'INCC', 'SHA', 'API']);
+
+// Espera a tela terminar de carregar: some todo esqueleto (Skeleton) e todo botão "carregando".
+async function waitReady(page, timeout = 90000) {
+  await page.waitForLoadState('networkidle', { timeout: 20000 }).catch(() => {});
+  await page.waitForFunction(() => !document.querySelector('[class*="Skeleton"], [class*="skeleton"], [aria-busy="true"]'), null, { timeout }).catch(() => {});
+  await page.waitForTimeout(800);
+}
 
 async function main() {
   const browser = await chromium.launch();
@@ -63,6 +81,15 @@ async function main() {
   page.setDefaultTimeout(60000);
   const findings = [];
   const visited = [];
+  let currentRoute = '(login)';
+  page.on('pageerror', (err) => findings.push({ route: currentRoute, kind: 'ERRO_JS', match: String(err.message).slice(0, 160), line: '' }));
+  page.on('console', (msg) => {
+    if (msg.type() !== 'error') return;
+    const t = msg.text();
+    // 4xx esperados de permissão/MFA não são erro de tela; erros de React/JS são.
+    if (/Failed to load resource|status of 40[13]/.test(t)) return;
+    findings.push({ route: currentRoute, kind: 'ERRO_CONSOLE', match: t.slice(0, 160), line: '' });
+  });
 
   await page.goto(`${BASE_URL}/entrar`, { waitUntil: 'domcontentloaded' });
   const teamTab = page.getByText('Sou da equipe', { exact: false });
@@ -74,14 +101,19 @@ async function main() {
   await page.waitForURL((u) => !u.pathname.includes('/entrar'), { timeout: 60000 }).catch(() => {});
   if (page.url().includes('/entrar')) throw new Error('login falhou');
 
-  async function scan(route) {
-    await page.goto(`${BASE_URL}${route}`, { waitUntil: 'domcontentloaded' });
-    await page.waitForLoadState('networkidle', { timeout: 20000 }).catch(() => {});
-    await page.waitForTimeout(1500);
+  async function scanText(route, name) {
     // Texto visível; ignora o conteúdo de <pre> do termo (hash) e valores de input.
     const text = await page.evaluate(() => document.body.innerText);
-    const name = route.replace(/^\/painel\//, '').replace(/[^a-z0-9]+/gi, '-');
     await page.screenshot({ path: path.join(SHOTS, `${name}.png`), fullPage: true });
+    const emptyCells = await page.evaluate(() => Array.from(document.querySelectorAll('tbody td'))
+      .filter((td) => td.offsetParent !== null && !td.querySelector('button, a, input, select, svg, img') && /^\s*(?:—|-|–)?\s*$/.test(td.innerText))
+      .map((td) => {
+        const tr = td.closest('tr');
+        const idx = Array.from(tr.children).indexOf(td);
+        const th = td.closest('table')?.querySelectorAll('thead th')[idx];
+        return `${th ? th.innerText.trim() : `coluna ${idx + 1}`} vazia — linha: ${tr.innerText.replace(/\s+/g, ' ').slice(0, 120)}`;
+      }));
+    for (const e of emptyCells) findings.push({ route: name, kind: 'CELULA_VAZIA', match: 'célula', line: e });
     const lines = text.split('\n');
     for (const p of PATTERNS) {
       for (const line of lines) {
@@ -94,10 +126,28 @@ async function main() {
           if (route === '/painel/contratos/clausulas' && /^[A-Z0-9_]+$/.test(m) && p.kind === 'ENUM') continue;
           if (p.kind === 'DATA_ISO' && /SHA-256|integridade/i.test(line)) continue;
           if (/Código de integridade|SHA-256:/.test(line)) continue;
+          if (p.kind === 'INGLES' && /^(?:pending|settled|approved|draft)$/i.test(m) && !/^[A-Z]+$/.test(m)) continue;
+          if (p.kind === 'COMPETENCIA_ISO' && /SHA-256|integridade|hash/i.test(line)) continue;
           const at = line.indexOf(m);
-          findings.push({ route, kind: p.kind, match: m, line: line.slice(Math.max(0, at - 80), at + m.length + 80).trim() });
+          findings.push({ route: name, kind: p.kind, match: m, line: line.slice(Math.max(0, at - 80), at + m.length + 80).trim() });
         }
       }
+    }
+  }
+
+  async function scan(route) {
+    currentRoute = route;
+    await page.goto(`${BASE_URL}${route}`, { waitUntil: 'domcontentloaded' });
+    await waitReady(page);
+    const name = route.replace(/^\/painel\//, '').replace(/[^a-z0-9]+/gi, '-');
+    await scanText(route, name);
+    const tabs = await page.locator('[role=tab]').all();
+    for (let i = 1; i < tabs.length; i += 1) {
+      const label = (await tabs[i].innerText().catch(() => `aba-${i}`)).trim();
+      await tabs[i].click().catch(() => {});
+      await waitReady(page);
+      currentRoute = `${route} [${label}]`;
+      await scanText(currentRoute, `${name}--${label.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`);
     }
     visited.push(route);
     return name;
