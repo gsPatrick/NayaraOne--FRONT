@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Table from "@/components/organisms/Table/Table";
@@ -98,6 +98,10 @@ export default function SegurosPage() {
   const [uploadingDoc, setUploadingDoc] = useState(false);
   const [viewerFile, setViewerFile] = useState(null);
   const [installments, setInstallments] = useState([]);
+  const [detailLoading, setDetailLoading] = useState({ installments: false, documents: false });
+  // Race fix (auditoria M7): id da apólice aberta no detalhe — respostas de requests de outra
+  // apólice (abertas/fechadas antes) são descartadas em vez de sobrescrever o estado atual.
+  const currentPolicyIdRef = useRef(null);
   const [payForm, setPayForm] = useState({}); // { [installmentId]: financialEntryId }
   // GAP REAL CORRIGIDO (reauditoria externa Nayara, 2026-10-08): o campo pedia o UUID do
   // lançamento financeiro digitado à mão — sem busca nenhuma, impossível de usar na prática.
@@ -125,21 +129,40 @@ export default function SegurosPage() {
   }, []);
 
   async function loadDocuments(policyId) {
+    setDetailLoading((s) => ({ ...s, documents: true }));
     try {
       const docs = await listInsurancePolicyDocuments(policyId);
+      if (currentPolicyIdRef.current !== policyId) return;
       setDocuments(docs || []);
     } catch (err) {
+      if (currentPolicyIdRef.current !== policyId) return;
       setActionError(err?.message || "Não foi possível carregar os documentos da apólice.");
+    } finally {
+      if (currentPolicyIdRef.current === policyId) setDetailLoading((s) => ({ ...s, documents: false }));
     }
   }
 
   async function loadInstallments(policyId) {
+    setDetailLoading((s) => ({ ...s, installments: true }));
     try {
       const data = await listInsurancePolicyInstallments(policyId);
+      if (currentPolicyIdRef.current !== policyId) return;
       setInstallments(data || []);
     } catch (err) {
+      if (currentPolicyIdRef.current !== policyId) return;
       setActionError(err?.message || "Não foi possível carregar as parcelas da apólice.");
+    } finally {
+      if (currentPolicyIdRef.current === policyId) setDetailLoading((s) => ({ ...s, installments: false }));
     }
+  }
+
+  function closeDetail() {
+    currentPolicyIdRef.current = null;
+    setDetailModal(null);
+    setDocuments([]);
+    setInstallments([]);
+    setPayForm({});
+    setDetailLoading({ installments: false, documents: false });
   }
 
   async function handlePayInstallment(installmentId, linkedEntryId) {
@@ -230,12 +253,22 @@ export default function SegurosPage() {
 
   async function openDetail(row) {
     setActionError("");
+    // Limpa o detalhe anterior ANTES de buscar o novo: nunca mostra parcelas/documentos de outra apólice.
+    currentPolicyIdRef.current = row.id;
+    setDocuments([]);
+    setInstallments([]);
+    setPayForm({});
+    setDetailLoading({ installments: true, documents: true });
     try {
       const policy = await getInsurancePolicy(row.id);
+      if (currentPolicyIdRef.current !== row.id) return;
       setDetailModal({ policy });
       loadDocuments(policy.id);
       loadInstallments(policy.id);
     } catch (err) {
+      if (currentPolicyIdRef.current !== row.id) return;
+      currentPolicyIdRef.current = null;
+      setDetailLoading({ installments: false, documents: false });
       setActionError(err?.message || "Não foi possível abrir a apólice.");
     }
   }
@@ -258,6 +291,7 @@ export default function SegurosPage() {
       await quoteInsurancePolicy(id, { estimatedValue });
       setQuoteTarget(null);
       const policy = await getInsurancePolicy(id);
+      currentPolicyIdRef.current = policy.id;
       setDetailModal({ policy });
       loadDocuments(policy.id);
       load();
@@ -292,6 +326,7 @@ export default function SegurosPage() {
       });
       setIssueTarget(null);
       const policy = await getInsurancePolicy(id);
+      currentPolicyIdRef.current = policy.id;
       setDetailModal({ policy });
       loadInstallments(policy.id);
       load();
@@ -316,6 +351,7 @@ export default function SegurosPage() {
         claimAmount: claimForm.claimAmount ? toNumber(claimForm.claimAmount) : undefined,
       });
       const policy = await getInsurancePolicy(detailModal.policy.id);
+      currentPolicyIdRef.current = policy.id;
       setDetailModal({ policy });
       setClaimForm({ description: "", claimAmount: "" });
       load();
@@ -332,6 +368,7 @@ export default function SegurosPage() {
     try {
       await submitInsuranceClaim(claimId);
       const policy = await getInsurancePolicy(detailModal.policy.id);
+      currentPolicyIdRef.current = policy.id;
       setDetailModal({ policy });
     } catch (err) {
       setActionError(err?.message || "Não foi possível submeter o sinistro.");
@@ -357,7 +394,7 @@ export default function SegurosPage() {
     try {
       await cancelInsurancePolicy(detailModal.policy.id, { reason: cancelReason.trim() });
       setCancelReason("");
-      setDetailModal(null);
+      closeDetail();
       load();
     } catch (err) {
       setActionError(err?.message || "Não foi possível cancelar a apólice.");
@@ -519,9 +556,9 @@ export default function SegurosPage() {
       <Modal
         size="lg"
         open={Boolean(detailModal)}
-        onClose={() => { setDetailModal(null); setDocuments([]); setInstallments([]); }}
+        onClose={closeDetail}
         title="Apólice"
-        footer={<Button variant="secondary" onClick={() => setDetailModal(null)}>Fechar</Button>}
+        footer={<Button variant="secondary" onClick={closeDetail}>Fechar</Button>}
       >
         {detailModal ? (
           <div style={FORM_GAP_STYLE}>
@@ -629,7 +666,9 @@ export default function SegurosPage() {
 
             <div style={SECTION_STYLE}>
               <strong>Parcelas do prêmio</strong>
-              {installments.length === 0 ? (
+              {detailLoading.installments ? (
+                <p style={{ color: "var(--color-ink-muted)", margin: "8px 0 0" }}>Carregando parcelas...</p>
+              ) : installments.length === 0 ? (
                 <p style={{ color: "var(--color-ink-muted)", margin: "8px 0 0" }}>Nenhuma parcela gerada ainda (emita a apólice primeiro).</p>
               ) : (
                 installments.map((inst) => (
@@ -690,7 +729,9 @@ export default function SegurosPage() {
 
             <div style={SECTION_STYLE}>
               <strong>Documentos</strong>
-              {documents.length === 0 ? (
+              {detailLoading.documents ? (
+                <p style={{ color: "var(--color-ink-muted)", margin: "8px 0 0" }}>Carregando documentos...</p>
+              ) : documents.length === 0 ? (
                 <p style={{ color: "var(--color-ink-muted)", margin: "8px 0 0" }}>Nenhum documento anexado.</p>
               ) : (
                 <ul style={{ margin: "10px 0 0", paddingLeft: 0, listStyle: "none" }}>
