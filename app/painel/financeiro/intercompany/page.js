@@ -16,6 +16,7 @@ import Input from "@/components/atoms/Input/Input";
 import Select from "@/components/atoms/Select/Select";
 import Alert from "@/components/molecules/Alert/Alert";
 import MfaVerifyModal from "@/components/organisms/MfaVerifyModal/MfaVerifyModal";
+import Modal from "@/components/organisms/Modal/Modal";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu";
 import {
@@ -55,6 +56,11 @@ export default function IntercompanyPage() {
   const [saving, setSaving] = useState(false);
   // §15 maker-checker: aprovar exige MFA recente; guarda qual transferência está sendo aprovada.
   const [approveId, setApproveId] = useState(null);
+  // Recusa: modal com motivo obrigatório (antes era window.prompt, sem validação visível).
+  const [rejectId, setRejectId] = useState(null);
+  const [rejectReason, setRejectReason] = useState("");
+  const [rejectError, setRejectError] = useState("");
+  const [rejecting, setRejecting] = useState(false);
 
   async function reload() {
     setLoading(true);
@@ -153,14 +159,26 @@ export default function IntercompanyPage() {
     }
   }
 
-  async function handleReject(id) {
-    const why = typeof window !== "undefined" ? window.prompt("Motivo da recusa:") : "";
-    if (!why || !why.trim()) return;
+  function openReject(id) {
+    setRejectId(id);
+    setRejectReason("");
+    setRejectError("");
+  }
+
+  async function confirmReject() {
+    if (!rejectReason.trim()) {
+      setRejectError("Informe o motivo da recusa.");
+      return;
+    }
+    setRejecting(true);
     try {
-      await rejectIntercompanyTransfer(id, why.trim());
+      await rejectIntercompanyTransfer(rejectId, rejectReason.trim());
+      setRejectId(null);
       await reload();
     } catch (err) {
-      setLoadError(err?.message || "Falha ao recusar a transferência.");
+      setRejectError(err?.message || "Falha ao recusar a transferência.");
+    } finally {
+      setRejecting(false);
     }
   }
 
@@ -207,7 +225,7 @@ export default function IntercompanyPage() {
               <Button type="button" size="sm" variant="ghost" onClick={() => setApproveId(row.id)}>
                 Aprovar
               </Button>
-              <Button type="button" size="sm" variant="ghost" onClick={() => handleReject(row.id)}>
+              <Button type="button" size="sm" variant="ghost" onClick={() => openReject(row.id)}>
                 Recusar
               </Button>
             </span>
@@ -321,6 +339,27 @@ export default function IntercompanyPage() {
           await runApprove(id);
         }}
       />
+
+      <Modal
+        open={Boolean(rejectId)}
+        onClose={() => setRejectId(null)}
+        title="Recusar transferência"
+        footer={
+          <>
+            <Button type="button" variant="ghost" onClick={() => setRejectId(null)} disabled={rejecting}>
+              Cancelar
+            </Button>
+            <Button type="button" onClick={confirmReject} disabled={rejecting}>
+              {rejecting ? "Recusando..." : "Confirmar recusa"}
+            </Button>
+          </>
+        }
+      >
+        <FormField label="Motivo da recusa" htmlFor="rejectReason">
+          <Input id="rejectReason" value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} autoFocus />
+        </FormField>
+        {rejectError ? <Alert tone="danger">{rejectError}</Alert> : null}
+      </Modal>
 
       <StickyActionBar>
         <FinanceNavMenu />

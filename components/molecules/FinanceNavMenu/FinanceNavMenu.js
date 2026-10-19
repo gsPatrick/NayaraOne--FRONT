@@ -20,6 +20,8 @@ const ITEMS = [
   { label: "Régua de cobrança", href: "/painel/financeiro/regua-cobranca", icon: "clock" },
   { label: "Fechamento de período", href: "/painel/financeiro/fechamento", icon: "shield" },
   { label: "Intercompany", href: "/painel/financeiro/intercompany", icon: "layers" },
+  { label: "Consolidado do grupo", href: "/painel/financeiro/consolidado-grupo", icon: "chart" },
+  { label: "Regra de comissão", href: "/painel/financeiro/regra-comissao", icon: "layers" },
   { label: "Plano de contas", href: "/painel/financeiro/plano-de-contas", icon: "document" },
   { label: "Centros de custo/resultado", href: "/painel/financeiro/centros", icon: "layers" },
   { label: "Relatório financeiro", href: "/painel/financeiro/relatorio", icon: "chart" },
