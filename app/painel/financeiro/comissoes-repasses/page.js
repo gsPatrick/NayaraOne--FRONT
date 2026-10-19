@@ -35,6 +35,7 @@ import {
   listCommissions,
   listCommissionInstallments,
   listOwnerRepasses,
+  listEligibleRepasseSources,
   listBankAccounts,
   listFinancialEntries,
   payCommissionInstallment,
@@ -535,6 +536,11 @@ export default function ComissoesRepassesPage() {
   );
 }
 
+function formatMonthBR(ym) {
+  const m = /^(\d{4})-(\d{2})$/.exec(String(ym || ""));
+  return m ? `${m[2]}/${m[1]}` : ym;
+}
+
 function NewRepasseModal({ open, people, bankAccounts, onClose, onConfirm, busy }) {
   const empty = { ownerPersonId: "", propertyId: "", contractId: "", referenceMonth: "", bankAccountId: "", deductionsAmount: "", sourceEntryIds: [] };
   const [form, setForm] = useState(empty);
@@ -542,26 +548,48 @@ function NewRepasseModal({ open, people, bankAccounts, onClose, onConfirm, busy 
   const [properties, setProperties] = useState([]);
   const [contracts, setContracts] = useState([]);
   const [receivables, setReceivables] = useState([]);
+  const [receivablesState, setReceivablesState] = useState({ loading: false, error: "" });
 
   useEffect(() => {
     if (!open) return;
     setForm(empty);
     setOwnerQuery("");
+    setReceivables([]);
     Promise.all([
       listProperties().catch(() => []),
       listContracts().catch(() => []),
-      listFinancialEntries({ nature: "RECEIVABLE" }).catch(() => []),
-    ]).then(([props, cts, entries]) => {
+    ]).then(([props, cts]) => {
       setProperties(Array.isArray(props) ? props : props?.items || []);
       setContracts(Array.isArray(cts) ? cts : cts?.items || []);
-      setReceivables(
-        (entries || []).filter(
-          (e) => e.nature === "RECEIVABLE" && !e.isThirdPartyFunds && ["SETTLED", "PARTIALLY_SETTLED"].includes(e.status)
-        )
-      );
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
+
+  // M45 F4: a lista de recebimentos vem da API já filtrada pelo imóvel/contrato/período
+  // escolhidos — mesma regra que a criação do repasse valida (liquidado, não é de terceiro,
+  // do contrato escolhido ou de contrato do imóvel, competência até o período, com saldo).
+  useEffect(() => {
+    if (!open) return undefined;
+    if (!form.propertyId) {
+      setReceivables([]);
+      return undefined;
+    }
+    let cancelled = false;
+    setReceivablesState({ loading: true, error: "" });
+    const validMonth = /^\d{4}-(0[1-9]|1[0-2])$/.test(form.referenceMonth) ? form.referenceMonth : undefined;
+    listEligibleRepasseSources({ propertyId: form.propertyId, contractId: form.contractId || undefined, referenceMonth: validMonth })
+      .then((items) => {
+        if (cancelled) return;
+        const list = Array.isArray(items) ? items : [];
+        setReceivables(list);
+        setForm((prev) => ({ ...prev, sourceEntryIds: prev.sourceEntryIds.filter((id) => list.some((e) => e.id === id)) }));
+        setReceivablesState({ loading: false, error: "" });
+      })
+      .catch((err) => {
+        if (!cancelled) setReceivablesState({ loading: false, error: err?.message || "Não foi possível carregar os recebimentos elegíveis." });
+      });
+    return () => { cancelled = true; };
+  }, [open, form.propertyId, form.contractId, form.referenceMonth]);
 
   const owners = useMemo(() => {
     const q = ownerQuery.trim().toLowerCase();
@@ -653,15 +681,26 @@ function NewRepasseModal({ open, people, bankAccounts, onClose, onConfirm, busy 
           ))}
         </Select>
       </FormField>
-      <FormField label="Recebimentos que compõem o repasse" required helper="Só recebimentos já liquidados (dinheiro real) e que não sejam de terceiros">
-        {receivables.length === 0 ? (
-          <p>Nenhum recebimento liquidado disponível.</p>
+      <FormField label="Recebimentos que compõem o repasse" required helper="Só recebimentos já liquidados (dinheiro real), que não sejam de terceiros, do imóvel/contrato escolhido e com competência até o período">
+        {!form.propertyId ? (
+          <p>Escolha o imóvel (e, se quiser, o contrato e o período) para ver os recebimentos elegíveis.</p>
+        ) : receivablesState.loading ? (
+          <p>Carregando recebimentos elegíveis…</p>
+        ) : receivablesState.error ? (
+          <Alert tone="danger">{receivablesState.error}</Alert>
+        ) : receivables.length === 0 ? (
+          <p>Nenhum recebimento liquidado com saldo disponível para este imóvel/contrato/período.</p>
         ) : (
           <div style={{ maxHeight: 180, overflowY: "auto", display: "grid", gap: 4 }}>
             {receivables.map((e) => (
               <label key={e.id} style={{ display: "flex", gap: 8, alignItems: "center" }}>
                 <input type="checkbox" checked={form.sourceEntryIds.includes(e.id)} onChange={() => toggleSource(e.id)} />
-                <span>{e.description || "Recebimento"} — {formatBRL(e.amount)} ({formatDate(e.competenceDate || e.dueDate || e.createdAt)})</span>
+                <span>
+                  {e.description || "Recebimento"} — disponível {formatBRL(e.availableAmount)}
+                  {Number(e.alreadyAllocatedAmount) > 0 ? ` de ${formatBRL(e.amount)}` : ""}
+                  {e.competenceMonth ? ` · competência ${formatMonthBR(e.competenceMonth)}` : ""}
+                  {e.settledAt ? ` · recebido em ${formatDate(e.settledAt)}` : ""}
+                </span>
               </label>
             ))}
           </div>
