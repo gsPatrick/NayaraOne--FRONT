@@ -1,5 +1,6 @@
 import { CompanyProvider } from "@/lib/context/CompanyContext";
 import CompanySwitchOverlay from "@/components/molecules/CompanySwitchOverlay/CompanySwitchOverlay";
+import MfaStepUpHost from "@/components/organisms/MfaStepUpHost/MfaStepUpHost";
 import AuthGuard from "@/components/organisms/AuthGuard/AuthGuard";
 
 export const metadata = {
@@ -13,6 +14,7 @@ export default function PainelLayout({ children }) {
       <CompanyProvider>
         {children}
         <CompanySwitchOverlay />
+        <MfaStepUpHost />
       </CompanyProvider>
     </AuthGuard>
   );
