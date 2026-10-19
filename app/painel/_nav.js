@@ -37,6 +37,8 @@ export const NAV_SECTIONS = [
           { label: "Régua de cobrança", href: "/painel/financeiro/regua-cobranca" },
           { label: "Fechamento de período", href: "/painel/financeiro/fechamento" },
           { label: "Intercompany", href: "/painel/financeiro/intercompany" },
+          { label: "Consolidado do grupo", href: "/painel/financeiro/consolidado-grupo" },
+          { label: "Regra de comissão", href: "/painel/financeiro/regra-comissao" },
           { label: "Plano de contas", href: "/painel/financeiro/plano-de-contas" },
           { label: "Centros de custo/resultado", href: "/painel/financeiro/centros" },
           { label: "Relatório financeiro", href: "/painel/financeiro/relatorio" },

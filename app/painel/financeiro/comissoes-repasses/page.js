@@ -29,6 +29,7 @@ import {
   ENTRY_STATUS_LABELS,
 } from "@/lib/mock/finance";
 import Input from "@/components/atoms/Input/Input";
+import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import FormField from "@/components/molecules/FormField/FormField";
 import {
   listCommissions,
@@ -44,11 +45,14 @@ import {
   getOwnerRepasseComposition,
   approveOwnerRepasse,
   listCostCenters,
+  createOwnerRepasse,
 } from "@/lib/api/finance";
+import { listProperties } from "@/lib/api/properties";
+import { listContracts } from "@/lib/api/legal";
 import { listPeople } from "@/lib/api/people";
 import { apiFetch } from "@/lib/api/client";
 import { commissionDescription } from "@/lib/finance/labels";
-import { formatBRL, formatDate } from "@/lib/format";
+import { formatBRL, formatDate, formatPercent, formatContractLabel, toNumber } from "@/lib/format";
 import { buildMonthlyChartData } from "@/lib/monthlyChartData";
 import styles from "./page.module.css";
 
@@ -62,6 +66,7 @@ function personOf(people, id) {
 export default function ComissoesRepassesPage() {
   const [commissions, setCommissions] = useState([]);
   const [installments, setInstallments] = useState([]);
+  const [newRepasseModal, setNewRepasseModal] = useState(false);
   const [repasses, setRepasses] = useState([]);
   const [bankAccounts, setBankAccounts] = useState([]);
   const [pendingEntries, setPendingEntries] = useState([]);
@@ -118,7 +123,7 @@ export default function ComissoesRepassesPage() {
     let cancelled = false;
     setLoading(true);
     setLoadError("");
-    Promise.all([listCommissions(), listOwnerRepasses(), listBankAccounts(), listFinancialEntries({ status: "PENDING" }), listPeople(), apiFetch("/users")])
+    Promise.all([listCommissions({ includeInstallments: true }), listOwnerRepasses(), listBankAccounts(), listFinancialEntries({ status: "PENDING" }), listPeople(), apiFetch("/users")])
       .then(async ([com, rep, ba, entries, pp, us]) => {
         if (cancelled) return;
         setCommissions(com || []);
@@ -127,10 +132,8 @@ export default function ComissoesRepassesPage() {
         setPendingEntries(entries || []);
         setPeople(pp || []);
         setUsers(us || []);
-        const allInstallments = await Promise.all(
-          (com || []).map((c) => listCommissionInstallments(c.id).catch(() => []))
-        );
-        if (!cancelled) setInstallments(allInstallments.flat());
+        // O2 (auditoria M45): parcelas vêm junto da listagem (uma chamada), sem N+1.
+        if (!cancelled) setInstallments((com || []).flatMap((c) => c.installments || []));
       })
       .catch((err) => {
         if (!cancelled) setLoadError(err?.message || "Não foi possível carregar comissões e repasses.");
@@ -164,6 +167,21 @@ export default function ComissoesRepassesPage() {
       showNotice("success", "Parcela paga", `Parcela ${installment.installmentNumber} marcada como paga.`);
     } catch (err) {
       showNotice("danger", "Não foi possível pagar a parcela", err?.message || "Tente novamente.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function handleCreateRepasse(payload) {
+    setBusyId("new-repasse");
+    try {
+      const created = await createOwnerRepasse(payload);
+      const repasse = created?.repasse || created;
+      setRepasses((prev) => [repasse, ...prev]);
+      setNewRepasseModal(false);
+      showNotice("success", "Repasse criado", `Repasse de ${formatBRL(repasse.netAmount)} (ref. ${repasse.referenceMonth}) aguardando aprovação por outra pessoa.`);
+    } catch (err) {
+      showNotice("danger", "Não foi possível criar o repasse", err?.message || "Tente novamente.");
     } finally {
       setBusyId(null);
     }
@@ -338,7 +356,7 @@ export default function ComissoesRepassesPage() {
                             <Avatar name={userName(users, c.beneficiaryUserId)} size="sm" />
                             <div className={styles.listRowInfo}>
                               <span className={styles.listRowTitle}>{commissionDescription(c)}</span>
-                              <span className={styles.listRowSubtitle}>{userName(users, c.beneficiaryUserId)} · {c.percentage}% sobre {formatBRL(c.baseAmount)}</span>
+                              <span className={styles.listRowSubtitle}>{userName(users, c.beneficiaryUserId)} · {formatPercent(c.percentage)} sobre {formatBRL(c.baseAmount)}</span>
                             </div>
                             <div className={styles.listRowRight}>
                               <Badge tone={COMMISSION_STATUS_TONE[c.status]}>{COMMISSION_STATUS_LABELS[c.status]}</Badge>
@@ -357,6 +375,8 @@ export default function ComissoesRepassesPage() {
                                 <span>Parcela {i.installmentNumber} — {formatBRL(i.amount)} — vence {formatDate(i.dueAt)}</span>
                                 {i.status === "PAID" ? (
                                   <Badge tone="success">Paga em {formatDate(i.paidAt)}</Badge>
+                                ) : i.status === "CANCELLED" || c.status === "CANCELLED" ? (
+                                  <Badge tone="neutral">Cancelada</Badge>
                                 ) : (
                                   <Button size="sm" variant="secondary" onClick={() => setPayModal(i)} loading={busyId === i.id}>Pagar</Button>
                                 )}
@@ -381,6 +401,13 @@ export default function ComissoesRepassesPage() {
               </Card>
 
               <Card title="Repasses a proprietários" subtitle="Líquido = bruto − deduções (sempre calculado, nunca editável)">
+                <div className={styles.toolbar}>
+                  {/* F4 (auditoria M45): não havia como criar repasse pela tela. */}
+                  <Button onClick={() => setNewRepasseModal(true)}>
+                    <Icon name="plus" size={16} /> Novo repasse
+                  </Button>
+                </div>
+                {repasses.length === 0 ? <p className={styles.emptyText}>Nenhum repasse registrado.</p> : null}
                 <ul className={styles.list}>
                   {pageItems2.map((r) => {
                     const account = bankAccountOf(r.bankAccountId);
@@ -466,6 +493,15 @@ export default function ComissoesRepassesPage() {
         busy={busyId === "new-commission"}
       />
 
+      <NewRepasseModal
+        open={newRepasseModal}
+        people={people}
+        bankAccounts={bankAccounts}
+        onClose={() => setNewRepasseModal(false)}
+        onConfirm={handleCreateRepasse}
+        busy={busyId === "new-repasse"}
+      />
+
       <CancelCommissionModal
         commission={cancelModal}
         users={users}
@@ -496,6 +532,145 @@ export default function ComissoesRepassesPage() {
       <AdjustmentsModal state={adjustmentsModal} onClose={() => setAdjustmentsModal(null)} />
       <CompositionModal state={compositionModal} onClose={() => setCompositionModal(null)} />
     </AppShell>
+  );
+}
+
+function NewRepasseModal({ open, people, bankAccounts, onClose, onConfirm, busy }) {
+  const empty = { ownerPersonId: "", propertyId: "", contractId: "", referenceMonth: "", bankAccountId: "", deductionsAmount: "", sourceEntryIds: [] };
+  const [form, setForm] = useState(empty);
+  const [ownerQuery, setOwnerQuery] = useState("");
+  const [properties, setProperties] = useState([]);
+  const [contracts, setContracts] = useState([]);
+  const [receivables, setReceivables] = useState([]);
+
+  useEffect(() => {
+    if (!open) return;
+    setForm(empty);
+    setOwnerQuery("");
+    Promise.all([
+      listProperties().catch(() => []),
+      listContracts().catch(() => []),
+      listFinancialEntries({ nature: "RECEIVABLE" }).catch(() => []),
+    ]).then(([props, cts, entries]) => {
+      setProperties(Array.isArray(props) ? props : props?.items || []);
+      setContracts(Array.isArray(cts) ? cts : cts?.items || []);
+      setReceivables(
+        (entries || []).filter(
+          (e) => e.nature === "RECEIVABLE" && !e.isThirdPartyFunds && ["SETTLED", "PARTIALLY_SETTLED"].includes(e.status)
+        )
+      );
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  const owners = useMemo(() => {
+    const q = ownerQuery.trim().toLowerCase();
+    const seen = new Set();
+    return (people || [])
+      .filter((p) => !seen.has(p.id) && seen.add(p.id))
+      .filter((p) => !q || (p.legalName || "").toLowerCase().includes(q) || (p.taxId || "").includes(q))
+      .slice(0, 50);
+  }, [people, ownerQuery]);
+  const propertyContracts = contracts.filter((c) => !form.propertyId || c.propertyId === form.propertyId);
+  const activeAccounts = (bankAccounts || []).filter((a) => a.status === "ACTIVE");
+  const isValid =
+    form.ownerPersonId && form.propertyId && /^\d{4}-(0[1-9]|1[0-2])$/.test(form.referenceMonth) && form.sourceEntryIds.length > 0;
+
+  function update(field) {
+    return (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
+  }
+  function toggleSource(id) {
+    setForm((prev) => ({
+      ...prev,
+      sourceEntryIds: prev.sourceEntryIds.includes(id) ? prev.sourceEntryIds.filter((x) => x !== id) : [...prev.sourceEntryIds, id],
+    }));
+  }
+
+  return (
+    <Modal
+      open={open}
+      onClose={onClose}
+      title="Novo repasse ao proprietário"
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>Cancelar</Button>
+          <Button
+            disabled={!isValid}
+            loading={busy}
+            onClick={() =>
+              onConfirm({
+                ownerPersonId: form.ownerPersonId,
+                propertyId: form.propertyId,
+                contractId: form.contractId || null,
+                referenceMonth: form.referenceMonth,
+                bankAccountId: form.bankAccountId || null,
+                sourceEntryIds: form.sourceEntryIds,
+                deductionsAmount: form.deductionsAmount ? toNumber(form.deductionsAmount) : 0,
+                idempotencyKey: `repasse-${form.ownerPersonId}-${form.propertyId}-${form.contractId || "sem"}-${form.referenceMonth}`,
+              })
+            }
+          >
+            Criar repasse
+          </Button>
+        </>
+      }
+    >
+      <FormField label="Buscar proprietário" htmlFor="nr-owner-q" helper="Digite parte do nome ou CPF/CNPJ (até 50 resultados)">
+        <Input id="nr-owner-q" value={ownerQuery} onChange={(e) => setOwnerQuery(e.target.value)} placeholder="Nome ou documento" />
+      </FormField>
+      <FormField label="Proprietário" htmlFor="nr-owner" required>
+        <Select id="nr-owner" value={form.ownerPersonId} onChange={update("ownerPersonId")}>
+          <option value="">Selecionar…</option>
+          {owners.map((p) => (
+            <option key={p.id} value={p.id}>{p.legalName}</option>
+          ))}
+        </Select>
+      </FormField>
+      <FormField label="Imóvel" htmlFor="nr-property" required>
+        <Select id="nr-property" value={form.propertyId} onChange={(e) => setForm((prev) => ({ ...prev, propertyId: e.target.value, contractId: "" }))}>
+          <option value="">Selecionar…</option>
+          {properties.map((p) => (
+            <option key={p.id} value={p.id}>{p.title || p.name || p.code || p.address || "Imóvel"}</option>
+          ))}
+        </Select>
+      </FormField>
+      <FormField label="Contrato (opcional)" htmlFor="nr-contract">
+        <Select id="nr-contract" value={form.contractId} onChange={update("contractId")}>
+          <option value="">Sem contrato</option>
+          {propertyContracts.map((c) => (
+            <option key={c.id} value={c.id}>{formatContractLabel(c)}</option>
+          ))}
+        </Select>
+      </FormField>
+      <FormField label="Período (competência)" htmlFor="nr-month" required helper="Só pode haver um repasse por proprietário/imóvel/contrato no mesmo período">
+        <Input id="nr-month" type="month" value={form.referenceMonth} onChange={update("referenceMonth")} />
+      </FormField>
+      <FormField label="Conta de pagamento" htmlFor="nr-bank">
+        <Select id="nr-bank" value={form.bankAccountId} onChange={update("bankAccountId")}>
+          <option value="">Definir depois</option>
+          {activeAccounts.map((a) => (
+            <option key={a.id} value={a.id}>{a.bankName || a.bankCode} · ag. {a.agency} · cc {a.accountNumber}</option>
+          ))}
+        </Select>
+      </FormField>
+      <FormField label="Recebimentos que compõem o repasse" required helper="Só recebimentos já liquidados (dinheiro real) e que não sejam de terceiros">
+        {receivables.length === 0 ? (
+          <p>Nenhum recebimento liquidado disponível.</p>
+        ) : (
+          <div style={{ maxHeight: 180, overflowY: "auto", display: "grid", gap: 4 }}>
+            {receivables.map((e) => (
+              <label key={e.id} style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <input type="checkbox" checked={form.sourceEntryIds.includes(e.id)} onChange={() => toggleSource(e.id)} />
+                <span>{e.description || "Recebimento"} — {formatBRL(e.amount)} ({formatDate(e.competenceDate || e.dueDate || e.createdAt)})</span>
+              </label>
+            ))}
+          </div>
+        )}
+      </FormField>
+      <FormField label="Deduções (R$)" htmlFor="nr-ded" helper="O bruto é o valor elegível dos recebimentos; líquido = bruto − deduções">
+        <DecimalInput id="nr-ded" value={form.deductionsAmount} onChange={update("deductionsAmount")} placeholder="0,00" />
+      </FormField>
+    </Modal>
   );
 }
 
