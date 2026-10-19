@@ -388,7 +388,7 @@ export default function NovoContratoPage() {
         {clausePreview ? (
           <Card
             title="Cláusulas do documento"
-            subtitle="Decidido pelo sistema com os dados deste contrato e as regras aprovadas na Biblioteca de cláusulas. Confira e clique em "Confirmar e criar contrato"."
+            subtitle="Decidido pelo sistema com os dados deste contrato e as regras aprovadas na Biblioteca de cláusulas. Confira e clique em “Confirmar e criar contrato”."
           >
             <div className={styles.clausePreview} data-testid="clause-preview">
               <p className={styles.clausePreviewHeading}>Vão entrar ({clausePreview.included.length})</p>
