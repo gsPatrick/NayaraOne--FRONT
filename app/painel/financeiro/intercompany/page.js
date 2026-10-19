@@ -13,6 +13,7 @@ import Badge from "@/components/atoms/Badge/Badge";
 import Button from "@/components/atoms/Button/Button";
 import FormField from "@/components/molecules/FormField/FormField";
 import Input from "@/components/atoms/Input/Input";
+import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import Select from "@/components/atoms/Select/Select";
 import Alert from "@/components/molecules/Alert/Alert";
 import MfaVerifyModal from "@/components/organisms/MfaVerifyModal/MfaVerifyModal";
@@ -32,7 +33,7 @@ import {
 import { uploadFile } from "@/lib/api/legal";
 import { listCompanies } from "@/lib/api/companies";
 import { useCompany } from "@/lib/context/CompanyContext";
-import { formatBRL, formatDateTime } from "@/lib/format";
+import { formatBRL, formatDateTime, toNumber } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function IntercompanyPage() {
@@ -114,8 +115,8 @@ export default function IntercompanyPage() {
       setFormError("Selecione a empresa de destino.");
       return;
     }
-    const numericAmount = Number(amount);
-    if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
+    const numericAmount = toNumber(amount);
+    if (Number.isNaN(numericAmount) || !Number.isFinite(numericAmount) || numericAmount <= 0) {
       setFormError("Informe um valor maior que zero.");
       return;
     }
@@ -142,7 +143,7 @@ export default function IntercompanyPage() {
       const uploaded = await uploadFile(evidenceFile);
       await createIntercompanyTransfer({
         toCompanyId,
-        amount: Number(amount),
+        amount: toNumber(amount),
         reason: reason.trim(),
         evidenceFileId: uploaded.id,
         fromBankAccountId,
@@ -293,7 +294,7 @@ export default function IntercompanyPage() {
             ) : null}
 
             <FormField label="Valor" htmlFor="amount">
-              <Input id="amount" type="number" min="0.01" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} />
+              <DecimalInput id="amount" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0,00" />
             </FormField>
 
             <FormField label="Conta de saída (esta empresa)" htmlFor="fromBankAccountId">
