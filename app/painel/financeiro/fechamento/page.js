@@ -6,7 +6,7 @@
 // ganhou tela — mesma classe de gap da importação de extrato (FIN-TS-007) e do orçamento
 // (achado na verificação cética final do Marco 4, 11/10/2026).
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Table from "@/components/organisms/Table/Table";
@@ -46,6 +46,7 @@ export default function FechamentoPage() {
   const [closures, setClosures] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const [closuresLoaded, setClosuresLoaded] = useState(false);
 
   const [monthToClose, setMonthToClose] = useState(currentReferenceMonth());
   const [closing, setClosing] = useState(false);
@@ -65,9 +66,11 @@ export default function FechamentoPage() {
 
   async function reload() {
     setLoading(true);
+    setLoadError("");
     try {
       const items = await listPeriodClosures();
       setClosures(items || []);
+      setClosuresLoaded(true);
     } catch (err) {
       setLoadError(err?.message || "Não foi possível carregar os fechamentos.");
     } finally {
@@ -75,17 +78,24 @@ export default function FechamentoPage() {
     }
   }
 
+  // Só a resposta do pedido mais recente vale: trocar de mês rápido não pode deixar o
+  // checklist de um mês aparecer em outro.
+  const checklistRequestRef = useRef(0);
+
   async function loadChecklist(month) {
     if (!month) return;
+    const requestId = ++checklistRequestRef.current;
     setChecklistLoading(true);
     setChecklistError("");
     try {
-      setChecklist(await getPeriodPreconditions(month));
+      const result = await getPeriodPreconditions(month);
+      if (requestId === checklistRequestRef.current) setChecklist({ ...result, referenceMonth: month });
     } catch (err) {
+      if (requestId !== checklistRequestRef.current) return;
       setChecklist(null);
       setChecklistError(err?.message || "Não foi possível carregar as pré-condições do fechamento.");
     } finally {
-      setChecklistLoading(false);
+      if (requestId === checklistRequestRef.current) setChecklistLoading(false);
     }
   }
 
@@ -94,6 +104,7 @@ export default function FechamentoPage() {
   }, []);
 
   useEffect(() => {
+    setChecklist(null);
     loadChecklist(monthToClose);
   }, [monthToClose]);
 
@@ -143,8 +154,16 @@ export default function FechamentoPage() {
     }
   }
 
-  const periodStatus = checklist?.status || "OPEN";
-  const preconditions = checklist?.preconditions;
+  // Status do mês: nunca um padrão falso enquanto carrega. Vem do checklist do mês (quando já
+  // chegou) ou, antes disso, da lista de fechamentos (leve: mês sem registro = OPEN). Enquanto
+  // nenhum dos dois chegou, o status é desconhecido (null) e nenhum botão de ação aparece.
+  const checklistForMonth = checklist && checklist.referenceMonth === monthToClose ? checklist : null;
+  const periodStatus = checklistForMonth
+    ? checklistForMonth.status
+    : closuresLoaded && !loading
+      ? closures.find((row) => row.referenceMonth === monthToClose)?.status || "OPEN"
+      : null;
+  const preconditions = checklistForMonth?.preconditions;
   const allOk = Boolean(preconditions?.allOk);
 
   async function handleReopen(e) {
@@ -212,7 +231,12 @@ export default function FechamentoPage() {
       <div className={styles.wrap}>
         {loadError ? (
           <div style={{ position: "fixed", top: "var(--space-4)", left: "50%", transform: "translateX(-50%)", zIndex: 200, width: "min(560px, calc(100vw - 2 * var(--space-4)))" }}>
-            <Alert tone="danger">{loadError}</Alert>
+            <Alert tone="danger">
+              {loadError}{" "}
+              <Button type="button" size="sm" variant="secondary" disabled={loading} onClick={reload}>
+                Tentar de novo
+              </Button>
+            </Alert>
           </div>
         ) : null}
 
@@ -228,10 +252,21 @@ export default function FechamentoPage() {
             <FormField label="Mês de referência" htmlFor="monthToClose">
               <Input id="monthToClose" type="month" value={monthToClose} onChange={(e) => setMonthToClose(e.target.value)} />
             </FormField>
-            <Badge tone={STATUS_TONE[periodStatus] || "neutral"}>{STATUS_LABEL[periodStatus] || periodStatus}</Badge>
+            {periodStatus ? (
+              <Badge tone={STATUS_TONE[periodStatus] || "neutral"}>{STATUS_LABEL[periodStatus] || periodStatus}</Badge>
+            ) : (
+              <Badge tone="neutral">Carregando…</Badge>
+            )}
           </div>
 
-          {checklistError ? <Alert tone="danger">{checklistError}</Alert> : null}
+          {checklistError ? (
+            <Alert tone="danger">
+              {checklistError}{" "}
+              <Button type="button" size="sm" variant="secondary" disabled={checklistLoading} onClick={() => loadChecklist(monthToClose)}>
+                Tentar de novo
+              </Button>
+            </Alert>
+          ) : null}
           {checklistLoading && !preconditions ? <p className={styles.helper}>Carregando as pré-condições...</p> : null}
 
           {preconditions ? (
@@ -269,7 +304,7 @@ export default function FechamentoPage() {
 
           {periodStatus === "OPEN" ? (
             <form onSubmit={handleClose} className={styles.inlineForm}>
-              <Button type="submit" disabled={closing || !allOk}>
+              <Button type="submit" disabled={closing || !preconditions || !allOk}>
                 {closing ? "Enviando..." : "Pedir fechamento"}
               </Button>
               {!allOk && preconditions ? (
@@ -284,7 +319,7 @@ export default function FechamentoPage() {
                 Fechamento pedido. A aprovação precisa ser feita por outra pessoa, com verificação em duas etapas recente.
               </p>
               <div className={styles.reopenActions}>
-                <Button type="button" disabled={approving || !allOk} onClick={handleApprove}>
+                <Button type="button" disabled={approving || !preconditions || !allOk} onClick={handleApprove}>
                   {approving ? "Aprovando..." : "Aprovar fechamento"}
                 </Button>
                 <Button type="button" variant="ghost" onClick={() => setReopenTarget({ referenceMonth: monthToClose, mode: "RETURN" })}>
