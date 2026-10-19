@@ -43,7 +43,7 @@ import {
   checkCloseoutEligibility,
   closeoutContract,
 } from "@/lib/api/billing";
-import { formatBRL, formatDate, formatContractLabel, toNumber } from "@/lib/format";
+import { formatBRL, formatDate, formatContractLabel, toNumber, formatCompetence, parseCompetenceInput } from "@/lib/format";
 import styles from "./page.module.css";
 import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 
@@ -62,8 +62,19 @@ const RENT_ADVANCE_STATUS_LABEL = { ELIGIBLE: "Elegível", PROPOSED: "Proposto",
 
 function currentPeriod() {
   const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  return `${String(now.getMonth() + 1).padStart(2, "0")}/${now.getFullYear()}`;
 }
+
+const CLOSEOUT_PENDENCY_LABELS = {
+  OPEN_BILLING: "Cobrança em aberto",
+  OPEN_COLLECTION_CASE: "Caso de cobrança aberto",
+  PENDING_UTILITY_TRANSFER: "Transferência de consumo (água/luz/gás) pendente",
+  ACTIVE_GUARANTEE: "Garantia ainda ativa",
+  DEPOSIT_BALANCE: "Saldo de caução a devolver",
+  OPEN_LEGAL_CASE: "Processo jurídico aberto",
+  OPEN_LEGAL_DEADLINE: "Prazo jurídico em aberto",
+  OPEN_NOTICE: "Notificação em aberto",
+};
 
 export default function LocacaoPage() {
   const [contracts, setContracts] = useState([]);
@@ -142,7 +153,7 @@ export default function LocacaoPage() {
     try {
       await generateBillingSchedule({
         contractId: scheduleForm.contractId,
-        period: scheduleForm.period,
+        period: parseCompetenceInput(scheduleForm.period) || scheduleForm.period,
         dueDate: scheduleForm.dueDate,
         items: [{ componentType: scheduleForm.componentType, amount: toNumber(scheduleForm.amount) }],
       });
@@ -171,7 +182,7 @@ export default function LocacaoPage() {
     try {
       await requestRentAdjustment({
         contractId: adjustForm.contractId,
-        period: adjustForm.period,
+        period: parseCompetenceInput(adjustForm.period) || adjustForm.period,
         indexCode: adjustForm.indexCode,
         oldRentAmount: toNumber(adjustForm.oldRentAmount),
       });
@@ -282,8 +293,10 @@ export default function LocacaoPage() {
     setCloseoutResult(null);
     setActionError("");
     try {
-      const reasons = await checkCloseoutEligibility(closeoutContractId);
-      setCloseoutResult({ reasons: reasons || [] });
+      // Gate único (M45-RECONF F1): a API devolve { contractId, eligible, reasons }.
+      const result = await checkCloseoutEligibility(closeoutContractId);
+      const reasons = Array.isArray(result) ? result : (Array.isArray(result?.reasons) ? result.reasons : []);
+      setCloseoutResult({ reasons });
     } catch (err) {
       setActionError(err.message || "Erro ao checar elegibilidade de encerramento.");
     } finally {
@@ -301,7 +314,7 @@ export default function LocacaoPage() {
       load();
     } catch (err) {
       if (err?.code === "CLOSEOUT_BLOCKED") {
-        setCloseoutResult({ reasons: err.details?.reasons || [], closed: false });
+        setCloseoutResult({ reasons: Array.isArray(err.details?.reasons) ? err.details.reasons : [], closed: false });
       } else {
         setActionError(err.message || "Erro ao encerrar contrato.");
       }
@@ -312,29 +325,29 @@ export default function LocacaoPage() {
 
   const scheduleColumns = [
     { key: "contractId", label: "Contrato", render: (row) => formatContractLabel(leaseContracts.find((c) => c.id === row.contractId)) || row.contractId.slice(0, 8) },
-    { key: "period", label: "Competência" },
+    { key: "period", label: "Competência", render: (row) => formatCompetence(row.period) },
     { key: "dueDate", label: "Vencimento", render: (row) => formatDate(row.dueDate) },
     { key: "totalAmount", label: "Total", render: (row) => formatBRL(row.totalAmount) },
     { key: "balance", label: "Saldo", render: (row) => formatBRL(row.balance) },
     { key: "status", label: "Status", render: (row) => <Badge tone={SCHEDULE_STATUS_TONE[row.status] || "neutral"}>{SCHEDULE_STATUS_LABEL[row.status] || row.status}</Badge> },
     {
       key: "actions",
-      label: "",
+      label: "Ações",
       render: (row) =>
         row.status !== "PAID" ? (
           <Button variant="secondary" size="sm" onClick={() => { setPayTarget(row); setPayAmount(""); }}>
             Registrar pagamento
           </Button>
-        ) : null,
+        ) : "Paga — nada a fazer",
     },
   ];
 
   const adjustmentColumns = [
     { key: "contractId", label: "Contrato", render: (row) => formatContractLabel(leaseContracts.find((c) => c.id === row.contractId)) || row.contractId.slice(0, 8) },
-    { key: "period", label: "Competência" },
+    { key: "period", label: "Competência", render: (row) => formatCompetence(row.period) },
     { key: "indexCode", label: "Índice" },
     { key: "oldRentAmount", label: "Aluguel anterior", render: (row) => formatBRL(row.oldRentAmount) },
-    { key: "newRentAmount", label: "Novo aluguel", render: (row) => (row.newRentAmount != null ? formatBRL(row.newRentAmount) : "—") },
+    { key: "newRentAmount", label: "Novo aluguel", render: (row) => (row.newRentAmount != null ? formatBRL(row.newRentAmount) : "Aguardando índice") },
     { key: "status", label: "Status", render: (row) => <Badge tone={ADJUSTMENT_STATUS_TONE[row.status] || "neutral"}>{ADJUSTMENT_STATUS_LABEL[row.status] || row.status}</Badge> },
   ];
 
@@ -350,7 +363,7 @@ export default function LocacaoPage() {
     },
     {
       key: "actions",
-      label: "",
+      label: "Ações",
       render: (row) => (
         <Button variant="secondary" size="sm" onClick={() => { setUtilityPayTarget(row); setUtilityPayAmount(""); setUtilityPaidBy(row.responsibleParty); }}>
           Registrar pagamento
@@ -365,13 +378,13 @@ export default function LocacaoPage() {
     { key: "status", label: "Status", render: (row) => <Badge tone={GUARANTEED_RENT_STATUS_TONE[row.status] || "neutral"}>{GUARANTEED_RENT_STATUS_LABEL[row.status] || row.status}</Badge> },
     {
       key: "actions",
-      label: "",
+      label: "Ações",
       render: (row) => (
         row.status === "ACTIVE" ? (
           <Button variant="secondary" size="sm" onClick={() => { setGuaranteedPayTarget(row); setGuaranteedPayAmount(""); }}>
             Pagar repasse
           </Button>
-        ) : null
+        ) : "Nenhuma ação (contrato não ativo)"
       ),
     },
   ];
@@ -383,13 +396,13 @@ export default function LocacaoPage() {
     { key: "status", label: "Status", render: (row) => <Badge tone={RENT_ADVANCE_STATUS_TONE[row.status] || "neutral"}>{RENT_ADVANCE_STATUS_LABEL[row.status] || row.status}</Badge> },
     {
       key: "actions",
-      label: "",
+      label: "Ações",
       render: (row) => {
         if (row.status === "ELIGIBLE") return <Button variant="secondary" size="sm" onClick={() => handleAdvanceTransition(row.id, proposeRentAdvance)}>Propor</Button>;
         if (row.status === "PROPOSED") return <Button variant="secondary" size="sm" onClick={() => handleAdvanceTransition(row.id, acceptRentAdvance)}>Aceitar</Button>;
         if (row.status === "ACCEPTED") return <Button variant="secondary" size="sm" onClick={() => handleAdvanceTransition(row.id, payRentAdvance)}>Pagar</Button>;
         if (row.status === "PAID" || row.status === "RECOVERING") return <Button variant="secondary" size="sm" onClick={() => { setRecoverTarget(row); setRecoverAmount(""); }}>Registrar recuperação</Button>;
-        return null;
+        return row.status === "RECOVERED" ? "Recuperada — nada a fazer" : "Nenhuma ação disponível";
       },
     },
   ];
@@ -486,7 +499,7 @@ export default function LocacaoPage() {
                       ) : (
                         <Alert tone="warning">
                           Bloqueado por {closeoutResult.reasons.length} pendência(s):
-                          <ul>{closeoutResult.reasons.map((r, i) => <li key={i}>{r.detail}</li>)}</ul>
+                          <ul>{closeoutResult.reasons.map((r, i) => <li key={i}><strong>{CLOSEOUT_PENDENCY_LABELS[r.type] || "Pendência"}:</strong> {r.detail}</li>)}</ul>
                         </Alert>
                       )
                     ) : null}
@@ -519,8 +532,8 @@ export default function LocacaoPage() {
             {leaseContracts.map((c) => <option key={c.id} value={c.id}>{formatContractLabel(c)}</option>)}
           </Select>
         </FormField>
-        <FormField label="Competência (AAAA-MM)" required>
-          <Input value={scheduleForm.period} onChange={(e) => setScheduleForm((f) => ({ ...f, period: e.target.value }))} placeholder="2026-10" />
+        <FormField label="Competência (MM/AAAA)" required>
+          <Input value={scheduleForm.period} onChange={(e) => setScheduleForm((f) => ({ ...f, period: e.target.value }))} placeholder="10/2026" />
         </FormField>
         <FormField label="Vencimento" required>
           <Input type="date" value={scheduleForm.dueDate} onChange={(e) => setScheduleForm((f) => ({ ...f, dueDate: e.target.value }))} />
@@ -569,8 +582,8 @@ export default function LocacaoPage() {
             {leaseContracts.map((c) => <option key={c.id} value={c.id}>{formatContractLabel(c)}</option>)}
           </Select>
         </FormField>
-        <FormField label="Competência (AAAA-MM)" required>
-          <Input value={adjustForm.period} onChange={(e) => setAdjustForm((f) => ({ ...f, period: e.target.value }))} placeholder="2026-10" />
+        <FormField label="Competência (MM/AAAA)" required>
+          <Input value={adjustForm.period} onChange={(e) => setAdjustForm((f) => ({ ...f, period: e.target.value }))} placeholder="10/2026" />
         </FormField>
         <FormField label="Índice">
           <Select value={adjustForm.indexCode} onChange={(e) => setAdjustForm((f) => ({ ...f, indexCode: e.target.value }))}>
