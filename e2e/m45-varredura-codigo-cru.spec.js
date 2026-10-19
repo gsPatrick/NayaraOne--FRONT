@@ -87,7 +87,7 @@ async function main() {
     if (msg.type() !== 'error') return;
     const t = msg.text();
     // 4xx esperados de permissão/MFA não são erro de tela; erros de React/JS são.
-    if (/Failed to load resource|status of 40[13]/.test(t)) return;
+    if (/Failed to load resource|status of 40[13]|webpack-hmr/.test(t)) return;
     findings.push({ route: currentRoute, kind: 'ERRO_CONSOLE', match: t.slice(0, 160), line: '' });
   });
 
