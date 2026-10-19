@@ -54,6 +54,7 @@ export default function IntencoesPagamentoPage() {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
   const [notice, setNotice] = useState(null);
   const [busyId, setBusyId] = useState(null);
   // B2 — resolver a incerteza de um envio ao banco exige motivo (e só dá como falha com
@@ -211,6 +212,10 @@ export default function IntencoesPagamentoPage() {
   const pendingCount = intents.filter((i) => i.status === "PENDING").length;
   const approvedCount = intents.filter((i) => i.status === "APPROVED").length;
   const executedCount = intents.filter((i) => i.status === "EXECUTED").length;
+  const inBankCount = intents.filter((i) => i.status === "SUBMITTING" || i.status === "SUBMITTED").length;
+  // M45 F9: filtro por situação — inclui SUBMITTING/SUBMITTED mesmo sem itens (contagem 0),
+  // para o operador saber que esses estados existem e onde aparecem.
+  const visible = statusFilter ? sorted.filter((i) => i.status === statusFilter) : sorted;
 
   return (
     <AppShell title="Intenções de pagamento" backHref="/painel/financeiro">
@@ -230,7 +235,25 @@ export default function IntencoesPagamentoPage() {
           <div className={styles.grid}>
             <StatTile label="Pendentes" value={pendingCount} tone={pendingCount > 0 ? "warning" : "success"} icon="shield" />
             <StatTile label="Aprovadas" value={approvedCount} tone="info" icon="check" />
+            <StatTile label="No banco (em trânsito/incertas)" value={inBankCount} tone={inBankCount > 0 ? "warning" : "success"} icon="clock" />
             <StatTile label="Executadas" value={executedCount} tone="success" icon="money" />
+          </div>
+
+          <div className={styles.filters} role="group" aria-label="Filtrar por situação">
+            {[["", "Todas"], ...Object.entries(STATUS_LABELS)].map(([value, label]) => {
+              const count = value ? intents.filter((i) => i.status === value).length : intents.length;
+              return (
+                <Button
+                  key={value || "ALL"}
+                  size="sm"
+                  variant={statusFilter === value ? "primary" : "secondary"}
+                  aria-pressed={statusFilter === value}
+                  onClick={() => setStatusFilter(value)}
+                >
+                  {label} ({count})
+                </Button>
+              );
+            })}
           </div>
 
           {resolveTarget ? (
@@ -250,11 +273,15 @@ export default function IntencoesPagamentoPage() {
           ) : null}
 
           <Card title="Intenções de pagamento" subtitle="Quem criou a intenção não pode aprová-la (maker-checker)">
-            {sorted.length === 0 ? (
-              <p className={styles.emptyText}>Nenhuma intenção de pagamento criada ainda — crie uma a partir do detalhe de um lançamento PENDING com conta bancária.</p>
+            {visible.length === 0 ? (
+              <p className={styles.emptyText}>
+                {statusFilter
+                  ? `Nenhuma intenção na situação "${STATUS_LABELS[statusFilter]}".`
+                  : "Nenhuma intenção de pagamento criada ainda — crie uma a partir do detalhe de um lançamento pendente com conta bancária."}
+              </p>
             ) : (
               <ul className={styles.list}>
-                {sorted.map((intent) => {
+                {visible.map((intent) => {
                   const entry = entryFor(intent);
                   return (
                     <li key={intent.id} className={styles.row}>
