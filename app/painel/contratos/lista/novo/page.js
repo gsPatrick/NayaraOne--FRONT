@@ -16,6 +16,7 @@ import { listPeople } from "@/lib/api/people";
 import { createContract, addContractParty, listContractTemplates, renderContractTemplate, createContractVersion } from "@/lib/api/legal";
 import { CONTRACT_TYPE_LABELS, CONTRACT_TYPE_CREATE_OPTIONS, PARTY_ROLE_LABELS } from "@/lib/mock/legal";
 import { dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE, formatDate, formatBRL } from "@/lib/format";
+import { describeCondition } from "@/app/painel/contratos/clausulas/ClauseConditionEditor";
 import styles from "./page.module.css";
 
 // Detecta placeholders "{{chave}}" que sobraram sem substituir no texto renderizado — o backend
@@ -81,6 +82,9 @@ export default function NovoContratoPage() {
   const [pendingPlaceholders, setPendingPlaceholders] = useState(null);
   const [placeholderValues, setPlaceholderValues] = useState({});
   const [checkingTemplate, setCheckingTemplate] = useState(false);
+  // F01: resultado da pré-visualização — quais cláusulas entram e quais ficam de fora (e por quê),
+  // decidido pelo servidor com os dados deste contrato. Mostrado antes de criar.
+  const [clausePreview, setClausePreview] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -142,6 +146,19 @@ export default function NovoContratoPage() {
     return buildKnownVariables({ parties, people, property, form });
   }
 
+  // Dados do contrato em criação, enviados só para o servidor DERIVAR o contexto das cláusulas
+  // condicionais (tipo de pessoa e tipo do imóvel são lidos do banco, não deste objeto).
+  function getDraftContract() {
+    return {
+      contractType: form.contractType,
+      totalValue: Number(form.totalValue),
+      startsAt: dateOnlyInputToIso(form.startsAt),
+      endsAt: dateOnlyInputToIso(form.endsAt),
+      propertyId: form.propertyId,
+      parties: parties.map((p) => ({ personId: p.personId, partyRole: p.partyRole })),
+    };
+  }
+
   async function handleSubmit() {
     if (!isValid) return;
     setActionError("");
@@ -153,14 +170,18 @@ export default function NovoContratoPage() {
       setCheckingTemplate(true);
       try {
         const known = getKnownVariables();
-        const rendered = await renderContractTemplate(form.templateId, known);
+        const rendered = await renderContractTemplate(form.templateId, known, { draftContract: getDraftContract() });
+        setClausePreview({ included: rendered.clauses || [], excluded: rendered.excludedClauses || [] });
         const missing = findUnresolvedPlaceholders(rendered.content);
         if (missing.length > 0) {
           setPendingPlaceholders(missing);
           setPlaceholderValues(Object.fromEntries(missing.map((key) => [key, ""])));
           return;
         }
+        // Para aqui na primeira vez: o usuário confere quais cláusulas entram/saem e confirma
+        // clicando de novo em "Criar contrato".
         setPendingPlaceholders([]);
+        return;
       } catch (err) {
         setActionError(err.message || "Erro ao processar o template do contrato.");
         return;
@@ -188,12 +209,13 @@ export default function NovoContratoPage() {
       // {{placeholder}} sobrando no documento gerado. requireDocument:false porque nesta etapa
       // ainda não existe upload de arquivo real — é um rascunho textual vinculado ao template,
       // gate de documento real continua valendo mais adiante (transição para SIGNING).
+      // F01: a versão é montada pelo SERVIDOR a partir do modelo, das condições aprovadas e dos
+      // dados reais do contrato recém-criado — o front manda só as variáveis de preenchimento.
       if (form.templateId) {
         const variables = { ...getKnownVariables(), ...placeholderValues };
-        const rendered = await renderContractTemplate(form.templateId, variables);
         await createContractVersion(contract.id, {
-          content: rendered.content,
           templateId: form.templateId,
+          variables,
           requireDocument: false,
         });
       }
@@ -211,6 +233,7 @@ export default function NovoContratoPage() {
   function resetTemplateCheck() {
     setPendingPlaceholders(null);
     setPlaceholderValues({});
+    setClausePreview(null);
   }
 
   if (loading) {
@@ -362,10 +385,48 @@ export default function NovoContratoPage() {
           </Card>
         ) : null}
 
+        {clausePreview ? (
+          <Card
+            title="Cláusulas do documento"
+            subtitle="Decidido pelo sistema com os dados deste contrato e as regras aprovadas na Biblioteca de cláusulas. Confira e clique em "Confirmar e criar contrato"."
+          >
+            <div className={styles.clausePreview} data-testid="clause-preview">
+              <p className={styles.clausePreviewHeading}>Vão entrar ({clausePreview.included.length})</p>
+              {clausePreview.included.length === 0 ? <p className={styles.emptyText}>Nenhuma cláusula.</p> : null}
+              <ul className={styles.clauseList}>
+                {clausePreview.included.map((c) => (
+                  <li key={c.contractClauseId} data-testid="clause-included">
+                    <strong>{c.title}</strong>
+                    {c.condition ? <span className={styles.clauseReason}> — regra atendida: {describeCondition(c.condition)}</span> : null}
+                  </li>
+                ))}
+              </ul>
+              {clausePreview.excluded.length > 0 ? (
+                <>
+                  <p className={styles.clausePreviewHeading}>Ficam de fora ({clausePreview.excluded.length})</p>
+                  <ul className={styles.clauseList}>
+                    {clausePreview.excluded.map((c) => (
+                      <li key={c.contractClauseId} data-testid="clause-excluded">
+                        <strong>{c.title || c.code}</strong>
+                        <span className={styles.clauseReason}>
+                          {" — "}
+                          {c.reason === "CLAUSE_RETIRED"
+                            ? "cláusula retirada de circulação na Biblioteca"
+                            : `regra não atendida por este contrato: ${describeCondition(c.condition)}`}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              ) : null}
+            </div>
+          </Card>
+        ) : null}
+
         <div className={styles.actionBar}>
           <Button variant="secondary" onClick={() => router.push("/painel/contratos/lista")}>Cancelar</Button>
           <Button onClick={handleSubmit} loading={submitting || checkingTemplate} disabled={!isValid}>
-            Criar contrato
+            {clausePreview ? "Confirmar e criar contrato" : "Criar contrato"}
           </Button>
         </div>
       </div>

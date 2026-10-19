@@ -32,7 +32,11 @@ import {
   createClauseVersion,
   deactivateClause,
   approveClauseCondition,
+  getClauseTemplateUsage,
+  upgradeTemplateClause,
 } from "@/lib/api/legal";
+import { hasPermission } from "@/lib/rbac/permissions";
+import { getCurrentUser } from "@/lib/auth/session";
 import ClauseConditionEditor, {
   toConditionPayload,
   fromConditionJson,
@@ -44,6 +48,16 @@ import styles from "./page.module.css";
 
 const CATEGORIES = ["GENERAL", "PAYMENT", "GUARANTEE", "TERMINATION", "PENALTY", "OBLIGATION", "OTHER"];
 const CATEGORY_LABELS = { GENERAL: "Geral", PAYMENT: "Pagamento", GUARANTEE: "Garantia", TERMINATION: "Rescisão", PENALTY: "Multa", OBLIGATION: "Obrigação", OTHER: "Outra" };
+
+// M1/M3 (revisão F01, 19/10): o botão só aparece onde a API vai aceitar — versão vigente, com
+// condição pendente, para quem tem legal:approve e não é o autor da versão. A API continua sendo
+// a fonte de verdade (recusa os mesmos casos).
+function canApproveCondition(clause) {
+  if (!clause?.conditionJson || clause.conditionStatus === "APPROVED" || !clause.isActive) return false;
+  if (!hasPermission("legal:approve")) return false;
+  const me = getCurrentUser();
+  return Boolean(me?.id) && Boolean(clause.createdBy) && String(clause.createdBy) !== String(me.id);
+}
 
 export default function ClausulasPage() {
   const [clauses, setClauses] = useState([]);
@@ -64,6 +78,8 @@ export default function ClausulasPage() {
   const [versionCondition, setVersionCondition] = useState(fromConditionJson(null));
   const [versionBusy, setVersionBusy] = useState(false);
   const [versionError, setVersionError] = useState("");
+  const [versionNotice, setVersionNotice] = useState("");
+  const [templateUsage, setTemplateUsage] = useState([]);
 
   const { confirm, ConfirmDialog } = useConfirm();
 
@@ -113,9 +129,13 @@ export default function ClausulasPage() {
     setNewVersionText(clause.bodyText || "");
     setVersionCondition(fromConditionJson(clause.conditionJson));
     setVersionError("");
+    setVersionNotice("");
     setVersionsLoading(true);
-    listClauseVersions(clause.code)
-      .then((res) => setVersions(res || []))
+    Promise.all([listClauseVersions(clause.code), getClauseTemplateUsage(clause.code)])
+      .then(([res, usage]) => {
+        setVersions(res || []);
+        setTemplateUsage(usage || []);
+      })
       .catch((err) => setVersionError(err.message || "Erro ao carregar versões."))
       .finally(() => setVersionsLoading(false));
   }
@@ -145,12 +165,32 @@ export default function ClausulasPage() {
       confirmLabel: "Aprovar condição",
     });
     if (!ok) return;
+    // O erro aparece onde a ação foi disparada: dentro do modal de versões se ele estiver aberto
+    // (antes ficava escondido atrás do modal, no topo da página).
+    const showError = (message) => (versionModal ? setVersionError(message) : setLoadError(message));
     try {
       const approved = await approveClauseCondition(clause.id);
       setClauses((prev) => prev.map((c) => (c.id === approved.id ? approved : c)));
       setVersions((prev) => prev.map((v) => (v.id === approved.id ? approved : v)));
     } catch (err) {
-      setLoadError(err.message || "Erro ao aprovar a condição.");
+      showError(err.message || "Erro ao aprovar a condição.");
+    }
+  }
+
+  async function handleUpgradeTemplate(usage) {
+    const ok = await confirm({
+      title: `Atualizar o modelo "${usage.templateName}" para a v${usage.latestVersionNumber}?`,
+      message: "Contratos já gerados continuam com o texto que tinham. Os próximos documentos deste modelo passam a usar a versão vigente — se ela tiver condição pendente, o modelo só volta a gerar depois da aprovação.",
+      confirmLabel: "Atualizar modelo",
+    });
+    if (!ok) return;
+    setVersionError("");
+    try {
+      await upgradeTemplateClause(usage.templateId, usage.contractClauseId);
+      setTemplateUsage(await getClauseTemplateUsage(versionModal.code));
+      setVersionNotice(`Modelo "${usage.templateName}" atualizado para a v${usage.latestVersionNumber}.`);
+    } catch (err) {
+      setVersionError(err.message || "Erro ao atualizar o modelo.");
     }
   }
 
@@ -202,7 +242,7 @@ export default function ClausulasPage() {
                   </Badge>
                 ) : null}
                 <Badge tone={c.isActive ? "success" : "neutral"}>{c.isActive ? "Ativa" : "Inativa"}</Badge>
-                {c.conditionJson && c.conditionStatus !== "APPROVED" ? (
+                {canApproveCondition(c) ? (
                   <Button size="sm" variant="secondary" onClick={() => handleApproveCondition(c)}>Aprovar condição</Button>
                 ) : null}
                 <Button size="sm" variant="secondary" onClick={() => openVersions(c)}>Versões</Button>
@@ -262,6 +302,7 @@ export default function ClausulasPage() {
         }
       >
         {versionError ? <Alert tone="danger" className={styles.notice}>{versionError}</Alert> : null}
+        {versionNotice ? <Alert tone="info" className={styles.notice}>{versionNotice}</Alert> : null}
         {versionsLoading ? (
           <SkeletonList />
         ) : (
@@ -280,14 +321,31 @@ export default function ClausulasPage() {
                   </Badge>
                 ) : null}
                 <Badge tone={v.isActive ? "success" : "neutral"}>{v.isActive ? "Vigente" : "Histórico"}</Badge>
-                {v.conditionJson && v.conditionStatus !== "APPROVED" ? (
+                {canApproveCondition(v) ? (
                   <Button size="sm" variant="secondary" onClick={() => handleApproveCondition(v)}>Aprovar condição</Button>
                 ) : null}
               </div>
             ))}
           </div>
         )}
-        <FormField label="Texto da nova versão" htmlFor="f-new-version" required helper="A versão anterior é preservada, nunca sobrescrita (append-only).">
+        {!versionsLoading && templateUsage.length > 0 ? (
+          <div className={styles.usage}>
+            <p className={styles.usageTitle}>Modelos que usam esta cláusula</p>
+            {templateUsage.map((u) => (
+              <div key={`${u.templateId}-${u.contractClauseId}`} className={styles.row}>
+                <div className={styles.name}>
+                  <div>{u.templateName}</div>
+                  <span className={styles.meta}>Usa a v{u.linkedVersionNumber}{u.superseded ? ` — vigente é a v${u.latestVersionNumber}` : ""}</span>
+                </div>
+                {u.superseded ? <Badge tone="warning">Modelo bloqueado até atualizar</Badge> : <Badge tone="success">Em dia</Badge>}
+                {u.superseded && hasPermission("legal:create") ? (
+                  <Button size="sm" variant="secondary" onClick={() => handleUpgradeTemplate(u)}>Atualizar para v{u.latestVersionNumber}</Button>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        ) : null}
+        <FormField label="Texto da nova versão" htmlFor="f-new-version" required helper="A versão anterior é preservada, nunca sobrescrita (append-only). Modelos que usam a versão atual ficam bloqueados até serem atualizados para a nova.">
           <textarea id="f-new-version" className={styles.textarea} rows={5} value={newVersionText} onChange={(e) => setNewVersionText(e.target.value)} />
         </FormField>
         <ClauseConditionEditor value={versionCondition} onChange={setVersionCondition} idPrefix="f-version-cond" />
