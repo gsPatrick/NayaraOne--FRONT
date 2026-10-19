@@ -19,9 +19,12 @@ import Alert from "@/components/molecules/Alert/Alert";
 import Modal from "@/components/organisms/Modal/Modal";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu";
-import { getCollectionCadence, publishCollectionCadence, listCollectionCadenceSteps } from "@/lib/api/billing";
+import { getCollectionCadence, publishCollectionCadence } from "@/lib/api/billing";
+import { listContracts } from "@/lib/api/legal";
+import { ApiError, getBaseUrl, refreshSessionSilently } from "@/lib/api/client";
+import { getSession } from "@/lib/auth/session";
 import { hasPermission } from "@/lib/rbac/permissions";
-import { formatBRL, formatDate, formatDateTime } from "@/lib/format";
+import { formatBRL, formatDate, formatDateTime, formatContractLabel } from "@/lib/format";
 import styles from "./page.module.css";
 
 const ACTION_LABELS = {
@@ -33,6 +36,33 @@ const OUTCOME_LABELS = { EXECUTED: "Executada", SKIPPED_SUPERSEDED: "Pulada (sup
 const PAGE_SIZE = 20;
 const CODE_PATTERN = /^[A-Z0-9_-]{2,40}$/;
 const INT_PATTERN = /^-?\d+$/;
+
+// Ajuste local (19/10/2026): o apiFetch compartilhado devolve só `data` e descarta o bloco
+// `pagination` da API — sem ele a tela não sabia o total de páginas. Em vez de mudar o
+// client.js (usado por todas as telas), esta busca lê o envelope completo aqui.
+async function fetchStepsPage(params, retried = false) {
+  const clean = Object.fromEntries(Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== ""));
+  const qs = new URLSearchParams(clean).toString();
+  const session = getSession();
+  let response;
+  try {
+    response = await fetch(`${getBaseUrl()}/billing/collection-cadence/steps${qs ? `?${qs}` : ""}`, {
+      headers: { "Content-Type": "application/json", ...(session?.accessToken ? { Authorization: `Bearer ${session.accessToken}` } : {}) },
+    });
+  } catch {
+    throw new ApiError("Não foi possível falar com o servidor. Verifique sua conexão.", { code: "NETWORK_ERROR" });
+  }
+  if (response.status === 401 && !retried) {
+    await refreshSessionSilently();
+    return fetchStepsPage(params, true);
+  }
+  const parsed = await response.json().catch(() => null);
+  if (!response.ok || !parsed?.success) {
+    const error = parsed?.error || {};
+    throw new ApiError(error.message || "Erro inesperado ao comunicar com a API.", { code: error.code || "UNKNOWN_ERROR", status: response.status });
+  }
+  return { rows: parsed.data || [], total: Number(parsed.pagination?.total ?? (parsed.data || []).length) };
+}
 
 function describeOffset(days) {
   if (days < 0) return `${Math.abs(days)} dia(s) antes do vencimento`;
@@ -80,6 +110,14 @@ export default function ReguaCobrancaPage() {
   const [filters, setFilters] = useState({ period: "", outcome: "", action: "", contractId: "" });
   const [appliedFilters, setAppliedFilters] = useState({});
   const [page, setPage] = useState(1);
+  const [stepsTotal, setStepsTotal] = useState(0);
+  const [contracts, setContracts] = useState([]);
+
+  useEffect(() => {
+    listContracts()
+      .then((list) => setContracts(list || []))
+      .catch(() => setContracts([]));
+  }, []);
   const [steps, setSteps] = useState([]);
   const [stepsLoading, setStepsLoading] = useState(true);
 
@@ -103,8 +141,9 @@ export default function ReguaCobrancaPage() {
   const loadSteps = useCallback(async () => {
     setStepsLoading(true);
     try {
-      const data = await listCollectionCadenceSteps({ ...appliedFilters, page, pageSize: PAGE_SIZE });
-      setSteps(data || []);
+      const { rows, total } = await fetchStepsPage({ ...appliedFilters, page, pageSize: PAGE_SIZE });
+      setSteps(rows);
+      setStepsTotal(total);
     } catch (err) {
       setActionError(err?.message || "Não foi possível carregar as etapas executadas.");
     } finally {
@@ -165,6 +204,7 @@ export default function ReguaCobrancaPage() {
     setAppliedFilters({ ...filters });
   }
 
+  const totalPages = Math.max(1, Math.ceil(stepsTotal / PAGE_SIZE));
   const current = rule?.current;
   const sortedPreview = [...draft]
     .filter((s) => INT_PATTERN.test(s.offsetDays.trim()))
@@ -316,6 +356,16 @@ export default function ReguaCobrancaPage() {
                 ))}
               </Select>
             </FormField>
+            <FormField label="Contrato" htmlFor="f-contract">
+              <Select id="f-contract" value={filters.contractId} onChange={(e) => setFilters((p) => ({ ...p, contractId: e.target.value }))}>
+                <option value="">Todos</option>
+                {contracts.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {formatContractLabel(c)}
+                  </option>
+                ))}
+              </Select>
+            </FormField>
             <Button type="submit" variant="ghost">
               Filtrar
             </Button>
@@ -325,8 +375,10 @@ export default function ReguaCobrancaPage() {
             <Button type="button" size="sm" variant="ghost" disabled={page <= 1 || stepsLoading} onClick={() => setPage((p) => Math.max(1, p - 1))}>
               Anterior
             </Button>
-            <span className={styles.helper}>Página {page}</span>
-            <Button type="button" size="sm" variant="ghost" disabled={steps.length < PAGE_SIZE || stepsLoading} onClick={() => setPage((p) => p + 1)}>
+            <span className={styles.helper}>
+              Página {page} de {totalPages} · {stepsTotal} etapa(s)
+            </span>
+            <Button type="button" size="sm" variant="ghost" disabled={page >= totalPages || stepsLoading} onClick={() => setPage((p) => p + 1)}>
               Próxima
             </Button>
           </div>
