@@ -26,7 +26,7 @@ import {
   listCostCenters,
   listResultCenters,
 } from "@/lib/api/finance";
-import { formatBRL, toNumber } from "@/lib/format";
+import { formatBRL, toNumber, formatCompetence } from "@/lib/format";
 import styles from "./page.module.css";
 import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 
@@ -124,7 +124,7 @@ export default function OrcamentoPage() {
 
   const forecastColumns = [
     { key: "nature", label: "Natureza", render: (row) => <Badge tone={row.nature === "PAYABLE" ? "danger" : "success"}>{row.nature === "PAYABLE" ? "Despesa" : "Receita"}</Badge> },
-    { key: "description", label: "Descrição", render: (row) => row.description || "—" },
+    { key: "description", label: "Descrição", render: (row) => row.description || "Sem descrição" },
     { key: "forecastedAmount", label: "Valor projetado", render: (row) => formatBRL(row.forecastedAmount) },
   ];
 
@@ -212,7 +212,7 @@ export default function OrcamentoPage() {
         </Card>
 
         <Card>
-          <h2 className={styles.sectionTitle}>Orçado x realizado — {competenceMonth}</h2>
+          <h2 className={styles.sectionTitle}>Orçado x realizado — {formatCompetence(competenceMonth)}</h2>
           <Table columns={compareColumns} rows={comparison} loading={loading} emptyMessage="Sem comparativo para este mês ainda." />
         </Card>
 

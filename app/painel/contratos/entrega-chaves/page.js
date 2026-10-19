@@ -98,8 +98,8 @@ export default function EntregaChavesPage() {
             return (
               <div key={delivery.id} className={styles.row}>
                 <div className={styles.rowInfo}>
-                  <span className={styles.rowTitle}>{contract ? formatContractLabel(contract) : "—"}</span>
-                  <span className={styles.rowSub}>Para {person?.legalName || "—"}{delivery.deliveredAt ? ` · entregue em ${formatDateTime(delivery.deliveredAt)}` : ""}</span>
+                  <span className={styles.rowTitle}>{contract ? formatContractLabel(contract) : "Contrato não encontrado"}</span>
+                  <span className={styles.rowSub}>Para {person?.legalName || "pessoa não encontrada"}{delivery.deliveredAt ? ` · entregue em ${formatDateTime(delivery.deliveredAt)}` : ""}</span>
                 </div>
                 <div className={styles.rowRight}>
                   <Badge tone={KEY_DELIVERY_STATUS_TONE[delivery.status]}>{KEY_DELIVERY_STATUS_LABELS[delivery.status]}</Badge>

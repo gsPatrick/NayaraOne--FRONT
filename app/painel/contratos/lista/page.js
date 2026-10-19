@@ -126,7 +126,7 @@ export default function ContratosListaPage() {
     },
     {
       key: "actions",
-      label: "",
+      label: "Ações",
       width: "12%",
       render: (row) => (
         <RowActions

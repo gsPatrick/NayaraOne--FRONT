@@ -139,7 +139,7 @@ export default function GarantiasPage() {
                     <span className={styles.guaranteeIcon}><Icon name={GUARANTEE_TYPE_ICON[g.guaranteeType]} size={20} /></span>
                     <div className={styles.guaranteeTitleBlock}>
                       <span className={styles.guaranteeTitle}>{GUARANTEE_TYPE_LABELS[g.guaranteeType]}</span>
-                      <span className={styles.guaranteeSub}>{contract ? formatContractLabel(contract) : "—"}</span>
+                      <span className={styles.guaranteeSub}>{contract ? formatContractLabel(contract) : "Contrato não encontrado"}</span>
                     </div>
                     <Badge tone={GUARANTEE_STATUS_TONE[g.status] || "neutral"}>{GUARANTEE_STATUS_LABELS[g.status] || g.status}</Badge>
                   </div>
@@ -152,7 +152,7 @@ export default function GarantiasPage() {
                     ) : null}
                     <div className={styles.guaranteeMetaRow}>
                       <span>Vigência</span>
-                      <strong>{g.startsAt ? `${formatDate(g.startsAt)} — ${g.endsAt ? formatDate(g.endsAt) : "indeterminado"}` : "—"}</strong>
+                      <strong>{g.startsAt ? `${formatDate(g.startsAt)} — ${g.endsAt ? formatDate(g.endsAt) : "indeterminado"}` : "Vigência não informada"}</strong>
                     </div>
                   </div>
                   <div className={styles.guaranteeActions}>

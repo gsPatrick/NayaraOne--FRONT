@@ -114,8 +114,8 @@ export default function ExtratoBancarioPage() {
 
   const columns = [
     { key: "transactionDate", label: "Data", render: (row) => formatDate(row.transactionDate) },
-    { key: "description", label: "Descrição" },
-    { key: "externalTransactionId", label: "ID externo" },
+    { key: "description", label: "Descrição", render: (row) => row.description || "Sem descrição no extrato" },
+    { key: "externalTransactionId", label: "ID externo", render: (row) => row.externalTransactionId || "Sem identificador do banco" },
     {
       key: "amount",
       label: "Valor",

@@ -85,7 +85,7 @@ export default function VistoriasPage() {
       width: "34%",
       render: (row) => (
         <div className={styles.nameCell}>
-          <span className={styles.nameMain}>{propertyOf(row.propertyId)?.name || "—"}</span>
+          <span className={styles.nameMain}>{propertyOf(row.propertyId)?.name || "Imóvel não encontrado"}</span>
           <span className={styles.nameSub}>{propertyOf(row.propertyId)?.city || ""}</span>
         </div>
       ),
@@ -96,7 +96,7 @@ export default function VistoriasPage() {
       width: "16%",
       render: (row) => <Badge tone={INSPECTION_TYPE_TONE[row.inspectionType]}>{INSPECTION_TYPE_LABELS[row.inspectionType]}</Badge>,
     },
-    { key: "scheduledAt", label: "Data agendada", width: "18%", render: (row) => formatDate(row.scheduledAt) },
+    { key: "scheduledAt", label: "Data agendada", width: "18%", render: (row) => (row.scheduledAt ? formatDate(row.scheduledAt) : "Sem agendamento (feita na hora)") },
     {
       key: "status",
       label: "Status",
@@ -109,7 +109,7 @@ export default function VistoriasPage() {
     },
     {
       key: "actions",
-      label: "",
+      label: "Ações",
       width: "12%",
       render: (row) => <RowActions onView={() => router.push(`/painel/contratos/vistorias/${row.id}`)} />,
     },
@@ -123,7 +123,7 @@ export default function VistoriasPage() {
         <StatTile label="Total de vistorias" value={inspections.length} tone="neutral" icon="eye" />
         <StatTile label="Agendadas" value={scheduledCount} tone={scheduledCount > 0 ? "warning" : "success"} icon="calendar" />
         <StatTile label="Concluídas" value={completedCount} tone="success" icon="check" />
-        <StatTile label="Itens com danos" value="—" tone="neutral" icon="filter" />
+        <StatTile label="Itens com danos" value="Veja em cada vistoria" tone="neutral" icon="filter" />
       </div>
 
       <Card title="Vistorias de entrada, saída e periódicas">

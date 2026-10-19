@@ -202,7 +202,7 @@ export default function LancamentosPage() {
     },
     { key: "nature", label: "Natureza", width: "14%", render: (row) => <NatureBadge nature={row.nature} /> },
     { key: "amount", label: "Valor", width: "11%", render: (row) => formatBRL(row.amount) },
-    { key: "dueAt", label: "Vencimento", width: "13%", render: (row) => (row.dueAt ? formatDate(row.dueAt) : "—") },
+    { key: "dueAt", label: "Vencimento", width: "13%", render: (row) => (row.dueAt ? formatDate(row.dueAt) : "Sem vencimento") },
     {
       key: "status",
       label: "Status",
@@ -216,7 +216,7 @@ export default function LancamentosPage() {
     },
     {
       key: "actions",
-      label: "",
+      label: "Ações",
       width: "12%",
       render: (row) => (
         <RowActions

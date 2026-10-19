@@ -181,7 +181,7 @@ export default function NotificacoesPage() {
               return (
                 <div key={n.id} className={styles.row}>
                   <div className={styles.name}>
-                    <div>{contract ? formatContractLabel(contract) : "—"} · {NOTICE_CHANNEL_LABELS[n.channel] || n.channel}</div>
+                    <div>{contract ? formatContractLabel(contract) : "Sem contrato vinculado"} · {NOTICE_CHANNEL_LABELS[n.channel] || n.channel}</div>
                     <span className={styles.meta}>{n.recipientDescription || "Sem destinatário descrito"} · {formatDateTime(n.createdAt)}</span>
                   </div>
                   <Badge tone={NOTICE_STATUS_TONE[n.status] || "neutral"}>{NOTICE_STATUS_LABELS[n.status] || n.status}</Badge>

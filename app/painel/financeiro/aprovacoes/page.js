@@ -45,7 +45,7 @@ const ENTITY_ICON = {
 const MFA_REQUIRED_RISK_LEVELS = ["HIGH", "CRITICAL"];
 
 function userName(users, id) {
-  return users.find((u) => u.id === id)?.name || "—";
+  return users.find((u) => u.id === id)?.name || "Usuário não identificado";
 }
 
 export default function AprovacoesPage() {

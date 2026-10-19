@@ -139,7 +139,7 @@ export default function VistoriaDetailPage({ params }) {
   }, [params.id]);
 
   function userName(id) {
-    return users.find((u) => u.id === id)?.name || "—";
+    return users.find((u) => u.id === id)?.name || "Usuário não identificado";
   }
 
   if (loading) {
@@ -371,11 +371,11 @@ export default function VistoriaDetailPage({ params }) {
 
         <Card title="Detalhes da vistoria">
           <dl className={styles.detailList}>
-            <div className={styles.detailRow}><dt>Imóvel</dt><dd>{property?.name || "—"}</dd></div>
-            <div className={styles.detailRow}><dt>Contrato vinculado</dt><dd>{contract ? formatContractLabel(contract) : "—"}</dd></div>
-            <div className={styles.detailRow}><dt>Inspetor</dt><dd>{inspection.inspectorUserId ? userName(inspection.inspectorUserId) : "—"}</dd></div>
+            <div className={styles.detailRow}><dt>Imóvel</dt><dd>{property?.name || "Imóvel não encontrado"}</dd></div>
+            <div className={styles.detailRow}><dt>Contrato vinculado</dt><dd>{contract ? formatContractLabel(contract) : "Sem contrato vinculado"}</dd></div>
+            <div className={styles.detailRow}><dt>Inspetor</dt><dd>{inspection.inspectorUserId ? userName(inspection.inspectorUserId) : "Sem vistoriador definido"}</dd></div>
             <div className={styles.detailRow}><dt>Agendada para</dt><dd>{formatDate(inspection.scheduledAt)}</dd></div>
-            <div className={styles.detailRow}><dt>Concluída em</dt><dd>{inspection.completedAt ? formatDateTime(inspection.completedAt) : "—"}</dd></div>
+            <div className={styles.detailRow}><dt>Concluída em</dt><dd>{inspection.completedAt ? formatDateTime(inspection.completedAt) : "Ainda não concluída"}</dd></div>
           </dl>
         </Card>
 

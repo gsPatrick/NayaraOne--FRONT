@@ -223,7 +223,7 @@ export default function ReguaCobrancaPage() {
   const versionColumns = [
     { key: "versionNumber", label: "Versão", render: (row) => `v${row.versionNumber}` },
     { key: "effectiveFrom", label: "Vigente desde", render: (row) => formatDateTime(row.effectiveFrom) },
-    { key: "effectiveUntil", label: "Até", render: (row) => (row.effectiveUntil ? formatDateTime(row.effectiveUntil) : "—") },
+    { key: "effectiveUntil", label: "Até", render: (row) => (row.effectiveUntil ? formatDateTime(row.effectiveUntil) : "Em vigor") },
     {
       key: "steps",
       label: "Etapas",
@@ -238,8 +238,8 @@ export default function ReguaCobrancaPage() {
 
   const stepColumns = [
     { key: "businessDate", label: "Data", render: (row) => formatDate(row.businessDate) },
-    { key: "period", label: "Competência", render: (row) => (row.period && /^\d{4}-\d{2}$/.test(row.period) ? `${row.period.slice(5)}/${row.period.slice(0, 4)}` : row.period || "—") },
-    { key: "dueDate", label: "Vencimento", render: (row) => (row.dueDate ? formatDate(row.dueDate) : "—") },
+    { key: "period", label: "Competência", render: (row) => (row.period && /^\d{4}-\d{2}$/.test(row.period) ? `${row.period.slice(5)}/${row.period.slice(0, 4)}` : row.period || "Sem competência") },
+    { key: "dueDate", label: "Vencimento", render: (row) => (row.dueDate ? formatDate(row.dueDate) : "Sem vencimento") },
     { key: "stepCode", label: "Etapa", render: (row) => describeOffset(row.offsetDays) },
     { key: "action", label: "Ação", render: (row) => ACTION_LABELS[row.action] || row.action },
     { key: "balanceAtStep", label: "Saldo na etapa", render: (row) => formatBRL(row.balanceAtStep) },

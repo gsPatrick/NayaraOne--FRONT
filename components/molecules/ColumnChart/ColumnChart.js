@@ -11,7 +11,7 @@ export default function ColumnChart({ items }) {
         {items.map((item) => (
           <div key={item.label} className={styles.colGroup} title={item.title || undefined}>
             <span className={[styles.colValue, item.ghost ? styles.colValueGhost : ""].filter(Boolean).join(" ")}>
-              {item.ghost ? "—" : item.displayValue !== undefined ? item.displayValue : item.value}
+              {item.ghost ? "sem dado" : item.displayValue !== undefined ? item.displayValue : item.value}
             </span>
             <div className={styles.colTrack}>
               {item.ghost ? (

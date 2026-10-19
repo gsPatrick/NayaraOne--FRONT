@@ -96,7 +96,7 @@ export default function ProcessoDetailPage({ params }) {
   }, [params.id]);
 
   function userName(id) {
-    return users.find((u) => u.id === id)?.name || "—";
+    return users.find((u) => u.id === id)?.name || "Usuário não identificado";
   }
 
   if (loading) {
@@ -236,9 +236,9 @@ export default function ProcessoDetailPage({ params }) {
             <Card title="Detalhes do processo">
               <dl className={styles.detailList}>
                 <div className={styles.detailRow}><dt>Resumo</dt><dd>{legalCase.summary}</dd></div>
-                <div className={styles.detailRow}><dt>Contrato vinculado</dt><dd>{contract ? formatContractLabel(contract) : "—"}</dd></div>
-                <div className={styles.detailRow}><dt>Imóvel vinculado</dt><dd>{property?.name || "—"}</dd></div>
-                <div className={styles.detailRow}><dt>Responsável</dt><dd>{legalCase.responsibleUserId ? userName(legalCase.responsibleUserId) : "—"}</dd></div>
+                <div className={styles.detailRow}><dt>Contrato vinculado</dt><dd>{contract ? formatContractLabel(contract) : "Sem contrato vinculado"}</dd></div>
+                <div className={styles.detailRow}><dt>Imóvel vinculado</dt><dd>{property?.name || "Sem imóvel vinculado"}</dd></div>
+                <div className={styles.detailRow}><dt>Responsável</dt><dd>{legalCase.responsibleUserId ? userName(legalCase.responsibleUserId) : "Sem responsável definido"}</dd></div>
               </dl>
             </Card>
 
@@ -328,7 +328,7 @@ export default function ProcessoDetailPage({ params }) {
                                 <span className={styles.manifestType}>{EVIDENCE_ACCESS_ACTION_LABELS[entry.action] || "Acesso"}</span>
                                 <div className={styles.manifestBody}>
                                   <span className={styles.manifestDesc}>
-                                    {entry.accessedByUserId ? userName(entry.accessedByUserId) : "—"}
+                                    {entry.accessedByUserId ? userName(entry.accessedByUserId) : "Acesso automático do sistema"}
                                   </span>
                                   <span className={styles.manifestHash}>{formatDateTime(entry.accessedAt)}</span>
                                 </div>

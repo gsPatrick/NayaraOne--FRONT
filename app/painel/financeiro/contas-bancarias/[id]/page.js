@@ -33,7 +33,7 @@ import {
   updateBankAccount,
   blockBankAccount,
 } from "@/lib/api/finance";
-import { formatBRL, formatDate, formatDateTime, humanizeText } from "@/lib/format";
+import { formatBRL, formatDate, formatDateTime, humanizeText, formatCompetence } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function ContaBancariaDetailPage({ params }) {
@@ -179,18 +179,18 @@ export default function ContaBancariaDetailPage({ params }) {
               >
                 <dl className={styles.detailList}>
                   <div className={styles.detailRow}><dt>Proprietário</dt><dd>{owner?.legalName || "Conta operacional"}</dd></div>
-                  <div className={styles.detailRow}><dt>Banco</dt><dd>{account.bankCode ? `${getBankName(account.bankCode)} (${account.bankCode})` : "—"}</dd></div>
+                  <div className={styles.detailRow}><dt>Banco</dt><dd>{account.bankCode ? `${getBankName(account.bankCode)} (${account.bankCode})` : "Não informado"}</dd></div>
                   <div className={styles.detailRow}>
                     <dt>Agência</dt>
-                    <dd className={styles.mono}>{account.agency ? (revealed ? account.agency : maskAgency(account.agency)) : "—"}</dd>
+                    <dd className={styles.mono}>{account.agency ? (revealed ? account.agency : maskAgency(account.agency)) : "Não informada"}</dd>
                   </div>
                   <div className={styles.detailRow}>
                     <dt>Conta</dt>
-                    <dd className={styles.mono}>{account.accountNumber ? (revealed ? account.accountNumber : maskAccountNumber(account.accountNumber)) : "—"}</dd>
+                    <dd className={styles.mono}>{account.accountNumber ? (revealed ? account.accountNumber : maskAccountNumber(account.accountNumber)) : "Não informado"}</dd>
                   </div>
                   <div className={styles.detailRow}>
                     <dt>Chave PIX</dt>
-                    <dd className={styles.mono}>{account.pixKey ? (revealed ? account.pixKey : maskPixKey(account.pixKey)) : "—"}</dd>
+                    <dd className={styles.mono}>{account.pixKey ? (revealed ? account.pixKey : maskPixKey(account.pixKey)) : "Sem chave PIX cadastrada"}</dd>
                   </div>
                   <div className={styles.detailRow}><dt>Última alteração</dt><dd>{formatDateTime(account.updatedAt || account.updated_at)}</dd></div>
                   <div className={styles.detailRow}><dt>ID</dt><dd className={styles.mono}>{account.id}</dd></div>
@@ -228,7 +228,7 @@ export default function ContaBancariaDetailPage({ params }) {
                       <li key={r.id} className={styles.listRow}>
                         <Icon name="money" size={16} />
                         <div className={styles.listRowInfo}>
-                          <span className={styles.listRowTitle}>Ref. {r.referenceMonth}</span>
+                          <span className={styles.listRowTitle}>Ref. {formatCompetence(r.referenceMonth)}</span>
                         </div>
                         <strong className={styles.listRowRight}>{formatBRL(r.netAmount)}</strong>
                       </li>

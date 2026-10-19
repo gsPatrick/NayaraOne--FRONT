@@ -118,7 +118,7 @@ export default function ContratosHubPage() {
                   <Link href={`/painel/contratos/vistorias/${i.id}`} className={styles.listRow}>
                     <span className={styles.listRowIcon}><Icon name="eye" size={16} /></span>
                     <div className={styles.listRowInfo}>
-                      <span className={styles.listRowTitle}>{propertyOf(i.propertyId)?.name || "—"}</span>
+                      <span className={styles.listRowTitle}>{propertyOf(i.propertyId)?.name || "Imóvel não encontrado"}</span>
                       <span className={styles.listRowSubtitle}>Agendada para {formatDate(i.scheduledAt)}</span>
                     </div>
                   </Link>

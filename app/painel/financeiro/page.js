@@ -38,7 +38,7 @@ export default function FinanceiroPage() {
   const [loadError, setLoadError] = useState("");
 
   function userName(id) {
-    return users.find((u) => u.id === id)?.name || "—";
+    return users.find((u) => u.id === id)?.name || "Usuário não identificado";
   }
 
   function bankAccountOf(id) {
@@ -99,7 +99,7 @@ export default function FinanceiroPage() {
   const byBankAccount = useMemo(() => {
     const counts = {};
     entries.forEach((e) => { counts[e.bankAccountId] = (counts[e.bankAccountId] || 0) + Number(e.amount); });
-    return Object.entries(counts).map(([id, value]) => ({ label: bankAccountLabel(bankAccountOf(id)) || id, value, displayValue: formatBRLCompact(value), title: formatBRL(value) }));
+    return Object.entries(counts).map(([id, value]) => ({ label: bankAccountLabel(bankAccountOf(id)), value, displayValue: formatBRLCompact(value), title: formatBRL(value) }));
   }, [entries, bankAccounts]);
 
   const byMonth = useMemo(

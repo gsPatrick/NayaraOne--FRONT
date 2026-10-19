@@ -53,12 +53,12 @@ import { listContracts } from "@/lib/api/legal";
 import { listPeople } from "@/lib/api/people";
 import { apiFetch } from "@/lib/api/client";
 import { commissionDescription } from "@/lib/finance/labels";
-import { formatBRL, formatDate, formatPercent, formatContractLabel, toNumber, humanizeText } from "@/lib/format";
+import { formatBRL, formatDate, formatPercent, formatContractLabel, toNumber, humanizeText, formatCompetence } from "@/lib/format";
 import { buildMonthlyChartData } from "@/lib/monthlyChartData";
 import styles from "./page.module.css";
 
 function userName(users, id) {
-  return users.find((u) => u.id === id)?.name || "—";
+  return users.find((u) => u.id === id)?.name || "Usuário não identificado";
 }
 function personOf(people, id) {
   return people.find((p) => p.id === id) || null;
@@ -180,7 +180,7 @@ export default function ComissoesRepassesPage() {
       const repasse = created?.repasse || created;
       setRepasses((prev) => [repasse, ...prev]);
       setNewRepasseModal(false);
-      showNotice("success", "Repasse criado", `Repasse de ${formatBRL(repasse.netAmount)} (ref. ${repasse.referenceMonth}) aguardando aprovação por outra pessoa.`);
+      showNotice("success", "Repasse criado", `Repasse de ${formatBRL(repasse.netAmount)} (ref. ${formatCompetence(repasse.referenceMonth)}) aguardando aprovação por outra pessoa.`);
     } catch (err) {
       showNotice("danger", "Não foi possível criar o repasse", err?.message || "Tente novamente.");
     } finally {
@@ -415,14 +415,14 @@ export default function ComissoesRepassesPage() {
                     const owner = personOf(people, r.ownerPersonId);
                     return (
                       <li key={r.id} className={styles.listRow}>
-                        <Avatar name={owner?.legalName || "—"} size="sm" />
+                        <Avatar name={owner?.legalName || "?"} size="sm" />
                         <span className={styles.bankIconSlot}>
                           <BankLogo bankCode={account?.bankCode} size={28} square />
                         </span>
                         <div className={styles.listRowInfo}>
-                          <span className={styles.listRowTitle}>{owner?.legalName || "—"}</span>
+                          <span className={styles.listRowTitle}>{owner?.legalName || "Proprietário não encontrado"}</span>
                           <span className={styles.listRowSubtitle}>
-                            Ref. {r.referenceMonth} · Bruto {formatBRL(r.grossAmount)} − Deduções {formatBRL(r.deductionsAmount)} = <strong>{formatBRL(r.netAmount)}</strong>
+                            Ref. {formatCompetence(r.referenceMonth)} · Bruto {formatBRL(r.grossAmount)} − Deduções {formatBRL(r.deductionsAmount)} = <strong>{formatBRL(r.netAmount)}</strong>
                           </span>
                         </div>
                         <div className={styles.listRowRight}>
@@ -782,7 +782,7 @@ function ApproveRepasseModal({ repasse, onClose, onConfirm }) {
     >
       <p>
         A aprovação precisa ser de outra pessoa (não de quem registrou o repasse) e cria o lançamento a pagar de{" "}
-        <strong>{repasse ? formatBRL(repasse.netAmount) : ""}</strong> (período {repasse?.referenceMonth}).
+        <strong>{repasse ? formatBRL(repasse.netAmount) : ""}</strong> (período {formatCompetence(repasse?.referenceMonth)}).
       </p>
       <FormField label="Centro de custo do pagamento" htmlFor="ar-cc" required>
         <Select id="ar-cc" value={costCenterId} onChange={(e) => setCostCenterId(e.target.value)}>
@@ -964,7 +964,7 @@ function CompositionModal({ state, onClose }) {
       {repasse ? (
         <>
           <p className={styles.modalSubtitle}>
-            Ref. {repasse.referenceMonth} · Líquido {formatBRL(repasse.netAmount)}
+            Ref. {formatCompetence(repasse.referenceMonth)} · Líquido {formatBRL(repasse.netAmount)}
           </p>
           {state.loading ? (
             <SkeletonDetail />

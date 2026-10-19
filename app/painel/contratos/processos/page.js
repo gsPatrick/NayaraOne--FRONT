@@ -122,14 +122,14 @@ export default function ProcessosPage() {
         return (
           <div className={styles.nameCell}>
             <span className={styles.nameMain}>{contract ? formatContractLabel(contract) : "Sem contrato"}</span>
-            <span className={styles.nameSub}>{property?.name || "—"}</span>
+            <span className={styles.nameSub}>{property?.name || "Sem imóvel vinculado"}</span>
           </div>
         );
       },
     },
     {
       key: "actions",
-      label: "",
+      label: "Ações",
       width: "12%",
       render: (row) => <RowActions onView={() => router.push(`/painel/contratos/processos/${row.id}`)} />,
     },

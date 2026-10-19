@@ -521,7 +521,7 @@ export default function LancamentoDetailPage({ params }) {
                 </FormField>
                 <FormField label="Centro de custo" htmlFor="e-cc">
                   <Select id="e-cc" value={editForm.costCenterId} onChange={(e) => setEditForm((p) => ({ ...p, costCenterId: e.target.value }))}>
-                    <option value="">—</option>
+                    <option value="">Selecione...</option>
                     {allCostCenters.map((c) => (
                       <option key={c.id} value={c.id}>{c.code} — {c.name}</option>
                     ))}
@@ -529,7 +529,7 @@ export default function LancamentoDetailPage({ params }) {
                 </FormField>
                 <FormField label="Centro de resultado" htmlFor="e-rc">
                   <Select id="e-rc" value={editForm.resultCenterId} onChange={(e) => setEditForm((p) => ({ ...p, resultCenterId: e.target.value }))}>
-                    <option value="">—</option>
+                    <option value="">Selecione...</option>
                     {allResultCenters.map((r) => (
                       <option key={r.id} value={r.id}>{r.code} — {r.name}</option>
                     ))}
@@ -550,8 +550,8 @@ export default function LancamentoDetailPage({ params }) {
                   <div className={styles.detailRow}><dt>Valor</dt><dd className={styles.amount}>{formatBRL(entry.amount)}</dd></div>
                   <div className={styles.detailRow}><dt>Tipo</dt><dd>{entry.entryType === "DEBIT" ? "Débito" : "Crédito"}</dd></div>
                   <div className={styles.detailRow}><dt>Natureza</dt><dd><NatureBadge nature={entry.nature} /></dd></div>
-                  <div className={styles.detailRow}><dt>Vencimento</dt><dd>{entry.dueAt ? formatDate(entry.dueAt) : "—"}</dd></div>
-                  <div className={styles.detailRow}><dt>Liquidado em</dt><dd>{entry.settledAt ? formatDateTime(entry.settledAt) : "—"}</dd></div>
+                  <div className={styles.detailRow}><dt>Vencimento</dt><dd>{entry.dueAt ? formatDate(entry.dueAt) : "Sem vencimento"}</dd></div>
+                  <div className={styles.detailRow}><dt>Liquidado em</dt><dd>{entry.settledAt ? formatDateTime(entry.settledAt) : "Ainda não liquidado"}</dd></div>
                   {entry.settlementMethod ? (
                     <div className={styles.detailRow}>
                       <dt>Forma da baixa</dt>
@@ -575,8 +575,8 @@ export default function LancamentoDetailPage({ params }) {
                       </dd>
                     </div>
                   ) : null}
-                  <div className={styles.detailRow}><dt>Centro de custo</dt><dd>{costCenter ? `${costCenter.code} — ${costCenter.name}` : "—"}</dd></div>
-                  <div className={styles.detailRow}><dt>Centro de resultado</dt><dd>{resultCenter ? `${resultCenter.code} — ${resultCenter.name}` : "—"}</dd></div>
+                  <div className={styles.detailRow}><dt>Centro de custo</dt><dd>{costCenter ? `${costCenter.code} — ${costCenter.name}` : "Não classificado"}</dd></div>
+                  <div className={styles.detailRow}><dt>Centro de resultado</dt><dd>{resultCenter ? `${resultCenter.code} — ${resultCenter.name}` : "Não classificado"}</dd></div>
                 </dl>
               </Card>
 

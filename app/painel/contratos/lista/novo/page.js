@@ -364,7 +364,7 @@ export default function NovoContratoPage() {
                 return (
                   <div key={party.id} className={styles.partyRow}>
                     <div className={styles.partyInfo}>
-                      <span className={styles.partyName}>{person?.legalName || "—"}</span>
+                      <span className={styles.partyName}>{person?.legalName || "Pessoa não encontrada"}</span>
                       <span className={styles.partyRole}>{PARTY_ROLE_LABELS[party.partyRole]}</span>
                     </div>
                     <button type="button" className={styles.removeBtn} onClick={() => removeParty(party.id)} aria-label="Remover parte">

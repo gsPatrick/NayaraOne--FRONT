@@ -135,7 +135,7 @@ export default function ContasBancariasPage() {
     },
     {
       key: "actions",
-      label: "",
+      label: "Ações",
       render: (row) => (
         <RowActions
           onView={() => router.push(`/painel/financeiro/contas-bancarias/${row.id}`)}

@@ -26,7 +26,7 @@ import {
   confirmPeriodCheck,
   approvePeriodClosure,
 } from "@/lib/api/finance";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTime, formatCompetence } from "@/lib/format";
 import styles from "./page.module.css";
 
 function currentReferenceMonth() {
@@ -196,23 +196,23 @@ export default function FechamentoPage() {
   }
 
   const columns = [
-    { key: "referenceMonth", label: "Mês" },
+    { key: "referenceMonth", label: "Mês", render: (row) => formatCompetence(row.referenceMonth) },
     {
       key: "status",
       label: "Status",
       render: (row) => <Badge tone={STATUS_TONE[row.status] || "neutral"}>{STATUS_LABEL[row.status] || row.status}</Badge>,
     },
-    { key: "closedAt", label: "Fechado em", render: (row) => (row.closedAt ? formatDateTime(row.closedAt) : "—") },
-    { key: "reopenedAt", label: "Última reabertura", render: (row) => (row.reopenedAt ? formatDateTime(row.reopenedAt) : "—") },
-    { key: "reopenReason", label: "Motivo da reabertura", render: (row) => row.reopenReason || "—" },
+    { key: "closedAt", label: "Fechado em", render: (row) => (row.closedAt ? formatDateTime(row.closedAt) : "Ainda não fechado") },
+    { key: "reopenedAt", label: "Última reabertura", render: (row) => (row.reopenedAt ? formatDateTime(row.reopenedAt) : "Nunca reaberto") },
+    { key: "reopenReason", label: "Motivo da reabertura", render: (row) => row.reopenReason || (row.reopenedAt ? "Motivo não informado" : "Não se aplica") },
     {
       key: "returnToOpenReason",
       label: "Última devolução da revisão",
-      render: (row) => (row.returnedToOpenAt ? `${formatDateTime(row.returnedToOpenAt)} — ${row.returnToOpenReason || ""}` : "—"),
+      render: (row) => (row.returnedToOpenAt ? `${formatDateTime(row.returnedToOpenAt)} — ${row.returnToOpenReason || "motivo não informado"}` : "Nunca devolvido"),
     },
     {
       key: "actions",
-      label: "",
+      label: "Ações",
       render: (row) =>
         row.status === "CLOSED" ? (
           <Button type="button" size="sm" variant="ghost" onClick={() => setReopenTarget({ referenceMonth: row.referenceMonth, mode: "REOPEN" })}>
@@ -222,7 +222,7 @@ export default function FechamentoPage() {
           <Button type="button" size="sm" variant="ghost" onClick={() => setReopenTarget({ referenceMonth: row.referenceMonth, mode: "RETURN" })}>
             Devolver para aberto
           </Button>
-        ) : null,
+        ) : "Aberto — feche pelo pedido de revisão",
     },
   ];
 
@@ -346,7 +346,7 @@ export default function FechamentoPage() {
         {reopenTarget ? (
           <Card className={styles.formCard}>
             <h2 className={styles.sectionTitle}>
-              {reopenTarget.mode === "RETURN" ? "Devolver para aberto" : "Reabrir"} {reopenTarget.referenceMonth}
+              {reopenTarget.mode === "RETURN" ? "Devolver para aberto" : "Reabrir"} {formatCompetence(reopenTarget.referenceMonth)}
             </h2>
             <form onSubmit={handleReopen} className={styles.inlineForm}>
               <FormField label="Motivo (obrigatório, fica auditado)" htmlFor="reopenReason">

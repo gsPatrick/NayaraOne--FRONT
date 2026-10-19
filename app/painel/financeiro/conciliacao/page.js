@@ -29,7 +29,7 @@ import styles from "./page.module.css";
 // não tem — e não deveria ganhar — um botão de "importar extrato" até esse endpoint existir.
 
 function userName(users, id) {
-  return users.find((u) => u.id === id)?.name || "—";
+  return users.find((u) => u.id === id)?.name || "Usuário não identificado";
 }
 
 function bankAccountOf(bankAccounts, id) {
@@ -174,7 +174,7 @@ export default function ConciliacaoPage() {
   const byBankAccount = useMemo(() => {
     const counts = {};
     transactions.forEach((t) => {
-      const label = bankAccountOf(bankAccounts, t.bankAccountId)?.bankCode || "—";
+      const label = bankAccountOf(bankAccounts, t.bankAccountId)?.bankCode || "conta não identificada";
       counts[label] = (counts[label] || 0) + Number(t.amount);
     });
     return Object.entries(counts).map(([label, value]) => ({ label, value, displayValue: formatBRL(value) }));
@@ -240,7 +240,7 @@ export default function ConciliacaoPage() {
                           </span>
                           <div className={styles.listRowInfo}>
                             <span className={styles.listRowTitle}>{humanizeText(t.description)}</span>
-                            <span className={styles.listRowSubtitle}>{formatDate(t.transactionDate)} · {t.externalTransactionId} · {account?.bankCode || "—"}</span>
+                            <span className={styles.listRowSubtitle}>{formatDate(t.transactionDate)} · {t.externalTransactionId || "sem identificador do banco"} · {account?.bankCode || "conta não identificada"}</span>
                           </div>
                           {classInfo ? <Badge tone={classInfo.tone}>{classInfo.text}</Badge> : null}
                           <span className={styles.listRowRight}>{formatBRL(t.amount)}</span>
