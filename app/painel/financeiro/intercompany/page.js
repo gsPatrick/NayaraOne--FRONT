@@ -105,7 +105,7 @@ export default function IntercompanyPage() {
   }, [toCompanyId]);
 
   function accountLabel(a) {
-    return `${a.bankCode} · ag. ${a.agency || "—"} · ${a.accountNumber}`;
+    return `${a.bankCode} · ag. ${a.agency || "sem agência"} · ${a.accountNumber}`;
   }
 
   function handleCreateClick(e) {
@@ -204,15 +204,36 @@ export default function IntercompanyPage() {
   }
 
   const columns = [
-    { key: "createdAt", label: "Data", render: (row) => formatDateTime(row.createdAt) },
-    { key: "fromCompanyId", label: "Origem", render: (row) => (row.fromCompanyId === company?.id ? "Esta empresa" : row.fromCompanyId) },
+    // M45-RECONF F6: a API devolve o carimbo como created_at (modelo underscored) — a coluna lia
+    // só createdAt e mostrava "—". Mostra a data do pedido e, quando houver, a da decisão.
+    {
+      key: "createdAt",
+      label: "Data",
+      render: (row) => {
+        const requested = row.createdAt || row.created_at;
+        const decided = row.reconciledAt || row.approvedAt || row.rejectedAt;
+        const decidedLabel = row.reconciledAt ? "conciliada" : row.approvedAt ? "aprovada" : "recusada";
+        return (
+          <span>
+            Pedida em {formatDateTime(requested)}
+            {decided ? <><br />{decidedLabel} em {formatDateTime(decided)}</> : null}
+          </span>
+        );
+      },
+    },
+    { key: "fromCompanyId", label: "Origem", render: (row) => (row.fromCompanyId === company?.id ? "Esta empresa" : companies.find((c) => c.id === row.fromCompanyId)?.name || "Outra empresa do grupo") },
     {
       key: "toCompanyId",
       label: "Destino",
-      render: (row) => companies.find((c) => c.id === row.toCompanyId)?.name || row.toCompanyId,
+      render: (row) => (row.toCompanyId === company?.id ? "Esta empresa" : companies.find((c) => c.id === row.toCompanyId)?.name || "Outra empresa do grupo"),
     },
     { key: "amount", label: "Valor", render: (row) => formatBRL(row.amount) },
-    { key: "reason", label: "Motivo", render: (row) => row.reason || "—" },
+    { key: "reason", label: "Motivo", render: (row) => (
+      <span>
+        {row.reason || "Motivo não informado"}
+        {row.rejectionReason ? <><br />Recusa: {row.rejectionReason}</> : null}
+      </span>
+    ) },
     {
       key: "status",
       label: "Status",
@@ -229,7 +250,7 @@ export default function IntercompanyPage() {
     },
     {
       key: "actions",
-      label: "",
+      label: "Ações",
       render: (row) => {
         if (row.status === "PENDING_APPROVAL") {
           return (
@@ -250,7 +271,7 @@ export default function IntercompanyPage() {
             </Button>
           );
         }
-        return null;
+        return row.status === "REJECTED" ? "Encerrada (recusada)" : "Nenhuma ação pendente";
       },
     },
   ];
