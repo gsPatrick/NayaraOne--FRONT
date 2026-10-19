@@ -31,7 +31,10 @@ export default function ObrasHubPage() {
     let cancelled = false;
     setLoading(true);
     setLoadError("");
-    Promise.all([listProjects(), listMaintenanceCases(), listProperties(), apiFetch("/users")])
+    // A lista de imóveis só serve para mostrar o nome do imóvel de cada obra: sem properties:read
+    // (ex.: aprovador de Compras, que vê Obras por ter construction:read) ela não pode derrubar a
+    // tela inteira — os nomes ficam em branco e o resto carrega (auditoria Marco 7 "final2").
+    Promise.all([listProjects(), listMaintenanceCases(), listProperties().catch(() => []), apiFetch("/users")])
       .then(([p, m, props, u]) => {
         if (cancelled) return;
         setProjects(p || []);

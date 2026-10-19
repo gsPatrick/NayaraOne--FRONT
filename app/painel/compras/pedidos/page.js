@@ -20,6 +20,7 @@ import { listInventoryLocations } from "@/lib/api/inventory";
 import { formatBRL, formatDateTime, formatQuantity, toNumber } from "@/lib/format";
 import { hasPermission } from "@/lib/rbac/permissions";
 import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
+import { getSession } from "@/lib/auth/session";
 
 const STATUS_LABELS = { OPEN: "Aberto", RECEIVED: "Recebido", CANCELED: "Cancelado" };
 const STATUS_TONE = { OPEN: "info", RECEIVED: "success", CANCELED: "neutral" };
@@ -30,6 +31,24 @@ const DISCREPANCY_TYPE_LABELS = {
   UNDER_RECEIPT: "Saldo não recebido (cancelamento)",
   PRICE_MISMATCH: "Divergência de preço (NF)",
 };
+
+// Notas de divergência gravadas antes de 18/10/2026 traziam identificador técnico e "payable"
+// ("[payable <uuid> criado para o excedente de 30]", "[... — recebimento <uuid>]"). As novas já
+// saem legíveis do backend; estas linhas antigas são reescritas só na exibição.
+const UUID_PATTERN = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
+function readableResolutionNotes(notes) {
+  if (!notes) return "";
+  return String(notes)
+    .replace(new RegExp(`\\[payable ${UUID_PATTERN} criado para o excedente de ([0-9.]+)\\]`, "gi"), (_, value) => `[lançamento a pagar de ${formatBRL(value)} gerado no Financeiro para o excedente]`)
+    .replace(new RegExp(` — recebimento ${UUID_PATTERN}`, "gi"), "")
+    .replace(/(\d+(?:\.\d+)?) un\./g, (_, qty) => `${formatQuantity(qty)} un.`);
+}
+
+function purchaseOrderLabel(row) {
+  if (!row.purchaseOrderCreatedAt) return null;
+  const amount = row.purchaseOrderAmount != null ? ` · ${formatBRL(row.purchaseOrderAmount)}` : "";
+  return `Pedido de ${formatDateTime(row.purchaseOrderCreatedAt)}${amount}`;
+}
 
 export default function PedidosDeCompraPage() {
   const router = useRouter();
@@ -49,6 +68,8 @@ export default function PedidosDeCompraPage() {
   const [saving, setSaving] = useState(false);
   const [busyDiscId, setBusyDiscId] = useState(null);
   const { confirm, ConfirmDialog } = useConfirm();
+  const [currentUserId, setCurrentUserId] = useState(null);
+  useEffect(() => { setCurrentUserId(getSession()?.user?.id || null); }, []);
 
   // Auditoria contratual Marco 7 (2026-10-07) — "Cancel/return = compensação": o backend
   // (cancelPurchaseOrder) já existia e era testado, mas nenhuma tela permitia cancelar uma PO.
@@ -275,28 +296,35 @@ export default function PedidosDeCompraPage() {
   async function handleResolveDiscrepancy(row, resolution) {
     // FIX (auditoria "reconf" 18/10): rejeitar exige justificativa — o backend recusa sem
     // "notes" (RECEIPT_DISCREPANCY_REJECTION_REASON_REQUIRED); a tela pede antes de enviar.
+    // FIX (auditoria "final2" 18/10): confirmar sem justificativa fechava o diálogo e o usuário
+    // tinha de abrir de novo; agora o diálogo volta na hora com o erro junto do campo.
     rejectReasonRef.current = "";
-    const ok = await confirm({
-      title: resolution === "ACCEPTED" ? "Aceitar divergência" : "Rejeitar divergência",
-      tone: resolution === "ACCEPTED" ? "default" : "danger",
-      message: (
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)" }}>
-          <p style={{ margin: 0 }}>
-            Confirma que quer marcar esta divergência ({DISCREPANCY_TYPE_LABELS[row.discrepancyType] || row.discrepancyType}
-            {row.itemName ? ` — ${row.itemName}` : ""}) como {resolution === "ACCEPTED" ? "aceita" : "rejeitada"}?
-          </p>
-          {resolution === "REJECTED" ? (
-            <FormField label="Justificativa da rejeição (obrigatória — fica registrada na trilha)" required>
-              <Input defaultValue="" maxLength={500} onChange={(e) => { rejectReasonRef.current = e.target.value; }} placeholder="Ex.: excedente devolvido ao fornecedor na própria entrega" />
-            </FormField>
-          ) : null}
-        </div>
-      ),
-    });
-    if (!ok) return;
-    if (resolution === "REJECTED" && !rejectReasonRef.current.trim()) {
-      setActionError("Rejeitar uma divergência exige uma justificativa.");
-      return;
+    let missingReason = false;
+    for (;;) {
+      const ok = await confirm({
+        title: resolution === "ACCEPTED" ? "Aceitar divergência" : "Rejeitar divergência",
+        tone: resolution === "ACCEPTED" ? "default" : "danger",
+        message: (
+          <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)" }}>
+            <p style={{ margin: 0 }}>
+              Confirma que quer marcar esta divergência ({DISCREPANCY_TYPE_LABELS[row.discrepancyType] || row.discrepancyType}
+              {row.itemName ? ` — ${row.itemName}` : ""}) como {resolution === "ACCEPTED" ? "aceita" : "rejeitada"}?
+            </p>
+            {resolution === "REJECTED" ? (
+              <FormField
+                label="Justificativa da rejeição (obrigatória — fica registrada na trilha)"
+                required
+                error={missingReason ? "Escreva a justificativa para rejeitar a divergência." : undefined}
+              >
+                <Input defaultValue="" maxLength={500} onChange={(e) => { rejectReasonRef.current = e.target.value; }} placeholder="Ex.: excedente devolvido ao fornecedor na própria entrega" />
+              </FormField>
+            ) : null}
+          </div>
+        ),
+      });
+      if (!ok) return;
+      if (resolution !== "REJECTED" || rejectReasonRef.current.trim()) break;
+      missingReason = true;
     }
     setBusyDiscId(row.id);
     setActionError("");
@@ -324,6 +352,9 @@ export default function PedidosDeCompraPage() {
           <div style={{ fontSize: 12, color: "var(--color-ink-muted)" }}>
             {[row.supplierName, row.invoiceNumber ? `NF ${row.invoiceNumber}` : null].filter(Boolean).join(" · ") || "—"}
           </div>
+          {purchaseOrderLabel(row) ? (
+            <div style={{ fontSize: 12, color: "var(--color-ink-muted)" }}>{purchaseOrderLabel(row)}</div>
+          ) : null}
         </div>
       ),
     },
@@ -337,7 +368,7 @@ export default function PedidosDeCompraPage() {
         <div>
           <Badge tone={row.status === "OPEN" ? "warning" : row.status === "REJECTED" ? "danger" : "success"}>{row.status === "OPEN" ? "Em aberto" : row.status === "REJECTED" ? "Rejeitada" : "Aceita"}</Badge>
           {row.status !== "OPEN" && row.resolutionNotes ? (
-            <div style={{ fontSize: 12, color: "var(--color-ink-muted)", marginTop: 4 }}>{row.resolutionNotes}</div>
+            <div style={{ fontSize: 12, color: "var(--color-ink-muted)", marginTop: 4 }}>{readableResolutionNotes(row.resolutionNotes)}</div>
           ) : null}
         </div>
       ),
@@ -346,12 +377,24 @@ export default function PedidosDeCompraPage() {
       key: "actions",
       label: "",
       width: "22%",
-      render: (row) => (row.status === "OPEN" ? (
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-          <Button size="sm" onClick={() => handleResolveDiscrepancy(row, "ACCEPTED")} loading={busyDiscId === row.id}>Aceitar</Button>
-          <Button size="sm" variant="secondary" onClick={() => handleResolveDiscrepancy(row, "REJECTED")} loading={busyDiscId === row.id}>Rejeitar</Button>
-        </div>
-      ) : null),
+      // FIX (auditoria "final2" 18/10): os botões apareciam para quem registrou o recebimento, e o
+      // bloqueio só vinha depois de confirmar. A regra continua no backend; a tela só não oferece.
+      render: (row) => {
+        if (row.status !== "OPEN") return null;
+        if (row.receivedByUserId && row.receivedByUserId === currentUserId) {
+          return (
+            <span style={{ fontSize: 12, color: "var(--color-ink-muted)" }}>
+              Você registrou este recebimento — a decisão cabe a outra pessoa.
+            </span>
+          );
+        }
+        return (
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            <Button size="sm" onClick={() => handleResolveDiscrepancy(row, "ACCEPTED")} loading={busyDiscId === row.id}>Aceitar</Button>
+            <Button size="sm" variant="secondary" onClick={() => handleResolveDiscrepancy(row, "REJECTED")} loading={busyDiscId === row.id}>Rejeitar</Button>
+          </div>
+        );
+      },
     },
   ];
 

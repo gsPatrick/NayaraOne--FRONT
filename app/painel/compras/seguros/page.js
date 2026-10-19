@@ -26,7 +26,7 @@ import { uploadFile, listContracts } from "@/lib/api/legal";
 import { listProperties } from "@/lib/api/properties";
 import { listFinancialEntries } from "@/lib/api/finance";
 import { listPeople } from "@/lib/api/people";
-import { formatDate, formatDateTime, formatBRL, toNumber } from "@/lib/format";
+import { formatDate, formatDateTime, formatBRL, toNumber, formatContractLabel } from "@/lib/format";
 
 const POLICY_STATUS_LABELS = { DRAFT: "Rascunho", QUOTED: "Cotada", ISSUED: "Emitida", ACTIVE: "Ativa", EXPIRED: "Expirada", CANCELED: "Cancelada" };
 const POLICY_STATUS_TONE = { DRAFT: "neutral", QUOTED: "info", ISSUED: "info", ACTIVE: "success", EXPIRED: "warning", CANCELED: "danger" };
@@ -90,6 +90,7 @@ export default function SegurosPage() {
   const [properties, setProperties] = useState([]);
   const [contracts, setContracts] = useState([]);
   const [people, setPeople] = useState([]);
+  const [formOptionsUnavailable, setFormOptionsUnavailable] = useState({ properties: false, contracts: false, people: false });
 
   const [detailModal, setDetailModal] = useState(null); // { policy }
   const [claimForm, setClaimForm] = useState({ description: "", claimAmount: "" });
@@ -174,18 +175,32 @@ export default function SegurosPage() {
     }
   }
 
+  // BUG REAL CORRIGIDO (auditoria Marco 7 "final2", 18/10/2026): as apólices eram carregadas num
+  // Promise.all junto com imóveis, contratos e pessoas — usados só pra exibir nomes e preencher o
+  // formulário de criação. Sem legal:read, listContracts falhava e derrubava a tela inteira:
+  // "Permissão ausente: legal:read" seguido de "Nenhuma apólice encontrada". Agora as apólices
+  // carregam sozinhas (a API já devolve os nomes de imóvel, contrato e segurado) e as listas do
+  // formulário carregam à parte; se uma delas falhar, só aquele seletor fica indisponível.
   function load() {
     setLoading(true);
     setLoadError("");
-    Promise.all([listInsurancePolicies(), listProperties(), listContracts(), listPeople()])
-      .then(([data, props, contrs, ppl]) => {
-        setPolicies(data || []);
-        setProperties(props || []);
-        setContracts(contrs || []);
-        setPeople(ppl || []);
+    listInsurancePolicies()
+      .then((data) => setPolicies(data || []))
+      .catch((err) => {
+        setPolicies([]);
+        setLoadError(err?.message || "Não foi possível carregar as apólices.");
       })
-      .catch((err) => setLoadError(err?.message || "Não foi possível carregar as apólices."))
       .finally(() => setLoading(false));
+    Promise.allSettled([listProperties(), listContracts(), listPeople()]).then(([props, contrs, ppl]) => {
+      setProperties(props.status === "fulfilled" ? props.value || [] : []);
+      setContracts(contrs.status === "fulfilled" ? contrs.value || [] : []);
+      setPeople(ppl.status === "fulfilled" ? ppl.value || [] : []);
+      setFormOptionsUnavailable({
+        properties: props.status === "rejected",
+        contracts: contrs.status === "rejected",
+        people: ppl.status === "rejected",
+      });
+    });
   }
   useEffect(() => { load(); }, []);
 
@@ -351,11 +366,21 @@ export default function SegurosPage() {
     }
   }
 
+  function partyName(party) {
+    return party.personName || people.find((person) => person.id === party.personId)?.legalName || "";
+  }
+  function linkedContractLabel(policy) {
+    const c = policy.linkedContract;
+    if (!c) return "";
+    const label = c.contractNumber ? `Nº ${c.contractNumber}` : formatContractLabel(c);
+    return [label, c.propertyTitle].filter(Boolean).join(" — ");
+  }
+
   const [listSearch, setListSearch] = useState("");
   const filteredPolicies = listSearch.trim()
     ? policies.filter((p) => {
         const needle = listSearch.trim().toLowerCase();
-        const insuredName = (p.parties || []).map((party) => people.find((person) => person.id === party.personId)?.legalName || "").join(" ");
+        const insuredName = (p.parties || []).map(partyName).join(" ");
         return [p.coverageSummary, p.externalPolicyNumber, insuredName].filter(Boolean).some((v) => String(v).toLowerCase().includes(needle));
       })
     : policies;
@@ -367,7 +392,7 @@ export default function SegurosPage() {
       label: "Cobertura / segurado",
       width: "26%",
       render: (row) => {
-        const insuredName = (row.parties || []).map((party) => people.find((person) => person.id === party.personId)?.legalName).filter(Boolean)[0];
+        const insuredName = (row.parties || []).map(partyName).filter(Boolean)[0];
         return (
           <span>
             {row.coverageSummary || "sem resumo de cobertura"}
@@ -416,7 +441,12 @@ export default function SegurosPage() {
         <div style={{ marginBottom: "var(--space-4)", maxWidth: 360 }}>
           <Input placeholder="Buscar por cobertura, nº da apólice ou segurado..." value={listSearch} onChange={(e) => setListSearch(e.target.value)} />
         </div>
-        <Table columns={columns} rows={loading ? [] : filteredPolicies} loading={loading} emptyMessage="Nenhuma apólice encontrada." />
+        <Table
+          columns={columns}
+          rows={loading ? [] : filteredPolicies}
+          loading={loading}
+          emptyMessage={loadError ? "As apólices não foram carregadas — veja o aviso acima." : "Nenhuma apólice encontrada."}
+        />
       </Card>
 
       <StickyActionBar>
@@ -445,29 +475,29 @@ export default function SegurosPage() {
               placeholder="Ex.: Seguro-fiança locatícia — apartamento Rua X"
             />
           </FormField>
-          <FormField label="Imóvel vinculado (opcional)">
-            <Select value={form.propertyId} onChange={(e) => setForm((p) => ({ ...p, propertyId: e.target.value }))}>
+          <FormField label="Imóvel vinculado (opcional)" helper={formOptionsUnavailable.properties ? "Seu perfil não tem acesso à lista de imóveis — a apólice pode ser criada sem vínculo." : undefined}>
+            <Select value={form.propertyId} disabled={formOptionsUnavailable.properties} onChange={(e) => setForm((p) => ({ ...p, propertyId: e.target.value }))}>
               <option value="">Nenhum</option>
               {properties.map((pr) => (
-                <option key={pr.id} value={pr.id}>{pr.name || pr.internalCode || "imóvel sem título"}</option>
+                <option key={pr.id} value={pr.id}>{pr.title || pr.name || pr.internalCode || "imóvel sem título"}</option>
               ))}
             </Select>
           </FormField>
-          <FormField label="Contrato de locação vinculado (opcional)">
-            <Select value={form.contractId} onChange={(e) => setForm((p) => ({ ...p, contractId: e.target.value }))}>
+          <FormField label="Contrato de locação vinculado (opcional)" helper={formOptionsUnavailable.contracts ? "Seu perfil não tem acesso aos contratos — a apólice pode ser criada sem vínculo." : undefined}>
+            <Select value={form.contractId} disabled={formOptionsUnavailable.contracts} onChange={(e) => setForm((p) => ({ ...p, contractId: e.target.value }))}>
               <option value="">Nenhum</option>
               {contracts.map((c) => {
                 const prop = properties.find((pr) => pr.id === c.propertyId);
-                const label = [c.contractNumber ? `Nº ${c.contractNumber}` : "contrato sem número", prop?.title].filter(Boolean).join(" — ");
+                const label = [c.contractNumber ? `Nº ${c.contractNumber}` : formatContractLabel(c), prop?.title || prop?.name].filter(Boolean).join(" — ");
                 return <option key={c.id} value={c.id}>{label}</option>;
               })}
             </Select>
           </FormField>
-          <FormField label="Segurado / beneficiário (opcional)">
-            <Select value={form.partyPersonId} onChange={(e) => setForm((p) => ({ ...p, partyPersonId: e.target.value }))}>
+          <FormField label="Segurado / beneficiário (opcional)" helper={formOptionsUnavailable.people ? "Seu perfil não tem acesso aos contatos — a apólice pode ser criada sem segurado." : undefined}>
+            <Select value={form.partyPersonId} disabled={formOptionsUnavailable.people} onChange={(e) => setForm((p) => ({ ...p, partyPersonId: e.target.value }))}>
               <option value="">Nenhum</option>
               {people.map((p) => (
-                <option key={p.id} value={p.id}>{p.legalName || p.name || p.id}</option>
+                <option key={p.id} value={p.id}>{p.legalName || p.name || "pessoa sem nome"}</option>
               ))}
             </Select>
           </FormField>
@@ -505,8 +535,8 @@ export default function SegurosPage() {
               {detailModal.policy.premiumAmount ? <p style={{ margin: "0 0 4px" }}>Prêmio: {formatBRL(detailModal.policy.premiumAmount)}</p> : null}
               {detailModal.policy.effectiveDate ? <p style={{ margin: "0 0 4px" }}>Vigência: {formatDate(detailModal.policy.effectiveDate)} a {detailModal.policy.expiryDate ? formatDate(detailModal.policy.expiryDate) : "—"}</p> : null}
               {detailModal.policy.coverageSummary ? <p style={{ margin: "0 0 4px" }}>Cobertura: {detailModal.policy.coverageSummary}</p> : null}
-              {detailModal.policy.propertyId ? <p style={{ margin: "0 0 4px" }}>Imóvel vinculado: {properties.find((pr) => pr.id === detailModal.policy.propertyId)?.name || "imóvel não encontrado"}</p> : null}
-              {detailModal.policy.contractId ? <p style={{ margin: 0 }}>Contrato vinculado: {(() => { const c = contracts.find((x) => x.id === detailModal.policy.contractId); if (!c) return "contrato não encontrado"; const prop = properties.find((pr) => pr.id === c.propertyId); return [c.contractNumber ? `Nº ${c.contractNumber}` : "contrato sem número", prop?.name].filter(Boolean).join(" — "); })()}</p> : null}
+              {detailModal.policy.propertyId ? <p style={{ margin: "0 0 4px" }}>Imóvel vinculado: {detailModal.policy.linkedProperty?.title || "imóvel não encontrado"}</p> : null}
+              {detailModal.policy.contractId ? <p style={{ margin: 0 }}>Contrato vinculado: {linkedContractLabel(detailModal.policy) || "contrato não encontrado"}</p> : null}
               {detailModal.policy.status === "CANCELED" && detailModal.policy.cancelInfo ? (
                 <p style={{ margin: "8px 0 0", color: "var(--color-ink-muted)" }}>
                   Cancelada em {formatDateTime(detailModal.policy.cancelInfo.occurredAt)} — motivo: {detailModal.policy.cancelInfo.reason}
@@ -541,7 +571,7 @@ export default function SegurosPage() {
                     <li key={party.id} style={{ padding: "6px 0" }}>
                       {party.partyRole === "INSURED" ? "Segurado" : party.partyRole === "BENEFICIARY" ? "Beneficiário" : party.partyRole}
                       {" — "}
-                      {people.find((p) => p.id === party.personId)?.legalName || party.personId}
+                      {partyName(party) || "pessoa não encontrada"}
                     </li>
                   ))}
                 </ul>

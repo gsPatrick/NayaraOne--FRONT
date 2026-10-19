@@ -49,7 +49,10 @@ export default function PosObraListaPage() {
     let cancelled = false;
     setLoading(true);
     setLoadError("");
-    Promise.all([listMaintenanceCases(), listProperties(), listProjects(), listPeople(), apiFetch("/users")])
+    // A lista de imóveis só serve para mostrar o nome do imóvel de cada obra: sem properties:read
+    // (ex.: aprovador de Compras, que vê Obras por ter construction:read) ela não pode derrubar a
+    // tela inteira — os nomes ficam em branco e o resto carrega (auditoria Marco 7 "final2").
+    Promise.all([listMaintenanceCases(), listProperties().catch(() => []), listProjects(), listPeople(), apiFetch("/users")])
       .then(([c, props, proj, pp, u]) => {
         if (cancelled) return;
         setCases(c || []);

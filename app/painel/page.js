@@ -24,6 +24,7 @@ import { listPeople, listDuplicatePairs } from "@/lib/api/people";
 import { apiFetch } from "@/lib/api/client";
 import { matchRadarToProperties, PROPERTY_TYPE_LABELS } from "@/lib/radarMatching";
 import { formatDateTime, formatBRL, isOverdue } from "@/lib/format";
+import { hasPermission } from "@/lib/rbac/permissions";
 import styles from "./page.module.css";
 
 const CLOSED_STAGES = ["ganho", "perdido"];
@@ -45,11 +46,26 @@ const ACTION_ICON = {
 };
 
 const QUICK_ACTIONS = [
-  { label: "Novo imóvel", href: "/painel/imoveis/novo", icon: "building" },
-  { label: "Novo contato", href: "/painel/pessoas/novo", icon: "users" },
-  { label: "Novo radar", href: "/painel/radar/novo", icon: "radar" },
-  { label: "Nova empresa", href: "/painel/empresas/novo", icon: "layers" },
+  { label: "Novo imóvel", href: "/painel/imoveis/novo", icon: "building", permission: "properties:create" },
+  { label: "Novo contato", href: "/painel/pessoas/novo", icon: "users", permission: "people:create" },
+  { label: "Novo radar", href: "/painel/radar/novo", icon: "radar", permission: "radar:create" },
+  { label: "Nova empresa", href: "/painel/empresas/novo", icon: "layers", permission: "companies:create" },
 ];
+
+// FIX (auditoria Marco 7 "final2", 18/10/2026): o Painel carregava TODAS as fontes num único
+// Promise.all e mostrava todas as abas para qualquer usuário. Com isso, cada leitura que faltava
+// derrubava a tela inteira, e o papel do aprovador de Compras foi recebendo leituras só para o
+// Painel abrir — o que expôs a ele a lista de usuários com e-mail e a aba de empresas com o botão
+// "Nova empresa". Agora cada seção só carrega e só aparece com a permissão correspondente; as
+// abas administrativas seguem o mesmo gate do menu de Administração (permissão de alteração).
+const SECTION_PERMISSIONS = {
+  properties: "properties:read",
+  people: "people:read",
+  opportunities: "crm:opportunities:read",
+  radars: "radar:read",
+  companies: "companies:update",
+  users: "users:update",
+};
 
 const GRADIENTS = [
   "linear-gradient(135deg, #3a2f1c 0%, #b8873a 100%)",
@@ -98,48 +114,61 @@ export default function PainelPage() {
   const [companies, setCompanies] = useState([]);
   const [users, setUsers] = useState([]);
 
+  const [can, setCan] = useState({});
+  const [failedSections, setFailedSections] = useState([]);
+
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setLoadError("");
-    Promise.all([
-      listProperties(),
-      listPeople(),
-      listDuplicatePairs(),
-      listOpportunities(),
-      listRadars(),
-      apiFetch("/companies"),
-      apiFetch("/units"),
-      apiFetch("/users"),
-      apiFetch("/memberships"),
-    ])
-      .then(([apiProperties, apiPeople, apiDuplicates, apiOpportunities, apiRadars, apiCompanies, apiUnits, apiUsers, apiMemberships]) => {
+    const allowed = Object.fromEntries(Object.entries(SECTION_PERMISSIONS).map(([key, code]) => [key, hasPermission(code)]));
+    setCan(allowed);
+    const skip = Promise.resolve(null);
+    const sources = {
+      properties: allowed.properties ? listProperties() : skip,
+      people: allowed.people ? listPeople() : skip,
+      duplicates: allowed.people ? listDuplicatePairs() : skip,
+      opportunities: allowed.opportunities ? listOpportunities() : skip,
+      radars: allowed.radars ? listRadars() : skip,
+      companies: allowed.companies ? apiFetch("/companies") : skip,
+      units: allowed.companies ? apiFetch("/units") : skip,
+      users: allowed.users ? apiFetch("/users") : skip,
+      memberships: allowed.users ? apiFetch("/memberships") : skip,
+    };
+    const keys = Object.keys(sources);
+    Promise.allSettled(keys.map((k) => sources[k]))
+      .then((results) => {
         if (cancelled) return;
-        setProperties(apiProperties || []);
-        setPeople(apiPeople || []);
-        setDuplicatePairs(apiDuplicates || []);
-        setOpportunities(apiOpportunities || []);
-        setRadars(apiRadars || []);
-        setCompanies(
-          (apiCompanies || []).map((c) => ({
-            ...c,
-            units: (apiUnits || []).filter((u) => u.companyId === c.id),
-          }))
-        );
+        const data = {};
+        const failed = [];
+        results.forEach((r, i) => {
+          if (r.status === "fulfilled") data[keys[i]] = r.value || [];
+          else {
+            data[keys[i]] = [];
+            failed.push(keys[i]);
+          }
+        });
+        setProperties(data.properties);
+        setPeople(data.people);
+        setDuplicatePairs(data.duplicates);
+        setOpportunities(data.opportunities);
+        setRadars(data.radars);
+        setCompanies(data.companies.map((c) => ({ ...c, units: data.units.filter((u) => u.companyId === c.id) })));
         setUsers(
-          (apiUsers || []).map((u) => ({
+          data.users.map((u) => ({
             id: u.id,
             name: u.name,
             email: u.email,
             status: toDisplayUserStatus(u.status),
-            memberships: (apiMemberships || [])
+            memberships: data.memberships
               .filter((m) => m.userId === u.id)
               .map((m) => ({ company: m.company?.name || "—", role: m.role?.name || "Sem papel", unit: m.unit?.name || null })),
           }))
         );
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar o painel.");
+        setFailedSections(failed);
+        if (failed.length > 0 && failed.length === results.filter((_, i) => sources[keys[i]] !== skip).length) {
+          setLoadError("Não foi possível carregar o painel.");
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -242,37 +271,56 @@ export default function PainelPage() {
     );
   }
 
+  const quickActions = QUICK_ACTIONS.filter((action) => hasPermission(action.permission));
+
   const overviewTab = (
     <>
+      {failedSections.length > 0 ? (
+        <Alert tone="warning" title="Parte do painel não carregou">
+          Algumas seções não puderam ser carregadas agora. As demais informações abaixo estão atualizadas.
+        </Alert>
+      ) : null}
+
       <div className={styles.grid}>
-        <StatTile label="Imóveis ativos" value={activeProperties.length} delta={`${properties.length} no total`} tone="success" icon="building" />
-        <StatTile
-          label="Oportunidades abertas"
-          value={openOpportunities.length}
-          delta={`${overdueOpportunities.length} com ação vencida`}
-          tone={overdueOpportunities.length > 0 ? "warning" : "success"}
-          icon="chart"
-        />
-        <StatTile label="Radares com match" value={radarsWithMatch.length} delta={`de ${radars.length} radares ativos`} tone="info" icon="radar" />
-        <StatTile
-          label="Ações vencidas"
-          value={overdueOpportunities.length}
-          delta={overdueOpportunities.length > 0 ? "precisam de atenção" : "tudo em dia"}
-          tone={overdueOpportunities.length > 0 ? "danger" : "success"}
-          icon="document"
-        />
+        {can.properties ? (
+          <StatTile label="Imóveis ativos" value={activeProperties.length} delta={`${properties.length} no total`} tone="success" icon="building" />
+        ) : null}
+        {can.opportunities ? (
+          <StatTile
+            label="Oportunidades abertas"
+            value={openOpportunities.length}
+            delta={`${overdueOpportunities.length} com ação vencida`}
+            tone={overdueOpportunities.length > 0 ? "warning" : "success"}
+            icon="chart"
+          />
+        ) : null}
+        {can.radars ? (
+          <StatTile label="Radares com match" value={radarsWithMatch.length} delta={`de ${radars.length} radares ativos`} tone="info" icon="radar" />
+        ) : null}
+        {can.opportunities ? (
+          <StatTile
+            label="Ações vencidas"
+            value={overdueOpportunities.length}
+            delta={overdueOpportunities.length > 0 ? "precisam de atenção" : "tudo em dia"}
+            tone={overdueOpportunities.length > 0 ? "danger" : "success"}
+            icon="document"
+          />
+        ) : null}
       </div>
 
-      <div className={styles.quickActions}>
-        {QUICK_ACTIONS.map((action) => (
-          <Link href={action.href} className={styles.quickAction} key={action.href}>
-            <Icon name={action.icon} size={16} />
-            {action.label}
-          </Link>
-        ))}
-      </div>
+      {quickActions.length > 0 ? (
+        <div className={styles.quickActions}>
+          {quickActions.map((action) => (
+            <Link href={action.href} className={styles.quickAction} key={action.href}>
+              <Icon name={action.icon} size={16} />
+              {action.label}
+            </Link>
+          ))}
+        </div>
+      ) : null}
 
       <div className={styles.mainGrid}>
+        {can.opportunities ? (
         <Card title="Ações vencidas" subtitle={overdueOpportunities.length === 0 ? "Nenhuma pendência no momento" : "Oportunidades com próxima ação atrasada"}>
           {overdueOpportunities.length === 0 ? (
             <p className={styles.emptyText}>Nenhuma ação vencida — bom trabalho.</p>
@@ -293,6 +341,7 @@ export default function PainelPage() {
             </ul>
           )}
         </Card>
+        ) : null}
 
         <Card title="Atividade recente" subtitle="Últimas movimentações do sistema" className={styles.activityCard}>
           {recentActivity.length === 0 ? (
@@ -548,13 +597,13 @@ export default function PainelPage() {
       <Tabs
         items={[
           { label: "Visão geral", content: overviewTab },
-          { label: "Imóveis", content: imoveisTab },
-          { label: "Contatos", content: contatosTab },
-          { label: "CRM", content: crmTab },
-          { label: "Radar", content: radarTab },
-          { label: "Empresas & Unidades", content: empresasTab },
-          { label: "Usuários", content: usuariosTab },
-        ]}
+          can.properties ? { label: "Imóveis", content: imoveisTab } : null,
+          can.people ? { label: "Contatos", content: contatosTab } : null,
+          can.opportunities ? { label: "CRM", content: crmTab } : null,
+          can.radars ? { label: "Radar", content: radarTab } : null,
+          can.companies ? { label: "Empresas & Unidades", content: empresasTab } : null,
+          can.users ? { label: "Usuários", content: usuariosTab } : null,
+        ].filter(Boolean)}
       />
     </AppShell>
   );
