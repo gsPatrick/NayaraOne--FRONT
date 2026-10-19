@@ -26,6 +26,7 @@ import {
   approveIntercompanyTransfer,
   rejectIntercompanyTransfer,
   listIntercompanyDestinationAccounts,
+  listIntercompanyDestinationCompanies,
   listBankAccounts,
 } from "@/lib/api/finance";
 import { uploadFile } from "@/lib/api/legal";
@@ -38,6 +39,7 @@ export default function IntercompanyPage() {
   const { company } = useCompany();
 
   const [companies, setCompanies] = useState([]);
+  const [destCompanies, setDestCompanies] = useState([]);
   const [transfers, setTransfers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
@@ -65,8 +67,14 @@ export default function IntercompanyPage() {
   async function reload() {
     setLoading(true);
     try {
-      const [companyList, transferList, accountList] = await Promise.all([listCompanies(), listIntercompanyTransfers(), listBankAccounts()]);
-      setCompanies(companyList || []);
+      const [companyList, transferList, accountList, destList] = await Promise.all([
+        listCompanies().catch(() => []),
+        listIntercompanyTransfers(),
+        listBankAccounts(),
+        listIntercompanyDestinationCompanies().catch(() => []),
+      ]);
+      setCompanies([...(companyList || []), ...(destList || []).filter((d) => !(companyList || []).some((c) => c.id === d.id))]);
+      setDestCompanies(destList || []);
       setTransfers(transferList || []);
       setOwnAccounts((accountList || []).filter((a) => a.status !== "BLOCKED"));
     } catch (err) {
@@ -80,7 +88,10 @@ export default function IntercompanyPage() {
     reload();
   }, []);
 
-  const otherCompanies = companies.filter((c) => c.id !== company?.id);
+  // M45 F8: só empresas onde o usuário tem finance:read entram como destino; as demais são
+  // explicadas abaixo do campo (o backend recusa listar contas sem essa permissão — regra correta).
+  const otherCompanies = destCompanies.filter((c) => c.canReadFinance && c.id !== company?.id);
+  const blockedCompanies = destCompanies.filter((c) => !c.canReadFinance && c.id !== company?.id);
 
   useEffect(() => {
     setToBankAccountId("");
@@ -269,6 +280,17 @@ export default function IntercompanyPage() {
                 ))}
               </Select>
             </FormField>
+            {!loading && otherCompanies.length === 0 ? (
+              <Alert tone="warning">
+                Você não tem acesso ao Financeiro de nenhuma outra empresa do grupo. Para pedir uma transferência, um administrador precisa
+                liberar seu acesso (permissão de leitura do Financeiro) na empresa de destino.
+              </Alert>
+            ) : null}
+            {blockedCompanies.length > 0 ? (
+              <p className={styles.helper}>
+                Sem acesso ao Financeiro (não aparecem como destino): {blockedCompanies.map((c) => c.name).join(", ")}.
+              </p>
+            ) : null}
 
             <FormField label="Valor" htmlFor="amount">
               <Input id="amount" type="number" min="0.01" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} />
