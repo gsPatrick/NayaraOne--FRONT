@@ -31,8 +31,6 @@ export default function EntregaChavesPage() {
   const [people, setPeople] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
-  const [releaseError, setReleaseError] = useState({});
-  const [busyId, setBusyId] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
@@ -89,7 +87,7 @@ export default function EntregaChavesPage() {
         <StatTile label="Entregas registradas" value={deliveries.length} tone="neutral" icon="key" />
         <StatTile label="Pendentes" value={pendingCount} tone={pendingCount > 0 ? "warning" : "success"} icon="calendar" />
         <StatTile label="Liberadas" value={releasedCount} tone="success" icon="check" />
-        <StatTile label="Travas ativas" value={Object.values(releaseError).filter(Boolean).length} tone="danger" icon="shield" />
+        <StatTile label="Outros status" value={deliveries.length - pendingCount - releasedCount} tone="neutral" icon="shield" />
       </div>
 
       <Card title="Entregas de chave" subtitle="A liberação só é permitida com contrato SIGNED/ACTIVE e vistoria de entrada concluída">
@@ -97,7 +95,6 @@ export default function EntregaChavesPage() {
           {loading ? <SkeletonList /> : pageItems.map((delivery) => {
             const contract = contractOf(delivery.contractId);
             const person = personOf(delivery.deliveredToPersonId);
-            const reason = releaseError[delivery.id];
             return (
               <div key={delivery.id} className={styles.row}>
                 <div className={styles.rowInfo}>
@@ -107,7 +104,7 @@ export default function EntregaChavesPage() {
                 <div className={styles.rowRight}>
                   <Badge tone={KEY_DELIVERY_STATUS_TONE[delivery.status]}>{KEY_DELIVERY_STATUS_LABELS[delivery.status]}</Badge>
                   {delivery.status === "PENDING" ? (
-                    <Button size="sm" onClick={() => handleRelease(delivery)} disabled={busyId === delivery.id}>
+                    <Button size="sm" onClick={() => handleRelease(delivery)}>
                       <Icon name="key" size={16} /> Liberar chaves
                     </Button>
                   ) : null}
@@ -117,11 +114,6 @@ export default function EntregaChavesPage() {
                     onDelete={() => setDeleteTarget(delivery)}
                   />
                 </div>
-                {reason ? (
-                  <div className={styles.alertWrap}>
-                    <Alert tone="danger" title="Liberação bloqueada">{reason}</Alert>
-                  </div>
-                ) : null}
               </div>
             );
           })}

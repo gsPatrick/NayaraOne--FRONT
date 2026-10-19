@@ -166,7 +166,7 @@ export default function VistoriaDetailPage({ params }) {
     setActionError("");
     setBusy(true);
     try {
-      const updated = await completeInspection(inspection.id);
+      const updated = await completeInspection(inspection.id, inspection.lockVersion);
       setInspection(updated);
       // Vistoria acabou de ser concluída — ainda não deve haver nenhuma assinatura registrada.
       try {
@@ -176,7 +176,11 @@ export default function VistoriaDetailPage({ params }) {
         setSignatures([]);
       }
     } catch (err) {
-      setActionError(err.message || "Erro ao concluir vistoria.");
+      if (err?.code === "LEGAL_INSPECTION_VERSION_CONFLICT" || err?.status === 409) {
+        setActionError("Esta vistoria foi alterada por outra pessoa enquanto você a revisava. Recarregue a página para ver a versão atual antes de concluir.");
+      } else {
+        setActionError(err.message || "Erro ao concluir vistoria.");
+      }
     } finally {
       setBusy(false);
     }
