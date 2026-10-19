@@ -542,7 +542,7 @@ function formatMonthBR(ym) {
 }
 
 function NewRepasseModal({ open, people, bankAccounts, onClose, onConfirm, busy }) {
-  const empty = { ownerPersonId: "", propertyId: "", contractId: "", referenceMonth: "", bankAccountId: "", deductionsAmount: "", sourceEntryIds: [] };
+  const empty = { ownerPersonId: "", propertyId: "", contractId: "", referenceMonth: "", bankAccountId: "", deductionsAmount: "", deductionsReason: "", sourceEntryIds: [] };
   const [form, setForm] = useState(empty);
   const [ownerQuery, setOwnerQuery] = useState("");
   const [properties, setProperties] = useState([]);
@@ -602,7 +602,8 @@ function NewRepasseModal({ open, people, bankAccounts, onClose, onConfirm, busy 
   const propertyContracts = contracts.filter((c) => !form.propertyId || c.propertyId === form.propertyId);
   const activeAccounts = (bankAccounts || []).filter((a) => a.status === "ACTIVE");
   const isValid =
-    form.ownerPersonId && form.propertyId && /^\d{4}-(0[1-9]|1[0-2])$/.test(form.referenceMonth) && form.sourceEntryIds.length > 0;
+    form.ownerPersonId && form.propertyId && /^\d{4}-(0[1-9]|1[0-2])$/.test(form.referenceMonth) && form.sourceEntryIds.length > 0 &&
+    (!(toNumber(form.deductionsAmount) > 0) || (form.deductionsReason || "").trim().length > 0);
 
   function update(field) {
     return (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
@@ -634,6 +635,7 @@ function NewRepasseModal({ open, people, bankAccounts, onClose, onConfirm, busy 
                 bankAccountId: form.bankAccountId || null,
                 sourceEntryIds: form.sourceEntryIds,
                 deductionsAmount: form.deductionsAmount ? toNumber(form.deductionsAmount) : 0,
+                deductionsReason: form.deductionsReason ? form.deductionsReason.trim() : null,
                 idempotencyKey: `repasse-${form.ownerPersonId}-${form.propertyId}-${form.contractId || "sem"}-${form.referenceMonth}`,
               })
             }
@@ -709,6 +711,11 @@ function NewRepasseModal({ open, people, bankAccounts, onClose, onConfirm, busy 
       <FormField label="Deduções (R$)" htmlFor="nr-ded" helper="O bruto é o valor elegível dos recebimentos; líquido = bruto − deduções">
         <DecimalInput id="nr-ded" value={form.deductionsAmount} onChange={update("deductionsAmount")} placeholder="0,00" />
       </FormField>
+      {toNumber(form.deductionsAmount) > 0 && (
+        <FormField label="Motivo das deduções" htmlFor="nr-ded-reason" helper="Obrigatório quando há desconto (ex.: taxa de administração do contrato)">
+          <Input id="nr-ded-reason" value={form.deductionsReason} onChange={update("deductionsReason")} placeholder="Motivo do desconto" />
+        </FormField>
+      )}
     </Modal>
   );
 }
