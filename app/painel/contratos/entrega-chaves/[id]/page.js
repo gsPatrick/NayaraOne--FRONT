@@ -13,7 +13,7 @@ import RowActions from "@/components/molecules/RowActions/RowActions";
 import Modal from "@/components/organisms/Modal/Modal";
 import Button from "@/components/atoms/Button/Button";
 import { listPeople } from "@/lib/api/people";
-import { getKeyDelivery, getContract, getInspection, releaseKeyDelivery, uploadFile } from "@/lib/api/legal";
+import { getKeyDelivery, getContract, getInspection, releaseKeyDelivery, uploadFile, listContractParties, getKeyDeliveryTermPreview } from "@/lib/api/legal";
 import FormField from "@/components/molecules/FormField/FormField";
 import Input from "@/components/atoms/Input/Input";
 import Select from "@/components/atoms/Select/Select";
@@ -22,6 +22,8 @@ import {
   KEY_DELIVERY_STATUS_TONE,
   CONTRACT_STATUS_LABELS,
   CONTRACT_STATUS_TONE,
+  PARTY_ROLE_LABELS,
+  INSPECTION_TYPE_LABELS,
   INSPECTION_STATUS_LABELS,
   INSPECTION_STATUS_TONE,
 } from "@/lib/mock/legal";
@@ -43,6 +45,9 @@ export default function EntregaChavesDetailPage({ params }) {
   const [releaseOpen, setReleaseOpen] = useState(false);
   const [releaseForm, setReleaseForm] = useState({ keysCount: "", keysIdentification: "", termSignedByPersonId: "" });
   const [releasePhotos, setReleasePhotos] = useState([]);
+  const [parties, setParties] = useState([]);
+  const [termPreview, setTermPreview] = useState(null);
+  const [termPreviewError, setTermPreviewError] = useState("");
 
   useEffect(() => {
     if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("liberar") === "1") {
@@ -61,8 +66,11 @@ export default function EntregaChavesDetailPage({ params }) {
         setPeople(peopleRes || []);
         if (deliveryRes?.contractId) {
           try {
-            const c = await getContract(deliveryRes.contractId);
-            if (!cancelled) setContract(c);
+            const [c, ps] = await Promise.all([
+              getContract(deliveryRes.contractId),
+              listContractParties(deliveryRes.contractId).catch(() => []),
+            ]);
+            if (!cancelled) { setContract(c); setParties(ps || []); }
           } catch {
             // Contrato pode não estar disponível.
           }
@@ -80,6 +88,24 @@ export default function EntregaChavesDetailPage({ params }) {
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, [params.id]);
+
+  // F7: prévia do termo (gerada no servidor) atualizada conforme o formulário de liberação;
+  // depois de liberado, o mesmo endpoint devolve o termo gravado.
+  useEffect(() => {
+    if (!delivery?.id || (delivery.status !== "RELEASED" && !releaseOpen)) return undefined;
+    if (delivery.status === "RELEASED" && delivery.termText) return undefined;
+    let cancelled = false;
+    const t = setTimeout(() => {
+      getKeyDeliveryTermPreview(delivery.id, {
+        keysCount: releaseForm.keysCount,
+        keysIdentification: releaseForm.keysIdentification.trim(),
+        termSignedByPersonId: releaseForm.termSignedByPersonId || delivery.deliveredToPersonId,
+      })
+        .then((res) => { if (!cancelled) { setTermPreview(res); setTermPreviewError(""); } })
+        .catch((err) => { if (!cancelled) setTermPreviewError(err.message || "Não foi possível gerar a prévia do termo."); });
+    }, 300);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [delivery?.id, delivery?.status, delivery?.termText, delivery?.deliveredToPersonId, releaseOpen, releaseForm]);
 
   function personOf(id) {
     return people.find((p) => p.id === id) || null;
@@ -104,6 +130,8 @@ export default function EntregaChavesDetailPage({ params }) {
   if (!delivery) return notFound();
 
   const deliveredTo = personOf(delivery.deliveredToPersonId);
+  // F6: entregas antigas (antes da regra) podem ter recebedor que não é parte — a API recusa a liberação.
+  const recipientIsParty = parties.some((p) => p.personId === delivery.deliveredToPersonId);
 
   // Política de fotos e texto do termo são decididos pelo servidor; aqui só vão os fatos da
   // entrega (quantidade, identificação, quem assinou o termo e as fotos, se houver).
@@ -160,6 +188,11 @@ export default function EntregaChavesDetailPage({ params }) {
           </div>
         </div>
 
+        {delivery.status === "PENDING" && contract && !recipientIsParty ? (
+          <Alert tone="warning" title="Recebedor não é parte do contrato" className={styles.notice}>
+            {deliveredTo?.legalName || "O recebedor"} não está entre as partes deste contrato. A liberação será recusada — cadastre-o como parte do contrato ou registre uma nova entrega para uma das partes.
+          </Alert>
+        ) : null}
         {actionError ? <Alert tone="danger" title="Liberação bloqueada" className={styles.notice}>{actionError}</Alert> : null}
         {notice ? <Alert tone={notice.tone} className={styles.notice}>{notice.text}</Alert> : null}
 
@@ -171,8 +204,8 @@ export default function EntregaChavesDetailPage({ params }) {
                 <div className={styles.detailRow}><dt>Entregue em</dt><dd>{delivery.deliveredAt ? formatDateTime(delivery.deliveredAt) : "—"}</dd></div>
                 <div className={styles.detailRow}><dt>Observações</dt><dd>{delivery.notes || "—"}</dd></div>
                 <div className={styles.detailRow}><dt>Chaves/controles</dt><dd>{delivery.keysCount ?? "—"}{delivery.keysIdentification ? ` (${delivery.keysIdentification})` : ""}</dd></div>
-                <div className={styles.detailRow}><dt>Política de fotos</dt><dd>{delivery.photoPolicy || "definida na liberação"}</dd></div>
-                <div className={styles.detailRow}><dt>ID</dt><dd className={styles.mono}>{delivery.id}</dd></div>
+                <div className={styles.detailRow}><dt>Política de fotos</dt><dd>{{ REQUIRED_USED_PROPERTY: "Fotos obrigatórias (imóvel usado)", REQUIRED_SALE_DELIVERY: "Fotos obrigatórias (entrega de venda)", NOT_REQUIRED_LEASE_CHECKIN_SIGNED: "Fotos dispensadas (locação com vistoria de entrada assinada)" }[delivery.photoPolicy || termPreview?.photoPolicy] || "definida na liberação"}</dd></div>
+                <div className={styles.detailRow}><dt>Termo</dt><dd>{delivery.termVersion || "KD-TERM-v1"} — {delivery.status === "RELEASED" ? "gerado e assinado" : "gerado pelo servidor na liberação (veja a prévia)"}</dd></div>
               </dl>
             </Card>
             {delivery.termText ? (
@@ -180,7 +213,18 @@ export default function EntregaChavesDetailPage({ params }) {
                 <pre className={styles.mono} style={{ whiteSpace: "pre-wrap" }}>{delivery.termText}</pre>
                 <p className={styles.mono}>SHA-256: {delivery.termHash}</p>
               </Card>
-            ) : null}
+            ) : (
+              <Card title="Prévia do termo de entrega">
+                {termPreview?.termText ? (
+                  <pre className={styles.mono} style={{ whiteSpace: "pre-wrap" }}>{termPreview.termText}</pre>
+                ) : (
+                  <Button variant="secondary" onClick={() => getKeyDeliveryTermPreview(delivery.id, {}).then(setTermPreview).catch((e) => setTermPreviewError(e.message))}>
+                    Ver prévia do termo
+                  </Button>
+                )}
+                {termPreviewError ? <Alert tone="warning">{termPreviewError}</Alert> : null}
+              </Card>
+            )}
           </div>
 
           <div className={styles.sideCol}>
@@ -202,7 +246,7 @@ export default function EntregaChavesDetailPage({ params }) {
               {inspection ? (
                 <div className={styles.linkRow} onClick={() => router.push(`/painel/contratos/vistorias/${inspection.id}`)}>
                   <div className={styles.linkInfo}>
-                    <span className={styles.linkTitle}>{inspection.id}</span>
+                    <span className={styles.linkTitle}>Vistoria de {(INSPECTION_TYPE_LABELS[inspection.inspectionType] || "").toLowerCase()}</span>
                     <span className={styles.linkSub}>{INSPECTION_STATUS_LABELS[inspection.status]}</span>
                   </div>
                   <Icon name="chevronRight" size={16} />
@@ -232,16 +276,21 @@ export default function EntregaChavesDetailPage({ params }) {
         <FormField label="Identificação" htmlFor="f-kd-ident">
           <Input id="f-kd-ident" value={releaseForm.keysIdentification} onChange={(e) => setReleaseForm((f) => ({ ...f, keysIdentification: e.target.value }))} placeholder="Ex.: 2 chaves da porta, 1 controle do portão" />
         </FormField>
-        <FormField label="Quem assina o termo" htmlFor="f-kd-signer" required helper="Recebedor das chaves ou parte do contrato. O texto do termo é gerado pelo sistema.">
+        <FormField label="Quem assina o termo" htmlFor="f-kd-signer" required helper="Somente partes do contrato. O texto do termo é gerado pelo sistema (prévia abaixo).">
           <Select id="f-kd-signer" value={releaseForm.termSignedByPersonId} onChange={(e) => setReleaseForm((f) => ({ ...f, termSignedByPersonId: e.target.value }))}>
-            <option value="">{deliveredTo?.legalName ? `${deliveredTo.legalName} (recebedor)` : "Recebedor das chaves"}</option>
-            {people.filter((p) => p.id !== delivery.deliveredToPersonId).map((p) => (
-              <option key={p.id} value={p.id}>{p.legalName}</option>
+            {recipientIsParty ? <option value="">{deliveredTo?.legalName ? `${deliveredTo.legalName} (recebedor)` : "Recebedor das chaves"}</option> : <option value="">Selecione uma parte do contrato</option>}
+            {[...new Map(parties.filter((p) => p.personId !== delivery.deliveredToPersonId).map((p) => [p.personId, p])).values()].map((p) => (
+              <option key={p.personId} value={p.personId}>{personOf(p.personId)?.legalName || "Pessoa"} — {PARTY_ROLE_LABELS[p.partyRole] || p.partyRole}</option>
             ))}
           </Select>
         </FormField>
         <FormField label="Fotos" htmlFor="f-kd-photos" helper="Obrigatórias quando a política do sistema exigir (imóvel usado, entrega de venda).">
           <input id="f-kd-photos" type="file" accept="image/*" multiple onChange={(e) => setReleasePhotos(Array.from(e.target.files || []))} />
+        </FormField>
+        <FormField label={`Prévia do termo (${termPreview?.termVersion || "KD-TERM-v1"})`} htmlFor="f-kd-term">
+          {termPreview?.termText
+            ? <pre id="f-kd-term" className={styles.mono} style={{ whiteSpace: "pre-wrap", maxHeight: 220, overflow: "auto" }}>{termPreview.termText}</pre>
+            : <p>{termPreviewError || "Gerando prévia…"}</p>}
         </FormField>
       </Modal>
 

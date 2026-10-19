@@ -59,6 +59,7 @@ export default function VistoriaDetailPage({ params }) {
   const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [confirmCompleteOpen, setConfirmCompleteOpen] = useState(false);
   const [compareOpen, setCompareOpen] = useState(false);
   const [comparison, setComparison] = useState(null);
   const [signatures, setSignatures] = useState([]);
@@ -162,7 +163,9 @@ export default function VistoriaDetailPage({ params }) {
   const counterpartType = inspection.inspectionType === "CHECK_IN" ? "CHECK_OUT" : inspection.inspectionType === "CHECK_OUT" ? "CHECK_IN" : null;
   const divergenceCount = comparison ? comparison.divergences.length : 0;
 
+  // O7 (auditoria M45): concluir é irreversível — pede confirmação antes.
   async function handleComplete() {
+    setConfirmCompleteOpen(false);
     setActionError("");
     setBusy(true);
     try {
@@ -330,7 +333,7 @@ export default function VistoriaDetailPage({ params }) {
           </div>
           <div className={styles.actions}>
             {inspection.status === "SCHEDULED" ? (
-              <Button onClick={handleComplete} disabled={busy}><Icon name="check" size={16} /> Concluir vistoria</Button>
+              <Button onClick={() => setConfirmCompleteOpen(true)} disabled={busy}><Icon name="check" size={16} /> Concluir vistoria</Button>
             ) : null}
             {counterpart ? (
               <Button variant="secondary" onClick={handleToggleCompare} disabled={busy}>
@@ -603,6 +606,19 @@ export default function VistoriaDetailPage({ params }) {
         fileId={viewerFile?.id}
         blobLoader={viewerFile?.blobLoader}
       />
+      <Modal
+        open={confirmCompleteOpen}
+        onClose={() => setConfirmCompleteOpen(false)}
+        title="Concluir vistoria?"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setConfirmCompleteOpen(false)}>Voltar</Button>
+            <Button onClick={handleComplete} disabled={busy}>Concluir vistoria</Button>
+          </>
+        }
+      >
+        <p>Depois de concluída, a vistoria não pode mais ser editada — itens, fotos e observações ficam travados e seguem para assinatura das partes. Confirme que revisou tudo.</p>
+      </Modal>
     </AppShell>
   );
 }

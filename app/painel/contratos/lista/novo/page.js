@@ -13,6 +13,7 @@ import Icon from "@/components/atoms/Icon/Icon";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import { listProperties } from "@/lib/api/properties";
 import { listPeople } from "@/lib/api/people";
+import { listProjects } from "@/lib/api/construction";
 import { createContract, addContractParty, listContractTemplates, renderContractTemplate, createContractVersion } from "@/lib/api/legal";
 import { CONTRACT_TYPE_LABELS, CONTRACT_TYPE_CREATE_OPTIONS, PARTY_ROLE_LABELS } from "@/lib/mock/legal";
 import { dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE, formatDate, formatBRL } from "@/lib/format";
@@ -72,7 +73,18 @@ export default function NovoContratoPage() {
     startsAt: "",
     endsAt: "",
     templateId: "",
+    constructionProjectId: "",
   });
+  // F5 (auditoria M45): contrato de Obra/Construção — a API exige a obra vinculada.
+  const [projects, setProjects] = useState(null);
+  const [projectsError, setProjectsError] = useState("");
+  const isConstruction = form.contractType === "CONSTRUCTION";
+  useEffect(() => {
+    if (!isConstruction || projects !== null) return;
+    listProjects()
+      .then((res) => setProjects(Array.isArray(res) ? res : res?.items || []))
+      .catch((err) => { setProjects([]); setProjectsError(err.message || "Erro ao carregar obras."); });
+  }, [isConstruction, projects]);
   const [parties, setParties] = useState([]);
   const [newParty, setNewParty] = useState({ personId: "", partyRole: "LANDLORD" });
   // Placeholders do template escolhido que não têm dado correspondente já coletado no
@@ -108,7 +120,8 @@ export default function NovoContratoPage() {
 
   const [dateErrors, setDateErrors] = useState({});
   const isValid =
-    form.propertyId && Number(form.totalValue) > 0 && parties.length > 0 && !dateErrors.startsAt && !dateErrors.endsAt;
+    form.propertyId && Number(form.totalValue) > 0 && parties.length > 0 && !dateErrors.startsAt && !dateErrors.endsAt &&
+    (!isConstruction || Boolean(form.constructionProjectId));
 
   function update(field) {
     return (e) => {
@@ -198,6 +211,7 @@ export default function NovoContratoPage() {
         totalValue: Number(form.totalValue),
         startsAt: dateOnlyInputToIso(form.startsAt),
         endsAt: dateOnlyInputToIso(form.endsAt),
+        ...(isConstruction ? { constructionProjectId: form.constructionProjectId } : {}),
       });
       for (const party of parties) {
         await addContractParty(contract.id, { personId: party.personId, partyRole: party.partyRole });
@@ -263,6 +277,22 @@ export default function NovoContratoPage() {
                 ))}
               </Select>
             </FormField>
+
+            {isConstruction ? (
+              <FormField
+                label="Obra vinculada"
+                htmlFor="f-project"
+                required
+                helper={projectsError || "Contrato de empreitada nasce vinculado à obra (checklist: alvará/projeto aprovado e demais documentos de obra)."}
+              >
+                <Select id="f-project" value={form.constructionProjectId} onChange={update("constructionProjectId")}>
+                  <option value="">{projects === null ? "Carregando obras…" : projects.length ? "Selecione a obra" : "Nenhuma obra cadastrada"}</option>
+                  {(projects || []).map((p) => (
+                    <option key={p.id} value={p.id}>{[p.code, p.name || p.title].filter(Boolean).join(" — ")}</option>
+                  ))}
+                </Select>
+              </FormField>
+            ) : null}
 
             <FormField label="Imóvel" htmlFor="f-property" required>
               <Select id="f-property" value={form.propertyId} onChange={update("propertyId")}>

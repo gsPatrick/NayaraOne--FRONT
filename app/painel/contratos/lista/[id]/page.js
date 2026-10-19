@@ -339,7 +339,7 @@ export default function ContratoDetailPage({ params }) {
       }
       setRequirements((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
       setRequirementModal(null);
-      setNotice({ tone: "info", text: mode === "satisfy" ? "Documento anexado — requirement marcado como satisfeito." : "Requirement dispensado, com justificativa registrada." });
+      setNotice({ tone: "info", text: mode === "satisfy" ? "Documento anexado — item do checklist marcado como satisfeito." : "Item do checklist dispensado, com justificativa registrada." });
     } catch (err) {
       setRequirementError(err.message || "Erro ao atualizar o requirement.");
     } finally {
