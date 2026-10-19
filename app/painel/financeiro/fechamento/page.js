@@ -21,6 +21,7 @@ import {
   listPeriodClosures,
   closePeriod,
   reopenPeriod,
+  returnPeriodToOpen,
   getPeriodPreconditions,
   confirmPeriodCheck,
   approvePeriodClosure,
@@ -150,17 +151,26 @@ export default function FechamentoPage() {
     e.preventDefault();
     setReopenError("");
     if (!reopenReason.trim()) {
-      setReopenError("Informe o motivo da reabertura — é obrigatório e fica auditado.");
+      setReopenError(
+        reopenTarget.mode === "RETURN"
+          ? "Informe o que precisa ser corrigido — o motivo é obrigatório e fica auditado."
+          : "Informe o motivo da reabertura — é obrigatório e fica auditado."
+      );
       return;
     }
     setReopening(true);
     try {
-      await reopenPeriod(reopenTarget.referenceMonth, reopenReason.trim());
+      if (reopenTarget.mode === "RETURN") {
+        await returnPeriodToOpen(reopenTarget.referenceMonth, reopenReason.trim());
+      } else {
+        await reopenPeriod(reopenTarget.referenceMonth, reopenReason.trim());
+      }
+      const month = reopenTarget.referenceMonth;
       setReopenTarget(null);
       setReopenReason("");
-      await reload();
+      await Promise.all([reload(), month === monthToClose ? loadChecklist(monthToClose) : null]);
     } catch (err) {
-      setReopenError(err?.message || "Falha ao reabrir o período.");
+      setReopenError(err?.message || (reopenTarget.mode === "RETURN" ? "Falha ao devolver o período para aberto." : "Falha ao reabrir o período."));
     } finally {
       setReopening(false);
     }
@@ -177,12 +187,21 @@ export default function FechamentoPage() {
     { key: "reopenedAt", label: "Última reabertura", render: (row) => (row.reopenedAt ? formatDateTime(row.reopenedAt) : "—") },
     { key: "reopenReason", label: "Motivo da reabertura", render: (row) => row.reopenReason || "—" },
     {
+      key: "returnToOpenReason",
+      label: "Última devolução da revisão",
+      render: (row) => (row.returnedToOpenAt ? `${formatDateTime(row.returnedToOpenAt)} — ${row.returnToOpenReason || ""}` : "—"),
+    },
+    {
       key: "actions",
       label: "",
       render: (row) =>
         row.status === "CLOSED" ? (
-          <Button type="button" size="sm" variant="ghost" onClick={() => setReopenTarget(row)}>
+          <Button type="button" size="sm" variant="ghost" onClick={() => setReopenTarget({ referenceMonth: row.referenceMonth, mode: "REOPEN" })}>
             Reabrir
+          </Button>
+        ) : row.status === "REVIEW" ? (
+          <Button type="button" size="sm" variant="ghost" onClick={() => setReopenTarget({ referenceMonth: row.referenceMonth, mode: "RETURN" })}>
+            Devolver para aberto
           </Button>
         ) : null,
     },
@@ -264,9 +283,18 @@ export default function FechamentoPage() {
               <p className={styles.helper}>
                 Fechamento pedido. A aprovação precisa ser feita por outra pessoa, com verificação em duas etapas recente.
               </p>
-              <Button type="button" disabled={approving || !allOk} onClick={handleApprove}>
-                {approving ? "Aprovando..." : "Aprovar fechamento"}
-              </Button>
+              <div className={styles.reopenActions}>
+                <Button type="button" disabled={approving || !allOk} onClick={handleApprove}>
+                  {approving ? "Aprovando..." : "Aprovar fechamento"}
+                </Button>
+                <Button type="button" variant="ghost" onClick={() => setReopenTarget({ referenceMonth: monthToClose, mode: "RETURN" })}>
+                  Devolver para aberto
+                </Button>
+              </div>
+              <p className={styles.helper}>
+                Se algo mudou depois do pedido (conferência desatualizada, lançamento a corrigir), devolva o
+                período para aberto com o motivo: as conferências são refeitas e o fechamento é pedido de novo.
+              </p>
             </div>
           ) : null}
 
@@ -282,7 +310,9 @@ export default function FechamentoPage() {
 
         {reopenTarget ? (
           <Card className={styles.formCard}>
-            <h2 className={styles.sectionTitle}>Reabrir {reopenTarget.referenceMonth}</h2>
+            <h2 className={styles.sectionTitle}>
+              {reopenTarget.mode === "RETURN" ? "Devolver para aberto" : "Reabrir"} {reopenTarget.referenceMonth}
+            </h2>
             <form onSubmit={handleReopen} className={styles.inlineForm}>
               <FormField label="Motivo (obrigatório, fica auditado)" htmlFor="reopenReason">
                 <textarea
@@ -295,7 +325,11 @@ export default function FechamentoPage() {
               </FormField>
               <div className={styles.reopenActions}>
                 <Button type="submit" disabled={reopening}>
-                  {reopening ? "Reabrindo..." : "Confirmar reabertura"}
+                  {reopening
+                    ? "Enviando..."
+                    : reopenTarget.mode === "RETURN"
+                      ? "Confirmar devolução"
+                      : "Confirmar reabertura"}
                 </Button>
                 <Button
                   type="button"
