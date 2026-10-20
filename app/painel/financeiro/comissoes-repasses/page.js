@@ -599,6 +599,10 @@ function NewRepasseModal({ open, people, bankAccounts, onClose, onConfirm, busy 
       .filter((p) => !q || (p.legalName || "").toLowerCase().includes(q) || (p.taxId || "").includes(q))
       .slice(0, 50);
   }, [people, ownerQuery]);
+  // O4: com proprietário escolhido, só entram os imóveis em que ele consta como proprietário.
+  const ownerProperties = form.ownerPersonId
+    ? properties.filter((p) => (p.owners || []).some((o) => o.personId === form.ownerPersonId))
+    : properties;
   const propertyContracts = contracts.filter((c) => !form.propertyId || c.propertyId === form.propertyId);
   const activeAccounts = (bankAccounts || []).filter((a) => a.status === "ACTIVE");
   const isValid =
@@ -649,7 +653,7 @@ function NewRepasseModal({ open, people, bankAccounts, onClose, onConfirm, busy 
         <Input id="nr-owner-q" value={ownerQuery} onChange={(e) => setOwnerQuery(e.target.value)} placeholder="Nome ou documento" />
       </FormField>
       <FormField label="Proprietário" htmlFor="nr-owner" required>
-        <Select id="nr-owner" value={form.ownerPersonId} onChange={update("ownerPersonId")}>
+        <Select id="nr-owner" value={form.ownerPersonId} onChange={(e) => setForm((prev) => ({ ...prev, ownerPersonId: e.target.value, propertyId: "", contractId: "", sourceEntryIds: [] }))}>
           <option value="">Selecionar…</option>
           {owners.map((p) => (
             <option key={p.id} value={p.id}>{p.legalName}</option>
@@ -659,7 +663,7 @@ function NewRepasseModal({ open, people, bankAccounts, onClose, onConfirm, busy 
       <FormField label="Imóvel" htmlFor="nr-property" required>
         <Select id="nr-property" value={form.propertyId} onChange={(e) => setForm((prev) => ({ ...prev, propertyId: e.target.value, contractId: "" }))}>
           <option value="">Selecionar…</option>
-          {properties.map((p) => (
+          {ownerProperties.map((p) => (
             <option key={p.id} value={p.id}>{p.title || p.name || p.code || p.address || "Imóvel"}</option>
           ))}
         </Select>

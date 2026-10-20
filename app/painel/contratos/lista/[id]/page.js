@@ -450,7 +450,8 @@ export default function ContratoDetailPage({ params }) {
             <Badge tone={CONTRACT_TYPE_TONE[contract.contractType]}>{CONTRACT_TYPE_LABELS[contract.contractType]}</Badge>
           </div>
           <div className={styles.actions}>
-            {contract.status !== "CANCELLED" && contract.status !== "ACTIVE" ? (
+            {/* O5: contrato em estado terminal (cancelado, encerrado, rescindido) não oferece Cancelar. */}
+            {!["CANCELLED", "ACTIVE", "CLOSED", "TERMINATED"].includes(contract.status) ? (
               <Button variant="secondary" onClick={handleCancel} disabled={busy}><Icon name="ban" size={16} /> Cancelar</Button>
             ) : null}
             {next ? (
