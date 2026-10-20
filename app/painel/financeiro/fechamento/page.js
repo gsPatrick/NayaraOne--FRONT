@@ -245,11 +245,11 @@ export default function FechamentoPage() {
       label: "Ações",
       render: (row) =>
         row.status === "CLOSED" ? (
-          <Button type="button" size="sm" variant="ghost" onClick={() => setReopenTarget({ referenceMonth: row.referenceMonth, mode: "REOPEN" })}>
+          <Button requires="finance:approve" type="button" size="sm" variant="ghost" onClick={() => setReopenTarget({ referenceMonth: row.referenceMonth, mode: "REOPEN" })}>
             Reabrir
           </Button>
         ) : row.status === "REVIEW" ? (
-          <Button type="button" size="sm" variant="ghost" onClick={() => setReopenTarget({ referenceMonth: row.referenceMonth, mode: "RETURN" })}>
+          <Button requires="finance:approve" type="button" size="sm" variant="ghost" onClick={() => setReopenTarget({ referenceMonth: row.referenceMonth, mode: "RETURN" })}>
             Devolver para aberto
           </Button>
         ) : "Aberto — feche pelo pedido de revisão",
@@ -327,7 +327,7 @@ export default function FechamentoPage() {
                           onChange={(e) => setCheckNotes((prev) => ({ ...prev, [item.code]: e.target.value }))}
                           aria-label={`Observação — ${item.label}`}
                         />
-                        <Button type="button" size="sm" variant="secondary" disabled={savingCheck === item.code} onClick={() => handleConfirmCheck(item.code)}>
+                        <Button requires="finance:settle" type="button" size="sm" variant="secondary" disabled={savingCheck === item.code} onClick={() => handleConfirmCheck(item.code)}>
                           {savingCheck === item.code ? "Registrando..." : "Registrar conferência"}
                         </Button>
                       </div>
@@ -355,10 +355,10 @@ export default function FechamentoPage() {
                 Fechamento pedido. A aprovação precisa ser feita por outra pessoa, com verificação em duas etapas recente.
               </p>
               <div className={styles.reopenActions}>
-                <Button type="button" disabled={approving || !preconditions || !allOk} onClick={handleApprove}>
+                <Button requires="finance:approve" type="button" disabled={approving || !preconditions || !allOk} onClick={handleApprove}>
                   {approving ? "Aprovando..." : "Aprovar fechamento"}
                 </Button>
-                <Button type="button" variant="ghost" onClick={() => setReopenTarget({ referenceMonth: monthToClose, mode: "RETURN" })}>
+                <Button requires="finance:approve" type="button" variant="ghost" onClick={() => setReopenTarget({ referenceMonth: monthToClose, mode: "RETURN" })}>
                   Devolver para aberto
                 </Button>
               </div>

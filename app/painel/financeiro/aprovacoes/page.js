@@ -245,8 +245,8 @@ export default function AprovacoesPage() {
                               <span className={styles.selfBlockNote}>Você solicitou — não pode decidir</span>
                             ) : (
                               <>
-                                <Button size="sm" onClick={() => handleDecide(r, "APPROVED")} loading={busyId === r.id}>Aprovar</Button>
-                                <Button size="sm" variant="secondary" onClick={() => handleDecide(r, "REJECTED")} loading={busyId === r.id}>Rejeitar</Button>
+                                <Button requires="finance:approve" size="sm" onClick={() => handleDecide(r, "APPROVED")} loading={busyId === r.id}>Aprovar</Button>
+                                <Button requires="finance:approve" size="sm" variant="secondary" onClick={() => handleDecide(r, "REJECTED")} loading={busyId === r.id}>Rejeitar</Button>
                               </>
                             )
                           ) : null}

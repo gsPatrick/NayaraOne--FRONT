@@ -267,10 +267,10 @@ export default function IntercompanyPage() {
         if (row.status === "PENDING_APPROVAL") {
           return (
             <span style={{ display: "inline-flex", gap: "var(--space-2)" }}>
-              <Button type="button" size="sm" variant="ghost" onClick={() => setApproveId(row.id)}>
+              <Button requires="finance:approve" type="button" size="sm" variant="ghost" onClick={() => setApproveId(row.id)}>
                 Aprovar
               </Button>
-              <Button type="button" size="sm" variant="ghost" onClick={() => openReject(row.id)}>
+              <Button requires="finance:approve" type="button" size="sm" variant="ghost" onClick={() => openReject(row.id)}>
                 Recusar
               </Button>
             </span>
@@ -278,7 +278,7 @@ export default function IntercompanyPage() {
         }
         if (row.status === "PENDING") {
           return (
-            <Button type="button" size="sm" variant="ghost" onClick={() => handleReconcile(row.id)}>
+            <Button requires="finance:reconcile" type="button" size="sm" variant="ghost" onClick={() => handleReconcile(row.id)}>
               Conciliar
             </Button>
           );
@@ -364,7 +364,7 @@ export default function IntercompanyPage() {
 
             {formError ? <Alert tone="danger">{formError}</Alert> : null}
 
-            <Button type="submit" disabled={saving}>
+            <Button requires="finance:settle" type="submit" disabled={saving}>
               {saving ? "Enviando..." : "Pedir transferência"}
             </Button>
           </form>

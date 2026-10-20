@@ -390,7 +390,7 @@ export default function ComissoesRepassesPage() {
                   {/* FIX (reportado pela cliente 18/09/2026): não existia nenhuma ação de
                       criação de comissão na tela nem gatilho automático a partir do contrato —
                       a API já tinha createCommission pronta e testada, só faltava esta tela. */}
-                  <Button onClick={() => { setModalError(""); setNewCommissionModal(true); }}>
+                  <Button requires="finance:create" onClick={() => { setModalError(""); setNewCommissionModal(true); }}>
                     <Icon name="plus" size={16} /> Nova comissão
                   </Button>
                 </div>
@@ -412,7 +412,7 @@ export default function ComissoesRepassesPage() {
                               <Badge tone={COMMISSION_STATUS_TONE[c.status]}>{COMMISSION_STATUS_LABELS[c.status]}</Badge>
                               <strong className={styles.commissionTotal}>{formatBRL(c.totalAmount)}</strong>
                               {c.status !== "CANCELLED" && c.status !== "PAID" ? (
-                                <Button size="sm" variant="danger" onClick={() => { setModalError(""); setCancelModal(c); }}>Cancelar</Button>
+                                <Button requires="finance:update" size="sm" variant="danger" onClick={() => { setModalError(""); setCancelModal(c); }}>Cancelar</Button>
                               ) : null}
                               {c.status === "CANCELLED" ? (
                                 <Button size="sm" variant="secondary" onClick={() => handleViewAdjustments(c)}>Ver ajustes</Button>
@@ -428,7 +428,7 @@ export default function ComissoesRepassesPage() {
                                 ) : i.status === "CANCELLED" || c.status === "CANCELLED" ? (
                                   <Badge tone="neutral">Cancelada</Badge>
                                 ) : (
-                                  <Button size="sm" variant="secondary" onClick={() => { setModalError(""); setPayModal(i); }} loading={busyId === i.id}>Pagar</Button>
+                                  <Button requires="finance:settle" size="sm" variant="secondary" onClick={() => { setModalError(""); setPayModal(i); }} loading={busyId === i.id}>Pagar</Button>
                                 )}
                               </div>
                             ))}
@@ -453,7 +453,7 @@ export default function ComissoesRepassesPage() {
               <Card title="Repasses a proprietários" subtitle="Líquido = bruto − deduções (sempre calculado, nunca editável)">
                 <div className={styles.toolbar}>
                   {/* F4 (auditoria M45): não havia como criar repasse pela tela. */}
-                  <Button onClick={() => { setModalError(""); setNewRepasseModal(true); }}>
+                  <Button requires="finance:create" onClick={() => { setModalError(""); setNewRepasseModal(true); }}>
                     <Icon name="plus" size={16} /> Novo repasse
                   </Button>
                 </div>
@@ -478,7 +478,7 @@ export default function ComissoesRepassesPage() {
                           <Badge tone={REPASSE_STATUS_TONE[r.status]}>{REPASSE_STATUS_LABELS[r.status]}</Badge>
                           <Button size="sm" variant="secondary" onClick={() => handleViewComposition(r)}>Composição</Button>
                           {r.status === "PENDING" ? (
-                            <Button
+                            <Button requires="finance:approve"
                               size="sm"
                               variant="secondary"
                               onClick={() => setApproveModal(r)}
@@ -489,7 +489,7 @@ export default function ComissoesRepassesPage() {
                             </Button>
                           ) : null}
                           {r.status === "APPROVED" ? (
-                            <Button size="sm" variant="secondary" onClick={() => handlePayRepasse(r)} loading={busyId === r.id}>
+                            <Button requires="finance:settle" size="sm" variant="secondary" onClick={() => handlePayRepasse(r)} loading={busyId === r.id}>
                               Confirmar pagamento
                             </Button>
                           ) : null}

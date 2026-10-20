@@ -160,8 +160,8 @@ export default function ConciliacaoPage() {
   const MATCH_CLASS_LABEL = {
     EXACT: { text: "Exato", tone: "success" },
     STRONG: { text: "Forte", tone: "success" },
-    PROBABLE: { text: "Provável — confirmar", tone: "warning" },
-    AMBIGUOUS: { text: "Ambíguo — revisão manual", tone: "danger" },
+    PROBABLE: { text: "Provável", tone: "warning" },
+    AMBIGUOUS: { text: "Ambíguo", tone: "danger" },
     NO_MATCH: { text: "Sem correspondência", tone: "neutral" },
   };
 
@@ -245,7 +245,9 @@ export default function ConciliacaoPage() {
                       // AMBÍGUO nunca auto-concilia, mesmo com 1 candidato aparente na lista
                       // filtrada — a classe já veio resolvida pela engine real do backend
                       // (§11 do Caderno: "ambíguo: várias possibilidades, nunca auto conciliar").
-                      const canAutoMatch = candidates.length === 1 && matchClass !== "AMBIGUOUS" && matchClass !== "NO_MATCH";
+                      // Só EXATO e FORTE (um único candidato) têm o botão direto "Conciliar". PROVÁVEL e
+                      // AMBÍGUO passam pela revisão (humano vê a razão e confirma); nada é automático.
+                      const canAutoMatch = candidates.length === 1 && (matchClass === "EXACT" || matchClass === "STRONG");
                       return (
                         <li key={t.id} className={styles.listRow}>
                           <span className={styles.bankIconSlot}>
@@ -258,11 +260,11 @@ export default function ConciliacaoPage() {
                           {classInfo ? <Badge tone={classInfo.tone}>{classInfo.text}</Badge> : null}
                           <span className={styles.listRowRight}>{formatBRL(t.amount)}</span>
                           {canAutoMatch ? (
-                            <Button size="sm" onClick={() => handleReconcile(candidates[0].id, t.id)}>
+                            <Button requires="finance:reconcile" size="sm" onClick={() => handleReconcile(candidates[0].id, t.id)}>
                               <Icon name="check" size={14} /> Conciliar
                             </Button>
                           ) : (
-                            <Button size="sm" variant="secondary" onClick={() => setReconcileModal(t)} disabled={candidates.length === 0}>
+                            <Button requires="finance:reconcile" size="sm" variant="secondary" onClick={() => setReconcileModal(t)} disabled={candidates.length === 0}>
                               {candidates.length === 0 ? "Sem candidato" : `Revisar (${candidates.length})`}
                             </Button>
                           )}
@@ -374,6 +376,7 @@ export default function ConciliacaoPage() {
         transaction={reconcileModal}
         candidates={reconcileModal ? candidatesFor(reconcileModal) : []}
         matchClass={reconcileModal ? suggestions[reconcileModal.id]?.finalClass : null}
+        suggested={reconcileModal ? suggestions[reconcileModal.id]?.candidates || [] : []}
         onClose={() => setReconcileModal(null)}
         onConfirm={(entryId) => handleReconcile(entryId, reconcileModal.id)}
         groupEntries={reconcileModal ? unreconciledEntries.filter((e) => !reconcileModal.bankAccountId || !e.bankAccountId || e.bankAccountId === reconcileModal.bankAccountId) : []}
@@ -383,7 +386,14 @@ export default function ConciliacaoPage() {
   );
 }
 
-function ReconcileModal({ transaction, candidates, matchClass, onClose, onConfirm, groupEntries = [], onConfirmGroup }) {
+// Razão da sugestão em português (vem do motor: "Valor igual", "Mesma conta bancária"...).
+function reasonSuffix(suggested, entryId) {
+  const hit = suggested.find((c) => c.financialEntryId === entryId);
+  if (!hit || !Array.isArray(hit.reasons) || hit.reasons.length === 0) return "";
+  return ` (${hit.reasons.join(", ").toLowerCase()})`;
+}
+
+function ReconcileModal({ transaction, candidates, matchClass, suggested = [], onClose, onConfirm, groupEntries = [], onConfirmGroup }) {
   const [entryId, setEntryId] = useState("");
   const [groupMode, setGroupMode] = useState(false);
   const [picked, setPicked] = useState([]);
@@ -415,9 +425,8 @@ function ReconcileModal({ transaction, candidates, matchClass, onClose, onConfir
       </p>
       {matchClass === "AMBIGUOUS" ? (
         <Alert tone="warning" className={styles.notice}>
-          Vários lançamentos batem igualmente bem com esta transação — a conciliação automática
-          foi desligada de propósito para este caso: quando há dúvida, a conciliação nunca é automática.
-          Confira os dados abaixo e escolha manualmente o lançamento correto.
+          Mais de um lançamento combina com esta transação com a mesma força. Quando há dúvida, a
+          conciliação nunca é automática: confira os dados abaixo e escolha o lançamento correto.
         </Alert>
       ) : null}
       {groupMode ? (
@@ -453,7 +462,7 @@ function ReconcileModal({ transaction, candidates, matchClass, onClose, onConfir
         <Select value={entryId} onChange={(e) => setEntryId(e.target.value)}>
           <option value="">Selecione o lançamento...</option>
           {candidates.map((e) => (
-            <option key={e.id} value={e.id}>{humanizeText(e.description)} — {formatBRL(e.amount)}</option>
+            <option key={e.id} value={e.id}>{humanizeText(e.description)} — {formatBRL(e.amount)}{reasonSuffix(suggested, e.id)}</option>
           ))}
         </Select>
       )}

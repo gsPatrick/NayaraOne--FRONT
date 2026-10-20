@@ -30,6 +30,7 @@ import {
   updateResultCenter,
   deleteResultCenter,
 } from "@/lib/api/finance";
+import { useHasPermission } from "@/lib/rbac/useHasPermission";
 import styles from "./page.module.css";
 
 function CenterPanel({ title, kind, items, onCreate, onUpdate, onDelete }) {
@@ -86,8 +87,10 @@ function CenterPanel({ title, kind, items, onCreate, onUpdate, onDelete }) {
     }
   }
 
+  const canChange = useHasPermission("finance:update");
+
   return (
-    <Card title={title} actions={<Button onClick={openCreate}><Icon name="plus" /> Novo</Button>}>
+    <Card title={title} actions={<Button requires="finance:create" onClick={openCreate}><Icon name="plus" /> Novo</Button>}>
       {error && <Alert tone="danger">{error}</Alert>}
       {items.length === 0 ? (
         <p className={styles.empty}>Nenhum {kind} cadastrado ainda.</p>
@@ -97,8 +100,12 @@ function CenterPanel({ title, kind, items, onCreate, onUpdate, onDelete }) {
             <div key={item.id} className={styles.row}>
               <span className={styles.code}>{item.code}</span>
               <span className={styles.name}>{item.name}</span>
-              <button type="button" className={styles.linkBtn} onClick={() => openEdit(item)}>Editar</button>
-              <button type="button" className={styles.linkBtn} onClick={() => handleDelete(item)}>Remover</button>
+              {canChange ? (
+                <>
+                  <button type="button" className={styles.linkBtn} onClick={() => openEdit(item)}>Editar</button>
+                  <button type="button" className={styles.linkBtn} onClick={() => handleDelete(item)}>Remover</button>
+                </>
+              ) : null}
             </div>
           ))}
         </div>

@@ -205,7 +205,7 @@ export default function OrcamentoPage() {
 
             {formError ? <Alert tone="danger">{formError}</Alert> : null}
 
-            <Button type="submit" disabled={saving}>
+            <Button requires="finance:create" type="submit" disabled={saving}>
               {saving ? "Lançando..." : "Lançar projeção"}
             </Button>
           </form>

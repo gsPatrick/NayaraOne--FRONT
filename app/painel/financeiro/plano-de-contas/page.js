@@ -20,6 +20,7 @@ import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu
 import { listChartAccounts, createChartAccount, updateChartAccount, deactivateChartAccount, listChartAccountVersions } from "@/lib/api/finance";
 import { friendlyFinanceError } from "@/lib/finance/extras";
 import { formatDateTime } from "@/lib/format";
+import { useHasPermission } from "@/lib/rbac/useHasPermission";
 import styles from "./page.module.css";
 
 const ACCOUNT_TYPES = [
@@ -145,6 +146,8 @@ export default function PlanoDeContasPage() {
     }
   }
 
+  const canChange = useHasPermission("finance:chartOfAccounts");
+
   function Row({ account, depth }) {
     return (
       <>
@@ -157,7 +160,7 @@ export default function PlanoDeContasPage() {
           <button type="button" className={styles.deactivateBtn} onClick={() => openHistory(account)}>
             Histórico
           </button>
-          {account.isActive && (
+          {account.isActive && canChange && (
             <>
               <button type="button" className={styles.deactivateBtn} onClick={() => openEditModal(account)}>
                 Editar
@@ -187,6 +190,7 @@ export default function PlanoDeContasPage() {
           title="Hierarquia de contas contábeis"
           actions={
             <Button
+              requires="finance:chartOfAccounts"
               onClick={() => {
                 setEditing(null);
                 setForm({ code: "", name: "", accountType: "EXPENSE", parentAccountId: "" });
@@ -284,7 +288,7 @@ export default function PlanoDeContasPage() {
                 ))}
             </Select>
           </FormField>
-          <Button onClick={handleCreate} disabled={submitting || !form.code || !form.name}>
+          <Button requires="finance:chartOfAccounts" onClick={handleCreate} disabled={submitting || !form.code || !form.name}>
             {submitting ? "Salvando..." : editing ? "Salvar conta" : "Criar conta"}
           </Button>
         </div>

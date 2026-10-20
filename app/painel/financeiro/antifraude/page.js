@@ -24,7 +24,8 @@ import StatTile from "@/components/molecules/StatTile/StatTile";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu";
 import { listAnomalyCases, resolveAnomalyCase } from "@/lib/api/finance";
-import { formatDate } from "@/lib/format";
+import Link from "next/link";
+import { formatDateTime } from "@/lib/format";
 import styles from "./page.module.css";
 import { ANOMALY_CASE_TYPE_LABELS } from "@/lib/mock/finance";
 import { humanizeText } from "@/lib/format";
@@ -123,17 +124,23 @@ export default function AntifraudePage() {
                   <div className={styles.rowTop}>
                     <Badge tone={RISK_TONE[c.riskLevel]}>{RISK_LABELS[c.riskLevel] || c.riskLevel}</Badge>
                     <Badge tone={STATUS_TONE[c.status]}>{STATUS_LABELS[c.status] || c.status}</Badge>
-                    <span className={styles.caseType}>{ANOMALY_CASE_TYPE_LABELS[c.caseType] || "Outro tipo de alerta"}</span>
+                    <span className={styles.caseType}>{c.caseTypeLabel || ANOMALY_CASE_TYPE_LABELS[c.caseType] || "Alerta financeiro"}</span>
                   </div>
                   <p className={styles.reason}>{humanizeText(c.reason)}</p>
                   <span className={styles.meta}>
-                    Aberto em {c.createdAt ? formatDate(c.createdAt) : "data não registrada"}
-                    {c.resolvedAt ? ` · Resolvido em ${formatDate(c.resolvedAt)}` : ""}
+                    Aberto em {c.createdAt ? formatDateTime(c.createdAt) : "data não disponível"}
+                    {c.relatedEntry ? (
+                      <>
+                        {" · Lançamento: "}
+                        <Link href={`/painel/financeiro/lancamentos/${c.relatedEntry.id}`}>{humanizeText(c.relatedEntry.description) || "Ver lançamento"}</Link>
+                      </>
+                    ) : null}
+                    {c.status === "RESOLVED" ? ` · Resolvido em ${c.resolvedAt ? formatDateTime(c.resolvedAt) : "data não disponível"} por ${c.resolvedByName || "responsável não identificado"}` : ""}
                     {c.resolutionNote ? ` · Nota: ${c.resolutionNote}` : ""}
                   </span>
                 </div>
                 {c.status === "OPEN" ? (
-                  <Button size="sm" variant="secondary" onClick={() => setResolveModal(c)} loading={busyId === c.id}>
+                  <Button requires="finance:update" size="sm" variant="secondary" onClick={() => setResolveModal(c)} loading={busyId === c.id}>
                     Resolver
                   </Button>
                 ) : null}

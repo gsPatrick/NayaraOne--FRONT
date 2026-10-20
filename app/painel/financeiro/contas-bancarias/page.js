@@ -141,6 +141,8 @@ export default function ContasBancariasPage() {
           onView={() => router.push(`/painel/financeiro/contas-bancarias/${row.id}`)}
           onEdit={() => router.push(`/painel/financeiro/contas-bancarias/${row.id}`)}
           onDelete={() => setDeleteTarget(row)}
+          editRequires="finance:bankAccounts"
+          deleteRequires="finance:bankAccounts"
         />
       ),
     },
@@ -206,7 +208,7 @@ export default function ContasBancariasPage() {
 
       <StickyActionBar>
         <FinanceNavMenu />
-        <Button href="/painel/financeiro/contas-bancarias/novo">
+        <Button requires="finance:bankAccounts" href="/painel/financeiro/contas-bancarias/novo">
           <Icon name="money" size={18} /> Nova conta
         </Button>
       </StickyActionBar>

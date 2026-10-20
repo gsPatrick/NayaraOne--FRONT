@@ -200,7 +200,7 @@ export default function FinanceiroPage() {
 
       <StickyActionBar>
         <FinanceNavMenu />
-        <Button href="/painel/financeiro/lancamentos/novo">
+        <Button requires="finance:create" href="/painel/financeiro/lancamentos/novo">
           <Icon name="chart" size={18} /> Novo lançamento
         </Button>
       </StickyActionBar>

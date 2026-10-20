@@ -191,7 +191,7 @@ export default function CommissionRulePage() {
             ))}
             {formError ? <Alert tone="danger">{formError}</Alert> : null}
             {success ? <Alert tone="success">{success}</Alert> : null}
-            <Button type="submit" disabled={saving}>
+            <Button requires="finance:approve" type="submit" disabled={saving}>
               {saving ? "Publicando..." : "Publicar regra"}
             </Button>
           </form>

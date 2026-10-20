@@ -120,7 +120,7 @@ export default function NovaContaBancariaPage() {
 
         <div className={styles.actionBar}>
           <Button variant="secondary" onClick={() => router.push("/painel/financeiro/contas-bancarias")}>Cancelar</Button>
-          <Button onClick={handleSubmit} loading={submitting} disabled={!isValid || loading}>Criar conta</Button>
+          <Button requires="finance:bankAccounts" onClick={handleSubmit} loading={submitting} disabled={!isValid || loading}>Criar conta</Button>
         </div>
       </div>
     </AppShell>

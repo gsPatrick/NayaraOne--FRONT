@@ -152,12 +152,12 @@ export default function ContaBancariaDetailPage({ params }) {
             </div>
             <div className={styles.actions}>
               {account.status !== "BLOCKED" ? (
-                <Button variant="secondary" onClick={() => setEditOpen(true)}>
+                <Button requires="finance:bankAccounts" variant="secondary" onClick={() => setEditOpen(true)}>
                   <Icon name="settings" size={16} /> Editar dados sensíveis
                 </Button>
               ) : null}
               {account.status !== "BLOCKED" ? (
-                <Button variant="danger" onClick={handleBlock} loading={busy}>
+                <Button requires="finance:bankAccounts" variant="danger" onClick={handleBlock} loading={busy}>
                   <Icon name="shield" size={16} /> Bloquear
                 </Button>
               ) : null}

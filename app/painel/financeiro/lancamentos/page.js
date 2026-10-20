@@ -246,6 +246,8 @@ export default function LancamentosPage() {
           onView={() => router.push(`/painel/financeiro/lancamentos/${row.id}`)}
           onEdit={() => router.push(`/painel/financeiro/lancamentos/${row.id}`)}
           onDelete={() => setDeleteTarget(row)}
+          editRequires="finance:update"
+          deleteRequires="finance:update"
         />
       ),
     },
@@ -283,7 +285,7 @@ export default function LancamentosPage() {
                     aberta em {formatDate(p.createdAt || p.created_at)}
                   </span>
                 </div>
-                <Button size="sm" onClick={() => { setResolveTarget(p); setResolveNature(""); setResolveCostCenterId(""); setResolveError(""); }}>
+                <Button requires="finance:update" size="sm" onClick={() => { setResolveTarget(p); setResolveNature(""); setResolveCostCenterId(""); setResolveError(""); }}>
                   Classificar
                 </Button>
               </li>
@@ -369,7 +371,7 @@ export default function LancamentosPage() {
         <Button variant="secondary" onClick={() => { setExportNotice(null); setExportOpen(true); }}>
           <Icon name="document" size={18} /> Exportar lançamentos (CSV)
         </Button>
-        <Button href="/painel/financeiro/lancamentos/novo">
+        <Button requires="finance:create" href="/painel/financeiro/lancamentos/novo">
           <Icon name="document" size={18} /> Novo lançamento
         </Button>
       </StickyActionBar>

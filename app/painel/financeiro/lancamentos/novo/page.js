@@ -425,7 +425,7 @@ export default function NovoLancamentoPage() {
 
         <div className={styles.actionBar}>
           <Button variant="secondary" onClick={() => router.push("/painel/financeiro/lancamentos")}>Cancelar</Button>
-          <Button onClick={handleSubmit} loading={submitting} disabled={!isValid || loading}>Criar lançamento</Button>
+          <Button requires="finance:create" onClick={handleSubmit} loading={submitting} disabled={!isValid || loading}>Criar lançamento</Button>
         </div>
       </div>
     </AppShell>

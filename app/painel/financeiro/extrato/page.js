@@ -18,6 +18,7 @@ import FileDropInput from "@/components/molecules/FileDropInput/FileDropInput";
 import Alert from "@/components/molecules/Alert/Alert";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu";
+import { useHasPermission } from "@/lib/rbac/useHasPermission";
 import { listBankAccounts, listBankTransactions, importBankStatement } from "@/lib/api/finance";
 import { getBankName } from "@/lib/mock/banks";
 import { formatCalendarDay } from "@/lib/finance/extras";
@@ -27,6 +28,7 @@ import styles from "./page.module.css";
 const CSV_HEADER = "externalTransactionId,transactionDate,description,amount";
 
 export default function ExtratoBancarioPage() {
+  const canImport = useHasPermission("finance:create");
   const [accounts, setAccounts] = useState([]);
   const [bankAccountId, setBankAccountId] = useState("");
   const [transactions, setTransactions] = useState([]);
@@ -156,6 +158,10 @@ export default function ExtratoBancarioPage() {
             </Select>
           </FormField>
 
+          {!canImport ? (
+            <Alert tone="info">Seu perfil só consulta o extrato; importar arquivos exige permissão de criação no Financeiro.</Alert>
+          ) : null}
+          {canImport ? (
           <FileDropInput
             id="statementFile"
             accept=".csv,text/csv"
@@ -169,6 +175,7 @@ export default function ExtratoBancarioPage() {
               setResult(null);
             }}
           />
+          ) : null}
 
           {result ? (
             <div className={styles.resultRow}>
