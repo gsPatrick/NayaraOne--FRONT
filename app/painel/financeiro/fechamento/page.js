@@ -27,6 +27,7 @@ import {
   approvePeriodClosure,
 } from "@/lib/api/finance";
 import { formatDateTime, formatCompetence, humanizeText } from "@/lib/format";
+import { readRecentMfa } from "@/lib/mfaRecent";
 import styles from "./page.module.css";
 
 // Mensagem sempre em português, com competência "MM/AAAA" (a API devolve "AAAA-MM" nos textos).
@@ -150,6 +151,14 @@ export default function FechamentoPage() {
     }
   }
 
+  const [recentMfa, setRecentMfa] = useState(null);
+  useEffect(() => {
+    const tick = () => setRecentMfa(readRecentMfa());
+    tick();
+    const id = window.setInterval(tick, 20000);
+    return () => window.clearInterval(id);
+  }, [approving, reopening]);
+
   async function handleApprove() {
     setCloseError("");
     setApproving(true);
@@ -211,7 +220,19 @@ export default function FechamentoPage() {
       label: "Status",
       render: (row) => <Badge tone={STATUS_TONE[row.status] || "neutral"}>{STATUS_LABEL[row.status] || row.status}</Badge>,
     },
-    { key: "closedAt", label: "Fechado em", render: (row) => (row.closedAt ? formatDateTime(row.closedAt) : "Ainda não fechado") },
+    {
+      key: "reviewRequestedAt",
+      label: "Pedido de revisão em",
+      render: (row) => (row.status === "REVIEW" && row.reviewRequestedAt ? formatDateTime(row.reviewRequestedAt) : "Sem pedido em andamento"),
+    },
+    {
+      key: "closedAt",
+      label: "Fechado em",
+      render: (row) => {
+        if (row.status === "CLOSED") return row.closedAt ? formatDateTime(row.closedAt) : "Data não registrada";
+        return row.closedAt ? `Não está fechado (último fechamento em ${formatDateTime(row.closedAt)})` : "Ainda não fechado";
+      },
+    },
     { key: "reopenedAt", label: "Última reabertura", render: (row) => (row.reopenedAt ? formatDateTime(row.reopenedAt) : "Nunca reaberto") },
     { key: "reopenReason", label: "Motivo da reabertura", render: (row) => row.reopenReason || (row.reopenedAt ? "Motivo não informado" : "Não se aplica") },
     {
@@ -255,6 +276,14 @@ export default function FechamentoPage() {
             Depois de fechado, nenhum lançamento daquele mês pode ser criado ou editado até o
             período ser reaberto com motivo.
           </p>
+          {recentMfa ? (
+            <Alert tone="info">
+              MFA verificado há {recentMfa.minutesAgo} min — a janela de MFA recente vale por mais cerca de {recentMfa.minutesLeft} min.
+              Dentro dela, aprovar o fechamento, devolver ou reabrir o período não pedem o código de novo.
+            </Alert>
+          ) : (
+            <p className={styles.helper}>Sem MFA recente: aprovar o fechamento, devolver ou reabrir o período vai pedir o código do autenticador.</p>
+          )}
           <div className={styles.monthRow}>
             <FormField label="Mês de referência" htmlFor="monthToClose">
               <Input id="monthToClose" type="month" value={monthToClose} onChange={(e) => setMonthToClose(e.target.value)} />

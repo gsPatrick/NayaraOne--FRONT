@@ -115,6 +115,7 @@ export default function ComissoesRepassesPage() {
   // §12 (Frente 3): aprovação do repasse por outra pessoa (centro de custo + MFA recente).
   const [approveModal, setApproveModal] = useState(null);
   const [approveMfa, setApproveMfa] = useState(null);
+  const [approveError, setApproveError] = useState("");
 
   async function handleViewAdjustments(commission) {
     setAdjustmentsModal({ commission, loading: true, items: [] });
@@ -261,16 +262,23 @@ export default function ComissoesRepassesPage() {
     }
   }
 
-  async function runApproveRepasse({ repasse, costCenterId }) {
+  async function runApproveRepasse({ repasse, costCenterId, bankAccountId }) {
     setBusyId(repasse.id);
+    setApproveError("");
     try {
-      const { repasse: updated } = await approveOwnerRepasse(repasse.id, { costCenterId });
+      const payload = { costCenterId };
+      if (bankAccountId) payload.bankAccountId = bankAccountId;
+      const { repasse: updated } = await approveOwnerRepasse(repasse.id, payload);
       setRepasses((prev) => prev.map((r) => (r.id === repasse.id ? updated : r)));
-      showNotice("success", "Repasse aprovado", "Lançamento a pagar criado — pague pelo banco (ou baixa com comprovante) e depois confirme o pagamento aqui.");
+      showNotice("success", "Repasse aprovado", "Status \"Aprovado\" e lançamento a pagar criado — pague pelo banco (ou baixa com comprovante) e depois confirme o pagamento aqui.");
     } catch (err) {
-      showNotice("danger", "Não foi possível aprovar o repasse", friendlyMessage(err, "Tente novamente."));
+      // O erro exato fica DENTRO do modal de aprovação (reaberto), visível ao usuário; antes só
+      // aparecia um aviso de 6 s no topo da página, fora da vista, e parecia "não acontecer nada".
+      setApproveError(friendlyMessage(err, "Não foi possível aprovar o repasse. Tente novamente."));
+      setApproveModal(repasse);
     } finally {
       setBusyId(null);
+      setReloadTick((n) => n + 1);
     }
   }
 
@@ -558,9 +566,12 @@ export default function ComissoesRepassesPage() {
 
       <ApproveRepasseModal
         repasse={approveModal}
-        onClose={() => setApproveModal(null)}
-        onConfirm={(costCenterId) => {
-          setApproveMfa({ repasse: approveModal, costCenterId });
+        error={approveError}
+        bankAccounts={bankAccounts}
+        onClose={() => { setApproveModal(null); setApproveError(""); }}
+        onConfirm={({ costCenterId, bankAccountId }) => {
+          setApproveError("");
+          setApproveMfa({ repasse: approveModal, costCenterId, bankAccountId });
           setApproveModal(null);
         }}
       />
@@ -820,12 +831,16 @@ function CancelCommissionModal({ commission, error, users, onClose, onConfirm, b
   );
 }
 
-function ApproveRepasseModal({ repasse, onClose, onConfirm }) {
+function ApproveRepasseModal({ repasse, error, bankAccounts, onClose, onConfirm }) {
   const [costCenters, setCostCenters] = useState([]);
   const [costCenterId, setCostCenterId] = useState("");
+  const [bankAccountId, setBankAccountId] = useState("");
+  const needsBankAccount = Boolean(repasse) && !repasse.bankAccountId;
+  const activeAccounts = (bankAccounts || []).filter((a) => a.status === "ACTIVE");
   useEffect(() => {
     if (!repasse) return;
     setCostCenterId("");
+    setBankAccountId("");
     listCostCenters().then((list) => setCostCenters(list || [])).catch(() => setCostCenters([]));
   }, [repasse]);
   return (
@@ -836,7 +851,7 @@ function ApproveRepasseModal({ repasse, onClose, onConfirm }) {
       footer={
         <>
           <Button variant="secondary" onClick={onClose}>Cancelar</Button>
-          <Button disabled={!costCenterId} onClick={() => onConfirm(costCenterId)}>Aprovar</Button>
+          <Button disabled={!costCenterId || (needsBankAccount && !bankAccountId)} onClick={() => onConfirm({ costCenterId, bankAccountId })}>Aprovar</Button>
         </>
       }
     >
@@ -844,6 +859,17 @@ function ApproveRepasseModal({ repasse, onClose, onConfirm }) {
         A aprovação precisa ser de outra pessoa (não de quem registrou o repasse) e cria o lançamento a pagar de{" "}
         <strong>{repasse ? formatBRL(repasse.netAmount) : ""}</strong> (período {formatCompetence(repasse?.referenceMonth)}).
       </p>
+      {error ? <Alert tone="danger" title="Não foi possível aprovar o repasse">{error}</Alert> : null}
+      {needsBankAccount ? (
+        <FormField label="Conta bancária de saída do repasse" htmlFor="ar-ba" required>
+          <Select id="ar-ba" value={bankAccountId} onChange={(e) => setBankAccountId(e.target.value)}>
+            <option value="">Selecionar…</option>
+            {activeAccounts.map((a) => (
+              <option key={a.id} value={a.id}>{a.bankName || a.bankCode} · ag. {a.agency} · cc {a.accountNumber}</option>
+            ))}
+          </Select>
+        </FormField>
+      ) : null}
       <FormField label="Centro de custo do pagamento" htmlFor="ar-cc" required>
         <Select id="ar-cc" value={costCenterId} onChange={(e) => setCostCenterId(e.target.value)}>
           <option value="">Selecionar…</option>
