@@ -88,7 +88,7 @@ table.cl{min-width:1150px}table.cl td{min-width:150px}table.cl td:first-child{mi
   <div class="summary">
     <p>1. Entrego o Marco 7 completo: Estoque, Ferramentas/QR, Patrimônio, Inventário, Perdas, Compras e Seguros.</p>
     <p>2. A matriz tem 119 linhas, uma para cada exigência do caderno: <b>119 atendidas, 0 parciais</b>. Reescrevi as 18 linhas que a conferência apontou (4, 6, 8, 10, 11, 34, 45, 49, 57, 67, 71, 103, 104, 105, 107, 110, 112, 119) para o código corrigido, com o nome exato do teste, o resultado de hoje e a evidência ao vivo nova.</p>
-    <p>3. Hoje, 20/10/2026 17:12:31 a 20/10/2026 19:29:33, rodei 56 arquivos de teste do Marco 7 no commit <code>e1a1f42</code>: <b>429 testes, 429 passaram, 0 falharam, 0 pulados</b>.</p>
+    <p>3. Hoje, 20/10/2026 17:12:31 a 20/10/2026 20:42:16, rodei 56 arquivos de teste do Marco 7 no commit <code>e1a1f42</code>: <b>436 testes, 436 passaram, 0 falharam, 0 pulados</b>.</p>
     <p>4. Capturei hoje, com login normal, 104 respostas HTTP novas contra a API local com o código corrigido (17 são recusas com o código de erro), 16 consultas novas somente leitura (inclusive a prova de que cada recusa não deixou efeito), a reexecução das invariantes e 2 prints novos do Front. Ao todo, o dossiê tem 224 respostas HTTP, 44 consultas e 29 prints.</p>
     <p>5. Tudo isso está num JSON embutido (seção 11) que a sua IA pode ler, copiar ou baixar sem acesso ao sistema. Os corpos das respostas HTTP estão como a API devolveu (campos nulos preservados); só o texto visível é humanizado.</p>
   </div>
@@ -99,7 +99,7 @@ table.cl{min-width:1150px}table.cl td{min-width:150px}table.cl td:first-child{mi
 <div class="stats">
   <div class="stat"><div class="n">119</div><div class="l">Linhas na matriz</div></div>
   <div class="stat"><div class="n">119</div><div class="l">Atendidas</div></div>
-  <div class="stat"><div class="n">429/429</div><div class="l">Testes do Marco 7 hoje</div></div>
+  <div class="stat"><div class="n">436/436</div><div class="l">Testes do Marco 7 hoje</div></div>
   <div class="stat"><div class="n">1429/1429</div><div class="l">Último CI verde (3f7e550)</div></div>
   <div class="stat"><div class="n">224</div><div class="l">Respostas HTTP reais</div></div>
   <div class="stat"><div class="n">44</div><div class="l">Consultas ao banco</div></div>
@@ -162,9 +162,9 @@ table.cl{min-width:1150px}table.cl td{min-width:150px}table.cl td:first-child{mi
 <tr class="ok" id="m1"><td class="n">1</td><td><b>EST-001</b><q>Item mestre único por empresa/SKU; não duplicar material por obra.</q></td><td><code>src/features/inventory/items.service.js</code> (SKU único por empresa, sem diferença de maiúsculas); tela <code>/painel/estoque</code> (Itens)</td><td><code>procurement.inventory.critical.test.js</code> — "TAB-0750…bloqueia SKU duplicado" e "EST-001: createItem/updateItem bloqueiam SKU duplicado mesmo com caixa diferente"</td><td>Prints: <a href="#F01">F01</a><br>HTTP: <a href="#H003">H003 POST 201</a>, <a href="#H004">H004 POST 400 INVENTORY_ITEM_DUPLICATE_SKU</a><br><span class="small">Rodada reval (16/10): SKU com caixa diferente bloqueado ao vivo</span></td><td>Banco: <a href="#Q10">Q10</a>, <a href="#Q10b">Q10b</a><br>JSON: <a href="#anexo-json"><code>matriz[0]</code></a><br><code>respostasHttp</code> (2)</td><td><span class="b ok">Atendido</span></td></tr>
 <tr class="ok" id="m2"><td class="n">2</td><td><b>EST-002</b><q>Todo movimento é append-only: entrada, saída, devolução, transferência, ajuste, perda e descarte.</q></td><td><code>movements.service.js</code> (7 tipos: IN, OUT, RETURN, TRANSFER, ADJUSTMENT, LOSS, DISPOSAL; sem rota de edição/exclusão); tela Movimentos com histórico</td><td><code>procurement.inventory.critical.test.js</code> — "EST-002: movimento OUT que deixaria o saldo negativo é bloqueado"; <code>inventory.auditGapsRound2.test.js</code> (LOSS só via loss case)</td><td>Prints: <a href="#F02">F02</a><br>HTTP: <a href="#H024">H024 POST 201</a>, <a href="#H026">H026 GET 200</a>, <a href="#H027">H027 PATCH 404</a>, <a href="#H028">H028 DELETE 404</a>, <a href="#H103">H103 POST 400 INVENTORY_INSUFFICIENT_BALANCE</a><br><span class="small">Homologação 14/10 achou Ajuste/Perda/Descarte com erro e sem histórico → corrigido e reconfirmado na rodada final (15/10) e em todas as seguintes</span></td><td>Banco: <a href="#Q01">Q01</a>, <a href="#Q01b">Q01b</a>, <a href="#Q04">Q04</a>, <a href="#Q21">Q21</a><br>JSON: <a href="#anexo-json"><code>matriz[1]</code></a><br><code>respostasHttp</code> (5)</td><td><span class="b ok">Atendido</span></td></tr>
 <tr class="ok" id="m3"><td class="n">3</td><td><b>EST-003</b><q>Saldo nunca é digitado manualmente; deriva do ledger…</q></td><td><code>movements.service.js#applyBalanceDelta</code> é a única escrita em <code>stock_balances</code>, na mesma transação do movimento, com <code>FOR UPDATE</code></td><td><code>inventory.marco7.concurrency.test.js</code> — "EST-TS-02: duas saídas concorrentes…"; <code>inventory.marco7check.severeBugs.test.js</code> (ajuste com origem e destino não cria saldo do nada)</td><td>Prints: <a href="#F02">F02</a><br>HTTP: <a href="#H013">H013 POST 200</a>, <a href="#H016">H016 GET 200</a>, <a href="#H081">H081 GET 200</a>, <a href="#H102">H102 GET 200</a>, <a href="#H103">H103 POST 400 INVENTORY_INSUFFICIENT_BALANCE</a>, <a href="#H118">H118 GET 200</a><br><span class="small">Final3 (19/10): saldo 25 antes da decisão e 30 depois do aceite, conferido na tela Movimentos</span></td><td>Banco: <a href="#Q01">Q01</a>, <a href="#Q01b">Q01b</a>, <a href="#Q01c">Q01c</a>, <a href="#Q02">Q02</a>, <a href="#Q03">Q03</a><br>JSON: <a href="#anexo-json"><code>matriz[2]</code></a><br><code>respostasHttp</code> (6)</td><td><span class="b ok">Atendido</span></td></tr>
-<tr class="ok" id="m4"><td class="n">4</td><td><b>EST-004</b><q>Material consumido precisa de project_id/stage_id quando atribuído à obra.</q></td><td><code>src/features/inventory/movements.service.js</code> (a obra do canteiro manda: <code>projectId</code> diferente da obra do canteiro é recusado com <code>INVENTORY_MOVEMENT_PROJECT_MISMATCH</code>; etapa de outra obra, com <code>INVENTORY_MOVEMENT_STAGE_INVALID</code>; saída para a obra sem etapa, com <code>INVENTORY_MOVEMENT_STAGE_REQUIRED</code>) e <code>src/features/inventory/requisitions.service.js</code> (etapa validada na requisição). Corrigido em <code>29119a1</code> (M7-F01, M7-F02 e A7).<div class="nota">Corrige a lacuna M7-F01/M7-F02 da conferência da cliente.</div></td><td><code>marco7rev20.F.test.js</code> — “F01 serviço: projectId da obra B num canteiro da obra A é recusado, sem nenhum efeito” (passou, 638,4 ms)<br><code>marco7rev20.F.test.js</code> — “F01 HTTP: POST /inventory/movements com projectId da obra B no canteiro da obra A → 400 sem efeitos” (passou, 91,8 ms)<br><code>marco7rev20.F.test.js</code> — “F02 serviço: stageId da obra B com projectId/canteiro da obra A é recusado, sem nenhum efeito (OUT e IN)” (passou, 36,7 ms)<br><code>marco7rev20.F.test.js</code> — “F02 HTTP: POST /inventory/movements com stageId da obra B → 400 sem efeitos” (passou, 59,8 ms)<br><code>marco7rev19.A.test.js</code> — “A7: OUT do canteiro (consumo na obra) sem stageId é recusado” (passou, 5059,4 ms)<br><code>marco7rev19.A.test.js</code> — “A7: OUT do almoxarifado vinculado a obra sem stageId é recusado; etapa de outra obra também” (passou, 6873,7 ms)<br><code>marco7rev19.A.test.js</code> — “A7: requisição para obra sem etapa é recusada na criação; entrega exige responsável e grava OUT com obra/etapa/responsável/custo” (passou, 16326,2 ms)<br><code>procurement.inventory.critical.test.js</code> — “EST-004: criar local PROJECT_SITE sem projectId é bloqueado na própria criação” (passou, 620,4 ms)</td><td>Prints: <a href="#F04">F04</a>, <a href="#F29">F29</a><br>HTTP: <a href="#H009">H009 POST 400 INVENTORY_LOCATION_PROJECT_REQUIRED</a>, <a href="#H133">H133 POST 400 INVENTORY_MOVEMENT_PROJECT_MISMATCH</a>, <a href="#H134">H134 POST 201</a>, <a href="#H135">H135 POST 400 INVENTORY_MOVEMENT_STAGE_INVALID</a>, <a href="#H136">H136 POST 400 INVENTORY_MOVEMENT_STAGE_INVALID</a>, <a href="#H137">H137 POST 201</a><br><span class="small">Reescrita em 20/10/2026 para o código corrigido após a conferência da cliente. Obra de outro canteiro e etapa de outra obra recusadas sem nenhum efeito (consultas Q29, Q30 e Q31); com a obra do canteiro o movimento é aceito.</span></td><td>Banco: <a href="#Q29">Q29</a>, <a href="#Q30">Q30</a>, <a href="#Q31">Q31</a><br>JSON: <a href="#anexo-json"><code>matriz[3]</code></a><br><code>respostasHttp</code> (6)</td><td><span class="b ok">Atendido</span></td></tr>
+<tr class="ok" id="m4"><td class="n">4</td><td><b>EST-004</b><q>Material consumido precisa de project_id/stage_id quando atribuído à obra.</q></td><td><code>src/features/inventory/movements.service.js</code> (a obra do canteiro manda: <code>projectId</code> diferente da obra do canteiro é recusado com <code>INVENTORY_MOVEMENT_PROJECT_MISMATCH</code>; etapa de outra obra, com <code>INVENTORY_MOVEMENT_STAGE_INVALID</code>; saída para a obra sem etapa, com <code>INVENTORY_MOVEMENT_STAGE_REQUIRED</code>) e <code>src/features/inventory/requisitions.service.js</code> (etapa validada na requisição). Corrigido em <code>29119a1</code> (M7-F01, M7-F02 e A7).<div class="nota">Corrige a lacuna M7-F01/M7-F02 da conferência da cliente.</div></td><td><code>marco7rev20.F.test.js</code> — “F01 serviço: projectId da obra B num canteiro da obra A é recusado, sem nenhum efeito” (passou, 48 ms)<br><code>marco7rev20.F.test.js</code> — “F01 HTTP: POST /inventory/movements com projectId da obra B no canteiro da obra A → 400 sem efeitos” (passou, 85,8 ms)<br><code>marco7rev20.F.test.js</code> — “F02 serviço: stageId da obra B com projectId/canteiro da obra A é recusado, sem nenhum efeito (OUT e IN)” (passou, 34,1 ms)<br><code>marco7rev20.F.test.js</code> — “F02 HTTP: POST /inventory/movements com stageId da obra B → 400 sem efeitos” (passou, 67,8 ms)<br><code>marco7rev19.A.test.js</code> — “A7: OUT do canteiro (consumo na obra) sem stageId é recusado” (passou, 5059,4 ms)<br><code>marco7rev19.A.test.js</code> — “A7: OUT do almoxarifado vinculado a obra sem stageId é recusado; etapa de outra obra também” (passou, 6873,7 ms)<br><code>marco7rev19.A.test.js</code> — “A7: requisição para obra sem etapa é recusada na criação; entrega exige responsável e grava OUT com obra/etapa/responsável/custo” (passou, 16326,2 ms)<br><code>procurement.inventory.critical.test.js</code> — “EST-004: criar local PROJECT_SITE sem projectId é bloqueado na própria criação” (passou, 620,4 ms)</td><td>Prints: <a href="#F04">F04</a>, <a href="#F29">F29</a><br>HTTP: <a href="#H009">H009 POST 400 INVENTORY_LOCATION_PROJECT_REQUIRED</a>, <a href="#H133">H133 POST 400 INVENTORY_MOVEMENT_PROJECT_MISMATCH</a>, <a href="#H134">H134 POST 201</a>, <a href="#H135">H135 POST 400 INVENTORY_MOVEMENT_STAGE_INVALID</a>, <a href="#H136">H136 POST 400 INVENTORY_MOVEMENT_STAGE_INVALID</a>, <a href="#H137">H137 POST 201</a><br><span class="small">Reescrita em 20/10/2026 para o código corrigido após a conferência da cliente. Obra de outro canteiro e etapa de outra obra recusadas sem nenhum efeito (consultas Q29, Q30 e Q31); com a obra do canteiro o movimento é aceito.</span></td><td>Banco: <a href="#Q29">Q29</a>, <a href="#Q30">Q30</a>, <a href="#Q31">Q31</a><br>JSON: <a href="#anexo-json"><code>matriz[3]</code></a><br><code>respostasHttp</code> (6)</td><td><span class="b ok">Atendido</span></td></tr>
 <tr class="ok" id="m5"><td class="n">5</td><td><b>EST-005</b><q>Ferramenta/patrimônio individualizável possui asset_id/asset_tag/QR Code próprio.</q></td><td><code>assets.service.js</code> (tag obrigatória, única por empresa); tela <code>/painel/estoque/patrimonio</code> gera o QR (lib <code>qrcode</code>)</td><td><code>procurement.inventory.critical.test.js</code> — "TAB-0760: createAsset exige assetTag e a unicidade é por empresa"</td><td>Prints: <a href="#F05">F05</a><br>HTTP: <a href="#H036">H036 POST 201</a>, <a href="#H037">H037 POST 400 ASSET_DUPLICATE_TAG</a>, <a href="#H038">H038 POST 400 ASSET_VALIDATION</a>, <a href="#H042">H042 GET 200</a><br><span class="small">Homologação 14/10: patrimônio com QR funcionando; card do QR reconfirmado na reval (16/10)</span></td><td>Banco: <a href="#Q09">Q09</a><br>JSON: <a href="#anexo-json"><code>matriz[4]</code></a><br><code>respostasHttp</code> (4)</td><td><span class="b ok">Atendido</span></td></tr>
-<tr class="ok" id="m6"><td class="n">6</td><td><b>EST-006</b><q>Saída de ferramenta registra responsável, destino, data prevista de retorno e condição.</q></td><td><code>src/features/inventory/toolLoans.service.js#loanTool</code>: responsável escolhido em seletor real (não ID digitado); destino; prazo de devolução (<code>dueAt</code>) obrigatório, de hoje até 90 dias (<code>TOOL_LOAN_DUE_AT_INVALID</code>); condição de saída obrigatória e válida (<code>TOOL_LOAN_VALIDATION</code>). Tela: modal “Emprestar ferramenta” em <code>/painel/estoque/patrimonio</code> (botão desabilitado sem prazo e sem condição, Front <code>e993b62</code>). Corrigido em <code>29119a1</code> (M7-F04 e A3).<div class="nota">Corrige a lacuna M7-F04 da conferência da cliente e o item A3 (prazo obrigatório).</div></td><td><code>marco7rev20.F.test.js</code> — “F04 serviço: empréstimo sem conditionOutCode é recusado; empréstimo, status e local não mudam” (passou, 19,6 ms)<br><code>marco7rev20.F.test.js</code> — “F04 HTTP: POST /assets/:id/loan sem conditionOutCode → 400, ferramenta continua disponível e sem empréstimo” (passou, 17,2 ms)<br><code>marco7rev19.A.test.js</code> — “A3: empréstimo de ferramenta com dueAt ausente é recusado” (passou, 1135,6 ms)<br><code>marco7rev19.A.test.js</code> — “A3: empréstimo de ferramenta com dueAt no passado é recusado” (passou, 1161,5 ms)<br><code>marco7rev19.A.test.js</code> — “A3: empréstimo de ferramenta com dueAt acima do limite máximo (400 dias) é recusado” (passou, 1181,8 ms)<br><code>marco7rev19.A.test.js</code> — “A3: empréstimo de ferramenta com dueAt inválido é recusado” (passou, 1135,6 ms)<br><code>marco7rev19.A.test.js</code> — “A3 (controle positivo): dueAt futuro dentro do limite é aceito” (passou, 2027,4 ms)<br><code>inventory.marco7ContractGaps.test.js</code> — “Gap 1 (EST-006): loanTool registra responsável, destino e data prevista, e move o asset pro destino” (passou, 2501,1 ms)</td><td>Prints: <a href="#F06">F06</a>, <a href="#F28">F28</a><br>HTTP: <a href="#H018">H018 POST 400 INVENTORY_MOVEMENT_RESPONSIBLE_REQUIRED</a>, <a href="#H039">H039 POST 400 TOOL_LOAN_VALIDATION</a>, <a href="#H040">H040 POST 201</a>, <a href="#H143">H143 POST 400 TOOL_LOAN_VALIDATION</a>, <a href="#H144">H144 POST 400 TOOL_LOAN_DUE_AT_INVALID</a>, <a href="#H145">H145 POST 400 TOOL_LOAN_DUE_AT_INVALID</a>, <a href="#H146">H146 POST 400 TOOL_LOAN_VALIDATION</a>, <a href="#H147">H147 POST 201</a><br><span class="small">Reescrita em 20/10/2026 para o código corrigido após a conferência da cliente. Sem condição, sem prazo, prazo no passado e condição inválida são recusados sem efeito (Q35, Q36, Q37, Q38); com tudo preenchido o empréstimo é registrado.</span></td><td>Banco: <a href="#Q35">Q35</a>, <a href="#Q36">Q36</a>, <a href="#Q37">Q37</a>, <a href="#Q38">Q38</a><br>JSON: <a href="#anexo-json"><code>matriz[5]</code></a><br><code>respostasHttp</code> (8)</td><td><span class="b ok">Atendido</span></td></tr>
+<tr class="ok" id="m6"><td class="n">6</td><td><b>EST-006</b><q>Saída de ferramenta registra responsável, destino, data prevista de retorno e condição.</q></td><td><code>src/features/inventory/toolLoans.service.js#loanTool</code>: responsável escolhido em seletor real (não ID digitado); destino; prazo de devolução (<code>dueAt</code>) obrigatório, de hoje até 90 dias (<code>TOOL_LOAN_DUE_AT_INVALID</code>); condição de saída obrigatória e válida (<code>TOOL_LOAN_VALIDATION</code>). Tela: modal “Emprestar ferramenta” em <code>/painel/estoque/patrimonio</code> (botão desabilitado sem prazo e sem condição, Front <code>e993b62</code>). Corrigido em <code>29119a1</code> (M7-F04 e A3).<div class="nota">Corrige a lacuna M7-F04 da conferência da cliente e o item A3 (prazo obrigatório).</div></td><td><code>marco7rev20.F.test.js</code> — “F04 serviço: empréstimo sem conditionOutCode é recusado; empréstimo, status e local não mudam” (passou, 17,9 ms)<br><code>marco7rev20.F.test.js</code> — “F04 HTTP: POST /assets/:id/loan sem conditionOutCode → 400, ferramenta continua disponível e sem empréstimo” (passou, 15,9 ms)<br><code>marco7rev19.A.test.js</code> — “A3: empréstimo de ferramenta com dueAt ausente é recusado” (passou, 1135,6 ms)<br><code>marco7rev19.A.test.js</code> — “A3: empréstimo de ferramenta com dueAt no passado é recusado” (passou, 1161,5 ms)<br><code>marco7rev19.A.test.js</code> — “A3: empréstimo de ferramenta com dueAt acima do limite máximo (400 dias) é recusado” (passou, 1181,8 ms)<br><code>marco7rev19.A.test.js</code> — “A3: empréstimo de ferramenta com dueAt inválido é recusado” (passou, 1135,6 ms)<br><code>marco7rev19.A.test.js</code> — “A3 (controle positivo): dueAt futuro dentro do limite é aceito” (passou, 2027,4 ms)<br><code>inventory.marco7ContractGaps.test.js</code> — “Gap 1 (EST-006): loanTool registra responsável, destino e data prevista, e move o asset pro destino” (passou, 2501,1 ms)</td><td>Prints: <a href="#F06">F06</a>, <a href="#F28">F28</a><br>HTTP: <a href="#H018">H018 POST 400 INVENTORY_MOVEMENT_RESPONSIBLE_REQUIRED</a>, <a href="#H039">H039 POST 400 TOOL_LOAN_VALIDATION</a>, <a href="#H040">H040 POST 201</a>, <a href="#H143">H143 POST 400 TOOL_LOAN_VALIDATION</a>, <a href="#H144">H144 POST 400 TOOL_LOAN_DUE_AT_INVALID</a>, <a href="#H145">H145 POST 400 TOOL_LOAN_DUE_AT_INVALID</a>, <a href="#H146">H146 POST 400 TOOL_LOAN_VALIDATION</a>, <a href="#H147">H147 POST 201</a><br><span class="small">Reescrita em 20/10/2026 para o código corrigido após a conferência da cliente. Sem condição, sem prazo, prazo no passado e condição inválida são recusados sem efeito (Q35, Q36, Q37, Q38); com tudo preenchido o empréstimo é registrado.</span></td><td>Banco: <a href="#Q35">Q35</a>, <a href="#Q36">Q36</a>, <a href="#Q37">Q37</a>, <a href="#Q38">Q38</a><br>JSON: <a href="#anexo-json"><code>matriz[5]</code></a><br><code>respostasHttp</code> (8)</td><td><span class="b ok">Atendido</span></td></tr>
 <tr class="ok" id="m7"><td class="n">7</td><td><b>EST-007</b><q>Devolução registra condição e pode abrir manutenção/nonconformity.</q></td><td><code>toolLoans.service.js#returnTool</code> → <code>maintenance.service.js</code> quando DAMAGED</td><td><code>inventory.maintenance.test.js</code> — "returnTool com devolução danificada continua abrindo manutenção e travando o asset"</td><td>Prints: <a href="#F06">F06</a><br>HTTP: <a href="#H043">H043 POST 400 TOOL_LOAN_VALIDATION</a>, <a href="#H044">H044 POST 200</a>, <a href="#H045">H045 GET 200</a><br><span class="small">Rodada completo R2 (17/10): devolução danificada abrindo manutenção reconfirmada</span></td><td>JSON: <a href="#anexo-json"><code>matriz[6]</code></a><br><code>respostasHttp</code> (3)</td><td><span class="b ok">Atendido</span></td></tr>
 <tr class="ok" id="m8"><td class="n">8</td><td><b>EST-008</b><q>Ajuste de estoque exige motivo, evidência e aprovação conforme valor/risco.</q></td><td><code>src/features/inventory/movements.service.js</code> (<code>proposeAdjustment</code> e <code>decideAdjustmentProposal</code>) + <code>adjustmentRiskRules.service.js</code> (REG-EST-002, limiar no Motor de Regras): ajuste e descarte manuais não entram no ledger direto (<code>INVENTORY_ADJUSTMENT_REQUIRES_PROPOSAL</code>); a proposta só vira movimento quando OUTRA pessoa com <code>inventory:approve</code> aprova (<code>INVENTORY_ADJUSTMENT_SELF_APPROVAL_BLOCKED</code>); quem abre a contagem não aprova o próprio ajuste. Corrigido em <code>29119a1</code> (A6).<div class="nota">Corrige o item A6 (ajuste manual com segunda pessoa).</div></td><td><code>marco7rev19.A.test.js</code> — “A6: ADJUSTMENT/DISPOSAL manual direto no ledger é recusado mesmo com inventory:approve” (passou, 2016,3 ms)<br><code>marco7rev19.A.test.js</code> — “A6: quem propôs o ajuste não aprova; outra pessoa aprova e só então o movimento é gravado” (passou, 8098,8 ms)<br><code>inventory.adjustmentRiskRule.test.js</code> (5 testes, passaram) e <code>inventory.countSelfApproval.test.js</code> (2 testes, passaram)</td><td>Prints: <a href="#F07">F07</a><br>HTTP: <a href="#H020">H020 POST 400 INVENTORY_MOVEMENT_REASON_REQUIRED</a>, <a href="#H030">H030 GET 200</a>, <a href="#H058">H058 POST 403 INVENTORY_COUNT_SELF_APPROVAL_BLOCKED</a>, <a href="#H097">H097 POST 403 PERMISSION_DENIED</a>, <a href="#H158">H158 POST 400 INVENTORY_ADJUSTMENT_REQUIRES_PROPOSAL</a>, <a href="#H159">H159 POST 201</a>, <a href="#H160">H160 POST 403 INVENTORY_ADJUSTMENT_SELF_APPROVAL_BLOCKED</a>, <a href="#H161">H161 POST 403 PERMISSION_DENIED</a><br><span class="small">Reescrita em 20/10/2026 para o código corrigido após a conferência da cliente. Ajuste direto recusado; proposta registrada; quem propôs não decide e o aprovador de Compras, sem permissão, também não.</span></td><td>Banco: <a href="#Q13">Q13</a><br>JSON: <a href="#anexo-json"><code>matriz[7]</code></a><br><code>respostasHttp</code> (8)</td><td><span class="b ok">Atendido</span></td></tr>
 <tr class="ok" id="m9"><td class="n">9</td><td><b>EST-009</b><q>Nota fiscal/documento de entrada fica vinculada à compra/recebimento.</q></td><td><code>receipts.service.js</code> (DRAFT → REVIEWED → COMPLETED); <code>procurement.service.js#confirmGoodsReceipt</code> leva a NF ao movimento</td><td><code>marco7compras.auditFixes.test.js</code> — "C4: a NF informada no recebimento de Compras aparece no motivo do movimento…" e "RECONF-6…"</td><td>Prints: <a href="#F03">F03</a><br>HTTP: <a href="#H010">H010 POST 201</a>, <a href="#H082">H082 GET 200</a><br><span class="small">Final3 (19/10): movimento diz "Excedente aceito — recebimento da nota fiscal nº AUDIT-M7FINAL3-NF-0001"</span></td><td>JSON: <a href="#anexo-json"><code>matriz[8]</code></a><br><code>respostasHttp</code> (2)</td><td><span class="b ok">Atendido</span></td></tr>
@@ -195,7 +195,7 @@ table.cl{min-width:1150px}table.cl td{min-width:150px}table.cl td:first-child{mi
 <h3 class="msec">§5 Movimento de estoque <span class="count">5 linha(s)</span></h3><div class="tw"><table class="mx"><thead><tr><th>#</th><th>Requisito (caderno)</th><th>Como implementei</th><th>Teste automatizado</th><th>Evidência ao vivo</th><th>Evidência em dados</th><th>Status</th></tr></thead><tbody>
 <tr class="ok" id="m32"><td class="n">32</td><td><b>§5.1</b><q>Tipos: IN, OUT, RETURN, TRANSFER, ADJUSTMENT, LOSS, DISPOSAL.</q></td><td><code>movements.service.js</code> (<code>MOVEMENT_TYPES</code>); tela Movimentos com os 7 tipos em português</td><td>ver EST-002</td><td>Prints: <a href="#F02">F02</a><br>HTTP: <a href="#H023">H023 POST 400 INVENTORY_MOVEMENT_VALIDATION</a><br><span class="small">Homologação 14/10 → corrigido; final 15/10 "Ajuste, Descarte e Perda sem erro"</span></td><td>Banco: <a href="#Q04">Q04</a><br>JSON: <a href="#anexo-json"><code>matriz[31]</code></a><br><code>respostasHttp</code> (1)</td><td><span class="b ok">Atendido</span></td></tr>
 <tr class="ok" id="m33"><td class="n">33</td><td><b>§5.2</b><q>Quantidade sempre positiva; direção é definida pelo movement_type.</q></td><td>Validação em <code>movements.service.js</code>; <code>confirmGoodsReceipt</code> recusa quantidade ≤ 0</td><td><code>procurement.inventory.critical.test.js</code> — "Three-way match: confirmGoodsReceipt recusa receivedQuantity &lt;= 0"</td><td>Prints: <a href="#F02">F02</a><br>HTTP: <a href="#H019">H019 POST 400 INVENTORY_MOVEMENT_VALIDATION</a>, <a href="#H073">H073 POST 400 GOODS_RECEIPT_INVALID_QUANTITY</a><br><span class="small">Coberto pelos testes; visto nos formulários (campo decimal positivo)</span></td><td>JSON: <a href="#anexo-json"><code>matriz[32]</code></a><br><code>respostasHttp</code> (2)</td><td><span class="b ok">Atendido</span></td></tr>
-<tr class="ok" id="m34"><td class="n">34</td><td><b>§5.3</b><q>Movimento precisa de source_type/source_id…</q></td><td><code>src/features/inventory/movements.service.js</code> (<code>assertMovementSource</code>): a origem é validada no servidor. <code>sourceType</code> conhecido; origem interna (<code>REQUISITION</code>) exige <code>sourceId</code> existente, da mesma empresa e do mesmo item, com responsável rastreável (<code>INVENTORY_MOVEMENT_SOURCE_REQUIRED</code>, <code>INVENTORY_MOVEMENT_SOURCE_INVALID</code>, <code>INVENTORY_MOVEMENT_SOURCE_ITEM_MISMATCH</code>, <code>INVENTORY_MOVEMENT_RESPONSIBLE_REQUIRED</code>); movimento manual não aceita <code>sourceId</code> solto. Recebimento, requisição, contagem, perda e ajuste gravam origem; motivo legível no histórico (65c5b2e). Corrigido em <code>29119a1</code> (M7-F03).<div class="nota">Corrige a lacuna M7-F03 da conferência da cliente.</div></td><td><code>marco7rev20.F.test.js</code> — “F03 serviço: REQUISITION com sourceId nulo e responsável nulo é recusado, sem efeitos” (passou, 20,3 ms)<br><code>marco7rev20.F.test.js</code> — “F03 serviço: origem inexistente, de outro item, tipo desconhecido e sourceId em movimento manual são recusados; responsável de outra empresa também” (passou, 46,1 ms)<br><code>marco7rev20.F.test.js</code> — “F03 serviço (controle positivo): baixa pela requisição real, com responsável, grava o OUT ligado à origem” (passou, 37,1 ms)<br><code>marco7rev20.F.test.js</code> — “F03 HTTP: POST /inventory/movements com REQUISITION, sourceId nulo e responsável nulo → 400 sem efeitos; origem de outro item idem” (passou, 51,4 ms)<br><code>marco7compras.auditFixes.test.js</code> — “C4: a NF informada no recebimento de Compras aparece no motivo do movimento de estoque e em listPurchaseOrders” (passou, 14205,1 ms)</td><td>Prints: <a href="#F02">F02</a>, <a href="#F29">F29</a><br>HTTP: <a href="#H024">H024 POST 201</a>, <a href="#H138">H138 POST 400 INVENTORY_MOVEMENT_SOURCE_REQUIRED</a>, <a href="#H139">H139 POST 400 INVENTORY_MOVEMENT_SOURCE_INVALID</a>, <a href="#H140">H140 POST 400 INVENTORY_MOVEMENT_SOURCE_INVALID</a><br><span class="small">Reescrita em 20/10/2026 para o código corrigido após a conferência da cliente. Origem REQUISITION sem sourceId e sem responsável, origem inexistente e sourceId solto recusados sem efeito (Q32, Q33, Q34).</span></td><td>Banco: <a href="#Q04">Q04</a>, <a href="#Q32">Q32</a>, <a href="#Q33">Q33</a>, <a href="#Q34">Q34</a><br>JSON: <a href="#anexo-json"><code>matriz[33]</code></a><br><code>respostasHttp</code> (4)</td><td><span class="b ok">Atendido</span></td></tr>
+<tr class="ok" id="m34"><td class="n">34</td><td><b>§5.3</b><q>Movimento precisa de source_type/source_id…</q></td><td><code>src/features/inventory/movements.service.js</code> (<code>assertMovementSource</code>): a origem é validada no servidor. <code>sourceType</code> conhecido; origem interna (<code>REQUISITION</code>) exige <code>sourceId</code> existente, da mesma empresa e do mesmo item, com responsável rastreável (<code>INVENTORY_MOVEMENT_SOURCE_REQUIRED</code>, <code>INVENTORY_MOVEMENT_SOURCE_INVALID</code>, <code>INVENTORY_MOVEMENT_SOURCE_ITEM_MISMATCH</code>, <code>INVENTORY_MOVEMENT_RESPONSIBLE_REQUIRED</code>); movimento manual não aceita <code>sourceId</code> solto. Recebimento, requisição, contagem, perda e ajuste gravam origem; motivo legível no histórico (65c5b2e). Corrigido em <code>29119a1</code> (M7-F03).<div class="nota">Corrige a lacuna M7-F03 da conferência da cliente.</div></td><td><code>marco7rev20.F.test.js</code> — “F03 serviço: REQUISITION com sourceId nulo e responsável nulo é recusado, sem efeitos” (passou, 17 ms)<br><code>marco7rev20.F.test.js</code> — “F03 serviço: origem inexistente, de outro item, tipo desconhecido e sourceId em movimento manual são recusados; responsável de outra empresa também” (passou, 38 ms)<br><code>marco7rev20.F.test.js</code> — “F03 serviço (controle positivo): baixa pela requisição real, com responsável, grava o OUT ligado à origem” (passou, 33,1 ms)<br><code>marco7rev20.F.test.js</code> — “F03 HTTP: POST /inventory/movements com REQUISITION, sourceId nulo e responsável nulo → 400 sem efeitos; origem de outro item idem” (passou, 39,1 ms)<br><code>marco7compras.auditFixes.test.js</code> — “C4: a NF informada no recebimento de Compras aparece no motivo do movimento de estoque e em listPurchaseOrders” (passou, 14205,1 ms)</td><td>Prints: <a href="#F02">F02</a>, <a href="#F29">F29</a><br>HTTP: <a href="#H024">H024 POST 201</a>, <a href="#H138">H138 POST 400 INVENTORY_MOVEMENT_SOURCE_REQUIRED</a>, <a href="#H139">H139 POST 400 INVENTORY_MOVEMENT_SOURCE_INVALID</a>, <a href="#H140">H140 POST 400 INVENTORY_MOVEMENT_SOURCE_INVALID</a><br><span class="small">Reescrita em 20/10/2026 para o código corrigido após a conferência da cliente. Origem REQUISITION sem sourceId e sem responsável, origem inexistente e sourceId solto recusados sem efeito (Q32, Q33, Q34).</span></td><td>Banco: <a href="#Q04">Q04</a>, <a href="#Q32">Q32</a>, <a href="#Q33">Q33</a>, <a href="#Q34">Q34</a><br>JSON: <a href="#anexo-json"><code>matriz[33]</code></a><br><code>respostasHttp</code> (4)</td><td><span class="b ok">Atendido</span></td></tr>
 <tr class="ok" id="m35"><td class="n">35</td><td><b>§5.4</b><q>Idempotency_key obrigatória para integrações/importações.</q></td><td><code>movements.service.js</code> (ADJUSTMENT exige chave; reenvio devolve o original)</td><td><code>inventory.auditGapsRound4.test.js</code> — "Gap 2 (EST-TS-12): reenviar a MESMA idempotencyKey duas vezes devolve o movimento original"</td><td>Prints: <a href="#F02">F02</a><br>HTTP: <a href="#H021">H021 POST 400 INVENTORY_MOVEMENT_IDEMPOTENCY_KEY_REQUIRED</a>, <a href="#H024">H024 POST 201</a>, <a href="#H025">H025 POST 201</a></td><td>Banco: <a href="#Q14">Q14</a><br>JSON: <a href="#anexo-json"><code>matriz[34]</code></a><br><code>respostasHttp</code> (3)</td><td><span class="b ok">Atendido</span></td></tr>
 <tr class="ok" id="m36"><td class="n">36</td><td><b>§5.5</b><q>Movimento confirmado não é editado; correção usa movimento compensatório.</q></td><td>Não existe rota de edição/exclusão de movimento; cancelamento de pedido estorna com movimento compensatório</td><td><code>procurement.auditGapsRound4.test.js</code> — "GAP1-COMPRAS: cancelPurchaseOrder com recebimento confirmado estorna o estoque…"</td><td>Prints: <a href="#F02">F02</a><br>HTTP: <a href="#H026">H026 GET 200</a>, <a href="#H027">H027 PATCH 404</a>, <a href="#H028">H028 DELETE 404</a>, <a href="#H084">H084 POST 200</a></td><td>JSON: <a href="#anexo-json"><code>matriz[35]</code></a><br><code>respostasHttp</code> (4)</td><td><span class="b ok">Atendido</span></td></tr></tbody></table></div>
 <h3 class="msec">§6 Entrada por NF <span class="count">5 linha(s)</span></h3><div class="tw"><table class="mx"><thead><tr><th>#</th><th>Requisito (caderno)</th><th>Como implementei</th><th>Teste automatizado</th><th>Evidência ao vivo</th><th>Evidência em dados</th><th>Status</th></tr></thead><tbody>
@@ -208,12 +208,12 @@ table.cl{min-width:1150px}table.cl td{min-width:150px}table.cl td:first-child{mi
 <tr class="ok" id="m42"><td class="n">42</td><td><b>§7.1</b><q>Obra/etapa solicita material via requisition.</q></td><td><code>requisitions.service.js</code>; tela <code>/painel/estoque/requisicoes</code> com coluna Obra e solicitante</td><td><code>marco7r2.auditFixes.test.js</code> — "R2-3: listRequisitions devolve requestedByUser…"</td><td>Prints: <a href="#F04">F04</a><br>HTTP: <a href="#H031">H031 POST 201</a>, <a href="#H034">H034 GET 200</a>, <a href="#H035">H035 GET 200</a><br><span class="small">R2 17/10 apontou solicitante ausente → corrigido (e4233ef)</span></td><td>JSON: <a href="#anexo-json"><code>matriz[41]</code></a><br><code>respostasHttp</code> (3)</td><td><span class="b ok">Atendido</span></td></tr>
 <tr class="ok" id="m43"><td class="n">43</td><td><b>§7.2</b><q>Aprovação conforme regra/valor/estoque.</q></td><td>Decisão por usuário diferente do solicitante (maker-checker)</td><td><code>inventory.marco7CheckFixes.test.js</code>; <code>inventory.marco7FinalFixes.test.js</code></td><td>Prints: <a href="#F04">F04</a><br>HTTP: <a href="#H032">H032 POST 403 INVENTORY_REQUISITION_SELF_APPROVAL_BLOCKED</a>, <a href="#H033">H033 POST 403 PERMISSION_DENIED</a><br><span class="small">Final 15/10 → maker-checker visual (4d60606)</span></td><td>JSON: <a href="#anexo-json"><code>matriz[42]</code></a><br><code>respostasHttp</code> (2)</td><td><span class="b ok">Atendido</span></td></tr>
 <tr class="ok" id="m44"><td class="n">44</td><td><b>§7.3</b><q>Separação gera reserva opcional; retirada confirmada gera OUT.</q></td><td><code>requisitions.service.js#issueRequisition</code> gera OUT por item com chave <code>req:id:item:id</code><div class="nota">Reserva é opcional no caderno; não implementei reserva separada — a baixa é feita na retirada.</div></td><td>EST-TS-02 (concorrência) e EST-004</td><td>Prints: <a href="#F04">F04</a><br>HTTP: <a href="#H031">H031 POST 201</a>, <a href="#H032">H032 POST 403 INVENTORY_REQUISITION_SELF_APPROVAL_BLOCKED</a><br><span class="small">Homologação 14/10: "requisição com baixa para a obra" funcionando</span></td><td>JSON: <a href="#anexo-json"><code>matriz[43]</code></a><br><code>respostasHttp</code> (2)</td><td><span class="b ok">Atendido</span></td></tr>
-<tr class="ok" id="m45"><td class="n">45</td><td><b>§7.4</b><q>OUT vincula project_id/stage_id e responsável.</q></td><td>Ver EST-004 e §5.3: <code>movements.service.js</code> valida obra, etapa, origem e responsável no servidor, na rota genérica de movimentos e na baixa de requisição (<code>requisitions.service.js#issueRequisition</code> grava o OUT com obra, etapa, responsável e custo). Corrigido em <code>29119a1</code> (M7-F01, M7-F02, M7-F03 e A7).<div class="nota">Corrige as lacunas M7-F02 e M7-F03.</div></td><td><code>marco7rev20.F.test.js</code> — “F02 serviço: stageId da obra B com projectId/canteiro da obra A é recusado, sem nenhum efeito (OUT e IN)” (passou, 36,7 ms)<br><code>marco7rev20.F.test.js</code> — “F03 serviço: REQUISITION com sourceId nulo e responsável nulo é recusado, sem efeitos” (passou, 20,3 ms)<br><code>marco7rev20.F.test.js</code> — “F03 serviço (controle positivo): baixa pela requisição real, com responsável, grava o OUT ligado à origem” (passou, 37,1 ms)<br><code>marco7rev19.A.test.js</code> — “A7: requisição para obra sem etapa é recusada na criação; entrega exige responsável e grava OUT com obra/etapa/responsável/custo” (passou, 16326,2 ms)<br><code>inventory.marco7ContractGaps.test.js</code> — “Gap 2 (EST-004): requisição grava stageId quando a etapa pertence à obra” (passou, 3539 ms)</td><td>Prints: <a href="#F04">F04</a>, <a href="#F29">F29</a><br>HTTP: <a href="#H034">H034 GET 200</a>, <a href="#H135">H135 POST 400 INVENTORY_MOVEMENT_STAGE_INVALID</a>, <a href="#H136">H136 POST 400 INVENTORY_MOVEMENT_STAGE_INVALID</a>, <a href="#H137">H137 POST 201</a>, <a href="#H138">H138 POST 400 INVENTORY_MOVEMENT_SOURCE_REQUIRED</a><br><span class="small">Reescrita em 20/10/2026 para o código corrigido após a conferência da cliente. Saída do canteiro com a etapa da própria obra e responsável é aceita; etapa de outra obra e origem sem responsável são recusadas sem efeito.</span></td><td>Banco: <a href="#Q30">Q30</a>, <a href="#Q32">Q32</a><br>JSON: <a href="#anexo-json"><code>matriz[44]</code></a><br><code>respostasHttp</code> (5)</td><td><span class="b ok">Atendido</span></td></tr>
+<tr class="ok" id="m45"><td class="n">45</td><td><b>§7.4</b><q>OUT vincula project_id/stage_id e responsável.</q></td><td>Ver EST-004 e §5.3: <code>movements.service.js</code> valida obra, etapa, origem e responsável no servidor, na rota genérica de movimentos e na baixa de requisição (<code>requisitions.service.js#issueRequisition</code> grava o OUT com obra, etapa, responsável e custo). Corrigido em <code>29119a1</code> (M7-F01, M7-F02, M7-F03 e A7).<div class="nota">Corrige as lacunas M7-F02 e M7-F03.</div></td><td><code>marco7rev20.F.test.js</code> — “F02 serviço: stageId da obra B com projectId/canteiro da obra A é recusado, sem nenhum efeito (OUT e IN)” (passou, 34,1 ms)<br><code>marco7rev20.F.test.js</code> — “F03 serviço: REQUISITION com sourceId nulo e responsável nulo é recusado, sem efeitos” (passou, 17 ms)<br><code>marco7rev20.F.test.js</code> — “F03 serviço (controle positivo): baixa pela requisição real, com responsável, grava o OUT ligado à origem” (passou, 33,1 ms)<br><code>marco7rev19.A.test.js</code> — “A7: requisição para obra sem etapa é recusada na criação; entrega exige responsável e grava OUT com obra/etapa/responsável/custo” (passou, 16326,2 ms)<br><code>inventory.marco7ContractGaps.test.js</code> — “Gap 2 (EST-004): requisição grava stageId quando a etapa pertence à obra” (passou, 3539 ms)</td><td>Prints: <a href="#F04">F04</a>, <a href="#F29">F29</a><br>HTTP: <a href="#H034">H034 GET 200</a>, <a href="#H135">H135 POST 400 INVENTORY_MOVEMENT_STAGE_INVALID</a>, <a href="#H136">H136 POST 400 INVENTORY_MOVEMENT_STAGE_INVALID</a>, <a href="#H137">H137 POST 201</a>, <a href="#H138">H138 POST 400 INVENTORY_MOVEMENT_SOURCE_REQUIRED</a><br><span class="small">Reescrita em 20/10/2026 para o código corrigido após a conferência da cliente. Saída do canteiro com a etapa da própria obra e responsável é aceita; etapa de outra obra e origem sem responsável são recusadas sem efeito.</span></td><td>Banco: <a href="#Q30">Q30</a>, <a href="#Q32">Q32</a><br>JSON: <a href="#anexo-json"><code>matriz[44]</code></a><br><code>respostasHttp</code> (5)</td><td><span class="b ok">Atendido</span></td></tr>
 <tr class="ok" id="m46"><td class="n">46</td><td><b>§7.5</b><q>Obras recebe custo via evento/read model, sem nova digitação.</q></td><td>Evento <code>inventory.movement.recorded</code> com projectId + custo médio; Obras lê pelo read model</td><td><code>inventory.marco7ContractGaps.test.js</code>; testes de Obras do Marco 6</td><td>Prints: <a href="#F04">F04</a><br>HTTP: <a href="#H034">H034 GET 200</a></td><td>JSON: <a href="#anexo-json"><code>matriz[45]</code></a><br><code>respostasHttp</code> (1)</td><td><span class="b ok">Atendido</span></td></tr></tbody></table></div>
 <h3 class="msec">§8 Ferramentas e QR Code <span class="count">5 linha(s)</span></h3><div class="tw"><table class="mx"><thead><tr><th>#</th><th>Requisito (caderno)</th><th>Como implementei</th><th>Teste automatizado</th><th>Evidência ao vivo</th><th>Evidência em dados</th><th>Status</th></tr></thead><tbody>
 <tr class="ok" id="m47"><td class="n">47</td><td><b>§8.1</b><q>Cada ferramenta individualizável possui asset_tag/QR único.</q></td><td>Ver EST-005</td><td>TAB-0760</td><td>Prints: <a href="#F05">F05</a><br>HTTP: <a href="#H036">H036 POST 201</a></td><td>JSON: <a href="#anexo-json"><code>matriz[46]</code></a><br><code>respostasHttp</code> (1)</td><td><span class="b ok">Atendido</span></td></tr>
 <tr class="ok" id="m48"><td class="n">48</td><td><b>§8.2</b><q>Leitura do QR abre ficha: item, serial, status, local, responsável, último movimento e manutenção.</q></td><td><code>GET /assets/by-tag/:tag</code> (<code>assets.service.js#getAssetByTag</code>); card na tela Patrimônio</td><td><code>inventory.patrimonioGaps.test.js</code> — 4 testes "Item 11: getAssetByTag…"</td><td>Prints: <a href="#F05">F05</a><br>HTTP: <a href="#H042">H042 GET 200</a><br><span class="small">Check 15/10: "Último movimento: indefinido (valor ausente)" → corrigido (28e17f8, b77374f) e confirmado na reval 16/10</span></td><td>JSON: <a href="#anexo-json"><code>matriz[47]</code></a><br><code>respostasHttp</code> (1)</td><td><span class="b ok">Atendido</span></td></tr>
-<tr class="ok" id="m49"><td class="n">49</td><td><b>§8.3</b><q>Loan OUT exige pessoa responsável, destino e due_at quando aplicável.</q></td><td>Ver EST-006: <code>toolLoans.service.js#loanTool</code> exige pessoa responsável, destino, <code>dueAt</code> (obrigatório, de hoje até 90 dias) e condição de saída válida (<code>conditionOutCode</code>); a recusa não muda empréstimo, status nem localização. Corrigido em <code>29119a1</code> (M7-F04 e A3).<div class="nota">Corrige a lacuna M7-F04.</div></td><td><code>marco7rev20.F.test.js</code> — “F04 serviço: empréstimo sem conditionOutCode é recusado; empréstimo, status e local não mudam” (passou, 19,6 ms)<br><code>marco7rev20.F.test.js</code> — “F04 HTTP: POST /assets/:id/loan sem conditionOutCode → 400, ferramenta continua disponível e sem empréstimo” (passou, 17,2 ms)<br><code>marco7rev19.A.test.js</code> — “A3: empréstimo de ferramenta com dueAt ausente é recusado” (passou, 1135,6 ms)<br><code>marco7rev19.A.test.js</code> — “A3 (controle positivo): dueAt futuro dentro do limite é aceito” (passou, 2027,4 ms)</td><td>Prints: <a href="#F06">F06</a>, <a href="#F28">F28</a><br>HTTP: <a href="#H039">H039 POST 400 TOOL_LOAN_VALIDATION</a>, <a href="#H040">H040 POST 201</a>, <a href="#H143">H143 POST 400 TOOL_LOAN_VALIDATION</a>, <a href="#H144">H144 POST 400 TOOL_LOAN_DUE_AT_INVALID</a>, <a href="#H145">H145 POST 400 TOOL_LOAN_DUE_AT_INVALID</a>, <a href="#H147">H147 POST 201</a><br><span class="small">Reescrita em 20/10/2026 para o código corrigido após a conferência da cliente. Provas de que a recusa não deixou efeito: Q35, Q36 e Q37.</span></td><td>Banco: <a href="#Q35">Q35</a>, <a href="#Q36">Q36</a>, <a href="#Q37">Q37</a><br>JSON: <a href="#anexo-json"><code>matriz[48]</code></a><br><code>respostasHttp</code> (6)</td><td><span class="b ok">Atendido</span></td></tr>
+<tr class="ok" id="m49"><td class="n">49</td><td><b>§8.3</b><q>Loan OUT exige pessoa responsável, destino e due_at quando aplicável.</q></td><td>Ver EST-006: <code>toolLoans.service.js#loanTool</code> exige pessoa responsável, destino, <code>dueAt</code> (obrigatório, de hoje até 90 dias) e condição de saída válida (<code>conditionOutCode</code>); a recusa não muda empréstimo, status nem localização. Corrigido em <code>29119a1</code> (M7-F04 e A3).<div class="nota">Corrige a lacuna M7-F04.</div></td><td><code>marco7rev20.F.test.js</code> — “F04 serviço: empréstimo sem conditionOutCode é recusado; empréstimo, status e local não mudam” (passou, 17,9 ms)<br><code>marco7rev20.F.test.js</code> — “F04 HTTP: POST /assets/:id/loan sem conditionOutCode → 400, ferramenta continua disponível e sem empréstimo” (passou, 15,9 ms)<br><code>marco7rev19.A.test.js</code> — “A3: empréstimo de ferramenta com dueAt ausente é recusado” (passou, 1135,6 ms)<br><code>marco7rev19.A.test.js</code> — “A3 (controle positivo): dueAt futuro dentro do limite é aceito” (passou, 2027,4 ms)</td><td>Prints: <a href="#F06">F06</a>, <a href="#F28">F28</a><br>HTTP: <a href="#H039">H039 POST 400 TOOL_LOAN_VALIDATION</a>, <a href="#H040">H040 POST 201</a>, <a href="#H143">H143 POST 400 TOOL_LOAN_VALIDATION</a>, <a href="#H144">H144 POST 400 TOOL_LOAN_DUE_AT_INVALID</a>, <a href="#H145">H145 POST 400 TOOL_LOAN_DUE_AT_INVALID</a>, <a href="#H147">H147 POST 201</a><br><span class="small">Reescrita em 20/10/2026 para o código corrigido após a conferência da cliente. Provas de que a recusa não deixou efeito: Q35, Q36 e Q37.</span></td><td>Banco: <a href="#Q35">Q35</a>, <a href="#Q36">Q36</a>, <a href="#Q37">Q37</a><br>JSON: <a href="#anexo-json"><code>matriz[48]</code></a><br><code>respostasHttp</code> (6)</td><td><span class="b ok">Atendido</span></td></tr>
 <tr class="ok" id="m50"><td class="n">50</td><td><b>§8.4</b><q>RETURN exige condition_code e pode abrir maintenance_order.</q></td><td>Ver EST-007</td><td>EST-007</td><td>Prints: <a href="#F06">F06</a><br>HTTP: <a href="#H043">H043 POST 400 TOOL_LOAN_VALIDATION</a>, <a href="#H044">H044 POST 200</a></td><td>JSON: <a href="#anexo-json"><code>matriz[49]</code></a><br><code>respostasHttp</code> (2)</td><td><span class="b ok">Atendido</span></td></tr>
 <tr class="ok" id="m51"><td class="n">51</td><td><b>§8.5</b><q>Ferramenta atrasada gera tarefa/escalonamento.</q></td><td><code>src/engines/jobs/toolLoanOverdueJob.js</code> (Notification + Task por nível)</td><td><code>inventory.toolLoanOverdue.test.js</code> (3 testes)</td><td>Prints: <a href="#F06">F06</a><br>HTTP: <a href="#H050">H050 GET 200</a></td><td>JSON: <a href="#anexo-json"><code>matriz[50]</code></a><br><code>respostasHttp</code> (1)</td><td><span class="b ok">Atendido</span></td></tr></tbody></table></div>
 <h3 class="msec">§9 Patrimônio <span class="count">4 linha(s)</span></h3><div class="tw"><table class="mx"><thead><tr><th>#</th><th>Requisito (caderno)</th><th>Como implementei</th><th>Teste automatizado</th><th>Evidência ao vivo</th><th>Evidência em dados</th><th>Status</th></tr></thead><tbody>
@@ -236,11 +236,11 @@ table.cl{min-width:1150px}table.cl td{min-width:150px}table.cl td:first-child{mi
 <tr class="ok" id="m65"><td class="n">65</td><td><b>§12.2</b><q>NAY pode sugerir compra baseada em consumo, obras ativas, lead time e estoque.</q></td><td>Ver EST-013</td><td><code>inventory.nay.test.js</code></td><td>Prints: <a href="#F09">F09</a><br>HTTP: <a href="#H060">H060 GET 200</a><br><span class="small">Reval 16/10: textos da NAY em português e formato brasileiro</span></td><td>JSON: <a href="#anexo-json"><code>matriz[64]</code></a><br><code>respostasHttp</code> (1)</td><td><span class="b ok">Atendido</span></td></tr>
 <tr class="ok" id="m66"><td class="n">66</td><td><b>§12.3</b><q>Sugestão não cria pedido de compra sem workflow autorizado.</q></td><td>Aprovação humana cria requisição REQUESTED, que segue o fluxo de Compras</td><td><code>inventory.nay.test.js</code></td><td>Prints: <a href="#F09">F09</a><br>HTTP: <a href="#H060">H060 GET 200</a></td><td>JSON: <a href="#anexo-json"><code>matriz[65]</code></a><br><code>respostasHttp</code> (1)</td><td><span class="b ok">Atendido</span></td></tr></tbody></table></div>
 <h3 class="msec">§13 Segurança e antifraude <span class="count">8 linha(s)</span></h3><div class="tw"><table class="mx"><thead><tr><th>#</th><th>Requisito (caderno)</th><th>Como implementei</th><th>Teste automatizado</th><th>Evidência ao vivo</th><th>Evidência em dados</th><th>Status</th></tr></thead><tbody>
-<tr class="ok" id="m67"><td class="n">67</td><td><b>Baixa sem retirada</b><q>QR/responsável/evidência conforme risco.</q></td><td>Saída exige responsável existente na empresa (<code>INVENTORY_MOVEMENT_RESPONSIBLE_REQUIRED</code>/<code>_INVALID</code>); a origem informada é validada no servidor, então <code>REQUISITION</code> com origem e responsável nulos não passa (<code>INVENTORY_MOVEMENT_SOURCE_REQUIRED</code>); empréstimo exige condição de saída; perda exige evidência. Corrigido em <code>29119a1</code> (M7-F03).<div class="nota">Corrige a lacuna M7-F03.</div></td><td><code>marco7rev20.F.test.js</code> — “F03 serviço: REQUISITION com sourceId nulo e responsável nulo é recusado, sem efeitos” (passou, 20,3 ms)<br><code>marco7rev20.F.test.js</code> — “F03 serviço: origem inexistente, de outro item, tipo desconhecido e sourceId em movimento manual são recusados; responsável de outra empresa também” (passou, 46,1 ms)<br><code>marco7rev20.F.test.js</code> — “F03 HTTP: POST /inventory/movements com REQUISITION, sourceId nulo e responsável nulo → 400 sem efeitos; origem de outro item idem” (passou, 51,4 ms)<br><code>inventory.marco7.adversarial.test.js</code> — “EST-TS-10: openLossCase com evidenceFileIds ausente é bloqueado com LOSS_CASE_EVIDENCE_REQUIRED” (passou, 3346,9 ms)</td><td>Prints: <a href="#F06">F06</a>, <a href="#F29">F29</a><br>HTTP: <a href="#H018">H018 POST 400 INVENTORY_MOVEMENT_RESPONSIBLE_REQUIRED</a>, <a href="#H039">H039 POST 400 TOOL_LOAN_VALIDATION</a>, <a href="#H138">H138 POST 400 INVENTORY_MOVEMENT_SOURCE_REQUIRED</a>, <a href="#H139">H139 POST 400 INVENTORY_MOVEMENT_SOURCE_INVALID</a><br><span class="small">Reescrita em 20/10/2026 para o código corrigido após a conferência da cliente. Saída por requisição sem responsável recusada sem efeito (Q32).</span></td><td>Banco: <a href="#Q32">Q32</a>, <a href="#Q33">Q33</a><br>JSON: <a href="#anexo-json"><code>matriz[66]</code></a><br><code>respostasHttp</code> (4)</td><td><span class="b ok">Atendido</span></td></tr>
+<tr class="ok" id="m67"><td class="n">67</td><td><b>Baixa sem retirada</b><q>QR/responsável/evidência conforme risco.</q></td><td>Saída exige responsável existente na empresa (<code>INVENTORY_MOVEMENT_RESPONSIBLE_REQUIRED</code>/<code>_INVALID</code>); a origem informada é validada no servidor, então <code>REQUISITION</code> com origem e responsável nulos não passa (<code>INVENTORY_MOVEMENT_SOURCE_REQUIRED</code>); empréstimo exige condição de saída; perda exige evidência. Corrigido em <code>29119a1</code> (M7-F03).<div class="nota">Corrige a lacuna M7-F03.</div></td><td><code>marco7rev20.F.test.js</code> — “F03 serviço: REQUISITION com sourceId nulo e responsável nulo é recusado, sem efeitos” (passou, 17 ms)<br><code>marco7rev20.F.test.js</code> — “F03 serviço: origem inexistente, de outro item, tipo desconhecido e sourceId em movimento manual são recusados; responsável de outra empresa também” (passou, 38 ms)<br><code>marco7rev20.F.test.js</code> — “F03 HTTP: POST /inventory/movements com REQUISITION, sourceId nulo e responsável nulo → 400 sem efeitos; origem de outro item idem” (passou, 39,1 ms)<br><code>inventory.marco7.adversarial.test.js</code> — “EST-TS-10: openLossCase com evidenceFileIds ausente é bloqueado com LOSS_CASE_EVIDENCE_REQUIRED” (passou, 3346,9 ms)</td><td>Prints: <a href="#F06">F06</a>, <a href="#F29">F29</a><br>HTTP: <a href="#H018">H018 POST 400 INVENTORY_MOVEMENT_RESPONSIBLE_REQUIRED</a>, <a href="#H039">H039 POST 400 TOOL_LOAN_VALIDATION</a>, <a href="#H138">H138 POST 400 INVENTORY_MOVEMENT_SOURCE_REQUIRED</a>, <a href="#H139">H139 POST 400 INVENTORY_MOVEMENT_SOURCE_INVALID</a><br><span class="small">Reescrita em 20/10/2026 para o código corrigido após a conferência da cliente. Saída por requisição sem responsável recusada sem efeito (Q32).</span></td><td>Banco: <a href="#Q32">Q32</a>, <a href="#Q33">Q33</a><br>JSON: <a href="#anexo-json"><code>matriz[66]</code></a><br><code>respostasHttp</code> (4)</td><td><span class="b ok">Atendido</span></td></tr>
 <tr class="ok" id="m68"><td class="n">68</td><td><b>NF duplicada</b><q>Chave/fingerprint UNIQUE.</q></td><td>Fingerprint único + número normalizado</td><td>EST-TS-08 (5 testes)</td><td>Prints: <a href="#F03">F03</a><br>HTTP: <a href="#H015">H015 POST 400 INVENTORY_RECEIPT_DUPLICATE_INVOICE</a></td><td>Banco: <a href="#Q08">Q08</a><br>JSON: <a href="#anexo-json"><code>matriz[67]</code></a><br><code>respostasHttp</code> (1)</td><td><span class="b ok">Atendido</span></td></tr>
 <tr class="ok" id="m69"><td class="n">69</td><td><b>Ajuste para esconder perda</b><q>Approval + audit + anomaly.</q></td><td>Maker-checker + audit_log + NAY de anomalia</td><td><code>inventory.countSelfApproval.test.js</code>, EST-TS-14</td><td>Prints: <a href="#F07">F07</a><br>HTTP: <a href="#H020">H020 POST 400 INVENTORY_MOVEMENT_REASON_REQUIRED</a></td><td>JSON: <a href="#anexo-json"><code>matriz[68]</code></a><br><code>respostasHttp</code> (1)</td><td><span class="b ok">Atendido</span></td></tr>
 <tr class="ok" id="m70"><td class="n">70</td><td><b>Ferramenta some</b><q>Loan overdue + responsible + escalation.</q></td><td><code>toolLoanOverdueJob.js</code></td><td><code>inventory.toolLoanOverdue.test.js</code></td><td>Prints: <a href="#F06">F06</a><br>HTTP: <a href="#H040">H040 POST 201</a>, <a href="#H050">H050 GET 200</a></td><td>JSON: <a href="#anexo-json"><code>matriz[69]</code></a><br><code>respostasHttp</code> (2)</td><td><span class="b ok">Atendido</span></td></tr>
-<tr class="ok" id="m71"><td class="n">71</td><td><b>Custo em obra errada</b><q>company/project validation.</q></td><td>Canteiro define a obra e a empresa; <code>projectId</code> conflitante com o canteiro é recusado (<code>INVENTORY_MOVEMENT_PROJECT_MISMATCH</code>); etapa validada contra a obra (<code>INVENTORY_MOVEMENT_STAGE_INVALID</code>); o custo levado à obra é o custo histórico do movimento, nunca o custo médio de hoje. Corrigido em <code>29119a1</code> (M7-F01, M7-F02 e A1).<div class="nota">Corrige as lacunas M7-F01 e M7-F02.</div></td><td><code>marco7rev20.F.test.js</code> — “F01 serviço: projectId da obra B num canteiro da obra A é recusado, sem nenhum efeito” (passou, 638,4 ms)<br><code>marco7rev20.F.test.js</code> — “F01 HTTP: POST /inventory/movements com projectId da obra B no canteiro da obra A → 400 sem efeitos” (passou, 91,8 ms)<br><code>marco7rev20.F.test.js</code> — “F02 serviço: stageId da obra B com projectId/canteiro da obra A é recusado, sem nenhum efeito (OUT e IN)” (passou, 36,7 ms)<br><code>marco7rev19.A.test.js</code> — “A1: OUT grava unit_cost/total_cost no momento do fato e o custo da obra não muda quando o custo médio sobe depois” (passou, 26523,7 ms)</td><td>Prints: <a href="#F04">F04</a><br>HTTP: <a href="#H009">H009 POST 400 INVENTORY_LOCATION_PROJECT_REQUIRED</a>, <a href="#H034">H034 GET 200</a>, <a href="#H133">H133 POST 400 INVENTORY_MOVEMENT_PROJECT_MISMATCH</a>, <a href="#H135">H135 POST 400 INVENTORY_MOVEMENT_STAGE_INVALID</a>, <a href="#H167">H167 GET 200</a>, <a href="#H171">H171 GET 200</a><br><span class="small">Reescrita em 20/10/2026 para o código corrigido após a conferência da cliente. Obra errada recusada sem efeito (Q29); custo da obra imutável (Q39).</span></td><td>Banco: <a href="#Q29">Q29</a>, <a href="#Q30">Q30</a>, <a href="#Q39">Q39</a><br>JSON: <a href="#anexo-json"><code>matriz[70]</code></a><br><code>respostasHttp</code> (6)</td><td><span class="b ok">Atendido</span></td></tr>
+<tr class="ok" id="m71"><td class="n">71</td><td><b>Custo em obra errada</b><q>company/project validation.</q></td><td>Canteiro define a obra e a empresa; <code>projectId</code> conflitante com o canteiro é recusado (<code>INVENTORY_MOVEMENT_PROJECT_MISMATCH</code>); etapa validada contra a obra (<code>INVENTORY_MOVEMENT_STAGE_INVALID</code>); o custo levado à obra é o custo histórico do movimento, nunca o custo médio de hoje. Corrigido em <code>29119a1</code> (M7-F01, M7-F02 e A1).<div class="nota">Corrige as lacunas M7-F01 e M7-F02.</div></td><td><code>marco7rev20.F.test.js</code> — “F01 serviço: projectId da obra B num canteiro da obra A é recusado, sem nenhum efeito” (passou, 48 ms)<br><code>marco7rev20.F.test.js</code> — “F01 HTTP: POST /inventory/movements com projectId da obra B no canteiro da obra A → 400 sem efeitos” (passou, 85,8 ms)<br><code>marco7rev20.F.test.js</code> — “F02 serviço: stageId da obra B com projectId/canteiro da obra A é recusado, sem nenhum efeito (OUT e IN)” (passou, 34,1 ms)<br><code>marco7rev19.A.test.js</code> — “A1: OUT grava unit_cost/total_cost no momento do fato e o custo da obra não muda quando o custo médio sobe depois” (passou, 26523,7 ms)</td><td>Prints: <a href="#F04">F04</a><br>HTTP: <a href="#H009">H009 POST 400 INVENTORY_LOCATION_PROJECT_REQUIRED</a>, <a href="#H034">H034 GET 200</a>, <a href="#H133">H133 POST 400 INVENTORY_MOVEMENT_PROJECT_MISMATCH</a>, <a href="#H135">H135 POST 400 INVENTORY_MOVEMENT_STAGE_INVALID</a>, <a href="#H167">H167 GET 200</a>, <a href="#H171">H171 GET 200</a><br><span class="small">Reescrita em 20/10/2026 para o código corrigido após a conferência da cliente. Obra errada recusada sem efeito (Q29); custo da obra imutável (Q39).</span></td><td>Banco: <a href="#Q29">Q29</a>, <a href="#Q30">Q30</a>, <a href="#Q39">Q39</a><br>JSON: <a href="#anexo-json"><code>matriz[70]</code></a><br><code>respostasHttp</code> (6)</td><td><span class="b ok">Atendido</span></td></tr>
 <tr class="ok" id="m72"><td class="n">72</td><td><b>Inventário manipulado</b><q>Contagem versionada + ajuste separado.</q></td><td>Contagem não altera saldo; ajuste separado por outra pessoa</td><td>EST-TS-09, EST-008</td><td>Prints: <a href="#F07">F07</a><br>HTTP: <a href="#H057">H057 GET 200</a>, <a href="#H058">H058 POST 403 INVENTORY_COUNT_SELF_APPROVAL_BLOCKED</a></td><td>JSON: <a href="#anexo-json"><code>matriz[71]</code></a><br><code>respostasHttp</code> (2)</td><td><span class="b ok">Atendido</span></td></tr>
 <tr class="ok" id="m73"><td class="n">73</td><td><b>Ativo transferido sem registro</b><q>asset_movement obrigatório.</q></td><td><code>transferAsset</code> sempre grava asset_movement</td><td>EST-TS-15</td><td>Prints: <a href="#F05">F05</a><br>HTTP: <a href="#H047">H047 POST 201</a></td><td>JSON: <a href="#anexo-json"><code>matriz[72]</code></a><br><code>respostasHttp</code> (1)</td><td><span class="b ok">Atendido</span></td></tr>
 <tr class="ok" id="m74"><td class="n">74</td><td><b>IA dá baixa</b><q>Tool proibida sem workflow.</q></td><td>NAY sem rota de escrita em estoque/compra</td><td><code>inventory.nay.test.js</code></td><td>Prints: <a href="#F09">F09</a><br>HTTP: <a href="#H060">H060 GET 200</a></td><td>JSON: <a href="#anexo-json"><code>matriz[73]</code></a><br><code>respostasHttp</code> (1)</td><td><span class="b ok">Atendido</span></td></tr></tbody></table></div>
@@ -314,7 +314,7 @@ table.cl{min-width:1150px}table.cl td{min-width:150px}table.cl td:first-child{mi
 </section>
 
 <section id="testes"><h2>5. Testes automatizados</h2>
-<p class="lead">Rodei hoje, 20/10/2026 17:12:31 a 20/10/2026 19:29:33, arquivo por arquivo, no commit <code>e1a1f42</code> da API, com Node 24.18.0: <code>NODE_ENV=test node --test --test-concurrency=1 --test-reporter=tap test/&lt;arquivo&gt;</code> contra Postgres real, com o usuário de aplicação sem bypass de RLS e cada teste dentro de uma transação que dá rollback. Os arquivos que gravam de verdade (rotas HTTP reais, concorrência e failure drills) rodaram em banco descartável: <code>node scripts/withDisposableDb.js -- node --test --test-concurrency=1 --test-reporter=tap test/&lt;arquivo&gt;</code>; o banco descartável aplica todas as migrations do zero (inclusive as novas de custo histórico, perda única por patrimônio, propostas de ajuste e NF única por fornecedor) e é apagado no fim. Banco local de homologação/desenvolvimento (PostgreSQL 18), com RLS ativo e credencial de aplicação; banco descartável criado e destruído automaticamente por teste.</p>
+<p class="lead">Rodei hoje, 20/10/2026 17:12:31 a 20/10/2026 20:42:16, arquivo por arquivo, no commit <code>e1a1f42</code> da API, com Node 24.18.0: <code>NODE_ENV=test node --test --test-concurrency=1 --test-reporter=tap test/&lt;arquivo&gt;</code> contra Postgres real, com o usuário de aplicação sem bypass de RLS e cada teste dentro de uma transação que dá rollback. Os arquivos que gravam de verdade (rotas HTTP reais, concorrência e failure drills) rodaram em banco descartável: <code>node scripts/withDisposableDb.js -- node --test --test-concurrency=1 --test-reporter=tap test/&lt;arquivo&gt;</code>; o banco descartável aplica todas as migrations do zero (inclusive as novas de custo histórico, perda única por patrimônio, propostas de ajuste e NF única por fornecedor) e é apagado no fim. Banco local de homologação/desenvolvimento (PostgreSQL 18), com RLS ativo e credencial de aplicação; banco descartável criado e destruído automaticamente por teste.</p>
 <div class="tw"><table class="tt"><thead><tr><th>Arquivo</th><th>Banco</th><th>Testes</th><th>Passou</th><th>Falhou</th><th>Pulado</th><th>Duração</th><th>Resultado</th></tr></thead><tbody><tr><td><code>test/construction.budget.test.js</code></td><td>banco com rollback</td><td class="r">39</td><td class="r">39</td><td class="r">0</td><td class="r">0</td><td class="r">276,7 s</td><td><span class='b ok'>verde</span></td></tr>
 <tr><td><code>test/construction.dashboard.test.js</code></td><td>banco com rollback</td><td class="r">4</td><td class="r">4</td><td class="r">0</td><td class="r">0</td><td class="r">53,2 s</td><td><span class='b ok'>verde</span></td></tr>
 <tr><td><code>test/construction.e2e.test.js</code></td><td>banco com rollback</td><td class="r">1</td><td class="r">1</td><td class="r">0</td><td class="r">0</td><td class="r">29,9 s</td><td><span class='b ok'>verde</span></td></tr>
@@ -357,7 +357,6 @@ table.cl{min-width:1150px}table.cl td{min-width:150px}table.cl td:first-child{mi
 <tr><td><code>test/marco7rev19.B.concurrency.test.js</code></td><td>banco descartável</td><td class="r">2</td><td class="r">2</td><td class="r">0</td><td class="r">0</td><td class="r">1,4 s</td><td><span class='b ok'>verde</span></td></tr>
 <tr><td><code>test/marco7rev19.B.insurance.test.js</code></td><td>banco com rollback</td><td class="r">7</td><td class="r">7</td><td class="r">0</td><td class="r">0</td><td class="r">43,1 s</td><td><span class='b ok'>verde</span></td></tr>
 <tr><td><code>test/marco7rev19.B.procurement.test.js</code></td><td>banco com rollback</td><td class="r">12</td><td class="r">12</td><td class="r">0</td><td class="r">0</td><td class="r">207,6 s</td><td><span class='b ok'>verde</span></td></tr>
-<tr><td><code>test/marco7rev20.F.test.js</code></td><td>banco descartável</td><td class="r">11</td><td class="r">11</td><td class="r">0</td><td class="r">0</td><td class="r">2,3 s</td><td><span class='b ok'>verde</span></td></tr>
 <tr><td><code>test/procurement.approvalSegregation.test.js</code></td><td>banco com rollback</td><td class="r">9</td><td class="r">9</td><td class="r">0</td><td class="r">0</td><td class="r">38,2 s</td><td><span class='b ok'>verde</span></td></tr>
 <tr><td><code>test/procurement.auditGaps.test.js</code></td><td>banco com rollback</td><td class="r">5</td><td class="r">5</td><td class="r">0</td><td class="r">0</td><td class="r">54,2 s</td><td><span class='b ok'>verde</span></td></tr>
 <tr><td><code>test/procurement.auditGapsRound2.test.js</code></td><td>banco com rollback</td><td class="r">4</td><td class="r">4</td><td class="r">0</td><td class="r">0</td><td class="r">55,1 s</td><td><span class='b ok'>verde</span></td></tr>
@@ -371,7 +370,8 @@ table.cl{min-width:1150px}table.cl td{min-width:150px}table.cl td:first-child{mi
 <tr><td><code>test/procurement.supplierQualification.test.js</code></td><td>banco com rollback</td><td class="r">2</td><td class="r">2</td><td class="r">0</td><td class="r">0</td><td class="r">17,7 s</td><td><span class='b ok'>verde</span></td></tr>
 <tr><td><code>test/rls.catalog.allTables.test.js</code></td><td>banco com rollback</td><td class="r">1</td><td class="r">1</td><td class="r">0</td><td class="r">0</td><td class="r">56,7 s</td><td><span class='b ok'>verde</span></td></tr>
 <tr><td><code>test/inventory.failureDrills.test.js</code></td><td>banco descartável</td><td class="r">3</td><td class="r">3</td><td class="r">0</td><td class="r">0</td><td class="r">0,7 s</td><td><span class='b ok'>verde</span></td></tr>
-<tr class="tot"><td>Total (56 arquivos)</td><td>conforme cada arquivo</td><td class="r">429</td><td class="r">429</td><td class="r">0</td><td class="r">0</td><td class="r">49,2 min</td><td><span class='b ok'>verde</span></td></tr></tbody></table></div>
+<tr><td><code>test/marco7rev20.F.test.js</code></td><td>banco descartável</td><td class="r">18</td><td class="r">18</td><td class="r">0</td><td class="r">0</td><td class="r">2,0 s</td><td><span class='b ok'>verde</span></td></tr>
+<tr class="tot"><td>Total (56 arquivos)</td><td>conforme cada arquivo</td><td class="r">436</td><td class="r">436</td><td class="r">0</td><td class="r">0</td><td class="r">49,2 min</td><td><span class='b ok'>verde</span></td></tr></tbody></table></div>
 <p class="small"><b>CI do commit final:</b> CI_FINAL (o run do commit e1a1f42 não existe ainda porque eu não fiz o push; preencho o run e a contagem assim que ele rodar). Não afirmo CI verde para este commit. O último CI verde conhecido é o da API <a href="https://github.com/gsPatrick/NayaraOne--API/actions/runs/39301913793">39301913793</a> no commit 3f7e550 (1429 testes, 0 falhas), anterior às correções desta página; o Front do CI é o run <a href="https://github.com/gsPatrick/NayaraOne--FRONT/actions/runs/39301378437">39301378437</a> (success). A lista completa, teste por teste, com duração, está em <code>testes[]</code> no JSON.</p>
 <p class="small">Todos os testes das regras novas foram conferidos em teste isolado e confirmados verdes na execução de hoje.</p>
 </section>
@@ -9053,7 +9053,7 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
 </section>
 
 <section id="anexo-json"><h2>11. Anexo de dados (JSON)</h2>
-<p class="lead">Dossiê completo, legível por máquina: <code>meta</code>, <code>matriz[]</code>, <code>testes[]</code>, <code>respostasHttp[]</code>, <code>consultasBanco[]</code>, <code>auditoria[]</code>, <code>seguranca</code>, <code>rodadas[]</code>, <code>correcoesCliente[]</code> e <code>hashes</code>. Também está no elemento <code>&lt;script type="application/json" id="evidencias-marco7"&gt;</code>. SHA-256 do JSON: <code>4bdb649175375c3afd322d2fde1662f416641abaec2ff16e26c32d29f94838e4</code> (método em <code>hashes.metodo</code>). A sanitização aplicada está declarada em <code>meta.sanitizacao</code>.</p>
+<p class="lead">Dossiê completo, legível por máquina: <code>meta</code>, <code>matriz[]</code>, <code>testes[]</code>, <code>respostasHttp[]</code>, <code>consultasBanco[]</code>, <code>auditoria[]</code>, <code>seguranca</code>, <code>rodadas[]</code>, <code>correcoesCliente[]</code> e <code>hashes</code>. Também está no elemento <code>&lt;script type="application/json" id="evidencias-marco7"&gt;</code>. SHA-256 do JSON: <code>c41518d8161fa7aa567cd91e1049bd6dd004ca8531b16fb662cb19a147f8be1e</code> (método em <code>hashes.metodo</code>). A sanitização aplicada está declarada em <code>meta.sanitizacao</code>.</p>
 <div class="btns"><button type="button" id="btn-copiar">Copiar JSON</button><button type="button" id="btn-baixar">Baixar JSON</button><span id="btn-msg" class="small"></span></div>
 <details><summary>Ver o JSON completo</summary><pre id="json-pre"></pre></details>
 </section>
@@ -22956,16 +22956,6 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "duracaoMs": 207641
   },
   {
-   "arquivo": "test/marco7rev20.F.test.js",
-   "modo": "banco descartável",
-   "exit": 0,
-   "testes": 11,
-   "passou": 11,
-   "falhou": 0,
-   "pulado": 0,
-   "duracaoMs": 2251
-  },
-  {
    "arquivo": "test/procurement.approvalSegregation.test.js",
    "modo": "banco com rollback",
    "exit": 0,
@@ -23094,6 +23084,16 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "falhou": 0,
    "pulado": 0,
    "duracaoMs": 692
+  },
+  {
+   "arquivo": "test/marco7rev20.F.test.js",
+   "modo": "banco descartável",
+   "exit": 0,
+   "testes": 18,
+   "passou": 18,
+   "falhou": 0,
+   "pulado": 0,
+   "duracaoMs": 1958
   }
  ],
  "testes": [
@@ -25492,83 +25492,6 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "duracaoMs": 2528
   },
   {
-   "arquivo": "test/marco7rev20.F.test.js",
-   "nome": "F01 serviço: projectId da obra B num canteiro da obra A é recusado, sem nenhum efeito",
-   "nivel": 0,
-   "status": "passou",
-   "duracaoMs": 638.4
-  },
-  {
-   "arquivo": "test/marco7rev20.F.test.js",
-   "nome": "F01 serviço: sem projectId o movimento usa a obra do canteiro; projectId igual ao do canteiro é aceito",
-   "nivel": 0,
-   "status": "passou",
-   "duracaoMs": 39.9
-  },
-  {
-   "arquivo": "test/marco7rev20.F.test.js",
-   "nome": "F02 serviço: stageId da obra B com projectId/canteiro da obra A é recusado, sem nenhum efeito (OUT e IN)",
-   "nivel": 0,
-   "status": "passou",
-   "duracaoMs": 36.7
-  },
-  {
-   "arquivo": "test/marco7rev20.F.test.js",
-   "nome": "F03 serviço: REQUISITION com sourceId nulo e responsável nulo é recusado, sem efeitos",
-   "nivel": 0,
-   "status": "passou",
-   "duracaoMs": 20.3
-  },
-  {
-   "arquivo": "test/marco7rev20.F.test.js",
-   "nome": "F03 serviço: origem inexistente, de outro item, tipo desconhecido e sourceId em movimento manual são recusados; responsável de outra empresa também",
-   "nivel": 0,
-   "status": "passou",
-   "duracaoMs": 46.1
-  },
-  {
-   "arquivo": "test/marco7rev20.F.test.js",
-   "nome": "F03 serviço (controle positivo): baixa pela requisição real, com responsável, grava o OUT ligado à origem",
-   "nivel": 0,
-   "status": "passou",
-   "duracaoMs": 37.1
-  },
-  {
-   "arquivo": "test/marco7rev20.F.test.js",
-   "nome": "F04 serviço: empréstimo sem conditionOutCode é recusado; empréstimo, status e local não mudam",
-   "nivel": 0,
-   "status": "passou",
-   "duracaoMs": 19.6
-  },
-  {
-   "arquivo": "test/marco7rev20.F.test.js",
-   "nome": "F01 HTTP: POST /inventory/movements com projectId da obra B no canteiro da obra A → 400 sem efeitos",
-   "nivel": 0,
-   "status": "passou",
-   "duracaoMs": 91.8
-  },
-  {
-   "arquivo": "test/marco7rev20.F.test.js",
-   "nome": "F02 HTTP: POST /inventory/movements com stageId da obra B → 400 sem efeitos",
-   "nivel": 0,
-   "status": "passou",
-   "duracaoMs": 59.8
-  },
-  {
-   "arquivo": "test/marco7rev20.F.test.js",
-   "nome": "F03 HTTP: POST /inventory/movements com REQUISITION, sourceId nulo e responsável nulo → 400 sem efeitos; origem de outro item idem",
-   "nivel": 0,
-   "status": "passou",
-   "duracaoMs": 51.4
-  },
-  {
-   "arquivo": "test/marco7rev20.F.test.js",
-   "nome": "F04 HTTP: POST /assets/:id/loan sem conditionOutCode → 400, ferramenta continua disponível e sem empréstimo",
-   "nivel": 0,
-   "status": "passou",
-   "duracaoMs": 17.2
-  },
-  {
    "arquivo": "test/procurement.approvalSegregation.test.js",
    "nome": "TAREFA 1 — decidePurchaseRequest rejeita quando o mesmo ator que criou a requisição tenta decidi-la (PURCHASE_REQUEST_SELF_APPROVAL_FORBIDDEN)",
    "nivel": 0,
@@ -26099,6 +26022,132 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "nivel": 0,
    "status": "passou",
    "duracaoMs": 71.5
+  },
+  {
+   "arquivo": "test/marco7rev20.F.test.js",
+   "nome": "Calibração de controle deliberado: divergência de saldo quebra o snapshot (não aceita NaN nem divergência)",
+   "nivel": 0,
+   "status": "passou",
+   "duracaoMs": 573.6
+  },
+  {
+   "arquivo": "test/marco7rev20.F.test.js",
+   "nome": "F01 serviço: projectId da obra B num canteiro da obra A é recusado, sem nenhum efeito",
+   "nivel": 0,
+   "status": "passou",
+   "duracaoMs": 48
+  },
+  {
+   "arquivo": "test/marco7rev20.F.test.js",
+   "nome": "F01 serviço: sem projectId o movimento usa a obra do canteiro; projectId igual ao do canteiro é aceito",
+   "nivel": 0,
+   "status": "passou",
+   "duracaoMs": 26.9
+  },
+  {
+   "arquivo": "test/marco7rev20.F.test.js",
+   "nome": "F02 serviço: stageId da obra B com projectId/canteiro da obra A é recusado, sem nenhum efeito (OUT e IN)",
+   "nivel": 0,
+   "status": "passou",
+   "duracaoMs": 34.1
+  },
+  {
+   "arquivo": "test/marco7rev20.F.test.js",
+   "nome": "F03 serviço: REQUISITION com sourceId nulo e responsável nulo é recusado, sem efeitos",
+   "nivel": 0,
+   "status": "passou",
+   "duracaoMs": 17
+  },
+  {
+   "arquivo": "test/marco7rev20.F.test.js",
+   "nome": "F03 residual serviço: OUT com COUNT, LOSS_CASE ou ADJUSTMENT_PROPOSAL sem responsável é recusado por responsável obrigatório; e com responsável é recusado pela matriz de origens",
+   "nivel": 0,
+   "status": "passou",
+   "duracaoMs": 19.1
+  },
+  {
+   "arquivo": "test/marco7rev20.F.test.js",
+   "nome": "F03 serviço: origem inexistente, de outro item, tipo desconhecido e sourceId em movimento manual são recusados; responsável de outra empresa também",
+   "nivel": 0,
+   "status": "passou",
+   "duracaoMs": 38
+  },
+  {
+   "arquivo": "test/marco7rev20.F.test.js",
+   "nome": "F03 serviço (controle positivo): baixa pela requisição real, com responsável, grava o OUT ligado à origem",
+   "nivel": 0,
+   "status": "passou",
+   "duracaoMs": 33.1
+  },
+  {
+   "arquivo": "test/marco7rev20.F.test.js",
+   "nome": "F04 serviço: empréstimo sem conditionOutCode é recusado; empréstimo, status e local não mudam",
+   "nivel": 0,
+   "status": "passou",
+   "duracaoMs": 17.9
+  },
+  {
+   "arquivo": "test/marco7rev20.F.test.js",
+   "nome": "F01 HTTP: POST /inventory/movements com projectId da obra B no canteiro da obra A → 400 sem efeitos",
+   "nivel": 0,
+   "status": "passou",
+   "duracaoMs": 85.8
+  },
+  {
+   "arquivo": "test/marco7rev20.F.test.js",
+   "nome": "F02 HTTP: POST /inventory/movements com stageId da obra B → 400 sem efeitos",
+   "nivel": 0,
+   "status": "passou",
+   "duracaoMs": 67.8
+  },
+  {
+   "arquivo": "test/marco7rev20.F.test.js",
+   "nome": "F03 HTTP: POST /inventory/movements com REQUISITION, sourceId nulo e responsável nulo → 400 sem efeitos; origem de outro item idem",
+   "nivel": 0,
+   "status": "passou",
+   "duracaoMs": 39.1
+  },
+  {
+   "arquivo": "test/marco7rev20.F.test.js",
+   "nome": "F03 residual HTTP: POST /inventory/movements com OUT e sourceType COUNT/LOSS_CASE/ADJUSTMENT_PROPOSAL sem responsável e com responsável → 400 sem efeitos",
+   "nivel": 0,
+   "status": "passou",
+   "duracaoMs": 61.9
+  },
+  {
+   "arquivo": "test/marco7rev20.F.test.js",
+   "nome": "F03 controle positivo HTTP: POST /inventory/movements com OUT manual legítimo e responsável grava o movimento e debita saldo",
+   "nivel": 0,
+   "status": "passou",
+   "duracaoMs": 36.7
+  },
+  {
+   "arquivo": "test/marco7rev20.F.test.js",
+   "nome": "F04 HTTP: POST /assets/:id/loan sem conditionOutCode → 400, ferramenta continua disponível e sem empréstimo",
+   "nivel": 0,
+   "status": "passou",
+   "duracaoMs": 15.9
+  },
+  {
+   "arquivo": "test/marco7rev20.F.test.js",
+   "nome": "Seguros Webhook HTTP: callback válido com HMAC na rota pública sem tenant processa com sucesso e liquida sinistro",
+   "nivel": 0,
+   "status": "passou",
+   "duracaoMs": 48.2
+  },
+  {
+   "arquivo": "test/marco7rev20.F.test.js",
+   "nome": "Seguros Webhook HTTP: HMAC inválido para ID conhecido é recusado com 401 sem alterar sinistro",
+   "nivel": 0,
+   "status": "passou",
+   "duracaoMs": 23.2
+  },
+  {
+   "arquivo": "test/marco7rev20.F.test.js",
+   "nome": "Seguros Webhook HTTP: indenização acima do teto do sinistro é limitada conforme regra de negócio",
+   "nivel": 0,
+   "status": "passou",
+   "duracaoMs": 31.1
   }
  ],
  "matriz": [
@@ -26224,10 +26273,10 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "requisito": "Material consumido precisa de project_id/stage_id quando atribuído à obra.",
    "implementacao": "`src/features/inventory/movements.service.js` (a obra do canteiro manda: `projectId` diferente da obra do canteiro é recusado com `INVENTORY_MOVEMENT_PROJECT_MISMATCH`; etapa de outra obra, com `INVENTORY_MOVEMENT_STAGE_INVALID`; saída para a obra sem etapa, com `INVENTORY_MOVEMENT_STAGE_REQUIRED`) e `src/features/inventory/requisitions.service.js` (etapa validada na requisição). Corrigido em `29119a1` (M7-F01, M7-F02 e A7).",
    "testes": [
-    "`marco7rev20.F.test.js` — “F01 serviço: projectId da obra B num canteiro da obra A é recusado, sem nenhum efeito” (passou, 638,4 ms)",
-    "`marco7rev20.F.test.js` — “F01 HTTP: POST /inventory/movements com projectId da obra B no canteiro da obra A → 400 sem efeitos” (passou, 91,8 ms)",
-    "`marco7rev20.F.test.js` — “F02 serviço: stageId da obra B com projectId/canteiro da obra A é recusado, sem nenhum efeito (OUT e IN)” (passou, 36,7 ms)",
-    "`marco7rev20.F.test.js` — “F02 HTTP: POST /inventory/movements com stageId da obra B → 400 sem efeitos” (passou, 59,8 ms)",
+    "`marco7rev20.F.test.js` — “F01 serviço: projectId da obra B num canteiro da obra A é recusado, sem nenhum efeito” (passou, 48 ms)",
+    "`marco7rev20.F.test.js` — “F01 HTTP: POST /inventory/movements com projectId da obra B no canteiro da obra A → 400 sem efeitos” (passou, 85,8 ms)",
+    "`marco7rev20.F.test.js` — “F02 serviço: stageId da obra B com projectId/canteiro da obra A é recusado, sem nenhum efeito (OUT e IN)” (passou, 34,1 ms)",
+    "`marco7rev20.F.test.js` — “F02 HTTP: POST /inventory/movements com stageId da obra B → 400 sem efeitos” (passou, 67,8 ms)",
     "`marco7rev19.A.test.js` — “A7: OUT do canteiro (consumo na obra) sem stageId é recusado” (passou, 5059,4 ms)",
     "`marco7rev19.A.test.js` — “A7: OUT do almoxarifado vinculado a obra sem stageId é recusado; etapa de outra obra também” (passou, 6873,7 ms)",
     "`marco7rev19.A.test.js` — “A7: requisição para obra sem etapa é recusada na criação; entrega exige responsável e grava OUT com obra/etapa/responsável/custo” (passou, 16326,2 ms)",
@@ -26308,8 +26357,8 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "requisito": "Saída de ferramenta registra responsável, destino, data prevista de retorno e condição.",
    "implementacao": "`src/features/inventory/toolLoans.service.js#loanTool`: responsável escolhido em seletor real (não ID digitado); destino; prazo de devolução (`dueAt`) obrigatório, de hoje até 90 dias (`TOOL_LOAN_DUE_AT_INVALID`); condição de saída obrigatória e válida (`TOOL_LOAN_VALIDATION`). Tela: modal “Emprestar ferramenta” em `/painel/estoque/patrimonio` (botão desabilitado sem prazo e sem condição, Front `e993b62`). Corrigido em `29119a1` (M7-F04 e A3).",
    "testes": [
-    "`marco7rev20.F.test.js` — “F04 serviço: empréstimo sem conditionOutCode é recusado; empréstimo, status e local não mudam” (passou, 19,6 ms)",
-    "`marco7rev20.F.test.js` — “F04 HTTP: POST /assets/:id/loan sem conditionOutCode → 400, ferramenta continua disponível e sem empréstimo” (passou, 17,2 ms)",
+    "`marco7rev20.F.test.js` — “F04 serviço: empréstimo sem conditionOutCode é recusado; empréstimo, status e local não mudam” (passou, 17,9 ms)",
+    "`marco7rev20.F.test.js` — “F04 HTTP: POST /assets/:id/loan sem conditionOutCode → 400, ferramenta continua disponível e sem empréstimo” (passou, 15,9 ms)",
     "`marco7rev19.A.test.js` — “A3: empréstimo de ferramenta com dueAt ausente é recusado” (passou, 1135,6 ms)",
     "`marco7rev19.A.test.js` — “A3: empréstimo de ferramenta com dueAt no passado é recusado” (passou, 1161,5 ms)",
     "`marco7rev19.A.test.js` — “A3: empréstimo de ferramenta com dueAt acima do limite máximo (400 dias) é recusado” (passou, 1181,8 ms)",
@@ -27183,10 +27232,10 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "requisito": "Movimento precisa de source_type/source_id…",
    "implementacao": "`src/features/inventory/movements.service.js` (`assertMovementSource`): a origem é validada no servidor. `sourceType` conhecido; origem interna (`REQUISITION`) exige `sourceId` existente, da mesma empresa e do mesmo item, com responsável rastreável (`INVENTORY_MOVEMENT_SOURCE_REQUIRED`, `INVENTORY_MOVEMENT_SOURCE_INVALID`, `INVENTORY_MOVEMENT_SOURCE_ITEM_MISMATCH`, `INVENTORY_MOVEMENT_RESPONSIBLE_REQUIRED`); movimento manual não aceita `sourceId` solto. Recebimento, requisição, contagem, perda e ajuste gravam origem; motivo legível no histórico (65c5b2e). Corrigido em `29119a1` (M7-F03).",
    "testes": [
-    "`marco7rev20.F.test.js` — “F03 serviço: REQUISITION com sourceId nulo e responsável nulo é recusado, sem efeitos” (passou, 20,3 ms)",
-    "`marco7rev20.F.test.js` — “F03 serviço: origem inexistente, de outro item, tipo desconhecido e sourceId em movimento manual são recusados; responsável de outra empresa também” (passou, 46,1 ms)",
-    "`marco7rev20.F.test.js` — “F03 serviço (controle positivo): baixa pela requisição real, com responsável, grava o OUT ligado à origem” (passou, 37,1 ms)",
-    "`marco7rev20.F.test.js` — “F03 HTTP: POST /inventory/movements com REQUISITION, sourceId nulo e responsável nulo → 400 sem efeitos; origem de outro item idem” (passou, 51,4 ms)",
+    "`marco7rev20.F.test.js` — “F03 serviço: REQUISITION com sourceId nulo e responsável nulo é recusado, sem efeitos” (passou, 17 ms)",
+    "`marco7rev20.F.test.js` — “F03 serviço: origem inexistente, de outro item, tipo desconhecido e sourceId em movimento manual são recusados; responsável de outra empresa também” (passou, 38 ms)",
+    "`marco7rev20.F.test.js` — “F03 serviço (controle positivo): baixa pela requisição real, com responsável, grava o OUT ligado à origem” (passou, 33,1 ms)",
+    "`marco7rev20.F.test.js` — “F03 HTTP: POST /inventory/movements com REQUISITION, sourceId nulo e responsável nulo → 400 sem efeitos; origem de outro item idem” (passou, 39,1 ms)",
     "`marco7compras.auditFixes.test.js` — “C4: a NF informada no recebimento de Compras aparece no motivo do movimento de estoque e em listPurchaseOrders” (passou, 14205,1 ms)"
    ],
    "evidenciaAoVivo": {
@@ -27524,9 +27573,9 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "requisito": "OUT vincula project_id/stage_id e responsável.",
    "implementacao": "Ver EST-004 e §5.3: `movements.service.js` valida obra, etapa, origem e responsável no servidor, na rota genérica de movimentos e na baixa de requisição (`requisitions.service.js#issueRequisition` grava o OUT com obra, etapa, responsável e custo). Corrigido em `29119a1` (M7-F01, M7-F02, M7-F03 e A7).",
    "testes": [
-    "`marco7rev20.F.test.js` — “F02 serviço: stageId da obra B com projectId/canteiro da obra A é recusado, sem nenhum efeito (OUT e IN)” (passou, 36,7 ms)",
-    "`marco7rev20.F.test.js` — “F03 serviço: REQUISITION com sourceId nulo e responsável nulo é recusado, sem efeitos” (passou, 20,3 ms)",
-    "`marco7rev20.F.test.js` — “F03 serviço (controle positivo): baixa pela requisição real, com responsável, grava o OUT ligado à origem” (passou, 37,1 ms)",
+    "`marco7rev20.F.test.js` — “F02 serviço: stageId da obra B com projectId/canteiro da obra A é recusado, sem nenhum efeito (OUT e IN)” (passou, 34,1 ms)",
+    "`marco7rev20.F.test.js` — “F03 serviço: REQUISITION com sourceId nulo e responsável nulo é recusado, sem efeitos” (passou, 17 ms)",
+    "`marco7rev20.F.test.js` — “F03 serviço (controle positivo): baixa pela requisição real, com responsável, grava o OUT ligado à origem” (passou, 33,1 ms)",
     "`marco7rev19.A.test.js` — “A7: requisição para obra sem etapa é recusada na criação; entrega exige responsável e grava OUT com obra/etapa/responsável/custo” (passou, 16326,2 ms)",
     "`inventory.marco7ContractGaps.test.js` — “Gap 2 (EST-004): requisição grava stageId quando a etapa pertence à obra” (passou, 3539 ms)"
    ],
@@ -27648,8 +27697,8 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "requisito": "Loan OUT exige pessoa responsável, destino e due_at quando aplicável.",
    "implementacao": "Ver EST-006: `toolLoans.service.js#loanTool` exige pessoa responsável, destino, `dueAt` (obrigatório, de hoje até 90 dias) e condição de saída válida (`conditionOutCode`); a recusa não muda empréstimo, status nem localização. Corrigido em `29119a1` (M7-F04 e A3).",
    "testes": [
-    "`marco7rev20.F.test.js` — “F04 serviço: empréstimo sem conditionOutCode é recusado; empréstimo, status e local não mudam” (passou, 19,6 ms)",
-    "`marco7rev20.F.test.js` — “F04 HTTP: POST /assets/:id/loan sem conditionOutCode → 400, ferramenta continua disponível e sem empréstimo” (passou, 17,2 ms)",
+    "`marco7rev20.F.test.js` — “F04 serviço: empréstimo sem conditionOutCode é recusado; empréstimo, status e local não mudam” (passou, 17,9 ms)",
+    "`marco7rev20.F.test.js` — “F04 HTTP: POST /assets/:id/loan sem conditionOutCode → 400, ferramenta continua disponível e sem empréstimo” (passou, 15,9 ms)",
     "`marco7rev19.A.test.js` — “A3: empréstimo de ferramenta com dueAt ausente é recusado” (passou, 1135,6 ms)",
     "`marco7rev19.A.test.js` — “A3 (controle positivo): dueAt futuro dentro do limite é aceito” (passou, 2027,4 ms)"
    ],
@@ -28181,9 +28230,9 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "requisito": "QR/responsável/evidência conforme risco.",
    "implementacao": "Saída exige responsável existente na empresa (`INVENTORY_MOVEMENT_RESPONSIBLE_REQUIRED`/`_INVALID`); a origem informada é validada no servidor, então `REQUISITION` com origem e responsável nulos não passa (`INVENTORY_MOVEMENT_SOURCE_REQUIRED`); empréstimo exige condição de saída; perda exige evidência. Corrigido em `29119a1` (M7-F03).",
    "testes": [
-    "`marco7rev20.F.test.js` — “F03 serviço: REQUISITION com sourceId nulo e responsável nulo é recusado, sem efeitos” (passou, 20,3 ms)",
-    "`marco7rev20.F.test.js` — “F03 serviço: origem inexistente, de outro item, tipo desconhecido e sourceId em movimento manual são recusados; responsável de outra empresa também” (passou, 46,1 ms)",
-    "`marco7rev20.F.test.js` — “F03 HTTP: POST /inventory/movements com REQUISITION, sourceId nulo e responsável nulo → 400 sem efeitos; origem de outro item idem” (passou, 51,4 ms)",
+    "`marco7rev20.F.test.js` — “F03 serviço: REQUISITION com sourceId nulo e responsável nulo é recusado, sem efeitos” (passou, 17 ms)",
+    "`marco7rev20.F.test.js` — “F03 serviço: origem inexistente, de outro item, tipo desconhecido e sourceId em movimento manual são recusados; responsável de outra empresa também” (passou, 38 ms)",
+    "`marco7rev20.F.test.js` — “F03 HTTP: POST /inventory/movements com REQUISITION, sourceId nulo e responsável nulo → 400 sem efeitos; origem de outro item idem” (passou, 39,1 ms)",
     "`inventory.marco7.adversarial.test.js` — “EST-TS-10: openLossCase com evidenceFileIds ausente é bloqueado com LOSS_CASE_EVIDENCE_REQUIRED” (passou, 3346,9 ms)"
    ],
    "evidenciaAoVivo": {
@@ -28306,9 +28355,9 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "requisito": "company/project validation.",
    "implementacao": "Canteiro define a obra e a empresa; `projectId` conflitante com o canteiro é recusado (`INVENTORY_MOVEMENT_PROJECT_MISMATCH`); etapa validada contra a obra (`INVENTORY_MOVEMENT_STAGE_INVALID`); o custo levado à obra é o custo histórico do movimento, nunca o custo médio de hoje. Corrigido em `29119a1` (M7-F01, M7-F02 e A1).",
    "testes": [
-    "`marco7rev20.F.test.js` — “F01 serviço: projectId da obra B num canteiro da obra A é recusado, sem nenhum efeito” (passou, 638,4 ms)",
-    "`marco7rev20.F.test.js` — “F01 HTTP: POST /inventory/movements com projectId da obra B no canteiro da obra A → 400 sem efeitos” (passou, 91,8 ms)",
-    "`marco7rev20.F.test.js` — “F02 serviço: stageId da obra B com projectId/canteiro da obra A é recusado, sem nenhum efeito (OUT e IN)” (passou, 36,7 ms)",
+    "`marco7rev20.F.test.js` — “F01 serviço: projectId da obra B num canteiro da obra A é recusado, sem nenhum efeito” (passou, 48 ms)",
+    "`marco7rev20.F.test.js` — “F01 HTTP: POST /inventory/movements com projectId da obra B no canteiro da obra A → 400 sem efeitos” (passou, 85,8 ms)",
+    "`marco7rev20.F.test.js` — “F02 serviço: stageId da obra B com projectId/canteiro da obra A é recusado, sem nenhum efeito (OUT e IN)” (passou, 34,1 ms)",
     "`marco7rev19.A.test.js` — “A1: OUT grava unit_cost/total_cost no momento do fato e o custo da obra não muda quando o custo médio sobe depois” (passou, 26523,7 ms)"
    ],
    "evidenciaAoVivo": {
@@ -30652,7 +30701,7 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
  "meta": {
   "marco": "Marco 7 — Estoque, Ferramentas, Patrimônio, Compras e Seguros",
   "status": "Pronto para aceite",
-  "geradoEm": "2026-10-20T22:29:46.280Z",
+  "geradoEm": "2026-10-20T23:45:55.637Z",
   "autor": "Patrick Siqueira",
   "commits": {
    "api": "3f7e550 (CI final); testes locais iniciados em dda254a",
@@ -30670,7 +30719,7 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
   "node": "v24.18.0",
   "execucaoLocal": {
    "inicio": "20/10/2026 17:12:31",
-   "fim": "20/10/2026 19:29:33",
+   "fim": "20/10/2026 20:42:16",
    "comandoRollback": "NODE_ENV=test node --test --test-concurrency=1 --test-reporter=tap test/<arquivo>",
    "comandoDescartavel": "node scripts/withDisposableDb.js -- node --test --test-concurrency=1 --test-reporter=tap test/<arquivo>",
    "observacao": "Banco local de homologação/desenvolvimento (PostgreSQL 18), com RLS ativo e credencial de aplicação; banco descartável criado e destruído automaticamente por teste."
@@ -31058,7 +31107,7 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "F29": "6d2d7e7b0b2de1e3562eb06ca816c4aeb60ab2e52cd1d8f2c2c66931a35bb1a8"
   },
   "metodo": "hashes.json = SHA-256 (UTF-8) de JSON.stringify(dossie, null, 1) depois de trocar hashes.json por \"\"; cada print = SHA-256 dos bytes JPEG do data URI",
-  "json": "4bdb649175375c3afd322d2fde1662f416641abaec2ff16e26c32d29f94838e4"
+  "json": "c41518d8161fa7aa567cd91e1049bd6dd004ca8531b16fb662cb19a147f8be1e"
  },
  "divergenciasDocumentais": [
   {
