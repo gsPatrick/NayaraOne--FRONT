@@ -20,7 +20,7 @@ import FileDropInput from "@/components/molecules/FileDropInput/FileDropInput";
 import { listAssets, createAsset, updateAsset, transferAsset, listAssetMovements, loanTool, returnTool, listToolLoans, listInventoryLocations, getAssetByTag, disposeAsset, getAssetDisposal } from "@/lib/api/inventory";
 import { uploadFile } from "@/lib/api/legal";
 import { apiFetch } from "@/lib/api/client";
-import { formatBRL, formatDate, toNumber } from "@/lib/format";
+import { formatBRL, formatDate, toNumber, dateOnlyInputToIso } from "@/lib/format";
 
 const STATUS_LABELS = { AVAILABLE: "Disponível", IN_USE: "Em uso", LOANED: "Emprestado", MAINTENANCE: "Em manutenção", LOST: "Perdido/extraviado", DISPOSED: "Baixado" };
 const ASSET_MOVEMENT_LABELS = { TRANSFER: "Transferência", DISPOSAL: "Baixa", LOAN: "Empréstimo", RETURN: "Devolução" };
@@ -33,6 +33,14 @@ const EMPTY_DISPOSE_FORM = { disposalType: "SALE", disposalValue: "", counterpar
 // Só patrimônio fora de qualquer processo aberto pode ser baixado — a API recusa LOANED (devolver
 // antes), MAINTENANCE (fechar a OS antes), LOST e DISPOSED (terminais).
 const DISPOSABLE_STATUSES = ["AVAILABLE", "IN_USE"];
+
+// Mesmo limite da API (toolLoans.service.js#TOOL_LOAN_MAX_DAYS).
+const LOAN_MAX_DAYS = 90;
+// Data (AAAA-MM-DD) em São Paulo, deslocada em `plusDays`.
+function todayDateOnly(plusDays = 0) {
+  const nowSp = new Date(Date.now() - 3 * 60 * 60 * 1000 + plusDays * 24 * 60 * 60 * 1000);
+  return nowSp.toISOString().slice(0, 10);
+}
 
 export default function PatrimonioPage() {
   const router = useRouter();
@@ -102,6 +110,9 @@ export default function PatrimonioPage() {
   // modal não tinha campo de destino (a API agora exige destinationLocationId).
   const [loanDestinationId, setLoanDestinationId] = useState("");
   const [loanDueAt, setLoanDueAt] = useState("");
+  const loanDueMin = todayDateOnly();
+  const loanDueMax = todayDateOnly(LOAN_MAX_DAYS);
+  const loanDueAtValid = Boolean(loanDueAt) && loanDueAt >= loanDueMin && loanDueAt <= loanDueMax;
   const [loanConditionOut, setLoanConditionOut] = useState("");
 
   // GAP REAL CORRIGIDO (auditoria de conformidade contratual Marco 7, 2026-10-07): Caderno §9 —
@@ -236,7 +247,7 @@ export default function PatrimonioPage() {
     setBusyId(loanTarget.id);
     setActionError("");
     try {
-      await loanTool(loanTarget.id, { personUserId: loanPersonId, destinationLocationId: loanDestinationId, dueAt: loanDueAt || undefined, conditionOutCode: loanConditionOut || undefined });
+      await loanTool(loanTarget.id, { personUserId: loanPersonId, destinationLocationId: loanDestinationId, dueAt: dateOnlyInputToIso(loanDueAt), conditionOutCode: loanConditionOut });
       const loanedId = loanTarget.id;
       setLoanTarget(null);
       setLoanPersonId("");
@@ -381,7 +392,8 @@ export default function PatrimonioPage() {
             </>
           ) : (
             <>
-              <Button size="sm" variant="secondary" onClick={() => openEdit(row)}>Editar</Button>
+              {/* A11: patrimônio perdido (LOST) saiu de circulação — a API recusa edição. */}
+              {row.status !== "LOST" ? <Button size="sm" variant="secondary" onClick={() => openEdit(row)}>Editar</Button> : null}
               <Button size="sm" variant="secondary" onClick={() => openHistory(row)}>Histórico</Button>
               {row.status !== "LOST" ? (
                 <Button size="sm" variant="secondary" onClick={() => setTransferTarget(row)}>Transferir</Button>
@@ -653,7 +665,7 @@ export default function PatrimonioPage() {
           ) : (
             <>
               <Button variant="secondary" onClick={() => setLoanTarget(null)}>Cancelar</Button>
-              <Button onClick={handleLoan} loading={busyId === loanTarget?.id} disabled={!loanPersonId.trim() || !loanDestinationId}>Emprestar</Button>
+              <Button onClick={handleLoan} loading={busyId === loanTarget?.id} disabled={!loanPersonId.trim() || !loanDestinationId || !loanDueAtValid || !loanConditionOut}>Emprestar</Button>
             </>
           )
         }
@@ -681,17 +693,19 @@ export default function PatrimonioPage() {
                 ))}
               </Select>
             </FormField>
-            <FormField label="Data prevista de devolução">
-              <Input type="date" value={loanDueAt} onChange={(e) => setLoanDueAt(e.target.value)} />
-              {loanDueAt && loanDueAt < new Date().toISOString().slice(0, 10) ? (
+            {/* Revisão Marco 7 (19/10/2026), A3 — EST-006: data prevista de devolução obrigatória,
+                de hoje até LOAN_MAX_DAYS dias (a API recusa fora disso). */}
+            <FormField label="Data prevista de devolução" required helper={`Obrigatória — de hoje até ${LOAN_MAX_DAYS} dias. Empréstimo mais longo: devolva e registre nova saída.`}>
+              <Input type="date" data-testid="loan-due-at" value={loanDueAt} min={loanDueMin} max={loanDueMax} onChange={(e) => setLoanDueAt(e.target.value)} />
+              {loanDueAt && !loanDueAtValid ? (
                 <Alert tone="warning" style={{ marginTop: "var(--space-2)" }}>
-                  Essa data já passou — a ferramenta já nasceria “atrasada”. Confirme se é isso mesmo.
+                  Escolha uma data entre hoje e {formatDate(dateOnlyInputToIso(loanDueMax))}.
                 </Alert>
               ) : null}
             </FormField>
-            <FormField label="Condição na saída" helper="Opcional — registre o estado da ferramenta no momento da saída.">
+            <FormField label="Condição na saída" required helper="Obrigatória (EST-006) — registre o estado da ferramenta no momento da saída.">
               <Select value={loanConditionOut} onChange={(e) => setLoanConditionOut(e.target.value)}>
-                <option value="">Não registrar</option>
+                <option value="">Selecione…</option>
                 <option value="OK">Boa</option>
                 <option value="DAMAGED">Danificada</option>
               </Select>

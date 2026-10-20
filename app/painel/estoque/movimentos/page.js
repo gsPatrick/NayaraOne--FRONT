@@ -17,9 +17,11 @@ import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import PersonPicker from "@/components/molecules/PersonPicker/PersonPicker";
-import { listInventoryItems, listInventoryLocations, recordInventoryMovement, getItemBalances, listInventoryMovements } from "@/lib/api/inventory";
+import { listInventoryItems, listInventoryLocations, recordInventoryMovement, getItemBalances, listInventoryMovements, proposeInventoryAdjustment, listAdjustmentProposals, decideAdjustmentProposal } from "@/lib/api/inventory";
+import { listProjectStages } from "@/lib/api/construction";
+import { getCurrentUser } from "@/lib/auth/session";
 import { generateIdempotencyKey } from "@/lib/offline/offlineQueue";
-import { formatQuantity, formatDateTime, toNumber } from "@/lib/format";
+import { formatQuantity, formatDateTime, formatBRL, toNumber } from "@/lib/format";
 import styles from "../../obras/lista/page.module.css";
 
 const MOVEMENT_TYPE_LABELS = { IN: "Entrada", OUT: "Saída", RETURN: "Devolução", TRANSFER: "Transferência", ADJUSTMENT: "Ajuste", LOSS: "Perda", DISPOSAL: "Descarte" };
@@ -31,6 +33,9 @@ const SOURCE_REQUIRED = { OUT: "source", LOSS: "source", DISPOSAL: "source", IN:
 // falha, por desenho. Removida dessa lista; o label/tone continuam existindo pra exibir no
 // histórico movimentos antigos/vindos de outro fluxo.
 const MOVEMENT_TYPE_OPTIONS = Object.entries(MOVEMENT_TYPE_LABELS).filter(([k]) => k !== "LOSS");
+// Revisão Marco 7 (19/10/2026), A6 — EST-008: ajuste e descarte manuais viram PROPOSTA; outra
+// pessoa com permissão de aprovação decide (a API recusa o lançamento direto).
+const PROPOSAL_TYPES = ["ADJUSTMENT", "DISPOSAL"];
 
 export default function MovimentosPage() {
   const router = useRouter();
@@ -58,8 +63,42 @@ export default function MovimentosPage() {
   const [historyFilters, setHistoryFilters] = useState({ inventoryItemId: "", locationId: "", movementType: "" });
   const [form, setForm] = useState({
     inventoryItemId: "", movementType: "IN", quantity: "", sourceLocationId: "", destinationLocationId: "",
-    responsiblePersonId: "", responsibleName: "", reason: "",
+    responsiblePersonId: "", responsibleName: "", reason: "", stageId: "",
   });
+  const currentUser = getCurrentUser();
+  const [notice, setNotice] = useState("");
+  const [proposals, setProposals] = useState([]);
+  const [proposalsLoading, setProposalsLoading] = useState(true);
+  const [proposalsError, setProposalsError] = useState("");
+  const [decidingId, setDecidingId] = useState(null);
+  const [stages, setStages] = useState([]);
+  const [stagesLoading, setStagesLoading] = useState(false);
+
+  function loadProposals() {
+    setProposalsLoading(true);
+    setProposalsError("");
+    listAdjustmentProposals({ status: "PENDING" })
+      .then((rows) => setProposals(rows || []))
+      .catch((err) => setProposalsError(err?.message || "Não foi possível carregar os ajustes pendentes."))
+      .finally(() => setProposalsLoading(false));
+  }
+  useEffect(() => { loadProposals(); }, []);
+
+  async function handleDecideProposal(id, decision) {
+    setDecidingId(id);
+    setActionError("");
+    setNotice("");
+    try {
+      await decideAdjustmentProposal(id, decision);
+      setNotice(decision === "APPROVED" ? "Ajuste aprovado — o movimento foi registrado no estoque." : "Ajuste rejeitado — o saldo não foi alterado.");
+      loadProposals();
+      loadHistory();
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível decidir o ajuste.");
+    } finally {
+      setDecidingId(null);
+    }
+  }
 
   function load() {
     setLoading(true);
@@ -92,6 +131,25 @@ export default function MovimentosPage() {
     getItemBalances(form.inventoryItemId).then(setBalances).catch(() => setBalances([]));
   }, [form.inventoryItemId]);
 
+  // A7 — EST-004/§5: saída (OUT) de um canteiro de obra exige a etapa onde o material foi usado.
+  const sourceLocation = locations.find((l) => l.id === form.sourceLocationId);
+  const siteProjectId = form.movementType === "OUT" && sourceLocation?.locationType === "PROJECT_SITE" ? sourceLocation.projectId : null;
+  const needsStage = Boolean(siteProjectId);
+  useEffect(() => {
+    if (!siteProjectId) {
+      setStages([]);
+      return undefined;
+    }
+    let cancelled = false;
+    setStagesLoading(true);
+    listProjectStages(siteProjectId)
+      .then((rows) => { if (!cancelled) setStages(rows || []); })
+      .catch(() => { if (!cancelled) setStages([]); })
+      .finally(() => { if (!cancelled) setStagesLoading(false); });
+    return () => { cancelled = true; };
+  }, [siteProjectId]);
+  const isProposal = PROPOSAL_TYPES.includes(form.movementType);
+
   const requirement = SOURCE_REQUIRED[form.movementType];
   const needsReason = ["ADJUSTMENT", "LOSS", "DISPOSAL"].includes(form.movementType);
   const item = items.find((i) => i.id === form.inventoryItemId);
@@ -112,7 +170,8 @@ export default function MovimentosPage() {
     (requirement !== "both" || (form.sourceLocationId && form.destinationLocationId)) &&
     (requirement !== "either" || form.sourceLocationId || form.destinationLocationId) &&
     (!needsReason || form.reason.trim()) &&
-    (!needsResponsible || form.responsiblePersonId.trim());
+    (!needsResponsible || form.responsiblePersonId.trim()) &&
+    (!needsStage || form.stageId);
 
   async function handleSubmit() {
     if (!isValid) return;
@@ -121,22 +180,38 @@ export default function MovimentosPage() {
     if (!movementIdempotencyKeyRef.current) {
       movementIdempotencyKeyRef.current = generateIdempotencyKey();
     }
+    setNotice("");
     try {
-      await recordInventoryMovement({
-        inventoryItemId: form.inventoryItemId,
-        movementType: form.movementType,
-        quantity: toNumber(form.quantity),
-        sourceLocationId: form.sourceLocationId || undefined,
-        destinationLocationId: form.destinationLocationId || undefined,
-        responsiblePersonId: form.responsiblePersonId || undefined,
-        reason: form.reason || undefined,
-        idempotencyKey: movementIdempotencyKeyRef.current,
-      });
+      if (isProposal) {
+        await proposeInventoryAdjustment({
+          inventoryItemId: form.inventoryItemId,
+          movementType: form.movementType,
+          quantity: toNumber(form.quantity),
+          sourceLocationId: form.sourceLocationId || undefined,
+          destinationLocationId: form.destinationLocationId || undefined,
+          reason: form.reason || undefined,
+          idempotencyKey: movementIdempotencyKeyRef.current,
+        });
+        setNotice("Proposta registrada — o saldo só muda depois que outra pessoa com permissão aprovar.");
+      } else {
+        await recordInventoryMovement({
+          inventoryItemId: form.inventoryItemId,
+          movementType: form.movementType,
+          quantity: toNumber(form.quantity),
+          sourceLocationId: form.sourceLocationId || undefined,
+          destinationLocationId: form.destinationLocationId || undefined,
+          responsiblePersonId: form.responsiblePersonId || undefined,
+          stageId: needsStage ? form.stageId : undefined,
+          reason: form.reason || undefined,
+          idempotencyKey: movementIdempotencyKeyRef.current,
+        });
+      }
       movementIdempotencyKeyRef.current = null;
       setModalOpen(false);
-      setForm({ inventoryItemId: "", movementType: "IN", quantity: "", sourceLocationId: "", destinationLocationId: "", responsiblePersonId: "", responsibleName: "", reason: "" });
+      setForm({ inventoryItemId: "", movementType: "IN", quantity: "", sourceLocationId: "", destinationLocationId: "", responsiblePersonId: "", responsibleName: "", reason: "", stageId: "" });
       load();
       loadHistory();
+      loadProposals();
     } catch (err) {
       setActionError(err?.message || "Não foi possível registrar o movimento.");
     } finally {
@@ -156,8 +231,40 @@ export default function MovimentosPage() {
     { key: "qty", label: "Quantidade", render: (row) => formatQuantity(row.quantity) },
     { key: "from", label: "De", render: (row) => row.sourceLocation?.name || "—" },
     { key: "to", label: "Para", render: (row) => row.destinationLocation?.name || "—" },
+    { key: "stage", label: "Etapa", render: (row) => row.stage?.name || "—" },
+    { key: "cost", label: "Custo", render: (row) => (row.totalCost != null ? formatBRL(row.totalCost) : "—") },
     { key: "reason", label: "Motivo", render: (row) => row.reason || "—" },
     { key: "by", label: "Responsável", render: (row) => row.responsiblePerson?.legalName || row.movedByUser?.name || "—" },
+  ];
+
+  const proposalColumns = [
+    { key: "createdAt", label: "Proposto em", render: (row) => formatDateTime(row.createdAt) },
+    { key: "type", label: "Tipo", render: (row) => <Badge tone={MOVEMENT_TYPE_TONE[row.movementType]}>{MOVEMENT_TYPE_LABELS[row.movementType]}</Badge> },
+    { key: "item", label: "Item", render: (row) => row.inventoryItem?.name || "—" },
+    {
+      key: "qty",
+      label: "Quantidade",
+      render: (row) => `${row.movementType === "ADJUSTMENT" && row.destinationLocationId ? "+" : "−"}${formatQuantity(row.quantity)}`,
+    },
+    { key: "where", label: "Local", render: (row) => row.destinationLocation?.name || row.sourceLocation?.name || "—" },
+    { key: "value", label: "Valor estimado", render: (row) => (row.estimatedValue != null ? formatBRL(row.estimatedValue) : "—") },
+    { key: "reason", label: "Motivo", render: (row) => row.reason },
+    { key: "by", label: "Proposto por", render: (row) => row.proposedByUser?.name || "—" },
+    {
+      key: "actions",
+      label: "",
+      render: (row) => {
+        if (currentUser?.id && currentUser.id === row.proposedByUserId) {
+          return <span style={{ fontSize: "var(--text-body-sm)", color: "var(--color-ink-muted)" }}>Você propôs — outra pessoa decide</span>;
+        }
+        return (
+          <div style={{ display: "flex", gap: 6 }}>
+            <Button size="sm" onClick={() => handleDecideProposal(row.id, "APPROVED")} loading={decidingId === row.id}>Aprovar</Button>
+            <Button size="sm" variant="secondary" onClick={() => handleDecideProposal(row.id, "REJECTED")} loading={decidingId === row.id}>Rejeitar</Button>
+          </div>
+        );
+      },
+    },
   ];
 
   return (
@@ -172,6 +279,13 @@ export default function MovimentosPage() {
           <Alert tone="danger">{actionError}</Alert>
         </div>
       ) : null}
+
+      {notice ? <Alert tone="success">{notice}</Alert> : null}
+
+      <Card title="Ajustes aguardando aprovação" subtitle="Ajuste e descarte manuais só mexem no saldo depois da aprovação de outra pessoa (EST-008)">
+        {proposalsError ? <Alert tone="danger" title="Não foi possível carregar os ajustes pendentes">{proposalsError}</Alert> : null}
+        <Table columns={proposalColumns} rows={proposals} loading={proposalsLoading} emptyMessage="Nenhum ajuste aguardando aprovação." />
+      </Card>
 
       <Card title="Consultar saldo por item" subtitle="Selecione um item para ver o saldo por local">
         <div className={styles.toolbar}>
@@ -239,7 +353,7 @@ export default function MovimentosPage() {
           ) : (
             <>
               <Button variant="secondary" onClick={() => setModalOpen(false)}>Cancelar</Button>
-              <Button onClick={handleSubmit} loading={saving} disabled={!isValid}>Registrar</Button>
+              <Button onClick={handleSubmit} loading={saving} disabled={!isValid}>{isProposal ? "Enviar para aprovação" : "Registrar"}</Button>
             </>
           )
         }
@@ -279,7 +393,7 @@ export default function MovimentosPage() {
               // de movimento não limpava "reason" nem origem/destino — motivo digitado para um
               // Ajuste (ex.: "contagem física") ficava gravado silenciosamente num movimento de
               // Saída depois, sem relação com o motivo real da saída.
-              setForm((p) => ({ ...p, movementType: e.target.value, reason: "", sourceLocationId: "", destinationLocationId: "" }))
+              setForm((p) => ({ ...p, movementType: e.target.value, reason: "", sourceLocationId: "", destinationLocationId: "", stageId: "" }))
             }
           >
             {MOVEMENT_TYPE_OPTIONS.map(([k, v]) => (
@@ -302,7 +416,7 @@ export default function MovimentosPage() {
                 const value = e.target.value;
                 setForm((p) => ({
                   ...p,
-                  sourceLocationId: value,
+                  sourceLocationId: value, stageId: "",
                   // Ajuste corrige UM local por vez — nunca os dois ao mesmo tempo (bug real: isso
                   // creditava o destino sem debitar a origem, criando saldo do nada).
                   destinationLocationId: p.movementType === "ADJUSTMENT" && value ? "" : p.destinationLocationId,
@@ -339,6 +453,19 @@ export default function MovimentosPage() {
               ))}
             </Select>
           </FormField>
+        ) : null}
+        {needsStage ? (
+          <FormField label="Etapa da obra" required helper={stages.length === 0 && !stagesLoading ? "Esta obra ainda não tem etapas cadastradas — cadastre em Obras antes de registrar a saída." : "Etapa em que o material foi usado."}>
+            <Select value={form.stageId} disabled={stagesLoading || stages.length === 0} onChange={(e) => setForm((p) => ({ ...p, stageId: e.target.value }))}>
+              <option value="">{stagesLoading ? "Carregando..." : "Selecione..."}</option>
+              {stages.map((st) => (
+                <option key={st.id} value={st.id}>{st.name}</option>
+              ))}
+            </Select>
+          </FormField>
+        ) : null}
+        {isProposal ? (
+          <Alert tone="info">Ajuste e descarte viram uma proposta: o saldo só muda depois que outra pessoa com permissão aprovar.</Alert>
         ) : null}
         {needsResponsible ? (
           <FormField label="Responsável" required helper="Quem está retirando ou recebendo o item.">

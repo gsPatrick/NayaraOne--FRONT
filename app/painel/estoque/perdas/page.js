@@ -27,8 +27,8 @@ import { uploadFile } from "@/lib/api/legal";
 import { formatBRL, formatDateTime, formatQuantity, toNumber } from "@/lib/format";
 import { getCurrentUser } from "@/lib/auth/session";
 
-const STATUS_LABELS = { OPEN: "Em análise", APPROVED: "Aprovada (baixa gerada)", REJECTED: "Rejeitada" };
-const STATUS_TONE = { OPEN: "warning", APPROVED: "danger", REJECTED: "neutral" };
+const STATUS_LABELS = { OPEN: "Em análise", PENDING_APPROVAL: "Acima da alçada — aguarda decisão", APPROVED: "Aprovada (baixa gerada)", REJECTED: "Rejeitada" };
+const STATUS_TONE = { OPEN: "warning", PENDING_APPROVAL: "warning", APPROVED: "danger", REJECTED: "neutral" };
 const EMPTY_DECISION_FORM = { chargeResponsible: false, responsiblePersonId: "", responsibleName: "", chargeAmount: "" };
 
 export default function PerdasPage() {
@@ -56,7 +56,7 @@ export default function PerdasPage() {
   // LOST/limpar custodiante/fechar empréstimos (R28/R30) — mas esta tela só permitia perda de
   // item de estoque (inventoryItemId). "targetType" alterna o formulário entre os dois modos.
   const [targetType, setTargetType] = useState("ITEM"); // ITEM | ASSET
-  const [form, setForm] = useState({ inventoryItemId: "", assetId: "", locationId: "", quantity: "", context: "", evidenceFileIds: [], evidenceFileNames: [], estimatedCost: "", responsiblePersonId: "", responsibleName: "" });
+  const [form, setForm] = useState({ inventoryItemId: "", assetId: "", locationId: "", quantity: "", context: "", evidenceFileIds: [], evidenceFileNames: [], responsiblePersonId: "", responsibleName: "" });
   const [evidenceUploading, setEvidenceUploading] = useState(false);
   const [evidenceUploadError, setEvidenceUploadError] = useState("");
 
@@ -100,6 +100,12 @@ export default function PerdasPage() {
   useEffect(() => { load(); }, []);
 
   const evidenceIds = form.evidenceFileIds;
+  // Prévia só informativa do custo que o servidor vai calcular (A2) — o valor gravado é sempre o do servidor.
+  const selectedItem = items.find((i) => i.id === form.inventoryItemId);
+  const selectedAsset = assets.find((a) => a.id === form.assetId);
+  const estimatedCostPreview = targetType === "ITEM"
+    ? (selectedItem?.averageCost != null && form.quantity && toNumber(form.quantity) > 0 ? Math.round(toNumber(form.quantity) * Number(selectedItem.averageCost) * 100) / 100 : null)
+    : (selectedAsset?.acquisitionValue != null ? Number(selectedAsset.acquisitionValue) : null);
   const isValid = targetType === "ITEM"
     ? form.inventoryItemId && form.locationId && !Number.isNaN(toNumber(form.quantity)) && toNumber(form.quantity) > 0 && form.context.trim() && evidenceIds.length > 0
     : form.assetId && form.context.trim() && evidenceIds.length > 0;
@@ -134,11 +140,12 @@ export default function PerdasPage() {
         quantity: targetType === "ITEM" ? toNumber(form.quantity) : undefined,
         context: form.context,
         evidenceFileIds: evidenceIds,
-        estimatedCost: form.estimatedCost ? toNumber(form.estimatedCost) : undefined,
+        // Revisão Marco 7 (19/10/2026), A2: a estimativa de custo NÃO é mais enviada — o servidor
+        // calcula (quantidade × custo médio do item, ou valor contábil do patrimônio).
         responsiblePersonId: form.responsiblePersonId || undefined,
       });
       setModalOpen(false);
-      setForm({ inventoryItemId: "", assetId: "", locationId: "", quantity: "", context: "", evidenceFileIds: [], evidenceFileNames: [], estimatedCost: "", responsiblePersonId: "", responsibleName: "" });
+      setForm({ inventoryItemId: "", assetId: "", locationId: "", quantity: "", context: "", evidenceFileIds: [], evidenceFileNames: [], responsiblePersonId: "", responsibleName: "" });
       setTargetType("ITEM");
       load();
     } catch (err) {
@@ -258,7 +265,7 @@ export default function PerdasPage() {
       label: "",
       width: "14%",
       render: (row) => {
-        if (row.status !== "OPEN") return null;
+        if (row.status !== "OPEN" && row.status !== "PENDING_APPROVAL") return null;
         const isOwnCase = currentUser?.id && row.createdBy && currentUser.id === row.createdBy;
         if (isOwnCase) {
           return <span style={{ fontSize: "var(--text-body-sm)", color: "var(--color-ink-muted)" }}>Você registrou — não pode decidir</span>;
@@ -383,8 +390,10 @@ export default function PerdasPage() {
                 }))}
               />
             </FormField>
-            <FormField label="Estimativa de custo (R$)">
-              <DecimalInput value={form.estimatedCost} onChange={(e) => setForm((p) => ({ ...p, estimatedCost: e.target.value }))} />
+            <FormField label="Estimativa de custo" helper="Calculada pelo sistema na abertura — quantidade × custo médio do item, ou valor contábil do patrimônio. Toda perda é decidida por outra pessoa com permissão.">
+              <div data-testid="loss-estimated-cost-preview" style={{ padding: "var(--space-2) 0", color: "var(--color-ink-muted)" }}>
+                {estimatedCostPreview != null ? formatBRL(estimatedCostPreview) : "Será calculada pelo sistema ao registrar."}
+              </div>
             </FormField>
             <FormField label="Responsável (se identificado)" helper="Opcional — a responsabilidade final é definida na decisão do caso.">
               <PersonPicker

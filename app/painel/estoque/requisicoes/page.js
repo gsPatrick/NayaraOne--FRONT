@@ -16,6 +16,7 @@ import StickyActionBar from "@/components/organisms/StickyActionBar/StickyAction
 import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
+import PersonPicker from "@/components/molecules/PersonPicker/PersonPicker";
 import { useRouter } from "next/navigation";
 import { listRequisitions, createRequisition, decideRequisition, issueRequisition, listInventoryItems, listInventoryLocations } from "@/lib/api/inventory";
 import { listProjects, listProjectStages } from "@/lib/api/construction";
@@ -93,9 +94,9 @@ export default function RequisicoesPage() {
     });
   }
 
-  // Obra com etapas cadastradas exige escolher a etapa (EST-004: project_id/stage_id). Obra sem
-  // nenhuma etapa ainda segue permitida (a API trata stageId como opcional nesse caso).
-  const stageRequired = Boolean(form.projectId) && stages.length > 0;
+  // Revisão Marco 7 (19/10/2026), A7 — EST-004/§5: requisição para obra SEMPRE exige a etapa
+  // (a API recusa sem ela). Obra sem etapas cadastradas não pode requisitar até cadastrá-las.
+  const stageRequired = Boolean(form.projectId);
   const isValid =
     form.warehouseLocationId &&
     (!form.projectLocationId || form.projectId) &&
@@ -149,18 +150,20 @@ export default function RequisicoesPage() {
     }
   }
 
+  // Revisão Marco 7 (19/10/2026), A7 — Caderno §5 "OUT vincula project_id/stage_id e
+  // responsável": a entrega para obra registra quem recebe o material (cadastro de Pessoas).
+  const [issueTarget, setIssueTarget] = useState(null);
+  const [issueResponsible, setIssueResponsible] = useState({ name: "", personId: "" });
+
   async function handleIssue(id) {
-    const ok = await confirm({
-      title: "Entregar esta requisição?",
-      message: "O estoque será baixado para os itens desta requisição. Esta ação não pode ser desfeita.",
-      confirmLabel: "Entregar",
-      tone: "danger",
-    });
-    if (!ok) return;
+    const row = requisitions.find((r) => r.id === id);
+    if (row?.projectId && !issueResponsible.personId) return;
     setBusyId(id);
     setActionError("");
     try {
-      await issueRequisition(id);
+      await issueRequisition(id, issueResponsible.personId ? { responsiblePersonId: issueResponsible.personId } : {});
+      setIssueTarget(null);
+      setIssueResponsible({ name: "", personId: "" });
       load();
     } catch (err) {
       setActionError(err?.message || "Não foi possível entregar a requisição.");
@@ -223,7 +226,7 @@ export default function RequisicoesPage() {
             )
           ) : null}
           {row.status === "APPROVED" ? (
-            <Button size="sm" onClick={() => handleIssue(row.id)} loading={busyId === row.id}>Entregar (baixa)</Button>
+            <Button size="sm" onClick={() => { setIssueResponsible({ name: "", personId: "" }); setIssueTarget(row); }} loading={busyId === row.id}>Entregar (baixa)</Button>
           ) : null}
         </div>
         );
@@ -344,7 +347,7 @@ export default function RequisicoesPage() {
             helper={stagesLoading
               ? "Carregando etapas..."
               : stages.length === 0 && !stagesError
-                ? "Esta obra ainda não tem etapas cadastradas — a requisição fica vinculada só à obra."
+                ? "Esta obra ainda não tem etapas cadastradas — cadastre as etapas em Obras antes de requisitar material para ela."
                 : "Etapa que vai consumir o material."}
           >
             <Select value={form.stageId} disabled={stagesLoading || stages.length === 0} onChange={(e) => setForm((p) => ({ ...p, stageId: e.target.value }))}>
@@ -371,6 +374,39 @@ export default function RequisicoesPage() {
         <Button variant="secondary" size="sm" onClick={() => setForm((p) => ({ ...p, lines: [...p.lines, { inventoryItemId: "", quantity: "" }] }))}>+ Adicionar item</Button>
         </>
         )}
+      </Modal>
+
+      <Modal
+        open={Boolean(issueTarget)}
+        onClose={() => setIssueTarget(null)}
+        title="Entregar esta requisição?"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setIssueTarget(null)}>Cancelar</Button>
+            <Button
+              variant="danger"
+              onClick={() => handleIssue(issueTarget.id)}
+              loading={busyId === issueTarget?.id}
+              disabled={Boolean(issueTarget?.projectId) && !issueResponsible.personId}
+            >
+              Entregar
+            </Button>
+          </>
+        }
+      >
+        <p style={{ marginTop: 0 }}>O estoque será baixado para os itens desta requisição. Esta ação não pode ser desfeita.</p>
+        {issueTarget?.projectId ? (
+          <FormField label="Quem recebe o material" required helper="Pessoa responsável pela retirada na obra — fica gravada na saída de estoque.">
+            <PersonPicker
+              id="requisition-issue-responsible"
+              value={issueResponsible.name}
+              personId={issueResponsible.personId}
+              placeholder="Buscar pessoa pelo nome..."
+              unlinkedHint="Selecione um contato da lista — texto livre não é aceito, é preciso um cadastro vinculado."
+              onSelect={({ name, personId }) => setIssueResponsible({ name, personId: personId || "" })}
+            />
+          </FormField>
+        ) : null}
       </Modal>
 
       <ConfirmDialog />

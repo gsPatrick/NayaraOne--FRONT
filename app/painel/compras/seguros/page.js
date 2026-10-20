@@ -314,14 +314,26 @@ export default function SegurosPage() {
     setIssueTarget(id);
   }
 
+  // Revisão Marco 7 (19/10/2026, B8): a vigência é obrigatória na emissão (a API recusa sem ela —
+  // sem data de fim não há alerta de renovação). A tela não envia mais "undefined" silencioso.
+  const issueValidityError = !issueForm.effectiveDate || !issueForm.expiryDate
+    ? "Informe o início e o fim da vigência."
+    : issueForm.expiryDate <= issueForm.effectiveDate
+      ? "O fim da vigência precisa ser depois do início."
+      : "";
+
   async function handleIssue() {
     const id = issueTarget;
+    if (issueValidityError) {
+      setActionError(issueValidityError);
+      return;
+    }
     setBusyId(id);
     setActionError("");
     try {
       await issueInsurancePolicy(id, {
-        effectiveDate: issueForm.effectiveDate || undefined,
-        expiryDate: issueForm.expiryDate || undefined,
+        effectiveDate: issueForm.effectiveDate,
+        expiryDate: issueForm.expiryDate,
         installmentsCount: issueForm.installmentsCount ? Number(issueForm.installmentsCount) : undefined,
       });
       setIssueTarget(null);
@@ -384,7 +396,7 @@ export default function SegurosPage() {
     if (!detailModal || !cancelReason.trim()) return;
     const ok = await confirm({
       title: "Cancelar apólice?",
-      message: "Essa ação não pode ser desfeita. A apólice ficará com status Cancelada.",
+      message: "Essa ação não pode ser desfeita. A apólice ficará Cancelada, as parcelas em aberto serão canceladas e os lançamentos a pagar delas estornados no Financeiro, e o alerta de renovação será encerrado. Parcelas já pagas não são estornadas (a restituição depende da seguradora).",
       confirmLabel: "Cancelar apólice",
       tone: "danger",
     });
@@ -392,9 +404,13 @@ export default function SegurosPage() {
     setSaving(true);
     setActionError("");
     try {
-      await cancelInsurancePolicy(detailModal.policy.id, { reason: cancelReason.trim() });
+      const canceled = await cancelInsurancePolicy(detailModal.policy.id, { reason: cancelReason.trim() });
       setCancelReason("");
-      closeDetail();
+      const comp = canceled?.compensation;
+      const policy = await getInsurancePolicy(detailModal.policy.id);
+      currentPolicyIdRef.current = policy.id;
+      setDetailModal({ policy, cancelSummary: comp || null });
+      loadInstallments(policy.id);
       load();
     } catch (err) {
       setActionError(err?.message || "Não foi possível cancelar a apólice.");
@@ -574,6 +590,13 @@ export default function SegurosPage() {
               {detailModal.policy.coverageSummary ? <p style={{ margin: "0 0 4px" }}>Cobertura: {detailModal.policy.coverageSummary}</p> : null}
               {detailModal.policy.propertyId ? <p style={{ margin: "0 0 4px" }}>Imóvel vinculado: {detailModal.policy.linkedProperty?.title || "imóvel não encontrado"}</p> : null}
               {detailModal.policy.contractId ? <p style={{ margin: 0 }}>Contrato vinculado: {linkedContractLabel(detailModal.policy) || "contrato não encontrado"}</p> : null}
+              {detailModal.cancelSummary ? (
+                <p role="status" style={{ margin: "8px 0 0", color: "var(--color-success, inherit)" }}>
+                  Apólice cancelada: {detailModal.cancelSummary.canceledInstallmentIds?.length || 0} parcela(s) em aberto cancelada(s), {detailModal.cancelSummary.reversedFinancialEntryIds?.length || 0} lançamento(s) a pagar estornado(s) no Financeiro
+                  {Number(detailModal.cancelSummary.paidPremiumAmount) > 0 ? `; prêmio já pago mantido: ${formatBRL(detailModal.cancelSummary.paidPremiumAmount)}` : ""}
+                  {detailModal.cancelSummary.dismissedRenewalTasks ? "; alerta de renovação encerrado" : ""}.
+                </p>
+              ) : null}
               {detailModal.policy.status === "CANCELED" && detailModal.policy.cancelInfo ? (
                 <p style={{ margin: "8px 0 0", color: "var(--color-ink-muted)" }}>
                   Cancelada em {formatDateTime(detailModal.policy.cancelInfo.occurredAt)} — motivo: {detailModal.policy.cancelInfo.reason}
@@ -675,11 +698,11 @@ export default function SegurosPage() {
                   <div key={inst.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid var(--color-border)", gap: 12 }}>
                     <span>
                       {formatDate(inst.dueDate || inst.due_date)} — {formatBRL(inst.amount)}{" "}
-                      <Badge tone={inst.status === "PAID" ? "success" : inst.status === "OVERDUE" ? "danger" : "neutral"}>
-                        {inst.status === "PAID" ? "Paga" : inst.status === "OVERDUE" ? "Vencida" : "Pendente"}
+                      <Badge tone={inst.status === "PAID" ? "success" : inst.status === "OVERDUE" ? "danger" : inst.status === "CANCELED" ? "warning" : "neutral"}>
+                        {inst.status === "PAID" ? "Paga" : inst.status === "OVERDUE" ? "Vencida" : inst.status === "CANCELED" ? "Cancelada" : "Pendente"}
                       </Badge>
                     </span>
-                    {inst.status !== "PAID" ? (
+                    {inst.status !== "PAID" && inst.status !== "CANCELED" ? (
                       /* BUG GRAVE REAL CORRIGIDO (auditoria Marco 7 Compras E2E, 2026-10-18): o
                          dropdown de "qualquer despesa liquidada de mesmo valor" ainda misturava
                          lançamentos de outros contextos (8 opções idênticas de centro de custo de
@@ -784,7 +807,7 @@ export default function SegurosPage() {
         footer={
           <>
             <Button variant="secondary" onClick={() => setIssueTarget(null)}>Cancelar</Button>
-            <Button variant="danger" onClick={handleIssue} loading={busyId === issueTarget}>Emitir</Button>
+            <Button variant="danger" onClick={handleIssue} loading={busyId === issueTarget} disabled={Boolean(issueValidityError)}>Emitir</Button>
           </>
         }
       >
@@ -806,6 +829,7 @@ export default function SegurosPage() {
             onChange={(e) => setIssueForm((p) => ({ ...p, installmentsCount: e.target.value }))}
           />
         </FormField>
+        {issueValidityError ? <p role="alert" style={{ color: "var(--color-danger)", margin: "4px 0 0" }}>{issueValidityError}</p> : null}
       </Modal>
 
       <FileViewerModal open={!!viewerFile} onClose={() => setViewerFile(null)} fileId={viewerFile?.id} />
