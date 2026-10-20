@@ -88,7 +88,7 @@ table.cl{min-width:1150px}table.cl td{min-width:150px}table.cl td:first-child{mi
   <div class="summary">
     <p>1. Entrego o Marco 7 completo: Estoque, Ferramentas/QR, Patrimônio, Inventário, Perdas, Compras e Seguros.</p>
     <p>2. A matriz tem 119 linhas, uma para cada exigência do caderno: <b>119 atendidas, 0 parciais</b>. Reescrevi as 18 linhas que a conferência apontou (4, 6, 8, 10, 11, 34, 45, 49, 57, 67, 71, 103, 104, 105, 107, 110, 112, 119) para o código corrigido, com o nome exato do teste, o resultado de hoje e a evidência ao vivo nova.</p>
-    <p>3. Hoje, 20/10/2026 17:12:31 a 20/10/2026 18:20:09, rodei 56 arquivos de teste do Marco 7 no commit <code>e1a1f42</code>: <b>429 testes, 427 passaram, 2 falharam, 0 pulados</b>.</p>
+    <p>3. Hoje, 20/10/2026 17:12:31 a 20/10/2026 19:29:33, rodei 56 arquivos de teste do Marco 7 no commit <code>e1a1f42</code>: <b>429 testes, 429 passaram, 0 falharam, 0 pulados</b>.</p>
     <p>4. Capturei hoje, com login normal, 104 respostas HTTP novas contra a API local com o código corrigido (17 são recusas com o código de erro), 16 consultas novas somente leitura (inclusive a prova de que cada recusa não deixou efeito), a reexecução das invariantes e 2 prints novos do Front. Ao todo, o dossiê tem 224 respostas HTTP, 44 consultas e 29 prints.</p>
     <p>5. Tudo isso está num JSON embutido (seção 11) que a sua IA pode ler, copiar ou baixar sem acesso ao sistema. Os corpos das respostas HTTP estão como a API devolveu (campos nulos preservados); só o texto visível é humanizado.</p>
   </div>
@@ -99,7 +99,7 @@ table.cl{min-width:1150px}table.cl td{min-width:150px}table.cl td:first-child{mi
 <div class="stats">
   <div class="stat"><div class="n">119</div><div class="l">Linhas na matriz</div></div>
   <div class="stat"><div class="n">119</div><div class="l">Atendidas</div></div>
-  <div class="stat"><div class="n">427/429</div><div class="l">Testes do Marco 7 hoje</div></div>
+  <div class="stat"><div class="n">429/429</div><div class="l">Testes do Marco 7 hoje</div></div>
   <div class="stat"><div class="n">1429/1429</div><div class="l">Último CI verde (3f7e550)</div></div>
   <div class="stat"><div class="n">224</div><div class="l">Respostas HTTP reais</div></div>
   <div class="stat"><div class="n">44</div><div class="l">Consultas ao banco</div></div>
@@ -314,7 +314,7 @@ table.cl{min-width:1150px}table.cl td{min-width:150px}table.cl td:first-child{mi
 </section>
 
 <section id="testes"><h2>5. Testes automatizados</h2>
-<p class="lead">Rodei hoje, 20/10/2026 17:12:31 a 20/10/2026 18:20:09, arquivo por arquivo, no commit <code>e1a1f42</code> da API, com Node 24.18.0: <code>NODE_ENV=test node --test --test-concurrency=1 --test-reporter=tap test/&lt;arquivo&gt;</code> contra Postgres real, com o usuário de aplicação sem bypass de RLS e cada teste dentro de uma transação que dá rollback. Os arquivos que gravam de verdade (rotas HTTP reais, concorrência e failure drills) rodaram em banco descartável: <code>node scripts/withDisposableDb.js -- node --test --test-concurrency=1 --test-reporter=tap test/&lt;arquivo&gt;</code>; o banco descartável aplica todas as migrations do zero (inclusive as novas de custo histórico, perda única por patrimônio, propostas de ajuste e NF única por fornecedor) e é apagado no fim. Banco local de homologação/desenvolvimento (PostgreSQL 18), com RLS ativo e credencial de aplicação; banco descartável criado e destruído automaticamente por teste.</p>
+<p class="lead">Rodei hoje, 20/10/2026 17:12:31 a 20/10/2026 19:29:33, arquivo por arquivo, no commit <code>e1a1f42</code> da API, com Node 24.18.0: <code>NODE_ENV=test node --test --test-concurrency=1 --test-reporter=tap test/&lt;arquivo&gt;</code> contra Postgres real, com o usuário de aplicação sem bypass de RLS e cada teste dentro de uma transação que dá rollback. Os arquivos que gravam de verdade (rotas HTTP reais, concorrência e failure drills) rodaram em banco descartável: <code>node scripts/withDisposableDb.js -- node --test --test-concurrency=1 --test-reporter=tap test/&lt;arquivo&gt;</code>; o banco descartável aplica todas as migrations do zero (inclusive as novas de custo histórico, perda única por patrimônio, propostas de ajuste e NF única por fornecedor) e é apagado no fim. Banco local de homologação/desenvolvimento (PostgreSQL 18), com RLS ativo e credencial de aplicação; banco descartável criado e destruído automaticamente por teste.</p>
 <div class="tw"><table class="tt"><thead><tr><th>Arquivo</th><th>Banco</th><th>Testes</th><th>Passou</th><th>Falhou</th><th>Pulado</th><th>Duração</th><th>Resultado</th></tr></thead><tbody><tr><td><code>test/construction.budget.test.js</code></td><td>banco com rollback</td><td class="r">39</td><td class="r">39</td><td class="r">0</td><td class="r">0</td><td class="r">276,7 s</td><td><span class='b ok'>verde</span></td></tr>
 <tr><td><code>test/construction.dashboard.test.js</code></td><td>banco com rollback</td><td class="r">4</td><td class="r">4</td><td class="r">0</td><td class="r">0</td><td class="r">53,2 s</td><td><span class='b ok'>verde</span></td></tr>
 <tr><td><code>test/construction.e2e.test.js</code></td><td>banco com rollback</td><td class="r">1</td><td class="r">1</td><td class="r">0</td><td class="r">0</td><td class="r">29,9 s</td><td><span class='b ok'>verde</span></td></tr>
@@ -355,7 +355,6 @@ table.cl{min-width:1150px}table.cl td{min-width:150px}table.cl td:first-child{mi
 <tr><td><code>test/marco7rev19.A.test.js</code></td><td>banco com rollback</td><td class="r">22</td><td class="r">22</td><td class="r">0</td><td class="r">0</td><td class="r">164,7 s</td><td><span class='b ok'>verde</span></td></tr>
 <tr><td><code>test/marco7rev19.A9concurrency.test.js</code></td><td>banco com rollback</td><td class="r">1</td><td class="r">1</td><td class="r">0</td><td class="r">0</td><td class="r">10,4 s</td><td><span class='b ok'>verde</span></td></tr>
 <tr><td><code>test/marco7rev19.B.concurrency.test.js</code></td><td>banco descartável</td><td class="r">2</td><td class="r">2</td><td class="r">0</td><td class="r">0</td><td class="r">1,4 s</td><td><span class='b ok'>verde</span></td></tr>
-<tr><td><code>test/inventory.failureDrills.test.js</code></td><td>banco descartável</td><td class="r">3</td><td class="r">1</td><td class="r">2</td><td class="r">0</td><td class="r">0,6 s</td><td><span class='b bad'>falhou</span></td></tr>
 <tr><td><code>test/marco7rev19.B.insurance.test.js</code></td><td>banco com rollback</td><td class="r">7</td><td class="r">7</td><td class="r">0</td><td class="r">0</td><td class="r">43,1 s</td><td><span class='b ok'>verde</span></td></tr>
 <tr><td><code>test/marco7rev19.B.procurement.test.js</code></td><td>banco com rollback</td><td class="r">12</td><td class="r">12</td><td class="r">0</td><td class="r">0</td><td class="r">207,6 s</td><td><span class='b ok'>verde</span></td></tr>
 <tr><td><code>test/marco7rev20.F.test.js</code></td><td>banco descartável</td><td class="r">11</td><td class="r">11</td><td class="r">0</td><td class="r">0</td><td class="r">2,3 s</td><td><span class='b ok'>verde</span></td></tr>
@@ -371,7 +370,8 @@ table.cl{min-width:1150px}table.cl td{min-width:150px}table.cl td:first-child{mi
 <tr><td><code>test/procurement.supplierBankChange.test.js</code></td><td>banco com rollback</td><td class="r">4</td><td class="r">4</td><td class="r">0</td><td class="r">0</td><td class="r">115,9 s</td><td><span class='b ok'>verde</span></td></tr>
 <tr><td><code>test/procurement.supplierQualification.test.js</code></td><td>banco com rollback</td><td class="r">2</td><td class="r">2</td><td class="r">0</td><td class="r">0</td><td class="r">17,7 s</td><td><span class='b ok'>verde</span></td></tr>
 <tr><td><code>test/rls.catalog.allTables.test.js</code></td><td>banco com rollback</td><td class="r">1</td><td class="r">1</td><td class="r">0</td><td class="r">0</td><td class="r">56,7 s</td><td><span class='b ok'>verde</span></td></tr>
-<tr class="tot"><td>Total (56 arquivos)</td><td>conforme cada arquivo</td><td class="r">429</td><td class="r">427</td><td class="r">2</td><td class="r">0</td><td class="r">49,2 min</td><td><span class='b bad'>com falhas</span></td></tr></tbody></table></div>
+<tr><td><code>test/inventory.failureDrills.test.js</code></td><td>banco descartável</td><td class="r">3</td><td class="r">3</td><td class="r">0</td><td class="r">0</td><td class="r">0,7 s</td><td><span class='b ok'>verde</span></td></tr>
+<tr class="tot"><td>Total (56 arquivos)</td><td>conforme cada arquivo</td><td class="r">429</td><td class="r">429</td><td class="r">0</td><td class="r">0</td><td class="r">49,2 min</td><td><span class='b ok'>verde</span></td></tr></tbody></table></div>
 <p class="small"><b>CI do commit final:</b> CI_FINAL (o run do commit e1a1f42 não existe ainda porque eu não fiz o push; preencho o run e a contagem assim que ele rodar). Não afirmo CI verde para este commit. O último CI verde conhecido é o da API <a href="https://github.com/gsPatrick/NayaraOne--API/actions/runs/39301913793">39301913793</a> no commit 3f7e550 (1429 testes, 0 falhas), anterior às correções desta página; o Front do CI é o run <a href="https://github.com/gsPatrick/NayaraOne--FRONT/actions/runs/39301378437">39301378437</a> (success). A lista completa, teste por teste, com duração, está em <code>testes[]</code> no JSON.</p>
 <p class="small">Todos os testes das regras novas foram conferidos em teste isolado e confirmados verdes na execução de hoje.</p>
 </section>
@@ -9053,7 +9053,7 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
 </section>
 
 <section id="anexo-json"><h2>11. Anexo de dados (JSON)</h2>
-<p class="lead">Dossiê completo, legível por máquina: <code>meta</code>, <code>matriz[]</code>, <code>testes[]</code>, <code>respostasHttp[]</code>, <code>consultasBanco[]</code>, <code>auditoria[]</code>, <code>seguranca</code>, <code>rodadas[]</code>, <code>correcoesCliente[]</code> e <code>hashes</code>. Também está no elemento <code>&lt;script type="application/json" id="evidencias-marco7"&gt;</code>. SHA-256 do JSON: <code>73f605a746d926bdfd4f9952c9cbd25d9a5568fc81f2703084a2b912c1d8d6b7</code> (método em <code>hashes.metodo</code>). A sanitização aplicada está declarada em <code>meta.sanitizacao</code>.</p>
+<p class="lead">Dossiê completo, legível por máquina: <code>meta</code>, <code>matriz[]</code>, <code>testes[]</code>, <code>respostasHttp[]</code>, <code>consultasBanco[]</code>, <code>auditoria[]</code>, <code>seguranca</code>, <code>rodadas[]</code>, <code>correcoesCliente[]</code> e <code>hashes</code>. Também está no elemento <code>&lt;script type="application/json" id="evidencias-marco7"&gt;</code>. SHA-256 do JSON: <code>4bdb649175375c3afd322d2fde1662f416641abaec2ff16e26c32d29f94838e4</code> (método em <code>hashes.metodo</code>). A sanitização aplicada está declarada em <code>meta.sanitizacao</code>.</p>
 <div class="btns"><button type="button" id="btn-copiar">Copiar JSON</button><button type="button" id="btn-baixar">Baixar JSON</button><span id="btn-msg" class="small"></span></div>
 <details><summary>Ver o JSON completo</summary><pre id="json-pre"></pre></details>
 </section>
@@ -22936,16 +22936,6 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "duracaoMs": 1363
   },
   {
-   "arquivo": "test/inventory.failureDrills.test.js",
-   "modo": "banco descartável",
-   "exit": 1,
-   "testes": 3,
-   "passou": 1,
-   "falhou": 2,
-   "pulado": 0,
-   "duracaoMs": 552
-  },
-  {
    "arquivo": "test/marco7rev19.B.insurance.test.js",
    "modo": "banco com rollback",
    "exit": 0,
@@ -23094,6 +23084,16 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "falhou": 0,
    "pulado": 0,
    "duracaoMs": 56715
+  },
+  {
+   "arquivo": "test/inventory.failureDrills.test.js",
+   "modo": "banco descartável",
+   "exit": 0,
+   "testes": 3,
+   "passou": 3,
+   "falhou": 0,
+   "pulado": 0,
+   "duracaoMs": 692
   }
  ],
  "testes": [
@@ -25359,27 +25359,6 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "duracaoMs": 427.7
   },
   {
-   "arquivo": "test/inventory.failureDrills.test.js",
-   "nome": "Drill 1: falha ao gravar o payable no meio do recebimento não deixa estado parcial; retry idempotente",
-   "nivel": 0,
-   "status": "falhou",
-   "duracaoMs": 117.9
-  },
-  {
-   "arquivo": "test/inventory.failureDrills.test.js",
-   "nome": "Drill 2: falha na 2ª perna da transferência não deixa saída sem entrada; retry idempotente",
-   "nivel": 0,
-   "status": "passou",
-   "duracaoMs": 48
-  },
-  {
-   "arquivo": "test/inventory.failureDrills.test.js",
-   "nome": "Drill 3: falha na 2ª linha da entrega de requisição não entrega nada; retry entrega uma vez",
-   "nivel": 0,
-   "status": "falhou",
-   "duracaoMs": 32.6
-  },
-  {
    "arquivo": "test/marco7rev19.B.insurance.test.js",
    "nome": "B5: cancelar a apólice cancela parcelas em aberto, estorna os payables do prêmio e encerra a tarefa de renovação",
    "nivel": 0,
@@ -26099,6 +26078,27 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "nivel": 0,
    "status": "passou",
    "duracaoMs": 56198.6
+  },
+  {
+   "arquivo": "test/inventory.failureDrills.test.js",
+   "nome": "Drill 1: falha ao gravar o payable no meio do recebimento não deixa estado parcial; retry idempotente",
+   "nivel": 0,
+   "status": "passou",
+   "duracaoMs": 230.8
+  },
+  {
+   "arquivo": "test/inventory.failureDrills.test.js",
+   "nome": "Drill 2: falha na 2ª perna da transferência não deixa saída sem entrada; retry idempotente",
+   "nivel": 0,
+   "status": "passou",
+   "duracaoMs": 33.3
+  },
+  {
+   "arquivo": "test/inventory.failureDrills.test.js",
+   "nome": "Drill 3: falha na 2ª linha da entrega de requisição não entrega nada; retry entrega uma vez",
+   "nivel": 0,
+   "status": "passou",
+   "duracaoMs": 71.5
   }
  ],
  "matriz": [
@@ -30652,7 +30652,7 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
  "meta": {
   "marco": "Marco 7 — Estoque, Ferramentas, Patrimônio, Compras e Seguros",
   "status": "Pronto para aceite",
-  "geradoEm": "2026-10-20T21:48:32.973Z",
+  "geradoEm": "2026-10-20T22:29:46.280Z",
   "autor": "Patrick Siqueira",
   "commits": {
    "api": "3f7e550 (CI final); testes locais iniciados em dda254a",
@@ -30670,7 +30670,7 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
   "node": "v24.18.0",
   "execucaoLocal": {
    "inicio": "20/10/2026 17:12:31",
-   "fim": "20/10/2026 18:20:09",
+   "fim": "20/10/2026 19:29:33",
    "comandoRollback": "NODE_ENV=test node --test --test-concurrency=1 --test-reporter=tap test/<arquivo>",
    "comandoDescartavel": "node scripts/withDisposableDb.js -- node --test --test-concurrency=1 --test-reporter=tap test/<arquivo>",
    "observacao": "Banco local de homologação/desenvolvimento (PostgreSQL 18), com RLS ativo e credencial de aplicação; banco descartável criado e destruído automaticamente por teste."
@@ -31058,7 +31058,7 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "F29": "6d2d7e7b0b2de1e3562eb06ca816c4aeb60ab2e52cd1d8f2c2c66931a35bb1a8"
   },
   "metodo": "hashes.json = SHA-256 (UTF-8) de JSON.stringify(dossie, null, 1) depois de trocar hashes.json por \"\"; cada print = SHA-256 dos bytes JPEG do data URI",
-  "json": "73f605a746d926bdfd4f9952c9cbd25d9a5568fc81f2703084a2b912c1d8d6b7"
+  "json": "4bdb649175375c3afd322d2fde1662f416641abaec2ff16e26c32d29f94838e4"
  },
  "divergenciasDocumentais": [
   {
