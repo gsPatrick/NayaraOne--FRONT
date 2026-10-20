@@ -25,6 +25,7 @@ const ITEMS = [
   { label: "Plano de contas", href: "/painel/financeiro/plano-de-contas", icon: "document" },
   { label: "Centros de custo/resultado", href: "/painel/financeiro/centros", icon: "layers" },
   { label: "Relatório financeiro", href: "/painel/financeiro/relatorio", icon: "chart" },
+  { label: "NAY financeira", href: "/painel/financeiro/nay", icon: "chart" },
 ];
 
 export default function FinanceNavMenu() {
