@@ -272,7 +272,7 @@ export default function ChangeOrdersObraPage({ params }) {
             </Select>
           </FormField>
           <FormField label="Impacto financeiro (R$)" htmlFor="m-co-impact" required helper="Positivo aumenta o orçamento, negativo reduz">
-            <DecimalInput id="m-co-impact" value={coForm.budgetImpact} onChange={(e) => setCoForm((p) => ({ ...p, budgetImpact: e.target.value }))} placeholder="0,00" />
+            <DecimalInput allowNegative id="m-co-impact" value={coForm.budgetImpact} onChange={(e) => setCoForm((p) => ({ ...p, budgetImpact: e.target.value }))} placeholder="0,00" />
           </FormField>
           <FormField label="Impacto de prazo (dias)" htmlFor="m-co-schedule" helper="Use 0 se não houver impacto de prazo">
             <Input id="m-co-schedule" type="number" value={coForm.scheduleImpactDays} onChange={(e) => setCoForm((p) => ({ ...p, scheduleImpactDays: e.target.value }))} placeholder="0" />

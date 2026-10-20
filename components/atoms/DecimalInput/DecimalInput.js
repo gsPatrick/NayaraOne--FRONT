@@ -1,6 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import Input from "@/components/atoms/Input/Input";
+
+export const NEGATIVE_VALUE_MESSAGE = "O valor deve ser maior que zero";
 
 // BUG REAL CRÍTICO CORRIGIDO (achado numa auditoria final do Marco 6, 30/09/2026): todo campo
 // monetário/percentual/quantidade fracionária do módulo usava <input type="number">. Esse tipo
@@ -18,9 +21,57 @@ import Input from "@/components/atoms/Input/Input";
 // e.target.value}))` continua funcionando sem mudança nenhuma. A conversão pra número (na hora
 // de montar o payload da API) deve usar `toNumber()` de lib/format.js, NUNCA `Number(...)` cru
 // (que entende só ponto, não vírgula).
-export default function DecimalInput({ value, onChange, ...rest }) {
+// R3 (reconferência 20/10/2026): o "-" era apagado em silêncio e -10 virava R$ 10,00. Agora o
+// sinal é recusado com aviso visível. Campos que aceitam negativo de verdade (ex.: impacto de
+// aditivo) usam allowNegative.
+export default function DecimalInput({ value, onChange, allowNegative = false, ...rest }) {
+  const [negativeWarning, setNegativeWarning] = useState(false);
   function handleChange(e) {
     const raw = e.target.value;
+    if (allowNegative) {
+      const neg = raw.trim().startsWith("-");
+      const body = raw.replace(/-/g, "");
+      const normalized = normalize(body);
+      onChange({ target: { value: neg ? `-${normalized}` : normalized } });
+      return;
+    }
+    if (raw.includes("-")) {
+      // Não converte negativo em positivo: esvazia o campo e avisa (impede salvar o valor errado).
+      setNegativeWarning(true);
+      onChange({ target: { value: "" } });
+      return;
+    }
+    setNegativeWarning(false);
+    const cleaned = normalize(raw);
+    if (cleaned === raw) {
+      onChange(e);
+    } else {
+      onChange({ target: { value: cleaned } });
+    }
+  }
+
+  return (
+    <>
+      <Input
+        type="text"
+        inputMode="decimal"
+        value={value}
+        onChange={handleChange}
+        error={negativeWarning || rest.error}
+        {...rest}
+        {...(negativeWarning ? { error: true } : {})}
+      />
+      {negativeWarning ? (
+        <span role="alert" style={{ color: "var(--color-danger, #b42318)", fontSize: "0.8125rem" }}>
+          {NEGATIVE_VALUE_MESSAGE}
+        </span>
+      ) : null}
+    </>
+  );
+}
+
+function normalize(raw) {
+  {
     // Permite dígitos, ponto (separador de milhar BR) e vírgula (separador decimal BR).
     let cleaned = raw.replace(/[^0-9,.]/g, "");
     // BUG REAL CORRIGIDO (achado em auditoria E2E de browser, 01/10/2026): valores >= R$ 1.000
@@ -40,22 +91,6 @@ export default function DecimalInput({ value, onChange, ...rest }) {
         cleaned = cleaned.slice(0, firstDot + 1) + cleaned.slice(firstDot + 1).replace(/\./g, "");
       }
     }
-    if (cleaned === raw) {
-      onChange(e);
-    } else {
-      // Só os call-sites deste projeto leem `e.target.value` — não precisamos (nem devemos,
-      // SyntheticEvent é reciclado pelo React) clonar o evento inteiro.
-      onChange({ target: { value: cleaned } });
-    }
+    return cleaned;
   }
-
-  return (
-    <Input
-      type="text"
-      inputMode="decimal"
-      value={value}
-      onChange={handleChange}
-      {...rest}
-    />
-  );
 }

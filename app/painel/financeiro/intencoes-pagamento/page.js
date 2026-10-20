@@ -144,7 +144,8 @@ export default function IntencoesPagamentoPage() {
     if (!accountId) return { owner: "Favorecido não definido no retrato", account: "sem conta bancária no retrato" };
     const account = bankAccounts.find((a) => a.id === accountId) || null;
     const person = account?.ownerPersonId ? people.find((p) => p.id === account.ownerPersonId) : null;
-    return { owner: person?.legalName || "Titular da conta não informado", account: maskedAccount(account) };
+    const owner = person?.legalName || (account && !account.ownerPersonId ? "Conta sem titular cadastrado: vincule a pessoa dona da conta antes de pagar" : "Titular da conta não encontrado no cadastro de pessoas");
+    return { owner, account: maskedAccount(account) };
   }
 
   async function handleApprove(intent) {
@@ -359,8 +360,7 @@ export default function IntencoesPagamentoPage() {
                         </span>
                         {invalidated ? (
                           <Alert tone="warning">
-                            Invalidada: lançamento alterado após a aprovação.{" "}
-                            {intent.cancelReason ? humanizeText(intent.cancelReason) : "Crie uma nova intenção sobre a versão atual."}
+                            {intent.cancelReason ? humanizeText(intent.cancelReason) : "Invalidada: o lançamento foi alterado depois da aprovação. Crie uma nova intenção sobre a versão atual."}
                           </Alert>
                         ) : null}
                         {rowResult[intent.id] ? (
@@ -371,14 +371,14 @@ export default function IntencoesPagamentoPage() {
                         <Badge tone={invalidated ? "warning" : STATUS_TONE[intent.status]}>{invalidated ? "Invalidada" : STATUS_LABELS[intent.status] || "Situação não reconhecida"}</Badge>
                         {intent.status === "PENDING" ? (
                           <>
-                            <Button size="sm" onClick={() => handleApprove(intent)} loading={busyId === intent.id}>Aprovar</Button>
+                            <Button requires="finance:approve" size="sm" onClick={() => handleApprove(intent)} loading={busyId === intent.id}>Aprovar</Button>
                             <Button size="sm" variant="secondary" onClick={() => handleCancel(intent)} loading={busyId === intent.id}>Cancelar</Button>
                           </>
                         ) : null}
                         {["SUBMITTING", "SUBMITTED"].includes(intent.status) ? (
                           <>
-                            <Button size="sm" variant="secondary" onClick={() => handleReconcile(intent)} loading={busyId === intent.id}>Consultar banco</Button>
-                            <Button
+                            <Button requires="finance:settle" size="sm" variant="secondary" onClick={() => handleReconcile(intent)} loading={busyId === intent.id}>Consultar banco</Button>
+                            <Button requires="finance:approve"
                               size="sm"
                               variant="secondary"
                               onClick={() => { setResolveTarget(intent); setResolveReason(""); setResolveError(""); }}
@@ -390,7 +390,7 @@ export default function IntencoesPagamentoPage() {
                         ) : null}
                         {intent.status === "APPROVED" ? (
                           <>
-                            <Button size="sm" onClick={() => handleExecute(intent)} loading={busyId === intent.id}>
+                            <Button requires="finance:settle" size="sm" onClick={() => handleExecute(intent)} loading={busyId === intent.id}>
                               <Icon name="check" size={14} /> Registrar pagamento
                             </Button>
                             <Button size="sm" variant="secondary" onClick={() => handleCancel(intent)} loading={busyId === intent.id}>Cancelar</Button>
