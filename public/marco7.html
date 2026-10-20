@@ -7194,7 +7194,7 @@ table.cl{min-width:1150px}table.cl td{min-width:150px}table.cl td:first-child{mi
 <section id="banco"><h2>8. Consultas ao banco (somente leitura)</h2>
 <p class="lead">Cada consulta rodou numa transação <code>BEGIN READ ONLY … ROLLBACK</code>, com a role da aplicação (sujeita a RLS) e o tenant da empresa de homologação. Não imprimo host nem string de conexão. Q29 em diante são de 20/10/2026 (provas de que cada recusa não deixou efeito e os ciclos de cancelamento); as consultas de invariantes sem registro de prova (Q01, Q01b, Q01c, Q02, Q05, Q06, Q08 a Q23) foram reexecutadas em 20/10/2026 e mostram os resultados atuais.</p>
 <div class="callout">&lt;b&gt;Resíduos históricos saneados (19/10/2026):&lt;/b&gt; três registros de teste anteriores a correções foram saneados pela aplicação com o script &lt;code&gt;scripts/saneamento-m7-residuos.js&lt;/code&gt; (commit 11ff461, dry-run e depois &lt;code&gt;--apply&lt;/code&gt;, sem DELETE/UPDATE em ledger ou audit_log): 1 saldo materializado negativo (ajuste compensatório); 2 divergências autodecididas em 18/10 (anotação por outro usuário); 6 parcelas de apólices legadas emitidas antes de 18/10 (explicadas em Q06).</div>
-<div class="tw"><table><thead><tr><th>ID</th><th>O que verifica</th><th>Resultado</th><th>Invariante</th></tr></thead><tbody><tr id="Q01"><td class="n">Q01</td><td>Saldo materializado = soma dos movimentos do ledger, para TODOS os pares item/local da empresa<div class="small">Requisitos: EST-003, EST-002, inventory.stock_balances</div><div class="small">Reexecutada em 20/10/2026 15:06:59.</div><details><summary>SQL</summary><pre>WITH mv AS (
+<div class="tw"><table><thead><tr><th>ID</th><th>O que verifica</th><th>Resultado</th><th>Invariante</th></tr></thead><tbody><tr id="Q01"><td class="n">Q01</td><td>Saldo materializado = soma dos movimentos do ledger, para TODOS os pares item/local da empresa<div class="small">Requisitos: EST-003, EST-002, inventory.stock_balances</div><div class="small">Reexecutada em 20/10/2026 20:47:38.</div><details><summary>SQL</summary><pre>WITH mv AS (
   SELECT inventory_item_id, destination_location_id AS loc, quantity AS q FROM inventory.inventory_movements WHERE destination_location_id IS NOT NULL
   UNION ALL
   SELECT inventory_item_id, source_location_id, -quantity FROM inventory.inventory_movements WHERE source_location_id IS NOT NULL),
@@ -7207,7 +7207,7 @@ FROM inventory.stock_balances b LEFT JOIN s ON s.inventory_item_id=b.inventory_i
   "pares_divergentes": "0"
  }
 ]</pre></td><td>pares_divergentes = 0<br><span class="b ok">confere</span></td></tr>
-<tr id="Q01b"><td class="n">Q01b</td><td>Pares item/local cujo saldo materializado difere da soma dos movimentos. Havia 1 (item de teste "AUDIT M7check Cimento", diferença de 2): o ajuste com origem E destino de 15/10 09:35 gravou −2 na origem no ledger, mas o código antigo (antes de f267aa9) só creditava o destino. Saneado em 19/10/2026 pelo script scripts/saneamento-m7-residuos.js (commit 11ff461), com trilha em audit_log (ação inventory.stock_balance.recalculated_from_ledger, id 82ac4803-fb27-409e-9a3c-544c76b18512): o saldo foi recalculado a partir do ledger, que ficou intacto.<div class="small">Requisitos: EST-003, EST-002</div><div class="small">Reexecutada em 20/10/2026 15:07:00.</div><details><summary>SQL</summary><pre>WITH mv AS (SELECT inventory_item_id, destination_location_id AS loc, quantity AS q FROM inventory.inventory_movements WHERE destination_location_id IS NOT NULL UNION ALL SELECT inventory_item_id, source_location_id, -quantity FROM inventory.inventory_movements WHERE source_location_id IS NOT NULL),
+<tr id="Q01b"><td class="n">Q01b</td><td>Pares item/local cujo saldo materializado difere da soma dos movimentos. Havia 1 (item de teste "AUDIT M7check Cimento", diferença de 2): o ajuste com origem E destino de 15/10 09:35 gravou −2 na origem no ledger, mas o código antigo (antes de f267aa9) só creditava o destino. Saneado em 19/10/2026 pelo script scripts/saneamento-m7-residuos.js (commit 11ff461), com trilha em audit_log (ação inventory.stock_balance.recalculated_from_ledger, id 82ac4803-fb27-409e-9a3c-544c76b18512): o saldo foi recalculado a partir do ledger, que ficou intacto.<div class="small">Requisitos: EST-003, EST-002</div><div class="small">Reexecutada em 20/10/2026 20:47:39.</div><details><summary>SQL</summary><pre>WITH mv AS (SELECT inventory_item_id, destination_location_id AS loc, quantity AS q FROM inventory.inventory_movements WHERE destination_location_id IS NOT NULL UNION ALL SELECT inventory_item_id, source_location_id, -quantity FROM inventory.inventory_movements WHERE source_location_id IS NOT NULL),
 s AS (SELECT inventory_item_id, loc, SUM(q) soma FROM mv GROUP BY 1,2)
 SELECT COUNT(*) AS pares_divergentes,
  (SELECT COUNT(*) FROM audit.audit_log a WHERE a.action='inventory.stock_balance.recalculated_from_ledger') AS saneamentos_auditados
@@ -7218,7 +7218,7 @@ WHERE abs(b.quantity_on_hand-COALESCE(s.soma,0))&gt;0.000001</pre></details></td
   "saneamentos_auditados": "1"
  }
 ]</pre></td><td>pares_divergentes = 0<br><span class="b ok">confere</span></td></tr>
-<tr id="Q01c"><td class="n">Q01c</td><td>Depois da correção f267aa9: nenhum par item/local cujo primeiro movimento é posterior a 15/10 10:20 diverge do ledger<div class="small">Requisitos: EST-003</div><div class="small">Reexecutada em 20/10/2026 15:07:00.</div><details><summary>SQL</summary><pre>WITH mv AS (SELECT inventory_item_id, destination_location_id AS loc, quantity AS q, created_at FROM inventory.inventory_movements WHERE destination_location_id IS NOT NULL UNION ALL SELECT inventory_item_id, source_location_id, -quantity, created_at FROM inventory.inventory_movements WHERE source_location_id IS NOT NULL),
+<tr id="Q01c"><td class="n">Q01c</td><td>Depois da correção f267aa9: nenhum par item/local cujo primeiro movimento é posterior a 15/10 10:20 diverge do ledger<div class="small">Requisitos: EST-003</div><div class="small">Reexecutada em 20/10/2026 20:47:40.</div><details><summary>SQL</summary><pre>WITH mv AS (SELECT inventory_item_id, destination_location_id AS loc, quantity AS q, created_at FROM inventory.inventory_movements WHERE destination_location_id IS NOT NULL UNION ALL SELECT inventory_item_id, source_location_id, -quantity, created_at FROM inventory.inventory_movements WHERE source_location_id IS NOT NULL),
 s AS (SELECT inventory_item_id, loc, SUM(q) soma, min(created_at) primeiro FROM mv GROUP BY 1,2)
 SELECT COUNT(*) AS pares_pos_correcao, COUNT(*) FILTER (WHERE abs(b.quantity_on_hand - s.soma) &gt; 0.000001) AS divergentes
 FROM inventory.stock_balances b JOIN s ON s.inventory_item_id=b.inventory_item_id AND s.loc=b.location_id WHERE s.primeiro &gt; '2026-10-15 13:20:39+00'</pre></details></td><td><pre class="res">[
@@ -7227,7 +7227,7 @@ FROM inventory.stock_balances b JOIN s ON s.inventory_item_id=b.inventory_item_i
   "divergentes": "0"
  }
 ]</pre></td><td>divergentes = 0<br><span class="b ok">confere</span></td></tr>
-<tr id="Q02"><td class="n">Q02</td><td>Nenhum saldo negativo em item/local<div class="small">Requisitos: EST-003, EST-TS-02</div><div class="small">Reexecutada em 20/10/2026 15:07:01.</div><details><summary>SQL</summary><pre>SELECT COUNT(*) AS saldos, COUNT(*) FILTER (WHERE quantity_on_hand &lt; 0) AS negativos FROM inventory.stock_balances</pre></details></td><td><pre class="res">[
+<tr id="Q02"><td class="n">Q02</td><td>Nenhum saldo negativo em item/local<div class="small">Requisitos: EST-003, EST-TS-02</div><div class="small">Reexecutada em 20/10/2026 20:47:41.</div><details><summary>SQL</summary><pre>SELECT COUNT(*) AS saldos, COUNT(*) FILTER (WHERE quantity_on_hand &lt; 0) AS negativos FROM inventory.stock_balances</pre></details></td><td><pre class="res">[
  {
   "saldos": "47",
   "negativos": "0"
@@ -7293,7 +7293,7 @@ FROM inventory.inventory_movements WHERE inventory_item_id=$1 ORDER BY moved_at<
   "quando": "19/10/2026 15:24:11"
  }
 ]</pre></td><td>todas as linhas têm source_type<br><span class="b ok">confere</span></td></tr>
-<tr id="Q05"><td class="n">Q05</td><td>Quantidade recebida por item de pedido = soma das linhas de recebimento (todos os pedidos da empresa)<div class="small">Requisitos: PROC-3way, T-over-receipt, INT-receipt</div><div class="small">Reexecutada em 20/10/2026 15:07:02.</div><details><summary>SQL</summary><pre>SELECT COUNT(*) AS itens_de_pedido,
+<tr id="Q05"><td class="n">Q05</td><td>Quantidade recebida por item de pedido = soma das linhas de recebimento (todos os pedidos da empresa)<div class="small">Requisitos: PROC-3way, T-over-receipt, INT-receipt</div><div class="small">Reexecutada em 20/10/2026 20:47:42.</div><details><summary>SQL</summary><pre>SELECT COUNT(*) AS itens_de_pedido,
   COUNT(*) FILTER (WHERE abs(poi.received_quantity - COALESCE(x.soma,0)) &gt; 0.000001) AS divergentes
 FROM procurement.purchase_order_items poi
 LEFT JOIN (SELECT gri.purchase_order_item_id, SUM(gri.received_quantity) soma FROM procurement.goods_receipt_items gri
@@ -7304,7 +7304,7 @@ JOIN procurement.purchase_orders po ON po.id=poi.purchase_order_id WHERE po.stat
   "divergentes": "0"
  }
 ]</pre></td><td>divergentes = 0 (pedidos não cancelados)<br><span class="b ok">confere</span></td></tr>
-<tr id="Q06"><td class="n">Q06</td><td>Parcelas = prêmio, separando rascunhos, legados e apólices elegíveis (conferência da cliente, 20/10/2026). Antes eu misturava tudo e a contagem de "parcela sem lançamento" incluía apólices emitidas antes de a parcela ser ligada ao lançamento do Financeiro. Agora o resultado vem por grupo: (1) rascunho ou cotação, que ainda não tem parcela; (2) legado, emitido antes de 18/10/2026, quando a parcela passou a nascer com o próprio lançamento (revisão de 18/10, C5); (3) elegível, emitido desde 18/10/2026.<div class="small">Requisitos: INS-apólice, INS-financeiro, T-policy expiry</div><div class="small">Reexecutada em 20/10/2026 15:07:03.</div><details><summary>SQL</summary><pre>WITH x AS (SELECT policy_id, SUM(amount) AS soma, COUNT(*) FILTER (WHERE financial_entry_id IS NULL) AS sem_lancamento FROM procurement.insurance_installments GROUP BY 1)
+<tr id="Q06"><td class="n">Q06</td><td>Parcelas = prêmio, separando rascunhos, legados e apólices elegíveis (conferência da cliente, 20/10/2026). Antes eu misturava tudo e a contagem de "parcela sem lançamento" incluía apólices emitidas antes de a parcela ser ligada ao lançamento do Financeiro. Agora o resultado vem por grupo: (1) rascunho ou cotação, que ainda não tem parcela; (2) legado, emitido antes de 18/10/2026, quando a parcela passou a nascer com o próprio lançamento (revisão de 18/10, C5); (3) elegível, emitido desde 18/10/2026.<div class="small">Requisitos: INS-apólice, INS-financeiro, T-policy expiry</div><div class="small">Reexecutada em 20/10/2026 20:47:43.</div><details><summary>SQL</summary><pre>WITH x AS (SELECT policy_id, SUM(amount) AS soma, COUNT(*) FILTER (WHERE financial_entry_id IS NULL) AS sem_lancamento FROM procurement.insurance_installments GROUP BY 1)
 SELECT CASE WHEN p.status IN ('DRAFT','QUOTED') THEN '1 rascunho ou cotação'
             WHEN p.created_at &lt; TIMESTAMPTZ '2026-10-18 00:00:00-03' THEN '2 legado: emitida antes de 18/10/2026'
             ELSE '3 elegível: emitida desde 18/10/2026' END AS grupo,
@@ -7361,26 +7361,26 @@ LEFT JOIN finance.financial_entries e ON e.id=i.financial_entry_id WHERE i.polic
   "premium_amount": "10.00"
  }
 ]</pre></td><td>vencimento_lancamento = due_date em todas; soma = prêmio<br><span class="b ok">confere</span></td></tr>
-<tr id="Q08"><td class="n">Q08</td><td>NF duplicada impossível: nenhum fingerprint/número repetido na empresa + índice único<div class="small">Requisitos: §6.5, EST-TS-08, NF duplicada</div><div class="small">Reexecutada em 20/10/2026 15:07:04.</div><details><summary>SQL</summary><pre>SELECT (SELECT COUNT(*) FROM (SELECT invoice_fingerprint FROM inventory.receipts WHERE invoice_fingerprint IS NOT NULL GROUP BY 1 HAVING COUNT(*)&gt;1) d) AS fingerprints_repetidos,
+<tr id="Q08"><td class="n">Q08</td><td>NF duplicada impossível: nenhum fingerprint/número repetido na empresa + índice único<div class="small">Requisitos: §6.5, EST-TS-08, NF duplicada</div><div class="small">Reexecutada em 20/10/2026 20:47:44.</div><details><summary>SQL</summary><pre>SELECT (SELECT COUNT(*) FROM (SELECT invoice_fingerprint FROM inventory.receipts WHERE invoice_fingerprint IS NOT NULL GROUP BY 1 HAVING COUNT(*)&gt;1) d) AS fingerprints_repetidos,
        (SELECT COUNT(*) FROM pg_indexes WHERE schemaname='inventory' AND tablename='receipts' AND indexdef ILIKE '%UNIQUE%') AS indices_unicos</pre></details></td><td><pre class="res">[
  {
   "fingerprints_repetidos": "0",
   "indices_unicos": "2"
  }
 ]</pre></td><td>fingerprints_repetidos = 0 e indices_unicos ≥ 1<br><span class="b ok">confere</span></td></tr>
-<tr id="Q09"><td class="n">Q09</td><td>Etiqueta de patrimônio única por empresa<div class="small">Requisitos: EST-005, EST-TS-04</div><div class="small">Reexecutada em 20/10/2026 15:07:05.</div><details><summary>SQL</summary><pre>SELECT COUNT(*) AS ativos, COUNT(DISTINCT lower(asset_tag)) AS etiquetas_distintas FROM inventory.assets</pre></details></td><td><pre class="res">[
+<tr id="Q09"><td class="n">Q09</td><td>Etiqueta de patrimônio única por empresa<div class="small">Requisitos: EST-005, EST-TS-04</div><div class="small">Reexecutada em 20/10/2026 20:47:45.</div><details><summary>SQL</summary><pre>SELECT COUNT(*) AS ativos, COUNT(DISTINCT lower(asset_tag)) AS etiquetas_distintas FROM inventory.assets</pre></details></td><td><pre class="res">[
  {
   "ativos": "17",
   "etiquetas_distintas": "17"
  }
 ]</pre></td><td>ativos = etiquetas_distintas<br><span class="b ok">confere</span></td></tr>
-<tr id="Q10"><td class="n">Q10</td><td>SKU único por empresa (sem diferença de maiúsculas)<div class="small">Requisitos: EST-001</div><div class="small">Reexecutada em 20/10/2026 15:07:06.</div><details><summary>SQL</summary><pre>SELECT COUNT(*) AS itens, COUNT(DISTINCT lower(sku)) AS skus_distintos FROM inventory.inventory_items WHERE sku IS NOT NULL AND deleted_at IS NULL</pre></details></td><td><pre class="res">[
+<tr id="Q10"><td class="n">Q10</td><td>SKU único por empresa (sem diferença de maiúsculas)<div class="small">Requisitos: EST-001</div><div class="small">Reexecutada em 20/10/2026 20:47:46.</div><details><summary>SQL</summary><pre>SELECT COUNT(*) AS itens, COUNT(DISTINCT lower(sku)) AS skus_distintos FROM inventory.inventory_items WHERE sku IS NOT NULL AND deleted_at IS NULL</pre></details></td><td><pre class="res">[
  {
   "itens": "44",
   "skus_distintos": "44"
  }
 ]</pre></td><td>itens = skus_distintos<br><span class="b ok">confere</span></td></tr>
-<tr id="Q10b"><td class="n">Q10b</td><td>SKUs repetidos (ignorando maiúsculas). Havia 1: "audit-m7c-cim-01", segunda cópia criada pela IA auditora em 15/10 10:49, antes de 0d6cb39. Saneado em 19/10/2026 pelo script scripts/saneamento-m7-residuos.js (commit 11ff461), com trilha em audit_log (ação inventory.item.sku_deduplicated, id e50bd862-959e-4320-9038-a5444719dd3f): a cópia mais recente, sem movimentos, foi renomeada para AUDIT-M7C-CIM-01-DUP pelo serviço de itens.<div class="small">Requisitos: EST-001</div><div class="small">Reexecutada em 20/10/2026 15:07:07.</div><details><summary>SQL</summary><pre>SELECT (SELECT COUNT(*) FROM (SELECT company_id, lower(sku) FROM inventory.inventory_items WHERE deleted_at IS NULL AND sku IS NOT NULL GROUP BY 1,2 HAVING COUNT(*)&gt;1) z) AS skus_repetidos,
+<tr id="Q10b"><td class="n">Q10b</td><td>SKUs repetidos (ignorando maiúsculas). Havia 1: "audit-m7c-cim-01", segunda cópia criada pela IA auditora em 15/10 10:49, antes de 0d6cb39. Saneado em 19/10/2026 pelo script scripts/saneamento-m7-residuos.js (commit 11ff461), com trilha em audit_log (ação inventory.item.sku_deduplicated, id e50bd862-959e-4320-9038-a5444719dd3f): a cópia mais recente, sem movimentos, foi renomeada para AUDIT-M7C-CIM-01-DUP pelo serviço de itens.<div class="small">Requisitos: EST-001</div><div class="small">Reexecutada em 20/10/2026 20:47:47.</div><details><summary>SQL</summary><pre>SELECT (SELECT COUNT(*) FROM (SELECT company_id, lower(sku) FROM inventory.inventory_items WHERE deleted_at IS NULL AND sku IS NOT NULL GROUP BY 1,2 HAVING COUNT(*)&gt;1) z) AS skus_repetidos,
  (SELECT string_agg(sku, ', ') FROM inventory.inventory_items WHERE sku ILIKE 'AUDIT-M7C-CIM-01%') AS skus_saneados,
  (SELECT COUNT(*) FROM audit.audit_log a WHERE a.action='inventory.item.sku_deduplicated') AS saneamentos_auditados</pre></details></td><td><pre class="res">[
  {
@@ -7389,36 +7389,36 @@ LEFT JOIN finance.financial_entries e ON e.id=i.financial_entry_id WHERE i.polic
   "saneamentos_auditados": "1"
  }
 ]</pre></td><td>skus_repetidos = 0<br><span class="b ok">confere</span></td></tr>
-<tr id="Q11"><td class="n">Q11</td><td>Nenhuma ferramenta com dois empréstimos abertos ao mesmo tempo<div class="small">Requisitos: EST-TS-05</div><div class="small">Reexecutada em 20/10/2026 15:07:07.</div><details><summary>SQL</summary><pre>SELECT COUNT(*) AS ativos_com_2_emprestimos_abertos FROM (SELECT asset_id FROM inventory.tool_loans WHERE returned_at IS NULL GROUP BY 1 HAVING COUNT(*)&gt;1) x</pre></details></td><td><pre class="res">[
+<tr id="Q11"><td class="n">Q11</td><td>Nenhuma ferramenta com dois empréstimos abertos ao mesmo tempo<div class="small">Requisitos: EST-TS-05</div><div class="small">Reexecutada em 20/10/2026 20:47:48.</div><details><summary>SQL</summary><pre>SELECT COUNT(*) AS ativos_com_2_emprestimos_abertos FROM (SELECT asset_id FROM inventory.tool_loans WHERE returned_at IS NULL GROUP BY 1 HAVING COUNT(*)&gt;1) x</pre></details></td><td><pre class="res">[
  {
   "ativos_com_2_emprestimos_abertos": "0"
  }
 ]</pre></td><td>= 0<br><span class="b ok">confere</span></td></tr>
-<tr id="Q12"><td class="n">Q12</td><td>Todo movimento LOSS nasce de um loss case aprovado<div class="small">Requisitos: EST-010, §11.1</div><div class="small">Reexecutada em 20/10/2026 15:07:08.</div><details><summary>SQL</summary><pre>SELECT COUNT(*) AS movimentos_loss, COUNT(*) FILTER (WHERE source_type IS DISTINCT FROM 'LOSS_CASE') AS loss_sem_caso FROM inventory.inventory_movements WHERE movement_type='LOSS'</pre></details></td><td><pre class="res">[
+<tr id="Q12"><td class="n">Q12</td><td>Todo movimento LOSS nasce de um loss case aprovado<div class="small">Requisitos: EST-010, §11.1</div><div class="small">Reexecutada em 20/10/2026 20:47:49.</div><details><summary>SQL</summary><pre>SELECT COUNT(*) AS movimentos_loss, COUNT(*) FILTER (WHERE source_type IS DISTINCT FROM 'LOSS_CASE') AS loss_sem_caso FROM inventory.inventory_movements WHERE movement_type='LOSS'</pre></details></td><td><pre class="res">[
  {
   "movimentos_loss": "3",
   "loss_sem_caso": "0"
  }
 ]</pre></td><td>loss_sem_caso = 0<br><span class="b ok">confere</span></td></tr>
-<tr id="Q13"><td class="n">Q13</td><td>Todo ADJUSTMENT tem motivo<div class="small">Requisitos: EST-008, §10.4</div><div class="small">Reexecutada em 20/10/2026 15:07:09.</div><details><summary>SQL</summary><pre>SELECT COUNT(*) AS ajustes, COUNT(*) FILTER (WHERE reason IS NULL OR btrim(reason)='') AS sem_motivo FROM inventory.inventory_movements WHERE movement_type='ADJUSTMENT'</pre></details></td><td><pre class="res">[
+<tr id="Q13"><td class="n">Q13</td><td>Todo ADJUSTMENT tem motivo<div class="small">Requisitos: EST-008, §10.4</div><div class="small">Reexecutada em 20/10/2026 20:47:50.</div><details><summary>SQL</summary><pre>SELECT COUNT(*) AS ajustes, COUNT(*) FILTER (WHERE reason IS NULL OR btrim(reason)='') AS sem_motivo FROM inventory.inventory_movements WHERE movement_type='ADJUSTMENT'</pre></details></td><td><pre class="res">[
  {
   "ajustes": "6",
   "sem_motivo": "0"
  }
 ]</pre></td><td>sem_motivo = 0<br><span class="b ok">confere</span></td></tr>
-<tr id="Q14"><td class="n">Q14</td><td>Chave de idempotência nunca repetida no ledger<div class="small">Requisitos: §5.4, EST-TS-12</div><div class="small">Reexecutada em 20/10/2026 15:07:10.</div><details><summary>SQL</summary><pre>SELECT COUNT(*) AS chaves_repetidas FROM (SELECT idempotency_key FROM inventory.inventory_movements WHERE idempotency_key IS NOT NULL GROUP BY 1 HAVING COUNT(*)&gt;1) x</pre></details></td><td><pre class="res">[
+<tr id="Q14"><td class="n">Q14</td><td>Chave de idempotência nunca repetida no ledger<div class="small">Requisitos: §5.4, EST-TS-12</div><div class="small">Reexecutada em 20/10/2026 20:47:51.</div><details><summary>SQL</summary><pre>SELECT COUNT(*) AS chaves_repetidas FROM (SELECT idempotency_key FROM inventory.inventory_movements WHERE idempotency_key IS NOT NULL GROUP BY 1 HAVING COUNT(*)&gt;1) x</pre></details></td><td><pre class="res">[
  {
   "chaves_repetidas": "0"
  }
 ]</pre></td><td>= 0<br><span class="b ok">confere</span></td></tr>
-<tr id="Q15"><td class="n">Q15</td><td>Recebimentos de compra: chave de idempotência nunca repetida<div class="small">Requisitos: T-receipt replay, EST-TS-01</div><div class="small">Reexecutada em 20/10/2026 15:07:11.</div><details><summary>SQL</summary><pre>SELECT COUNT(*) AS recebimentos, COUNT(DISTINCT idempotency_key) FILTER (WHERE idempotency_key IS NOT NULL) AS chaves_distintas, COUNT(idempotency_key) AS com_chave FROM procurement.goods_receipts</pre></details></td><td><pre class="res">[
+<tr id="Q15"><td class="n">Q15</td><td>Recebimentos de compra: chave de idempotência nunca repetida<div class="small">Requisitos: T-receipt replay, EST-TS-01</div><div class="small">Reexecutada em 20/10/2026 20:47:52.</div><details><summary>SQL</summary><pre>SELECT COUNT(*) AS recebimentos, COUNT(DISTINCT idempotency_key) FILTER (WHERE idempotency_key IS NOT NULL) AS chaves_distintas, COUNT(idempotency_key) AS com_chave FROM procurement.goods_receipts</pre></details></td><td><pre class="res">[
  {
   "recebimentos": "16",
   "chaves_distintas": "8",
   "com_chave": "8"
  }
 ]</pre></td><td>com_chave = chaves_distintas<br><span class="b ok">confere</span></td></tr>
-<tr id="Q16"><td class="n">Q16</td><td>Nenhuma divergência DECIDIDA (aceita ou rejeitada) pela mesma pessoa que registrou o recebimento. Desde a revisão de 19/10 (B12), cancelar o pedido encerra as divergências abertas com o status CANCELED; isso não é decisão e não entra na conta.<div class="small">Requisitos: T-over-receipt, Segurança</div><div class="small">Reexecutada em 20/10/2026 15:07:12.</div><details><summary>SQL</summary><pre>SELECT COUNT(*) AS decididas, COUNT(*) FILTER (WHERE d.resolved_by_user_id = gr.created_by AND d.resolution_notes NOT LIKE '%[SANEAMENTO M7%') AS autodecididas_sem_anotacao, COUNT(*) FILTER (WHERE d.resolution_notes LIKE '%[SANEAMENTO M7%') AS anteriores_a_regra_anotadas
+<tr id="Q16"><td class="n">Q16</td><td>Nenhuma divergência DECIDIDA (aceita ou rejeitada) pela mesma pessoa que registrou o recebimento. Desde a revisão de 19/10 (B12), cancelar o pedido encerra as divergências abertas com o status CANCELED; isso não é decisão e não entra na conta.<div class="small">Requisitos: T-over-receipt, Segurança</div><div class="small">Reexecutada em 20/10/2026 20:47:53.</div><details><summary>SQL</summary><pre>SELECT COUNT(*) AS decididas, COUNT(*) FILTER (WHERE d.resolved_by_user_id = gr.created_by AND d.resolution_notes NOT LIKE '%[SANEAMENTO M7%') AS autodecididas_sem_anotacao, COUNT(*) FILTER (WHERE d.resolution_notes LIKE '%[SANEAMENTO M7%') AS anteriores_a_regra_anotadas
 FROM procurement.receipt_discrepancies d JOIN procurement.goods_receipt_items gi ON gi.id=d.goods_receipt_item_id JOIN procurement.goods_receipts gr ON gr.id=gi.goods_receipt_id
 WHERE d.resolved_by_user_id IS NOT NULL AND d.status IN ('ACCEPTED','REJECTED')</pre></details></td><td><pre class="res">[
  {
@@ -7427,7 +7427,7 @@ WHERE d.resolved_by_user_id IS NOT NULL AND d.status IN ('ACCEPTED','REJECTED')<
   "anteriores_a_regra_anotadas": "2"
  }
 ]</pre></td><td>autodecididas_sem_anotacao = 0<br><span class="b ok">confere</span></td></tr>
-<tr id="Q16b"><td class="n">Q16b</td><td>Divergências decididas (aceitas ou rejeitadas) pela mesma pessoa que registrou o recebimento. As 2 existentes são de 18/10 10:02 e 10:13 (rodada "reconf", achado RECONF-5, antes de 0ab0e7b, 18/10 11:39). Não há fluxo de re-decisão (decisão é definitiva), então as decisões foram preservadas e anotadas como "anteriores à regra de segregação" por outro usuário. Saneado em 19/10/2026 pelo script scripts/saneamento-m7-residuos.js (commit 11ff461), com trilha em audit_log. Encerramento por cancelamento do pedido (status CANCELED) não é decisão e não entra na conta.<div class="small">Requisitos: T-over-receipt, Segurança</div><div class="small">Reexecutada em 20/10/2026 15:07:13.</div><details><summary>SQL</summary><pre>SELECT COUNT(*) FILTER (WHERE d.resolved_at &gt; '2026-10-18 14:39:36+00') AS mesma_pessoa_depois_de_0ab0e7b,
+<tr id="Q16b"><td class="n">Q16b</td><td>Divergências decididas (aceitas ou rejeitadas) pela mesma pessoa que registrou o recebimento. As 2 existentes são de 18/10 10:02 e 10:13 (rodada "reconf", achado RECONF-5, antes de 0ab0e7b, 18/10 11:39). Não há fluxo de re-decisão (decisão é definitiva), então as decisões foram preservadas e anotadas como "anteriores à regra de segregação" por outro usuário. Saneado em 19/10/2026 pelo script scripts/saneamento-m7-residuos.js (commit 11ff461), com trilha em audit_log. Encerramento por cancelamento do pedido (status CANCELED) não é decisão e não entra na conta.<div class="small">Requisitos: T-over-receipt, Segurança</div><div class="small">Reexecutada em 20/10/2026 20:47:54.</div><details><summary>SQL</summary><pre>SELECT COUNT(*) FILTER (WHERE d.resolved_at &gt; '2026-10-18 14:39:36+00') AS mesma_pessoa_depois_de_0ab0e7b,
  COUNT(*) FILTER (WHERE d.resolution_notes NOT LIKE '%[SANEAMENTO M7%') AS mesma_pessoa_sem_anotacao,
  COUNT(*) FILTER (WHERE d.resolution_notes LIKE '%[SANEAMENTO M7%') AS anteriores_anotadas,
  (SELECT COUNT(*) FROM audit.audit_log a WHERE a.action='procurement.divergence.legacy_segregation_annotated') AS anotacoes_auditadas
@@ -7440,13 +7440,13 @@ WHERE d.resolved_by_user_id = gr.created_by AND d.status IN ('ACCEPTED','REJECTE
   "anotacoes_auditadas": "2"
  }
 ]</pre></td><td>mesma_pessoa_depois_de_0ab0e7b = 0 e mesma_pessoa_sem_anotacao = 0<br><span class="b ok">confere</span></td></tr>
-<tr id="Q17"><td class="n">Q17</td><td>Nenhuma requisição de compra aprovada por quem a criou<div class="small">Requisitos: PROC-fluxo, Segurança</div><div class="small">Reexecutada em 20/10/2026 15:07:13.</div><details><summary>SQL</summary><pre>SELECT COUNT(*) AS aprovadas, COUNT(*) FILTER (WHERE approved_by_user_id = requested_by_user_id) AS autoaprovadas FROM procurement.purchase_requests WHERE approved_by_user_id IS NOT NULL</pre></details></td><td><pre class="res">[
+<tr id="Q17"><td class="n">Q17</td><td>Nenhuma requisição de compra aprovada por quem a criou<div class="small">Requisitos: PROC-fluxo, Segurança</div><div class="small">Reexecutada em 20/10/2026 20:47:55.</div><details><summary>SQL</summary><pre>SELECT COUNT(*) AS aprovadas, COUNT(*) FILTER (WHERE approved_by_user_id = requested_by_user_id) AS autoaprovadas FROM procurement.purchase_requests WHERE approved_by_user_id IS NOT NULL</pre></details></td><td><pre class="res">[
  {
   "aprovadas": "17",
   "autoaprovadas": "0"
  }
 ]</pre></td><td>autoaprovadas = 0<br><span class="b ok">confere</span></td></tr>
-<tr id="Q18"><td class="n">Q18</td><td>RLS ligado e FORCE em todas as tabelas inventory.* e procurement.*<div class="small">Requisitos: EST-015, EST-TS-11, T-RLS, DoD — RLS/concorrência</div><div class="small">Reexecutada em 20/10/2026 15:07:14.</div><details><summary>SQL</summary><pre>SELECT n.nspname AS schema, COUNT(*) AS tabelas, COUNT(*) FILTER (WHERE c.relrowsecurity) AS com_rls, COUNT(*) FILTER (WHERE c.relforcerowsecurity) AS com_force
+<tr id="Q18"><td class="n">Q18</td><td>RLS ligado e FORCE em todas as tabelas inventory.* e procurement.*<div class="small">Requisitos: EST-015, EST-TS-11, T-RLS, DoD — RLS/concorrência</div><div class="small">Reexecutada em 20/10/2026 20:47:56.</div><details><summary>SQL</summary><pre>SELECT n.nspname AS schema, COUNT(*) AS tabelas, COUNT(*) FILTER (WHERE c.relrowsecurity) AS com_rls, COUNT(*) FILTER (WHERE c.relforcerowsecurity) AS com_force
 FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE c.relkind='r' AND n.nspname IN ('inventory','procurement') GROUP BY 1 ORDER BY 1</pre></details></td><td><pre class="res">[
  {
   "schema": "inventory",
@@ -7461,21 +7461,21 @@ FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE c.relkind='r' 
   "com_force": "20"
  }
 ]</pre></td><td>tabelas = com_rls = com_force<br><span class="b ok">confere</span></td></tr>
-<tr id="Q19"><td class="n">Q19</td><td>A role da aplicação não é superusuário nem tem BYPASSRLS<div class="small">Requisitos: EST-015, Segurança</div><div class="small">Reexecutada em 20/10/2026 15:07:15.</div><details><summary>SQL</summary><pre>SELECT current_user = 'nayara_runtime' AS conexao_e_runtime, rolsuper, rolbypassrls FROM pg_roles WHERE rolname = current_user</pre></details></td><td><pre class="res">[
+<tr id="Q19"><td class="n">Q19</td><td>A role da aplicação não é superusuário nem tem BYPASSRLS<div class="small">Requisitos: EST-015, Segurança</div><div class="small">Reexecutada em 20/10/2026 20:47:57.</div><details><summary>SQL</summary><pre>SELECT current_user = 'nayara_runtime' AS conexao_e_runtime, rolsuper, rolbypassrls FROM pg_roles WHERE rolname = current_user</pre></details></td><td><pre class="res">[
  {
   "conexao_e_runtime": true,
   "rolsuper": false,
   "rolbypassrls": false
  }
 ]</pre></td><td>rolsuper = false e rolbypassrls = false<br><span class="b ok">confere</span></td></tr>
-<tr id="Q20"><td class="n">Q20</td><td>Isolamento: com o tenant de OUTRA empresa (UUID inexistente) a mesma consulta não enxerga nada<div class="small">Requisitos: EST-TS-11, EST-015</div><div class="small">Reexecutada em 20/10/2026 15:07:16.</div><details><summary>SQL</summary><pre>SELECT set_config('app.company_id','00000000-0000-0000-0000-000000000001',true) AS _ , (SELECT COUNT(*) FROM inventory.inventory_items) AS itens_visiveis, (SELECT COUNT(*) FROM procurement.purchase_orders) AS pedidos_visiveis, (SELECT COUNT(*) FROM procurement.insurance_policies) AS apolices_visiveis</pre></details></td><td><pre class="res">[
+<tr id="Q20"><td class="n">Q20</td><td>Isolamento: com o tenant de OUTRA empresa (UUID inexistente) a mesma consulta não enxerga nada<div class="small">Requisitos: EST-TS-11, EST-015</div><div class="small">Reexecutada em 20/10/2026 20:47:58.</div><details><summary>SQL</summary><pre>SELECT set_config('app.company_id','00000000-0000-0000-0000-000000000001',true) AS _ , (SELECT COUNT(*) FROM inventory.inventory_items) AS itens_visiveis, (SELECT COUNT(*) FROM procurement.purchase_orders) AS pedidos_visiveis, (SELECT COUNT(*) FROM procurement.insurance_policies) AS apolices_visiveis</pre></details></td><td><pre class="res">[
  {
   "itens_visiveis": "0",
   "pedidos_visiveis": "0",
   "apolices_visiveis": "0"
  }
 ]</pre></td><td>tudo = 0<br><span class="b ok">confere</span></td></tr>
-<tr id="Q21"><td class="n">Q21</td><td>audit_log append-only: triggers que bloqueiam UPDATE/DELETE/TRUNCATE<div class="small">Requisitos: Segurança, EST-002</div><div class="small">Reexecutada em 20/10/2026 15:07:17.</div><details><summary>SQL</summary><pre>SELECT tgname, pg_get_triggerdef(t.oid) ~* 'UPDATE' AS cobre_update, pg_get_triggerdef(t.oid) ~* 'DELETE' AS cobre_delete, pg_get_triggerdef(t.oid) ~* 'TRUNCATE' AS cobre_truncate
+<tr id="Q21"><td class="n">Q21</td><td>audit_log append-only: triggers que bloqueiam UPDATE/DELETE/TRUNCATE<div class="small">Requisitos: Segurança, EST-002</div><div class="small">Reexecutada em 20/10/2026 20:47:59.</div><details><summary>SQL</summary><pre>SELECT tgname, pg_get_triggerdef(t.oid) ~* 'UPDATE' AS cobre_update, pg_get_triggerdef(t.oid) ~* 'DELETE' AS cobre_delete, pg_get_triggerdef(t.oid) ~* 'TRUNCATE' AS cobre_truncate
 FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='audit' AND c.relname='audit_log' AND NOT t.tgisinternal</pre></details></td><td><pre class="res">[
  {
   "tgname": "audit_log_no_update_delete",
@@ -7490,25 +7490,29 @@ FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oi
   "cobre_truncate": true
  }
 ]</pre></td><td>há triggers cobrindo UPDATE, DELETE e TRUNCATE<br><span class="b ok">confere</span></td></tr>
-<tr id="Q22"><td class="n">Q22</td><td>Ações do Marco 7 registradas no audit_log hoje (contagem por ação)<div class="small">Requisitos: Segurança, §14</div><div class="small">Reexecutada em 20/10/2026 15:07:18.</div><details><summary>SQL</summary><pre>SELECT action, COUNT(*) AS registros FROM audit.audit_log WHERE (action ~* '^(inventory|procurement|goods_receipt|purchase_|tool_|asset|maintenance|loss|quotation|supplier|insurance|receipt|count)') AND occurred_at &gt;= date_trunc('day', now() AT TIME ZONE 'America/Sao_Paulo') AT TIME ZONE 'America/Sao_Paulo' GROUP BY 1 ORDER BY 2 DESC</pre></details></td><td><pre class="res">[
+<tr id="Q22"><td class="n">Q22</td><td>Ações do Marco 7 registradas no audit_log hoje (contagem por ação)<div class="small">Requisitos: Segurança, §14</div><div class="small">Reexecutada em 20/10/2026 20:48:00.</div><details><summary>SQL</summary><pre>SELECT action, COUNT(*) AS registros FROM audit.audit_log WHERE (action ~* '^(inventory|procurement|goods_receipt|purchase_|tool_|asset|maintenance|loss|quotation|supplier|insurance|receipt|count)') AND occurred_at &gt;= date_trunc('day', now() AT TIME ZONE 'America/Sao_Paulo') AT TIME ZONE 'America/Sao_Paulo' GROUP BY 1 ORDER BY 2 DESC</pre></details></td><td><pre class="res">[
  {
   "action": "INVENTORY_MOVEMENT_RECORDED",
-  "registros": "44"
+  "registros": "48"
  },
  {
-  "action": "PURCHASE_REQUEST_CREATED",
-  "registros": "14"
+  "action": "SUPPLIER_QUALIFICATION_UPDATED",
+  "registros": "22"
  },
  {
   "action": "PURCHASE_REQUEST_DECIDED",
-  "registros": "14"
+  "registros": "20"
  },
  {
-  "action": "INVENTORY_RECEIPT_COMPLETED",
-  "registros": "13"
+  "action": "PURCHASE_REQUEST_CREATED",
+  "registros": "20"
  },
  {
   "action": "PURCHASE_ORDER_CREATED",
+  "registros": "17"
+ },
+ {
+  "action": "INVENTORY_RECEIPT_COMPLETED",
   "registros": "13"
  },
  {
@@ -7516,28 +7520,28 @@ FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oi
   "registros": "13"
  },
  {
-  "action": "SUPPLIER_QUALIFICATION_UPDATED",
+  "action": "PURCHASE_ORDER_CANCELED",
   "registros": "12"
  },
  {
-  "action": "PURCHASE_ORDER_CANCELED",
+  "action": "ASSET_TRANSFERRED",
   "registros": "10"
- },
- {
-  "action": "GOODS_RECEIPT_CONFIRMED",
-  "registros": "6"
  },
  {
   "action": "INVENTORY_LOSS_CASE_OPENED",
   "registros": "6"
  },
  {
-  "action": "INVENTORY_COUNT_OPENED",
-  "registros": "4"
+  "action": "SUPPLIER_DUE_DILIGENCE_DECIDED",
+  "registros": "6"
  },
  {
-  "action": "ASSET_TRANSFERRED",
-  "registros": "4"
+  "action": "GOODS_RECEIPT_CONFIRMED",
+  "registros": "6"
+ },
+ {
+  "action": "INVENTORY_COUNT_OPENED",
+  "registros": "6"
  },
  {
   "action": "TOOL_LOAN_CREATED",
@@ -7564,11 +7568,7 @@ FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oi
   "registros": "2"
  },
  {
-  "action": "SUPPLIER_DUE_DILIGENCE_DECIDED",
-  "registros": "2"
- },
- {
-  "action": "INVENTORY_COUNT_COMPLETED",
+  "action": "procurement.insurance_claim.submit",
   "registros": "1"
  },
  {
@@ -7576,14 +7576,14 @@ FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oi
   "registros": "1"
  },
  {
-  "action": "procurement.insurance_claim.submit",
+  "action": "INVENTORY_COUNT_COMPLETED",
   "registros": "1"
  }
 ]</pre></td><td>≥ 1 ação registrada<br><span class="b ok">confere</span></td></tr>
-<tr id="Q23"><td class="n">Q23</td><td>Eventos do Marco 7 publicados no outbox (nomes distintos)<div class="small">Requisitos: §14, EST-012</div><div class="small">Reexecutada em 20/10/2026 15:07:19.</div><details><summary>SQL</summary><pre>SELECT event_type, COUNT(*) AS eventos FROM integration.outbox_events WHERE event_type LIKE 'inventory.%' OR event_type LIKE 'tool.%' OR event_type LIKE 'asset.%' OR event_type LIKE 'maintenance.%' GROUP BY 1 ORDER BY 1</pre></details></td><td><pre class="res">[
+<tr id="Q23"><td class="n">Q23</td><td>Eventos do Marco 7 publicados no outbox (nomes distintos)<div class="small">Requisitos: §14, EST-012</div><div class="small">Reexecutada em 20/10/2026 20:48:01.</div><details><summary>SQL</summary><pre>SELECT event_type, COUNT(*) AS eventos FROM integration.outbox_events WHERE event_type LIKE 'inventory.%' OR event_type LIKE 'tool.%' OR event_type LIKE 'asset.%' OR event_type LIKE 'maintenance.%' GROUP BY 1 ORDER BY 1</pre></details></td><td><pre class="res">[
  {
   "event_type": "asset.transferred",
-  "eventos": "129"
+  "eventos": "135"
  },
  {
   "event_type": "inventory.count.completed",
@@ -7591,7 +7591,7 @@ FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oi
  },
  {
   "event_type": "inventory.item.created",
-  "eventos": "111"
+  "eventos": "115"
  },
  {
   "event_type": "inventory.loss.opened",
@@ -7599,7 +7599,7 @@ FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oi
  },
  {
   "event_type": "inventory.movement.recorded",
-  "eventos": "235"
+  "eventos": "239"
  },
  {
   "event_type": "inventory.receipt.completed",
@@ -7634,7 +7634,7 @@ FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oi
   "eventos": "9"
  }
 ]</pre></td><td>≥ 1 evento por nome<br><span class="b ok">confere</span></td></tr>
-<tr id="Q24"><td class="n">Q24</td><td>Custo histórico gravado por movimento (EST-011). Conta os movimentos que carregam custo ao sair do estoque: quantos gravaram o custo na hora do fato (cost_source RECORDED), quantos são antigos e foram preenchidos pela migration com o melhor dado disponível (BACKFILL), quantos são de item sem custo conhecido (UNKNOWN, entram como zero) e quantos têm total diferente de quantidade × custo unitário. A prova de que o custo da obra não muda depois de uma entrada com preço diferente está em Q39.<div class="small">Requisitos: EST-011, Custo em obra errada</div><div class="small">Reexecutada em 20/10/2026 15:07:20.</div><details><summary>SQL</summary><pre>SELECT COUNT(*) FILTER (WHERE cost_source = 'RECORDED') AS movimentos_com_custo_gravado_na_hora,
+<tr id="Q24"><td class="n">Q24</td><td>Custo histórico gravado por movimento (EST-011). Conta os movimentos que carregam custo ao sair do estoque: quantos gravaram o custo na hora do fato (cost_source RECORDED), quantos são antigos e foram preenchidos pela migration com o melhor dado disponível (BACKFILL), quantos são de item sem custo conhecido (UNKNOWN, entram como zero) e quantos têm total diferente de quantidade × custo unitário. A prova de que o custo da obra não muda depois de uma entrada com preço diferente está em Q39.<div class="small">Requisitos: EST-011, Custo em obra errada</div><div class="small">Reexecutada em 20/10/2026 20:48:02.</div><details><summary>SQL</summary><pre>SELECT COUNT(*) FILTER (WHERE cost_source = 'RECORDED') AS movimentos_com_custo_gravado_na_hora,
        COUNT(*) FILTER (WHERE cost_source LIKE 'BACKFILL%') AS movimentos_antigos_preenchidos_pela_migration,
        COUNT(*) FILTER (WHERE cost_source = 'UNKNOWN') AS movimentos_de_item_sem_custo_conhecido,
        COUNT(*) FILTER (WHERE unit_cost IS NOT NULL AND total_cost IS NOT NULL AND abs(total_cost - quantity * unit_cost) &gt; 0.01) AS custo_total_diferente_de_quantidade_x_unitario
@@ -9053,7 +9053,7 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
 </section>
 
 <section id="anexo-json"><h2>11. Anexo de dados (JSON)</h2>
-<p class="lead">Dossiê completo, legível por máquina: <code>meta</code>, <code>matriz[]</code>, <code>testes[]</code>, <code>respostasHttp[]</code>, <code>consultasBanco[]</code>, <code>auditoria[]</code>, <code>seguranca</code>, <code>rodadas[]</code>, <code>correcoesCliente[]</code> e <code>hashes</code>. Também está no elemento <code>&lt;script type="application/json" id="evidencias-marco7"&gt;</code>. SHA-256 do JSON: <code>c41518d8161fa7aa567cd91e1049bd6dd004ca8531b16fb662cb19a147f8be1e</code> (método em <code>hashes.metodo</code>). A sanitização aplicada está declarada em <code>meta.sanitizacao</code>.</p>
+<p class="lead">Dossiê completo, legível por máquina: <code>meta</code>, <code>matriz[]</code>, <code>testes[]</code>, <code>respostasHttp[]</code>, <code>consultasBanco[]</code>, <code>auditoria[]</code>, <code>seguranca</code>, <code>rodadas[]</code>, <code>correcoesCliente[]</code> e <code>hashes</code>. Também está no elemento <code>&lt;script type="application/json" id="evidencias-marco7"&gt;</code>. SHA-256 do JSON: <code>c24ca2e5aa7e21e0041a2add14f6b49d6a1ab8b361406a035c08ed30a4ab488c</code> (método em <code>hashes.metodo</code>). A sanitização aplicada está declarada em <code>meta.sanitizacao</code>.</p>
 <div class="btns"><button type="button" id="btn-copiar">Copiar JSON</button><button type="button" id="btn-baixar">Baixar JSON</button><span id="btn-msg" class="small"></span></div>
 <details><summary>Ver o JSON completo</summary><pre id="json-pre"></pre></details>
 </section>
@@ -20657,9 +20657,9 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "invariante": "pares_divergentes = 0",
    "invarianteOk": true,
    "erro": null,
-   "dataHora": "2026-10-20T18:06:59.125Z",
+   "dataHora": "2026-10-20T23:47:38.319Z",
    "transacao": "BEGIN READ ONLY … ROLLBACK",
-   "reexecutadaEm": "2026-10-20T18:06:59.125Z"
+   "reexecutadaEm": "2026-10-20T23:47:38.319Z"
   },
   {
    "id": "Q01b",
@@ -20679,9 +20679,9 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "invariante": "pares_divergentes = 0",
    "invarianteOk": true,
    "erro": null,
-   "dataHora": "2026-10-20T18:07:00.010Z",
+   "dataHora": "2026-10-20T23:47:39.361Z",
    "transacao": "BEGIN READ ONLY … ROLLBACK",
-   "reexecutadaEm": "2026-10-20T18:07:00.010Z"
+   "reexecutadaEm": "2026-10-20T23:47:39.361Z"
   },
   {
    "id": "Q01c",
@@ -20700,9 +20700,9 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "invariante": "divergentes = 0",
    "invarianteOk": true,
    "erro": null,
-   "dataHora": "2026-10-20T18:07:00.884Z",
+   "dataHora": "2026-10-20T23:47:40.379Z",
    "transacao": "BEGIN READ ONLY … ROLLBACK",
-   "reexecutadaEm": "2026-10-20T18:07:00.884Z"
+   "reexecutadaEm": "2026-10-20T23:47:40.379Z"
   },
   {
    "id": "Q02",
@@ -20722,9 +20722,9 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "invariante": "negativos = 0",
    "invarianteOk": true,
    "erro": null,
-   "dataHora": "2026-10-20T18:07:01.757Z",
+   "dataHora": "2026-10-20T23:47:41.399Z",
    "transacao": "BEGIN READ ONLY … ROLLBACK",
-   "reexecutadaEm": "2026-10-20T18:07:01.757Z"
+   "reexecutadaEm": "2026-10-20T23:47:41.399Z"
   },
   {
    "id": "Q03",
@@ -20838,9 +20838,9 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "invariante": "divergentes = 0 (pedidos não cancelados)",
    "invarianteOk": true,
    "erro": null,
-   "dataHora": "2026-10-20T18:07:02.640Z",
+   "dataHora": "2026-10-20T23:47:42.416Z",
    "transacao": "BEGIN READ ONLY … ROLLBACK",
-   "reexecutadaEm": "2026-10-20T18:07:02.640Z"
+   "reexecutadaEm": "2026-10-20T23:47:42.416Z"
   },
   {
    "id": "Q06",
@@ -20878,9 +20878,9 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "invariante": "grupo 3 (elegível): soma das parcelas = prêmio e nenhuma parcela sem lançamento; em todos os grupos a soma das parcelas = prêmio. Legados (grupo 2) mostram parcela sem lançamento por serem anteriores à regra.",
    "invarianteOk": true,
    "erro": null,
-   "dataHora": "2026-10-20T18:07:03.516Z",
+   "dataHora": "2026-10-20T23:47:43.434Z",
    "transacao": "BEGIN READ ONLY … ROLLBACK",
-   "reexecutadaEm": "2026-10-20T18:07:03.516Z"
+   "reexecutadaEm": "2026-10-20T23:47:43.434Z"
   },
   {
    "id": "Q07",
@@ -20942,9 +20942,9 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "invariante": "fingerprints_repetidos = 0 e indices_unicos ≥ 1",
    "invarianteOk": true,
    "erro": null,
-   "dataHora": "2026-10-20T18:07:04.389Z",
+   "dataHora": "2026-10-20T23:47:44.452Z",
    "transacao": "BEGIN READ ONLY … ROLLBACK",
-   "reexecutadaEm": "2026-10-20T18:07:04.389Z"
+   "reexecutadaEm": "2026-10-20T23:47:44.452Z"
   },
   {
    "id": "Q09",
@@ -20964,9 +20964,9 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "invariante": "ativos = etiquetas_distintas",
    "invarianteOk": true,
    "erro": null,
-   "dataHora": "2026-10-20T18:07:05.261Z",
+   "dataHora": "2026-10-20T23:47:45.470Z",
    "transacao": "BEGIN READ ONLY … ROLLBACK",
-   "reexecutadaEm": "2026-10-20T18:07:05.261Z"
+   "reexecutadaEm": "2026-10-20T23:47:45.470Z"
   },
   {
    "id": "Q10",
@@ -20985,9 +20985,9 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "invariante": "itens = skus_distintos",
    "invarianteOk": true,
    "erro": null,
-   "dataHora": "2026-10-20T18:07:06.130Z",
+   "dataHora": "2026-10-20T23:47:46.487Z",
    "transacao": "BEGIN READ ONLY … ROLLBACK",
-   "reexecutadaEm": "2026-10-20T18:07:06.130Z"
+   "reexecutadaEm": "2026-10-20T23:47:46.487Z"
   },
   {
    "id": "Q10b",
@@ -21007,9 +21007,9 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "invariante": "skus_repetidos = 0",
    "invarianteOk": true,
    "erro": null,
-   "dataHora": "2026-10-20T18:07:07.004Z",
+   "dataHora": "2026-10-20T23:47:47.506Z",
    "transacao": "BEGIN READ ONLY … ROLLBACK",
-   "reexecutadaEm": "2026-10-20T18:07:07.004Z"
+   "reexecutadaEm": "2026-10-20T23:47:47.506Z"
   },
   {
    "id": "Q11",
@@ -21027,9 +21027,9 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "invariante": "= 0",
    "invarianteOk": true,
    "erro": null,
-   "dataHora": "2026-10-20T18:07:07.869Z",
+   "dataHora": "2026-10-20T23:47:48.521Z",
    "transacao": "BEGIN READ ONLY … ROLLBACK",
-   "reexecutadaEm": "2026-10-20T18:07:07.869Z"
+   "reexecutadaEm": "2026-10-20T23:47:48.521Z"
   },
   {
    "id": "Q12",
@@ -21049,9 +21049,9 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "invariante": "loss_sem_caso = 0",
    "invarianteOk": true,
    "erro": null,
-   "dataHora": "2026-10-20T18:07:08.734Z",
+   "dataHora": "2026-10-20T23:47:49.539Z",
    "transacao": "BEGIN READ ONLY … ROLLBACK",
-   "reexecutadaEm": "2026-10-20T18:07:08.734Z"
+   "reexecutadaEm": "2026-10-20T23:47:49.539Z"
   },
   {
    "id": "Q13",
@@ -21071,9 +21071,9 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "invariante": "sem_motivo = 0",
    "invarianteOk": true,
    "erro": null,
-   "dataHora": "2026-10-20T18:07:09.600Z",
+   "dataHora": "2026-10-20T23:47:50.558Z",
    "transacao": "BEGIN READ ONLY … ROLLBACK",
-   "reexecutadaEm": "2026-10-20T18:07:09.600Z"
+   "reexecutadaEm": "2026-10-20T23:47:50.558Z"
   },
   {
    "id": "Q14",
@@ -21092,9 +21092,9 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "invariante": "= 0",
    "invarianteOk": true,
    "erro": null,
-   "dataHora": "2026-10-20T18:07:10.469Z",
+   "dataHora": "2026-10-20T23:47:51.573Z",
    "transacao": "BEGIN READ ONLY … ROLLBACK",
-   "reexecutadaEm": "2026-10-20T18:07:10.469Z"
+   "reexecutadaEm": "2026-10-20T23:47:51.573Z"
   },
   {
    "id": "Q15",
@@ -21115,9 +21115,9 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "invariante": "com_chave = chaves_distintas",
    "invarianteOk": true,
    "erro": null,
-   "dataHora": "2026-10-20T18:07:11.335Z",
+   "dataHora": "2026-10-20T23:47:52.589Z",
    "transacao": "BEGIN READ ONLY … ROLLBACK",
-   "reexecutadaEm": "2026-10-20T18:07:11.335Z"
+   "reexecutadaEm": "2026-10-20T23:47:52.589Z"
   },
   {
    "id": "Q16",
@@ -21138,9 +21138,9 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "invariante": "autodecididas_sem_anotacao = 0",
    "invarianteOk": true,
    "erro": null,
-   "dataHora": "2026-10-20T18:07:12.202Z",
+   "dataHora": "2026-10-20T23:47:53.605Z",
    "transacao": "BEGIN READ ONLY … ROLLBACK",
-   "reexecutadaEm": "2026-10-20T18:07:12.202Z"
+   "reexecutadaEm": "2026-10-20T23:47:53.605Z"
   },
   {
    "id": "Q16b",
@@ -21162,9 +21162,9 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "invariante": "mesma_pessoa_depois_de_0ab0e7b = 0 e mesma_pessoa_sem_anotacao = 0",
    "invarianteOk": true,
    "erro": null,
-   "dataHora": "2026-10-20T18:07:13.076Z",
+   "dataHora": "2026-10-20T23:47:54.625Z",
    "transacao": "BEGIN READ ONLY … ROLLBACK",
-   "reexecutadaEm": "2026-10-20T18:07:13.076Z"
+   "reexecutadaEm": "2026-10-20T23:47:54.625Z"
   },
   {
    "id": "Q17",
@@ -21184,9 +21184,9 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "invariante": "autoaprovadas = 0",
    "invarianteOk": true,
    "erro": null,
-   "dataHora": "2026-10-20T18:07:13.940Z",
+   "dataHora": "2026-10-20T23:47:55.641Z",
    "transacao": "BEGIN READ ONLY … ROLLBACK",
-   "reexecutadaEm": "2026-10-20T18:07:13.940Z"
+   "reexecutadaEm": "2026-10-20T23:47:55.641Z"
   },
   {
    "id": "Q18",
@@ -21216,9 +21216,9 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "invariante": "tabelas = com_rls = com_force",
    "invarianteOk": true,
    "erro": null,
-   "dataHora": "2026-10-20T18:07:14.813Z",
+   "dataHora": "2026-10-20T23:47:56.656Z",
    "transacao": "BEGIN READ ONLY … ROLLBACK",
-   "reexecutadaEm": "2026-10-20T18:07:14.813Z"
+   "reexecutadaEm": "2026-10-20T23:47:56.656Z"
   },
   {
    "id": "Q19",
@@ -21239,9 +21239,9 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "invariante": "rolsuper = false e rolbypassrls = false",
    "invarianteOk": true,
    "erro": null,
-   "dataHora": "2026-10-20T18:07:15.680Z",
+   "dataHora": "2026-10-20T23:47:57.674Z",
    "transacao": "BEGIN READ ONLY … ROLLBACK",
-   "reexecutadaEm": "2026-10-20T18:07:15.680Z"
+   "reexecutadaEm": "2026-10-20T23:47:57.674Z"
   },
   {
    "id": "Q20",
@@ -21262,9 +21262,9 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "invariante": "tudo = 0",
    "invarianteOk": true,
    "erro": null,
-   "dataHora": "2026-10-20T18:07:16.554Z",
+   "dataHora": "2026-10-20T23:47:58.726Z",
    "transacao": "BEGIN READ ONLY … ROLLBACK",
-   "reexecutadaEm": "2026-10-20T18:07:16.554Z"
+   "reexecutadaEm": "2026-10-20T23:47:58.726Z"
   },
   {
    "id": "Q21",
@@ -21292,9 +21292,9 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "invariante": "há triggers cobrindo UPDATE, DELETE e TRUNCATE",
    "invarianteOk": true,
    "erro": null,
-   "dataHora": "2026-10-20T18:07:17.425Z",
+   "dataHora": "2026-10-20T23:47:59.750Z",
    "transacao": "BEGIN READ ONLY … ROLLBACK",
-   "reexecutadaEm": "2026-10-20T18:07:17.425Z"
+   "reexecutadaEm": "2026-10-20T23:47:59.750Z"
   },
   {
    "id": "Q22",
@@ -21308,22 +21308,26 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "resultado": [
     {
      "action": "INVENTORY_MOVEMENT_RECORDED",
-     "registros": "44"
+     "registros": "48"
     },
     {
-     "action": "PURCHASE_REQUEST_CREATED",
-     "registros": "14"
+     "action": "SUPPLIER_QUALIFICATION_UPDATED",
+     "registros": "22"
     },
     {
      "action": "PURCHASE_REQUEST_DECIDED",
-     "registros": "14"
+     "registros": "20"
     },
     {
-     "action": "INVENTORY_RECEIPT_COMPLETED",
-     "registros": "13"
+     "action": "PURCHASE_REQUEST_CREATED",
+     "registros": "20"
     },
     {
      "action": "PURCHASE_ORDER_CREATED",
+     "registros": "17"
+    },
+    {
+     "action": "INVENTORY_RECEIPT_COMPLETED",
      "registros": "13"
     },
     {
@@ -21331,28 +21335,28 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
      "registros": "13"
     },
     {
-     "action": "SUPPLIER_QUALIFICATION_UPDATED",
+     "action": "PURCHASE_ORDER_CANCELED",
      "registros": "12"
     },
     {
-     "action": "PURCHASE_ORDER_CANCELED",
+     "action": "ASSET_TRANSFERRED",
      "registros": "10"
-    },
-    {
-     "action": "GOODS_RECEIPT_CONFIRMED",
-     "registros": "6"
     },
     {
      "action": "INVENTORY_LOSS_CASE_OPENED",
      "registros": "6"
     },
     {
-     "action": "INVENTORY_COUNT_OPENED",
-     "registros": "4"
+     "action": "SUPPLIER_DUE_DILIGENCE_DECIDED",
+     "registros": "6"
     },
     {
-     "action": "ASSET_TRANSFERRED",
-     "registros": "4"
+     "action": "GOODS_RECEIPT_CONFIRMED",
+     "registros": "6"
+    },
+    {
+     "action": "INVENTORY_COUNT_OPENED",
+     "registros": "6"
     },
     {
      "action": "TOOL_LOAN_CREATED",
@@ -21379,11 +21383,7 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
      "registros": "2"
     },
     {
-     "action": "SUPPLIER_DUE_DILIGENCE_DECIDED",
-     "registros": "2"
-    },
-    {
-     "action": "INVENTORY_COUNT_COMPLETED",
+     "action": "procurement.insurance_claim.submit",
      "registros": "1"
     },
     {
@@ -21391,16 +21391,16 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
      "registros": "1"
     },
     {
-     "action": "procurement.insurance_claim.submit",
+     "action": "INVENTORY_COUNT_COMPLETED",
      "registros": "1"
     }
    ],
    "invariante": "≥ 1 ação registrada",
    "invarianteOk": true,
    "erro": null,
-   "dataHora": "2026-10-20T18:07:18.315Z",
+   "dataHora": "2026-10-20T23:48:00.804Z",
    "transacao": "BEGIN READ ONLY … ROLLBACK",
-   "reexecutadaEm": "2026-10-20T18:07:18.315Z"
+   "reexecutadaEm": "2026-10-20T23:48:00.804Z"
   },
   {
    "id": "Q23",
@@ -21414,7 +21414,7 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "resultado": [
     {
      "event_type": "asset.transferred",
-     "eventos": "129"
+     "eventos": "135"
     },
     {
      "event_type": "inventory.count.completed",
@@ -21422,7 +21422,7 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
     },
     {
      "event_type": "inventory.item.created",
-     "eventos": "111"
+     "eventos": "115"
     },
     {
      "event_type": "inventory.loss.opened",
@@ -21430,7 +21430,7 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
     },
     {
      "event_type": "inventory.movement.recorded",
-     "eventos": "235"
+     "eventos": "239"
     },
     {
      "event_type": "inventory.receipt.completed",
@@ -21468,9 +21468,9 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "invariante": "≥ 1 evento por nome",
    "invarianteOk": true,
    "erro": null,
-   "dataHora": "2026-10-20T18:07:19.193Z",
+   "dataHora": "2026-10-20T23:48:01.865Z",
    "transacao": "BEGIN READ ONLY … ROLLBACK",
-   "reexecutadaEm": "2026-10-20T18:07:19.193Z"
+   "reexecutadaEm": "2026-10-20T23:48:01.865Z"
   },
   {
    "id": "Q24",
@@ -21492,9 +21492,9 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "invariante": "custo_total_diferente_de_quantidade_x_unitario = 0",
    "invarianteOk": true,
    "erro": null,
-   "dataHora": "2026-10-20T18:07:20.062Z",
+   "dataHora": "2026-10-20T23:48:02.944Z",
    "transacao": "BEGIN READ ONLY … ROLLBACK",
-   "reexecutadaEm": "2026-10-20T18:07:20.062Z"
+   "reexecutadaEm": "2026-10-20T23:48:02.944Z"
   },
   {
    "id": "Q29",
@@ -30701,7 +30701,7 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
  "meta": {
   "marco": "Marco 7 — Estoque, Ferramentas, Patrimônio, Compras e Seguros",
   "status": "Pronto para aceite",
-  "geradoEm": "2026-10-20T23:45:55.637Z",
+  "geradoEm": "2026-10-20T23:48:22.253Z",
   "autor": "Patrick Siqueira",
   "commits": {
    "api": "3f7e550 (CI final); testes locais iniciados em dda254a",
@@ -31107,7 +31107,7 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
    "F29": "6d2d7e7b0b2de1e3562eb06ca816c4aeb60ab2e52cd1d8f2c2c66931a35bb1a8"
   },
   "metodo": "hashes.json = SHA-256 (UTF-8) de JSON.stringify(dossie, null, 1) depois de trocar hashes.json por \"\"; cada print = SHA-256 dos bytes JPEG do data URI",
-  "json": "c41518d8161fa7aa567cd91e1049bd6dd004ca8531b16fb662cb19a147f8be1e"
+  "json": "c24ca2e5aa7e21e0041a2add14f6b49d6a1ab8b361406a035c08ed30a4ab488c"
  },
  "divergenciasDocumentais": [
   {
