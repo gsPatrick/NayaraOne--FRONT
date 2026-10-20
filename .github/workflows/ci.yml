@@ -9,7 +9,13 @@ on:
     branches: [main, marco-6-e-7-homologado-nayara]
   pull_request:
     branches: [main, marco-6-e-7-homologado-nayara]
+  # Disparo manual: reexecuta lint e build sem deploy; deploy de produção só se marcado.
   workflow_dispatch:
+    inputs:
+      deploy_production:
+        description: 'Também disparar o deploy de produção (exige aprovação do environment production)'
+        type: boolean
+        default: false
 
 jobs:
   lint-build:
@@ -50,7 +56,7 @@ jobs:
 
   deploy-production:
     needs: lint-build
-    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    if: (github.event_name == 'workflow_dispatch' && inputs.deploy_production) || (github.event_name == 'push' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     # Required reviewers configurados no environment "production" seguram este job até alguém
     # aprovar na página do run.
