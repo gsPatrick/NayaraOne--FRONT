@@ -17,7 +17,9 @@ import Alert from "@/components/molecules/Alert/Alert";
 import Modal from "@/components/organisms/Modal/Modal";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu";
-import { listChartAccounts, createChartAccount, updateChartAccount, deactivateChartAccount } from "@/lib/api/finance";
+import { listChartAccounts, createChartAccount, updateChartAccount, deactivateChartAccount, listChartAccountVersions } from "@/lib/api/finance";
+import { friendlyFinanceError } from "@/lib/finance/extras";
+import { formatDateTime } from "@/lib/format";
 import styles from "./page.module.css";
 
 const ACCOUNT_TYPES = [
@@ -41,6 +43,22 @@ export default function PlanoDeContasPage() {
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ code: "", name: "", accountType: "EXPENSE", parentAccountId: "" });
   const [editing, setEditing] = useState(null);
+  // Histórico de versões da conta (cada alteração gera uma versão; relatórios antigos usam a vigente no fato).
+  const [historyAccount, setHistoryAccount] = useState(null);
+  const [versions, setVersions] = useState([]);
+  const [versionsLoading, setVersionsLoading] = useState(false);
+  const [versionsError, setVersionsError] = useState("");
+
+  function openHistory(account) {
+    setHistoryAccount(account);
+    setVersions([]);
+    setVersionsError("");
+    setVersionsLoading(true);
+    listChartAccountVersions(account.id)
+      .then((items) => setVersions(items || []))
+      .catch((err) => setVersionsError(friendlyFinanceError(err, "Não foi possível carregar o histórico da conta.")))
+      .finally(() => setVersionsLoading(false));
+  }
 
   function load() {
     setLoading(true);
@@ -111,7 +129,7 @@ export default function PlanoDeContasPage() {
       setForm({ code: "", name: "", accountType: "EXPENSE", parentAccountId: "" });
       load();
     } catch (err) {
-      setActionError(err?.message || `Não foi possível ${editing ? "salvar" : "criar"} a conta contábil.`);
+      setActionError(friendlyFinanceError(err, `Não foi possível ${editing ? "salvar" : "criar"} a conta contábil.`));
     } finally {
       setSubmitting(false);
     }
@@ -134,7 +152,11 @@ export default function PlanoDeContasPage() {
           <span className={styles.code}>{account.code}</span>
           <span className={styles.name}>{account.name}</span>
           <Badge tone="neutral">{typeLabel(account.accountType)}</Badge>
+          <Badge tone="neutral">{account.children.some((c) => c.isActive) ? "Sintética" : "Analítica"}</Badge>
           {!account.isActive && <Badge tone="warning">Inativa</Badge>}
+          <button type="button" className={styles.deactivateBtn} onClick={() => openHistory(account)}>
+            Histórico
+          </button>
           {account.isActive && (
             <>
               <button type="button" className={styles.deactivateBtn} onClick={() => openEditModal(account)}>
@@ -187,6 +209,43 @@ export default function PlanoDeContasPage() {
           )}
         </Card>
       )}
+
+      <Modal
+        open={Boolean(historyAccount)}
+        onClose={() => setHistoryAccount(null)}
+        title={historyAccount ? `Histórico da conta ${historyAccount.code} — ${historyAccount.name}` : "Histórico da conta"}
+      >
+        {versionsError ? <Alert tone="danger">{versionsError}</Alert> : null}
+        {versionsLoading ? (
+          <SkeletonDetail />
+        ) : versions.length === 0 && !versionsError ? (
+          <p className={styles.empty}>Nenhuma versão registrada para esta conta.</p>
+        ) : (
+          <ol className={styles.history}>
+            {versions.map((v, i) => {
+              const prev = versions[i - 1];
+              const changes = [];
+              if (prev) {
+                if (prev.code !== v.code) changes.push(`Código: ${prev.code} → ${v.code}`);
+                if (prev.name !== v.name) changes.push(`Nome: ${prev.name} → ${v.name}`);
+                if (prev.accountType !== v.accountType) changes.push(`Natureza: ${typeLabel(prev.accountType)} → ${typeLabel(v.accountType)}`);
+                if (prev.isActive !== v.isActive) changes.push(v.isActive ? "Conta reativada" : "Conta desativada");
+                if ((prev.parentAccountId || null) !== (v.parentAccountId || null)) changes.push("Conta pai alterada");
+              }
+              return (
+                <li key={v.id} className={styles.historyItem}>
+                  <strong>Versão {v.versionNumber}</strong> · vigente desde {formatDateTime(v.effectiveFrom)}
+                  {v.effectiveUntil ? ` até ${formatDateTime(v.effectiveUntil)}` : " (versão atual)"}
+                  <div className={styles.historyBody}>
+                    {prev ? (changes.length ? changes.join(" · ") : "Sem mudança nos dados da conta") : `Criada como ${v.code} — ${v.name} (${typeLabel(v.accountType)})`}
+                  </div>
+                  <div className={styles.historyBody}>Motivo: {v.changeReason || "não informado"}</div>
+                </li>
+              );
+            })}
+          </ol>
+        )}
+      </Modal>
 
       <Modal
         open={showCreate}

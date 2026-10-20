@@ -46,8 +46,11 @@ import {
   createPaymentIntent,
   listPaymentIntents,
 } from "@/lib/api/finance";
-import { uploadFile } from "@/lib/api/legal";
-import { formatBRL, formatDate, formatDateTime, dateOnlyInputToIso, humanizeText, toNumber } from "@/lib/format";
+import { uploadFile, getContract } from "@/lib/api/legal";
+import { getPerson } from "@/lib/api/people";
+import { friendlyFinanceError } from "@/lib/finance/extras";
+import ThirdPartyReleaseModal, { thirdPartyBalance } from "./ThirdPartyReleaseModal";
+import { formatBRL, formatDate, formatDateTime, formatCompetence, formatContractLabel, dateOnlyInputToIso, humanizeText, toNumber } from "@/lib/format";
 import styles from "./page.module.css";
 import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 
@@ -66,6 +69,10 @@ export default function LancamentoDetailPage({ params }) {
   const [editError, setEditError] = useState("");
   const [reversalTarget, setReversalTarget] = useState(null);
   const [reversedBy, setReversedBy] = useState(null);
+  const [allEntries, setAllEntries] = useState([]);
+  const [contractInfo, setContractInfo] = useState(null);
+  const [holderInfo, setHolderInfo] = useState(null);
+  const [releaseOpen, setReleaseOpen] = useState(false);
   const [reconciliation, setReconciliation] = useState(null);
   const [reconciledTransaction, setReconciledTransaction] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -116,6 +123,9 @@ export default function LancamentoDetailPage({ params }) {
         setAllBankAccounts(bankAccounts);
         setAllCostCenters(costCenters);
         setAllResultCenters(resultCenters);
+        setAllEntries(allEntries || []);
+        if (e.contractId) getContract(e.contractId).then((c) => { if (!cancelled) setContractInfo(c); }).catch(() => {});
+        if (e.thirdPartyHolderPersonId) getPerson(e.thirdPartyHolderPersonId).then((p) => { if (!cancelled) setHolderInfo(p); }).catch(() => {});
         setReversalTarget(e.reversalOfEntryId ? allEntries.find((x) => x.id === e.reversalOfEntryId) || null : null);
         setReversedBy(allEntries.find((x) => x.reversalOfEntryId === e.id) || null);
         const rec = reconciliations.find((r) => r.financialEntryId === e.id) || null;
@@ -175,6 +185,20 @@ export default function LancamentoDetailPage({ params }) {
     approvalRequest?.status === "APPROVED" ||
     paymentIntent?.status === "APPROVED";
 
+  // Caução recebida (dinheiro de terceiro a receber, já liquidado): permite devolver/compensar ligado a ela.
+  const isDepositReceived =
+    entry?.nature === "RECEIVABLE" && entry?.isThirdPartyFunds && ["SETTLED", "PARTIALLY_SETTLED"].includes(entry?.status);
+  const depositBalance = isDepositReceived ? thirdPartyBalance(entry, allEntries) : null;
+  // Baixas parciais: o saldo é o valor do lançamento menos o que as baixas (filhas) já liquidaram.
+  const partialChildren = entry ? allEntries.filter((x) => x.parentEntryId === entry.id && x.status === "SETTLED") : [];
+  const alreadySettledCents = partialChildren.reduce((a, c) => a + Math.round(Number(c.amount) * 100), 0);
+  const remainingCents = entry ? Math.max(0, Math.round(Number(entry.amount) * 100) - alreadySettledCents) : 0;
+  const hasPartialSettlements = entry?.status === "PARTIALLY_SETTLED" || partialChildren.length > 0;
+  // Recebimento antecipado: liquidado antes do dia do vencimento (dia de calendário em São Paulo).
+  const dayKey = (iso) => new Date(iso).toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" });
+  const isEarlyReceipt =
+    entry?.nature === "RECEIVABLE" && entry?.status === "SETTLED" && entry?.dueAt && entry?.settledAt && dayKey(entry.settledAt) < dayKey(entry.dueAt);
+
   // A4: comprovante + motivo são ANEXADOS antes da aprovação (quem aprova vê o arquivo).
   function validateManualEvidence() {
     if (!manualFile) return "Selecione o comprovante do pagamento (PDF ou imagem).";
@@ -201,7 +225,7 @@ export default function LancamentoDetailPage({ params }) {
       load();
       setNotice({ tone: "success", text: "Comprovante anexado. Agora solicite a aprovação — ela precisa ser feita por outra pessoa." });
     } catch (err) {
-      setManualError(err?.message || "Não foi possível anexar o comprovante.");
+      setManualError(friendlyFinanceError(err, "Não foi possível anexar o comprovante."));
     } finally {
       setBusy(false);
     }
@@ -252,7 +276,7 @@ export default function LancamentoDetailPage({ params }) {
       setApprovalRequest(created);
       setNotice({ tone: "success", text: "Aprovação solicitada. Acompanhe em Financeiro → Aprovações." });
     } catch (err) {
-      setNotice({ tone: "danger", text: err?.message || "Não foi possível solicitar a aprovação." });
+      setNotice({ tone: "danger", text: friendlyFinanceError(err, "Não foi possível solicitar a aprovação.") });
     } finally {
       setBusy(false);
     }
@@ -272,7 +296,7 @@ export default function LancamentoDetailPage({ params }) {
       setPaymentIntent(created);
       setNotice({ tone: "success", text: "Intenção de pagamento criada. Acompanhe em Financeiro → Intenções de pagamento." });
     } catch (err) {
-      setNotice({ tone: "danger", text: err?.message || "Não foi possível criar a intenção de pagamento." });
+      setNotice({ tone: "danger", text: friendlyFinanceError(err, "Não foi possível criar a intenção de pagamento.") });
     } finally {
       setBusy(false);
     }
@@ -286,7 +310,7 @@ export default function LancamentoDetailPage({ params }) {
       setEntry(updated);
       setNotice({ tone: "success", text: needsManualEvidence ? "Baixa manual registrada com o comprovante anexado." : "Lançamento liquidado com sucesso." });
     } catch (err) {
-      setNotice({ tone: "danger", text: err?.message || "Não foi possível liquidar o lançamento." });
+      setNotice({ tone: "danger", text: friendlyFinanceError(err, "Não foi possível liquidar o lançamento.") });
     } finally {
       setBusy(false);
     }
@@ -320,7 +344,7 @@ export default function LancamentoDetailPage({ params }) {
       setPartialAmount("");
       setNotice({ tone: "success", text: "Baixa parcial registrada com sucesso." });
     } catch (err) {
-      setNotice({ tone: "danger", text: err?.message || "Não foi possível registrar a baixa parcial." });
+      setNotice({ tone: "danger", text: friendlyFinanceError(err, "Não foi possível registrar a baixa parcial.") });
     } finally {
       setBusy(false);
     }
@@ -361,7 +385,7 @@ export default function LancamentoDetailPage({ params }) {
       setEditOpen(false);
       setNotice({ tone: "success", text: "Lançamento atualizado com sucesso." });
     } catch (err) {
-      setEditError(err?.message || "Não foi possível salvar as alterações.");
+      setEditError(friendlyFinanceError(err, "Não foi possível salvar as alterações."));
     } finally {
       setEditSaving(false);
     }
@@ -382,7 +406,7 @@ export default function LancamentoDetailPage({ params }) {
       setEntry(result.original || result);
       setNotice({ tone: "info", text: "Lançamento estornado — um lançamento compensatório foi criado (o original nunca é editado, ledger imutável)." });
     } catch (err) {
-      setNotice({ tone: "danger", text: err?.message || "Não foi possível estornar o lançamento." });
+      setNotice({ tone: "danger", text: friendlyFinanceError(err, "Não foi possível estornar o lançamento.") });
     } finally {
       setBusy(false);
     }
@@ -417,7 +441,7 @@ export default function LancamentoDetailPage({ params }) {
                   {approvalRequest?.status === "PENDING" ? "Aprovação pendente" : "Solicitar aprovação"}
                 </Button>
               ) : null}
-              {entry.status === "PENDING" && entry.bankAccountId && !["PENDING", "APPROVED", "SUBMITTING", "SUBMITTED"].includes(paymentIntent?.status) ? (
+              {entry.status === "PENDING" && isPayable && entry.bankAccountId && !["PENDING", "APPROVED", "SUBMITTING", "SUBMITTED"].includes(paymentIntent?.status) ? (
                 <Button variant="secondary" onClick={handleCreatePaymentIntent} loading={busy}>
                   <Icon name="shield" size={16} /> Criar intenção de pagamento
                 </Button>
@@ -439,11 +463,11 @@ export default function LancamentoDetailPage({ params }) {
               ) : entry.status === "PENDING" || entry.status === "PARTIALLY_SETTLED" ? (
                 approvalGateSatisfied ? (
                   <Button onClick={handleSettle} loading={busy}><Icon name="check" size={16} /> Liquidar</Button>
-                ) : (
-                  <Button disabled title="Aguardando aprovação prévia antes de liquidar">
+                ) : approvalRequest?.status === "PENDING" || paymentIntent?.status === "PENDING" ? (
+                  <Button disabled title="Aguardando a decisão de outra pessoa antes de liquidar">
                     <Icon name="check" size={16} /> Aguardando aprovação
                   </Button>
-                )
+                ) : null
               ) : null}
               {(entry.status === "PENDING" || entry.status === "PARTIALLY_SETTLED") && !intentInTransit && !isCompensation ? (
                 approvalGateSatisfied ? (
@@ -451,6 +475,11 @@ export default function LancamentoDetailPage({ params }) {
                     <Icon name="money" size={16} /> Liquidar parcial
                   </Button>
                 ) : null
+              ) : null}
+              {isDepositReceived && depositBalance.available > 0 ? (
+                <Button variant="secondary" onClick={() => setReleaseOpen(true)} disabled={busy}>
+                  <Icon name="money" size={16} /> Devolver ou compensar caução
+                </Button>
               ) : null}
               {entry.status === "SETTLED" ? (
                 <Button variant="secondary" onClick={handleReverse} loading={busy}><Icon name="settings" size={16} /> Estornar</Button>
@@ -551,7 +580,28 @@ export default function LancamentoDetailPage({ params }) {
                   <div className={styles.detailRow}><dt>Tipo</dt><dd>{entry.entryType === "DEBIT" ? "Débito" : "Crédito"}</dd></div>
                   <div className={styles.detailRow}><dt>Natureza</dt><dd><NatureBadge nature={entry.nature} /></dd></div>
                   <div className={styles.detailRow}><dt>Vencimento</dt><dd>{entry.dueAt ? formatDate(entry.dueAt) : "Sem vencimento"}</dd></div>
-                  <div className={styles.detailRow}><dt>Liquidado em</dt><dd>{entry.settledAt ? formatDateTime(entry.settledAt) : "Ainda não liquidado"}</dd></div>
+                  {entry.competenceMonth ? <div className={styles.detailRow}><dt>Competência</dt><dd>{formatCompetence(entry.competenceMonth)}</dd></div> : null}
+                  <div className={styles.detailRow}>
+                    <dt>Liquidado em</dt>
+                    <dd>
+                      {entry.settledAt ? formatDateTime(entry.settledAt) : "Ainda não liquidado"}
+                      {isEarlyReceipt ? <> <Badge tone="info">Recebimento antecipado</Badge></> : null}
+                    </dd>
+                  </div>
+                  {hasPartialSettlements ? (
+                    <>
+                      <div className={styles.detailRow}><dt>Já baixado</dt><dd>{formatBRL(alreadySettledCents / 100)}</dd></div>
+                      <div className={styles.detailRow}><dt>Saldo restante</dt><dd className={styles.amount}>{formatBRL(remainingCents / 100)}</dd></div>
+                    </>
+                  ) : null}
+                  {entry.isThirdPartyFunds ? (
+                    <>
+                      <div className={styles.detailRow}><dt>Dinheiro de terceiro</dt><dd>{entry.thirdPartyReference ? humanizeText(entry.thirdPartyReference) : "Sim"}</dd></div>
+                      {contractInfo ? <div className={styles.detailRow}><dt>Contrato</dt><dd>{formatContractLabel(contractInfo)}</dd></div> : null}
+                      {holderInfo ? <div className={styles.detailRow}><dt>Titular</dt><dd>{holderInfo.legalName || "Titular sem nome cadastrado"}</dd></div> : null}
+                      {depositBalance ? <div className={styles.detailRow}><dt>Saldo da caução</dt><dd>{formatBRL(depositBalance.available)} de {formatBRL(depositBalance.received)} recebidos</dd></div> : null}
+                    </>
+                  ) : null}
                   {entry.settlementMethod ? (
                     <div className={styles.detailRow}>
                       <dt>Forma da baixa</dt>
@@ -650,6 +700,21 @@ export default function LancamentoDetailPage({ params }) {
           } else {
             await runSettle();
           }
+        }}
+      />
+
+      <ThirdPartyReleaseModal
+        open={releaseOpen}
+        onClose={() => setReleaseOpen(false)}
+        origin={entry}
+        allEntries={allEntries}
+        contract={contractInfo}
+        holderName={holderInfo?.legalName}
+        costCenters={allCostCenters}
+        bankAccounts={allBankAccounts}
+        onCreated={(created) => {
+          setReleaseOpen(false);
+          router.push(`/painel/financeiro/lancamentos/${created.id}`);
         }}
       />
 

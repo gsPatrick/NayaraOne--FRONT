@@ -96,7 +96,7 @@ export default function AntifraudePage() {
         <StatTile label="Alto risco abertos" value={highRiskOpenCount} tone={highRiskOpenCount > 0 ? "danger" : "success"} icon="shield" />
       </div>
 
-      <Card title="Casos de anomalia" subtitle="Detectados automaticamente pelo motor de antifraude (Caderno §17) — nunca apagados, só resolvidos com nota">
+      <Card title="Casos de anomalia" subtitle="Detectados automaticamente pelo motor de antifraude — nunca apagados, só resolvidos com nota">
         <div className={styles.toolbar}>
           <Select className={styles.filter} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
             <option value="">Todos os status</option>
@@ -127,7 +127,7 @@ export default function AntifraudePage() {
                   </div>
                   <p className={styles.reason}>{humanizeText(c.reason)}</p>
                   <span className={styles.meta}>
-                    Aberto em {formatDate(c.createdAt)}
+                    Aberto em {c.createdAt ? formatDate(c.createdAt) : "data não registrada"}
                     {c.resolvedAt ? ` · Resolvido em ${formatDate(c.resolvedAt)}` : ""}
                     {c.resolutionNote ? ` · Nota: ${c.resolutionNote}` : ""}
                   </span>

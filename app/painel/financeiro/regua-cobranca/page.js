@@ -80,7 +80,7 @@ function validateDraft(draft, limits) {
   const offsets = new Set();
   for (const step of draft) {
     const code = step.code.trim().toUpperCase();
-    if (!CODE_PATTERN.test(code)) return `Código inválido: "${step.code}" (use A-Z, 0-9, _ ou -, de 2 a 40 caracteres).`;
+    if (!CODE_PATTERN.test(code)) return `Nome curto inválido: "${step.code}" (use letras sem acento, números, _ ou -, de 2 a 40 caracteres).`;
     if (!INT_PATTERN.test(step.offsetDays.trim())) return `A etapa ${code} precisa de um dia inteiro (ex.: -3 ou 5).`;
     const offset = Number.parseInt(step.offsetDays.trim(), 10);
     const min = limits?.minOffset ?? -30;
@@ -88,7 +88,7 @@ function validateDraft(draft, limits) {
     if (offset < min || offset > max) return `A etapa ${code} precisa ficar entre ${min} e ${max} dias.`;
     if (offset === 0) return `A etapa ${code} não pode ser no próprio dia do vencimento.`;
     if (!ACTION_LABELS[step.action]) return `Escolha a ação da etapa ${code}.`;
-    if (codes.has(code) || offsets.has(offset)) return "Códigos e dias das etapas não podem se repetir.";
+    if (codes.has(code) || offsets.has(offset)) return "Os nomes curtos e os dias das etapas não podem se repetir.";
     codes.add(code);
     offsets.add(offset);
   }
@@ -279,7 +279,7 @@ export default function ReguaCobrancaPage() {
           </p>
           {draft.map((step, index) => (
             <div key={index} className={styles.stepRow}>
-              <FormField label="Código" htmlFor={`code-${index}`}>
+              <FormField label="Nome curto da etapa" htmlFor={`code-${index}`} helper="Só letras, números, _ ou -">
                 <Input
                   id={`code-${index}`}
                   value={step.code}
@@ -416,7 +416,7 @@ export default function ReguaCobrancaPage() {
         <ul>
           {sortedPreview.map((s) => (
             <li key={s.code + s.offsetDays}>
-              {s.code.toUpperCase()}: {describeOffset(Number.parseInt(s.offsetDays, 10))} — {ACTION_LABELS[s.action]}
+              {ACTION_LABELS[s.action]}: {describeOffset(Number.parseInt(s.offsetDays, 10))}
             </li>
           ))}
         </ul>

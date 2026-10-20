@@ -21,6 +21,7 @@ import Badge from "@/components/atoms/Badge/Badge";
 import { listFinancialEntries, listBankTransactions, listBankAccounts, listReconciliations, matchReconciliation, suggestReconciliationMatches } from "@/lib/api/finance";
 import { apiFetch } from "@/lib/api/client";
 import { getCurrentUser } from "@/lib/auth/session";
+import { formatCalendarDay } from "@/lib/finance/extras";
 import { formatBRL, formatDate, formatDateTime, humanizeText } from "@/lib/format";
 import styles from "./page.module.css";
 
@@ -240,7 +241,7 @@ export default function ConciliacaoPage() {
                           </span>
                           <div className={styles.listRowInfo}>
                             <span className={styles.listRowTitle}>{humanizeText(t.description)}</span>
-                            <span className={styles.listRowSubtitle}>{formatDate(t.transactionDate)} · {t.externalTransactionId || "sem identificador do banco"} · {account?.bankCode || "conta não identificada"}</span>
+                            <span className={styles.listRowSubtitle}>{formatCalendarDay(t.transactionDate)} · {t.externalTransactionId || "sem identificador do banco"} · {account?.bankCode || "conta não identificada"}</span>
                           </div>
                           {classInfo ? <Badge tone={classInfo.tone}>{classInfo.text}</Badge> : null}
                           <span className={styles.listRowRight}>{formatBRL(t.amount)}</span>
@@ -386,12 +387,12 @@ function ReconcileModal({ transaction, candidates, matchClass, onClose, onConfir
       }
     >
       <p className={styles.modalIntro}>
-        {humanizeText(transaction.description)} — {formatBRL(transaction.amount)} em {formatDate(transaction.transactionDate)}
+        {humanizeText(transaction.description)} — {formatBRL(transaction.amount)} em {formatCalendarDay(transaction.transactionDate)}
       </p>
       {matchClass === "AMBIGUOUS" ? (
         <Alert tone="warning" className={styles.notice}>
           Vários lançamentos batem igualmente bem com esta transação — a conciliação automática
-          foi desligada de propósito para este caso (Caderno §11: ambíguo nunca concilia sozinho).
+          foi desligada de propósito para este caso: quando há dúvida, a conciliação nunca é automática.
           Confira os dados abaixo e escolha manualmente o lançamento correto.
         </Alert>
       ) : null}

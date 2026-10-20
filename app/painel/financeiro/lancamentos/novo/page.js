@@ -14,9 +14,12 @@ import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/Skeleton
 import NatureBadge from "@/components/molecules/NatureBadge/NatureBadge";
 import BankAccountSelect from "@/components/molecules/BankAccountSelect/BankAccountSelect";
 import { ENTRY_NATURE_LABELS } from "@/lib/mock/finance";
-import { listBankAccounts, listCostCenters, listResultCenters, createFinancialEntry } from "@/lib/api/finance";
+import { listBankAccounts, listCostCenters, listResultCenters, listChartAccounts, createFinancialEntry } from "@/lib/api/finance";
+import { listContracts, listContractParties } from "@/lib/api/legal";
+import { listPeople } from "@/lib/api/people";
+import { friendlyFinanceError } from "@/lib/finance/extras";
 import { generateIdempotencyKey } from "@/lib/offline/offlineQueue";
-import { dateOnlyInputToIso, toNumber } from "@/lib/format";
+import { dateOnlyInputToIso, formatContractLabel, parseCompetenceInput, toNumber } from "@/lib/format";
 import styles from "./page.module.css";
 import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 
@@ -29,6 +32,12 @@ export default function NovoLancamentoPage() {
   const [bankAccounts, setBankAccounts] = useState([]);
   const [costCenters, setCostCenters] = useState([]);
   const [resultCenters, setResultCenters] = useState([]);
+  const [chartAccounts, setChartAccounts] = useState([]);
+  const [contracts, setContracts] = useState([]);
+  const [people, setPeople] = useState([]);
+  const [parties, setParties] = useState([]);
+  const [partiesLoading, setPartiesLoading] = useState(false);
+  const [amountTouched, setAmountTouched] = useState(false);
   const [form, setForm] = useState({
     description: "",
     amount: "",
@@ -38,9 +47,13 @@ export default function NovoLancamentoPage() {
     costCenterId: "",
     resultCenterId: "",
     dueAt: "",
+    competenceMonth: "",
+    chartOfAccountId: "",
     idempotencyKey: "",
     isThirdPartyFunds: false,
     thirdPartyReference: "",
+    contractId: "",
+    thirdPartyHolderPersonId: "",
   });
   // FIX (reportado pela cliente): digitar um ano fora do intervalo plausível (ex: "92026")
   // num <input type="date"> faz o navegador considerar o valor inválido e reportar
@@ -71,6 +84,17 @@ export default function NovoLancamentoPage() {
         setResultCenters(rc || []);
         setForm((prev) => ({ ...prev, bankAccountId: ba?.[0]?.id || "" }));
       })
+      .then(() => Promise.all([
+        listChartAccounts().catch(() => []),
+        listContracts().catch(() => []),
+        listPeople().catch(() => []),
+      ]))
+      .then(([ca, ct, pp]) => {
+        if (cancelled) return;
+        setChartAccounts(ca || []);
+        setContracts(ct || []);
+        setPeople(pp || []);
+      })
       .catch((err) => {
         if (!cancelled) setLoadError(err?.message || "Não foi possível carregar os dados do formulário.");
       })
@@ -88,6 +112,17 @@ export default function NovoLancamentoPage() {
   // passar lançamento de despesa/receita sem o centro correspondente — a API agora também
   // bloqueia isso (FINANCE_ENTRY_COST_CENTER_REQUIRED/FINANCE_ENTRY_RESULT_CENTER_REQUIRED),
   // mas o front precisa impedir o envio antes, não só mostrar o erro depois do POST.
+  // Conta analítica = ativa e sem subcontas ativas (conta com subconta é sintética e não recebe lançamento).
+  const analyticAccounts = chartAccounts.filter(
+    (a) => a.isActive !== false && !chartAccounts.some((c) => c.parentAccountId === a.id && c.isActive !== false)
+  );
+  const competenceInvalid = form.competenceMonth && !parseCompetenceInput(form.competenceMonth);
+  const isTerceiroRecebimento = form.isThirdPartyFunds && form.nature === "RECEIVABLE";
+  const isTerceiroSaida = form.isThirdPartyFunds && form.nature === "PAYABLE";
+  const contractMissing = isTerceiroRecebimento && !form.contractId;
+  const holderMissing = isTerceiroRecebimento && !form.thirdPartyHolderPersonId;
+  const referenceMissing = form.isThirdPartyFunds && !isTerceiroSaida && !form.thirdPartyReference.trim();
+  const amountInvalid = amountTouched && !(toNumber(form.amount) > 0);
   const costCenterMissing = form.nature === "PAYABLE" && !form.costCenterId;
   const resultCenterMissing = form.nature === "RECEIVABLE" && !form.resultCenterId;
   const isValid =
@@ -96,11 +131,42 @@ export default function NovoLancamentoPage() {
     form.bankAccountId &&
     !dueAtInvalid &&
     !costCenterMissing &&
-    !resultCenterMissing;
+    !resultCenterMissing &&
+    !competenceInvalid &&
+    !isTerceiroSaida &&
+    !contractMissing &&
+    !holderMissing &&
+    !referenceMissing;
 
   function update(field) {
     return (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
   }
+
+  // A natureza define o tipo padrão: a receber nasce como Crédito e a pagar como Débito.
+  function handleNatureChange(e) {
+    const nature = e.target.value;
+    setForm((prev) => ({
+      ...prev,
+      nature,
+      entryType: nature === "RECEIVABLE" ? "CREDIT" : nature === "PAYABLE" ? "DEBIT" : prev.entryType,
+    }));
+  }
+
+  // O titular precisa ser parte do contrato: ao escolher o contrato, carrega as partes dele.
+  function handleContractChange(e) {
+    const contractId = e.target.value;
+    setForm((prev) => ({ ...prev, contractId, thirdPartyHolderPersonId: "" }));
+    setParties([]);
+    if (!contractId) return;
+    setPartiesLoading(true);
+    listContractParties(contractId)
+      .then((items) => setParties(items || []))
+      .catch(() => setParties([]))
+      .finally(() => setPartiesLoading(false));
+  }
+
+  const PARTY_ROLE_LABEL = { TENANT: "Locatário", BUYER: "Comprador", GUARANTOR: "Fiador", LANDLORD: "Locador", SELLER: "Vendedor" };
+  const holderOptions = parties.filter((p) => ["TENANT", "BUYER", "GUARANTOR"].includes(p.partyRole));
 
   function handleDueAtChange(e) {
     const validity = e.target.validity;
@@ -131,14 +197,18 @@ export default function NovoLancamentoPage() {
         amount: toNumber(form.amount),
         description: form.description.trim(),
         dueAt: dateOnlyInputToIso(form.dueAt),
+        competenceMonth: form.competenceMonth ? parseCompetenceInput(form.competenceMonth) : undefined,
+        chartOfAccountId: form.chartOfAccountId || undefined,
         idempotencyKey: manualKey || entryIdempotencyKeyRef.current,
         isThirdPartyFunds: form.isThirdPartyFunds,
         thirdPartyReference: form.isThirdPartyFunds ? form.thirdPartyReference.trim() || undefined : undefined,
+        contractId: isTerceiroRecebimento ? form.contractId : undefined,
+        thirdPartyHolderPersonId: isTerceiroRecebimento ? form.thirdPartyHolderPersonId : undefined,
       });
       entryIdempotencyKeyRef.current = null;
       router.push("/painel/financeiro/lancamentos");
     } catch (err) {
-      setActionError(err?.message || "Não foi possível criar o lançamento.");
+      setActionError(friendlyFinanceError(err, "Não foi possível criar o lançamento."));
     } finally {
       setSubmitting(false);
     }
@@ -163,13 +233,24 @@ export default function NovoLancamentoPage() {
                 <Input id="f-desc" value={form.description} onChange={update("description")} placeholder="Ex: Aluguel — Edifício Aurora Apto 302" />
               </FormField>
 
-              <FormField label="Valor (R$)" htmlFor="f-amount" required>
-                <DecimalInput id="f-amount" value={form.amount} onChange={update("amount")} placeholder="0,00" />
+              <FormField
+                label="Valor (R$)"
+                htmlFor="f-amount"
+                required
+                error={amountInvalid ? "Informe um valor maior que zero." : undefined}
+              >
+                <DecimalInput
+                  id="f-amount"
+                  value={form.amount}
+                  onChange={(e) => { setAmountTouched(true); update("amount")(e); }}
+                  onBlur={() => setAmountTouched(true)}
+                  placeholder="0,00"
+                />
               </FormField>
 
               <FormField label="Natureza" htmlFor="f-nature">
                 <div className={styles.natureRow}>
-                  <Select id="f-nature" value={form.nature} onChange={update("nature")}>
+                  <Select id="f-nature" value={form.nature} onChange={handleNatureChange}>
                     {Object.entries(ENTRY_NATURE_LABELS).filter(([k]) => k !== "PENDING_CLASSIFICATION").map(([k, v]) => (
                       <option key={k} value={k}>{v}</option>
                     ))}
@@ -207,6 +288,29 @@ export default function NovoLancamentoPage() {
                   value={form.dueAt}
                   onChange={handleDueAtChange}
                 />
+              </FormField>
+
+              <FormField
+                label="Competência (mês)"
+                htmlFor="f-competence"
+                helper="Opcional. Sem informar, vale o mês do vencimento. Use MM/AAAA ou escolha o mês."
+                error={competenceInvalid ? "Competência inválida. Use o formato MM/AAAA." : undefined}
+              >
+                <Input
+                  id="f-competence"
+                  type="month"
+                  value={parseCompetenceInput(form.competenceMonth) || form.competenceMonth}
+                  onChange={update("competenceMonth")}
+                />
+              </FormField>
+
+              <FormField label="Conta contábil" htmlFor="f-chart" helper="Opcional. Só contas analíticas recebem lançamento (contas com subcontas são agrupadoras).">
+                <Select id="f-chart" value={form.chartOfAccountId} onChange={update("chartOfAccountId")}>
+                  <option value="">Sem conta contábil</option>
+                  {analyticAccounts.map((a) => (
+                    <option key={a.id} value={a.id}>{a.code} — {a.name}</option>
+                  ))}
+                </Select>
               </FormField>
 
               <FormField
@@ -257,15 +361,63 @@ export default function NovoLancamentoPage() {
                 checked={form.isThirdPartyFunds}
                 onChange={(e) => setForm((prev) => ({ ...prev, isThirdPartyFunds: e.target.checked }))}
               />
-              {form.isThirdPartyFunds ? (
-                <FormField label="Referência do titular/origem" htmlFor="f-third-party-ref" helper='Ex: "Caução contrato LOC-2026-0008"'>
-                  <Input
-                    id="f-third-party-ref"
-                    value={form.thirdPartyReference}
-                    onChange={update("thirdPartyReference")}
-                    placeholder="Caução contrato..."
-                  />
-                </FormField>
+              {isTerceiroSaida ? (
+                <Alert tone="info" title="Devolução ou compensação de caução">
+                  A saída de dinheiro de terceiro precisa estar ligada à caução recebida. Abra o recebimento da caução e use o botão Devolver ou compensar caução. Aqui você registra apenas o recebimento.
+                </Alert>
+              ) : null}
+              {form.isThirdPartyFunds && !isTerceiroSaida ? (
+                <>
+                  <FormField
+                    label="Contrato"
+                    htmlFor="f-third-party-contract"
+                    required
+                    helper="Contrato ao qual a caução pertence."
+                    error={contractMissing ? "Escolha o contrato da caução." : undefined}
+                  >
+                    <Select id="f-third-party-contract" value={form.contractId} onChange={handleContractChange}>
+                      <option value="">Selecione o contrato...</option>
+                      {contracts.map((c) => (
+                        <option key={c.id} value={c.id}>{formatContractLabel(c)}</option>
+                      ))}
+                    </Select>
+                  </FormField>
+                  <FormField
+                    label="Titular da caução"
+                    htmlFor="f-third-party-holder"
+                    required
+                    helper="Quem pagou a caução: locatário, comprador ou fiador do contrato."
+                    error={holderMissing && form.contractId ? "Escolha o titular da caução." : undefined}
+                  >
+                    <Select
+                      id="f-third-party-holder"
+                      value={form.thirdPartyHolderPersonId}
+                      onChange={update("thirdPartyHolderPersonId")}
+                      disabled={!form.contractId || partiesLoading}
+                    >
+                      <option value="">{form.contractId ? (partiesLoading ? "Carregando partes..." : "Selecione o titular...") : "Escolha o contrato primeiro"}</option>
+                      {holderOptions.map((p) => (
+                        <option key={p.personId} value={p.personId}>
+                          {(people.find((x) => x.id === p.personId)?.legalName) || "Pessoa sem nome"} — {PARTY_ROLE_LABEL[p.partyRole] || "Parte"}
+                        </option>
+                      ))}
+                    </Select>
+                  </FormField>
+                  <FormField
+                    label="Referência do titular/origem"
+                    htmlFor="f-third-party-ref"
+                    required
+                    helper='Ex: "Caução contrato LOC-2026-0008"'
+                    error={referenceMissing ? "Informe a referência da caução." : undefined}
+                  >
+                    <Input
+                      id="f-third-party-ref"
+                      value={form.thirdPartyReference}
+                      onChange={update("thirdPartyReference")}
+                      placeholder="Caução contrato..."
+                    />
+                  </FormField>
+                </>
               ) : null}
             </div>
           </Card>

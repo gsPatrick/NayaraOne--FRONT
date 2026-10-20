@@ -20,7 +20,8 @@ import StickyActionBar from "@/components/organisms/StickyActionBar/StickyAction
 import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu";
 import { listBankAccounts, listBankTransactions, importBankStatement } from "@/lib/api/finance";
 import { getBankName } from "@/lib/mock/banks";
-import { formatBRL, formatDate } from "@/lib/format";
+import { formatCalendarDay } from "@/lib/finance/extras";
+import { formatBRL } from "@/lib/format";
 import styles from "./page.module.css";
 
 const CSV_HEADER = "externalTransactionId,transactionDate,description,amount";
@@ -113,7 +114,7 @@ export default function ExtratoBancarioPage() {
   }
 
   const columns = [
-    { key: "transactionDate", label: "Data", render: (row) => formatDate(row.transactionDate) },
+    { key: "transactionDate", label: "Data", render: (row) => formatCalendarDay(row.transactionDate) },
     { key: "description", label: "Descrição", render: (row) => row.description || "Sem descrição no extrato" },
     { key: "externalTransactionId", label: "ID externo", render: (row) => row.externalTransactionId || "Sem identificador do banco" },
     {

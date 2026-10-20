@@ -69,11 +69,11 @@ export default function RelatorioFinanceiroPage() {
               delta="A receber − a pagar"
               tone={report.projectedNetBalance >= 0 ? "success" : "danger"}
             />
-            <StatTile label="Dinheiro de terceiros (segregado)" value={formatBRL(report.thirdPartyFunds.total)} delta={`${report.thirdPartyFunds.count} lançamentos`} tone="neutral" />
+            <StatTile label="Terceiros ainda a movimentar" value={formatBRL(report.thirdPartyFunds.total)} delta={`${report.thirdPartyFunds.count} lançamento(s) pendente(s) de terceiros (cauções e repasses), fora da receita própria`} tone="neutral" />
             <StatTile
               label="Caixa disponível"
               value={formatBRL(report.freeCash.value)}
-              delta={`Saldo bancário ${formatBRL(report.freeCash.grossBankBalance)} − terceiros retidos ${formatBRL(report.freeCash.thirdPartyHeld)}`}
+              delta={`Saldo bancário ${formatBRL(report.freeCash.grossBankBalance)} − terceiros retidos no caixa (recebido menos devolvido) ${formatBRL(report.freeCash.thirdPartyHeld)}`}
               tone={report.freeCash.value >= 0 ? "success" : "danger"}
             />
             <StatTile
