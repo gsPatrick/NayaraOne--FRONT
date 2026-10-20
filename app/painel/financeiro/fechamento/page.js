@@ -26,8 +26,17 @@ import {
   confirmPeriodCheck,
   approvePeriodClosure,
 } from "@/lib/api/finance";
-import { formatDateTime, formatCompetence } from "@/lib/format";
+import { formatDateTime, formatCompetence, humanizeText } from "@/lib/format";
 import styles from "./page.module.css";
+
+// Mensagem sempre em português, com competência "MM/AAAA" (a API devolve "AAAA-MM" nos textos).
+function msg(err, fallback) {
+  const raw = String(err?.message || "").trim();
+  if (!raw || /failed to fetch|load failed|networkerror/i.test(raw)) {
+    return raw ? "Não foi possível conectar ao servidor. Verifique sua internet e tente de novo." : fallback;
+  }
+  return humanizeText(raw);
+}
 
 function currentReferenceMonth() {
   const now = new Date();
@@ -72,7 +81,7 @@ export default function FechamentoPage() {
       setClosures(items || []);
       setClosuresLoaded(true);
     } catch (err) {
-      setLoadError(err?.message || "Não foi possível carregar os fechamentos.");
+      setLoadError(msg(err, "Não foi possível carregar os fechamentos."));
     } finally {
       setLoading(false);
     }
@@ -93,7 +102,7 @@ export default function FechamentoPage() {
     } catch (err) {
       if (requestId !== checklistRequestRef.current) return;
       setChecklist(null);
-      setChecklistError(err?.message || "Não foi possível carregar as pré-condições do fechamento.");
+      setChecklistError(msg(err, "Não foi possível carregar as pré-condições do fechamento."));
     } finally {
       if (requestId === checklistRequestRef.current) setChecklistLoading(false);
     }
@@ -116,7 +125,7 @@ export default function FechamentoPage() {
       await closePeriod(monthToClose);
       await Promise.all([reload(), loadChecklist(monthToClose)]);
     } catch (err) {
-      setCloseError(err?.message || "Falha ao pedir o fechamento do período.");
+      setCloseError(msg(err, "Falha ao pedir o fechamento do período."));
     } finally {
       setClosing(false);
     }
@@ -135,7 +144,7 @@ export default function FechamentoPage() {
       setCheckNotes((prev) => ({ ...prev, [code]: "" }));
       await Promise.all([reload(), loadChecklist(monthToClose)]);
     } catch (err) {
-      setCloseError(err?.message || "Falha ao registrar a conferência.");
+      setCloseError(msg(err, "Falha ao registrar a conferência."));
     } finally {
       setSavingCheck("");
     }
@@ -148,7 +157,7 @@ export default function FechamentoPage() {
       await approvePeriodClosure(monthToClose);
       await Promise.all([reload(), loadChecklist(monthToClose)]);
     } catch (err) {
-      setCloseError(err?.message || "Falha ao aprovar o fechamento.");
+      setCloseError(msg(err, "Falha ao aprovar o fechamento."));
     } finally {
       setApproving(false);
     }
@@ -189,7 +198,7 @@ export default function FechamentoPage() {
       setReopenReason("");
       await Promise.all([reload(), month === monthToClose ? loadChecklist(monthToClose) : null]);
     } catch (err) {
-      setReopenError(err?.message || (reopenTarget.mode === "RETURN" ? "Falha ao devolver o período para aberto." : "Falha ao reabrir o período."));
+      setReopenError(msg(err, reopenTarget.mode === "RETURN" ? "Falha ao devolver o período para aberto." : "Falha ao reabrir o período."));
     } finally {
       setReopening(false);
     }
@@ -230,14 +239,12 @@ export default function FechamentoPage() {
     <AppShell title="Fechamento de período" backHref="/painel/financeiro">
       <div className={styles.wrap}>
         {loadError ? (
-          <div style={{ position: "fixed", top: "var(--space-4)", left: "50%", transform: "translateX(-50%)", zIndex: 200, width: "min(560px, calc(100vw - 2 * var(--space-4)))" }}>
-            <Alert tone="danger">
-              {loadError}{" "}
-              <Button type="button" size="sm" variant="secondary" disabled={loading} onClick={reload}>
-                Tentar de novo
-              </Button>
-            </Alert>
-          </div>
+          <Alert tone="danger">
+            {loadError}{" "}
+            <Button type="button" size="sm" variant="secondary" disabled={loading} onClick={reload}>
+              Tentar de novo
+            </Button>
+          </Alert>
         ) : null}
 
         <Card className={styles.formCard}>
@@ -277,10 +284,10 @@ export default function FechamentoPage() {
                 return (
                   <li key={item.code} className={styles.checkItem}>
                     <div className={styles.checkHeader}>
-                      <span className={styles.checkLabel}>{item.label}</span>
+                      <span className={styles.checkLabel}>{humanizeText(item.label)}</span>
                       <Badge tone={item.ok ? "success" : "warning"}>{item.ok ? "Ok" : "Pendente"}</Badge>
                     </div>
-                    <p className={styles.checkDetail}>{item.detail}</p>
+                    <p className={styles.checkDetail}>{humanizeText(item.detail)}</p>
                     {canConfirm ? (
                       <div className={styles.checkForm}>
                         <textarea
@@ -349,6 +356,11 @@ export default function FechamentoPage() {
               {reopenTarget.mode === "RETURN" ? "Devolver para aberto" : "Reabrir"} {formatCompetence(reopenTarget.referenceMonth)}
             </h2>
             <form onSubmit={handleReopen} className={styles.inlineForm}>
+              <p className={styles.helper}>
+                {reopenTarget.mode === "RETURN"
+                  ? "Devolver o fechamento para aberto exige motivo, permissão de aprovação e verificação em duas etapas (MFA) recente."
+                  : "Reabrir um mês fechado exige motivo, permissão de aprovação e verificação em duas etapas (MFA) recente. Se você ainda não verificou o MFA há pouco tempo, o sistema pede o código ao confirmar."}
+              </p>
               <FormField label="Motivo (obrigatório, fica auditado)" htmlFor="reopenReason">
                 <textarea
                   id="reopenReason"

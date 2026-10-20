@@ -17,8 +17,24 @@ import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu
 import { getCommissionRule, publishCommissionRule, listCommissionRuleVersions } from "@/lib/api/finance";
 import Table from "@/components/organisms/Table/Table";
 import Badge from "@/components/atoms/Badge/Badge";
-import { formatDate, formatDateTime, formatPercent } from "@/lib/format";
+import { formatDateTime, formatPercent } from "@/lib/format";
 import styles from "./page.module.css";
+
+// O que mudou em relação à versão anterior (a lista vem da mais nova para a mais antiga).
+function describeChange(version, olderVersion) {
+  if (!olderVersion) return "Primeira versão publicada.";
+  const changes = [];
+  for (const { key, label } of COMPONENTS) {
+    const before = olderVersion.components?.[key];
+    const after = version.components?.[key];
+    if (before === after) continue;
+    const name = label.replace(" (%)", "");
+    if (before == null) changes.push(`${name}: passou a valer ${formatPercent(after)}`);
+    else if (after == null) changes.push(`${name}: deixou de ter percentual (era ${formatPercent(before)})`);
+    else changes.push(`${name}: de ${formatPercent(before)} para ${formatPercent(after)}`);
+  }
+  return changes.length ? changes.join("; ") : "Nenhum percentual mudou.";
+}
 
 const COMPONENTS = [
   { key: "BROKER", label: "Corretor (%)" },
@@ -45,7 +61,7 @@ export default function CommissionRulePage() {
       const list = await listCommissionRuleVersions();
       setVersions(Array.isArray(list) ? list : []);
     } catch (err) {
-      setVersionsError(err?.message || "Não foi possível carregar o histórico de versões.");
+      setVersionsError(/failed to fetch/i.test(err?.message || "") ? "Não foi possível conectar ao servidor para carregar o histórico de versões." : err?.message || "Não foi possível carregar o histórico de versões.");
     } finally {
       setVersionsLoading(false);
     }
@@ -120,7 +136,7 @@ export default function CommissionRulePage() {
           <h2 className={styles.sectionTitle}>Versão vigente</h2>
           {rule ? (
             <p className={styles.helper}>
-              Versão {rule.versionNumber ?? "vigente"}{rule.effectiveFrom ? ` (desde ${formatDate(rule.effectiveFrom)})` : ""} · base: valor do recebimento ·{" "}
+              Versão {rule.versionNumber ?? "vigente"}{rule.effectiveFrom ? ` (publicada em ${formatDateTime(rule.effectiveFrom)})` : ""} · base: valor do recebimento ·{" "}
               {COMPONENTS.map(({ key, label }) => `${label.replace(" (%)", "")}: ${rule.components?.[key] != null ? formatPercent(rule.components[key]) : "não se aplica"}`).join(" · ")}
             </p>
           ) : (
@@ -150,6 +166,7 @@ export default function CommissionRulePage() {
                   ? `De ${formatDateTime(v.effectiveFrom)} até ${formatDateTime(v.effectiveUntil)}`
                   : `Desde ${formatDateTime(v.effectiveFrom)} (em vigor)`
               ) },
+              { key: "mudou", label: "O que mudou", render: (v) => describeChange(v, versions[versions.indexOf(v) + 1]) },
               { key: "publishedByName", label: "Publicada por", render: (v) => v.publishedByName },
               { key: "publishedAt", label: "Publicada em", render: (v) => formatDateTime(v.publishedAt) },
             ]}

@@ -36,6 +36,17 @@ import { useCompany } from "@/lib/context/CompanyContext";
 import { formatBRL, formatDateTime, toNumber } from "@/lib/format";
 import styles from "./page.module.css";
 
+// Mensagens técnicas (variável de ambiente, rede em inglês) nunca chegam à tela do usuário.
+function friendly(err, fallback) {
+  const raw = String(err?.message || "").trim();
+  if (!raw) return fallback;
+  if (/failed to fetch|load failed|networkerror/i.test(raw)) return "Não foi possível conectar ao servidor. Verifique sua internet e tente de novo.";
+  if (/vari[aá]vel de ambiente|_KEY|ENCRYPTION/i.test(raw)) {
+    return "O envio de documentos está indisponível no servidor neste momento. Avise o administrador do sistema e tente de novo.";
+  }
+  return raw;
+}
+
 export default function IntercompanyPage() {
   const { company } = useCompany();
 
@@ -67,6 +78,7 @@ export default function IntercompanyPage() {
 
   async function reload() {
     setLoading(true);
+    setLoadError("");
     try {
       const [companyList, transferList, accountList, destList] = await Promise.all([
         listCompanies().catch(() => []),
@@ -79,7 +91,7 @@ export default function IntercompanyPage() {
       setTransfers(transferList || []);
       setOwnAccounts((accountList || []).filter((a) => a.status !== "BLOCKED"));
     } catch (err) {
-      setLoadError(err?.message || "Não foi possível carregar as transferências intercompany.");
+      setLoadError(friendly(err, "Não foi possível carregar as transferências intercompany."));
     } finally {
       setLoading(false);
     }
@@ -101,7 +113,7 @@ export default function IntercompanyPage() {
     if (!toCompanyId) return;
     listIntercompanyDestinationAccounts(toCompanyId)
       .then((list) => setDestAccounts(list || []))
-      .catch((err) => setDestError(err?.message || "Não foi possível carregar as contas da empresa de destino."));
+      .catch((err) => setDestError(friendly(err, "Não foi possível carregar as contas da empresa de destino.")));
   }, [toCompanyId]);
 
   function accountLabel(a) {
@@ -156,7 +168,7 @@ export default function IntercompanyPage() {
       setToCompanyId("");
       await reload();
     } catch (err) {
-      setFormError(err?.message || "Falha ao criar a transferência.");
+      setFormError(friendly(err, "Falha ao criar a transferência."));
     } finally {
       setSaving(false);
     }
@@ -167,7 +179,7 @@ export default function IntercompanyPage() {
       await approveIntercompanyTransfer(id);
       await reload();
     } catch (err) {
-      setLoadError(err?.message || "Falha ao aprovar a transferência.");
+      setLoadError(friendly(err, "Falha ao aprovar a transferência."));
     }
   }
 
@@ -188,7 +200,7 @@ export default function IntercompanyPage() {
       setRejectId(null);
       await reload();
     } catch (err) {
-      setRejectError(err?.message || "Falha ao recusar a transferência.");
+      setRejectError(friendly(err, "Falha ao recusar a transferência."));
     } finally {
       setRejecting(false);
     }
@@ -199,7 +211,7 @@ export default function IntercompanyPage() {
       await reconcileIntercompanyTransfer(id);
       await reload();
     } catch (err) {
-      setLoadError(err?.message || "Falha ao conciliar a transferência.");
+      setLoadError(friendly(err, "Falha ao conciliar a transferência."));
     }
   }
 
@@ -215,7 +227,7 @@ export default function IntercompanyPage() {
         const decidedLabel = row.reconciledAt ? "conciliada" : row.approvedAt ? "aprovada" : "recusada";
         return (
           <span>
-            Pedida em {formatDateTime(requested)}
+            Pedida em {requested ? formatDateTime(requested) : "data não informada"}
             {decided ? <><br />{decidedLabel} em {formatDateTime(decided)}</> : null}
           </span>
         );
@@ -280,9 +292,10 @@ export default function IntercompanyPage() {
     <AppShell title="Transferências intercompany" backHref="/painel/financeiro">
       <div className={styles.wrap}>
         {loadError ? (
-          <div style={{ position: "fixed", top: "var(--space-4)", left: "50%", transform: "translateX(-50%)", zIndex: 200, width: "min(560px, calc(100vw - 2 * var(--space-4)))" }}>
-            <Alert tone="danger">{loadError}</Alert>
-          </div>
+          <Alert tone="danger">
+            {loadError}{" "}
+            <Button type="button" size="sm" variant="secondary" onClick={() => { setLoadError(""); reload(); }}>Tentar de novo</Button>
+          </Alert>
         ) : null}
 
         <Card className={styles.formCard}>

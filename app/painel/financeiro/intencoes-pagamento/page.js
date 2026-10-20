@@ -20,9 +20,11 @@ import {
   executePaymentIntent,
   cancelPaymentIntent,
   listFinancialEntries,
+  listBankAccounts,
   reconcilePaymentIntent,
   resolveUncertainPaymentIntent,
 } from "@/lib/api/finance";
+import { listPeople } from "@/lib/api/people";
 import { formatBRL, formatDateTime, humanizeText } from "@/lib/format";
 import { getCurrentUser } from "@/lib/auth/session";
 import styles from "./page.module.css";
@@ -48,6 +50,28 @@ const STATUS_TONE = {
   CANCELLED: "neutral",
 };
 
+// Mensagem sempre em português e sem texto técnico.
+function msg(err, fallback) {
+  const raw = String(err?.message || "").trim();
+  if (!raw) return fallback;
+  if (/failed to fetch|load failed|networkerror/i.test(raw)) return "Não foi possível conectar ao servidor. Verifique sua internet e tente de novo.";
+  return humanizeText(raw);
+}
+
+// Intenção cancelada porque o lançamento mudou depois da aprovação (troca de conta, valor, vencimento...).
+function isInvalidated(intent) {
+  return intent.status === "CANCELLED" && /alterad|invalidad/i.test(intent.cancelReason || "");
+}
+
+// Conta mascarada: só os 4 últimos dígitos da conta aparecem.
+function maskedAccount(account) {
+  if (!account) return "conta não encontrada";
+  const bank = account.bankName || (account.bankCode ? `banco ${account.bankCode}` : "banco não informado");
+  const number = String(account.accountNumber || "");
+  const tail = number ? `conta final ${number.slice(-4)}` : account.pixKey ? "chave PIX cadastrada" : "conta sem número";
+  return `${bank} · ag. ${account.agency || "sem agência"} · ${tail}`;
+}
+
 const RECONCILE_OUTCOME_LABELS = {
   CONFIRMED: "o banco confirmou o pagamento e o lançamento foi liquidado.",
   NOT_UNCERTAIN: "esta intenção não estava mais em trânsito.",
@@ -63,6 +87,8 @@ export default function IntencoesPagamentoPage() {
   const currentUser = getCurrentUser();
   const [intents, setIntents] = useState([]);
   const [entries, setEntries] = useState([]);
+  const [bankAccounts, setBankAccounts] = useState([]);
+  const [people, setPeople] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
@@ -80,14 +106,17 @@ export default function IntencoesPagamentoPage() {
     let cancelled = false;
     setLoading(true);
     setLoadError("");
-    Promise.all([listPaymentIntents(), listFinancialEntries()])
-      .then(([pi, fe]) => {
+    // Contas e pessoas só enriquecem o favorecido: se falharem, a lista continua aparecendo.
+    Promise.all([listPaymentIntents(), listFinancialEntries(), listBankAccounts().catch(() => []), listPeople().catch(() => [])])
+      .then(([pi, fe, ba, pp]) => {
         if (cancelled) return;
         setIntents(pi || []);
         setEntries(fe || []);
+        setBankAccounts(ba || []);
+        setPeople(pp || []);
       })
       .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar as intenções de pagamento.");
+        if (!cancelled) setLoadError(msg(err, "Não foi possível carregar as intenções de pagamento."));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -109,9 +138,18 @@ export default function IntencoesPagamentoPage() {
     return entries.find((e) => e.id === intent.financialEntryId) || null;
   }
 
+  // Favorecido do retrato: a conta que valia quando a intenção foi criada (não a atual do lançamento).
+  function beneficiaryOf(intent) {
+    const accountId = intent.snapshotJson?.bankAccountId || intent.bankAccountId || null;
+    if (!accountId) return { owner: "Favorecido não definido no retrato", account: "sem conta bancária no retrato" };
+    const account = bankAccounts.find((a) => a.id === accountId) || null;
+    const person = account?.ownerPersonId ? people.find((p) => p.id === account.ownerPersonId) : null;
+    return { owner: person?.legalName || "Titular da conta não informado", account: maskedAccount(account) };
+  }
+
   async function handleApprove(intent) {
     if (intent.createdBy && currentUser?.id && intent.createdBy === currentUser.id) {
-      showNotice("danger", "Quem criou a intenção não pode aprová-la (segregação de funções — maker-checker).");
+      showNotice("danger", "Quem criou a intenção não pode aprová-la: a aprovação precisa ser de outra pessoa.");
       return;
     }
     const ok = await confirm({
@@ -126,7 +164,7 @@ export default function IntencoesPagamentoPage() {
       setIntents((prev) => prev.map((i) => (i.id === intent.id ? updated : i)));
       showNotice("success", "Intenção aprovada.");
     } catch (err) {
-      showNotice("danger", err?.message || "Não foi possível aprovar.");
+      showNotice("danger", msg(err, "Não foi possível aprovar."));
     } finally {
       setBusyId(null);
     }
@@ -157,7 +195,7 @@ export default function IntencoesPagamentoPage() {
       setIntents((prev) => prev.map((i) => (i.id === intent.id ? updated : i)));
       showNotice("success", "Pagamento registrado com o comprovante anexado.");
     } catch (err) {
-      showNotice("danger", err?.message || "Não foi possível registrar o pagamento.");
+      showNotice("danger", msg(err, "Não foi possível registrar o pagamento."));
     } finally {
       setBusyId(null);
     }
@@ -180,7 +218,7 @@ export default function IntencoesPagamentoPage() {
       showNotice(tone, text);
       if (updated.status === "EXECUTED") load();
     } catch (err) {
-      const text = err?.message || "Não foi possível consultar o banco.";
+      const text = msg(err, "Não foi possível consultar o banco.");
       setRowResult((prev) => ({ ...prev, [intent.id]: { tone: "danger", text } }));
       showNotice("danger", text);
     } finally {
@@ -203,7 +241,7 @@ export default function IntencoesPagamentoPage() {
       setResolveTarget(null);
       showNotice("info", `Situação resolvida com o banco: ${STATUS_LABELS[updated.status] || updated.status}.`);
     } catch (err) {
-      setResolveError(err?.message || "Não foi possível resolver a incerteza.");
+      setResolveError(msg(err, "Não foi possível resolver a incerteza."));
     } finally {
       setBusyId(null);
     }
@@ -223,7 +261,7 @@ export default function IntencoesPagamentoPage() {
       setIntents((prev) => prev.map((i) => (i.id === intent.id ? updated : i)));
       showNotice("info", "Intenção cancelada.");
     } catch (err) {
-      showNotice("danger", err?.message || "Não foi possível cancelar.");
+      showNotice("danger", msg(err, "Não foi possível cancelar."));
     } finally {
       setBusyId(null);
     }
@@ -248,8 +286,8 @@ export default function IntencoesPagamentoPage() {
 
       <p className={styles.intro}>
         Caminho alternativo e mais rigoroso ao par &quot;Solicitar aprovação&quot; + &quot;Liquidar&quot;: cada intenção trava um
-        retrato (snapshot) com hash do lançamento no momento em que é criada. Aprovar ou executar recusa automaticamente se o
-        lançamento mudou nesse meio tempo (Caderno Técnico §8, ponto 4).
+        retrato do lançamento (valor, favorecido e conta) com um código de verificação no momento em que é criada. Se o
+        lançamento mudar depois, a intenção é invalidada e é preciso criar outra.
       </p>
 
       {loading ? (
@@ -283,7 +321,7 @@ export default function IntencoesPagamentoPage() {
           {resolveTarget ? (
             <Card
               title="Resolver envio incerto ao banco"
-              subtitle="O banco é consultado de novo. A intenção só é dada como falha se o banco responder falha ou não conhecer o pagamento — nunca sem resposta do banco."
+              subtitle="O banco é consultado de novo. A intenção só é dada como falha se o banco responder falha ou não conhecer o pagamento — nunca sem resposta do banco. Esta ação exige verificação em duas etapas (MFA) recente: se for preciso, o código será pedido ao confirmar."
             >
               {resolveError ? <Alert tone="danger">{resolveError}</Alert> : null}
               <FormField label="Motivo" required>
@@ -296,7 +334,7 @@ export default function IntencoesPagamentoPage() {
             </Card>
           ) : null}
 
-          <Card title="Intenções de pagamento" subtitle="Quem criou a intenção não pode aprová-la (maker-checker)">
+          <Card title="Intenções de pagamento" subtitle="Quem criou a intenção não pode aprová-la: a aprovação é sempre de outra pessoa">
             {visible.length === 0 ? (
               <p className={styles.emptyText}>
                 {statusFilter
@@ -307,19 +345,30 @@ export default function IntencoesPagamentoPage() {
               <ul className={styles.list}>
                 {visible.map((intent) => {
                   const entry = entryFor(intent);
+                  const beneficiary = beneficiaryOf(intent);
+                  const invalidated = isInvalidated(intent);
                   return (
                     <li key={intent.id} className={styles.row}>
                       <div className={styles.rowInfo}>
                         <span className={styles.rowTitle}>{humanizeText(entry?.description) || "Lançamento"}</span>
                         <span className={styles.rowSubtitle}>
-                          {entry ? formatBRL(entry.amount) : "valor no lançamento de outra empresa"} · hash {intent.snapshotHash?.slice(0, 10)}… · criada em {formatDateTime(intent.createdAt || intent.created_at)}
+                          {formatBRL(intent.snapshotJson?.amount ?? entry?.amount)} · código de verificação {intent.snapshotHash?.slice(0, 10)}… · criada em {formatDateTime(intent.createdAt || intent.created_at)}
                         </span>
+                        <span className={styles.rowSubtitle}>
+                          Favorecido no retrato: {beneficiary.owner} · {beneficiary.account}
+                        </span>
+                        {invalidated ? (
+                          <Alert tone="warning">
+                            Invalidada: lançamento alterado após a aprovação.{" "}
+                            {intent.cancelReason ? humanizeText(intent.cancelReason) : "Crie uma nova intenção sobre a versão atual."}
+                          </Alert>
+                        ) : null}
                         {rowResult[intent.id] ? (
                           <Alert tone={rowResult[intent.id].tone}>{rowResult[intent.id].text}</Alert>
                         ) : null}
                       </div>
                       <div className={styles.rowRight}>
-                        <Badge tone={STATUS_TONE[intent.status]}>{STATUS_LABELS[intent.status] || intent.status}</Badge>
+                        <Badge tone={invalidated ? "warning" : STATUS_TONE[intent.status]}>{invalidated ? "Invalidada" : STATUS_LABELS[intent.status] || "Situação não reconhecida"}</Badge>
                         {intent.status === "PENDING" ? (
                           <>
                             <Button size="sm" onClick={() => handleApprove(intent)} loading={busyId === intent.id}>Aprovar</Button>

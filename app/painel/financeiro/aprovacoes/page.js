@@ -29,8 +29,20 @@ import { listApprovalRequests, decideApprovalStep } from "@/lib/api/finance";
 import { apiFetch } from "@/lib/api/client";
 import { getCurrentUser } from "@/lib/auth/session";
 import { entityTypeLabel, approvalRequestLabel } from "@/lib/finance/labels";
-import { formatDate } from "@/lib/format";
+import { formatDate, humanizeText } from "@/lib/format";
 import styles from "./page.module.css";
+
+// STALE = a decisão foi tomada sobre uma versão do lançamento que depois foi alterada: a aprovação
+// deixa de valer e é preciso pedir outra.
+const STATUS_LABELS = { ...APPROVAL_STATUS_LABELS, STALE: "Invalidada" };
+const STATUS_TONE = { ...APPROVAL_STATUS_TONE, STALE: "warning" };
+
+function msg(err, fallback) {
+  const raw = String(err?.message || "").trim();
+  if (!raw) return fallback;
+  if (/failed to fetch|load failed|networkerror/i.test(raw)) return "Não foi possível conectar ao servidor. Verifique sua internet e tente de novo.";
+  return humanizeText(raw);
+}
 
 const ENTITY_ICON = {
   BankAccount: "money",
@@ -71,14 +83,15 @@ export default function AprovacoesPage() {
     let cancelled = false;
     setLoading(true);
     setLoadError("");
-    Promise.all([listApprovalRequests(), apiFetch("/users")])
+    // Os nomes dos usuários só enriquecem a lista: se falharem, as aprovações continuam aparecendo.
+    Promise.all([listApprovalRequests(), apiFetch("/users").catch(() => [])])
       .then(([ar, us]) => {
         if (cancelled) return;
         setApprovalRequests(ar || []);
         setUsers(us || []);
       })
       .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar as aprovações.");
+        if (!cancelled) setLoadError(msg(err, "Não foi possível carregar as aprovações."));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -103,7 +116,7 @@ export default function AprovacoesPage() {
       if (decision === "REJECTED") showNotice("info", "Solicitação rejeitada", approvalRequestLabel(request));
       else showNotice("success", updated.status === "APPROVED" ? "Aprovado" : "Aprovação registrada", approvalRequestLabel(request));
     } catch (err) {
-      showNotice("danger", "Não foi possível decidir", err?.message || "Tente novamente.");
+      showNotice("danger", "Não foi possível decidir", msg(err, "Tente novamente."));
     } finally {
       setBusyId(null);
     }
@@ -149,6 +162,7 @@ export default function AprovacoesPage() {
   const pendingApprovals = useMemo(() => approvalRequests.filter((r) => r.status === "PENDING"), [approvalRequests]);
   const approvedCount = approvalRequests.filter((r) => r.status === "APPROVED").length;
   const rejectedCount = approvalRequests.filter((r) => r.status === "REJECTED").length;
+  const staleCount = approvalRequests.filter((r) => r.status === "STALE").length;
   const highRiskPending = pendingApprovals.filter((r) => r.riskLevel === "HIGH" || r.riskLevel === "CRITICAL").length;
 
   const byRisk = useMemo(() => {
@@ -161,7 +175,7 @@ export default function AprovacoesPage() {
     const counts = {};
     approvalRequests.forEach((r) => { counts[r.status] = (counts[r.status] || 0) + 1; });
     return Object.entries(counts).map(([status, value]) => ({
-      label: APPROVAL_STATUS_LABELS[status] || status,
+      label: STATUS_LABELS[status] || "Situação não reconhecida",
       value,
       color: status === "APPROVED" ? "var(--color-success)" : status === "REJECTED" ? "var(--color-danger)" : "var(--color-warning)",
     }));
@@ -181,15 +195,16 @@ export default function AprovacoesPage() {
             <StatTile label="Alto risco pendente" value={highRiskPending} tone={highRiskPending > 0 ? "danger" : "success"} icon="shield" />
             <StatTile label="Aprovadas" value={approvedCount} tone="success" icon="check" />
             <StatTile label="Rejeitadas" value={rejectedCount} tone={rejectedCount > 0 ? "danger" : "neutral"} icon="document" />
+            <StatTile label="Invalidadas" value={staleCount} tone={staleCount > 0 ? "warning" : "neutral"} icon="shield" />
           </div>
 
           <div className={styles.layout}>
-            <Card title="Aprovações (maker-checker)" subtitle="Quem solicita não pode aprovar a própria solicitação" className={styles.listCard}>
+            <Card title="Aprovações" subtitle="Quem solicita não pode aprovar a própria solicitação" className={styles.listCard}>
               <div className={styles.toolbar}>
                 <SearchInput placeholder="Buscar solicitação..." value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} />
                 <Select className={styles.filter} value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}>
                   <option value="">Todos os status</option>
-                  {Object.entries(APPROVAL_STATUS_LABELS).map(([k, v]) => (
+                  {Object.entries(STATUS_LABELS).map(([k, v]) => (
                     <option key={k} value={k}>{v}</option>
                   ))}
                 </Select>
@@ -212,6 +227,11 @@ export default function AprovacoesPage() {
                           <span className={styles.listRowSubtitle}>
                             {entityTypeLabel(r.relatedEntityType)} · Solicitado em {formatDate(r.createdAt || r.created_at)}
                           </span>
+                          {r.status === "STALE" ? (
+                            <span className={styles.listRowSubtitle}>
+                              Invalidada: o lançamento foi alterado depois da aprovação. Peça uma nova aprovação sobre a versão atual.
+                            </span>
+                          ) : null}
                         </div>
                         <div className={styles.requesterCell}>
                           <Avatar name={userName(users, r.requestedByUserId)} size="sm" />
@@ -219,7 +239,7 @@ export default function AprovacoesPage() {
                         </div>
                         <div className={styles.approvalRight}>
                           <Badge tone={RISK_LEVEL_TONE[r.riskLevel]}>Risco {RISK_LEVEL_LABELS[r.riskLevel]}</Badge>
-                          <Badge tone={APPROVAL_STATUS_TONE[r.status]}>{APPROVAL_STATUS_LABELS[r.status]}</Badge>
+                          <Badge tone={STATUS_TONE[r.status]}>{STATUS_LABELS[r.status] || "Situação não reconhecida"}</Badge>
                           {r.status === "PENDING" ? (
                             isRequester ? (
                               <span className={styles.selfBlockNote}>Você solicitou — não pode decidir</span>

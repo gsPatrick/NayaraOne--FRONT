@@ -57,6 +57,19 @@ import { formatBRL, formatDate, formatPercent, formatContractLabel, toNumber, hu
 import { buildMonthlyChartData } from "@/lib/monthlyChartData";
 import styles from "./page.module.css";
 
+// Mensagem de erro sempre em português: a rede que falha chega como "Failed to fetch" em inglês.
+function friendlyMessage(err, fallback) {
+  const raw = String(err?.message || "").trim();
+  if (!raw || /failed to fetch|load failed|networkerror/i.test(raw)) {
+    return "Não foi possível conectar ao servidor. Verifique sua internet e tente de novo.";
+  }
+  return raw || fallback;
+}
+
+function propertyLabel(p) {
+  return p?.title || p?.name || p?.code || p?.address || p?.addressLine || "Imóvel sem título";
+}
+
 function userName(users, id) {
   return users.find((u) => u.id === id)?.name || "Usuário não identificado";
 }
@@ -74,7 +87,10 @@ export default function ComissoesRepassesPage() {
   const [people, setPeople] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
+  // Cada bloco carrega sozinho: se um falha, os outros continuam aparecendo.
+  const [blockErrors, setBlockErrors] = useState({});
+  const [reloadTick, setReloadTick] = useState(0);
+  const [modalError, setModalError] = useState("");
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [notice, setNotice] = useState(null);
@@ -123,29 +139,44 @@ export default function ComissoesRepassesPage() {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    setLoadError("");
-    Promise.all([listCommissions({ includeInstallments: true }), listOwnerRepasses(), listBankAccounts(), listFinancialEntries({ status: "PENDING" }), listPeople(), apiFetch("/users")])
-      .then(async ([com, rep, ba, entries, pp, us]) => {
-        if (cancelled) return;
-        setCommissions(com || []);
-        setRepasses(rep || []);
-        setBankAccounts(ba || []);
-        setPendingEntries(entries || []);
-        setPeople(pp || []);
-        setUsers(us || []);
-        // O2 (auditoria M45): parcelas vêm junto da listagem (uma chamada), sem N+1.
-        if (!cancelled) setInstallments((com || []).flatMap((c) => c.installments || []));
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar comissões e repasses.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+    const blocks = [
+      {
+        key: "comissoes",
+        label: "as comissões",
+        run: () => listCommissions({ includeInstallments: true }),
+        apply: (com) => {
+          setCommissions(com || []);
+          // O2 (auditoria M45): parcelas vêm junto da listagem (uma chamada), sem N+1.
+          setInstallments((com || []).flatMap((c) => c.installments || []));
+        },
+      },
+      { key: "repasses", label: "os repasses", run: () => listOwnerRepasses(), apply: (rep) => setRepasses(rep || []) },
+      { key: "contas", label: "as contas bancárias", run: () => listBankAccounts(), apply: (ba) => setBankAccounts(ba || []) },
+      { key: "lancamentos", label: "os lançamentos pendentes", run: () => listFinancialEntries({ status: "PENDING" }), apply: (e) => setPendingEntries(e || []) },
+      { key: "pessoas", label: "as pessoas", run: () => listPeople(), apply: (pp) => setPeople(pp || []) },
+      { key: "usuarios", label: "os usuários", run: () => apiFetch("/users"), apply: (us) => setUsers(us || []) },
+    ];
+    setBlockErrors({});
+    Promise.all(
+      blocks.map((b) =>
+        b
+          .run()
+          .then((result) => {
+            if (!cancelled) b.apply(result);
+          })
+          .catch((err) => {
+            if (!cancelled) {
+              setBlockErrors((prev) => ({ ...prev, [b.key]: `Não foi possível carregar ${b.label}. ${friendlyMessage(err, "")}`.trim() }));
+            }
+          })
+      )
+    ).finally(() => {
+      if (!cancelled) setLoading(false);
+    });
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [reloadTick]);
 
   function showNotice(tone, title, message) {
     setNotice({ tone, title, message });
@@ -161,13 +192,14 @@ export default function ComissoesRepassesPage() {
   // então abrimos um seletor de lançamento PENDING antes de confirmar o pagamento.
   async function confirmPayInstallment(installment, financialEntryId) {
     setBusyId(installment.id);
+    setModalError("");
     try {
       const updated = await payCommissionInstallment(installment.id, financialEntryId);
       setInstallments((prev) => prev.map((i) => (i.id === installment.id ? updated : i)));
       setPayModal(null);
       showNotice("success", "Parcela paga", `Parcela ${installment.installmentNumber} marcada como paga.`);
     } catch (err) {
-      showNotice("danger", "Não foi possível pagar a parcela", err?.message || "Tente novamente.");
+      setModalError(friendlyMessage(err, "Não foi possível pagar a parcela. Tente novamente."));
     } finally {
       setBusyId(null);
     }
@@ -175,14 +207,16 @@ export default function ComissoesRepassesPage() {
 
   async function handleCreateRepasse(payload) {
     setBusyId("new-repasse");
+    setModalError("");
     try {
       const created = await createOwnerRepasse(payload);
       const repasse = created?.repasse || created;
       setRepasses((prev) => [repasse, ...prev]);
       setNewRepasseModal(false);
-      showNotice("success", "Repasse criado", `Repasse de ${formatBRL(repasse.netAmount)} (ref. ${formatCompetence(repasse.referenceMonth)}) aguardando aprovação por outra pessoa.`);
+      showNotice("success", "Repasse criado", `Repasse de ${formatBRL(repasse.netAmount)} (referência ${formatCompetence(repasse.referenceMonth)}) aguardando aprovação por outra pessoa.`);
     } catch (err) {
-      showNotice("danger", "Não foi possível criar o repasse", err?.message || "Tente novamente.");
+      // O modal fica aberto: a recusa (duplicado, dedução sem motivo, acima do elegível) aparece dentro dele.
+      setModalError(friendlyMessage(err, "Não foi possível criar o repasse. Tente novamente."));
     } finally {
       setBusyId(null);
     }
@@ -190,6 +224,7 @@ export default function ComissoesRepassesPage() {
 
   async function handleCreateCommission(payload) {
     setBusyId("new-commission");
+    setModalError("");
     try {
       const { commission } = await createCommission(payload);
       setCommissions((prev) => [commission, ...prev]);
@@ -198,7 +233,7 @@ export default function ComissoesRepassesPage() {
       setNewCommissionModal(false);
       showNotice("success", "Comissão criada", `Comissão de ${formatBRL(commission.totalAmount)} registrada para ${userName(users, commission.beneficiaryUserId)}.`);
     } catch (err) {
-      showNotice("danger", "Não foi possível criar a comissão", err?.message || "Tente novamente.");
+      setModalError(friendlyMessage(err, "Não foi possível criar a comissão. Tente novamente."));
     } finally {
       setBusyId(null);
     }
@@ -210,6 +245,7 @@ export default function ComissoesRepassesPage() {
   // era "Pagar parcela". Botão de cancelamento com motivo obrigatório adicionado.
   async function handleCancelCommission(commission, reason) {
     setBusyId(`cancel-${commission.id}`);
+    setModalError("");
     try {
       const { commission: updated } = await cancelCommission(commission.id, reason);
       setCommissions((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
@@ -219,7 +255,7 @@ export default function ComissoesRepassesPage() {
       setCancelModal(null);
       showNotice("success", "Comissão cancelada", `Comissão de ${userName(users, updated.beneficiaryUserId)} cancelada — ajuste registrado em auditoria.`);
     } catch (err) {
-      showNotice("danger", "Não foi possível cancelar a comissão", err?.message || "Tente novamente.");
+      setModalError(friendlyMessage(err, "Não foi possível cancelar a comissão. Tente novamente."));
     } finally {
       setBusyId(null);
     }
@@ -232,7 +268,7 @@ export default function ComissoesRepassesPage() {
       setRepasses((prev) => prev.map((r) => (r.id === repasse.id ? updated : r)));
       showNotice("success", "Repasse aprovado", "Lançamento a pagar criado — pague pelo banco (ou baixa com comprovante) e depois confirme o pagamento aqui.");
     } catch (err) {
-      showNotice("danger", "Não foi possível aprovar o repasse", err?.message || "Tente novamente.");
+      showNotice("danger", "Não foi possível aprovar o repasse", friendlyMessage(err, "Tente novamente."));
     } finally {
       setBusyId(null);
     }
@@ -252,7 +288,7 @@ export default function ComissoesRepassesPage() {
       setRepasses((prev) => prev.map((r) => (r.id === repasse.id ? updated : r)));
       showNotice("success", "Pagamento confirmado", `Repasse de ${formatBRL(updated.netAmount)} confirmado como pago (com comprovante/confirmação bancária).`);
     } catch (err) {
-      showNotice("danger", "Não foi possível pagar o repasse", err?.message || "Tente novamente.");
+      showNotice("danger", "Não foi possível pagar o repasse", friendlyMessage(err, "Tente novamente."));
     } finally {
       setBusyId(null);
     }
@@ -306,7 +342,12 @@ export default function ComissoesRepassesPage() {
 
   return (
     <AppShell title="Comissões & Repasses" backHref="/painel/financeiro">
-      {loadError ? <Alert tone="danger" title="Não foi possível carregar comissões e repasses">{loadError}</Alert> : null}
+      {Object.entries(blockErrors).map(([key, message]) => (
+        <Alert key={key} tone="danger" className={styles.notice}>
+          {message}{" "}
+          <Button size="sm" variant="secondary" onClick={() => setReloadTick((t) => t + 1)}>Tentar de novo</Button>
+        </Alert>
+      ))}
       {notice ? <Alert tone={notice.tone} title={notice.title} className={styles.notice}>{notice.message}</Alert> : null}
 
       {loading ? (
@@ -341,7 +382,7 @@ export default function ComissoesRepassesPage() {
                   {/* FIX (reportado pela cliente 18/09/2026): não existia nenhuma ação de
                       criação de comissão na tela nem gatilho automático a partir do contrato —
                       a API já tinha createCommission pronta e testada, só faltava esta tela. */}
-                  <Button onClick={() => setNewCommissionModal(true)}>
+                  <Button onClick={() => { setModalError(""); setNewCommissionModal(true); }}>
                     <Icon name="plus" size={16} /> Nova comissão
                   </Button>
                 </div>
@@ -363,7 +404,7 @@ export default function ComissoesRepassesPage() {
                               <Badge tone={COMMISSION_STATUS_TONE[c.status]}>{COMMISSION_STATUS_LABELS[c.status]}</Badge>
                               <strong className={styles.commissionTotal}>{formatBRL(c.totalAmount)}</strong>
                               {c.status !== "CANCELLED" && c.status !== "PAID" ? (
-                                <Button size="sm" variant="danger" onClick={() => setCancelModal(c)}>Cancelar</Button>
+                                <Button size="sm" variant="danger" onClick={() => { setModalError(""); setCancelModal(c); }}>Cancelar</Button>
                               ) : null}
                               {c.status === "CANCELLED" ? (
                                 <Button size="sm" variant="secondary" onClick={() => handleViewAdjustments(c)}>Ver ajustes</Button>
@@ -379,7 +420,7 @@ export default function ComissoesRepassesPage() {
                                 ) : i.status === "CANCELLED" || c.status === "CANCELLED" ? (
                                   <Badge tone="neutral">Cancelada</Badge>
                                 ) : (
-                                  <Button size="sm" variant="secondary" onClick={() => setPayModal(i)} loading={busyId === i.id}>Pagar</Button>
+                                  <Button size="sm" variant="secondary" onClick={() => { setModalError(""); setPayModal(i); }} loading={busyId === i.id}>Pagar</Button>
                                 )}
                               </div>
                             ))}
@@ -404,7 +445,7 @@ export default function ComissoesRepassesPage() {
               <Card title="Repasses a proprietários" subtitle="Líquido = bruto − deduções (sempre calculado, nunca editável)">
                 <div className={styles.toolbar}>
                   {/* F4 (auditoria M45): não havia como criar repasse pela tela. */}
-                  <Button onClick={() => setNewRepasseModal(true)}>
+                  <Button onClick={() => { setModalError(""); setNewRepasseModal(true); }}>
                     <Icon name="plus" size={16} /> Novo repasse
                   </Button>
                 </div>
@@ -422,7 +463,7 @@ export default function ComissoesRepassesPage() {
                         <div className={styles.listRowInfo}>
                           <span className={styles.listRowTitle}>{owner?.legalName || "Proprietário não encontrado"}</span>
                           <span className={styles.listRowSubtitle}>
-                            Ref. {formatCompetence(r.referenceMonth)} · Bruto {formatBRL(r.grossAmount)} − Deduções {formatBRL(r.deductionsAmount)} = <strong>{formatBRL(r.netAmount)}</strong>
+                            Referência {formatCompetence(r.referenceMonth)} · Bruto {formatBRL(r.grossAmount)} − Deduções {formatBRL(r.deductionsAmount)} = <strong>{formatBRL(r.netAmount)}</strong>
                           </span>
                         </div>
                         <div className={styles.listRowRight}>
@@ -480,6 +521,7 @@ export default function ComissoesRepassesPage() {
 
       <PayInstallmentModal
         installment={payModal}
+        error={modalError}
         pendingEntries={pendingEntries}
         onClose={() => setPayModal(null)}
         onConfirm={(financialEntryId) => confirmPayInstallment(payModal, financialEntryId)}
@@ -488,6 +530,7 @@ export default function ComissoesRepassesPage() {
 
       <NewCommissionModal
         open={newCommissionModal}
+        error={modalError}
         users={users.filter((u) => u.status === "ACTIVE")}
         onClose={() => setNewCommissionModal(false)}
         onConfirm={handleCreateCommission}
@@ -496,6 +539,7 @@ export default function ComissoesRepassesPage() {
 
       <NewRepasseModal
         open={newRepasseModal}
+        error={modalError}
         people={people}
         bankAccounts={bankAccounts}
         onClose={() => setNewRepasseModal(false)}
@@ -505,6 +549,7 @@ export default function ComissoesRepassesPage() {
 
       <CancelCommissionModal
         commission={cancelModal}
+        error={modalError}
         users={users}
         onClose={() => setCancelModal(null)}
         onConfirm={(reason) => handleCancelCommission(cancelModal, reason)}
@@ -541,7 +586,7 @@ function formatMonthBR(ym) {
   return m ? `${m[2]}/${m[1]}` : ym;
 }
 
-function NewRepasseModal({ open, people, bankAccounts, onClose, onConfirm, busy }) {
+function NewRepasseModal({ open, error, people, bankAccounts, onClose, onConfirm, busy }) {
   const empty = { ownerPersonId: "", propertyId: "", contractId: "", referenceMonth: "", bankAccountId: "", deductionsAmount: "", deductionsReason: "", sourceEntryIds: [] };
   const [form, setForm] = useState(empty);
   const [ownerQuery, setOwnerQuery] = useState("");
@@ -580,7 +625,8 @@ function NewRepasseModal({ open, people, bankAccounts, onClose, onConfirm, busy 
     listEligibleRepasseSources({ propertyId: form.propertyId, contractId: form.contractId || undefined, referenceMonth: validMonth })
       .then((items) => {
         if (cancelled) return;
-        const list = Array.isArray(items) ? items : [];
+        // Recebimento já consumido (sem saldo) não aparece para seleção.
+        const list = (Array.isArray(items) ? items : []).filter((e) => Number(e.availableAmount) > 0);
         setReceivables(list);
         setForm((prev) => ({ ...prev, sourceEntryIds: prev.sourceEntryIds.filter((id) => list.some((e) => e.id === id)) }));
         setReceivablesState({ loading: false, error: "" });
@@ -608,6 +654,13 @@ function NewRepasseModal({ open, people, bankAccounts, onClose, onConfirm, busy 
   const isValid =
     form.ownerPersonId && form.propertyId && /^\d{4}-(0[1-9]|1[0-2])$/.test(form.referenceMonth) && form.sourceEntryIds.length > 0 &&
     (!(toNumber(form.deductionsAmount) > 0) || (form.deductionsReason || "").trim().length > 0);
+
+  const missing = [];
+  if (!form.ownerPersonId) missing.push("o proprietário");
+  if (!form.propertyId) missing.push("o imóvel");
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(form.referenceMonth)) missing.push("o período (competência)");
+  if (form.sourceEntryIds.length === 0) missing.push("ao menos um recebimento");
+  if (toNumber(form.deductionsAmount) > 0 && !(form.deductionsReason || "").trim()) missing.push("o motivo da dedução");
 
   function update(field) {
     return (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
@@ -649,6 +702,8 @@ function NewRepasseModal({ open, people, bankAccounts, onClose, onConfirm, busy 
         </>
       }
     >
+      {error ? <Alert tone="danger">{error}</Alert> : null}
+      {missing.length > 0 ? <p className={styles.modalSubtitle}>Para criar o repasse falta informar: {missing.join(", ")}.</p> : null}
       <FormField label="Buscar proprietário" htmlFor="nr-owner-q" helper="Digite parte do nome ou CPF/CNPJ (até 50 resultados)">
         <Input id="nr-owner-q" value={ownerQuery} onChange={(e) => setOwnerQuery(e.target.value)} placeholder="Nome ou documento" />
       </FormField>
@@ -661,10 +716,10 @@ function NewRepasseModal({ open, people, bankAccounts, onClose, onConfirm, busy 
         </Select>
       </FormField>
       <FormField label="Imóvel" htmlFor="nr-property" required>
-        <Select id="nr-property" value={form.propertyId} onChange={(e) => setForm((prev) => ({ ...prev, propertyId: e.target.value, contractId: "" }))}>
-          <option value="">Selecionar…</option>
+        <Select id="nr-property" value={form.propertyId} onChange={(e) => setForm((prev) => ({ ...prev, propertyId: e.target.value, contractId: "", sourceEntryIds: [] }))}>
+          <option value="">{form.ownerPersonId && ownerProperties.length === 0 ? "Este proprietário não consta em nenhum imóvel" : "Selecionar…"}</option>
           {ownerProperties.map((p) => (
-            <option key={p.id} value={p.id}>{p.title || p.name || p.code || p.address || "Imóvel"}</option>
+            <option key={p.id} value={p.id}>{propertyLabel(p)}</option>
           ))}
         </Select>
       </FormField>
@@ -712,7 +767,7 @@ function NewRepasseModal({ open, people, bankAccounts, onClose, onConfirm, busy 
           </div>
         )}
       </FormField>
-      <FormField label="Deduções (R$)" htmlFor="nr-ded" helper="O bruto é o valor elegível dos recebimentos; líquido = bruto − deduções">
+      <FormField label="Deduções (R$)" htmlFor="nr-ded" helper="O bruto é o valor elegível dos recebimentos; líquido = bruto − deduções. Com dedução, informe o motivo logo abaixo.">
         <DecimalInput id="nr-ded" value={form.deductionsAmount} onChange={update("deductionsAmount")} placeholder="0,00" />
       </FormField>
       {toNumber(form.deductionsAmount) > 0 && (
@@ -724,7 +779,7 @@ function NewRepasseModal({ open, people, bankAccounts, onClose, onConfirm, busy 
   );
 }
 
-function CancelCommissionModal({ commission, users, onClose, onConfirm, busy }) {
+function CancelCommissionModal({ commission, error, users, onClose, onConfirm, busy }) {
   const [reason, setReason] = useState("");
 
   useEffect(() => {
@@ -747,13 +802,14 @@ function CancelCommissionModal({ commission, users, onClose, onConfirm, busy }) 
     >
       {commission ? (
         <>
+          {error ? <Alert tone="danger">{error}</Alert> : null}
           <p className={styles.modalIntro}>
             {commissionDescription(commission)} — {userName(users, commission.beneficiaryUserId)} —{" "}
             {formatBRL(commission.totalAmount)}
           </p>
           <Alert tone="warning">
             Parcelas já pagas permanecem pagas. Parcelas ainda não pagas serão canceladas e um ajuste auditável será
-            registrado (FIN-TS-017) — esta ação não pode ser desfeita.
+            registrado — esta ação não pode ser desfeita.
           </Alert>
           <FormField label="Motivo do cancelamento" htmlFor="cancel-reason" required helper="Obrigatório — ex.: contrato cancelado, erro de lançamento">
             <Input id="cancel-reason" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Descreva o motivo..." />
@@ -802,7 +858,7 @@ function ApproveRepasseModal({ repasse, onClose, onConfirm }) {
 
 // Frente 3 (§14): percentual e base vêm da regra de comissão vigente (Motor de Regras) e do
 // recebimento que gera o direito — a tela só escolhe o fato gerador e o componente.
-function NewCommissionModal({ open, users, onClose, onConfirm, busy }) {
+function NewCommissionModal({ open, error, users, onClose, onConfirm, busy }) {
   const empty = { beneficiaryUserId: "", sourceEntryId: "", component: "BROKER", installmentsCount: "1" };
   const [form, setForm] = useState(empty);
   const [receivables, setReceivables] = useState([]);
@@ -851,6 +907,7 @@ function NewCommissionModal({ open, users, onClose, onConfirm, busy }) {
         </>
       }
     >
+      {error ? <Alert tone="danger">{error}</Alert> : null}
       <FormField label="Corretor/beneficiário" htmlFor="nc-user" required>
         <Select id="nc-user" value={form.beneficiaryUserId} onChange={update("beneficiaryUserId")}>
           <option value="">Selecionar…</option>
@@ -881,7 +938,7 @@ function NewCommissionModal({ open, users, onClose, onConfirm, busy }) {
   );
 }
 
-function PayInstallmentModal({ installment, pendingEntries, onClose, onConfirm, busy }) {
+function PayInstallmentModal({ installment, error, pendingEntries, onClose, onConfirm, busy }) {
   const [entryId, setEntryId] = useState("");
 
   useEffect(() => {
@@ -904,10 +961,11 @@ function PayInstallmentModal({ installment, pendingEntries, onClose, onConfirm, 
           original não pedia esse vínculo, então adicionamos este seletor de lançamento PENDING. */}
       {installment ? (
         <>
+          {error ? <Alert tone="danger">{error}</Alert> : null}
           <p className={styles.modalIntro}>Parcela {installment.installmentNumber} — {formatBRL(installment.amount)}</p>
-          <Alert tone="info">Selecione o lançamento (PENDING) do ledger que corresponde ao pagamento desta parcela.</Alert>
+          <Alert tone="info">Selecione o lançamento pendente do financeiro que corresponde ao pagamento desta parcela.</Alert>
           {pendingEntries.length === 0 ? (
-            <Alert tone="warning">Nenhum lançamento PENDING disponível — crie um lançamento antes de pagar esta parcela.</Alert>
+            <Alert tone="warning">Nenhum lançamento pendente disponível — crie um lançamento antes de pagar esta parcela.</Alert>
           ) : (
             <Select value={entryId} onChange={(e) => setEntryId(e.target.value)}>
               <option value="">Selecione o lançamento...</option>
@@ -943,7 +1001,7 @@ function AdjustmentsModal({ state, onClose }) {
               {state.items.map((adj, idx) => (
                 <li key={idx} className={styles.listRow}>
                   <div className={styles.listRowInfo}>
-                    <span className={styles.listRowTitle}>{adj.adjustmentType === "CANCELLATION_REVERSAL" ? "Cancelamento" : adj.adjustmentType}</span>
+                    <span className={styles.listRowTitle}>{adj.adjustmentType === "CANCELLATION_REVERSAL" ? "Cancelamento" : "Ajuste da comissão"}</span>
                     <span className={styles.listRowSubtitle}>
                       Já pago {formatBRL(adj.paidAmountBefore)} de {formatBRL(adj.totalAmountBefore)} · Ajuste de {formatBRL(adj.adjustmentAmount)}
                     </span>
@@ -968,7 +1026,7 @@ function CompositionModal({ state, onClose }) {
       {repasse ? (
         <>
           <p className={styles.modalSubtitle}>
-            Ref. {formatCompetence(repasse.referenceMonth)} · Líquido {formatBRL(repasse.netAmount)}
+            Referência {formatCompetence(repasse.referenceMonth)} · Líquido {formatBRL(repasse.netAmount)}
           </p>
           {state.loading ? (
             <SkeletonDetail />
