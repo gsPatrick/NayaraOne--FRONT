@@ -18,7 +18,8 @@ import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu
 import NatureBadge from "@/components/molecules/NatureBadge/NatureBadge";
 import Pagination from "@/components/molecules/Pagination/Pagination";
 import Badge from "@/components/atoms/Badge/Badge";
-import { listFinancialEntries, listBankTransactions, listBankAccounts, listReconciliations, matchReconciliation, suggestReconciliationMatches } from "@/lib/api/finance";
+import { listFinancialEntries, listBankTransactions, listBankAccounts, listReconciliations, matchReconciliation,
+  matchReconciliationGroup, suggestReconciliationMatches } from "@/lib/api/finance";
 import { apiFetch } from "@/lib/api/client";
 import { getCurrentUser } from "@/lib/auth/session";
 import { formatCalendarDay } from "@/lib/finance/extras";
@@ -107,6 +108,17 @@ export default function ConciliacaoPage() {
       showNotice("success", "Conciliado", "Lançamento conciliado com a transação de extrato.");
     } catch (err) {
       showNotice("danger", "Não foi possível conciliar", err?.message || "Verifique se os valores batem e se nenhum dos dois já está conciliado.");
+    }
+  }
+
+  async function handleReconcileGroup(entryIds, transactionId) {
+    try {
+      const result = await matchReconciliationGroup({ financialEntryIds: entryIds, bankTransactionIds: [transactionId] });
+      setReconciliations((prev) => [...prev, ...(result?.reconciliations || [])]);
+      setReconcileModal(null);
+      showNotice("success", "Conciliado em grupo", `${entryIds.length} lançamentos conciliados com a transação de extrato.`);
+    } catch (err) {
+      showNotice("danger", "Não foi possível conciliar em grupo", err?.message || "A soma dos lançamentos precisa bater exatamente com a transação.");
     }
   }
 
@@ -364,13 +376,21 @@ export default function ConciliacaoPage() {
         matchClass={reconcileModal ? suggestions[reconcileModal.id]?.finalClass : null}
         onClose={() => setReconcileModal(null)}
         onConfirm={(entryId) => handleReconcile(entryId, reconcileModal.id)}
+        groupEntries={reconcileModal ? unreconciledEntries.filter((e) => !reconcileModal.bankAccountId || !e.bankAccountId || e.bankAccountId === reconcileModal.bankAccountId) : []}
+        onConfirmGroup={(entryIds) => handleReconcileGroup(entryIds, reconcileModal.id)}
       />
     </AppShell>
   );
 }
 
-function ReconcileModal({ transaction, candidates, matchClass, onClose, onConfirm }) {
+function ReconcileModal({ transaction, candidates, matchClass, onClose, onConfirm, groupEntries = [], onConfirmGroup }) {
   const [entryId, setEntryId] = useState("");
+  const [groupMode, setGroupMode] = useState(false);
+  const [picked, setPicked] = useState([]);
+  const toCents = (v) => Math.round(Math.abs(Number(v) || 0) * 100);
+  const pickedCents = groupEntries.filter((e) => picked.includes(e.id)).reduce((acc, e) => acc + toCents(e.amount), 0);
+  const targetCents = transaction ? toCents(transaction.amount) : 0;
+  const groupMatches = picked.length >= 2 && pickedCents === targetCents;
 
   if (!transaction) return null;
 
@@ -382,7 +402,11 @@ function ReconcileModal({ transaction, candidates, matchClass, onClose, onConfir
       footer={
         <>
           <Button variant="secondary" onClick={onClose}>Cancelar</Button>
-          <Button onClick={() => entryId && onConfirm(entryId)} disabled={!entryId}>Conciliar</Button>
+          {groupMode ? (
+            <Button onClick={() => groupMatches && onConfirmGroup && onConfirmGroup(picked)} disabled={!groupMatches}>Conciliar em grupo</Button>
+          ) : (
+            <Button onClick={() => entryId && onConfirm(entryId)} disabled={!entryId}>Conciliar</Button>
+          )}
         </>
       }
     >
@@ -396,9 +420,34 @@ function ReconcileModal({ transaction, candidates, matchClass, onClose, onConfir
           Confira os dados abaixo e escolha manualmente o lançamento correto.
         </Alert>
       ) : null}
-      {candidates.length === 0 ? (
+      {groupMode ? (
+        <div>
+          <p className={styles.modalIntro}>
+            Marque dois ou mais lançamentos cuja soma bata exatamente com a transação. Soma marcada: {formatBRL(pickedCents / 100)} de {formatBRL(targetCents / 100)}.
+          </p>
+          {groupEntries.length === 0 ? (
+            <Alert tone="warning" title="Nenhum lançamento em aberto">Não há lançamentos sem conciliação para esta conta.</Alert>
+          ) : (
+            groupEntries.map((e) => (
+              <label key={e.id} style={{ display: "flex", gap: 8, alignItems: "center", padding: "4px 0" }}>
+                <input
+                  type="checkbox"
+                  checked={picked.includes(e.id)}
+                  onChange={(ev) => setPicked((prev) => (ev.target.checked ? [...prev, e.id] : prev.filter((x) => x !== e.id)))}
+                />
+                <span>{humanizeText(e.description)} — {formatBRL(e.amount)}</span>
+              </label>
+            ))
+          )}
+          {picked.length >= 2 && !groupMatches ? (
+            <Alert tone="warning">A soma marcada ainda não bate com a transação. A conciliação em grupo só é aceita quando bate no centavo.</Alert>
+          ) : null}
+          <Button variant="secondary" onClick={() => { setGroupMode(false); setPicked([]); }}>Voltar para conciliação de um lançamento</Button>
+        </div>
+      ) : candidates.length === 0 ? (
         <Alert tone="warning" title="Nenhum lançamento com valor compatível">
-          Só é possível conciliar lançamentos cujo valor bate exatamente com a transação.
+          Nenhum lançamento sozinho tem o valor desta transação.{" "}
+          <Button variant="secondary" onClick={() => setGroupMode(true)}>Conciliar vários lançamentos juntos</Button>
         </Alert>
       ) : (
         <Select value={entryId} onChange={(e) => setEntryId(e.target.value)}>
@@ -408,6 +457,11 @@ function ReconcileModal({ transaction, candidates, matchClass, onClose, onConfir
           ))}
         </Select>
       )}
+      {!groupMode && candidates.length > 0 ? (
+        <p className={styles.modalIntro}>
+          <Button variant="secondary" onClick={() => setGroupMode(true)}>Conciliar vários lançamentos juntos</Button>
+        </p>
+      ) : null}
     </Modal>
   );
 }
