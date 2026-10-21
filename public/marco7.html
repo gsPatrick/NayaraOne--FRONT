@@ -83,8 +83,8 @@ table.cl{min-width:1150px}table.cl td{min-width:150px}table.cl td:first-child{mi
 <header class="top">
   <div class="tag">Nayara One · Entrega do Marco 7</div>
   <h1>Estoque, Ferramentas, Patrimônio, Compras e Seguros</h1>
-  <div class="meta"><span><b>Data:</b> 20/10/2026</span><span><b>Autor:</b> Patrick Siqueira (desenvolvedor)</span><span><b>Base:</b> Caderno Técnico, Anexo I — "Estoque + Ferramentas + Patrimônio — Blindado v1" e addendum "Compras/Procurement + Seguros"</span><span><b>Versão:</b> API <code>e1a1f42</code> · Front <code>e993b62</code></span><span><b>CI:</b> último CI verde conhecido: API run <a href="https://github.com/gsPatrick/NayaraOne--API/actions/runs/39301913793">39301913793</a> (1429/1429, commit 3f7e550) · Front run <a href="https://github.com/gsPatrick/NayaraOne--FRONT/actions/runs/39301378437">39301378437</a> (success). O commit final ainda não passou por CI porque eu ainda não fiz o push (seção 5).</span></div>
-  <div class="status"><span class="b ok big">Pronto para aceite</span><span>Reenvio após a conferência da cliente de 20/10/2026: corrigi as seis lacunas M7-F01 a M7-F06 e os itens de dinheiro; os 119 requisitos seguem Atendidos, agora com teste, evidência ao vivo e dados do código corrigido.</span></div>
+  <div class="meta"><span><b>Data:</b> 20/10/2026</span><span><b>Autor:</b> Patrick Siqueira (desenvolvedor)</span><span><b>Base:</b> Caderno Técnico, Anexo I — "Estoque + Ferramentas + Patrimônio — Blindado v1" e addendum "Compras/Procurement + Seguros"</span><span><b>Versão publicada:</b> API <code>a3c38242e2e659692cacdea5ea6d9de37bd223d9</code> · Front: o commit deste arquivo</span><span><b>CI da versão publicada:</b> API run <a href="https://github.com/gsPatrick/NayaraOne--API/actions/runs/39656221878">39656221878</a> (commit a3c3824, 1591 passaram, 0 falharam, 0 pulados). O CI anterior do commit <code>b2f7011</code>, run <a href="https://github.com/gsPatrick/NayaraOne--API/actions/runs/39534175703">39534175703</a>, registrou 1577 aprovados, 14 pulados e 0 falhas; a reprodução local serial de 1591 não é esse CI.</span></div>
+  <div class="status"><span class="b ok big">Dossiê do Marco 7</span><span>A evidência específica deste dossiê (442 testes do Marco 7 e as capturas HTTP) foi colhida no commit <code>e1a1f42</code>, que está no histórico da versão publicada <code>a3c3824</code>. O CI que classifica a versão publicada é o run 39656221878, da suíte inteira, e não a execução local de 20/10/2026. O CI antigo do commit 3f7e550 (run <a href="https://github.com/gsPatrick/NayaraOne--API/actions/runs/39301913793">39301913793</a>, 1429/1429) e o Front run <a href="https://github.com/gsPatrick/NayaraOne--FRONT/actions/runs/39301378437">39301378437</a> continuam no histórico, anteriores a esta versão.</span></div>
   <div class="summary">
     <p>1. Entrego o Marco 7 completo: Estoque, Ferramentas/QR, Patrimônio, Inventário, Perdas, Compras e Seguros.</p>
     <p>2. A matriz tem 119 linhas, uma para cada exigência do caderno: <b>119 atendidas, 0 parciais</b>. Reescrevi as 18 linhas que a conferência apontou (4, 6, 8, 10, 11, 34, 45, 49, 57, 67, 71, 103, 104, 105, 107, 110, 112, 119) para o código corrigido, com o nome exato do teste, o resultado de hoje e a evidência ao vivo nova.</p>
@@ -372,7 +372,7 @@ table.cl{min-width:1150px}table.cl td{min-width:150px}table.cl td:first-child{mi
 <tr><td><code>test/inventory.failureDrills.test.js</code></td><td>banco descartável</td><td class="r">3</td><td class="r">3</td><td class="r">0</td><td class="r">0</td><td class="r">0,7 s</td><td><span class='b ok'>verde</span></td></tr>
 <tr><td><code>test/marco7rev20.F.test.js</code></td><td>banco descartável</td><td class="r">24</td><td class="r">24</td><td class="r">0</td><td class="r">0</td><td class="r">2,2 s</td><td><span class='b ok'>verde</span></td></tr>
 <tr class="tot"><td>Total (56 arquivos)</td><td>conforme cada arquivo</td><td class="r">442</td><td class="r">442</td><td class="r">0</td><td class="r">0</td><td class="r">49,2 min</td><td><span class='b ok'>verde</span></td></tr></tbody></table></div>
-<p class="small"><b>CI do commit final:</b> CI_FINAL (o run do commit e1a1f42 não existe ainda porque eu não fiz o push; preencho o run e a contagem assim que ele rodar). Não afirmo CI verde para este commit. O último CI verde conhecido é o da API <a href="https://github.com/gsPatrick/NayaraOne--API/actions/runs/39301913793">39301913793</a> no commit 3f7e550 (1429 testes, 0 falhas), anterior às correções desta página; o Front do CI é o run <a href="https://github.com/gsPatrick/NayaraOne--FRONT/actions/runs/39301378437">39301378437</a> (success). A lista completa, teste por teste, com duração, está em <code>testes[]</code> no JSON.</p>
+<p class="small"><b>CI da versão publicada:</b> API run <a href="https://github.com/gsPatrick/NayaraOne--API/actions/runs/39656221878">39656221878</a> no commit <code>a3c38242e2e659692cacdea5ea6d9de37bd223d9</code> — 1591 testes, 1591 passaram, 0 falharam, 0 pulados. Essa suíte inclui os testes que estão em <code>test/*.test.js</code>. Os 442 testes citados acima são a execução local de 20/10/2026 no commit <code>e1a1f42</code>, não um segundo artifact. O run <a href="https://github.com/gsPatrick/NayaraOne--API/actions/runs/39301913793">39301913793</a> (commit 3f7e550, 1429/1429) e o Front run <a href="https://github.com/gsPatrick/NayaraOne--FRONT/actions/runs/39301378437">39301378437</a> são anteriores. A lista da execução local, teste por teste, continua em <code>testes[]</code> no JSON.</p>
 <p class="small">Todos os testes das regras novas foram conferidos em teste isolado e confirmados verdes na execução de hoje.</p>
 </section>
 
@@ -9192,7 +9192,7 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
 </ul>
 </section>
 
-<footer class="sign">Eu, Patrick Siqueira, preparei esta página em 20/10/2026 com base no caderno, nas rodadas de auditoria ao vivo, na conferência da cliente de 20/10/2026, no histórico de commits, numa execução real dos testes do Marco 7 no commit e1a1f42, nas evidências capturadas ao vivo em 19/10 e 20/10/2026 e no último CI verde conhecido.</footer>
+<footer class="sign">Eu, Patrick Siqueira, preparei o dossiê do Marco 7 em 20/10/2026 com base no caderno, nas rodadas de auditoria ao vivo, na conferência da cliente de 20/10/2026, no histórico de commits, numa execução local dos testes do Marco 7 no commit e1a1f42 e nas evidências capturadas ao vivo em 19/10 e 20/10/2026. Em 21/10/2026 a versão publicada da API é a3c38242e2e659692cacdea5ea6d9de37bd223d9, CI https://github.com/gsPatrick/NayaraOne--API/actions/runs/39656221878 (1591 passaram, 0 falharam, 0 pulados). O endereço de homologação é https://homologacao-nayaraone--front.hpztyd.easypanel.host/marco7.html.</footer>
 </div>
 <script type="application/json" id="evidencias-marco7">{
  "respostasHttp": [
@@ -30742,7 +30742,7 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
  ],
  "meta": {
   "marco": "Marco 7 — Estoque, Ferramentas, Patrimônio, Compras e Seguros",
-  "status": "Pronto para aceite",
+  "status": "Dossiê do Marco 7 colhido em e1a1f42; a versão publicada da API é a3c3824, CI 39656221878 (1591 passaram, 0 falharam, 0 pulados)",
   "geradoEm": "2026-10-21T02:12:18.267Z",
   "autor": "Patrick Siqueira",
   "commits": {
@@ -30782,7 +30782,21 @@ SELECT o.status AS pedido, (SELECT SUM(received_quantity) FROM procurement.purch
     "url": "https://github.com/gsPatrick/NayaraOne--FRONT/actions/runs/39301378437",
     "commit": "728e99f",
     "resultado": "success"
-   }
+   },
+   "observacao": "Este bloco ci é o histórico anterior. A versão publicada está em ciPublicado."
+  },
+  "ciPublicado": {
+   "api": {
+    "run": "39656221878",
+    "url": "https://github.com/gsPatrick/NayaraOne--API/actions/runs/39656221878",
+    "commit": "a3c38242e2e659692cacdea5ea6d9de37bd223d9",
+    "testes": 1591,
+    "passou": 1591,
+    "falhou": 0,
+    "pulados": 0,
+    "artefato": "test-results-a3c38242e2e659692cacdea5ea6d9de37bd223d9"
+   },
+   "distincao": "O run 39534175703 do commit b2f7011 registrou 1577 aprovados, 14 pulados e 0 falhas. A reprodução local serial de 1591 aprovados e 0 pulados não é esse CI. O run 39656221878 do commit a3c3824 é a suíte executada no CI: 1591 aprovados, 0 falhas e 0 pulados."
   },
   "linhasMatriz": 119,
   "linhasAtendidas": 119,
