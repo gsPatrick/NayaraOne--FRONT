@@ -240,6 +240,7 @@ export default function PersonDetailPage({ params }) {
       engine: data.extractionMeta?.engine || "",
       source: data.extractionMeta?.source || "",
       fields: toEditableFields(data.fields),
+      data,
     });
     setDocOpen(true);
   }
@@ -261,8 +262,10 @@ export default function PersonDetailPage({ params }) {
         engine: data.extractionMeta?.engine || "",
         source: data.extractionMeta?.source || "",
         fields: toEditableFields(data.fields),
+        data,
         taskOpened: !!result.pendingTask,
       });
+      setDocBusy(false);
       setPerson(await getPerson(person.id));
     } catch (err) {
       setDocError(err?.message || "Não foi possível ler o documento.");
@@ -287,10 +290,9 @@ export default function PersonDetailPage({ params }) {
                 ? f.value.replace(/^(\d{2})\/(\d{2})\/(\d{4})$/, "$3-$2-$1")
                 : f.value;
       }
-      const current = person.documents.find((d) => d.id === docResult.documentId);
       await updateDocument(person.id, docResult.documentId, {
         verificationStatus: status,
-        extractedDataJson: { ...(current?.extractedData || {}), fields, reviewedByHuman: true },
+        extractedDataJson: { ...(docResult.data || {}), fields, reviewedByHuman: true },
       });
       setPerson(await getPerson(person.id));
       setDocOpen(false);
@@ -501,10 +503,10 @@ export default function PersonDetailPage({ params }) {
               {person.documents.length > 0 ? (
                 <div className={styles.list}>
                   {person.documents.map((d) => (
-                    <div className={styles.listRow} key={`${d.type}-${d.value}`}>
+                    <div className={styles.listRow} key={d.id || `${d.type}-${d.value}`}>
                       <span className={styles.listRowLeft}>
                         <Icon name="document" size={14} />
-                        <span>{DOCUMENT_TYPE_LABELS[d.type] || d.type}: {d.value}</span>
+                        <span>{DOCUMENT_TYPE_LABELS[d.type] || d.type}{d.createdAt ? ` — enviado em ${formatDate(d.createdAt)}` : ""}</span>
                       </span>
                       <span className={styles.listRowLeft}>
                         <button
