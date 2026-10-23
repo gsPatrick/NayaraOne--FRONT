@@ -17,11 +17,14 @@ import Button from "@/components/atoms/Button/Button";
 import FormField from "@/components/molecules/FormField/FormField";
 import Input from "@/components/atoms/Input/Input";
 import Select from "@/components/atoms/Select/Select";
+import Checkbox from "@/components/atoms/Checkbox/Checkbox";
+import FileDropInput from "@/components/molecules/FileDropInput/FileDropInput";
+import PersonPicker from "@/components/molecules/PersonPicker/PersonPicker";
 import Alert from "@/components/molecules/Alert/Alert";
 import Modal from "@/components/organisms/Modal/Modal";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import ContractsNavMenu from "@/components/molecules/ContractsNavMenu/ContractsNavMenu";
-import { listContracts } from "@/lib/api/legal";
+import { listContracts, uploadFile } from "@/lib/api/legal";
 import {
   listBillingSchedules,
   generateBillingSchedule,
@@ -31,6 +34,8 @@ import {
   listUtilityObligations,
   createUtilityObligation,
   recordUtilityPayment,
+  requestOwnershipTransfer,
+  completeOwnershipTransferTask,
   listGuaranteedRentContracts,
   enrollGuaranteedRent,
   payGuaranteedRent,
@@ -95,10 +100,17 @@ export default function LocacaoPage() {
   const [utilityPayTarget, setUtilityPayTarget] = useState(null);
   const [utilityPayAmount, setUtilityPayAmount] = useState("");
   const [utilityPaidBy, setUtilityPaidBy] = useState("TENANT");
+  const [transferRequestTarget, setTransferRequestTarget] = useState(null);
+  const [transferRequestPerson, setTransferRequestPerson] = useState({ name: "", personId: null });
+  const [transferCompleteTarget, setTransferCompleteTarget] = useState(null);
+  const [transferCompletePerson, setTransferCompletePerson] = useState({ name: "", personId: null });
+  const [transferEvidence, setTransferEvidence] = useState({ fileId: "", fileName: "" });
+  const [transferUploading, setTransferUploading] = useState(false);
+  const [transferError, setTransferError] = useState("");
 
   const [scheduleForm, setScheduleForm] = useState({ contractId: "", period: currentPeriod(), dueDate: "", componentType: "RENT", amount: "" });
   const [adjustForm, setAdjustForm] = useState({ contractId: "", period: currentPeriod(), indexCode: "IGPM", oldRentAmount: "" });
-  const [utilityForm, setUtilityForm] = useState({ contractId: "", utilityType: "WATER", responsibleParty: "TENANT", provider: "", transferRequired: false });
+  const [utilityForm, setUtilityForm] = useState({ contractId: "", utilityType: "WATER", responsibleParty: "TENANT", provider: "", transferRequired: false, transferToPersonId: null, transferToName: "" });
 
   // GAP REAL CORRIGIDO (varredura completa do Marco 5 contra o addendum "Cobrança de locação +
   // utilidades" do Caderno, 12/10/2026): aluguel garantido, antecipação de aluguel e
@@ -203,9 +215,10 @@ export default function LocacaoPage() {
         responsibleParty: utilityForm.responsibleParty,
         provider: utilityForm.provider || undefined,
         transferRequired: utilityForm.transferRequired,
+        transferToPersonId: utilityForm.transferRequired ? utilityForm.transferToPersonId || undefined : undefined,
       });
       setUtilityOpen(false);
-      setUtilityForm({ contractId: "", utilityType: "WATER", responsibleParty: "TENANT", provider: "", transferRequired: false });
+      setUtilityForm({ contractId: "", utilityType: "WATER", responsibleParty: "TENANT", provider: "", transferRequired: false, transferToPersonId: null, transferToName: "" });
       load();
     } catch (err) {
       setActionError(err.message || "Erro ao criar obrigação.");
@@ -221,6 +234,53 @@ export default function LocacaoPage() {
       load();
     } catch (err) {
       setActionError(err.message || "Erro ao registrar pagamento da obrigação.");
+    }
+  }
+
+  async function handleRequestTransfer() {
+    setActionError("");
+    try {
+      await requestOwnershipTransfer(transferRequestTarget.id, { toPersonId: transferRequestPerson.personId || undefined });
+      setTransferRequestTarget(null);
+      setTransferRequestPerson({ name: "", personId: null });
+      load();
+    } catch (err) {
+      setActionError(err.message || "Erro ao solicitar a transferência de titularidade.");
+    }
+  }
+
+  function openTransferComplete(row, task) {
+    setTransferCompleteTarget({ obligation: row, task });
+    setTransferCompletePerson({ name: "", personId: task.toPersonId || null });
+    setTransferEvidence({ fileId: "", fileName: "" });
+    setTransferError("");
+  }
+
+  async function handleTransferUpload(file) {
+    if (!file) return;
+    setTransferUploading(true);
+    setTransferError("");
+    try {
+      const uploaded = await uploadFile(file);
+      setTransferEvidence({ fileId: uploaded.id, fileName: file.name });
+    } catch (err) {
+      setTransferError(err.message || "Erro ao enviar o comprovante.");
+    } finally {
+      setTransferUploading(false);
+    }
+  }
+
+  async function handleCompleteTransfer() {
+    setTransferError("");
+    try {
+      await completeOwnershipTransferTask(transferCompleteTarget.task.id, {
+        evidenceFileId: transferEvidence.fileId,
+        toPersonId: transferCompletePerson.personId || undefined,
+      });
+      setTransferCompleteTarget(null);
+      load();
+    } catch (err) {
+      setTransferError(err.message || "Erro ao concluir a transferência de titularidade.");
     }
   }
 
@@ -364,11 +424,26 @@ export default function LocacaoPage() {
     {
       key: "actions",
       label: "Ações",
-      render: (row) => (
-        <Button variant="secondary" size="sm" onClick={() => { setUtilityPayTarget(row); setUtilityPayAmount(""); setUtilityPaidBy(row.responsibleParty); }}>
-          Registrar pagamento
-        </Button>
-      ),
+      render: (row) => {
+        const pendingTask = (row.transferTasks || []).find((t) => t.status === "PENDING");
+        return (
+          <div className={styles.toolbarRow}>
+            {row.status === "ACTIVE" ? (
+              <Button variant="secondary" size="sm" onClick={() => { setTransferRequestTarget(row); setTransferRequestPerson({ name: "", personId: null }); }}>
+                Solicitar transferência
+              </Button>
+            ) : null}
+            {pendingTask ? (
+              <Button variant="secondary" size="sm" onClick={() => openTransferComplete(row, pendingTask)}>
+                Concluir transferência
+              </Button>
+            ) : null}
+            <Button variant="secondary" size="sm" onClick={() => { setUtilityPayTarget(row); setUtilityPayAmount(""); setUtilityPaidBy(row.responsibleParty); }}>
+              Registrar pagamento
+            </Button>
+          </div>
+        );
+      },
     },
   ];
 
@@ -626,6 +701,82 @@ export default function LocacaoPage() {
         </FormField>
         <FormField label="Fornecedor" helper="Opcional">
           <Input value={utilityForm.provider} onChange={(e) => setUtilityForm((f) => ({ ...f, provider: e.target.value }))} />
+        </FormField>
+        <FormField label="Titularidade" helper="Marque quando a conta precisa mudar de titular. O contrato só encerra depois do comprovante.">
+          <Checkbox
+            id="utility-transfer-required"
+            label="Exige transferência de titularidade"
+            checked={utilityForm.transferRequired}
+            onChange={(e) => setUtilityForm((f) => ({ ...f, transferRequired: e.target.checked }))}
+          />
+        </FormField>
+        {utilityForm.transferRequired ? (
+          <FormField label="Novo titular" helper="Opcional agora; é obrigatório para concluir a transferência.">
+            <PersonPicker
+              id="utility-transfer-to-person"
+              value={utilityForm.transferToName}
+              personId={utilityForm.transferToPersonId}
+              onSelect={({ name, personId }) => setUtilityForm((f) => ({ ...f, transferToName: name, transferToPersonId: personId }))}
+            />
+          </FormField>
+        ) : null}
+      </Modal>
+
+      <Modal
+        open={Boolean(transferRequestTarget)}
+        onClose={() => setTransferRequestTarget(null)}
+        title="Solicitar transferência de titularidade"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setTransferRequestTarget(null)}>Cancelar</Button>
+            <Button onClick={handleRequestTransfer}>Solicitar</Button>
+          </>
+        }
+      >
+        <FormField label="Novo titular" helper="Opcional agora; é obrigatório para concluir a transferência.">
+          <PersonPicker
+            id="utility-transfer-request-person"
+            value={transferRequestPerson.name}
+            personId={transferRequestPerson.personId}
+            onSelect={setTransferRequestPerson}
+          />
+        </FormField>
+      </Modal>
+
+      <Modal
+        open={Boolean(transferCompleteTarget)}
+        onClose={() => setTransferCompleteTarget(null)}
+        title="Concluir transferência de titularidade"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setTransferCompleteTarget(null)}>Cancelar</Button>
+            <Button
+              onClick={handleCompleteTransfer}
+              disabled={!transferEvidence.fileId || !transferCompletePerson.personId || transferUploading}
+            >
+              Concluir
+            </Button>
+          </>
+        }
+      >
+        {transferError ? <Alert tone="danger">{transferError}</Alert> : null}
+        <FormField label="Novo titular" required>
+          <PersonPicker
+            id="utility-transfer-complete-person"
+            value={transferCompletePerson.name}
+            personId={transferCompletePerson.personId}
+            onSelect={setTransferCompletePerson}
+          />
+        </FormField>
+        <FormField label="Comprovante da transferência" required>
+          <FileDropInput
+            id="utility-transfer-evidence"
+            accept="image/*,application/pdf"
+            uploading={transferUploading}
+            fileNames={transferEvidence.fileName ? [transferEvidence.fileName] : []}
+            onFiles={(files) => handleTransferUpload(files[0])}
+            onRemove={() => setTransferEvidence({ fileId: "", fileName: "" })}
+          />
         </FormField>
       </Modal>
 
