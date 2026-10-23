@@ -13,6 +13,10 @@ import Modal from "@/components/organisms/Modal/Modal";
 import FileViewerModal from "@/components/organisms/FileViewerModal/FileViewerModal";
 import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
+import FormField from "@/components/molecules/FormField/FormField";
+import FileDropInput from "@/components/molecules/FileDropInput/FileDropInput";
+import Input from "@/components/atoms/Input/Input";
+import Select from "@/components/atoms/Select/Select";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import {
   ROLE_TONE,
@@ -27,9 +31,9 @@ import {
   VERIFICATION_TONE,
 } from "@/lib/mock/people";
 import { OWNER_ROLE_LABELS, AVAILABILITY_STATUS_LABELS } from "@/lib/mock/properties";
-import { listPeople, getPerson, listDuplicatePairs, deletePerson, mergePeople } from "@/lib/api/people";
+import { listPeople, getPerson, listDuplicatePairs, deletePerson, mergePeople, ingestPersonDocument, updateDocument } from "@/lib/api/people";
 import { listProperties } from "@/lib/api/properties";
-import { formatDate } from "@/lib/format";
+import { formatDate, toNumber } from "@/lib/format";
 import { buildGoogleMapsUrl, buildGoogleMapsEmbedUrl } from "@/lib/maps";
 import styles from "./page.module.css";
 
@@ -54,6 +58,49 @@ function hashCode(str = "") {
     hash |= 0;
   }
   return hash;
+}
+
+const DOC_READER_TYPES = {
+  RG: "RG",
+  CIN: "CIN",
+  CNH: "CNH",
+  IR: "Imposto de Renda",
+  HOLERITE: "Holerite",
+  BANK_STATEMENT: "Extrato bancário",
+  OTHER: "Outro",
+};
+const DOC_FIELD_LABELS = {
+  name: "Nome",
+  taxId: "CPF/CNPJ",
+  income: "Renda",
+  accountNumber: "Conta",
+  issuedAt: "Emissão",
+  expiresAt: "Validade",
+};
+const DOC_ENGINE_LABELS = {
+  pdftotext: "texto do PDF",
+  tesseract: "reconhecimento de imagem (OCR)",
+};
+
+function maskTaxId(digits) {
+  const d = String(digits).replace(/\D/g, "");
+  if (d.length === 11) return d.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+  if (d.length === 14) return d.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5");
+  return String(digits);
+}
+
+function toEditableFields(fields) {
+  return Object.entries(fields || {}).map(([key, value]) => ({
+    key,
+    value:
+      key === "income" && typeof value === "number"
+        ? value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+        : key === "taxId"
+          ? maskTaxId(value)
+          : key === "issuedAt" || key === "expiresAt"
+            ? String(value).replace(/^(\d{4})-(\d{2})-(\d{2})$/, "$3/$2/$1")
+            : String(value),
+  }));
 }
 
 export default function PersonDetailPage({ params }) {
@@ -81,6 +128,13 @@ export default function PersonDetailPage({ params }) {
   const [actionError, setActionError] = useState("");
   const [canonicalId, setCanonicalId] = useState(null);
   const [viewerFileId, setViewerFileId] = useState(null);
+
+  const [docOpen, setDocOpen] = useState(false);
+  const [docType, setDocType] = useState("RG");
+  const [docFile, setDocFile] = useState(null);
+  const [docBusy, setDocBusy] = useState(false);
+  const [docError, setDocError] = useState("");
+  const [docResult, setDocResult] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -164,6 +218,88 @@ export default function PersonDetailPage({ params }) {
             return nameMatch || docMatch;
           })
           .slice(0, 8);
+
+  function openDocumentReader() {
+    setDocType("RG");
+    setDocFile(null);
+    setDocError("");
+    setDocResult(null);
+    setDocOpen(true);
+  }
+
+  function openDocumentReview(d) {
+    const data = d.extractedData || {};
+    setDocError("");
+    setDocFile(null);
+    setDocResult({
+      documentId: d.id,
+      documentType: d.type,
+      pending: d.verificationStatus === "PENDING",
+      confidence: data.confidence ?? 0,
+      illegible: !!data.illegible,
+      engine: data.extractionMeta?.engine || "",
+      source: data.extractionMeta?.source || "",
+      fields: toEditableFields(data.fields),
+    });
+    setDocOpen(true);
+  }
+
+  async function handleReadDocument() {
+    if (!docFile) return;
+    setDocBusy(true);
+    setDocError("");
+    try {
+      const result = await ingestPersonDocument(person.id, docFile, docType);
+      const doc = result.document;
+      const data = doc.extractedDataJson || {};
+      setDocResult({
+        documentId: doc.id,
+        documentType: doc.documentType,
+        pending: true,
+        confidence: data.confidence ?? 0,
+        illegible: !!data.illegible,
+        engine: data.extractionMeta?.engine || "",
+        source: data.extractionMeta?.source || "",
+        fields: toEditableFields(data.fields),
+        taskOpened: !!result.pendingTask,
+      });
+      setPerson(await getPerson(person.id));
+    } catch (err) {
+      setDocError(err?.message || "Não foi possível ler o documento.");
+    } finally {
+      setDocBusy(false);
+    }
+  }
+
+  async function handleReviewDocument(status) {
+    setDocBusy(true);
+    setDocError("");
+    try {
+      const fields = {};
+      for (const f of docResult.fields) {
+        if (f.value === "") continue;
+        fields[f.key] =
+          f.key === "income"
+            ? toNumber(f.value)
+            : f.key === "taxId"
+              ? f.value.replace(/\D/g, "")
+              : f.key === "issuedAt" || f.key === "expiresAt"
+                ? f.value.replace(/^(\d{2})\/(\d{2})\/(\d{4})$/, "$3-$2-$1")
+                : f.value;
+      }
+      const current = person.documents.find((d) => d.id === docResult.documentId);
+      await updateDocument(person.id, docResult.documentId, {
+        verificationStatus: status,
+        extractedDataJson: { ...(current?.extractedData || {}), fields, reviewedByHuman: true },
+      });
+      setPerson(await getPerson(person.id));
+      setDocOpen(false);
+    } catch (err) {
+      setDocError(err?.message || "Não foi possível registrar a revisão do documento.");
+    } finally {
+      setDocBusy(false);
+    }
+  }
 
   function openManualMerge(candidate) {
     setManualPartner(candidate);
@@ -354,7 +490,14 @@ export default function PersonDetailPage({ params }) {
               )}
             </Card>
 
-            <Card title="Documentos">
+            <Card
+              title="Documentos"
+              actions={
+                <Button size="sm" variant="secondary" onClick={openDocumentReader}>
+                  <Icon name="document" size={14} /> Ler documento automaticamente
+                </Button>
+              }
+            >
               {person.documents.length > 0 ? (
                 <div className={styles.list}>
                   {person.documents.map((d) => (
@@ -375,6 +518,18 @@ export default function PersonDetailPage({ params }) {
                           {VERIFICATION_LABELS[d.verificationStatus] || d.verificationStatus}
                         </Badge>
                       </span>
+                      {d.extractedData ? (
+                        <span className={styles.meta} style={{ display: "block", width: "100%" }}>
+                          {d.extractedData.illegible
+                            ? "Documento ilegível: a leitura automática não extraiu dados."
+                            : `Leitura automática com confiança de ${Math.round((d.extractedData.confidence || 0) * 100)}%.`}{" "}
+                          {d.verificationStatus === "PENDING" ? (
+                            <button type="button" className={styles.mediaViewBtn} onClick={() => openDocumentReview(d)}>
+                              Revisar dados
+                            </button>
+                          ) : null}
+                        </span>
+                      ) : null}
                     </div>
                   ))}
                 </div>
@@ -593,6 +748,78 @@ export default function PersonDetailPage({ params }) {
             </div>
           </>
         ) : null}
+      </Modal>
+
+      <Modal
+        open={docOpen}
+        onClose={() => !docBusy && setDocOpen(false)}
+        title={docResult ? "Dados lidos do documento" : "Ler documento automaticamente"}
+        footer={
+          docResult ? (
+            docResult.pending ? (
+              <>
+                <Button variant="secondary" onClick={() => handleReviewDocument("REJECTED")} disabled={docBusy}>Rejeitar documento</Button>
+                <Button onClick={() => handleReviewDocument("VERIFIED")} loading={docBusy} disabled={docResult.illegible}>
+                  Confirmar dados e validar
+                </Button>
+              </>
+            ) : (
+              <Button variant="secondary" onClick={() => setDocOpen(false)}>Fechar</Button>
+            )
+          ) : (
+            <>
+              <Button variant="secondary" onClick={() => setDocOpen(false)} disabled={docBusy}>Cancelar</Button>
+              <Button onClick={handleReadDocument} loading={docBusy} disabled={!docFile}>Enviar e ler</Button>
+            </>
+          )
+        }
+      >
+        {docError ? <Alert tone="danger">{docError}</Alert> : null}
+        {!docResult ? (
+          <>
+            <FormField label="Tipo de documento" htmlFor="doc-type">
+              <Select id="doc-type" value={docType} onChange={(e) => setDocType(e.target.value)}>
+                {Object.entries(DOC_READER_TYPES).map(([key, label]) => <option key={key} value={key}>{label}</option>)}
+              </Select>
+            </FormField>
+            <FormField label="Arquivo" helper="PDF ou imagem. O arquivo passa pelo antivírus antes de ser guardado.">
+              <FileDropInput
+                id="doc-file"
+                accept="image/*,application/pdf"
+                uploading={docBusy}
+                fileNames={docFile ? [docFile.name] : []}
+                onFiles={(files) => setDocFile(files[0] || null)}
+                onRemove={() => setDocFile(null)}
+              />
+            </FormField>
+          </>
+        ) : (
+          <>
+            {docResult.illegible ? (
+              <Alert tone="warning" title="Documento ilegível">
+                A leitura automática não conseguiu extrair dados. Nenhum dado foi inventado e uma pendência de revisão foi aberta.
+              </Alert>
+            ) : (
+              <Alert tone="info" title="Revise antes de validar">
+                Origem: {DOC_ENGINE_LABELS[docResult.engine] || "leitura automática"} · confiança de {Math.round((docResult.confidence || 0) * 100)}%.
+                Os dados só ficam validados depois da sua confirmação.
+              </Alert>
+            )}
+            {!docResult.illegible && docResult.fields.length === 0 ? (
+              <p className={styles.meta}>Nenhum campo conhecido foi encontrado no texto do documento.</p>
+            ) : null}
+            {docResult.fields.map((f, index) => (
+              <FormField key={f.key} label={DOC_FIELD_LABELS[f.key] || f.key} htmlFor={`doc-field-${f.key}`}>
+                <Input
+                  id={`doc-field-${f.key}`}
+                  value={f.value}
+                  disabled={!docResult.pending}
+                  onChange={(e) => setDocResult((r) => ({ ...r, fields: r.fields.map((x, i) => (i === index ? { ...x, value: e.target.value } : x)) }))}
+                />
+              </FormField>
+            ))}
+          </>
+        )}
       </Modal>
 
       <FileViewerModal
