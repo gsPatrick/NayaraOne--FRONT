@@ -427,7 +427,7 @@ export default function LocacaoPage() {
       render: (row) => {
         const pendingTask = (row.transferTasks || []).find((t) => t.status === "PENDING");
         return (
-          <div className={styles.toolbarRow}>
+          <div className={styles.rowActions}>
             {row.status === "ACTIVE" ? (
               <Button variant="secondary" size="sm" onClick={() => { setTransferRequestTarget(row); setTransferRequestPerson({ name: "", personId: null }); }}>
                 Solicitar transferência
