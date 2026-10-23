@@ -16,7 +16,10 @@ import FormField from "@/components/molecules/FormField/FormField";
 import Input from "@/components/atoms/Input/Input";
 import Alert from "@/components/molecules/Alert/Alert";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
-import { getActiveSlaRule, createSlaRule } from "@/lib/api/construction";
+import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
+import Radio from "@/components/atoms/Radio/Radio";
+import { getActiveSlaRule, createSlaRule, getActiveMarginRule, createMarginRule } from "@/lib/api/construction";
+import { toNumber } from "@/lib/format";
 import styles from "./page.module.css";
 
 const SEVERITIES = [
@@ -36,9 +39,36 @@ export default function ObrasConfiguracoesPage() {
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState("");
 
+  const [margin, setMargin] = useState(null);
+  const [marginForm, setMarginForm] = useState({ minMarginPct: "", economyPct: "", commissionPct: "", enforcementMode: "ALERT" });
+  const [marginLoading, setMarginLoading] = useState(true);
+  const [marginSaving, setMarginSaving] = useState(false);
+  const [marginError, setMarginError] = useState("");
+  const [marginNotice, setMarginNotice] = useState("");
+
+  function pctToField(value) {
+    return value === null || value === undefined ? "" : String(Number(value)).replace(".", ",");
+  }
+
+  function loadMargin() {
+    return getActiveMarginRule()
+      .then((rule) => {
+        setMargin(rule);
+        setMarginForm({
+          minMarginPct: pctToField(rule?.minMarginPct),
+          economyPct: pctToField(rule?.economyPct),
+          commissionPct: pctToField(rule?.commissionPct),
+          enforcementMode: rule?.enforcementMode === "BLOCK" ? "BLOCK" : "ALERT",
+        });
+      })
+      .catch((err) => setLoadError(err?.message || "Não foi possível carregar a regra de margem ativa."))
+      .finally(() => setMarginLoading(false));
+  }
+
   function load() {
     setLoading(true);
     setLoadError("");
+    loadMargin();
     getActiveSlaRule()
       .then((data) => {
         setCurrent(data);
@@ -56,6 +86,33 @@ export default function ObrasConfiguracoesPage() {
   useEffect(() => { load(); }, []);
 
   const isValid = SEVERITIES.every((s) => form[s.key] !== "" && Number(form[s.key]) > 0 && Number.isInteger(Number(form[s.key])));
+
+  const marginValid =
+    marginForm.minMarginPct !== "" &&
+    !Number.isNaN(toNumber(marginForm.minMarginPct)) &&
+    toNumber(marginForm.minMarginPct) >= 0 &&
+    toNumber(marginForm.minMarginPct) <= 100;
+
+  async function handleSaveMargin() {
+    if (!marginValid || marginSaving) return;
+    setMarginSaving(true);
+    setMarginError("");
+    setMarginNotice("");
+    try {
+      await createMarginRule({
+        minMarginPct: toNumber(marginForm.minMarginPct),
+        economyPct: marginForm.economyPct === "" ? null : toNumber(marginForm.economyPct),
+        commissionPct: marginForm.commissionPct === "" ? null : toNumber(marginForm.commissionPct),
+        enforcementMode: marginForm.enforcementMode,
+      });
+      setMarginNotice("Nova versão da margem mínima publicada. Orçamentos já aprovados mantêm a versão com que foram aprovados.");
+      await loadMargin();
+    } catch (err) {
+      setMarginError(err?.message || "Não foi possível publicar a margem mínima.");
+    } finally {
+      setMarginSaving(false);
+    }
+  }
 
   async function handleSave() {
     if (!isValid || saving) return;
@@ -87,8 +144,9 @@ export default function ObrasConfiguracoesPage() {
       {loadError ? <Alert tone="danger" title="Não foi possível carregar">{loadError}</Alert> : null}
 
       {loading ? (
-        <SkeletonDetail sections={1} />
+        <SkeletonDetail sections={2} />
       ) : (
+        <>
         <Card
           title="SLA de garantia por severidade"
           subtitle="Prazo padrão de atendimento de pós-obra por severidade"
@@ -129,6 +187,84 @@ export default function ObrasConfiguracoesPage() {
             <Icon name="check" size={16} /> Publicar nova versão
           </Button>
         </Card>
+
+        <Card
+          title="Margem mínima da obra"
+          subtitle="Regra da empresa usada na aprovação de orçamento e na Saúde da obra"
+        >
+          <p className={styles.helper}>
+            O percentual é definido por você: o sistema não assume nenhum valor. Enquanto não houver uma margem mínima
+            publicada, a aprovação de orçamento fica bloqueada. Publicar cria uma nova versão; a anterior fica no histórico
+            e não altera orçamentos já aprovados.
+          </p>
+          {marginLoading ? null : margin ? (
+            <p className={styles.current}>Regra vigente: margem mínima de {pctToField(margin.minMarginPct)}%.</p>
+          ) : (
+            <Alert tone="warning" className={styles.notice} title="Margem mínima não configurada">
+              Defina o percentual abaixo para liberar a aprovação de orçamentos desta empresa.
+            </Alert>
+          )}
+          {marginNotice ? <Alert tone="success" className={styles.notice}>{marginNotice}</Alert> : null}
+          {marginError ? <Alert tone="danger" className={styles.notice}>{marginError}</Alert> : null}
+
+          <div className={styles.grid}>
+            <FormField label="Margem mínima exigida (%)" htmlFor="margin-min" required>
+              <DecimalInput
+                id="margin-min"
+                value={marginForm.minMarginPct}
+                onChange={(e) => setMarginForm((p) => ({ ...p, minMarginPct: e.target.value }))}
+                onFocus={(e) => e.target.select()}
+                placeholder="Ex: 10,00"
+              />
+            </FormField>
+            <FormField label="Economia (%)" htmlFor="margin-economy" helper="Opcional — referência informativa">
+              <DecimalInput
+                id="margin-economy"
+                value={marginForm.economyPct}
+                onChange={(e) => setMarginForm((p) => ({ ...p, economyPct: e.target.value }))}
+                onFocus={(e) => e.target.select()}
+                placeholder="0,00"
+              />
+            </FormField>
+            <FormField label="Comissão (%)" htmlFor="margin-commission" helper="Opcional — considerada no cálculo de margem">
+              <DecimalInput
+                id="margin-commission"
+                value={marginForm.commissionPct}
+                onChange={(e) => setMarginForm((p) => ({ ...p, commissionPct: e.target.value }))}
+                onFocus={(e) => e.target.select()}
+                placeholder="0,00"
+              />
+            </FormField>
+          </div>
+
+          <FormField
+            label="Quando a margem projetada ficar abaixo do mínimo"
+            htmlFor="margin-enforcement-alert"
+            helper="Alertar apenas avisa na Saúde da obra. Bloquear impede a aprovação de orçamento e de change orders."
+          >
+            <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-2)" }}>
+              <Radio
+                id="margin-enforcement-alert"
+                name="marginEnforcement"
+                label="Apenas alertar"
+                checked={marginForm.enforcementMode === "ALERT"}
+                onChange={() => setMarginForm((p) => ({ ...p, enforcementMode: "ALERT" }))}
+              />
+              <Radio
+                id="margin-enforcement-block"
+                name="marginEnforcement"
+                label="Bloquear aprovação"
+                checked={marginForm.enforcementMode === "BLOCK"}
+                onChange={() => setMarginForm((p) => ({ ...p, enforcementMode: "BLOCK" }))}
+              />
+            </div>
+          </FormField>
+
+          <Button onClick={handleSaveMargin} loading={marginSaving} disabled={!marginValid}>
+            <Icon name="check" size={16} /> Publicar margem mínima
+          </Button>
+        </Card>
+        </>
       )}
     </AppShell>
   );
