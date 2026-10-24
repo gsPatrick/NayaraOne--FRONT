@@ -110,6 +110,7 @@ export const NAV_SECTIONS = [
         children: [
           { label: "Financiamentos", href: "/painel/correspondente" },
           { label: "Fiscal", href: "/painel/correspondente/fiscal", permission: "correspondent:fiscal" },
+          { label: "Parâmetros", href: "/painel/correspondente/parametros", permission: "correspondent:parameters" },
         ],
       },
     ],

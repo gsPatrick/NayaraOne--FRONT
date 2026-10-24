@@ -29,6 +29,7 @@ import {
   listAppraisals,
   createAppraisal,
   listCommissionEntitlements,
+  getCorrespondentParameters,
   createCommissionEntitlement,
   confirmCommissionEntitlement,
   receiveCommissionEntitlement,
@@ -90,6 +91,17 @@ const PROVIDER_LABELS = {
 };
 const PROVIDER_SHORT_LABELS = { sandbox: "Sandbox", manual: "Manual" };
 const PURPOSE_LABELS = { RESIDENCIAL: "Residencial", COMERCIAL: "Comercial" };
+const PRODUCT_LABELS = {
+  FINANCIAMENTO_IMOBILIARIO: "Financiamento imobiliário",
+  REFINANCIAMENTO: "Refinanciamento",
+  CREDITO_COM_GARANTIA: "Crédito com garantia de imóvel",
+  CONSTRUCAO: "Financiamento de construção",
+};
+const TRIGGER_EVENT_LABELS = {
+  CONTRATO_ASSINADO: "Contrato assinado",
+  RECURSO_LIBERADO: "Recurso liberado pelo banco",
+  REGISTRO_MANUAL: "Registro manual",
+};
 
 const COMMISSION_STATUS_LABELS = {
   EXPECTED: "Prevista",
@@ -171,6 +183,8 @@ export default function FinancingCaseDetailPage() {
   const [commissionsLoading, setCommissionsLoading] = useState(true);
   const [commissionsError, setCommissionsError] = useState("");
   const [commissionBaseAmount, setCommissionBaseAmount] = useState("");
+  const [commissionTrigger, setCommissionTrigger] = useState("");
+  const [triggerOptions, setTriggerOptions] = useState([]);
   const [creatingCommission, setCreatingCommission] = useState(false);
   const [commissionFormError, setCommissionFormError] = useState("");
   const [commissionNotice, setCommissionNotice] = useState("");
@@ -249,6 +263,13 @@ export default function FinancingCaseDetailPage() {
     loadStatus();
     loadAppraisals();
     loadCommissions();
+    getCorrespondentParameters()
+      .then((p) => {
+        const allowed = p?.commission?.action?.allowedTriggerEvents || [];
+        setTriggerOptions(allowed);
+        setCommissionTrigger(p?.commission?.action?.defaultTriggerEvent || allowed[0] || "");
+      })
+      .catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
@@ -350,7 +371,7 @@ export default function FinancingCaseDetailPage() {
     }
     setCreatingCommission(true);
     try {
-      await createCommissionEntitlement(id, { baseAmount });
+      await createCommissionEntitlement(id, { baseAmount, triggerEvent: commissionTrigger });
       setCommissionBaseAmount("");
       loadCommissions();
     } catch (err) {
@@ -505,6 +526,11 @@ export default function FinancingCaseDetailPage() {
           <div>
             <strong>Provider</strong>
             <p>{PROVIDER_LABELS[financingCase.providerCode] || financingCase.providerCode}</p>
+          </div>
+
+          <div>
+            <strong>Produto</strong>
+            <p>{PRODUCT_LABELS[financingCase.product] || financingCase.product}</p>
           </div>
 
           <div>
@@ -844,6 +870,13 @@ export default function FinancingCaseDetailPage() {
             <FormField label="Valor-base (R$)" htmlFor="commission-base-amount">
               <DecimalInput id="commission-base-amount" value={commissionBaseAmount} onChange={(e) => setCommissionBaseAmount(e.target.value)} placeholder="0,00" />
             </FormField>
+            <FormField label="Fato gerador" htmlFor="commission-trigger">
+              <Select id="commission-trigger" value={commissionTrigger} onChange={(e) => setCommissionTrigger(e.target.value)}>
+                {triggerOptions.map((value) => (
+                  <option key={value} value={value}>{TRIGGER_EVENT_LABELS[value] || value}</option>
+                ))}
+              </Select>
+            </FormField>
             <Button onClick={handleCreateCommission} loading={creatingCommission}>
               Registrar direito à comissão
             </Button>
@@ -863,9 +896,13 @@ export default function FinancingCaseDetailPage() {
                 <thead>
                   <tr style={{ textAlign: "left", borderBottom: "1px solid var(--color-border)" }}>
                     <th style={{ padding: "8px 12px" }}>Data</th>
+                    <th style={{ padding: "8px 12px" }}>Provider</th>
+                    <th style={{ padding: "8px 12px" }}>Fato gerador</th>
                     <th style={{ padding: "8px 12px" }}>Base</th>
                     <th style={{ padding: "8px 12px" }}>Percentual</th>
                     <th style={{ padding: "8px 12px" }}>Valor</th>
+                    <th style={{ padding: "8px 12px" }}>Corretor</th>
+                    <th style={{ padding: "8px 12px" }}>Gerente</th>
                     <th style={{ padding: "8px 12px" }}>Status</th>
                     <th style={{ padding: "8px 12px" }}>Ações</th>
                   </tr>
@@ -874,9 +911,13 @@ export default function FinancingCaseDetailPage() {
                   {commissions.map((c) => (
                     <tr key={c.id} style={{ borderBottom: "1px solid var(--color-border)" }}>
                       <td style={{ padding: "8px 12px" }}>{formatDateTime(c.created_at || c.createdAt)}</td>
+                      <td style={{ padding: "8px 12px" }}>{PROVIDER_LABELS[c.providerCode] || c.providerCode}</td>
+                      <td style={{ padding: "8px 12px" }}>{TRIGGER_EVENT_LABELS[c.triggerEvent] || c.triggerEvent}</td>
                       <td style={{ padding: "8px 12px" }}>{formatBRL(c.baseAmount)}</td>
                       <td style={{ padding: "8px 12px" }}>{formatPercent(c.percentage)}</td>
                       <td style={{ padding: "8px 12px" }}>{formatBRL(c.amount)}</td>
+                      <td style={{ padding: "8px 12px" }}>{formatBRL(c.brokerAmount)} ({formatPercent(c.brokerSharePct)})</td>
+                      <td style={{ padding: "8px 12px" }}>{formatBRL(c.managerAmount)} ({formatPercent(c.managerSharePct)})</td>
                       <td style={{ padding: "8px 12px" }}>
                         <Badge tone={COMMISSION_STATUS_TONE[c.status] || "neutral"}>
                           {COMMISSION_STATUS_LABELS[c.status] || c.status}

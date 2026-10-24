@@ -34,3 +34,23 @@
   font-size: var(--text-caption);
   color: var(--color-ink-muted);
 }
+
+.inlineField {
+  min-width: 220px;
+}
+
+.candidates {
+  margin-bottom: var(--space-4);
+}
+
+.batchBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.subtitle {
+  font-weight: 600;
+  color: var(--color-ink);
+  margin-top: var(--space-3);
+}

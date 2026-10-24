@@ -122,7 +122,8 @@ export default function FinancingCaseWorkflow({ financingCase, onChanged }) {
     <>
       {current === "CANCELED" ? (
         <Alert tone="danger" title="Caso cancelado">
-          Este caso foi cancelado e não aceita novos documentos, simulações, avaliações nem envios. O histórico continua preservado.
+          Motivo: {financingCase.canceledReason || financingCase.canceled_reason}. Cancelado em {formatDateTime(financingCase.canceledAt || financingCase.canceled_at)}.
+          O caso não aceita novos documentos, simulações, avaliações nem envios, e o histórico continua preservado.
         </Alert>
       ) : null}
 

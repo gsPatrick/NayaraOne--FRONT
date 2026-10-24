@@ -62,7 +62,15 @@ const PURPOSE_LABELS = {
   COMERCIAL: "Comercial",
 };
 
+const PRODUCT_LABELS = {
+  FINANCIAMENTO_IMOBILIARIO: "Financiamento imobiliário",
+  REFINANCIAMENTO: "Refinanciamento",
+  CREDITO_COM_GARANTIA: "Crédito com garantia de imóvel",
+  CONSTRUCAO: "Financiamento de construção",
+};
+
 const EMPTY_FORM = {
+  product: "FINANCIAMENTO_IMOBILIARIO",
   propertyId: "",
   providerCode: "sandbox",
   purpose: "RESIDENCIAL",
@@ -127,6 +135,7 @@ export default function CorrespondentePage() {
         propertyId: form.propertyId || null,
         providerCode: form.providerCode,
         purpose: form.purpose,
+        product: form.product,
         applicants,
       });
       setCreateOpen(false);
@@ -183,6 +192,12 @@ export default function CorrespondentePage() {
       render: (row) => (row.property ? `${row.property.internalCode ? `${row.property.internalCode} — ` : ""}${row.property.title || ""}` : "Sem imóvel vinculado"),
     },
     {
+      key: "product",
+      label: "Produto",
+      width: "220px",
+      render: (row) => PRODUCT_LABELS[row.product] || row.product,
+    },
+    {
       key: "provider",
       label: "Provider",
       width: "220px",
@@ -218,7 +233,7 @@ export default function CorrespondentePage() {
       ) : null}
 
       <Card title="Casos de financiamento" subtitle="Correspondente bancário — proponentes vinculados ao cadastro real de contatos.">
-        <Table columns={columns} minWidth="1416px" rows={loading ? [] : cases.slice(0, visibleCount)} loading={loading} emptyMessage="Nenhum caso de financiamento registrado." />
+        <Table columns={columns} minWidth="1636px" rows={loading ? [] : cases.slice(0, visibleCount)} loading={loading} emptyMessage="Nenhum caso de financiamento registrado." />
         {!loading && cases.length > visibleCount ? (
           <div style={{ marginTop: 12 }}>
             <Button variant="secondary" onClick={() => setVisibleCount((n) => n + 25)}>
@@ -250,6 +265,14 @@ export default function CorrespondentePage() {
             <option value="">Sem imóvel vinculado ainda</option>
             {properties.map((prop) => (
               <option key={prop.id} value={prop.id}>{prop.internalCode ? `${prop.internalCode} — ` : ""}{prop.name}</option>
+            ))}
+          </Select>
+        </FormField>
+
+        <FormField label="Produto" htmlFor="fc-product">
+          <Select id="fc-product" value={form.product} onChange={(e) => setForm((p) => ({ ...p, product: e.target.value }))}>
+            {Object.entries(PRODUCT_LABELS).map(([value, label]) => (
+              <option key={value} value={value}>{label}</option>
             ))}
           </Select>
         </FormField>
