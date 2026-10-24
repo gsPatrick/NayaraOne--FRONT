@@ -46,6 +46,42 @@
   transform: translateY(-1px);
 }
 
+.sheet {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .sheet {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: calc(60px + env(safe-area-inset-bottom));
+    max-height: 70vh;
+    overflow: auto;
+    z-index: 39;
+    background: var(--color-canvas-raised);
+    border-top: 1px solid var(--color-border);
+    box-shadow: var(--shadow-lg);
+    padding: 8px 0;
+  }
+}
+
+.sheetLink {
+  padding: 12px 16px;
+  color: var(--color-ink);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+button.tab {
+  background: none;
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .tabIcon { transition: none; }
   .tab.active .tabIcon { transform: none; }
