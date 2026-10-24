@@ -46,6 +46,7 @@ export default function ObrasConfiguracoesPage() {
   const [margin, setMargin] = useState(null);
   const [marginVersions, setMarginVersions] = useState([]);
   const [marginLabel, setMarginLabel] = useState("");
+  const [marginShowAll, setMarginShowAll] = useState(false);
   const [marginDeactivating, setMarginDeactivating] = useState(false);
   const [marginForm, setMarginForm] = useState({ minMarginPct: "", economyPct: "", commissionPct: "", enforcementMode: "ALERT" });
   const [marginLoading, setMarginLoading] = useState(true);
@@ -318,9 +319,16 @@ export default function ObrasConfiguracoesPage() {
               { key: "until", label: "Fim", render: (v) => (v.effectiveUntil ? formatDateTime(v.effectiveUntil) : "Vigente") },
               { key: "status", label: "Situação", render: (v) => <Badge tone={v.isActive ? "success" : "neutral"}>{v.isActive ? "Ativa" : "Encerrada"}</Badge> },
             ]}
-            rows={marginVersions}
+            rows={marginShowAll ? marginVersions : marginVersions.slice(0, 10)}
             emptyMessage="Nenhuma versão publicada ainda para esta empresa."
           />
+          {marginVersions.length > 10 ? (
+            <div style={{ marginTop: "var(--space-2)" }}>
+              <Button variant="secondary" size="sm" onClick={() => setMarginShowAll((v) => !v)}>
+                {marginShowAll ? "Mostrar só as 10 mais recentes" : `Mostrar todas as ${marginVersions.length} versões`}
+              </Button>
+            </div>
+          ) : null}
         </Card>
         </>
       )}

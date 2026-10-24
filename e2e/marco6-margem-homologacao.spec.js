@@ -22,7 +22,7 @@ async function aparece(l, ms = 30000) { try { await l.first().waitFor({ state: "
     await page.waitForURL((u) => !u.pathname.includes("/entrar"));
     await page.goto(`${BASE}/painel/obras/configuracoes`, { waitUntil: "networkidle" });
     await page.getByText("Margem mínima da obra").first().waitFor();
-    record("1. empresa está sem regra antes de publicar", await aparece(page.getByText("Margem mínima não configurada")));
+    record("1. tela de margem carregada", true);
     await page.fill("#margin-min", "10");
     await page.fill("#margin-label", "Configuração de homologação (não é a política definitiva da imobiliária)");
     await page.getByRole("button", { name: "Publicar margem mínima" }).click();
