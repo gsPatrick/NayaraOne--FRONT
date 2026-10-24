@@ -36,6 +36,7 @@ import {
   requestInvoice,
 } from "@/lib/api/correspondent";
 import { uploadFile } from "@/lib/api/legal";
+import FinancingCaseWorkflow from "@/components/organisms/FinancingCaseWorkflow/FinancingCaseWorkflow";
 import { formatDateTime, formatBRL, formatPercent, toNumber } from "@/lib/format";
 
 const STATUS_LABELS = {
@@ -80,8 +81,8 @@ const STATUS_TONE = {
   CANCELED: "danger",
 };
 
-const SUBMISSION_STATUS_LABELS = { PENDING: "Enviando…", SUBMITTED: "Enviado", UNKNOWN: "Status indeterminado", FAILED: "Falhou" };
-const SUBMISSION_STATUS_TONE = { PENDING: "neutral", SUBMITTED: "success", UNKNOWN: "warning", FAILED: "danger" };
+const SUBMISSION_STATUS_LABELS = { PENDING: "Enviando…", SUBMITTED: "Enviado", UNKNOWN: "Status indeterminado", FAILED: "Falhou", CANCELED: "Cancelado" };
+const SUBMISSION_STATUS_TONE = { PENDING: "neutral", SUBMITTED: "success", UNKNOWN: "warning", FAILED: "danger", CANCELED: "neutral" };
 
 const PROVIDER_LABELS = {
   sandbox: "Sandbox (simulação, sem envio real a nenhum banco)",
@@ -773,6 +774,15 @@ export default function FinancingCaseDetailPage() {
           </div>
         </div>
       </Card>
+
+      <FinancingCaseWorkflow
+        financingCase={financingCase}
+        onChanged={() => {
+          refreshCase();
+          loadStatus();
+          loadSubmissions();
+        }}
+      />
 
       <Card
         title="Avaliação do imóvel"
