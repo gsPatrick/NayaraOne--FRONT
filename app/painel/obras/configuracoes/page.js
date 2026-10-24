@@ -18,8 +18,11 @@ import Alert from "@/components/molecules/Alert/Alert";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import Radio from "@/components/atoms/Radio/Radio";
-import { getActiveSlaRule, createSlaRule, getActiveMarginRule, createMarginRule } from "@/lib/api/construction";
-import { toNumber } from "@/lib/format";
+import Table from "@/components/organisms/Table/Table";
+import Badge from "@/components/atoms/Badge/Badge";
+import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
+import { getActiveSlaRule, createSlaRule, getActiveMarginRule, createMarginRule, deactivateMarginRule, listMarginRuleVersions } from "@/lib/api/construction";
+import { toNumber, formatDateTime } from "@/lib/format";
 import styles from "./page.module.css";
 
 const SEVERITIES = [
@@ -39,7 +42,11 @@ export default function ObrasConfiguracoesPage() {
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState("");
 
+  const { confirm, ConfirmDialog } = useConfirm();
   const [margin, setMargin] = useState(null);
+  const [marginVersions, setMarginVersions] = useState([]);
+  const [marginLabel, setMarginLabel] = useState("");
+  const [marginDeactivating, setMarginDeactivating] = useState(false);
   const [marginForm, setMarginForm] = useState({ minMarginPct: "", economyPct: "", commissionPct: "", enforcementMode: "ALERT" });
   const [marginLoading, setMarginLoading] = useState(true);
   const [marginSaving, setMarginSaving] = useState(false);
@@ -51,6 +58,7 @@ export default function ObrasConfiguracoesPage() {
   }
 
   function loadMargin() {
+    listMarginRuleVersions().then((v) => setMarginVersions(v || [])).catch(() => setMarginVersions([]));
     return getActiveMarginRule()
       .then((rule) => {
         setMargin(rule);
@@ -104,13 +112,37 @@ export default function ObrasConfiguracoesPage() {
         economyPct: marginForm.economyPct === "" ? null : toNumber(marginForm.economyPct),
         commissionPct: marginForm.commissionPct === "" ? null : toNumber(marginForm.commissionPct),
         enforcementMode: marginForm.enforcementMode,
+        description: marginLabel.trim() || undefined,
       });
+      setMarginLabel("");
       setMarginNotice("Nova versão da margem mínima publicada. Orçamentos já aprovados mantêm a versão com que foram aprovados.");
       await loadMargin();
     } catch (err) {
       setMarginError(err?.message || "Não foi possível publicar a margem mínima.");
     } finally {
       setMarginSaving(false);
+    }
+  }
+
+  async function handleDeactivateMargin() {
+    const ok = await confirm({
+      title: "Desativar a margem mínima?",
+      message: "A empresa volta a ficar sem margem mínima e a aprovação de orçamento passa a ser recusada até publicar uma nova. A versão atual continua no histórico e os orçamentos já aprovados não mudam.",
+      confirmLabel: "Desativar",
+      tone: "danger",
+    });
+    if (!ok) return;
+    setMarginDeactivating(true);
+    setMarginError("");
+    setMarginNotice("");
+    try {
+      await deactivateMarginRule("Desativada pela tela de configurações de obras");
+      setMarginNotice("Margem mínima desativada. A versão anterior continua no histórico.");
+      await loadMargin();
+    } catch (err) {
+      setMarginError(err?.message || "Não foi possível desativar a margem mínima.");
+    } finally {
+      setMarginDeactivating(false);
     }
   }
 
@@ -260,12 +292,39 @@ export default function ObrasConfiguracoesPage() {
             </div>
           </FormField>
 
-          <Button onClick={handleSaveMargin} loading={marginSaving} disabled={!marginValid}>
-            <Icon name="check" size={16} /> Publicar margem mínima
-          </Button>
+          <FormField label="Identificação desta versão" htmlFor="margin-label" helper="Opcional. Fica gravada na versão, por exemplo: Configuração de homologação (não é a política definitiva).">
+            <Input id="margin-label" value={marginLabel} onChange={(e) => setMarginLabel(e.target.value)} placeholder="Ex: Configuração de homologação" />
+          </FormField>
+
+          <div style={{ display: "flex", gap: "var(--space-2)", flexWrap: "wrap" }}>
+            <Button onClick={handleSaveMargin} loading={marginSaving} disabled={!marginValid}>
+              <Icon name="check" size={16} /> Publicar margem mínima
+            </Button>
+            {margin ? (
+              <Button variant="secondary" onClick={handleDeactivateMargin} loading={marginDeactivating}>
+                Desativar margem mínima
+              </Button>
+            ) : null}
+          </div>
+
+          <h3 style={{ margin: "var(--space-4) 0 var(--space-2)" }}>Histórico de versões</h3>
+          <Table
+            columns={[
+              { key: "versionNumber", label: "Versão", render: (v) => `v${v.versionNumber}` },
+              { key: "minMarginPct", label: "Margem mínima", render: (v) => `${pctToField(v.minMarginPct)}%` },
+              { key: "mode", label: "Comportamento", render: (v) => (v.enforcementMode === "BLOCK" ? "Bloquear aprovação" : "Apenas alertar") },
+              { key: "description", label: "Identificação", render: (v) => v.description || "Sem identificação" },
+              { key: "from", label: "Início", render: (v) => formatDateTime(v.effectiveFrom) },
+              { key: "until", label: "Fim", render: (v) => (v.effectiveUntil ? formatDateTime(v.effectiveUntil) : "Vigente") },
+              { key: "status", label: "Situação", render: (v) => <Badge tone={v.isActive ? "success" : "neutral"}>{v.isActive ? "Ativa" : "Encerrada"}</Badge> },
+            ]}
+            rows={marginVersions}
+            emptyMessage="Nenhuma versão publicada ainda para esta empresa."
+          />
         </Card>
         </>
       )}
+    <ConfirmDialog />
     </AppShell>
   );
 }
