@@ -404,7 +404,7 @@ function DuplicateReviewModal({ pair, onClose, onMerge }) {
               <p className={styles.compareName}>{p.legalName}</p>
               <p className={styles.compareMeta}>{p.taxIdNormalized}</p>
               <p className={styles.compareMeta}>Cadastrado em {formatDate(p.createdAt)}</p>
-              <p className={styles.compareMeta}>{p.contacts.find((c) => c.primary)?.value || "—"}</p>
+              <p className={styles.compareMeta}>{p.contacts.find((c) => c.primary)?.value || "Sem contato principal"}</p>
             </button>
           );
         })}

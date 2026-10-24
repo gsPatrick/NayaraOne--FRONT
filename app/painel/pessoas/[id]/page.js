@@ -441,7 +441,7 @@ export default function PersonDetailPage({ params }) {
                 </div>
                 <div>
                   <p className={styles.fieldLabel}>{person.personType === "PF" ? "Nascimento" : "Fundação"}</p>
-                  <p className={styles.fieldValue}>{person.birthOrFoundationDate ? formatDate(person.birthOrFoundationDate) : "—"}</p>
+                  <p className={styles.fieldValue}>{person.birthOrFoundationDate ? formatDate(person.birthOrFoundationDate) : "Não informado"}</p>
                 </div>
                 <div>
                   <p className={styles.fieldLabel}>Cadastrado em</p>
@@ -544,7 +544,7 @@ export default function PersonDetailPage({ params }) {
               {person.address ? (
                 <>
                   <p className={styles.meta}>
-                    {person.address.street || "—"}{person.address.number ? `, ${person.address.number}` : ""}
+                    {person.address.street || "Rua não informada"}{person.address.number ? `, ${person.address.number}` : ""}
                     {person.address.complement ? ` — ${person.address.complement}` : ""}
                   </p>
                   <p className={styles.meta}>
@@ -589,7 +589,7 @@ export default function PersonDetailPage({ params }) {
                   <span className={styles.summaryLabel}>Papéis</span>
                   <div className={styles.summaryRoles}>
                     {person.roles.length === 0 ? (
-                      <span className={styles.summaryValue}>—</span>
+                      <span className={styles.summaryValue}>Sem papel definido</span>
                     ) : (
                       person.roles.map((role) => (
                         <Badge key={role} tone={ROLE_TONE[role] || "neutral"}>{ROLE_LABELS[role] || role}</Badge>

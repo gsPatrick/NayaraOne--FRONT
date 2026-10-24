@@ -642,12 +642,12 @@ export default function NovaPessoaPage() {
                   <div className={styles.reviewNameRow}>
                     <Avatar name={basic.legalName || "?"} src={photoUrl} size="lg" />
                     <p className={styles.reviewName}>
-                      {basic.legalName || "—"}{basic.preferredName ? ` (conhecida como ${basic.preferredName})` : ""}
+                      {basic.legalName || "Não informado"}{basic.preferredName ? ` (conhecida como ${basic.preferredName})` : ""}
                     </p>
                   </div>
-                  <p className={styles.reviewMeta}>{basic.personType === "PF" ? "Pessoa física" : "Pessoa jurídica"} · {basic.taxIdNormalized || "—"}</p>
+                  <p className={styles.reviewMeta}>{basic.personType === "PF" ? "Pessoa física" : "Pessoa jurídica"} · {basic.taxIdNormalized || "Não informado"}</p>
                   <p className={styles.reviewMeta}>
-                    {basic.personType === "PF" ? "Nascimento" : "Fundação"}: {basic.birthOrFoundationDate || "—"}
+                    {basic.personType === "PF" ? "Nascimento" : "Fundação"}: {basic.birthOrFoundationDate || "Não informado"}
                   </p>
                   <div className={styles.reviewChips}>
                     {roles.map((r) => <Badge tone="neutral" key={r}>{ROLE_LABELS[r]}</Badge>)}
@@ -658,7 +658,7 @@ export default function NovaPessoaPage() {
                   <p className={styles.reviewTitle}>Contatos</p>
                   {contacts.map((c, i) => (
                     <p className={styles.reviewMeta} key={i}>
-                      {CONTACT_TYPE_LABELS[c.type]}: {c.value || "—"} {c.primary ? "· Principal" : ""}
+                      {CONTACT_TYPE_LABELS[c.type]}: {c.value || "Não informado"} {c.primary ? "· Principal" : ""}
                     </p>
                   ))}
                 </div>
@@ -666,17 +666,17 @@ export default function NovaPessoaPage() {
                 <div className={styles.reviewSection}>
                   <p className={styles.reviewTitle}>Documentos</p>
                   {documents.length > 0 ? documents.map((d, i) => (
-                    <p className={styles.reviewMeta} key={i}>{DOCUMENT_TYPE_LABELS[d.type]}: {d.fileName || "—"}</p>
+                    <p className={styles.reviewMeta} key={i}>{DOCUMENT_TYPE_LABELS[d.type]}: {d.fileName || "Não informado"}</p>
                   )) : <p className={styles.reviewMeta}>Nenhum documento adicionado.</p>}
                 </div>
 
                 <div className={styles.reviewSection}>
                   <p className={styles.reviewTitle}>Endereço</p>
                   <p className={styles.reviewMeta}>
-                    {address.street || "—"}{address.number ? `, ${address.number}` : ""}{address.complement ? ` — ${address.complement}` : ""}
+                    {address.street || "Rua não informada"}{address.number ? `, ${address.number}` : ""}{address.complement ? ` — ${address.complement}` : ""}
                   </p>
-                  <p className={styles.reviewMeta}>{address.neighborhood || "—"}, {address.city || "—"} {address.state ? `— ${address.state}` : ""}</p>
-                  <p className={styles.reviewMeta}>CEP {address.zipCode || "—"}</p>
+                  <p className={styles.reviewMeta}>{address.neighborhood || "Bairro não informado"}, {address.city || "Cidade não informada"} {address.state ? `— ${address.state}` : ""}</p>
+                  <p className={styles.reviewMeta}>CEP {address.zipCode || "não informado"}</p>
                 </div>
 
                 {linkedProperties.length > 0 ? (
@@ -686,7 +686,7 @@ export default function NovaPessoaPage() {
                       const prop = availableProperties.find((p) => p.id === link.propertyId);
                       return (
                         <p className={styles.reviewMeta} key={link.propertyId}>
-                          {prop?.name || "—"} · {OWNER_ROLE_LABELS[link.roleCode] || link.roleCode} · {link.percentage}%
+                          {prop?.name || "Imóvel não informado"} · {OWNER_ROLE_LABELS[link.roleCode] || link.roleCode} · {link.percentage}%
                         </p>
                       );
                     })}
