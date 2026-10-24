@@ -441,7 +441,7 @@ export default function PersonDetailPage({ params }) {
                 </div>
                 <div>
                   <p className={styles.fieldLabel}>{person.personType === "PF" ? "Nascimento" : "Fundação"}</p>
-                  <p className={styles.fieldValue}>{person.birthOrFoundationDate ? formatDate(person.birthOrFoundationDate) : "Não informado"}</p>
+                  <p className={styles.fieldValue}>{person.birthOrFoundationDate ? formatDate(person.birthOrFoundationDate) : "Sem data cadastrada"}</p>
                 </div>
                 <div>
                   <p className={styles.fieldLabel}>Cadastrado em</p>
@@ -544,7 +544,7 @@ export default function PersonDetailPage({ params }) {
               {person.address ? (
                 <>
                   <p className={styles.meta}>
-                    {person.address.street || "Rua não informada"}{person.address.number ? `, ${person.address.number}` : ""}
+                    {person.address.street || "Rua sem cadastro"}{person.address.number ? `, ${person.address.number}` : ""}
                     {person.address.complement ? ` — ${person.address.complement}` : ""}
                   </p>
                   <p className={styles.meta}>

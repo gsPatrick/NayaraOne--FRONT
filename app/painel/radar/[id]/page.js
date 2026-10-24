@@ -66,8 +66,8 @@ export default function RadarDetailPage({ params }) {
           if (cancelled) return;
           setOpportunity({
             ...apiOpportunity,
-            propertyName: property?.name || "—",
-            repName: (users || []).find((u) => u.id === apiOpportunity.ownerUserId)?.name || "—",
+            propertyName: property?.name || "Sem imóvel vinculado",
+            repName: (users || []).find((u) => u.id === apiOpportunity.ownerUserId)?.name || "Sem responsável definido",
           });
         }
       })
@@ -121,7 +121,7 @@ export default function RadarDetailPage({ params }) {
       <div className={styles.wrap}>
         <div className={styles.topRow}>
           <div className={styles.personBlock}>
-            <Avatar name={person?.legalName || "—"} size="xl" />
+            <Avatar name={person?.legalName || "Sem pessoa vinculada"} size="xl" />
             <div>
               <p className={styles.personName}>{person?.legalName || "Contato removido"}</p>
               {person ? (
@@ -194,16 +194,16 @@ export default function RadarDetailPage({ params }) {
               <div className={styles.criteriaList}>
                 <div className={styles.criteriaRow}>
                   <span className={styles.criteriaLabel}>Tipo de imóvel</span>
-                  <span className={styles.criteriaValue}>{PROPERTY_TYPE_LABELS[c.propertyType] || c.propertyType || "—"}</span>
+                  <span className={styles.criteriaValue}>{PROPERTY_TYPE_LABELS[c.propertyType] || c.propertyType || "Sem tipo de imóvel"}</span>
                 </div>
                 <div className={styles.criteriaRow}>
                   <span className={styles.criteriaLabel}>Finalidade</span>
-                  <span className={styles.criteriaValue}>{OFFER_TYPE_LABELS[c.offerType] || c.offerType || "—"}</span>
+                  <span className={styles.criteriaValue}>{OFFER_TYPE_LABELS[c.offerType] || c.offerType || "Sem tipo de oferta"}</span>
                 </div>
                 <div className={styles.criteriaRow}>
                   <span className={styles.criteriaLabel}>Faixa de preço</span>
                   <span className={styles.criteriaValue}>
-                    {c.minPrice != null ? formatBRL(c.minPrice) : "—"} – {c.maxPrice != null ? formatBRL(c.maxPrice) : "—"}
+                    {c.minPrice != null ? formatBRL(c.minPrice) : "sem mínimo"} – {c.maxPrice != null ? formatBRL(c.maxPrice) : "sem máximo"}
                   </span>
                 </div>
                 <div className={styles.criteriaRow}>

@@ -170,7 +170,7 @@ export default function CompanyDetailPage({ params }) {
     {
       key: "price",
       label: "Preço",
-      render: (row) => (row.activeOffer ? `${formatBRL(row.activeOffer.askingPrice)}${row.activeOffer.offerType === "RENT" ? "/mês" : ""}` : "—"),
+      render: (row) => (row.activeOffer ? `${formatBRL(row.activeOffer.askingPrice)}${row.activeOffer.offerType === "RENT" ? "/mês" : ""}` : "Sem oferta ativa"),
     },
     {
       key: "availabilityStatus",
@@ -273,7 +273,7 @@ export default function CompanyDetailPage({ params }) {
             </div>
             <div>
               <p className={styles.infoLabel}>CNPJ</p>
-              <p className={styles.infoValue}>{company.taxId || "—"}</p>
+              <p className={styles.infoValue}>{company.taxId || "Sem CPF/CNPJ"}</p>
             </div>
             <div>
               <p className={styles.infoLabel}>Status</p>
@@ -331,7 +331,7 @@ export default function CompanyDetailPage({ params }) {
                   >
                     <div>
                       <p className={styles.unitName}>{unit.name}</p>
-                      <p className={styles.unitCode}>Cód. {unit.code || "—"}</p>
+                      <p className={styles.unitCode}>Cód. {unit.code || "Sem código"}</p>
                     </div>
                     <div className={styles.unitRowRight}>
                       <span className={styles.unitUserCount}>
@@ -416,7 +416,7 @@ export default function CompanyDetailPage({ params }) {
                       <span className={styles.carouselName}>{p.name}</span>
                       <span className={styles.carouselMeta}>{p.internalCode} · {p.city}</span>
                       <span className={styles.carouselPrice}>
-                        {p.activeOffer ? formatBRL(p.activeOffer.askingPrice) : "—"}
+                        {p.activeOffer ? formatBRL(p.activeOffer.askingPrice) : "Sem oferta ativa"}
                         {p.activeOffer?.offerType === "RENT" ? <span className={styles.carouselPriceSuffix}>/mês</span> : null}
                       </span>
                     </div>

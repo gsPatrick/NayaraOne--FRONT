@@ -526,7 +526,7 @@ export default function ContratoDetailPage({ params }) {
                   <div key={r.id} className={styles.partyRow}>
                     <div className={styles.partyInfo}>
                       <span className={styles.partyName}>{humanizeText(r.description)}</span>
-                      <span className={styles.partyRole}>{r.status === "WAIVED" ? `Dispensado — motivo: ${r.waivedReason || "não informado"}` : r.status === "SATISFIED" ? `Documento anexado${r.satisfiedAt ? ` em ${formatDate(r.satisfiedAt)}` : ""}` : "Aguardando documento"}</span>
+                      <span className={styles.partyRole}>{r.status === "WAIVED" ? `Dispensado — motivo: ${r.waivedReason || "sem motivo registrado"}` : r.status === "SATISFIED" ? `Documento anexado${r.satisfiedAt ? ` em ${formatDate(r.satisfiedAt)}` : ""}` : "Aguardando documento"}</span>
                     </div>
                     <Badge tone={REQUIREMENT_STATUS_TONE[r.status] || "neutral"}>{REQUIREMENT_STATUS_LABELS[r.status] || r.status}</Badge>
                     {r.status === "PENDING" ? (
@@ -567,7 +567,7 @@ export default function ContratoDetailPage({ params }) {
                   {timeline.map((event, idx) => (
                     <li key={`${event.type}-${event.referenceId}-${idx}`} className={styles.timelineItem}>
                       <Badge tone={TIMELINE_TYPE_TONE[event.type] || "neutral"}>{TIMELINE_TYPE_LABELS[event.type] || event.type}</Badge>
-                      <span className={styles.timelineDate}>{event.occurredAt ? formatDateTime(event.occurredAt) : "Data não registrada"}</span>
+                      <span className={styles.timelineDate}>{event.occurredAt ? formatDateTime(event.occurredAt) : "Sem data registrada"}</span>
                       <span className={styles.timelineSummary}>{event.summary}</span>
                     </li>
                   ))}
@@ -695,7 +695,7 @@ export default function ContratoDetailPage({ params }) {
                     <div className={styles.guaranteeInfo}>
                       <span className={styles.guaranteeTitle}>{GUARANTEE_TYPE_LABELS[g.guaranteeType]}</span>
                       <span className={styles.guaranteeMeta}>
-                        {g.guarantorPersonId ? personOf(g.guarantorPersonId)?.legalName : g.value != null ? formatBRL(g.value) : "Sem valor informado"}
+                        {g.guarantorPersonId ? personOf(g.guarantorPersonId)?.legalName : g.value != null ? formatBRL(g.value) : "Sem valor cadastrado"}
                       </span>
                     </div>
                     <Badge tone={GUARANTEE_STATUS_TONE[g.status] || "neutral"}>{GUARANTEE_STATUS_LABELS[g.status] || g.status}</Badge>

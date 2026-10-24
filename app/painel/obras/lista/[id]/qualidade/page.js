@@ -667,7 +667,7 @@ export default function QualidadeObraPage({ params }) {
               ))}
             </Select>
           </FormField>
-          <FormField label="Prazo (SLA)" htmlFor="m-nc-sla" helper="Opcional — calculado automaticamente por severidade se não informado">
+          <FormField label="Prazo (SLA)" htmlFor="m-nc-sla" helper="Opcional — calculado automaticamente por severidade se ficar em branco">
             <Input
               id="m-nc-sla"
               type="date"

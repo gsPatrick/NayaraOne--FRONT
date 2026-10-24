@@ -32,7 +32,7 @@ function buildMemberships(userId, memberships) {
   return memberships
     .filter((m) => m.userId === userId)
     .map((m) => ({
-      company: m.company?.name || "—",
+      company: m.company?.name || "Sem empresa vinculada",
       role: m.role?.name || "Sem papel",
       unit: m.unit?.name || null,
     }));
@@ -125,6 +125,7 @@ export default function UsuariosPage() {
       label: "Empresa, unidade & papel",
       render: (row) => (
         <div className={styles.membershipCell}>
+          {row.memberships.length === 0 ? "Sem vínculo com empresa" : null}
           {row.memberships.map((m) => (
             <div key={m.company} className={styles.membershipRow}>
               <span className={styles.membershipText}>

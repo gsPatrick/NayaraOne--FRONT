@@ -98,7 +98,7 @@ export default function EmpresasPage() {
         </div>
       ),
     },
-    { key: "taxId", label: "CNPJ" },
+    { key: "taxId", label: "CNPJ", render: (row) => row.taxId || "Sem CNPJ" },
     {
       key: "units",
       label: "Unidades",

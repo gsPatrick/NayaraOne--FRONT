@@ -356,11 +356,11 @@ export default function PatrimonioPage() {
   }
 
   function locationName(id) {
-    return locations.find((l) => l.id === id)?.name || "—";
+    return locations.find((l) => l.id === id)?.name || "Sem local definido";
   }
 
   function userName(id) {
-    return users.find((u) => u.id === id)?.name || "—";
+    return users.find((u) => u.id === id)?.name || "Sem responsável definido";
   }
 
   // BUG REAL CORRIGIDO (auditoria "loop até secar", rodada 24, 2026-10-05): o backend sempre
@@ -369,16 +369,16 @@ export default function PatrimonioPage() {
   // contratado de Patrimônio) ficava invisível pro usuário, que precisaria abrir a lista de
   // empréstimos manualmente pra saber quem está com a ferramenta.
   const columns = [
-    { key: "tag", label: "QR / Tag", width: "12%", render: (row) => row.assetTag || "—" },
+    { key: "tag", label: "QR / Tag", width: "12%", render: (row) => row.assetTag || "Sem etiqueta" },
     { key: "name", label: "Nome", width: "18%" },
     { key: "status", label: "Status", width: "12%", render: (row) => <Badge tone={STATUS_TONE[row.status]}>{STATUS_LABELS[row.status] || row.status}</Badge> },
-    { key: "custodian", label: "Custodiante", width: "14%", render: (row) => (row.assignedToUserId ? userName(row.assignedToUserId) : "—") },
-    { key: "location", label: "Local", width: "14%", render: (row) => (row.currentLocationId ? locationName(row.currentLocationId) : "—") },
-    { key: "value", label: "Valor aquisição", width: "12%", render: (row) => (row.acquisitionValue != null ? formatBRL(row.acquisitionValue) : "—") },
+    { key: "custodian", label: "Custodiante", width: "14%", render: (row) => (row.assignedToUserId ? userName(row.assignedToUserId) : "Sem responsável definido") },
+    { key: "location", label: "Local", width: "14%", render: (row) => (row.currentLocationId ? locationName(row.currentLocationId) : "Sem local definido") },
+    { key: "value", label: "Valor aquisição", width: "12%", render: (row) => (row.acquisitionValue != null ? formatBRL(row.acquisitionValue) : "Sem valor registrado") },
     // GAP REAL CORRIGIDO (3ª verificação cética, Marco 7, Caderno §9/EST-014 — "depreciação
     // informativa"): o backend já calcula `estimatedCurrentValue` em toda listagem
     // (assets.service.js#listAssets), mas nenhuma tela chegava a mostrar esse dado.
-    { key: "estimatedValue", label: "Valor estimado (depreciação)", width: "14%", render: (row) => (row.estimatedCurrentValue != null ? formatBRL(row.estimatedCurrentValue) : "—") },
+    { key: "estimatedValue", label: "Valor estimado (depreciação)", width: "14%", render: (row) => (row.estimatedCurrentValue != null ? formatBRL(row.estimatedCurrentValue) : "Sem valor registrado") },
     {
       key: "actions",
       label: "",
@@ -454,14 +454,14 @@ export default function PatrimonioPage() {
             <strong>{tagSearchResult.asset?.name}</strong>
             <span>
               <Badge tone={STATUS_TONE[tagSearchResult.asset?.status]}>{STATUS_LABELS[tagSearchResult.asset?.status] || tagSearchResult.asset?.status}</Badge>
-              {" — "}Custodiante: {tagSearchResult.asset?.assignedToUserId ? userName(tagSearchResult.asset.assignedToUserId) : "—"}
-              {" — "}Local: {tagSearchResult.asset?.currentLocationId ? locationName(tagSearchResult.asset.currentLocationId) : "—"}
+              {" — "}Custodiante: {tagSearchResult.asset?.assignedToUserId ? userName(tagSearchResult.asset.assignedToUserId) : "Sem responsável definido"}
+              {" — "}Local: {tagSearchResult.asset?.currentLocationId ? locationName(tagSearchResult.asset.currentLocationId) : "Sem local definido"}
               {tagSearchResult.estimatedCurrentValue != null ? <> {" — "}Valor estimado: {formatBRL(tagSearchResult.estimatedCurrentValue)}</> : null}
             </span>
             <span style={{ color: "var(--color-ink-muted)", fontSize: "var(--text-body-sm)" }}>
               Último movimento: {tagSearchResult.lastMovement ? `${ASSET_MOVEMENT_LABELS[tagSearchResult.lastMovement.movementType] || tagSearchResult.lastMovement.movementType} em ${formatDate(tagSearchResult.lastMovement.movedAt || tagSearchResult.lastMovement.moved_at)}` : "nenhum registrado"}
               {" — "}Manutenção: {tagSearchResult.openMaintenance ? "aberta" : "nenhuma em aberto"}
-              {tagSearchResult.activeLoan ? <> {" — "}Empréstimo ativo com {tagSearchResult.activeLoan.personUserId ? userName(tagSearchResult.activeLoan.personUserId) : "—"}</> : null}
+              {tagSearchResult.activeLoan ? <> {" — "}Empréstimo ativo com {tagSearchResult.activeLoan.personUserId ? userName(tagSearchResult.activeLoan.personUserId) : "responsável não identificado"}</> : null}
             </span>
           </div>
         ) : null}
@@ -594,22 +594,22 @@ export default function PatrimonioPage() {
                 </div>
                 <div style={{ color: "var(--color-ink-muted)", fontSize: "var(--text-body-sm)" }}>
                   {m.movementType === "DISPOSAL" ? (
-                    <>Saiu de: {locationName(m.sourceLocationId)} · Custodiante: {m.sourceCustodianUserId ? userName(m.sourceCustodianUserId) : "—"} → patrimônio baixado</>
+                    <>Saiu de: {locationName(m.sourceLocationId)} · Custodiante: {m.sourceCustodianUserId ? userName(m.sourceCustodianUserId) : "Sem custodiante"} → patrimônio baixado</>
                   ) : m.movementType === "LOAN" ? (
                     <>
-                      Responsável: {m.assignedToUserId ? userName(m.assignedToUserId) : "—"} · Destino: {locationName(m.destinationLocationId)}
+                      Responsável: {m.assignedToUserId ? userName(m.assignedToUserId) : "Sem responsável definido"} · Destino: {locationName(m.destinationLocationId)}
                       {m.dueAt ? <> · Devolução prevista: {formatDate(m.dueAt)}</> : null}
                       {m.conditionCode ? <> · Condição na saída: {CONDITION_LABELS[m.conditionCode] || m.conditionCode}</> : null}
                     </>
                   ) : m.movementType === "RETURN" ? (
                     <>
-                      Devolvido por: {m.assignedToUserId ? userName(m.assignedToUserId) : "—"}
-                      {" · "}Condição na devolução: {CONDITION_LABELS[m.conditionCode] || m.conditionCode || "—"}
+                      Devolvido por: {m.assignedToUserId ? userName(m.assignedToUserId) : "Sem responsável definido"}
+                      {" · "}Condição na devolução: {CONDITION_LABELS[m.conditionCode] || m.conditionCode || "Sem condição registrada"}
                     </>
                   ) : (
                     <>
                       Local: {locationName(m.sourceLocationId)} → {locationName(m.destinationLocationId)}
-                      {" · "}Custodiante: {m.sourceCustodianUserId ? userName(m.sourceCustodianUserId) : "—"} → {m.destinationCustodianUserId ? userName(m.destinationCustodianUserId) : "—"}
+                      {" · "}Custodiante: {m.sourceCustodianUserId ? userName(m.sourceCustodianUserId) : "Sem custodiante"} → {m.destinationCustodianUserId ? userName(m.destinationCustodianUserId) : "Sem custodiante"}
                     </>
                   )}
                 </div>
@@ -793,7 +793,7 @@ export default function PatrimonioPage() {
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             <div><strong>Tipo:</strong> {DISPOSAL_TYPE_LABELS[disposalView.data.disposalType] || disposalView.data.disposalType}</div>
             <div><strong>Data:</strong> {formatDate(disposalView.data.disposedAt)}</div>
-            <div><strong>Responsável pela baixa:</strong> {disposalView.data.disposedByUserId ? userName(disposalView.data.disposedByUserId) : "—"}</div>
+            <div><strong>Responsável pela baixa:</strong> {disposalView.data.disposedByUserId ? userName(disposalView.data.disposedByUserId) : "Sem responsável definido"}</div>
             {disposalView.data.counterpartyName ? <div><strong>Contraparte:</strong> {disposalView.data.counterpartyName}</div> : null}
             <div><strong>Valor:</strong> {disposalView.data.disposalValue > 0 ? formatBRL(disposalView.data.disposalValue) : "Sem valor"}</div>
             {disposalView.data.financialEntry ? (

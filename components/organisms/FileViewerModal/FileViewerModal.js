@@ -14,9 +14,9 @@ import { getFileMeta, fetchFileContent } from "@/lib/api/files";
 import styles from "./FileViewerModal.module.css";
 
 function formatBytes(bytes) {
-  if (bytes === null || bytes === undefined) return "—";
+  if (bytes === null || bytes === undefined) return "Tamanho desconhecido";
   const n = Number(bytes);
-  if (!Number.isFinite(n) || n < 0) return "—";
+  if (!Number.isFinite(n) || n < 0) return "Tamanho desconhecido";
   if (n < 1024) return `${n} B`;
   if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
   return `${(n / (1024 * 1024)).toFixed(1)} MB`;

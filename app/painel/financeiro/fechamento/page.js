@@ -229,16 +229,16 @@ export default function FechamentoPage() {
       key: "closedAt",
       label: "Fechado em",
       render: (row) => {
-        if (row.status === "CLOSED") return row.closedAt ? formatDateTime(row.closedAt) : "Data não registrada";
+        if (row.status === "CLOSED") return row.closedAt ? formatDateTime(row.closedAt) : "Sem data de fechamento";
         return row.closedAt ? `Não está fechado (último fechamento em ${formatDateTime(row.closedAt)})` : "Ainda não fechado";
       },
     },
     { key: "reopenedAt", label: "Última reabertura", render: (row) => (row.reopenedAt ? formatDateTime(row.reopenedAt) : "Nunca reaberto") },
-    { key: "reopenReason", label: "Motivo da reabertura", render: (row) => row.reopenReason || (row.reopenedAt ? "Motivo não informado" : "Não se aplica") },
+    { key: "reopenReason", label: "Motivo da reabertura", render: (row) => row.reopenReason || (row.reopenedAt ? "Sem motivo registrado" : "Não se aplica") },
     {
       key: "returnToOpenReason",
       label: "Última devolução da revisão",
-      render: (row) => (row.returnedToOpenAt ? `${formatDateTime(row.returnedToOpenAt)} — ${row.returnToOpenReason || "motivo não informado"}` : "Nunca devolvido"),
+      render: (row) => (row.returnedToOpenAt ? `${formatDateTime(row.returnedToOpenAt)} — ${row.returnToOpenReason || "sem motivo registrado"}` : "Nunca devolvido"),
     },
     {
       key: "actions",

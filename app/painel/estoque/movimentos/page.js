@@ -21,7 +21,7 @@ import { listInventoryItems, listInventoryLocations, recordInventoryMovement, ge
 import { listProjectStages } from "@/lib/api/construction";
 import { getCurrentUser } from "@/lib/auth/session";
 import { generateIdempotencyKey } from "@/lib/offline/offlineQueue";
-import { formatQuantity, formatDateTime, formatBRL, toNumber } from "@/lib/format";
+import { formatQuantity, formatDateTime, formatBRL, toNumber, humanizeText } from "@/lib/format";
 import styles from "../../obras/lista/page.module.css";
 
 const MOVEMENT_TYPE_LABELS = { IN: "Entrada", OUT: "Saída", RETURN: "Devolução", TRANSFER: "Transferência", ADJUSTMENT: "Ajuste", LOSS: "Perda", DISPOSAL: "Descarte" };
@@ -227,29 +227,29 @@ export default function MovimentosPage() {
   const historyColumns = [
     { key: "movedAt", label: "Data", render: (row) => formatDateTime(row.movedAt) },
     { key: "type", label: "Tipo", render: (row) => <Badge tone={MOVEMENT_TYPE_TONE[row.movementType]}>{MOVEMENT_TYPE_LABELS[row.movementType] || row.movementType}</Badge> },
-    { key: "item", label: "Item", render: (row) => row.inventoryItem?.name || "—" },
+    { key: "item", label: "Item", render: (row) => row.inventoryItem?.name || "Sem item identificado" },
     { key: "qty", label: "Quantidade", render: (row) => formatQuantity(row.quantity) },
-    { key: "from", label: "De", render: (row) => row.sourceLocation?.name || "—" },
-    { key: "to", label: "Para", render: (row) => row.destinationLocation?.name || "—" },
-    { key: "stage", label: "Etapa", render: (row) => row.stage?.name || "—" },
-    { key: "cost", label: "Custo", render: (row) => (row.totalCost != null ? formatBRL(row.totalCost) : "—") },
-    { key: "reason", label: "Motivo", render: (row) => row.reason || "—" },
-    { key: "by", label: "Responsável", render: (row) => row.responsiblePerson?.legalName || row.movedByUser?.name || "—" },
+    { key: "from", label: "De", render: (row) => row.sourceLocation?.name || "Sem local de origem" },
+    { key: "to", label: "Para", render: (row) => row.destinationLocation?.name || "Sem local de destino" },
+    { key: "stage", label: "Etapa", render: (row) => row.stage?.name || "Sem etapa" },
+    { key: "cost", label: "Custo", render: (row) => (row.totalCost != null ? formatBRL(row.totalCost) : "Sem custo registrado") },
+    { key: "reason", label: "Motivo", render: (row) => humanizeText(row.reason) || "Sem motivo registrado" },
+    { key: "by", label: "Responsável", render: (row) => row.responsiblePerson?.legalName || row.movedByUser?.name || "Sem responsável definido" },
   ];
 
   const proposalColumns = [
     { key: "createdAt", label: "Proposto em", render: (row) => formatDateTime(row.createdAt) },
     { key: "type", label: "Tipo", render: (row) => <Badge tone={MOVEMENT_TYPE_TONE[row.movementType]}>{MOVEMENT_TYPE_LABELS[row.movementType]}</Badge> },
-    { key: "item", label: "Item", render: (row) => row.inventoryItem?.name || "—" },
+    { key: "item", label: "Item", render: (row) => row.inventoryItem?.name || "Sem nome" },
     {
       key: "qty",
       label: "Quantidade",
       render: (row) => `${row.movementType === "ADJUSTMENT" && row.destinationLocationId ? "+" : "−"}${formatQuantity(row.quantity)}`,
     },
-    { key: "where", label: "Local", render: (row) => row.destinationLocation?.name || row.sourceLocation?.name || "—" },
-    { key: "value", label: "Valor estimado", render: (row) => (row.estimatedValue != null ? formatBRL(row.estimatedValue) : "—") },
-    { key: "reason", label: "Motivo", render: (row) => row.reason },
-    { key: "by", label: "Proposto por", render: (row) => row.proposedByUser?.name || "—" },
+    { key: "where", label: "Local", render: (row) => row.destinationLocation?.name || row.sourceLocation?.name || "Sem nome" },
+    { key: "value", label: "Valor estimado", render: (row) => (row.estimatedValue != null ? formatBRL(row.estimatedValue) : "Sem valor estimado") },
+    { key: "reason", label: "Motivo", render: (row) => humanizeText(row.reason) || "Sem motivo registrado" },
+    { key: "by", label: "Proposto por", render: (row) => row.proposedByUser?.name || "Sem responsável definido" },
     {
       key: "actions",
       label: "",

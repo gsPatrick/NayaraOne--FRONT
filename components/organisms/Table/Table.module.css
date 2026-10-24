@@ -109,3 +109,9 @@
 @media (prefers-reduced-motion: reduce) {
   .skeleton { animation-duration: 2.8s; }
 }
+
+/* Contêiner de ações sem nenhum botão: em vez de célula em branco, diz que não há ação possível. */
+.table tbody td > div:empty::after {
+  content: "Sem ações disponíveis";
+  color: var(--color-ink-muted);
+}

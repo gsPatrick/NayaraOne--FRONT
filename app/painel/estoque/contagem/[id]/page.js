@@ -34,7 +34,7 @@ const STATUS_LABELS = { OPEN: "Em contagem", COMPLETED: "Fechado" };
 const STATUS_TONE = { OPEN: "warning", COMPLETED: "success" };
 
 function userName(users, id) {
-  return users.find((u) => u.id === id)?.name || "—";
+  return users.find((u) => u.id === id)?.name || "Sem responsável definido";
 }
 
 export default function ContagemDetailPage() {
@@ -95,13 +95,13 @@ export default function ContagemDetailPage() {
   if (notFoundFlag) return notFound();
 
   function locationName(locId) {
-    return locations.find((l) => l.id === locId)?.name || "—";
+    return locations.find((l) => l.id === locId)?.name || "Sem local definido";
   }
   function itemName(itemId) {
-    return items.find((i) => i.id === itemId)?.name || "—";
+    return items.find((i) => i.id === itemId)?.name || "Sem item identificado";
   }
   function projectName(projId) {
-    return projects.find((p) => p.id === projId)?.name || "—";
+    return projects.find((p) => p.id === projId)?.name || "Sem obra vinculada";
   }
 
   async function handleAddLine() {

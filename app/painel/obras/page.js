@@ -141,7 +141,7 @@ export default function ObrasHubPage() {
                           {propertyOf(p.propertyId)?.name || "Sem imóvel vinculado"} · {userOf(p.responsibleUserId)?.name || "Sem responsável"}
                         </span>
                         <span className={styles.listRowSubtitle}>
-                          Início {formatDate(p.startsAt)} · Previsão {p.endsAtPlanned ? formatDate(p.endsAtPlanned) : "—"} · {formatBRL(p.budgetAmount)}
+                          Início {formatDate(p.startsAt)} · Previsão {p.endsAtPlanned ? formatDate(p.endsAtPlanned) : "Sem previsão de término"} · {formatBRL(p.budgetAmount)}
                         </span>
                       </div>
                       <Badge tone={PROJECT_STATUS_TONE[p.status] || "neutral"}>{PROJECT_STATUS_LABELS[p.status] || p.status}</Badge>

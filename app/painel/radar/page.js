@@ -114,10 +114,10 @@ export default function RadarPage() {
             }
           }}
         >
-          <Avatar name={row.person?.legalName || "—"} size="sm" />
+          <Avatar name={row.person?.legalName || "Sem pessoa vinculada"} size="sm" />
           <div>
             <p className={styles.personName}>{row.person?.legalName || "Contato removido"}</p>
-            <p className={styles.personDoc}>{row.person?.taxIdNormalized || "—"}</p>
+            <p className={styles.personDoc}>{row.person?.taxIdNormalized || "Sem CPF/CNPJ"}</p>
           </div>
         </div>
       ),
@@ -127,8 +127,8 @@ export default function RadarPage() {
       label: "Tipo · Finalidade",
       render: (row) => (
         <div className={styles.tagRow}>
-          <Badge tone="neutral">{PROPERTY_TYPE_LABELS[row.radar.criteriaJson.propertyType] || "—"}</Badge>
-          <Badge tone="neutral">{OFFER_TYPE_LABELS[row.radar.criteriaJson.offerType] || "—"}</Badge>
+          <Badge tone="neutral">{PROPERTY_TYPE_LABELS[row.radar.criteriaJson.propertyType] || "Sem tipo de imóvel"}</Badge>
+          <Badge tone="neutral">{OFFER_TYPE_LABELS[row.radar.criteriaJson.offerType] || "Sem tipo de oferta"}</Badge>
         </div>
       ),
     },
@@ -139,7 +139,7 @@ export default function RadarPage() {
         const c = row.radar.criteriaJson;
         return (
           <span className={styles.priceRange}>
-            {c.minPrice != null ? formatBRL(c.minPrice) : "—"} – {c.maxPrice != null ? formatBRL(c.maxPrice) : "—"}
+            {c.minPrice != null ? formatBRL(c.minPrice) : "sem mínimo"} – {c.maxPrice != null ? formatBRL(c.maxPrice) : "sem máximo"}
           </span>
         );
       },

@@ -67,7 +67,7 @@ export default function CrmDashboardPage() {
             <StatTile label="Em aberto" value={dashboard.opportunities.open} tone="info" icon="clock" />
             <StatTile
               label="Taxa de conversão"
-              value={dashboard.conversionRate != null ? `${(dashboard.conversionRate * 100).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%` : "—"}
+              value={dashboard.conversionRate != null ? `${(dashboard.conversionRate * 100).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%` : "Sem conversões ainda"}
               tone="success"
               icon="check"
             />

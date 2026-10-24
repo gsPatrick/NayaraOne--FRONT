@@ -379,7 +379,7 @@ export default function PropertyDetailPage({ params }) {
 
             <Card title="Localização">
               <p className={styles.meta}>
-                {property.address?.street || "—"}{property.address?.number ? `, ${property.address.number}` : ""}
+                {property.address?.street || "Sem rua cadastrada"}{property.address?.number ? `, ${property.address.number}` : ""}
                 {property.address?.complement ? ` — ${property.address.complement}` : ""}
               </p>
               <p className={styles.meta}>
@@ -433,7 +433,7 @@ export default function PropertyDetailPage({ params }) {
                     ) : null}
                   </div>
                   <p className={styles.meta}>
-                    {property.features.constructionYear ? `Construído em ${property.features.constructionYear}` : "Ano de construção não informado"}
+                    {property.features.constructionYear ? `Construído em ${property.features.constructionYear}` : "Sem ano de construção cadastrado"}
                     {` · ${property.features.coveredParkingSpots || 0} vaga(s) coberta(s)`}
                     {` · ${property.features.uncoveredParkingSpots || 0} vaga(s) descoberta(s)`}
                   </p>
@@ -448,24 +448,24 @@ export default function PropertyDetailPage({ params }) {
                 <div className={styles.docGrid}>
                   <div>
                     <p className={styles.docLabel}>Matrícula</p>
-                    <p className={styles.docValue}>{property.documentation.registryNumber || "—"}</p>
+                    <p className={styles.docValue}>{property.documentation.registryNumber || "Sem número de matrícula"}</p>
                   </div>
                   <div>
                     <p className={styles.docLabel}>Cartório</p>
-                    <p className={styles.docValue}>{property.documentation.registryOffice || "—"}</p>
+                    <p className={styles.docValue}>{property.documentation.registryOffice || "Sem cartório"}</p>
                   </div>
                   <div>
                     <p className={styles.docLabel}>IPTU</p>
-                    <p className={styles.docValue}>{property.documentation.iptuNumber || "—"}</p>
+                    <p className={styles.docValue}>{property.documentation.iptuNumber || "Sem número de IPTU"}</p>
                   </div>
                   <div>
                     <p className={styles.docLabel}>Condomínio</p>
-                    <p className={styles.docValue}>{property.documentation.condoFee ? formatBRL(property.documentation.condoFee) : "—"}</p>
+                    <p className={styles.docValue}>{property.documentation.condoFee ? formatBRL(property.documentation.condoFee) : "Sem taxa de condomínio"}</p>
                   </div>
                   <div>
                     <p className={styles.docLabel}>Situação</p>
                     <Badge tone={REG_TONE[property.documentation.regularizationStatus] || "neutral"}>
-                      {property.documentation.regularizationStatus || "—"}
+                      {property.documentation.regularizationStatus || "Sem situação de regularização"}
                     </Badge>
                   </div>
                 </div>
@@ -645,7 +645,7 @@ export default function PropertyDetailPage({ params }) {
 
                       {o.validFrom || o.validUntil ? (
                         <p className={styles.offerValidity}>
-                          Vigência: {o.validFrom ? new Date(o.validFrom).toLocaleDateString("pt-BR") : "—"}
+                          Vigência: {o.validFrom ? new Date(o.validFrom).toLocaleDateString("pt-BR") : "Sem data de início"}
                           {o.validUntil ? ` até ${new Date(o.validUntil).toLocaleDateString("pt-BR")}` : " (indeterminada)"}
                         </p>
                       ) : null}

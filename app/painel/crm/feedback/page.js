@@ -49,7 +49,7 @@ export default function FeedbackPage() {
   const [escalatingId, setEscalatingId] = useState(null);
 
   function userName(id) {
-    return users.find((u) => u.id === id)?.name || "—";
+    return users.find((u) => u.id === id)?.name || "Sem responsável definido";
   }
 
   function load() {
@@ -156,7 +156,7 @@ export default function FeedbackPage() {
             { key: "description", label: "Descrição", render: (r) => <span className={styles.descCell}>{r.description}</span> },
             { key: "severity", label: "Severidade", render: (r) => <Badge tone={SEVERITY_TONE[r.severity] || "neutral"}>{SEVERITY_LABELS[r.severity] || r.severity}</Badge> },
             { key: "status", label: "Status", render: (r) => <Badge tone={STATUS_TONE[r.status] || "neutral"}>{STATUS_LABELS[r.status] || r.status}</Badge> },
-            { key: "assignedTo", label: "Responsável", render: (r) => (r.assignedToUserId ? userName(r.assignedToUserId) : "—") },
+            { key: "assignedTo", label: "Responsável", render: (r) => (r.assignedToUserId ? userName(r.assignedToUserId) : "Sem responsável definido") },
             {
               key: "sla",
               label: "SLA",

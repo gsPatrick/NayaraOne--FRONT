@@ -121,13 +121,13 @@ export default function ObrasListaPage() {
       key: "property",
       label: "Imóvel vinculado",
       width: "15%",
-      render: (row) => propertyOf(row.propertyId)?.name || "—",
+      render: (row) => propertyOf(row.propertyId)?.name || "Sem imóvel vinculado",
     },
     {
       key: "responsible",
       label: "Responsável",
       width: "13%",
-      render: (row) => userOf(row.responsibleUserId)?.name || "—",
+      render: (row) => userOf(row.responsibleUserId)?.name || "Sem responsável definido",
     },
     {
       key: "status",

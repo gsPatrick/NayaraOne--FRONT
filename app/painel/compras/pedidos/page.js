@@ -255,8 +255,8 @@ export default function PedidosDeCompraPage() {
       // cru — backend agora resolve supplierPersonName (mesmo fix já aplicado em compareOffers).
       // Link para a ficha do fornecedor (qualificação/due diligence/contas bancárias).
       render: (row) => (row.supplierPersonId ? (
-        <Link href={`/painel/compras/fornecedores/${row.supplierPersonId}`}>{row.supplierPersonName || row.supplierPersonId}</Link>
-      ) : "—"),
+        <Link href={`/painel/compras/fornecedores/${row.supplierPersonId}`}>{row.supplierPersonName || "Fornecedor sem nome"}</Link>
+      ) : "Sem fornecedor"),
     },
     {
       // FIX (auditoria Marco 7 Compras E2E, 18/10): "Nota do fornecedor" era a AVALIAÇÃO (1-5),
@@ -264,13 +264,13 @@ export default function PedidosDeCompraPage() {
       key: "score",
       label: "Avaliação do fornecedor",
       width: "12%",
-      render: (row) => (supplierScores[row.supplierPersonId] != null ? `${supplierScores[row.supplierPersonId]} / 5` : "—"),
+      render: (row) => (supplierScores[row.supplierPersonId] != null ? `${supplierScores[row.supplierPersonId]} / 5` : "Sem nota de fornecedor"),
     },
     {
       key: "nf",
       label: "NF",
       width: "12%",
-      render: (row) => (Array.isArray(row.invoiceNumbers) && row.invoiceNumbers.length > 0 ? row.invoiceNumbers.join(", ") : "—"),
+      render: (row) => (Array.isArray(row.invoiceNumbers) && row.invoiceNumbers.length > 0 ? row.invoiceNumbers.join(", ") : "Sem notas fiscais"),
     },
     { key: "amount", label: "Custo comprometido", width: "16%", render: (row) => formatBRL(row.committedAmount) },
     { key: "status", label: "Status", width: "12%", render: (row) => <Badge tone={STATUS_TONE[row.status]}>{STATUS_LABELS[row.status]}</Badge> },
@@ -348,9 +348,9 @@ export default function PedidosDeCompraPage() {
       width: "24%",
       render: (row) => (
         <div>
-          <div>{row.itemName || "—"}</div>
+          <div>{row.itemName || "Sem item identificado"}</div>
           <div style={{ fontSize: 12, color: "var(--color-ink-muted)" }}>
-            {[row.supplierName, row.invoiceNumber ? `NF ${row.invoiceNumber}` : null].filter(Boolean).join(" · ") || "—"}
+            {[row.supplierName, row.invoiceNumber ? `NF ${row.invoiceNumber}` : null].filter(Boolean).join(" · ") || "Sem fornecedor nem nota fiscal"}
           </div>
           {purchaseOrderLabel(row) ? (
             <div style={{ fontSize: 12, color: "var(--color-ink-muted)" }}>{purchaseOrderLabel(row)}</div>
@@ -358,8 +358,8 @@ export default function PedidosDeCompraPage() {
         </div>
       ),
     },
-    { key: "expected", label: "Esperado", width: "10%", render: (row) => (row.expectedValue != null ? formatQuantity(row.expectedValue) : "—") },
-    { key: "received", label: "Recebido", width: "10%", render: (row) => (row.receivedValue != null ? formatQuantity(row.receivedValue) : "—") },
+    { key: "expected", label: "Esperado", width: "10%", render: (row) => (row.expectedValue != null ? formatQuantity(row.expectedValue) : "Sem quantidade registrada") },
+    { key: "received", label: "Recebido", width: "10%", render: (row) => (row.receivedValue != null ? formatQuantity(row.receivedValue) : "Sem quantidade registrada") },
     {
       key: "status",
       label: "Status",

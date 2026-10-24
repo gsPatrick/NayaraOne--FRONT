@@ -152,7 +152,7 @@ export default function GarantiasPage() {
                     ) : null}
                     <div className={styles.guaranteeMetaRow}>
                       <span>Vigência</span>
-                      <strong>{g.startsAt ? `${formatDate(g.startsAt)} — ${g.endsAt ? formatDate(g.endsAt) : "indeterminado"}` : "Vigência não informada"}</strong>
+                      <strong>{g.startsAt ? `${formatDate(g.startsAt)} — ${g.endsAt ? formatDate(g.endsAt) : "indeterminado"}` : "Sem vigência definida"}</strong>
                     </div>
                   </div>
                   <div className={styles.guaranteeActions}>
@@ -197,7 +197,7 @@ export default function GarantiasPage() {
           </>
         }
       >
-        <p>Tem certeza que deseja excluir a garantia <strong>{deleteTarget ? GUARANTEE_TYPE_LABELS[deleteTarget.guaranteeType] : ""}</strong> do contrato <strong>{formatContractLabel(contractOf(deleteTarget?.contractId)) || "—"}</strong>? Esta ação não pode ser desfeita.</p>
+        <p>Tem certeza que deseja excluir a garantia <strong>{deleteTarget ? GUARANTEE_TYPE_LABELS[deleteTarget.guaranteeType] : ""}</strong> do contrato <strong>{formatContractLabel(contractOf(deleteTarget?.contractId)) || "Contrato sem identificação"}</strong>? Esta ação não pode ser desfeita.</p>
       </Modal>
     </AppShell>
   );

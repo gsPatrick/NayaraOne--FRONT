@@ -94,7 +94,7 @@ export function describeCondition(conditionJson) {
     const def = CONDITION_VARIABLES[r.variable];
     if (!def) return r.variable;
     const label = (v) => (def.type === "enum" ? def.options[v] || v : def.type === "boolean" ? (v ? "Sim" : "Não") : String(v));
-    if (r.operator === "exists") return `${def.label} ${r.value ? "informado" : "não informado"}`;
+    if (r.operator === "exists") return `${def.label} ${r.value ? "informado" : "sem valor"}`;
     const value = Array.isArray(r.value) ? r.value.map(label).join(", ") : label(r.value);
     return `${def.label} ${OPERATOR_LABELS[r.operator]} ${value}`;
   });

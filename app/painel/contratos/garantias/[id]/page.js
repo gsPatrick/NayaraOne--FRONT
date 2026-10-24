@@ -143,8 +143,8 @@ export default function GarantiaDetailPage({ params }) {
               <dl className={styles.detailList}>
                 <div className={styles.detailRow}><dt>Tipo</dt><dd className={styles.typeCell}><Icon name={GUARANTEE_TYPE_ICON[guarantee.guaranteeType]} size={16} /> {GUARANTEE_TYPE_LABELS[guarantee.guaranteeType]}</dd></div>
                 <div className={styles.detailRow}><dt>Fiador</dt><dd>{guarantor?.legalName || "Não se aplica"}</dd></div>
-                <div className={styles.detailRow}><dt>Valor</dt><dd className={styles.amount}>{guarantee.value != null ? formatBRL(guarantee.value) : "Sem valor informado"}</dd></div>
-                <div className={styles.detailRow}><dt>Início de vigência</dt><dd>{guarantee.startsAt ? formatDate(guarantee.startsAt) : "Não informado"}</dd></div>
+                <div className={styles.detailRow}><dt>Valor</dt><dd className={styles.amount}>{guarantee.value != null ? formatBRL(guarantee.value) : "Sem valor cadastrado"}</dd></div>
+                <div className={styles.detailRow}><dt>Início de vigência</dt><dd>{guarantee.startsAt ? formatDate(guarantee.startsAt) : "Sem data de início"}</dd></div>
                 <div className={styles.detailRow}><dt>Fim de vigência</dt><dd>{guarantee.endsAt ? formatDate(guarantee.endsAt) : "Prazo indeterminado"}</dd></div>
                 <div className={styles.detailRow}><dt>ID</dt><dd className={styles.mono}>{guarantee.id}</dd></div>
               </dl>

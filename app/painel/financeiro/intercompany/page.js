@@ -227,7 +227,7 @@ export default function IntercompanyPage() {
         const decidedLabel = row.reconciledAt ? "conciliada" : row.approvedAt ? "aprovada" : "recusada";
         return (
           <span>
-            Pedida em {requested ? formatDateTime(requested) : "data não informada"}
+            Pedida em {requested ? formatDateTime(requested) : "sem data de pedido"}
             {decided ? <><br />{decidedLabel} em {formatDateTime(decided)}</> : null}
           </span>
         );
@@ -242,7 +242,7 @@ export default function IntercompanyPage() {
     { key: "amount", label: "Valor", render: (row) => formatBRL(row.amount) },
     { key: "reason", label: "Motivo", render: (row) => (
       <span>
-        {row.reason || "Motivo não informado"}
+        {row.reason || "Sem motivo registrado"}
         {row.rejectionReason ? <><br />Recusa: {row.rejectionReason}</> : null}
       </span>
     ) },

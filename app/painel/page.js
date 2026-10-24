@@ -162,7 +162,7 @@ export default function PainelPage() {
             status: toDisplayUserStatus(u.status),
             memberships: data.memberships
               .filter((m) => m.userId === u.id)
-              .map((m) => ({ company: m.company?.name || "—", role: m.role?.name || "Sem papel", unit: m.unit?.name || null })),
+              .map((m) => ({ company: m.company?.name || "Sem empresa vinculada", role: m.role?.name || "Sem papel", unit: m.unit?.name || null })),
           }))
         );
         setFailedSections(failed);
@@ -178,7 +178,7 @@ export default function PainelPage() {
     };
   }, []);
 
-  const personName = (id) => people.find((p) => p.id === id)?.legalName || "—";
+  const personName = (id) => people.find((p) => p.id === id)?.legalName || "Sem pessoa vinculada";
 
   // ---- Overview ----
   const activeProperties = useMemo(() => properties.filter((p) => p.availabilityStatus === "AVAILABLE"), [properties]);
@@ -403,7 +403,7 @@ export default function PainelPage() {
                   <span className={styles.carouselName}>{p.name}</span>
                   <span className={styles.carouselMeta}>{p.internalCode} · {p.city}</span>
                   <span className={styles.carouselPrice}>
-                    {p.activeOffer ? formatBRL(p.activeOffer.askingPrice) : "—"}
+                    {p.activeOffer ? formatBRL(p.activeOffer.askingPrice) : "Sem oferta ativa"}
                     {p.activeOffer?.offerType === "RENT" ? <span className={styles.carouselPriceSuffix}>/mês</span> : null}
                   </span>
                 </div>

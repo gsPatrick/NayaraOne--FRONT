@@ -620,7 +620,7 @@ export default function LancamentoDetailPage({ params }) {
                             ? "Confirmada pelo provedor de simulação (sandbox) — não é confirmação de banco real"
                             : entry.settlementMethod === "COMPENSATION"
                               ? "Compensação com dívida do titular — sem movimento de caixa"
-                              : `Baixa manual com comprovante — ${entry.settlementReason || "sem motivo informado"}`}
+                              : `Baixa manual com comprovante — ${entry.settlementReason || "sem motivo registrado"}`}
                       </dd>
                     </div>
                   ) : null}
@@ -629,7 +629,7 @@ export default function LancamentoDetailPage({ params }) {
                       <dt>Comprovante anexado</dt>
                       <dd>
                         {entry.settlementEvidenceAttachedAt ? `${formatDateTime(entry.settlementEvidenceAttachedAt)} — ` : ""}
-                        {entry.settlementReason || "sem motivo informado"}
+                        {entry.settlementReason || "sem motivo registrado"}
                       </dd>
                     </div>
                   ) : null}

@@ -243,7 +243,7 @@ export default function PlanoDeContasPage() {
                   <div className={styles.historyBody}>
                     {prev ? (changes.length ? changes.join(" · ") : "Sem mudança nos dados da conta") : `Criada como ${v.code} — ${v.name} (${typeLabel(v.accountType)})`}
                   </div>
-                  <div className={styles.historyBody}>Motivo: {v.changeReason || "não informado"}</div>
+                  <div className={styles.historyBody}>Motivo: {v.changeReason || "sem motivo registrado"}</div>
                 </li>
               );
             })}

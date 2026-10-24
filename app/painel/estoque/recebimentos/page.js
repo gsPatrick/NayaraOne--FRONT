@@ -230,16 +230,16 @@ export default function RecebimentosPage() {
   }
 
   function itemName(id) {
-    return items.find((i) => i.id === id)?.name || "—";
+    return items.find((i) => i.id === id)?.name || "Sem item identificado";
   }
 
   function locationName(id) {
-    return locations.find((l) => l.id === id)?.name || "—";
+    return locations.find((l) => l.id === id)?.name || "Sem local definido";
   }
 
   const columns = [
-    { key: "invoice", label: "NF", width: "12%", render: (row) => row.invoiceNumber || "—" },
-    { key: "supplier", label: "Fornecedor", width: "14%", render: (row) => row.supplier?.legalName || "—" },
+    { key: "invoice", label: "NF", width: "12%", render: (row) => row.invoiceNumber || "Sem nota fiscal" },
+    { key: "supplier", label: "Fornecedor", width: "14%", render: (row) => row.supplier?.legalName || "Sem fornecedor" },
     { key: "dest", label: "Destino", width: "16%", render: (row) => locationName(row.destinationLocationId) },
     { key: "status", label: "Status", width: "12%", render: (row) => <Badge tone={STATUS_TONE[row.status]}>{STATUS_LABELS[row.status]}</Badge> },
     { key: "created", label: "Criado em", width: "16%", render: (row) => formatDateTime(row.created_at) },
@@ -428,7 +428,7 @@ export default function RecebimentosPage() {
               <tr key={it.id} style={{ borderBottom: "1px solid var(--color-border)" }}>
                 <td style={{ padding: "4px 8px" }}>{itemName(it.inventoryItemId)}</td>
                 <td style={{ padding: "4px 8px" }}>{formatQuantity(it.quantity)}</td>
-                <td style={{ padding: "4px 8px" }}>{it.unitCost != null ? formatBRL(it.unitCost) : "—"}</td>
+                <td style={{ padding: "4px 8px" }}>{it.unitCost != null ? formatBRL(it.unitCost) : "Sem custo registrado"}</td>
               </tr>
             ))}
           </tbody>
@@ -447,7 +447,7 @@ export default function RecebimentosPage() {
         }
       >
         <p>
-          Confirmar a entrada da NF <strong>{confirmTarget?.invoiceNumber || "—"}</strong> vai atualizar o saldo e o custo médio do estoque. Essa ação não pode ser desfeita pela tela.
+          Confirmar a entrada da NF <strong>{confirmTarget?.invoiceNumber || "Sem nota fiscal"}</strong> vai atualizar o saldo e o custo médio do estoque. Essa ação não pode ser desfeita pela tela.
         </p>
       </Modal>
     </AppShell>

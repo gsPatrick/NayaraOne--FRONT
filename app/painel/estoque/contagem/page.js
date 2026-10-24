@@ -66,7 +66,7 @@ export default function ContagemPage() {
   }
 
   function locationName(id) {
-    return locations.find((l) => l.id === id)?.name || "—";
+    return locations.find((l) => l.id === id)?.name || "Sem local definido";
   }
   const columns = [
     { key: "location", label: "Local", width: "30%", render: (row) => locationName(row.locationId) },

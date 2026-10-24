@@ -463,16 +463,16 @@ export default function ObraDetalhePage({ params }) {
               <p className={styles.infoValue}>
                 {property ? (
                   <a href={`/painel/imoveis/${property.id}`} className={styles.infoLink}>{property.name}</a>
-                ) : "—"}
+                ) : "Sem imóvel vinculado"}
               </p>
             </div>
             <div>
               <p className={styles.infoLabel}>Responsável</p>
-              <p className={styles.infoValue}>{responsible?.name || "—"}</p>
+              <p className={styles.infoValue}>{responsible?.name || "Sem responsável definido"}</p>
             </div>
             <div>
               <p className={styles.infoLabel}>Centro de custo</p>
-              <p className={styles.infoValue}>{costCenters.find((c) => c.id === project.costCenterId)?.name || "—"}</p>
+              <p className={styles.infoValue}>{costCenters.find((c) => c.id === project.costCenterId)?.name || "Sem centro de custo"}</p>
             </div>
             <div>
               <p className={styles.infoLabel}>Orçamento planejado</p>
@@ -548,7 +548,7 @@ export default function ObraDetalhePage({ params }) {
               <div className={styles.infoGrid} style={{ marginTop: "var(--space-4)" }}>
                 <div>
                   <p className={styles.infoLabel}>Progresso físico medido</p>
-                  <p className={styles.infoValue}>{health.kpis?.physicalProgressPct != null ? `${health.kpis.physicalProgressPct}%` : "—"}</p>
+                  <p className={styles.infoValue}>{health.kpis?.physicalProgressPct != null ? `${health.kpis.physicalProgressPct}%` : "Sem medição ainda"}</p>
                 </div>
                 <div>
                   <p className={styles.infoLabel}>Progresso planejado</p>
@@ -608,7 +608,7 @@ export default function ObraDetalhePage({ params }) {
                   </div>
                   <div>
                     <p className={styles.infoLabel}>Tempo médio de atendimento</p>
-                    <p className={styles.infoValue}>{postObraHealth.summary.avgResolutionHours != null ? `${postObraHealth.summary.avgResolutionHours}h` : "—"}</p>
+                    <p className={styles.infoValue}>{postObraHealth.summary.avgResolutionHours != null ? `${postObraHealth.summary.avgResolutionHours}h` : "Sem chamados resolvidos ainda"}</p>
                   </div>
                   <div>
                     <p className={styles.infoLabel}>Custo total de garantia</p>
@@ -636,7 +636,7 @@ export default function ObraDetalhePage({ params }) {
                       {Object.entries(postObraHealth.summary.casesByEscalationLevel || {})
                         .filter(([, count]) => count > 0)
                         .map(([level, count]) => `${MAINTENANCE_ESCALATION_LABELS[level] || level}: ${count}`)
-                        .join(" · ") || "—"}
+                        .join(" · ") || "Sem chamados escalonados"}
                     </p>
                   </div>
                 </div>

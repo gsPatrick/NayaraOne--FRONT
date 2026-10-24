@@ -21,7 +21,7 @@ import {
   listFiscalReconciliations,
   resolveFiscalReconciliation,
 } from "@/lib/api/correspondent";
-import { formatDateTime, formatBRL, toNumber } from "@/lib/format";
+import { formatDateTime, formatBRL, toNumber, humanizeText } from "@/lib/format";
 import styles from "./page.module.css";
 
 const INVOICE_STATUS_LABEL = {
@@ -149,10 +149,10 @@ export default function FiscalPage() {
   }
 
   const invoiceColumns = [
-    { key: "description", label: "Descrição", render: (row) => row.description },
+    { key: "description", label: "Descrição", render: (row) => humanizeText(row.description) },
     { key: "amount", label: "Valor", render: (row) => formatBRL(row.amount) },
     { key: "status", label: "Status", render: (row) => <Badge tone={INVOICE_STATUS_TONE[row.status] || "neutral"}>{INVOICE_STATUS_LABEL[row.status] || row.status}</Badge> },
-    { key: "createdAt", label: "Solicitada em", render: (row) => formatDateTime(row.createdAt) },
+    { key: "createdAt", label: "Solicitada em", render: (row) => formatDateTime(row.createdAt || row.created_at) },
     {
       key: "actions",
       label: "",
@@ -173,8 +173,8 @@ export default function FiscalPage() {
     { key: "referenceYear", label: "Ano" },
     { key: "version", label: "Versão" },
     { key: "status", label: "Status", render: (row) => <Badge tone={row.status === "CLOSED" ? "success" : "neutral"}>{row.status === "CLOSED" ? "Fechado" : "Rascunho"}</Badge> },
-    { key: "snapshotHash", label: "Hash do snapshot", render: (row) => <code className={styles.hash}>{row.snapshotHash.slice(0, 16)}…</code> },
-    { key: "createdAt", label: "Gerado em", render: (row) => formatDateTime(row.createdAt) },
+    { key: "snapshotHash", label: "Hash do snapshot", render: (row) => <code className={styles.hash}>{(row.snapshotHash || "").slice(0, 16)}…</code> },
+    { key: "createdAt", label: "Gerado em", render: (row) => formatDateTime(row.createdAt || row.created_at) },
     {
       key: "actions",
       label: "",
@@ -188,7 +188,7 @@ export default function FiscalPage() {
     { key: "actualAmount", label: "Real", render: (row) => formatBRL(row.actualAmount) },
     { key: "differenceAmount", label: "Diferença", render: (row) => formatBRL(row.differenceAmount) },
     { key: "status", label: "Status", render: (row) => <Badge tone={row.status === "OPEN" ? "danger" : "success"}>{row.status === "OPEN" ? "Em aberto" : "Resolvida"}</Badge> },
-    { key: "detectedAt", label: "Detectada em", render: (row) => formatDateTime(row.detectedAt) },
+    { key: "detectedAt", label: "Detectada em", render: (row) => formatDateTime(row.detectedAt || row.detected_at) },
     {
       key: "actions",
       label: "",

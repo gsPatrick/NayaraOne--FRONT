@@ -198,8 +198,8 @@ export default function SugestoesNayPage() {
       width: "20%",
       render: (row) => (
         <div>
-          <span className={styles.nameMain}>{row.itemName || "—"}</span>
-          <div style={{ fontSize: 12, color: "var(--color-text-muted)" }}>{row.sku || ""} · {row.locationName || "—"}</div>
+          <span className={styles.nameMain}>{row.itemName || "Sem item identificado"}</span>
+          <div style={{ fontSize: 12, color: "var(--color-text-muted)" }}>{row.sku || "Sem SKU"} · {row.locationName || "Sem local definido"}</div>
         </div>
       ),
     },
@@ -269,7 +269,7 @@ export default function SugestoesNayPage() {
   const anomalyColumns = [
     { key: "case", label: "Caso", width: "14%", render: (row) => <code>{row.lossCaseId.slice(0, 8)}</code> },
     { key: "status", label: "Status do caso", width: "14%", render: (row) => <Badge tone={row.status === "OPEN" ? "warning" : "neutral"}>{row.status === "OPEN" ? "Em análise" : row.status === "APPROVED" ? "Aprovada" : "Rejeitada"}</Badge> },
-    { key: "value", label: "Valor", width: "12%", render: (row) => (row.value != null ? formatBRL(row.value) : "—") },
+    { key: "value", label: "Valor", width: "12%", render: (row) => (row.value != null ? formatBRL(row.value) : "Sem valor estimado") },
     {
       key: "flags",
       label: "Indícios (NAY)",
@@ -305,9 +305,9 @@ export default function SugestoesNayPage() {
       </Alert>
 
       <div className={styles.grid}>
-        <StatTile label="Sugestões pendentes" value={statusFilter === "PENDING" ? pending.length : "—"} tone="neutral" icon="chart" />
-        <StatTile label="Risco de falta" value={statusFilter === "PENDING" ? highRisk : "—"} tone={highRisk > 0 ? "danger" : "success"} icon="bell" />
-        <StatTile label="Custo estimado (pendentes)" value={statusFilter === "PENDING" ? formatBRL(estimatedTotal) : "—"} tone="neutral" icon="money" />
+        <StatTile label="Sugestões pendentes" value={statusFilter === "PENDING" ? pending.length : "Escolha o filtro Pendentes"} tone="neutral" icon="chart" />
+        <StatTile label="Risco de falta" value={statusFilter === "PENDING" ? highRisk : "Escolha o filtro Pendentes"} tone={highRisk > 0 ? "danger" : "success"} icon="bell" />
+        <StatTile label="Custo estimado (pendentes)" value={statusFilter === "PENDING" ? formatBRL(estimatedTotal) : "Escolha o filtro Pendentes"} tone="neutral" icon="money" />
         <StatTile label="Casos de perda com indício" value={flaggedCases.length} tone={flaggedCases.length > 0 ? "warning" : "success"} icon="check" />
       </div>
 

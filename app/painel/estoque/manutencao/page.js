@@ -17,7 +17,7 @@ import Select from "@/components/atoms/Select/Select";
 import Input from "@/components/atoms/Input/Input";
 import { listMaintenanceOrders, closeMaintenanceOrder, openMaintenanceOrder, listAssets } from "@/lib/api/inventory";
 import { apiFetch } from "@/lib/api/client";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTime, humanizeText } from "@/lib/format";
 
 const STATUS_LABELS = { OPEN: "Aberta", CLOSED: "Fechada" };
 const STATUS_TONE = { OPEN: "warning", CLOSED: "success" };
@@ -82,16 +82,16 @@ export default function ManutencaoPage() {
   }
 
   function assetName(id) {
-    return assets.find((a) => a.id === id)?.name || "—";
+    return assets.find((a) => a.id === id)?.name || "Sem ativo identificado";
   }
 
   function userName(id) {
-    return users.find((u) => u.id === id)?.name || "—";
+    return users.find((u) => u.id === id)?.name || "Sem responsável definido";
   }
 
   const columns = [
     { key: "asset", label: "Patrimônio", width: "20%", render: (row) => assetName(row.assetId) },
-    { key: "description", label: "Descrição", width: "20%", render: (row) => row.description || "—" },
+    { key: "description", label: "Descrição", width: "20%", render: (row) => humanizeText(row.description) || "Sem descrição" },
     { key: "status", label: "Status", width: "10%", render: (row) => <Badge tone={STATUS_TONE[row.status]}>{STATUS_LABELS[row.status]}</Badge> },
     { key: "opened", label: "Aberta em", width: "14%", render: (row) => formatDateTime(row.openedAt || row.opened_at) },
     { key: "openedBy", label: "Aberta por", width: "12%", render: (row) => userName(row.createdBy) },
@@ -99,7 +99,7 @@ export default function ManutencaoPage() {
       key: "closed",
       label: "Fechada em / por",
       width: "16%",
-      render: (row) => (row.status === "CLOSED" ? `${formatDateTime(row.closedAt || row.closed_at)} — ${userName(row.updatedBy)}` : "—"),
+      render: (row) => (row.status === "CLOSED" ? `${formatDateTime(row.closedAt || row.closed_at)} — ${userName(row.updatedBy)}` : "Em aberto, sem data de encerramento"),
     },
     {
       key: "actions",

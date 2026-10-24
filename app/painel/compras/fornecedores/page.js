@@ -69,7 +69,7 @@ export default function FornecedoresPage() {
       key: "supplier",
       label: "Fornecedor",
       width: "26%",
-      render: (row) => <Link href={`/painel/compras/fornecedores/${row.id}`}>{nameById.get(row.id) || row.id}</Link>,
+      render: (row) => <Link href={`/painel/compras/fornecedores/${row.id}`}>{nameById.get(row.id) || "Fornecedor sem nome"}</Link>,
     },
     {
       key: "risk",
@@ -81,14 +81,14 @@ export default function FornecedoresPage() {
       key: "dd",
       label: "Due diligence",
       width: "18%",
-      render: (row) => (row.qualification ? <Badge tone={DUE_DILIGENCE_TONE[row.qualification.dueDiligenceStatus]}>{DUE_DILIGENCE_LABELS[row.qualification.dueDiligenceStatus] || row.qualification.dueDiligenceStatus}</Badge> : "—"),
+      render: (row) => (row.qualification ? <Badge tone={DUE_DILIGENCE_TONE[row.qualification.dueDiligenceStatus]}>{DUE_DILIGENCE_LABELS[row.qualification.dueDiligenceStatus] || row.qualification.dueDiligenceStatus}</Badge> : "Sem due diligence"),
     },
     {
       key: "valid",
       label: "Vigência",
       width: "14%",
       render: (row) => {
-        if (!row.qualification?.validUntil) return "—";
+        if (!row.qualification?.validUntil) return "Sem validade definida";
         return (
           <span style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
             {formatDate(row.qualification.validUntil)}
@@ -97,7 +97,7 @@ export default function FornecedoresPage() {
         );
       },
     },
-    { key: "docs", label: "Documentos", width: "10%", render: (row) => (row.qualification ? (row.qualification.documentFileIds || []).length : "—") },
+    { key: "docs", label: "Documentos", width: "10%", render: (row) => (row.qualification ? (row.qualification.documentFileIds || []).length : "Fornecedor sem qualificação") },
     {
       key: "award",
       label: "Pode receber pedido de compra?",

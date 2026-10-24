@@ -33,7 +33,7 @@ import styles from "./page.module.css";
 // aqui só traduzimos a CHAVE (ex.: "ganho") pro rótulo em pt-BR do funil (ex.: "Fechado
 // (Ganho)"), sem reaplicar o mapeamento do valor cru da API.
 function stageLabel(stageKey) {
-  return STAGES.find((s) => s.key === stageKey)?.label || stageKey || "—";
+  return STAGES.find((s) => s.key === stageKey)?.label || stageKey || "Sem etapa";
 }
 
 const STATUS_LABELS = {
@@ -88,13 +88,13 @@ export default function PropostasPage() {
     [proposals, statusFilter]
   );
 
-  const personName = (id) => people.find((p) => p.id === id)?.legalName || "—";
+  const personName = (id) => people.find((p) => p.id === id)?.legalName || "Sem pessoa vinculada";
   const opportunityLabel = (id) => {
     const opp = opportunities.find((o) => o.id === id);
-    if (!opp) return "—";
+    if (!opp) return "Sem oportunidade vinculada";
     return `${personName(opp.personId)} · ${stageLabel(opp.stage)}`;
   };
-  const propertyName = (id) => properties.find((p) => p.id === id)?.name || "—";
+  const propertyName = (id) => properties.find((p) => p.id === id)?.name || "Sem imóvel vinculado";
 
   async function handleCreate(payload) {
     setActionError("");
@@ -156,7 +156,7 @@ export default function PropostasPage() {
             { key: "version", label: "Versão", render: (r) => `v${r.versionNumber}` },
             { key: "value", label: "Valor", render: (r) => formatBRL(r.value) },
             { key: "status", label: "Status", render: (r) => <Badge tone={STATUS_TONE[r.status] || "neutral"}>{STATUS_LABELS[r.status] || r.status}</Badge> },
-            { key: "validUntil", label: "Válida até", render: (r) => (r.validUntil ? formatDate(r.validUntil) : "—") },
+            { key: "validUntil", label: "Válida até", render: (r) => (r.validUntil ? formatDate(r.validUntil) : "Sem data de validade") },
             { key: "createdAt", label: "Criada em", render: (r) => formatDateTime(r.createdAt) },
             {
               key: "actions",

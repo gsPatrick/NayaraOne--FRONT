@@ -249,11 +249,11 @@ export default function EstoqueItensPage() {
   // com min-width na coluna de ações pra garantir espaço pros 2 botões.
   const columns = [
     { key: "name", label: "Nome", width: "18%", render: (row) => <span className={styles.nameMain}>{row.name}</span> },
-    { key: "sku", label: "SKU", width: "10%", render: (row) => row.sku || "—" },
+    { key: "sku", label: "SKU", width: "10%", render: (row) => row.sku || "Sem SKU" },
     { key: "itemType", label: "Tipo", width: "12%", render: (row) => <Badge tone={ITEM_TYPE_TONE[row.itemType]}>{ITEM_TYPE_LABELS[row.itemType]}</Badge> },
-    { key: "unit", label: "Unidade", width: "8%", render: (row) => row.unitOfMeasure || "—" },
-    { key: "min", label: "Estoque mínimo", width: "12%", render: (row) => (row.minimumQuantity != null ? formatQuantity(row.minimumQuantity) : "—") },
-    { key: "avgCost", label: "Custo médio", width: "12%", render: (row) => (row.averageCost != null ? formatBRL(row.averageCost) : "—") },
+    { key: "unit", label: "Unidade", width: "8%", render: (row) => row.unitOfMeasure || "Sem unidade de medida" },
+    { key: "min", label: "Estoque mínimo", width: "12%", render: (row) => (row.minimumQuantity != null ? formatQuantity(row.minimumQuantity) : "Sem estoque mínimo") },
+    { key: "avgCost", label: "Custo médio", width: "12%", render: (row) => (row.averageCost != null ? formatBRL(row.averageCost) : "Sem custo registrado") },
     {
       key: "policy",
       label: "",
@@ -273,7 +273,7 @@ export default function EstoqueItensPage() {
   const locationColumns = [
     { key: "name", label: "Nome", width: "24%" },
     { key: "type", label: "Tipo", width: "16%", render: (row) => LOCATION_TYPE_LABELS[row.locationType] || row.locationType },
-    { key: "project", label: "Obra", width: "16%", render: (row) => row.project?.name || (row.locationType === "PROJECT_SITE" ? "—" : "") },
+    { key: "project", label: "Obra", width: "16%", render: (row) => row.project?.name || (row.locationType === "PROJECT_SITE" ? "Canteiro sem obra vinculada" : "Local sem obra (não é canteiro)") },
     { key: "status", label: "Status", width: "14%", render: (row) => <Badge tone={row.isActive ? "success" : "neutral"}>{row.isActive ? "Ativo" : "Inativo"}</Badge> },
     {
       key: "actions",
@@ -300,12 +300,12 @@ export default function EstoqueItensPage() {
         {/* BUG REAL CORRIGIDO (auditoria final Marco 7, Claude Browser, 14/10/2026): os cards
             mostravam "0" por alguns segundos enquanto a lista ainda carregava, antes da resposta
             real chegar — mesmo padrão de flash de vazio já corrigido no histórico do Patrimônio
-            nesta sessão. Agora mostram "—" durante o loading, nunca um "0" que pode ser confundido
+            nesta sessão. Agora mostram "Carregando" durante o loading, nunca um "0" que pode ser confundido
             com o valor real. */}
-        <StatTile label="Itens cadastrados" value={loading ? "—" : items.length} tone="neutral" icon="building" />
-        <StatTile label="Ferramentas" value={loading ? "—" : items.filter((i) => i.itemType === "TOOL").length} tone="info" icon="chart" />
-        <StatTile label="Locais cadastrados" value={loading ? "—" : locations.length} tone="success" icon="check" />
-        <StatTile label="Valor em custo médio" value={loading ? "—" : formatBRL(totalAvgValue)} tone="neutral" icon="money" />
+        <StatTile label="Itens cadastrados" value={loading ? "Carregando" : items.length} tone="neutral" icon="building" />
+        <StatTile label="Ferramentas" value={loading ? "Carregando" : items.filter((i) => i.itemType === "TOOL").length} tone="info" icon="chart" />
+        <StatTile label="Locais cadastrados" value={loading ? "Carregando" : locations.length} tone="success" icon="check" />
+        <StatTile label="Valor em custo médio" value={loading ? "Carregando" : formatBRL(totalAvgValue)} tone="neutral" icon="money" />
       </div>
 
       <Card title="Itens de estoque" subtitle="Catálogo mestre — materiais, ferramentas, patrimônio e serviços">

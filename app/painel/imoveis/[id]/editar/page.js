@@ -738,24 +738,24 @@ export default function EditPropertyPage({ params }) {
             <div className={styles.reviewWrap}>
               <div className={styles.reviewSection}>
                 <p className={styles.reviewTitle}>Informações básicas</p>
-                <p className={styles.reviewName}>{basic.name || "—"}</p>
-                <p className={styles.reviewMeta}>Código interno: {basic.internalCode || "—"}</p>
+                <p className={styles.reviewName}>{basic.name || "Falta preencher o nome do imóvel"}</p>
+                <p className={styles.reviewMeta}>Código interno: {basic.internalCode || "Sem código interno"}</p>
                 <p className={styles.reviewMeta}>
                   {basic.type} · {basic.areaM2 || "0"} m²
                   {basic.bedrooms ? ` · ${basic.bedrooms} dorm.` : ""}
                   {basic.parkingSpots ? ` · ${basic.parkingSpots} vaga(s)` : ""}
                 </p>
-                <p className={styles.reviewMeta}>{address.neighborhood || "—"}, {address.city || "—"}</p>
+                <p className={styles.reviewMeta}>{address.neighborhood || "Sem bairro"}, {address.city || "Sem cidade"}</p>
               </div>
 
               <div className={styles.reviewSection}>
                 <p className={styles.reviewTitle}>Localização</p>
                 <p className={styles.reviewMeta}>
-                  {address.street || "—"}{address.number ? `, ${address.number}` : ""}
+                  {address.street || "Sem rua cadastrada"}{address.number ? `, ${address.number}` : ""}
                   {address.complement ? ` — ${address.complement}` : ""}
                 </p>
-                <p className={styles.reviewMeta}>{address.neighborhood || "—"}, {address.city || "—"} {address.state ? `— ${address.state}` : ""}</p>
-                <p className={styles.reviewMeta}>CEP {address.zipCode || "—"}</p>
+                <p className={styles.reviewMeta}>{address.neighborhood || "Sem bairro"}, {address.city || "Sem cidade"} {address.state ? `— ${address.state}` : ""}</p>
+                <p className={styles.reviewMeta}>CEP {address.zipCode || "Sem CEP"}</p>
               </div>
 
               <div className={styles.reviewSection}>
@@ -770,7 +770,7 @@ export default function EditPropertyPage({ params }) {
                   <p className={styles.reviewMeta}>Nenhuma comodidade selecionada.</p>
                 )}
                 <p className={styles.reviewMeta}>
-                  {features.constructionYear ? `Construído em ${features.constructionYear}` : "Ano de construção não informado"}
+                  {features.constructionYear ? `Construído em ${features.constructionYear}` : "Sem ano de construção cadastrado"}
                   {features.coveredParkingSpots ? ` · ${features.coveredParkingSpots} vaga(s) coberta(s)` : ""}
                   {features.uncoveredParkingSpots ? ` · ${features.uncoveredParkingSpots} vaga(s) descoberta(s)` : ""}
                 </p>
@@ -778,8 +778,8 @@ export default function EditPropertyPage({ params }) {
 
               <div className={styles.reviewSection}>
                 <p className={styles.reviewTitle}>Documentação</p>
-                <p className={styles.reviewMeta}>Matrícula {docs.registryNumber || "—"} {docs.registryOffice ? `— ${docs.registryOffice}` : ""}</p>
-                <p className={styles.reviewMeta}>IPTU {docs.iptuNumber || "—"} · Condomínio {docs.condoFee ? formatBRL(Number(docs.condoFee)) : "—"}</p>
+                <p className={styles.reviewMeta}>Matrícula {docs.registryNumber || "Sem número de matrícula"} {docs.registryOffice ? `— ${docs.registryOffice}` : ""}</p>
+                <p className={styles.reviewMeta}>IPTU {docs.iptuNumber || "Sem número de IPTU"} · Condomínio {docs.condoFee ? formatBRL(Number(docs.condoFee)) : "Sem taxa de condomínio"}</p>
                 <Badge tone={docs.regularizationStatus === "Regularizado" ? "success" : "warning"}>{docs.regularizationStatus}</Badge>
               </div>
 
@@ -793,7 +793,7 @@ export default function EditPropertyPage({ params }) {
                   <p className={styles.reviewTitle}>Oferta</p>
                   <div className={styles.reviewOfferRow}>
                     <span className={styles.reviewPrice}>
-                      {offer.askingPrice ? formatBRL(Number(offer.askingPrice)) : "—"}
+                      {offer.askingPrice ? formatBRL(Number(offer.askingPrice)) : "Sem oferta ativa"}
                       {offer.offerType !== "SALE" ? <span className={styles.reviewPriceSuffix}>/mês</span> : null}
                     </span>
                     <Badge tone={offer.status === "ACTIVE" ? "success" : offer.status === "PAUSED" ? "warning" : "neutral"}>
@@ -802,13 +802,13 @@ export default function EditPropertyPage({ params }) {
                   </div>
                   <p className={styles.reviewMeta}>{OFFER_TYPE_LABELS[offer.offerType]}</p>
                   <p className={styles.reviewMeta}>
-                    Preço mínimo confidencial: {offer.confidentialMinPrice ? formatBRL(Number(offer.confidentialMinPrice)) : "—"} (uso interno)
+                    Preço mínimo confidencial: {offer.confidentialMinPrice ? formatBRL(Number(offer.confidentialMinPrice)) : "Sem preço mínimo definido"} (uso interno)
                   </p>
                   <p className={styles.reviewMeta}>
                     {offer.acceptsFinancing ? "Aceita financiamento" : "Não financia"} · {offer.acceptsTrade ? "Aceita permuta" : "Sem permuta"}
                   </p>
                   <p className={styles.reviewMeta}>
-                    Vigência: {offer.validFrom || "—"} {offer.validUntil ? `até ${offer.validUntil}` : "(indeterminada)"}
+                    Vigência: {offer.validFrom || "Sem data de início"} {offer.validUntil ? `até ${offer.validUntil}` : "(indeterminada)"}
                   </p>
                 </div>
               ) : null}
@@ -817,7 +817,7 @@ export default function EditPropertyPage({ params }) {
                 <p className={styles.reviewTitle}>Proprietários</p>
                 {owners.map((o, i) => (
                   <p className={styles.reviewMeta} key={i}>
-                    {o.name || "—"} — {o.percentage || "0"}% · {OWNER_ROLE_LABELS[o.roleCode] || o.roleCode}
+                    {o.name || "Proprietário sem nome"} — {o.percentage || "0"}% · {OWNER_ROLE_LABELS[o.roleCode] || o.roleCode}
                   </p>
                 ))}
               </div>

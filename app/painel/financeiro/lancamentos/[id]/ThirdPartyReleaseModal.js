@@ -150,7 +150,7 @@ export default function ThirdPartyReleaseModal({ open, onClose, origin, allEntri
               <Select id="tp-bank" value={bankAccountId} onChange={(e) => setBankAccountId(e.target.value)}>
                 <option value="">Selecione...</option>
                 {(bankAccounts || []).map((a) => (
-                  <option key={a.id} value={a.id}>{a.bankCode ? `Banco ${a.bankCode}` : "Chave PIX"} · Ag. {a.agency || "não informada"} · Conta {a.accountNumber || "não informada"}</option>
+                  <option key={a.id} value={a.id}>{a.bankCode ? `Banco ${a.bankCode}` : "Chave PIX"} · Ag. {a.agency || "sem agência"} · Conta {a.accountNumber || "sem agência"}</option>
                 ))}
               </Select>
             </FormField>

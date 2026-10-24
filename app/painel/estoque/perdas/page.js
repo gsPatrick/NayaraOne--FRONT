@@ -220,20 +220,20 @@ export default function PerdasPage() {
   }
 
   function itemName(id) {
-    return items.find((i) => i.id === id)?.name || "—";
+    return items.find((i) => i.id === id)?.name || "Sem item identificado";
   }
 
   function assetName(id) {
     const asset = assets.find((a) => a.id === id);
-    return asset ? `${asset.name}${asset.assetTag ? ` (${asset.assetTag})` : ""}` : "—";
+    return asset ? `${asset.name}${asset.assetTag ? ` (${asset.assetTag})` : ""}` : "Sem ativo identificado";
   }
 
   const columns = [
     { key: "item", label: "Item", width: "14%", render: (row) => (row.inventoryItemId ? itemName(row.inventoryItemId) : assetName(row.assetId)) },
-    { key: "qty", label: "Quantidade", width: "7%", render: (row) => (row.quantity != null ? formatQuantity(row.quantity) : "—") },
+    { key: "qty", label: "Quantidade", width: "7%", render: (row) => (row.quantity != null ? formatQuantity(row.quantity) : "Sem quantidade registrada") },
     { key: "context", label: "Contexto", width: "15%" },
-    { key: "estimate", label: "Estimativa", width: "9%", render: (row) => (row.estimatedCost != null ? formatBRL(row.estimatedCost) : "—") },
-    { key: "responsible", label: "Responsável", width: "10%", render: (row) => (row.responsiblePersonId ? personName(row.responsiblePersonId) || "Responsável definido" : "—") },
+    { key: "estimate", label: "Estimativa", width: "9%", render: (row) => (row.estimatedCost != null ? formatBRL(row.estimatedCost) : "Sem valor registrado") },
+    { key: "responsible", label: "Responsável", width: "10%", render: (row) => (row.responsiblePersonId ? personName(row.responsiblePersonId) || "Responsável sem cadastro" : "Sem responsável definido") },
     {
       key: "charge",
       label: "Cobrança",
@@ -242,7 +242,7 @@ export default function PerdasPage() {
         <span title="Lançamento a receber criado no Financeiro">
           {formatBRL(row.chargeFinancialEntry.amount)} <Badge tone="info">A receber</Badge>
         </span>
-      ) : row.status === "APPROVED" ? "Sem cobrança" : "—"),
+      ) : row.status === "APPROVED" ? "Sem cobrança" : "Sem cobrança prevista"),
     },
     {
       key: "status",

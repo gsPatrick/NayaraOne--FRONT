@@ -128,14 +128,14 @@ export default function AntifraudePage() {
                   </div>
                   <p className={styles.reason}>{humanizeText(c.reason)}</p>
                   <span className={styles.meta}>
-                    Aberto em {c.createdAt ? formatDateTime(c.createdAt) : "data não disponível"}
+                    Aberto em {c.createdAt ? formatDateTime(c.createdAt) : "data sem registro"}
                     {c.relatedEntry ? (
                       <>
                         {" · Lançamento: "}
                         <Link href={`/painel/financeiro/lancamentos/${c.relatedEntry.id}`}>{humanizeText(c.relatedEntry.description) || "Ver lançamento"}</Link>
                       </>
                     ) : null}
-                    {c.status === "RESOLVED" ? ` · Resolvido em ${c.resolvedAt ? formatDateTime(c.resolvedAt) : "data não disponível"} por ${c.resolvedByName || "responsável não identificado"}` : ""}
+                    {c.status === "RESOLVED" ? ` · Resolvido em ${c.resolvedAt ? formatDateTime(c.resolvedAt) : "data sem registro"} por ${c.resolvedByName || "responsável não identificado"}` : ""}
                     {c.resolutionNote ? ` · Nota: ${c.resolutionNote}` : ""}
                   </span>
                 </div>

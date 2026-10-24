@@ -180,7 +180,7 @@ export default function PessoasPage() {
         </div>
       ),
     },
-    { key: "taxIdNormalized", label: "Documento" },
+    { key: "taxIdNormalized", label: "Documento", render: (row) => row.taxIdNormalized || "Sem CPF/CNPJ" },
     {
       key: "status",
       label: "Status",
@@ -209,6 +209,7 @@ export default function PessoasPage() {
       key: "roles",
       label: "Papéis",
       render: (row) => {
+        if (row.roles.length === 0) return "Sem papel definido";
         const visibleRoles = row.roles.slice(0, 3);
         const extraCount = row.roles.length - visibleRoles.length;
         return (
@@ -230,6 +231,7 @@ export default function PessoasPage() {
       label: "Contato principal",
       render: (row) => (
         <div className={styles.contactCell}>
+          {row.contacts.filter((c) => c.primary).length === 0 ? "Sem contato principal" : null}
           {row.contacts.filter((c) => c.primary).map((c) => (
             <span key={c.id || `${c.type}-${c.value}`} className={styles.contactRow}>
               <Icon name={CONTACT_TYPE_ICON[c.type] || "phone"} size={12} />

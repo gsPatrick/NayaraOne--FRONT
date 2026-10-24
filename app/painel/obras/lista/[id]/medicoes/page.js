@@ -142,7 +142,7 @@ export default function MedicoesObraPage({ params }) {
                         <div className={styles.rowInfo}>
                           <span className={styles.rowTitle}>{formatDate(m.measuredAt)} · {formatPercent(m.measuredPct)}</span>
                           <span className={styles.rowSubtitle}>
-                            Medido por {measuredBy?.name || "—"} · Valor: {formatBRL(m.totalAmount)}
+                            Medido por {measuredBy?.name || "Sem responsável definido"} · Valor: {formatBRL(m.totalAmount)}
                             {m.notes ? ` · ${m.notes}` : ""}
                           </span>
                         </div>

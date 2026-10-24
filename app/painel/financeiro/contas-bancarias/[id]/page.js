@@ -179,14 +179,14 @@ export default function ContaBancariaDetailPage({ params }) {
               >
                 <dl className={styles.detailList}>
                   <div className={styles.detailRow}><dt>Proprietário</dt><dd>{owner?.legalName || "Conta operacional"}</dd></div>
-                  <div className={styles.detailRow}><dt>Banco</dt><dd>{account.bankCode ? `${getBankName(account.bankCode)} (${account.bankCode})` : "Não informado"}</dd></div>
+                  <div className={styles.detailRow}><dt>Banco</dt><dd>{account.bankCode ? `${getBankName(account.bankCode)} (${account.bankCode})` : "Sem banco cadastrado"}</dd></div>
                   <div className={styles.detailRow}>
                     <dt>Agência</dt>
-                    <dd className={styles.mono}>{account.agency ? (revealed ? account.agency : maskAgency(account.agency)) : "Não informada"}</dd>
+                    <dd className={styles.mono}>{account.agency ? (revealed ? account.agency : maskAgency(account.agency)) : "Sem agência cadastrada"}</dd>
                   </div>
                   <div className={styles.detailRow}>
                     <dt>Conta</dt>
-                    <dd className={styles.mono}>{account.accountNumber ? (revealed ? account.accountNumber : maskAccountNumber(account.accountNumber)) : "Não informado"}</dd>
+                    <dd className={styles.mono}>{account.accountNumber ? (revealed ? account.accountNumber : maskAccountNumber(account.accountNumber)) : "Sem número da conta cadastrado"}</dd>
                   </div>
                   <div className={styles.detailRow}>
                     <dt>Chave PIX</dt>

@@ -279,7 +279,7 @@ export default function UserDetailPage({ params }) {
                         </span>
                       </div>
                       <div className={styles.propertyPrice}>
-                        {p.activeOffer ? formatBRL(p.activeOffer.askingPrice) : "—"}
+                        {p.activeOffer ? formatBRL(p.activeOffer.askingPrice) : "Sem oferta ativa"}
                         {p.activeOffer?.offerType === "RENT" ? <span className={styles.propertyPriceSuffix}>/mês</span> : null}
                       </div>
                       <Icon name="chevronRight" size={16} className={styles.propertyArrow} />
@@ -328,7 +328,7 @@ export default function UserDetailPage({ params }) {
                       <span className={styles.listRowLeft}>
                         <Icon name="layers" size={14} />
                         <span className={styles.listRowText}>
-                          <span className={styles.listRowCompany}>{m.company?.name || "—"}</span>
+                          <span className={styles.listRowCompany}>{m.company?.name || "Sem empresa vinculada"}</span>
                           <span className={styles.listRowUnit}>{m.unit?.name || "Sem unidade — acesso a toda a empresa"}</span>
                         </span>
                       </span>

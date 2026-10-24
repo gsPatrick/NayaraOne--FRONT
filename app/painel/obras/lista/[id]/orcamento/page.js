@@ -359,7 +359,7 @@ export default function OrcamentoObraPage({ params }) {
                   {budgetLines.map((b) => (
                     <tr key={b.id}>
                       <td>{b.category}</td>
-                      <td>{b.description || "—"}</td>
+                      <td>{b.description || "Sem descrição"}</td>
                       <td>
                         {formatBRL(b.plannedAmount)}
                         {budget?.status === "APPROVED" && b.budgetId === budget.id ? (

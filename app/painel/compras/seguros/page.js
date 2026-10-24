@@ -455,8 +455,8 @@ export default function SegurosPage() {
       },
     },
     { key: "provider", label: "Seguradora", width: "12%", render: (row) => providerLabel(row.provider) },
-    { key: "number", label: "Nº da apólice", width: "14%", render: (row) => row.externalPolicyNumber || "—" },
-    { key: "premium", label: "Prêmio", width: "12%", render: (row) => (row.premiumAmount ? formatBRL(row.premiumAmount) : "—") },
+    { key: "number", label: "Nº da apólice", width: "14%", render: (row) => row.externalPolicyNumber || "Sem número de apólice" },
+    { key: "premium", label: "Prêmio", width: "12%", render: (row) => (row.premiumAmount ? formatBRL(row.premiumAmount) : "Sem prêmio registrado") },
     { key: "created", label: "Criada em", width: "12%", render: (row) => formatDateTime(row.created_at) },
     {
       key: "actions",
@@ -586,7 +586,7 @@ export default function SegurosPage() {
                 {detailModal.policy.externalPolicyNumber ? ` — Nº ${detailModal.policy.externalPolicyNumber}` : ""}
               </p>
               {detailModal.policy.premiumAmount ? <p style={{ margin: "0 0 4px" }}>Prêmio: {formatBRL(detailModal.policy.premiumAmount)}</p> : null}
-              {detailModal.policy.effectiveDate ? <p style={{ margin: "0 0 4px" }}>Vigência: {formatDate(detailModal.policy.effectiveDate)} a {detailModal.policy.expiryDate ? formatDate(detailModal.policy.expiryDate) : "—"}</p> : null}
+              {detailModal.policy.effectiveDate ? <p style={{ margin: "0 0 4px" }}>Vigência: {formatDate(detailModal.policy.effectiveDate)} a {detailModal.policy.expiryDate ? formatDate(detailModal.policy.expiryDate) : "Sem data de validade"}</p> : null}
               {detailModal.policy.coverageSummary ? <p style={{ margin: "0 0 4px" }}>Cobertura: {detailModal.policy.coverageSummary}</p> : null}
               {detailModal.policy.propertyId ? <p style={{ margin: "0 0 4px" }}>Imóvel vinculado: {detailModal.policy.linkedProperty?.title || "imóvel não encontrado"}</p> : null}
               {detailModal.policy.contractId ? <p style={{ margin: 0 }}>Contrato vinculado: {linkedContractLabel(detailModal.policy) || "contrato não encontrado"}</p> : null}
@@ -669,7 +669,7 @@ export default function SegurosPage() {
               {isPolicyExpired(detailModal.policy) ? (
                 <div style={{ marginTop: "var(--space-5)" }}>
                   <Alert tone="warning" title="Vigência encerrada">
-                    A vigência desta apólice terminou em {detailModal.policy.expiryDate || "—"} — não é possível abrir sinistro novo.
+                    A vigência desta apólice terminou em {detailModal.policy.expiryDate || "data sem registro"} — não é possível abrir sinistro novo.
                     Sinistros abertos antes do vencimento continuam podendo ser submetidos e liquidados normalmente.
                   </Alert>
                 </div>

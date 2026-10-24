@@ -315,9 +315,9 @@ export default function FornecedorDetailPage({ params }) {
                   <dt>Status</dt>
                   <dd style={{ margin: 0 }}><Badge tone={DUE_DILIGENCE_TONE[qualification.dueDiligenceStatus]}>{DUE_DILIGENCE_LABELS[qualification.dueDiligenceStatus] || qualification.dueDiligenceStatus}</Badge></dd>
                   <dt>Parecer</dt>
-                  <dd style={{ margin: 0 }}>{qualification.dueDiligenceNotes || "—"}</dd>
+                  <dd style={{ margin: 0 }}>{qualification.dueDiligenceNotes || "Sem observações"}</dd>
                   <dt>Decidido em</dt>
-                  <dd style={{ margin: 0 }}>{qualification.approvedAt && qualification.dueDiligenceStatus !== "PENDING" ? formatDateTime(qualification.approvedAt) : "—"}</dd>
+                  <dd style={{ margin: 0 }}>{qualification.approvedAt && qualification.dueDiligenceStatus !== "PENDING" ? formatDateTime(qualification.approvedAt) : "Sem aprovação registrada"}</dd>
                 </dl>
                 {canApprove ? (
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>

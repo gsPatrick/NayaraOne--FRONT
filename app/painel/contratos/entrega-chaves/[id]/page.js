@@ -225,7 +225,7 @@ export default function EntregaChavesDetailPage({ params }) {
         ) : null}
         {delivery.status === "CANCELLED" ? (
           <Alert tone="info" title="Entrega cancelada" className={styles.notice}>
-            Cancelada em {delivery.cancelledAt ? formatDateTime(delivery.cancelledAt) : "data não registrada"}. Motivo: {delivery.cancelReason || "não informado"}
+            Cancelada em {delivery.cancelledAt ? formatDateTime(delivery.cancelledAt) : "data sem registro"}. Motivo: {delivery.cancelReason || "sem motivo registrado"}
           </Alert>
         ) : null}
         {actionError ? <Alert tone="danger" title="Ação bloqueada" className={styles.notice}>{actionError}</Alert> : null}
@@ -238,7 +238,7 @@ export default function EntregaChavesDetailPage({ params }) {
                 <div className={styles.detailRow}><dt>Entregue para</dt><dd>{deliveredTo?.legalName || "Pessoa não encontrada"}</dd></div>
                 <div className={styles.detailRow}><dt>Entregue em</dt><dd>{delivery.deliveredAt ? formatDateTime(delivery.deliveredAt) : "Ainda não entregue"}</dd></div>
                 <div className={styles.detailRow}><dt>Observações</dt><dd>{delivery.notes || "Sem observações"}</dd></div>
-                <div className={styles.detailRow}><dt>Chaves/controles</dt><dd>{delivery.keysCount ?? "Não informado"}{delivery.keysIdentification ? ` (${delivery.keysIdentification})` : ""}</dd></div>
+                <div className={styles.detailRow}><dt>Chaves/controles</dt><dd>{delivery.keysCount ?? "Sem quantidade registrada"}{delivery.keysIdentification ? ` (${delivery.keysIdentification})` : ""}</dd></div>
                 <div className={styles.detailRow}><dt>Política de fotos</dt><dd>{{ REQUIRED_USED_PROPERTY: "Fotos obrigatórias (imóvel usado)", REQUIRED_SALE_DELIVERY: "Fotos obrigatórias (entrega de venda)", NOT_REQUIRED_LEASE_CHECKIN_SIGNED: "Fotos dispensadas (locação com vistoria de entrada assinada)" }[delivery.photoPolicy || termPreview?.photoPolicy] || "definida na liberação"}</dd></div>
                 <div className={styles.detailRow}><dt>Termo</dt><dd>{delivery.status === "RELEASED" ? `${termVersionLabel(delivery.termVersion)} — gerado e assinado` : delivery.status === "CANCELLED" ? "Não gerado (entrega cancelada)" : "Gerado pelo sistema na liberação (veja a prévia)"}</dd></div>
               </dl>

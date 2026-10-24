@@ -87,7 +87,7 @@ export default function ObrasDashboardPage() {
               <p className={styles.generatedAt}>
                 Margem projetada: {formatBRL(dashboard.obras.projectedMarginTotal)}
                 {dashboard.obras.projectedMarginPct !== null ? ` (${dashboard.obras.projectedMarginPct}%)` : ""}
-                {" · "}Desperdício: {dashboard.obras.wastagePct !== null ? `${dashboard.obras.wastagePct}%` : "—"}
+                {" · "}Desperdício: {dashboard.obras.wastagePct !== null ? `${dashboard.obras.wastagePct}%` : "Sem desperdício medido ainda"}
               </p>
             </Card>
 
@@ -112,8 +112,8 @@ export default function ObrasDashboardPage() {
           <div className={styles.row}>
             <Card title="Progresso x cronograma" subtitle="Média de todas as etapas de todas as obras">
               <div className={styles.grid} style={{ gridTemplateColumns: "1fr 1fr", marginBottom: 0 }}>
-                <StatTile label="Progresso físico médio" value={dashboard.obras.avgPhysicalProgressPct !== null ? `${dashboard.obras.avgPhysicalProgressPct}%` : "—"} tone="info" icon="chart" />
-                <StatTile label="Progresso planejado médio" value={dashboard.obras.avgPlannedProgressPct !== null ? `${dashboard.obras.avgPlannedProgressPct}%` : "—"} tone="neutral" icon="clock" />
+                <StatTile label="Progresso físico médio" value={dashboard.obras.avgPhysicalProgressPct !== null ? `${dashboard.obras.avgPhysicalProgressPct}%` : "Sem medição ainda"} tone="info" icon="chart" />
+                <StatTile label="Progresso planejado médio" value={dashboard.obras.avgPlannedProgressPct !== null ? `${dashboard.obras.avgPlannedProgressPct}%` : "Sem medição ainda"} tone="neutral" icon="clock" />
               </div>
             </Card>
 

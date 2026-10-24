@@ -432,12 +432,12 @@ export default function EtapaDetalhePage({ params }) {
                     <div className={styles.rowInfo}>
                       <span className={styles.rowTitle}>{formatDate(m.measuredAt)} · {formatPercent(m.measuredPct)}</span>
                       <span className={styles.rowSubtitle}>
-                        Medido por {measuredBy?.name || "—"} · Valor: {formatBRL(m.totalAmount)}
+                        Medido por {measuredBy?.name || "Sem responsável definido"} · Valor: {formatBRL(m.totalAmount)}
                         {m.notes ? ` · ${m.notes}` : ""}
                       </span>
                       {m.status === "PAYABLE" || m.status === "REJECTED" ? (
                         <span className={styles.rowSubtitle}>
-                          {m.status === "PAYABLE" ? "Aprovada" : "Rejeitada"} por {decidedBy?.name || "—"} em {formatDateTime(m.decidedAt)}
+                          {m.status === "PAYABLE" ? "Aprovada" : "Rejeitada"} por {decidedBy?.name || "Sem responsável definido"} em {formatDateTime(m.decidedAt)}
                         </span>
                       ) : null}
                       {m.rejectionReason ? (

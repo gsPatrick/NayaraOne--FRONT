@@ -480,13 +480,13 @@ export default function PosObraDetalhePage({ params }) {
                 <div>
                   <p className={styles.infoLabel}>Imóvel</p>
                   <p className={styles.infoValue}>
-                    {property ? <a href={`/painel/imoveis/${property.id}`} className={styles.infoLink}>{property.name}</a> : "—"}
+                    {property ? <a href={`/painel/imoveis/${property.id}`} className={styles.infoLink}>{property.name}</a> : "Sem imóvel vinculado"}
                   </p>
                 </div>
                 <div>
                   <p className={styles.infoLabel}>Obra de origem</p>
                   <p className={styles.infoValue}>
-                    {project ? <a href={`/painel/obras/lista/${project.id}`} className={styles.infoLink}>{project.name}</a> : "—"}
+                    {project ? <a href={`/painel/obras/lista/${project.id}`} className={styles.infoLink}>{project.name}</a> : "Sem obra vinculada"}
                   </p>
                 </div>
                 <div>
@@ -495,7 +495,7 @@ export default function PosObraDetalhePage({ params }) {
                 </div>
                 <div>
                   <p className={styles.infoLabel}>Responsável</p>
-                  <p className={styles.infoValue}>{responsible?.name || "—"}</p>
+                  <p className={styles.infoValue}>{responsible?.name || "Sem responsável definido"}</p>
                 </div>
                 <div>
                   <p className={styles.infoLabel}>Prazo de garantia</p>
@@ -507,11 +507,11 @@ export default function PosObraDetalhePage({ params }) {
                 </div>
                 <div>
                   <p className={styles.infoLabel}>Categoria</p>
-                  <p className={styles.infoValue}>{MAINTENANCE_CATEGORY_LABELS[maintenanceCase.category] || "—"}</p>
+                  <p className={styles.infoValue}>{MAINTENANCE_CATEGORY_LABELS[maintenanceCase.category] || "Sem categoria"}</p>
                 </div>
                 <div>
                   <p className={styles.infoLabel}>Causa raiz</p>
-                  <p className={styles.infoValue}>{MAINTENANCE_ROOT_CAUSE_LABELS[maintenanceCase.rootCauseCode] || "—"}</p>
+                  <p className={styles.infoValue}>{MAINTENANCE_ROOT_CAUSE_LABELS[maintenanceCase.rootCauseCode] || "Sem causa raiz"}</p>
                 </div>
                 <div>
                   <p className={styles.infoLabel}>Prazo de SLA</p>

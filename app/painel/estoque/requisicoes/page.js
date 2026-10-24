@@ -173,11 +173,11 @@ export default function RequisicoesPage() {
   }
 
   function locationName(id) {
-    return locations.find((l) => l.id === id)?.name || "—";
+    return locations.find((l) => l.id === id)?.name || "Sem local definido";
   }
 
   function itemName(id) {
-    return items.find((i) => i.id === id)?.name || "—";
+    return items.find((i) => i.id === id)?.name || "Sem item identificado";
   }
 
   const hasWarehouse = locations.some((l) => l.locationType === "WAREHOUSE");
@@ -189,15 +189,15 @@ export default function RequisicoesPage() {
   // exibe um resumo por linha.
   const columns = [
     { key: "warehouse", label: "Almoxarifado", width: "14%", render: (row) => locationName(row.warehouseLocationId) },
-    { key: "site", label: "Canteiro", width: "14%", render: (row) => (row.projectLocationId ? locationName(row.projectLocationId) : "—") },
-    { key: "obra", label: "Obra", width: "14%", render: (row) => row.project?.name || "—" },
+    { key: "site", label: "Canteiro", width: "14%", render: (row) => (row.projectLocationId ? locationName(row.projectLocationId) : "Sem local definido") },
+    { key: "obra", label: "Obra", width: "14%", render: (row) => row.project?.name || "Sem obra vinculada" },
     {
       key: "items",
       label: "Itens",
       width: "22%",
       render: (row) => (
         <span style={{ fontSize: "var(--text-body-sm)" }}>
-          {(row.items || []).map((it) => `${itemName(it.inventoryItemId)} (${formatQuantity(it.quantity)})`).join(", ") || "—"}
+          {(row.items || []).map((it) => `${itemName(it.inventoryItemId)} (${formatQuantity(it.quantity)})`).join(", ") || "Sem itens"}
         </span>
       ),
     },
@@ -205,7 +205,7 @@ export default function RequisicoesPage() {
     // ACHADO REAL (auditoria Marco 7 "r2", 2026-10-17): a obra aparecia, mas o nome de quem
     // pediu não aparecia em lugar nenhum — mesmo padrão já corrigido antes em Requisições de
     // compra. O backend agora inclui requestedByUser na listagem.
-    { key: "requester", label: "Solicitante", width: "12%", render: (row) => row.requestedByUser?.name || "—" },
+    { key: "requester", label: "Solicitante", width: "12%", render: (row) => row.requestedByUser?.name || "Sem solicitante" },
     { key: "created", label: "Criada em", width: "14%", render: (row) => formatDateTime(row.created_at) },
     {
       key: "actions",

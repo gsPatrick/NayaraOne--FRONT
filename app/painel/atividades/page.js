@@ -21,7 +21,7 @@ import { apiFetch } from "@/lib/api/client";
 import { entityTypeLabel, actionVerb, ACTION_TONE, ACTION_ICON, ENTITY_TYPE_LABELS } from "@/lib/audit/labels";
 import { summarizeChanges } from "@/lib/audit/humanize";
 import { hasPermission } from "@/lib/rbac/permissions";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTime, humanizeText } from "@/lib/format";
 import styles from "./page.module.css";
 
 // Entidades cuja reversão já existe como rota própria e segura no domínio dono do registro —
@@ -120,7 +120,7 @@ export default function AtividadesPage() {
               <Icon name={ACTION_ICON[verb] || "pencil"} size={14} />
             </span>
             <div className={styles.whatInfo}>
-              <span className={styles.whatReason}>{row.reason || row.action}</span>
+              <span className={styles.whatReason}>{humanizeText(row.reason) || row.action}</span>
               <span className={styles.whatEntity}>{entityTypeLabel(row.entityType)}</span>
             </div>
           </div>

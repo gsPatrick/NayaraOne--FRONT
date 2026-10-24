@@ -18,17 +18,54 @@ import { listFinancingCases, createFinancingCase, getNayStalledCases } from "@/l
 import { listProperties } from "@/lib/api/properties";
 import { formatDateTime } from "@/lib/format";
 
-const STATUS_LABELS = { DRAFT: "Rascunho" };
-const STATUS_TONE = { DRAFT: "neutral" };
+const STATUS_LABELS = {
+  DRAFT: "Rascunho",
+  DOCUMENTS_PENDING: "Aguardando documentos",
+  READY_TO_SUBMIT: "Pronto para enviar",
+  SUBMITTED: "Enviado ao provider",
+  UNDER_ANALYSIS: "Em análise",
+  PENDING_CUSTOMER: "Aguardando documentos do cliente",
+  PENDING_PROPERTY: "Aguardando dados do imóvel",
+  APPROVED: "Aprovado",
+  REJECTED: "Rejeitado",
+  CONTRACTING: "Em contratação",
+  COMPLETED: "Concluído",
+  CANCELED: "Cancelado",
+};
+
+function financingStatusLabel(row) {
+  if (row?.providerCode === "manual" && row?.status === "SUBMITTED") return "Aguardando ação manual no banco";
+  return STATUS_LABELS[row?.status] || row?.status;
+}
+const STATUS_TONE = {
+  DRAFT: "neutral",
+  DOCUMENTS_PENDING: "warning",
+  READY_TO_SUBMIT: "info",
+  SUBMITTED: "info",
+  UNDER_ANALYSIS: "info",
+  PENDING_CUSTOMER: "warning",
+  PENDING_PROPERTY: "warning",
+  APPROVED: "success",
+  REJECTED: "danger",
+  CONTRACTING: "info",
+  COMPLETED: "success",
+  CANCELED: "danger",
+};
 
 const PROVIDER_LABELS = {
   sandbox: "Sandbox (simulação)",
   manual: "Manual (sem banco real integrado)",
 };
 
+const PURPOSE_LABELS = {
+  RESIDENCIAL: "Residencial",
+  COMERCIAL: "Comercial",
+};
+
 const EMPTY_FORM = {
   propertyId: "",
   providerCode: "sandbox",
+  purpose: "RESIDENCIAL",
   principalName: "",
   principalPersonId: "",
   coApplicantName: "",
@@ -48,6 +85,7 @@ export default function CorrespondentePage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [visibleCount, setVisibleCount] = useState(25);
 
   function load() {
     setLoading(true);
@@ -85,12 +123,17 @@ export default function CorrespondentePage() {
       if (form.includeCoApplicant && form.coApplicantPersonId) {
         applicants.push({ personId: form.coApplicantPersonId, role: "CO_APPLICANT" });
       }
-      await createFinancingCase({
+      const created = await createFinancingCase({
         propertyId: form.propertyId || null,
         providerCode: form.providerCode,
+        purpose: form.purpose,
         applicants,
       });
       setCreateOpen(false);
+      if (created?.id) {
+        router.push(`/painel/correspondente/${created.id}`);
+        return;
+      }
       load();
     } catch (err) {
       setActionError(err?.message || "Não foi possível criar o caso de financiamento.");
@@ -103,10 +146,10 @@ export default function CorrespondentePage() {
     {
       key: "status",
       label: "Status",
-      width: "14%",
+      width: "240px",
       render: (row) => (
         <>
-          <Badge tone={STATUS_TONE[row.status] || "neutral"}>{STATUS_LABELS[row.status] || row.status}</Badge>
+          <Badge tone={STATUS_TONE[row.status] || "neutral"}>{financingStatusLabel(row)}</Badge>
           {row.possibleDuplicateOfCaseId ? (
             <div style={{ marginTop: 4 }}>
               <Badge tone="warning">Possível duplicata</Badge>
@@ -118,38 +161,39 @@ export default function CorrespondentePage() {
     {
       key: "principal",
       label: "Proponente principal",
-      width: "26%",
+      width: "220px",
       render: (row) => {
         const principal = (row.applicants || []).find((a) => a.role === "PRINCIPAL");
-        return principal?.person?.legalName || "—";
+        return principal?.person?.legalName || "Sem pessoa vinculada";
       },
     },
     {
       key: "coApplicants",
       label: "Co-proponentes",
-      width: "20%",
+      width: "200px",
       render: (row) => {
         const others = (row.applicants || []).filter((a) => a.role !== "PRINCIPAL");
-        return others.length ? others.map((a) => a.person?.legalName).filter(Boolean).join(", ") : "—";
+        return others.length ? others.map((a) => a.person?.legalName).filter(Boolean).join(", ") : "Sem co-proponentes";
       },
     },
     {
       key: "property",
       label: "Imóvel",
-      width: "18%",
-      render: (row) => (row.property ? `${row.property.internalCode ? `${row.property.internalCode} — ` : ""}${row.property.title || ""}` : "—"),
+      width: "280px",
+      render: (row) => (row.property ? `${row.property.internalCode ? `${row.property.internalCode} — ` : ""}${row.property.title || ""}` : "Sem imóvel vinculado"),
     },
     {
       key: "provider",
       label: "Provider",
-      width: "12%",
+      width: "220px",
       render: (row) => PROVIDER_LABELS[row.providerCode] || row.providerCode,
     },
-    { key: "created", label: "Criado em", width: "8%", render: (row) => formatDateTime(row.created_at || row.createdAt) },
+    { key: "created", label: "Criado em", width: "168px", render: (row) => formatDateTime(row.created_at || row.createdAt) },
     {
       key: "actions",
       label: "",
-      width: "12%",
+      width: "88px",
+      sticky: true,
       render: (row) => (
         <Button size="sm" variant="secondary" onClick={() => router.push(`/painel/correspondente/${row.id}`)}>Ver</Button>
       ),
@@ -167,12 +211,21 @@ export default function CorrespondentePage() {
 
       {stalled && stalled.cases?.length > 0 ? (
         <Alert tone="warning" title={`${stalled.cases.length} caso(s) sem atividade há mais de ${stalled.thresholdDays} dia(s)`}>
-          Sinalização automática de acompanhamento — não decide nem altera nenhum caso. {stalled.cases.map((c) => c.reason).slice(0, 3).join(" ")}
+          Sinalização automática de acompanhamento — não decide nem altera nenhum caso.
+          {" "}
+          {[...new Set(stalled.cases.map((c) => c.reason))].slice(0, 2).join(" ")}
         </Alert>
       ) : null}
 
       <Card title="Casos de financiamento" subtitle="Correspondente bancário — proponentes vinculados ao cadastro real de contatos.">
-        <Table columns={columns} rows={loading ? [] : cases} loading={loading} emptyMessage="Nenhum caso de financiamento registrado." />
+        <Table columns={columns} minWidth="1416px" rows={loading ? [] : cases.slice(0, visibleCount)} loading={loading} emptyMessage="Nenhum caso de financiamento registrado." />
+        {!loading && cases.length > visibleCount ? (
+          <div style={{ marginTop: 12 }}>
+            <Button variant="secondary" onClick={() => setVisibleCount((n) => n + 25)}>
+              Mostrar mais ({cases.length - visibleCount} restantes)
+            </Button>
+          </div>
+        ) : null}
       </Card>
 
       <StickyActionBar>
@@ -201,6 +254,13 @@ export default function CorrespondentePage() {
           </Select>
         </FormField>
 
+        <FormField label="Finalidade" htmlFor="fc-purpose">
+          <Select id="fc-purpose" value={form.purpose} onChange={(e) => setForm((p) => ({ ...p, purpose: e.target.value }))}>
+            <option value="RESIDENCIAL">{PURPOSE_LABELS.RESIDENCIAL}</option>
+            <option value="COMERCIAL">{PURPOSE_LABELS.COMERCIAL}</option>
+          </Select>
+        </FormField>
+
         <FormField label="Provider" htmlFor="fc-provider" helper="Sandbox simula um banco fictício; nenhum banco real está integrado ainda nesta fase.">
           <Select id="fc-provider" value={form.providerCode} onChange={(e) => setForm((p) => ({ ...p, providerCode: e.target.value }))}>
             <option value="sandbox">{PROVIDER_LABELS.sandbox}</option>
@@ -214,6 +274,7 @@ export default function CorrespondentePage() {
             value={form.principalName}
             personId={form.principalPersonId}
             placeholder="Buscar contato pelo nome..."
+            unlinkedHint="Selecione um contato já cadastrado. Texto livre não cria o caso."
             onSelect={({ name, personId }) => setForm((p) => ({ ...p, principalName: name, principalPersonId: personId || "" }))}
           />
         </FormField>
@@ -229,6 +290,7 @@ export default function CorrespondentePage() {
               value={form.coApplicantName}
               personId={form.coApplicantPersonId}
               placeholder="Buscar contato pelo nome..."
+              unlinkedHint="Selecione um contato já cadastrado. Texto livre não cria o caso."
               onSelect={({ name, personId }) => setForm((p) => ({ ...p, coApplicantName: name, coApplicantPersonId: personId || "" }))}
             />
             <Button

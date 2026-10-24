@@ -66,7 +66,7 @@ function isInvalidated(intent) {
 // Conta mascarada: só os 4 últimos dígitos da conta aparecem.
 function maskedAccount(account) {
   if (!account) return "conta não encontrada";
-  const bank = account.bankName || (account.bankCode ? `banco ${account.bankCode}` : "banco não informado");
+  const bank = account.bankName || (account.bankCode ? `banco ${account.bankCode}` : "banco sem cadastro");
   const number = String(account.accountNumber || "");
   const tail = number ? `conta final ${number.slice(-4)}` : account.pixKey ? "chave PIX cadastrada" : "conta sem número";
   return `${bank} · ag. ${account.agency || "sem agência"} · ${tail}`;
@@ -184,7 +184,7 @@ export default function IntencoesPagamentoPage() {
     }
     const ok = await confirm({
       title: "Registrar pagamento com o comprovante anexado?",
-      message: `O lançamento será dado como pago por baixa manual com o comprovante anexado (motivo: ${entry.settlementReason || "não informado"}) — não como confirmação do banco. A conciliação com o extrato continua necessária.`,
+      message: `O lançamento será dado como pago por baixa manual com o comprovante anexado (motivo: ${entry.settlementReason || "sem motivo registrado"}) — não como confirmação do banco. A conciliação com o extrato continua necessária.`,
       confirmLabel: "Registrar",
       tone: "primary",
     });

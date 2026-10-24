@@ -82,9 +82,9 @@ export default function CrmPage() {
   const [actionError, setActionError] = useState("");
   const [reasonPrompt, setReasonPrompt] = useState(null); // { itemId, stageKey } | null
 
-  const personName = (id) => people.find((p) => p.id === id)?.legalName || "—";
-  const propertyName = (id) => properties.find((p) => p.id === id)?.name || "—";
-  const repName = (id) => users.find((u) => u.id === id)?.name || "—";
+  const personName = (id) => people.find((p) => p.id === id)?.legalName || "Sem pessoa vinculada";
+  const propertyName = (id) => properties.find((p) => p.id === id)?.name || "Sem imóvel vinculado";
+  const repName = (id) => users.find((u) => u.id === id)?.name || "Sem responsável definido";
 
   function loadOpportunities() {
     setLoading(true);
@@ -326,7 +326,7 @@ export default function CrmPage() {
 function timelineEventLabel(event, stages) {
   const stageLabel = (apiStage) => {
     const key = fromApiStage(apiStage);
-    return stages.find((s) => s.key === key)?.label || apiStage || "—";
+    return stages.find((s) => s.key === key)?.label || apiStage || "Sem etapa";
   };
   if (event.type === "OPPORTUNITY_CREATED") return "Oportunidade criada";
   if (event.type === "STAGE_CHANGE") {
@@ -505,7 +505,7 @@ function OpportunityDetailModal({ opportunity, stages, users = [], onSave, onClo
                   value={form.temperature}
                   onChange={(e) => setForm((p) => ({ ...p, temperature: e.target.value }))}
                 >
-                  <option value="">Não informada</option>
+                  <option value="">Sem temperatura definida</option>
                   <option value="COLD">Fria</option>
                   <option value="WARM">Morna</option>
                   <option value="HOT">Quente</option>
@@ -531,7 +531,7 @@ function OpportunityDetailModal({ opportunity, stages, users = [], onSave, onClo
               {!isClosed ? (
                 <div className={[styles.nextActionBox, overdue ? styles.overdue : ""].join(" ")}>
                   <p className={styles.nextActionLabel}>Próxima ação</p>
-                  <p className={styles.nextActionText}>{opportunity.nextAction || "—"}</p>
+                  <p className={styles.nextActionText}>{opportunity.nextAction || "Sem próxima ação definida"}</p>
                   <p className={styles.nextActionDue}>
                     Prazo: {formatDateTime(opportunity.nextActionDueAt)}{overdue ? " · vencida" : ""}
                   </p>
@@ -580,7 +580,7 @@ function OpportunityDetailModal({ opportunity, stages, users = [], onSave, onClo
                       <strong>{task.title}</strong>
                       <div className={styles.nextActionDue}>
                         {task.dueAt ? `Prazo: ${formatDateTime(task.dueAt)}` : "Sem prazo"}
-                        {task.assignedToUserId ? ` · ${users.find((u) => u.id === task.assignedToUserId)?.name || "—"}` : ""}
+                        {task.assignedToUserId ? ` · ${users.find((u) => u.id === task.assignedToUserId)?.name || "Sem responsável definido"}` : ""}
                       </div>
                     </div>
                     <div className={styles.detailHeader}>

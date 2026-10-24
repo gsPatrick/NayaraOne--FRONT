@@ -89,7 +89,7 @@ export default function PropertyCard({ property, onClick }) {
         </div>
         <div className={styles.footer}>
           <div>
-            <span className={styles.price}>{offer ? formatBRL(offer.askingPrice) : "—"}</span>
+            <span className={styles.price}>{offer ? formatBRL(offer.askingPrice) : "Sem oferta ativa"}</span>
             {offer?.offerType === "RENT" ? <span className={styles.priceSuffix}>/mês</span> : null}
           </div>
           <span className={styles.offerType}>{offer ? OFFER_TYPE_LABELS[offer.offerType] : "Sem oferta"}</span>

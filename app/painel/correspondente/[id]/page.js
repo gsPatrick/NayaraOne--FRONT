@@ -11,12 +11,15 @@ import FormField from "@/components/molecules/FormField/FormField";
 import Select from "@/components/atoms/Select/Select";
 import FileDropInput from "@/components/molecules/FileDropInput/FileDropInput";
 import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
+import Input from "@/components/atoms/Input/Input";
+import Modal from "@/components/organisms/Modal/Modal";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import {
   getFinancingCase,
   listCaseRequirements,
   createCaseRequirement,
   uploadCaseDocument,
+  validateCaseRequirement,
   listSimulations,
   createSimulation,
   listSubmissions,
@@ -28,6 +31,7 @@ import {
   listCommissionEntitlements,
   createCommissionEntitlement,
   confirmCommissionEntitlement,
+  receiveCommissionEntitlement,
   chargebackCommissionEntitlement,
   requestInvoice,
 } from "@/lib/api/correspondent";
@@ -48,6 +52,19 @@ const STATUS_LABELS = {
   COMPLETED: "Concluído",
   CANCELED: "Cancelado",
 };
+
+function financingStatusLabel(row) {
+  if ((row?.providerCode || row?.provider_code) === "manual" && row?.status === "SUBMITTED") {
+    return "Aguardando ação manual no banco";
+  }
+  return STATUS_LABELS[row?.status] || row?.status;
+}
+
+function submissionStatusLabel(sub) {
+  const raw = sub?.responseSnapshot || sub?.response_snapshot;
+  if (raw?.status === "PENDING_MANUAL_ACTION") return "Aguardando ação manual";
+  return SUBMISSION_STATUS_LABELS[sub?.status] || sub?.status;
+}
 const STATUS_TONE = {
   DRAFT: "neutral",
   DOCUMENTS_PENDING: "warning",
@@ -71,6 +88,7 @@ const PROVIDER_LABELS = {
   manual: "Manual (corretor conduz o caso com o banco por fora do sistema)",
 };
 const PROVIDER_SHORT_LABELS = { sandbox: "Sandbox", manual: "Manual" };
+const PURPOSE_LABELS = { RESIDENCIAL: "Residencial", COMERCIAL: "Comercial" };
 
 const COMMISSION_STATUS_LABELS = {
   EXPECTED: "Prevista",
@@ -121,6 +139,8 @@ export default function FinancingCaseDetailPage() {
   const [addingRequirement, setAddingRequirement] = useState(false);
   const [actionError, setActionError] = useState("");
   const [uploadingRequirementId, setUploadingRequirementId] = useState(null);
+  const [validatingRequirementId, setValidatingRequirementId] = useState(null);
+  const [submitConsent, setSubmitConsent] = useState(false);
 
   const [simulations, setSimulations] = useState([]);
   const [simulationsLoading, setSimulationsLoading] = useState(true);
@@ -152,9 +172,15 @@ export default function FinancingCaseDetailPage() {
   const [commissionBaseAmount, setCommissionBaseAmount] = useState("");
   const [creatingCommission, setCreatingCommission] = useState(false);
   const [commissionFormError, setCommissionFormError] = useState("");
+  const [commissionNotice, setCommissionNotice] = useState("");
   const [confirmingCommissionId, setConfirmingCommissionId] = useState(null);
   const [chargebackCommissionId, setChargebackCommissionId] = useState(null);
   const [invoicingCommissionId, setInvoicingCommissionId] = useState(null);
+  const [receivingCommissionId, setReceivingCommissionId] = useState(null);
+  const [confirmTargetId, setConfirmTargetId] = useState(null);
+  const [confirmExternalId, setConfirmExternalId] = useState("");
+  const [chargebackTargetId, setChargebackTargetId] = useState(null);
+  const [chargebackReason, setChargebackReason] = useState("");
 
   function loadCommissions() {
     setCommissionsLoading(true);
@@ -225,16 +251,32 @@ export default function FinancingCaseDetailPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
+  function refreshCase() {
+    getFinancingCase(id).then(setFinancingCase).catch(() => {});
+  }
+
   async function handleSubmitToProvider() {
     setSubmitError("");
+    if (!submitConsent) {
+      setSubmitError("Marque a autorização do cliente antes de enviar.");
+      return;
+    }
     setSubmitting(true);
     try {
-      await submitFinancingCase(id);
+      await submitFinancingCase(id, { consent: true });
       loadSubmissions();
       loadStatus();
-      getFinancingCase(id).then(setFinancingCase).catch(() => {});
+      refreshCase();
+      let ticks = 0;
+      const timer = setInterval(() => {
+        ticks += 1;
+        loadSubmissions();
+        loadStatus();
+        refreshCase();
+        if (ticks >= 5) clearInterval(timer);
+      }, 3000);
     } catch (err) {
-      setSubmitError(err?.message || "Não foi possível enviar o caso ao provider.");
+      setSubmitError(err?.message || (financingCase?.providerCode === "manual" ? "Não foi possível registrar o caso para ação manual." : "Não foi possível enviar o caso ao provider."));
     } finally {
       setSubmitting(false);
     }
@@ -281,8 +323,16 @@ export default function FinancingCaseDetailPage() {
     setAppraisalFormError("");
     setRequestingAppraisal(true);
     try {
-      await createAppraisal(id, {});
+      const latest = [...simulations].sort((a, b) => new Date(b.createdAt || b.created_at || 0) - new Date(a.createdAt || a.created_at || 0))[0];
+      const referenceValue = latest ? toNumber(latest.amount) : undefined;
+      await createAppraisal(id, referenceValue ? { referenceValue } : {});
       loadAppraisals();
+      let ticks = 0;
+      const timer = setInterval(() => {
+        ticks += 1;
+        loadAppraisals();
+        if (ticks >= 4) clearInterval(timer);
+      }, 3000);
     } catch (err) {
       setAppraisalFormError(err?.message || "Não foi possível solicitar a avaliação.");
     } finally {
@@ -309,15 +359,14 @@ export default function FinancingCaseDetailPage() {
     }
   }
 
-  async function handleConfirmCommission(entitlementId) {
-    const externalConfirmationId = window.prompt(
-      "Identificação da confirmação (vem do banco/financeira — garante que confirmar duas vezes não duplica o recebível):"
-    );
-    if (!externalConfirmationId) return;
-    setConfirmingCommissionId(entitlementId);
+  async function handleConfirmCommission() {
+    if (!confirmExternalId.trim() || !confirmTargetId) return;
+    setConfirmingCommissionId(confirmTargetId);
     setCommissionFormError("");
     try {
-      await confirmCommissionEntitlement(id, entitlementId, { externalConfirmationId });
+      await confirmCommissionEntitlement(id, confirmTargetId, { externalConfirmationId: confirmExternalId.trim() });
+      setConfirmTargetId(null);
+      setConfirmExternalId("");
       loadCommissions();
     } catch (err) {
       setCommissionFormError(err?.message || "Não foi possível confirmar esta comissão.");
@@ -326,13 +375,27 @@ export default function FinancingCaseDetailPage() {
     }
   }
 
-  async function handleChargebackCommission(entitlementId) {
-    const reason = window.prompt("Motivo do estorno/chargeback (obrigatório):");
-    if (!reason) return;
-    setChargebackCommissionId(entitlementId);
+  async function handleReceiveCommission(entitlementId) {
+    setReceivingCommissionId(entitlementId);
     setCommissionFormError("");
     try {
-      await chargebackCommissionEntitlement(id, entitlementId, { reason });
+      await receiveCommissionEntitlement(id, entitlementId);
+      loadCommissions();
+    } catch (err) {
+      setCommissionFormError(err?.message || "Não foi possível registrar o recebimento desta comissão.");
+    } finally {
+      setReceivingCommissionId(null);
+    }
+  }
+
+  async function handleChargebackCommission() {
+    if (!chargebackReason.trim() || !chargebackTargetId) return;
+    setChargebackCommissionId(chargebackTargetId);
+    setCommissionFormError("");
+    try {
+      await chargebackCommissionEntitlement(id, chargebackTargetId, { reason: chargebackReason.trim() });
+      setChargebackTargetId(null);
+      setChargebackReason("");
       loadCommissions();
     } catch (err) {
       setCommissionFormError(err?.message || "Não foi possível estornar esta comissão.");
@@ -351,8 +414,7 @@ export default function FinancingCaseDetailPage() {
         amount: entitlement.amount,
         description: `Comissão de correspondente bancário — caso ${id}`,
       });
-      setCommissionFormError("");
-      window.alert('NFS-e solicitada. Acompanhe o status em Correspondente → Fiscal.');
+      setCommissionNotice("NFS-e solicitada. Acompanhe o status em Correspondente, Fiscal.");
     } catch (err) {
       setCommissionFormError(err?.message || "Não foi possível solicitar a NFS-e desta comissão.");
     } finally {
@@ -366,6 +428,7 @@ export default function FinancingCaseDetailPage() {
     try {
       await createCaseRequirement(id, { documentType: newRequirementType });
       loadRequirements();
+      refreshCase();
     } catch (err) {
       setActionError(err?.message || "Não foi possível adicionar o item ao checklist.");
     } finally {
@@ -381,10 +444,25 @@ export default function FinancingCaseDetailPage() {
       const uploaded = await uploadFile(file);
       await uploadCaseDocument(id, { requirementId, fileId: uploaded.id });
       loadRequirements();
+      refreshCase();
     } catch (err) {
       setActionError(err?.message || "Não foi possível enviar o documento.");
     } finally {
       setUploadingRequirementId(null);
+    }
+  }
+
+  async function handleValidateRequirement(requirementId) {
+    setValidatingRequirementId(requirementId);
+    setActionError("");
+    try {
+      await validateCaseRequirement(id, requirementId);
+      loadRequirements();
+      refreshCase();
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível validar este documento.");
+    } finally {
+      setValidatingRequirementId(null);
     }
   }
 
@@ -413,8 +491,11 @@ export default function FinancingCaseDetailPage() {
       ) : null}
       <Card
         title={
-          <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            Status: <Badge tone={STATUS_TONE[financingCase.status] || "neutral"}>{STATUS_LABELS[financingCase.status] || financingCase.status}</Badge>
+          <span style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            Status: <Badge tone={STATUS_TONE[financingCase.status] || "neutral"}>{financingStatusLabel(financingCase)}</Badge>
+            {financingCase.possibleDuplicateOfCaseId || financingCase.possible_duplicate_of_case_id ? (
+              <Badge tone="warning">Possível duplicata</Badge>
+            ) : null}
           </span>
         }
         subtitle={`Criado em ${formatDateTime(financingCase.created_at || financingCase.createdAt)}`}
@@ -423,6 +504,11 @@ export default function FinancingCaseDetailPage() {
           <div>
             <strong>Provider</strong>
             <p>{PROVIDER_LABELS[financingCase.providerCode] || financingCase.providerCode}</p>
+          </div>
+
+          <div>
+            <strong>Finalidade</strong>
+            <p>{PURPOSE_LABELS[financingCase.purpose] || financingCase.purpose || "Residencial"}</p>
           </div>
 
           <div>
@@ -438,7 +524,7 @@ export default function FinancingCaseDetailPage() {
               <ul style={{ marginTop: 8, paddingLeft: 20 }}>
                 {financingCase.applicants.map((applicant) => (
                   <li key={applicant.id}>
-                    {applicant.person?.legalName || "—"} · {APPLICANT_ROLE_LABELS[applicant.role] || applicant.role}
+                    {applicant.person?.legalName || "Sem pessoa vinculada"} · {APPLICANT_ROLE_LABELS[applicant.role] || applicant.role}
                   </li>
                 ))}
               </ul>
@@ -487,7 +573,10 @@ export default function FinancingCaseDetailPage() {
                         {currentDocument.file?.fileName ? `Arquivo atual: ${currentDocument.file.fileName} (versão ${currentDocument.version})` : `Documento enviado (versão ${currentDocument.version}) — sem permissão para ver o nome do arquivo.`}
                       </p>
                     ) : null}
-                    <div style={{ marginTop: 8 }}>
+                    {currentDocument?.suggestedNote ? (
+                      <p style={{ marginTop: 8, fontSize: 13 }}>{currentDocument.suggestedNote}</p>
+                    ) : null}
+                    <div style={{ marginTop: 8, display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
                       <FileDropInput
                         id={`requirement-upload-${req.id}`}
                         accept="image/*,application/pdf"
@@ -496,6 +585,15 @@ export default function FinancingCaseDetailPage() {
                         onFiles={(files) => files[0] && handleUploadDocument(req.id, files[0])}
                         helper={currentDocument ? "Enviar um novo arquivo substitui a versão vigente (a anterior fica preservada no histórico)." : "Nenhum arquivo enviado ainda."}
                       />
+                      {req.status === "SUBMITTED" ? (
+                        <Button
+                          variant="secondary"
+                          onClick={() => handleValidateRequirement(req.id)}
+                          loading={validatingRequirementId === req.id}
+                        >
+                          Validar documento
+                        </Button>
+                      ) : null}
                     </div>
                   </div>
                 );
@@ -513,7 +611,7 @@ export default function FinancingCaseDetailPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <div style={{ display: "flex", gap: 12, alignItems: "flex-end", flexWrap: "wrap" }}>
             <FormField label="Valor financiado (R$)" htmlFor="sim-amount">
-              <DecimalInput id="sim-amount" value={simAmount} onChange={setSimAmount} placeholder="0,00" />
+              <DecimalInput id="sim-amount" value={simAmount} onChange={(e) => setSimAmount(e.target.value)} placeholder="0,00" />
             </FormField>
             <FormField label="Prazo (meses)" htmlFor="sim-term">
               <Select id="sim-term" value={simTermMonths} onChange={(e) => setSimTermMonths(e.target.value)}>
@@ -579,8 +677,10 @@ export default function FinancingCaseDetailPage() {
         </div>
       </Card>
       <Card
-        title="Envio ao provider"
-        subtitle="Envia o caso para o banco/financeira configurado. Enviar de novo com os mesmos dados nunca cria um segundo envio — o sistema reconhece quando já existe uma tentativa igual."
+        title={financingCase?.providerCode === "manual" ? "Ação manual no banco" : "Envio ao provider"}
+        subtitle={financingCase?.providerCode === "manual"
+          ? "Este provider não envia a proposta sozinho. Registrar aqui só guarda o pedido para alguém levar ao banco. Registrar de novo com os mesmos dados não cria um segundo pedido."
+          : "Envia o caso para o banco/financeira configurado. Enviar de novo com os mesmos dados nunca cria um segundo envio — o sistema reconhece quando já existe uma tentativa igual."}
         style={{ marginTop: 16 }}
       >
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -589,8 +689,16 @@ export default function FinancingCaseDetailPage() {
             const isUnknown = latestSubmission && latestSubmission.status === "UNKNOWN";
             return (
               <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-                <Button onClick={handleSubmitToProvider} loading={submitting} disabled={isUnknown}>
-                  Enviar ao provider
+                <label style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 14 }}>
+                  <input
+                    type="checkbox"
+                    checked={submitConsent}
+                    onChange={(e) => setSubmitConsent(e.target.checked)}
+                  />
+                  {financingCase?.providerCode === "manual" ? "O cliente autorizou registrar esta proposta para ação manual" : "O cliente autorizou o envio desta proposta"}
+                </label>
+                <Button onClick={handleSubmitToProvider} loading={submitting} disabled={isUnknown || !submitConsent}>
+                  {financingCase?.providerCode === "manual" ? "Registrar ação manual" : "Enviar ao provider"}
                 </Button>
                 {isUnknown ? (
                   <Button
@@ -636,9 +744,9 @@ export default function FinancingCaseDetailPage() {
                       <td style={{ padding: "8px 12px" }}>{formatDateTime(sub.created_at || sub.createdAt)}</td>
                       <td style={{ padding: "8px 12px" }}>{PROVIDER_SHORT_LABELS[sub.providerCode] || sub.providerCode}</td>
                       <td style={{ padding: "8px 12px" }}>
-                        <Badge tone={SUBMISSION_STATUS_TONE[sub.status] || "neutral"}>{SUBMISSION_STATUS_LABELS[sub.status] || sub.status}</Badge>
+                        <Badge tone={SUBMISSION_STATUS_TONE[sub.status] || "neutral"}>{submissionStatusLabel(sub)}</Badge>
                       </td>
-                      <td style={{ padding: "8px 12px" }}>{sub.externalCaseId || "—"}</td>
+                      <td style={{ padding: "8px 12px" }}>{sub.externalCaseId || "Sem identificador no provider"}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -702,11 +810,11 @@ export default function FinancingCaseDetailPage() {
                       <td style={{ padding: "8px 12px" }}>{formatDateTime(ap.created_at || ap.createdAt)}</td>
                       <td style={{ padding: "8px 12px" }}>{PROVIDER_SHORT_LABELS[ap.providerCode] || ap.providerCode}</td>
                       <td style={{ padding: "8px 12px" }}>
-                        <Badge tone={ap.status === "COMPLETED" ? "success" : "warning"}>
-                          {ap.status === "COMPLETED" ? "Concluída" : "Solicitada"}
+                        <Badge tone={ap.status === "COMPLETED" ? "success" : ap.status === "FAILED" ? "danger" : "warning"}>
+                          {ap.status === "COMPLETED" ? "Concluída" : ap.status === "FAILED" ? "Falhou" : "Solicitada"}
                         </Badge>
                       </td>
-                      <td style={{ padding: "8px 12px" }}>{ap.requestedValue != null ? formatBRL(ap.requestedValue) : "—"}</td>
+                      <td style={{ padding: "8px 12px" }}>{(ap.requestedValue ?? ap.requested_value) != null ? formatBRL(ap.requestedValue ?? ap.requested_value) : "Sem valor solicitado"}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -724,13 +832,14 @@ export default function FinancingCaseDetailPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <div style={{ display: "flex", gap: 12, alignItems: "flex-end", flexWrap: "wrap" }}>
             <FormField label="Valor-base (R$)" htmlFor="commission-base-amount">
-              <DecimalInput id="commission-base-amount" value={commissionBaseAmount} onChange={setCommissionBaseAmount} placeholder="0,00" />
+              <DecimalInput id="commission-base-amount" value={commissionBaseAmount} onChange={(e) => setCommissionBaseAmount(e.target.value)} placeholder="0,00" />
             </FormField>
             <Button onClick={handleCreateCommission} loading={creatingCommission}>
               Registrar direito à comissão
             </Button>
           </div>
           {commissionFormError ? <Alert tone="danger">{commissionFormError}</Alert> : null}
+          {commissionNotice ? <Alert tone="success">{commissionNotice}</Alert> : null}
 
           {commissionsLoading ? (
             <p>Carregando comissões…</p>
@@ -767,16 +876,25 @@ export default function FinancingCaseDetailPage() {
                         {c.status === "EXPECTED" ? (
                           <Button
                             variant="secondary"
-                            onClick={() => handleConfirmCommission(c.id)}
+                            onClick={() => { setConfirmTargetId(c.id); setConfirmExternalId(""); }}
                             loading={confirmingCommissionId === c.id}
                           >
                             Confirmar
                           </Button>
                         ) : null}
+                        {c.status === "RECEIVABLE" ? (
+                          <Button
+                            variant="secondary"
+                            onClick={() => handleReceiveCommission(c.id)}
+                            loading={receivingCommissionId === c.id}
+                          >
+                            Receber
+                          </Button>
+                        ) : null}
                         {c.status === "RECEIVABLE" || c.status === "CONFIRMED" ? (
                           <Button
                             variant="secondary"
-                            onClick={() => handleChargebackCommission(c.id)}
+                            onClick={() => { setChargebackTargetId(c.id); setChargebackReason(""); }}
                             loading={chargebackCommissionId === c.id}
                           >
                             Estornar
@@ -800,6 +918,36 @@ export default function FinancingCaseDetailPage() {
           )}
         </div>
       </Card>
+      <Modal
+        open={Boolean(confirmTargetId)}
+        onClose={() => setConfirmTargetId(null)}
+        title="Confirmar comissão"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setConfirmTargetId(null)}>Cancelar</Button>
+            <Button onClick={handleConfirmCommission} disabled={!confirmExternalId.trim()} loading={Boolean(confirmingCommissionId)}>Confirmar</Button>
+          </>
+        }
+      >
+        <FormField label="Identificação da confirmação" htmlFor="commission-external-id" helper="Vem do banco ou da financeira. Confirmar de novo com a mesma identificação não duplica o recebível.">
+          <Input id="commission-external-id" value={confirmExternalId} onChange={(e) => setConfirmExternalId(e.target.value)} />
+        </FormField>
+      </Modal>
+      <Modal
+        open={Boolean(chargebackTargetId)}
+        onClose={() => setChargebackTargetId(null)}
+        title="Estornar comissão"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setChargebackTargetId(null)}>Cancelar</Button>
+            <Button onClick={handleChargebackCommission} disabled={!chargebackReason.trim()} loading={Boolean(chargebackCommissionId)}>Estornar</Button>
+          </>
+        }
+      >
+        <FormField label="Motivo do estorno" htmlFor="commission-chargeback-reason">
+          <Input id="commission-chargeback-reason" value={chargebackReason} onChange={(e) => setChargebackReason(e.target.value)} />
+        </FormField>
+      </Modal>
     </AppShell>
   );
 }
