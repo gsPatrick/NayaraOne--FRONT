@@ -26,10 +26,10 @@ button{font:inherit;border:1px solid var(--bd);background:var(--sf);color:var(--
 <header>
   <div class="eb">Resposta da Contratada · Nayara One</div>
   <h1>Resposta de 24/10/2026 ao retorno da Nayara e da IA auditora: OCR e antivírus, margem, arquivos e backup, armazenamento S3, titularidade, contas de teste e API</h1>
-  <p>Data: 24/10/2026 17:22:40 (horário de Brasília) · Autor: Patrick Siqueira (desenvolvedor) · API: commit <code>f367cf6</code> · Front: commit <code>aa24c70</code> · Node v24.18.0</p>
+  <p>Data: 24/10/2026 18:03:48 (horário de Brasília) · Autor: Patrick Siqueira (desenvolvedor) · API: commit <code>69d945a</code> · Front: commit <code>d51cd58</code> · Node v24.18.0</p>
   <div class="card">
     <p><b>Resumo.</b> Esta página responde, ponto a ponto, às duas mensagens de 24/10/2026 (a da Nayara com as decisões e a da IA auditora com a reconferência). Para cada item está dito o que foi feito, a prova, o que ainda depende de alguém e quem. Foi escrita para ser conferida sem acesso ao sistema.</p>
-    <p>CI do GitHub no commit da API <code>f367cf6</code> (run 40128982755): <b>sucesso</b>, com 1630 testes, 1623 passaram, 0 falharam e 7 pulados (os que exigem o ClamAV e o Tesseract reais, que o CI não tem). Nada que gere custo foi contratado ou ativado.</p>
+    <p>CI do GitHub no commit da API <code>69d945a</code> (run 40130323771): <b>sucesso</b>, com 1630 testes, 1623 passaram, 0 falharam e 7 pulados (os que exigem o ClamAV e o Tesseract reais, que o CI não tem). Nada que gere custo foi contratado ou ativado.</p>
     <div class="kp">
       <div><b>44/44</b>testes desta rodada passaram</div>
       <div><b>0</b>falhas</div>
@@ -44,20 +44,22 @@ button{font:inherit;border:1px solid var(--bd);background:var(--sf);color:var(--
 
 <section id="s1" class="card"><h2>1. Os pedidos e a resposta</h2>
 <h3>Mensagem da Nayara</h3>
-<div class="tw"><table><thead><tr><th>Decisão ou pedido</th><th>Resposta</th><th>Status</th></tr></thead><tbody><tr><td><b>1. OCR e antivírus:</b> usar o servidor existente, só se houver capacidade e nenhum custo adicional; se precisar de mais recurso, apresentar o valor antes; depois de ativar, disponibilizar os cenários.</td><td>Capacidade conferida (seção 2): o servidor atual tem cerca de 14,3 GB de memória livre e 183 GB de disco livre, muito acima dos 2 GB e 2 GB necessários, então a ativação cabe com custo adicional zero. O roteiro está pronto; falta executá-lo no painel do servidor, e em seguida disponibilizo os cenários.</td><td><span class="pill ok">Capacidade e custo confirmados</span> <span class="pill wa">Ativação: a executar</span></td></tr><tr><td><b>2. Margem:</b> cadastrar 10% só na Empresa Dev, identificado como configuração de homologação; preservar versionamento; explicar como alterar ou desativar.</td><td>Cadastrado e vigente: 10%, apenas alertar, com a identificação pedida (versão 77). Criei também o botão "Desativar margem mínima" e o histórico de versões. Seção 3.</td><td><span class="pill ok">Atendido</span></td></tr><tr><td><b>3. Arquivos:</b> evidências da configuração, da persistência após republicar e da recuperação a partir de backup, com a disponibilidade das chaves.</td><td>Seção 4: persistência conferida na homologação depois do deploy; teste de restauração dos anexos feito de ponta a ponta (backup, restauração em diretório novo, abertura e comparação de hash), incluindo a prova de que sem a chave os arquivos não abrem.</td><td><span class="pill ok">Atendido</span> <span class="pill wa">Backup agendado no servidor: a confirmar</span></td></tr><tr><td><b>4. Armazenamento S3:</b> recomendação, custo estimado, retenção, versionamento, backup e plano de migração; manter a adequação pendente, com etapa prevista; sem custo novo.</td><td>Proposta completa na seção 5. A adequação fica registrada como pendente, com a etapa prevista de conclusão depois da autorização de custo. Nenhum custo foi autorizado nem gerado.</td><td><span class="pill wa">Pendente por decisão da Nayara (registrado)</span></td></tr><tr><td><b>5. Titularidade:</b> cenários para retestar; preservar o LOC-2026-0124.</td><td>Seção 6, com os sete cenários, o passo a passo e o resultado esperado de cada um. O LOC-2026-0124 não foi alterado.</td><td><span class="pill ok">Atendido</span></td></tr><tr><td><b>Retorno em um único envio:</b> link da página técnica, commits publicados e registros preparados.</td><td>Esta página e a mensagem que a acompanha. Commits na seção 9; registros de teste na seção 7 e no anexo.</td><td><span class="pill ok">Atendido</span></td></tr></tbody></table></div>
+<div class="tw"><table><thead><tr><th>Decisão ou pedido</th><th>Resposta</th><th>Status</th></tr></thead><tbody><tr><td><b>1. OCR e antivírus:</b> usar o servidor existente, só se houver capacidade e nenhum custo adicional; se precisar de mais recurso, apresentar o valor antes; depois de ativar, disponibilizar os cenários.</td><td>Capacidade conferida (o servidor atual tem cerca de 14,3 GB de memória livre e 183 GB de disco livre, muito acima dos 2 GB e 2 GB necessários) e ativação feita em 24/10/2026, sem ampliar recurso e com custo adicional zero. Os cenários de extração, revisão humana, documento ilegível e recusa do arquivo de teste foram conferidos na homologação (seção 2).</td><td><span class="pill ok">Ativado e conferido na homologação</span></td></tr><tr><td><b>2. Margem:</b> cadastrar 10% só na Empresa Dev, identificado como configuração de homologação; preservar versionamento; explicar como alterar ou desativar.</td><td>Cadastrado e vigente: 10%, apenas alertar, com a identificação pedida (versão 77). Criei também o botão "Desativar margem mínima" e o histórico de versões. Seção 3.</td><td><span class="pill ok">Atendido</span></td></tr><tr><td><b>3. Arquivos:</b> evidências da configuração, da persistência após republicar e da recuperação a partir de backup, com a disponibilidade das chaves.</td><td>Seção 4: persistência conferida na homologação depois do deploy; teste de restauração dos anexos feito de ponta a ponta (backup, restauração em diretório novo, abertura e comparação de hash), incluindo a prova de que sem a chave os arquivos não abrem.</td><td><span class="pill ok">Atendido</span> <span class="pill wa">Backup agendado no servidor: a confirmar</span></td></tr><tr><td><b>4. Armazenamento S3:</b> recomendação, custo estimado, retenção, versionamento, backup e plano de migração; manter a adequação pendente, com etapa prevista; sem custo novo.</td><td>Proposta completa na seção 5. A adequação fica registrada como pendente, com a etapa prevista de conclusão depois da autorização de custo. Nenhum custo foi autorizado nem gerado.</td><td><span class="pill wa">Pendente por decisão da Nayara (registrado)</span></td></tr><tr><td><b>5. Titularidade:</b> cenários para retestar; preservar o LOC-2026-0124.</td><td>Seção 6, com os sete cenários, o passo a passo e o resultado esperado de cada um. O LOC-2026-0124 não foi alterado.</td><td><span class="pill ok">Atendido</span></td></tr><tr><td><b>Retorno em um único envio:</b> link da página técnica, commits publicados e registros preparados.</td><td>Esta página e a mensagem que a acompanha. Commits na seção 9; registros de teste na seção 7 e no anexo.</td><td><span class="pill ok">Atendido</span></td></tr></tbody></table></div>
 <h3>Mensagem da IA auditora</h3>
-<div class="tw"><table><thead><tr><th>Pendência</th><th>Resposta</th><th>Status</th></tr></thead><tbody><tr><td><b>1. OCR e antivírus reais na homologação:</b> o PDF legível também foi lido como ilegível.</td><td>Correto: na homologação os motores reais não estão ativos, e por isso o leitor de laboratório trata o arquivo como ilegível. A capacidade do servidor foi conferida e comporta a ativação sem custo (seção 2); falta executar o roteiro.</td><td><span class="pill wa">Pendente: executar a ativação</span></td></tr><tr><td><b>2. Acessos de teste:</b> conta restrita, sem permissões de alteração, e conta de outra empresa de testes, pelo meio seguro.</td><td>Duas contas criadas, somente leitura (seção 7). As credenciais e o segredo do autenticador seguem pelo meio seguro, nunca por esta página nem por mensagem aberta.</td><td><span class="pill ok">Atendido</span></td></tr><tr><td><b>3. API:</b> tentativas diretas sem permissão, com a documentação e os endpoints.</td><td>Matriz de permissões gerada do código (548 rotas protegidas) e um teste que chama cada rota sem token e sem permissão (seção 8).</td><td><span class="pill ok">Atendido</span></td></tr><tr><td><b>4. Backup:</b> rotina existente e teste de restauração com abertura dos anexos.</td><td>Seção 4: rotina de banco e de arquivos, e o teste de restauração com abertura e conferência de hash dos anexos restaurados.</td><td><span class="pill ok">Atendido</span> <span class="pill wa">Agendamento no servidor: a confirmar</span></td></tr><tr><td><b>5. Margem:</b> percentual não publicado, valor pendente de definição.</td><td>A Nayara autorizou 10% na mensagem dela; está publicado e vigente como v77 (seção 3).</td><td><span class="pill ok">Atendido</span></td></tr></tbody></table></div>
+<div class="tw"><table><thead><tr><th>Pendência</th><th>Resposta</th><th>Status</th></tr></thead><tbody><tr><td><b>1. OCR e antivírus reais na homologação:</b> o PDF legível também foi lido como ilegível.</td><td>Correto na época: os motores reais ainda não estavam ativos. Foram ativados em 24/10/2026 e o mesmo cenário (PDF legível, imagem, PDF escaneado, documento em branco e arquivo de teste de antivírus) foi refeito na homologação com sucesso (seção 2).</td><td><span class="pill ok">Atendido</span></td></tr><tr><td><b>2. Acessos de teste:</b> conta restrita, sem permissões de alteração, e conta de outra empresa de testes, pelo meio seguro.</td><td>Duas contas criadas, somente leitura (seção 7). As credenciais e o segredo do autenticador seguem pelo meio seguro, nunca por esta página nem por mensagem aberta.</td><td><span class="pill ok">Atendido</span></td></tr><tr><td><b>3. API:</b> tentativas diretas sem permissão, com a documentação e os endpoints.</td><td>Matriz de permissões gerada do código (548 rotas protegidas) e um teste que chama cada rota sem token e sem permissão (seção 8).</td><td><span class="pill ok">Atendido</span></td></tr><tr><td><b>4. Backup:</b> rotina existente e teste de restauração com abertura dos anexos.</td><td>Seção 4: rotina de banco e de arquivos, e o teste de restauração com abertura e conferência de hash dos anexos restaurados.</td><td><span class="pill ok">Atendido</span> <span class="pill wa">Agendamento no servidor: a confirmar</span></td></tr><tr><td><b>5. Margem:</b> percentual não publicado, valor pendente de definição.</td><td>A Nayara autorizou 10% na mensagem dela; está publicado e vigente como v77 (seção 3).</td><td><span class="pill ok">Atendido</span></td></tr></tbody></table></div>
 </section>
 
-<section id="s2" class="card"><h2>2. Antivírus (ClamAV) e leitura de documentos (Tesseract e pdftotext)</h2>
-<p><b>Autorização da Nayara:</b> usar o servidor existente, desde que eu confirme antes a capacidade disponível e a ausência de custo adicional. Se for preciso ampliar recurso ou contratar serviço, o valor é apresentado antes.</p>
-<h3>O que já está pronto</h3>
-<ul><li>Os adaptadores reais de antivírus e de leitura estão no código e ligados ao fluxo, ativados só por variável de ambiente. Sem elas o sistema usa os adaptadores de laboratório (é o que a homologação usa hoje).</li><li>No meu ambiente local, com os motores reais, os cenários já foram demonstrados e estão na página de 23/10 (<code>/resposta-nayara-23-10.html</code>, seção 5): PDF legível com origem e confiança, revisão humana, documento ilegível sem dado inventado e arquivo de teste de antivírus recusado.</li><li>A imagem da API tem um argumento de build opcional (<code>INSTALL_DOCUMENT_ENGINES=true</code>) que inclui o Tesseract em português e o poppler. Desligado por padrão.</li></ul>
-<h3>Conferência de capacidade (feita em 24/10/2026, print P02)</h3>
-<div class="tw"><table><thead><tr><th>O que conferir</th><th>De quanto preciso</th><th>Servidor atual</th><th>Cabe?</th></tr></thead><tbody><tr><td>Memória livre</td><td>2 GB (medi 966 MB do ClamAV em regime no meu computador; reservo o dobro para o pico de recarga das assinaturas)</td><td>15,6 GB no total, 1,3 GB em uso (8,1%): cerca de 14,3 GB livres</td><td>Sim, com folga</td></tr><tr><td>Disco livre</td><td>2 GB (assinaturas de 108 MB, mais as imagens)</td><td>192,7 GB no total, 8,8 GB em uso (4,6%): cerca de 183,9 GB livres</td><td>Sim, com folga</td></tr><tr><td>CPU</td><td>folga para picos curtos (de 0,4 a 0,7 segundo por documento)</td><td>4 núcleos, 0,3% de uso, carga 0,08</td><td>Sim, com folga</td></tr></tbody></table></div>
-<p><b>Conclusão:</b> o servidor atual comporta o ClamAV e a leitura de documentos sem ampliar recurso e sem contratar nada. O custo adicional é <b>zero</b>, e a condição da Nayara está cumprida. O que falta é só executar o roteiro abaixo e, em seguida, mostrar os cenários.</p>
-<h3>Roteiro de ativação (resumo)</h3>
-<ul><li>Criar no mesmo projeto um serviço <code>clamav</code> a partir da imagem <code>clamav/clamav:stable</code>, com volume persistente para as assinaturas, sem domínio público e com limite de 2 GB.</li><li>Na API: argumento de build <code>INSTALL_DOCUMENT_ENGINES=true</code> e variáveis <code>ANTIVIRUS_PROVIDER=clamav</code>, <code>CLAMAV_HOST</code>, <code>CLAMAV_PORT=3310</code> e <code>OCR_PROVIDER=local</code>; deploy.</li><li>Atenção operacional: com o antivírus ligado, se o serviço do ClamAV estiver fora do ar todo envio de arquivo é recusado, porque o sistema nunca aceita arquivo sem varredura. O serviço precisa reiniciar sozinho e ter alerta.</li><li>Voltar atrás: remover as duas variáveis e fazer o deploy; o sistema volta aos adaptadores de laboratório sem perder dado.</li></ul>
+<section id="s2" class="card"><h2>2. Antivírus (ClamAV) e leitura de documentos (Tesseract e pdftotext): ativados e conferidos</h2>
+<p><b>Autorização da Nayara:</b> usar o servidor existente, desde que eu confirmasse antes a capacidade disponível e a ausência de custo adicional.</p>
+<h3>Capacidade conferida em 24/10/2026 (print P02)</h3>
+<div class="tw"><table><thead><tr><th>O que conferir</th><th>De quanto preciso</th><th>Servidor atual</th><th>Cabe?</th></tr></thead><tbody><tr><td>Memória livre</td><td>2 GB (medi 966 MB do ClamAV em regime; reservo o dobro para o pico de recarga das assinaturas)</td><td>15,6 GB no total, 1,3 GB em uso (8,1%): cerca de 14,3 GB livres</td><td>Sim, com folga</td></tr><tr><td>Disco livre</td><td>2 GB (assinaturas de 108 MB, mais as imagens)</td><td>192,7 GB no total, 8,8 GB em uso (4,6%): cerca de 183,9 GB livres</td><td>Sim, com folga</td></tr><tr><td>CPU</td><td>folga para picos curtos (de 0,4 a 0,7 segundo por documento)</td><td>4 núcleos, 0,3% de uso, carga 0,08</td><td>Sim, com folga</td></tr></tbody></table></div>
+<p><b>Conclusão:</b> o servidor atual comporta o ClamAV e a leitura de documentos sem ampliar recurso e sem contratar nada. <b>Custo adicional: zero.</b></p>
+<h3>O que foi ativado</h3>
+<ul><li>Serviço <code>clamav</code> no projeto <code>infrastructure</code>, a partir da imagem oficial <code>clamav/clamav:stable</code>, com volume persistente para as assinaturas, limite de 4 GB de memória e <b>sem domínio público</b>: só a API o alcança, pela rede interna. As assinaturas de vírus estão atualizadas (cerca de 3,6 milhões).</li><li>Na API: <code>ANTIVIRUS_PROVIDER=clamav</code>, <code>CLAMAV_HOST</code>, <code>CLAMAV_PORT=3310</code> e <code>OCR_PROVIDER=local</code>. O Tesseract (5.5.1, com o idioma português) e o pdftotext (25.12.0) estão na imagem da API. O teste de conexão da API com o antivírus respondeu <code>PONG</code>.</li><li>Atenção operacional: com o antivírus ligado, se o serviço do ClamAV ficar parado, todo envio de arquivo é recusado, porque o sistema nunca aceita arquivo sem varredura. Para voltar atrás basta remover as quatro variáveis e fazer o deploy: o sistema volta aos adaptadores de laboratório sem perder dado.</li></ul>
+<h3>Cenários conferidos na homologação (24/10/2026)</h3>
+<p>Conferência independente feita por Claude Browser (sessão de QA independente), em https://homologacao-nayaraone--front.hpztyd.easypanel.host/, com documentos fictícios, 9 de 9 passos sem falha.</p>
+<div class="tw"><table><thead><tr><th>Cenário</th><th>Resultado</th></tr></thead><tbody><tr><td>1. PDF com texto</td><td>Origem "texto do PDF", confiança de 95%; nome, CPF/CNPJ, renda (R$ 4.500,00), emissão e validade lidos corretamente, editáveis, ainda sem validar.</td></tr><tr><td>2. Revisão humana</td><td>Campo corrigido e "Confirmar dados e validar": o documento fica "Verificado"; Atividades mostra o envio, a leitura e a validação.</td></tr><tr><td>3. Imagem (PNG)</td><td>Origem "reconhecimento de imagem (OCR)", confiança de 87%, mesmos campos.</td></tr><tr><td>4. PDF escaneado, sem camada de texto</td><td>Origem "reconhecimento de imagem (OCR)", confiança de 82%. A leitura dos campos foi parcial, porque a imagem do arquivo de teste é comprimida; é exatamente para isso que a tela exige a revisão humana antes de validar.</td></tr><tr><td>5. Documento em branco</td><td>"Documento ilegível": nenhum campo preenchido, botão "Confirmar dados e validar" desabilitado, documento "Pendente" com "Revisar dados".</td></tr><tr><td>6. Arquivo de teste de antivírus (EICAR)</td><td>"Arquivo rejeitado pelo antivírus: assinatura de malware detectada."; o arquivo não aparece na lista de documentos.</td></tr><tr><td>7. Versões</td><td>Reenviar o mesmo tipo de documento é aceito sem erro, cria a versão seguinte e preserva a anterior.</td></tr><tr><td>8. Caso de financiamento (Marco 8)</td><td>Comprovante de renda: sugestão "Leitura automática (texto do PDF, confiança de 95%): …"; documento em branco: aviso de ilegível; EICAR: recusado pelo antivírus.</td></tr><tr><td>9. Textos</td><td>Nenhum código técnico, identificador, data técnica, número em formato americano, traço ou "não informado" em nenhuma tela.</td></tr></tbody></table></div>
+<p>Os mesmos cenários, com os motores reais no meu ambiente local, estão em <code>/resposta-nayara-23-10.html</code> (seção 5), com as leituras, os tempos e os hashes dos arquivos. Os prints desta conferência na homologação estão no relatório da própria conferência.</p>
 </section>
 
 <section id="s3" class="card"><h2>3. Margem mínima: 10% de homologação</h2>
@@ -123,7 +125,7 @@ button{font:inherit;border:1px solid var(--bd);background:var(--sf);color:var(--
 </section>
 
 <section id="s9" class="card"><h2>9. Commits e como confirmar o que está implantado</h2>
-<div class="tw"><table><thead><tr><th>Repositório</th><th>Commit</th><th>O que contém</th></tr></thead><tbody><tr><td>API</td><td><code>8bd8ec2</code></td><td>fix: atualiza body-parser para 1.20.9 (aviso de segurança de alta gravidade que travava o CI)</td></tr><tr><td>API</td><td><code>2cea80b</code></td><td>feat: Marco 8 com mensagens de negócio na submissão e na elegibilidade, provider manual sem valor obrigatório e estágios do CI na ordem do caderno</td></tr><tr><td>API</td><td><code>f367cf6</code></td><td>feat: margem mínima com histórico e desativação, matriz de permissões da API testada, contas de auditoria somente leitura, teste de restauração dos anexos e runbooks de ativação e de armazenamento S3</td></tr><tr><td>Front</td><td><code>2e2f94a</code></td><td>fix: nenhuma tela mostra campo vazio, traço ou texto genérico de não informado</td></tr><tr><td>Front</td><td><code>de0fe36</code></td><td>feat: Marco 8 no menu do celular, no roadmap e no teste de interface do fluxo do correspondente</td></tr><tr><td>Front</td><td><code>aa24c70</code></td><td>feat: margem mínima com identificação da versão, histórico de versões e botão para desativar</td></tr></tbody></table></div>
+<div class="tw"><table><thead><tr><th>Repositório</th><th>Commit</th><th>O que contém</th></tr></thead><tbody><tr><td>API</td><td><code>8bd8ec2</code></td><td>fix: atualiza body-parser para 1.20.9 (aviso de segurança de alta gravidade que travava o CI)</td></tr><tr><td>API</td><td><code>2cea80b</code></td><td>feat: Marco 8 com mensagens de negócio na submissão e na elegibilidade, provider manual sem valor obrigatório e estágios do CI na ordem do caderno</td></tr><tr><td>API</td><td><code>f367cf6</code></td><td>feat: margem mínima com histórico e desativação, matriz de permissões da API testada, contas de auditoria somente leitura, teste de restauração dos anexos e runbooks de ativação e de armazenamento S3</td></tr><tr><td>API</td><td><code>97a1feb</code></td><td>test: matriz de permissões descarrega o relatório antes de encerrar o processo</td></tr><tr><td>API</td><td><code>69d945a</code></td><td>build: Tesseract e poppler passam a vir na imagem por padrão (o OCR só liga com OCR_PROVIDER=local)</td></tr><tr><td>Front</td><td><code>2e2f94a</code></td><td>fix: nenhuma tela mostra campo vazio, traço ou texto genérico de não informado</td></tr><tr><td>Front</td><td><code>de0fe36</code></td><td>feat: Marco 8 no menu do celular, no roadmap e no teste de interface do fluxo do correspondente</td></tr><tr><td>Front</td><td><code>aa24c70</code></td><td>feat: margem mínima com identificação da versão, histórico de versões e botão para desativar</td></tr><tr><td>Front</td><td><code>a96cf63</code></td><td>docs: página de resposta de 24/10/2026 e histórico da margem com mostrar mais</td></tr><tr><td>Front</td><td><code>d51cd58</code></td><td>docs: página de 24/10 sem a menção antiga de CI ausente</td></tr></tbody></table></div>
 <p>Branch dos dois repositórios: <code>marco-6-e-7-homologado-nayara</code>. O commit que está <b>efetivamente implantado</b> pode ser conferido sem acesso ao servidor: <code>GET /api/version</code> da API publicada devolve o campo <code>commit</code> (o build grava o identificador do commit) e a data do último deploy. O que esta página lista é o que foi enviado ao repositório; a confirmação do que está no ar é por esse endereço.</p>
 </section>
 
@@ -139,13 +141,13 @@ button{font:inherit;border:1px solid var(--bd);background:var(--sf);color:var(--
 </section>
 
 <section id="s12" class="card"><h2>12. Anexo de dados (JSON)</h2>
-<p>O hash SHA-256 do JSON, calculado antes do campo <code>hashes</code>, é <code>8965e3728dff10c1e72ef3da43097e42925fb5092f669ada5f1fd79a0b396499</code>.</p>
+<p>O hash SHA-256 do JSON, calculado antes do campo <code>hashes</code>, é <code>cce5b2458a5f8459cfcf6db38293c298a55391dc9efcfb37d378726d6cc2c858</code>.</p>
 <p><button type="button" id="copiar">Copiar JSON</button> <button type="button" id="baixar">Baixar JSON</button></p>
 <details><summary>Ver o JSON completo</summary><pre>{
   "ci": {
-    "runId": 40128982755,
+    "runId": 40130323771,
     "evento": "push",
-    "commit": "f367cf6",
+    "commit": "69d945a",
     "conclusao": "sucesso",
     "testes": 1630,
     "passaram": 1623,
@@ -164,9 +166,56 @@ button{font:inherit;border:1px solid var(--bd);background:var(--sf);color:var(--
     ],
     "observacao": "Os 7 testes pulados são os que exigem o ClamAV e o Tesseract reais; o CI não os tem, e eles passam no meu ambiente local. Os jobs test, deploy-dev e deploy-lab passaram; deploy-production fica pulado por desenho."
   },
+  "ocrAntivirusHomologacao": {
+    "conferidoEm": "24/10/2026",
+    "conferidoPor": "Claude Browser (sessão de QA independente), em https://homologacao-nayaraone--front.hpztyd.easypanel.host/",
+    "servidor": {
+      "antivirus": "ClamAV no serviço clamav (projeto infrastructure), acessado pela API pela rede interna; resposta ao teste de conexão: PONG",
+      "leitor": "Tesseract 5.5.1 e pdftotext 25.12.0 dentro da imagem da API",
+      "variaveis": "ANTIVIRUS_PROVIDER=clamav, CLAMAV_HOST, CLAMAV_PORT=3310, OCR_PROVIDER=local"
+    },
+    "passos": [
+      [
+        "1. PDF com texto",
+        "Origem \"texto do PDF\", confiança de 95%; nome, CPF/CNPJ, renda (R$ 4.500,00), emissão e validade lidos corretamente, editáveis, ainda sem validar."
+      ],
+      [
+        "2. Revisão humana",
+        "Campo corrigido e \"Confirmar dados e validar\": o documento fica \"Verificado\"; Atividades mostra o envio, a leitura e a validação."
+      ],
+      [
+        "3. Imagem (PNG)",
+        "Origem \"reconhecimento de imagem (OCR)\", confiança de 87%, mesmos campos."
+      ],
+      [
+        "4. PDF escaneado, sem camada de texto",
+        "Origem \"reconhecimento de imagem (OCR)\", confiança de 82%. A leitura dos campos foi parcial, porque a imagem do arquivo de teste é comprimida; é exatamente para isso que a tela exige a revisão humana antes de validar."
+      ],
+      [
+        "5. Documento em branco",
+        "\"Documento ilegível\": nenhum campo preenchido, botão \"Confirmar dados e validar\" desabilitado, documento \"Pendente\" com \"Revisar dados\"."
+      ],
+      [
+        "6. Arquivo de teste de antivírus (EICAR)",
+        "\"Arquivo rejeitado pelo antivírus: assinatura de malware detectada.\"; o arquivo não aparece na lista de documentos."
+      ],
+      [
+        "7. Versões",
+        "Reenviar o mesmo tipo de documento é aceito sem erro, cria a versão seguinte e preserva a anterior."
+      ],
+      [
+        "8. Caso de financiamento (Marco 8)",
+        "Comprovante de renda: sugestão \"Leitura automática (texto do PDF, confiança de 95%): …\"; documento em branco: aviso de ilegível; EICAR: recusado pelo antivírus."
+      ],
+      [
+        "9. Textos",
+        "Nenhum código técnico, identificador, data técnica, número em formato americano, traço ou \"não informado\" em nenhuma tela."
+      ]
+    ]
+  },
   "meta": {
     "titulo": "Resposta à rodada de 24/10/2026",
-    "geradoEm": "24/10/2026 17:22:40",
+    "geradoEm": "24/10/2026 18:03:48",
     "node": "v24.18.0",
     "commits": {
       "api": "f367cf66b7590c8f99287d6fb89e8c04404f6e6d",
@@ -191,6 +240,16 @@ button{font:inherit;border:1px solid var(--bd);background:var(--sf);color:var(--
       "msg": "feat: margem mínima com histórico e desativação, matriz de permissões da API testada, contas de auditoria somente leitura, teste de restauração dos anexos e runbooks de ativação e de armazenamento S3"
     },
     {
+      "repo": "API",
+      "hash": "97a1feb",
+      "msg": "test: matriz de permissões descarrega o relatório antes de encerrar o processo"
+    },
+    {
+      "repo": "API",
+      "hash": "69d945a",
+      "msg": "build: Tesseract e poppler passam a vir na imagem por padrão (o OCR só liga com OCR_PROVIDER=local)"
+    },
+    {
       "repo": "Front",
       "hash": "2e2f94a",
       "msg": "fix: nenhuma tela mostra campo vazio, traço ou texto genérico de não informado"
@@ -204,6 +263,16 @@ button{font:inherit;border:1px solid var(--bd);background:var(--sf);color:var(--
       "repo": "Front",
       "hash": "aa24c70",
       "msg": "feat: margem mínima com identificação da versão, histórico de versões e botão para desativar"
+    },
+    {
+      "repo": "Front",
+      "hash": "a96cf63",
+      "msg": "docs: página de resposta de 24/10/2026 e histórico da margem com mostrar mais"
+    },
+    {
+      "repo": "Front",
+      "hash": "d51cd58",
+      "msg": "docs: página de 24/10 sem a menção antiga de CI ausente"
     }
   ],
   "testes": [
@@ -6105,7 +6174,7 @@ button{font:inherit;border:1px solid var(--bd);background:var(--sf);color:var(--
     }
   ],
   "hashes": {
-    "jsonSemOsHashes": "8965e3728dff10c1e72ef3da43097e42925fb5092f669ada5f1fd79a0b396499",
+    "jsonSemOsHashes": "cce5b2458a5f8459cfcf6db38293c298a55391dc9efcfb37d378726d6cc2c858",
     "prints": {
       "P02": "737efbb40d73280f00354ef9ac92a2150f7ac1c1d8949e3b92df1197427f990d",
       "P01": "3ecaf480c96ce96a30adc8847ff33dc02eba1ae9571d8381d9c0b67a82fb40d4"
@@ -6114,9 +6183,9 @@ button{font:inherit;border:1px solid var(--bd);background:var(--sf);color:var(--
 }</pre></details>
 <script type="application/json" id="evidencias-resposta-24-10">{
   "ci": {
-    "runId": 40128982755,
+    "runId": 40130323771,
     "evento": "push",
-    "commit": "f367cf6",
+    "commit": "69d945a",
     "conclusao": "sucesso",
     "testes": 1630,
     "passaram": 1623,
@@ -6135,9 +6204,56 @@ button{font:inherit;border:1px solid var(--bd);background:var(--sf);color:var(--
     ],
     "observacao": "Os 7 testes pulados são os que exigem o ClamAV e o Tesseract reais; o CI não os tem, e eles passam no meu ambiente local. Os jobs test, deploy-dev e deploy-lab passaram; deploy-production fica pulado por desenho."
   },
+  "ocrAntivirusHomologacao": {
+    "conferidoEm": "24/10/2026",
+    "conferidoPor": "Claude Browser (sessão de QA independente), em https://homologacao-nayaraone--front.hpztyd.easypanel.host/",
+    "servidor": {
+      "antivirus": "ClamAV no serviço clamav (projeto infrastructure), acessado pela API pela rede interna; resposta ao teste de conexão: PONG",
+      "leitor": "Tesseract 5.5.1 e pdftotext 25.12.0 dentro da imagem da API",
+      "variaveis": "ANTIVIRUS_PROVIDER=clamav, CLAMAV_HOST, CLAMAV_PORT=3310, OCR_PROVIDER=local"
+    },
+    "passos": [
+      [
+        "1. PDF com texto",
+        "Origem \"texto do PDF\", confiança de 95%; nome, CPF/CNPJ, renda (R$ 4.500,00), emissão e validade lidos corretamente, editáveis, ainda sem validar."
+      ],
+      [
+        "2. Revisão humana",
+        "Campo corrigido e \"Confirmar dados e validar\": o documento fica \"Verificado\"; Atividades mostra o envio, a leitura e a validação."
+      ],
+      [
+        "3. Imagem (PNG)",
+        "Origem \"reconhecimento de imagem (OCR)\", confiança de 87%, mesmos campos."
+      ],
+      [
+        "4. PDF escaneado, sem camada de texto",
+        "Origem \"reconhecimento de imagem (OCR)\", confiança de 82%. A leitura dos campos foi parcial, porque a imagem do arquivo de teste é comprimida; é exatamente para isso que a tela exige a revisão humana antes de validar."
+      ],
+      [
+        "5. Documento em branco",
+        "\"Documento ilegível\": nenhum campo preenchido, botão \"Confirmar dados e validar\" desabilitado, documento \"Pendente\" com \"Revisar dados\"."
+      ],
+      [
+        "6. Arquivo de teste de antivírus (EICAR)",
+        "\"Arquivo rejeitado pelo antivírus: assinatura de malware detectada.\"; o arquivo não aparece na lista de documentos."
+      ],
+      [
+        "7. Versões",
+        "Reenviar o mesmo tipo de documento é aceito sem erro, cria a versão seguinte e preserva a anterior."
+      ],
+      [
+        "8. Caso de financiamento (Marco 8)",
+        "Comprovante de renda: sugestão \"Leitura automática (texto do PDF, confiança de 95%): …\"; documento em branco: aviso de ilegível; EICAR: recusado pelo antivírus."
+      ],
+      [
+        "9. Textos",
+        "Nenhum código técnico, identificador, data técnica, número em formato americano, traço ou \"não informado\" em nenhuma tela."
+      ]
+    ]
+  },
   "meta": {
     "titulo": "Resposta à rodada de 24/10/2026",
-    "geradoEm": "2026-10-24T20:22:40.743Z",
+    "geradoEm": "2026-10-24T21:03:48.127Z",
     "node": "v24.18.0",
     "commits": {
       "api": "f367cf66b7590c8f99287d6fb89e8c04404f6e6d",
@@ -6162,6 +6278,16 @@ button{font:inherit;border:1px solid var(--bd);background:var(--sf);color:var(--
       "msg": "feat: margem mínima com histórico e desativação, matriz de permissões da API testada, contas de auditoria somente leitura, teste de restauração dos anexos e runbooks de ativação e de armazenamento S3"
     },
     {
+      "repo": "API",
+      "hash": "97a1feb",
+      "msg": "test: matriz de permissões descarrega o relatório antes de encerrar o processo"
+    },
+    {
+      "repo": "API",
+      "hash": "69d945a",
+      "msg": "build: Tesseract e poppler passam a vir na imagem por padrão (o OCR só liga com OCR_PROVIDER=local)"
+    },
+    {
       "repo": "Front",
       "hash": "2e2f94a",
       "msg": "fix: nenhuma tela mostra campo vazio, traço ou texto genérico de não informado"
@@ -6175,6 +6301,16 @@ button{font:inherit;border:1px solid var(--bd);background:var(--sf);color:var(--
       "repo": "Front",
       "hash": "aa24c70",
       "msg": "feat: margem mínima com identificação da versão, histórico de versões e botão para desativar"
+    },
+    {
+      "repo": "Front",
+      "hash": "a96cf63",
+      "msg": "docs: página de resposta de 24/10/2026 e histórico da margem com mostrar mais"
+    },
+    {
+      "repo": "Front",
+      "hash": "d51cd58",
+      "msg": "docs: página de 24/10 sem a menção antiga de CI ausente"
     }
   ],
   "testes": [
@@ -12076,7 +12212,7 @@ button{font:inherit;border:1px solid var(--bd);background:var(--sf);color:var(--
     }
   ],
   "hashes": {
-    "jsonSemOsHashes": "8965e3728dff10c1e72ef3da43097e42925fb5092f669ada5f1fd79a0b396499",
+    "jsonSemOsHashes": "cce5b2458a5f8459cfcf6db38293c298a55391dc9efcfb37d378726d6cc2c858",
     "prints": {
       "P02": "737efbb40d73280f00354ef9ac92a2150f7ac1c1d8949e3b92df1197427f990d",
       "P01": "3ecaf480c96ce96a30adc8847ff33dc02eba1ae9571d8381d9c0b67a82fb40d4"
