@@ -26,10 +26,10 @@ button{font:inherit;border:1px solid var(--bd);background:var(--sf);color:var(--
 <header>
   <div class="eb">Resposta da Contratada · Nayara One</div>
   <h1>Resposta de 24/10/2026 ao retorno da Nayara e da IA auditora: OCR e antivírus, margem, arquivos e backup, armazenamento S3, titularidade, contas de teste e API</h1>
-  <p>Data: 24/10/2026 18:03:48 (horário de Brasília) · Autor: Patrick Siqueira (desenvolvedor) · API: commit <code>69d945a</code> · Front: commit <code>d51cd58</code> · Node v24.18.0</p>
+  <p>Data: 24/10/2026 18:26:04 (horário de Brasília) · Autor: Patrick Siqueira (desenvolvedor) · API: commit <code>1028574</code> · Front: commit <code>87f5593</code> · Node v24.18.0</p>
   <div class="card">
     <p><b>Resumo.</b> Esta página responde, ponto a ponto, às duas mensagens de 24/10/2026 (a da Nayara com as decisões e a da IA auditora com a reconferência). Para cada item está dito o que foi feito, a prova, o que ainda depende de alguém e quem. Foi escrita para ser conferida sem acesso ao sistema.</p>
-    <p>CI do GitHub no commit da API <code>69d945a</code> (run 40130323771): <b>sucesso</b>, com 1630 testes, 1623 passaram, 0 falharam e 7 pulados (os que exigem o ClamAV e o Tesseract reais, que o CI não tem). Nada que gere custo foi contratado ou ativado.</p>
+    <p>CI do GitHub no commit da API <code>1028574</code> (run 40133385159): <b>sucesso</b>, com 1630 testes, 1630 passaram, 0 falharam e <b>0 pulados</b>: o CI passou a subir o ClamAV real e a instalar o Tesseract e o poppler, então os testes dos motores reais rodam nele. Nada que gere custo adicional foi contratado.</p>
     <div class="kp">
       <div><b>44/44</b>testes desta rodada passaram</div>
       <div><b>0</b>falhas</div>
@@ -125,13 +125,13 @@ button{font:inherit;border:1px solid var(--bd);background:var(--sf);color:var(--
 </section>
 
 <section id="s9" class="card"><h2>9. Commits e como confirmar o que está implantado</h2>
-<div class="tw"><table><thead><tr><th>Repositório</th><th>Commit</th><th>O que contém</th></tr></thead><tbody><tr><td>API</td><td><code>8bd8ec2</code></td><td>fix: atualiza body-parser para 1.20.9 (aviso de segurança de alta gravidade que travava o CI)</td></tr><tr><td>API</td><td><code>2cea80b</code></td><td>feat: Marco 8 com mensagens de negócio na submissão e na elegibilidade, provider manual sem valor obrigatório e estágios do CI na ordem do caderno</td></tr><tr><td>API</td><td><code>f367cf6</code></td><td>feat: margem mínima com histórico e desativação, matriz de permissões da API testada, contas de auditoria somente leitura, teste de restauração dos anexos e runbooks de ativação e de armazenamento S3</td></tr><tr><td>API</td><td><code>97a1feb</code></td><td>test: matriz de permissões descarrega o relatório antes de encerrar o processo</td></tr><tr><td>API</td><td><code>69d945a</code></td><td>build: Tesseract e poppler passam a vir na imagem por padrão (o OCR só liga com OCR_PROVIDER=local)</td></tr><tr><td>Front</td><td><code>2e2f94a</code></td><td>fix: nenhuma tela mostra campo vazio, traço ou texto genérico de não informado</td></tr><tr><td>Front</td><td><code>de0fe36</code></td><td>feat: Marco 8 no menu do celular, no roadmap e no teste de interface do fluxo do correspondente</td></tr><tr><td>Front</td><td><code>aa24c70</code></td><td>feat: margem mínima com identificação da versão, histórico de versões e botão para desativar</td></tr><tr><td>Front</td><td><code>a96cf63</code></td><td>docs: página de resposta de 24/10/2026 e histórico da margem com mostrar mais</td></tr><tr><td>Front</td><td><code>d51cd58</code></td><td>docs: página de 24/10 sem a menção antiga de CI ausente</td></tr></tbody></table></div>
+<div class="tw"><table><thead><tr><th>Repositório</th><th>Commit</th><th>O que contém</th></tr></thead><tbody><tr><td>API</td><td><code>8bd8ec2</code></td><td>fix: atualiza body-parser para 1.20.9 (aviso de segurança de alta gravidade que travava o CI)</td></tr><tr><td>API</td><td><code>2cea80b</code></td><td>feat: Marco 8 com mensagens de negócio na submissão e na elegibilidade, provider manual sem valor obrigatório e estágios do CI na ordem do caderno</td></tr><tr><td>API</td><td><code>f367cf6</code></td><td>feat: margem mínima com histórico e desativação, matriz de permissões da API testada, contas de auditoria somente leitura, teste de restauração dos anexos e runbooks de ativação e de armazenamento S3</td></tr><tr><td>API</td><td><code>97a1feb</code></td><td>test: matriz de permissões descarrega o relatório antes de encerrar o processo</td></tr><tr><td>API</td><td><code>69d945a</code></td><td>build: Tesseract e poppler passam a vir na imagem por padrão (o OCR só liga com OCR_PROVIDER=local)</td></tr><tr><td>API</td><td><code>1028574</code></td><td>ci: instala o leitor de documentos e sobe o ClamAV para os 7 testes dos motores reais deixarem de ser pulados</td></tr><tr><td>Front</td><td><code>2e2f94a</code></td><td>fix: nenhuma tela mostra campo vazio, traço ou texto genérico de não informado</td></tr><tr><td>Front</td><td><code>de0fe36</code></td><td>feat: Marco 8 no menu do celular, no roadmap e no teste de interface do fluxo do correspondente</td></tr><tr><td>Front</td><td><code>aa24c70</code></td><td>feat: margem mínima com identificação da versão, histórico de versões e botão para desativar</td></tr><tr><td>Front</td><td><code>a96cf63</code></td><td>docs: página de resposta de 24/10/2026 e histórico da margem com mostrar mais</td></tr><tr><td>Front</td><td><code>d51cd58</code></td><td>docs: página de 24/10 sem a menção antiga de CI ausente</td></tr><tr><td>Front</td><td><code>87f5593</code></td><td>docs: página de 24/10 com o antivírus e a leitura de documentos ativados e conferidos na homologação</td></tr></tbody></table></div>
 <p>Branch dos dois repositórios: <code>marco-6-e-7-homologado-nayara</code>. O commit que está <b>efetivamente implantado</b> pode ser conferido sem acesso ao servidor: <code>GET /api/version</code> da API publicada devolve o campo <code>commit</code> (o build grava o identificador do commit) e a data do último deploy. O que esta página lista é o que foi enviado ao repositório; a confirmação do que está no ar é por esse endereço.</p>
 </section>
 
 <section id="s10" class="card"><h2>10. Testes automatizados desta rodada</h2>
 <div class="tw"><table><thead><tr><th>Arquivo</th><th>Testes</th><th>Passaram</th><th>Falharam</th><th>Pulados</th></tr></thead><tbody><tr><td>test/api.permissionMatrix.test.js</td><td>3</td><td>3</td><td>0</td><td>0</td></tr><tr><td>test/construction.marginRuleLifecycle.test.js</td><td>1</td><td>1</td><td>0</td><td>0</td></tr><tr><td>test/construction.httpRoutes.test.js</td><td>7</td><td>7</td><td>0</td><td>0</td></tr><tr><td>test/billing.test.js</td><td>18</td><td>18</td><td>0</td><td>0</td></tr><tr><td>test/people.documentAdapters.real.test.js</td><td>12</td><td>12</td><td>0</td><td>0</td></tr><tr><td>test/files.uploadSecurity.test.js</td><td>3</td><td>3</td><td>0</td><td>0</td></tr><tr><td><b>Total</b></td><td><b>44</b></td><td><b>44</b></td><td><b>0</b></td><td><b>0</b></td></tr></tbody></table></div>
-<p>Rodados um arquivo por vez, na pasta da API, com o <code>clamd</code> ativo. O CI do GitHub rodou a suíte inteira no commit da API: 1630 testes, 1623 passaram, 0 falharam, 7 pulados.</p>
+<p>Rodados um arquivo por vez, na pasta da API, com o <code>clamd</code> ativo. O CI do GitHub rodou a suíte inteira no commit da API <code>1028574</code>: 1630 testes, 1630 passaram, 0 falharam, 0 pulados, com o ClamAV e o Tesseract reais. O run de pull request do mesmo commit falhou uma vez num teste intermitente do Financeiro (ele compara o relatório da empresa enquanto outros testes gravam dados em paralelo) e passou na reexecução.</p>
 <details><summary>Lista completa dos testes</summary><div class="tw"><table><thead><tr><th>Arquivo</th><th>Teste</th><th>Resultado</th></tr></thead><tbody><tr><td>api.permissionMatrix.test.js</td><td>matriz: a API tem rotas protegidas por permissão</td><td>Passou</td></tr><tr><td>api.permissionMatrix.test.js</td><td>toda rota protegida recusa chamada sem token (401)</td><td>Passou</td></tr><tr><td>api.permissionMatrix.test.js</td><td>toda rota protegida recusa token sem a permissão exigida (403 PERMISSION_DENIED com a permissão pedida)</td><td>Passou</td></tr><tr><td>construction.marginRuleLifecycle.test.js</td><td>margem mínima: publicar versões, alterar, desativar e reativar preservam o histórico e nunca apagam versão</td><td>Passou</td></tr><tr><td>construction.httpRoutes.test.js</td><td>HTTP real: POST /construction/projects/:id/measurements cria a medição (201)</td><td>Passou</td></tr><tr><td>construction.httpRoutes.test.js</td><td>HTTP real: POST /construction/measurements/:id/approve aprova a medição já revisada (200)</td><td>Passou</td></tr><tr><td>construction.httpRoutes.test.js</td><td>HTTP real: POST /construction/measurements/:id/approve SEM permissão construction:approve é bloqueado (403)</td><td>Passou</td></tr><tr><td>construction.httpRoutes.test.js</td><td>HTTP real: POST /construction/margin-rules SEM permissão construction:update é bloqueado (403) e não cria versão</td><td>Passou</td></tr><tr><td>construction.httpRoutes.test.js</td><td>HTTP real: POST /construction/warranty-cases cria o caso de garantia/pós-obra (201)</td><td>Passou</td></tr><tr><td>construction.httpRoutes.test.js</td><td>HTTP real: GET /construction/maintenance-cases devolve formato paginado {data, pagination} (mesmo padrão de GET /construction/projects)</td><td>Passou</td></tr><tr><td>construction.httpRoutes.test.js</td><td>HTTP real: PATCH /construction/budget-lines/:id com baseline APPROVED é bloqueado (400/422 BUDGET_LINE_BASELINE_LOCKED)</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: gerar cobrança duas vezes para a mesma competência é bloqueado com erro claro</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: pagamento parcial recompõe saldo e só fecha quando quitado totalmente</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: reajuste sem fonte de índice disponível vira PENDING_SOURCE sem inventar percentual</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: reajuste com fonte de índice disponível aplica o percentual (raw pode divergir de applied)</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: aluguel garantido e antecipação são produtos/tabelas separados</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: reembolso é criado quando a imobiliária paga utilidade da responsabilidade da outra parte</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: closeout bloqueia com cobrança em aberto e libera quando quitada</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: completeOwnershipTransfer exige comprovante (evidenceFileId) e destinatário (A05)</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: requestOwnershipTransfer abre tarefa numa obrigação existente, recusa duplicada e a conclusão grava o comprovante na obrigação</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: closeout bloqueia com transferência de utilidade pendente</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: closeout sem pendências avança o contrato ACTIVE até CLOSED</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: closeout bloqueado por garantia ACTIVE pendente (gate único de encerramento)</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: caso de cobrança dentro da carência (REG-LOC-002) é bloqueado</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: duas aberturas CONCORRENTES de caso de cobrança para a mesma competência não duplicam</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: duas recuperações CONCORRENTES da mesma antecipação de aluguel não perdem incremento (lost update)</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: dois pagamentos CONCORRENTES de aluguel garantido para a mesma competência não duplicam</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: duas conclusões CONCORRENTES da última tarefa de transferência não travam a obrigação em TRANSFER_PENDING</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: RLS está corretamente configurada (ENABLE+FORCE+policy tenant_isolation) em todas as tabelas novas</td><td>Passou</td></tr><tr><td>people.documentAdapters.real.test.js</td><td>resolvers: sem variável de ambiente continuam nos adaptadores de laboratório; com ela entram os reais</td><td>Passou</td></tr><tr><td>people.documentAdapters.real.test.js</td><td>ClamAV: antivírus fora do ar falha FECHADO (nunca aprova sem varredura)</td><td>Passou</td></tr><tr><td>people.documentAdapters.real.test.js</td><td>ClamAV real: arquivo com a assinatura de teste EICAR é recusado e um arquivo comum passa</td><td>Passou</td></tr><tr><td>people.documentAdapters.real.test.js</td><td>extractFields: só preenche campo que está no texto, nunca inventa</td><td>Passou</td></tr><tr><td>people.documentAdapters.real.test.js</td><td>OCR real: PDF com texto é lido pelo pdftotext com origem e confiança</td><td>Passou</td></tr><tr><td>people.documentAdapters.real.test.js</td><td>OCR real: imagem do mesmo documento é lida pelo Tesseract</td><td>Passou</td></tr><tr><td>people.documentAdapters.real.test.js</td><td>OCR real: PDF escaneado (sem texto) cai no Tesseract</td><td>Passou</td></tr><tr><td>people.documentAdapters.real.test.js</td><td>OCR real: página em branco, bytes aleatórios e PDF corrompido viram ILEGÍVEL, sem campo inventado</td><td>Passou</td></tr><tr><td>people.documentAdapters.real.test.js</td><td>pipeline completo com motores reais: EICAR é recusado, PDF legível guarda origem e confiança, ilegível abre pendência</td><td>Passou</td></tr><tr><td>people.documentAdapters.real.test.js</td><td>auditoria: a leitura do documento e a validação humana gravam antes/depois</td><td>Passou</td></tr><tr><td>people.documentAdapters.real.test.js</td><td>Marco 8: documento do caso passa pela leitura real; ilegível abre pendência e a sugestão traz origem e confiança</td><td>Passou</td></tr><tr><td>people.documentAdapters.real.test.js</td><td>enviar de novo um documento do mesmo tipo cria a versão seguinte e preserva a anterior (sem erro de unicidade)</td><td>Passou</td></tr><tr><td>files.uploadSecurity.test.js</td><td>files: uploadFile recusa mimeType fora da allowlist (html/script, executável)</td><td>Passou</td></tr><tr><td>files.uploadSecurity.test.js</td><td>files: uploadFile recusa arquivo vazio com mensagem de negócio, não vaza nome de parâmetro interno</td><td>Passou</td></tr><tr><td>files.uploadSecurity.test.js</td><td>files: uploadFile aceita mimeType permitido (imagem, PDF)</td><td>Passou</td></tr></tbody></table></div></details>
 </section>
 
@@ -141,18 +141,18 @@ button{font:inherit;border:1px solid var(--bd);background:var(--sf);color:var(--
 </section>
 
 <section id="s12" class="card"><h2>12. Anexo de dados (JSON)</h2>
-<p>O hash SHA-256 do JSON, calculado antes do campo <code>hashes</code>, é <code>cce5b2458a5f8459cfcf6db38293c298a55391dc9efcfb37d378726d6cc2c858</code>.</p>
+<p>O hash SHA-256 do JSON, calculado antes do campo <code>hashes</code>, é <code>df737e2f00869a328376a37bfdf7e4333d24db8d12ec94b8fe0f74c3430a5377</code>.</p>
 <p><button type="button" id="copiar">Copiar JSON</button> <button type="button" id="baixar">Baixar JSON</button></p>
 <details><summary>Ver o JSON completo</summary><pre>{
   "ci": {
-    "runId": 40130323771,
+    "runId": 40133385159,
     "evento": "push",
-    "commit": "69d945a",
+    "commit": "1028574",
     "conclusao": "sucesso",
     "testes": 1630,
-    "passaram": 1623,
+    "passaram": 1630,
     "falharam": 0,
-    "pulados": 7,
+    "pulados": 0,
     "estagiosDoCaderno": [
       "provider adapter contract tests",
       "eligibility tests",
@@ -164,7 +164,8 @@ button{font:inherit;border:1px solid var(--bd);background:var(--sf);color:var(--
       "restante da suíte, sem pular arquivo",
       "sandbox failure drills"
     ],
-    "observacao": "Os 7 testes pulados são os que exigem o ClamAV e o Tesseract reais; o CI não os tem, e eles passam no meu ambiente local. Os jobs test, deploy-dev e deploy-lab passaram; deploy-production fica pulado por desenho."
+    "motoresReaisNoCi": "O CI sobe o ClamAV (imagem oficial) e instala o Tesseract em português e o poppler; por isso os 7 testes dos motores reais (antivírus, PDF com texto, imagem, PDF escaneado, documento ilegível e os fluxos dos Marcos 3 e 8) rodam no CI em vez de serem pulados.",
+    "observacao": "Os jobs test, deploy-dev e deploy-lab passaram; deploy-production fica pulado por desenho. O run de pull request do mesmo commit falhou uma vez num teste intermitente do Financeiro que compara o relatório da empresa enquanto outros testes gravam dados em paralelo, e passou na reexecução."
   },
   "ocrAntivirusHomologacao": {
     "conferidoEm": "24/10/2026",
@@ -215,7 +216,7 @@ button{font:inherit;border:1px solid var(--bd);background:var(--sf);color:var(--
   },
   "meta": {
     "titulo": "Resposta à rodada de 24/10/2026",
-    "geradoEm": "24/10/2026 18:03:48",
+    "geradoEm": "24/10/2026 18:26:04",
     "node": "v24.18.0",
     "commits": {
       "api": "f367cf66b7590c8f99287d6fb89e8c04404f6e6d",
@@ -250,6 +251,11 @@ button{font:inherit;border:1px solid var(--bd);background:var(--sf);color:var(--
       "msg": "build: Tesseract e poppler passam a vir na imagem por padrão (o OCR só liga com OCR_PROVIDER=local)"
     },
     {
+      "repo": "API",
+      "hash": "1028574",
+      "msg": "ci: instala o leitor de documentos e sobe o ClamAV para os 7 testes dos motores reais deixarem de ser pulados"
+    },
+    {
       "repo": "Front",
       "hash": "2e2f94a",
       "msg": "fix: nenhuma tela mostra campo vazio, traço ou texto genérico de não informado"
@@ -273,6 +279,11 @@ button{font:inherit;border:1px solid var(--bd);background:var(--sf);color:var(--
       "repo": "Front",
       "hash": "d51cd58",
       "msg": "docs: página de 24/10 sem a menção antiga de CI ausente"
+    },
+    {
+      "repo": "Front",
+      "hash": "87f5593",
+      "msg": "docs: página de 24/10 com o antivírus e a leitura de documentos ativados e conferidos na homologação"
     }
   ],
   "testes": [
@@ -6174,7 +6185,7 @@ button{font:inherit;border:1px solid var(--bd);background:var(--sf);color:var(--
     }
   ],
   "hashes": {
-    "jsonSemOsHashes": "cce5b2458a5f8459cfcf6db38293c298a55391dc9efcfb37d378726d6cc2c858",
+    "jsonSemOsHashes": "df737e2f00869a328376a37bfdf7e4333d24db8d12ec94b8fe0f74c3430a5377",
     "prints": {
       "P02": "737efbb40d73280f00354ef9ac92a2150f7ac1c1d8949e3b92df1197427f990d",
       "P01": "3ecaf480c96ce96a30adc8847ff33dc02eba1ae9571d8381d9c0b67a82fb40d4"
@@ -6183,14 +6194,14 @@ button{font:inherit;border:1px solid var(--bd);background:var(--sf);color:var(--
 }</pre></details>
 <script type="application/json" id="evidencias-resposta-24-10">{
   "ci": {
-    "runId": 40130323771,
+    "runId": 40133385159,
     "evento": "push",
-    "commit": "69d945a",
+    "commit": "1028574",
     "conclusao": "sucesso",
     "testes": 1630,
-    "passaram": 1623,
+    "passaram": 1630,
     "falharam": 0,
-    "pulados": 7,
+    "pulados": 0,
     "estagiosDoCaderno": [
       "provider adapter contract tests",
       "eligibility tests",
@@ -6202,7 +6213,8 @@ button{font:inherit;border:1px solid var(--bd);background:var(--sf);color:var(--
       "restante da suíte, sem pular arquivo",
       "sandbox failure drills"
     ],
-    "observacao": "Os 7 testes pulados são os que exigem o ClamAV e o Tesseract reais; o CI não os tem, e eles passam no meu ambiente local. Os jobs test, deploy-dev e deploy-lab passaram; deploy-production fica pulado por desenho."
+    "motoresReaisNoCi": "O CI sobe o ClamAV (imagem oficial) e instala o Tesseract em português e o poppler; por isso os 7 testes dos motores reais (antivírus, PDF com texto, imagem, PDF escaneado, documento ilegível e os fluxos dos Marcos 3 e 8) rodam no CI em vez de serem pulados.",
+    "observacao": "Os jobs test, deploy-dev e deploy-lab passaram; deploy-production fica pulado por desenho. O run de pull request do mesmo commit falhou uma vez num teste intermitente do Financeiro que compara o relatório da empresa enquanto outros testes gravam dados em paralelo, e passou na reexecução."
   },
   "ocrAntivirusHomologacao": {
     "conferidoEm": "24/10/2026",
@@ -6253,7 +6265,7 @@ button{font:inherit;border:1px solid var(--bd);background:var(--sf);color:var(--
   },
   "meta": {
     "titulo": "Resposta à rodada de 24/10/2026",
-    "geradoEm": "2026-10-24T21:03:48.127Z",
+    "geradoEm": "2026-10-24T21:26:04.701Z",
     "node": "v24.18.0",
     "commits": {
       "api": "f367cf66b7590c8f99287d6fb89e8c04404f6e6d",
@@ -6288,6 +6300,11 @@ button{font:inherit;border:1px solid var(--bd);background:var(--sf);color:var(--
       "msg": "build: Tesseract e poppler passam a vir na imagem por padrão (o OCR só liga com OCR_PROVIDER=local)"
     },
     {
+      "repo": "API",
+      "hash": "1028574",
+      "msg": "ci: instala o leitor de documentos e sobe o ClamAV para os 7 testes dos motores reais deixarem de ser pulados"
+    },
+    {
       "repo": "Front",
       "hash": "2e2f94a",
       "msg": "fix: nenhuma tela mostra campo vazio, traço ou texto genérico de não informado"
@@ -6311,6 +6328,11 @@ button{font:inherit;border:1px solid var(--bd);background:var(--sf);color:var(--
       "repo": "Front",
       "hash": "d51cd58",
       "msg": "docs: página de 24/10 sem a menção antiga de CI ausente"
+    },
+    {
+      "repo": "Front",
+      "hash": "87f5593",
+      "msg": "docs: página de 24/10 com o antivírus e a leitura de documentos ativados e conferidos na homologação"
     }
   ],
   "testes": [
@@ -12212,7 +12234,7 @@ button{font:inherit;border:1px solid var(--bd);background:var(--sf);color:var(--
     }
   ],
   "hashes": {
-    "jsonSemOsHashes": "cce5b2458a5f8459cfcf6db38293c298a55391dc9efcfb37d378726d6cc2c858",
+    "jsonSemOsHashes": "df737e2f00869a328376a37bfdf7e4333d24db8d12ec94b8fe0f74c3430a5377",
     "prints": {
       "P02": "737efbb40d73280f00354ef9ac92a2150f7ac1c1d8949e3b92df1197427f990d",
       "P01": "3ecaf480c96ce96a30adc8847ff33dc02eba1ae9571d8381d9c0b67a82fb40d4"
