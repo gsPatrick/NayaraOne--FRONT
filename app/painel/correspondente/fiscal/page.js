@@ -67,6 +67,11 @@ const OBLIGATION_STATUS_TONE = { PENDING: "warning", COMPLETED: "success", OVERD
 const OBLIGATION_TYPE_LABEL = { DIMOB_ANNUAL: "DIMOB anual" };
 const SOURCE_TYPE_LABEL = { COMMISSION_ENTITLEMENT: "Comissão de correspondente", NFSE: "NFS-e" };
 
+// humanizeText tira códigos internos do texto e pode deixar um travessão solto no fim.
+function limpaDescricao(text) {
+  return humanizeText(text).replace(/\s*[—–-]\s*$/, "");
+}
+
 function currentPeriod() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
@@ -393,7 +398,7 @@ export default function FiscalPage() {
   }
 
   const invoiceColumns = [
-    { key: "description", label: "Descrição", render: (row) => humanizeText(row.description) },
+    { key: "description", label: "Descrição", render: (row) => limpaDescricao(row.description) },
     { key: "amount", label: "Valor", render: (row) => formatBRL(row.amount) },
     { key: "status", label: "Status", render: (row) => <Badge tone={INVOICE_STATUS_TONE[row.status] || "neutral"}>{INVOICE_STATUS_LABEL[row.status] || row.status}</Badge> },
     { key: "number", label: "Número oficial", render: (row) => row.document?.documentNumber || "Aguardando autorização" },
@@ -467,13 +472,13 @@ export default function FiscalPage() {
 
   const candidateColumns = [
     { key: "sourceType", label: "Origem", render: (row) => SOURCE_TYPE_LABEL[row.sourceType] || row.sourceType },
-    { key: "description", label: "Descrição", render: (row) => humanizeText(row.description) },
+    { key: "description", label: "Descrição", render: (row) => limpaDescricao(row.description) },
     { key: "amount", label: "Valor", render: (row) => formatBRL(row.amount) },
   ];
 
   const batchLineColumns = [
     { key: "sourceType", label: "Origem", render: (row) => SOURCE_TYPE_LABEL[row.sourceType] || row.sourceType },
-    { key: "description", label: "Descrição", render: (row) => humanizeText(row.description) },
+    { key: "description", label: "Descrição", render: (row) => limpaDescricao(row.description) },
     { key: "amount", label: "Valor", render: (row) => formatBRL(row.amount) },
     { key: "kind", label: "Tipo", render: (row) => (row.adjustmentOfLineId ? "Ajuste" : "Original") },
     {

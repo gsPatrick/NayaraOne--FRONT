@@ -20,7 +20,8 @@ const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
 const EMAIL = process.env.E2E_EMAIL || 'admin@nayaraone.dev';
 const PASSWORD = process.env.E2E_PASSWORD || 'DevAdmin#2026';
 const API_DIR = process.env.E2E_API_DIR || path.join(__dirname, '..', '..', 'NayaraOne--API');
-const OBLIGATION_YEAR = new Date().getFullYear() + 4;
+const PRINTS = process.env.E2E_PRINTS || '';
+const OBLIGATION_YEAR = new Date().getFullYear() + 1;
 
 const passos = [];
 function passo(nome, ok, detalhe) {
@@ -46,6 +47,12 @@ function bancoApi(codigo, args = {}) {
   return linha ? JSON.parse(linha.slice(2)) : null;
 }
 
+async function shot(page, nome) {
+  if (!PRINTS) return;
+  await page.waitForTimeout(600);
+  await page.screenshot({ path: path.join(PRINTS, nome), fullPage: false });
+}
+
 async function digitar(page, locator, valor) {
   await locator.click();
   await locator.fill('');
@@ -55,8 +62,8 @@ async function digitar(page, locator, valor) {
 async function main() {
   const inicio = new Date();
   const marca = `QA-M8-LAC-${inicio.getTime()}`;
-  const browser = await chromium.launch({ headless: true });
-  const page = await browser.newPage({ viewport: { width: 1440, height: 1100 }, acceptDownloads: true });
+  const browser = await chromium.launch({ headless: true, args: ['--lang=pt-BR'] });
+  const page = await browser.newPage({ viewport: { width: 1440, height: 1100 }, acceptDownloads: true, locale: 'pt-BR' });
   page.setDefaultTimeout(60000);
   let casoId = '';
   page.on('response', async (res) => {
@@ -89,6 +96,7 @@ async function main() {
 
     const produtos = await page.getByText('Financiamento de construção').count();
     passo('elegibilidade lista os produtos', produtos > 0);
+    await shot(page, 'F18-parametros-elegibilidade.png');
 
     await page.getByRole('tab', { name: 'Comissão' }).click();
     await page.locator('#co-broker-manual').waitFor({ state: 'visible' });
@@ -96,6 +104,7 @@ async function main() {
     await digitar(page, page.locator('#co-broker-manual'), '60');
     const gerenteMsg = await page.getByText('Gerente fica com 40%').count();
     passo('divisão mostra a parte do gerente ao digitar', gerenteMsg > 0);
+    await shot(page, 'F19-parametros-comissao.png');
     await digitar(page, page.locator('#co-reason'), `${marca} teste de divisão`);
     const versoesAntes = await page.locator('table').last().locator('tbody tr').count();
     await page.getByRole('button', { name: 'Salvar comissão' }).click();
@@ -154,6 +163,7 @@ async function main() {
     await page.getByText('Vigente').first().waitFor({ state: 'visible' });
     const valorMostrado = await page.getByText('250.000,50').count();
     passo('aprovar com proposta: proposta vigente aparece na tabela', valorMostrado > 0);
+    await shot(page, 'F20-proposta-vigente.png');
 
     await page.locator('#manual-status').selectOption('CONTRACTING');
     await digitar(page, page.locator('#proposal-amount'), '240000');
@@ -162,6 +172,7 @@ async function main() {
     await page.getByRole('button', { name: 'Registrar resultado do banco' }).click();
     await page.getByText('Substituída').first().waitFor({ state: 'visible' });
     passo('nova proposta substitui a anterior (histórico preservado)', true);
+    await shot(page, 'F21-proposta-substituida.png');
 
     // ---------- Comissão ----------
     await page.locator('#commission-trigger').selectOption('CONTRATO_ASSINADO');
@@ -170,6 +181,8 @@ async function main() {
     await page.getByText('Prevista').first().waitFor({ state: 'visible' });
     const corpo = await page.locator('body').innerText();
     passo('comissão mostra provider, fato gerador e divisão', /Manual/.test(corpo) && /Contrato assinado/.test(corpo) && /60/.test(corpo));
+    await page.getByRole('columnheader', { name: 'Corretor' }).evaluate((el) => el.scrollIntoView({ block: 'center' }));
+    await shot(page, 'F22-comissao-divisao.png');
     await page.getByRole('button', { name: 'Confirmar' }).first().click();
     await digitar(page, page.locator('#commission-external-id'), `${marca}-conf`);
     await page.getByRole('dialog').getByRole('button', { name: 'Confirmar' }).click().catch(async () => {
@@ -198,6 +211,7 @@ async function main() {
     await dlPdf.saveAs(pdfPath);
     passo('PDF da NFS-e baixa e é um PDF', fs.readFileSync(pdfPath).subarray(0, 4).toString() === '%PDF', dlPdf.suggestedFilename());
     passo('número oficial aparece na lista', (await page.getByText(/NFSE-/).count()) > 0);
+    await shot(page, 'F23-nfse-xml-pdf.png');
 
     // Calendário
     await page.getByRole('tab', { name: 'Calendário' }).click();
@@ -208,6 +222,7 @@ async function main() {
     const linhaObr = page.locator('tr', { hasText: String(OBLIGATION_YEAR) }).first();
     await linhaObr.waitFor({ state: 'visible' });
     passo('obrigação aparece no calendário com prazo e situação', /Faltam \d+ dia/.test(await linhaObr.innerText()), (await linhaObr.innerText()).replace(/\s+/g, ' '));
+    await shot(page, 'F24-calendario-fiscal.png');
     await linhaObr.getByRole('button', { name: 'Concluir' }).click();
     await digitar(page, page.locator('#obl-note'), `${marca} entregue`);
     await page.getByRole('dialog').getByRole('button', { name: 'Concluir' }).click();
@@ -222,6 +237,7 @@ async function main() {
     await page.getByRole('button', { name: 'Ver registros' }).first().click();
     await page.getByText('Total do batch').waitFor({ state: 'visible' });
     passo('DIMOB mostra os registros do batch', true);
+    await shot(page, 'F25-dimob-registros.png');
     await page.keyboard.press('Escape');
 
     // Reconciliações
@@ -229,12 +245,14 @@ async function main() {
     await page.getByRole('button', { name: 'Conferir agora' }).click();
     await page.getByText(/Conferência concluída/).waitFor({ state: 'visible' });
     passo('Conferir agora roda e informa o resultado', true, (await page.getByText(/Conferência concluída/).first().innerText()).trim());
+    await shot(page, 'F26-conferencia-fiscal.png');
 
     // Exportação contábil
     await page.getByRole('tab', { name: 'Exportação contábil' }).click();
     await page.getByRole('button', { name: 'Ver lançamentos pendentes' }).click();
     await page.getByRole('button', { name: /Gerar batch com/ }).waitFor({ state: 'visible' });
     passo('exportação lista lançamentos pendentes do mês', true);
+    await shot(page, 'F27-exportacao-pendentes.png');
     await page.getByRole('button', { name: /Gerar batch com/ }).click();
     await page.getByText('gerado para o contador').waitFor({ state: 'visible' });
     await page.getByRole('button', { name: 'Abrir' }).first().click();
@@ -253,6 +271,7 @@ async function main() {
     await page.getByText('Ajuste registrado').waitFor({ state: 'visible' });
     const ajusteVisivel = await page.getByRole('cell', { name: 'Ajuste', exact: true }).first().waitFor({ state: 'visible', timeout: 30000 }).then(() => true).catch(() => false);
     passo('ajuste cria linha nova e mantém a original', ajusteVisivel && (await page.getByRole('cell', { name: 'Original', exact: true }).count()) > 0);
+    await shot(page, 'F28-exportacao-ajuste.png');
 
     // retorno certo
     await page.locator('#return-file').setInputFiles(csvPath);
@@ -261,6 +280,7 @@ async function main() {
     await page.waitForFunction(() => !document.querySelector('button[class*="loading"]'), null, { timeout: 60000 });
     // O ajuste de -5 já foi feito depois do CSV baixado: o retorno sem ele diverge de propósito.
     passo('retorno com valor diferente é marcado como divergente', (await page.getByText('Divergente').count()) > 0);
+    await shot(page, 'F29-retorno-divergente.png');
 
     // hash errado
     const ruim = path.join(os.tmpdir(), `${marca}-ruim.csv`);
@@ -270,6 +290,7 @@ async function main() {
     await page.getByText(/não confere com o do batch/).first().waitFor({ state: 'visible' });
     await page.waitForFunction(() => !document.querySelector('button[class*="loading"]'), null, { timeout: 60000 });
     passo('retorno com hash errado é recusado com mensagem clara', true);
+    await shot(page, 'F30-retorno-hash-errado.png');
     await page.keyboard.press('Escape');
 
     await page.getByRole('tab', { name: 'Reconciliações' }).click();
@@ -285,6 +306,7 @@ async function main() {
     await botao.click();
     await page.getByText('Caso cancelado').first().waitFor({ state: 'visible' });
     passo('caso cancelado mostra o aviso e o motivo', (await page.getByText(/Motivo: .*cliente desistiu/).count()) > 0);
+    await shot(page, 'F31-caso-cancelado.png');
     passo('depois de cancelado não oferece mais resultado do banco', (await page.locator('#manual-status').count()) === 0);
   } catch (err) {
     passo('interrupção', false, String(err.message).slice(0, 500));

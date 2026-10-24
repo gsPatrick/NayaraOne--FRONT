@@ -434,7 +434,7 @@ export default function FinancingCaseDetailPage() {
         sourceType: "COMMISSION_ENTITLEMENT",
         sourceId: entitlement.id,
         amount: entitlement.amount,
-        description: `Comissão de correspondente bancário — caso ${id}`,
+        description: `Comissão de correspondente bancário, provider ${PROVIDER_LABELS[entitlement.providerCode] || entitlement.providerCode}`,
       });
       setCommissionNotice("NFS-e solicitada. Acompanhe o status em Correspondente, Fiscal.");
     } catch (err) {
