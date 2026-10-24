@@ -29,13 +29,13 @@ ul{margin:6px 0;padding-left:20px}
 <header>
   <div class="eb">Resposta da Contratada · Nayara One</div>
   <h1>Resposta de 23/10/2026: OCR e antivírus (Marco 3), transferência de titularidade (Marco 5), margem mínima (Marco 6), armazenamento de arquivos e leitura de documentos do Marco 8</h1>
-  <p>Data: 23/10/2026 16:43:24 (horário de Brasília) · Autor: Patrick Siqueira (desenvolvedor) · API: commit <code>6031a57</code> · Front: commit <code>6cdec0c</code> · Node v24.18.0</p>
+  <p>Data: 24/10/2026 09:58:42 (horário de Brasília) · Autor: Patrick Siqueira (desenvolvedor) · API: commit <code>6031a57</code> · Front: commit <code>4adcd0e</code> · Node v24.18.0</p>
   <div class="card">
     <p><b>Resumo.</b> Eu respondo aqui, num só lugar, aos quatro pedidos da última mensagem da IA auditora e deixo registrado como cada um foi atendido, com o que existe, quem faz o quê, o custo medido e as provas. A página foi escrita para ser conferida sem acesso ao sistema: tudo o que importa está nas tabelas, nos prints e no JSON da seção 10.</p>
     <p>Não há run de CI para estes commits. Os números de teste abaixo são da execução local. A ativação do antivírus e do leitor de documentos <b>no servidor publicado</b> depende da aprovação da Nayara (cláusula 14.2 do contrato) e por isso está descrita, e não declarada como feita.</p>
     <div class="kp">
-      <div><b>10</b>linhas na matriz</div>
-      <div><b>47/47</b>testes passaram</div>
+      <div><b>11</b>linhas na matriz</div>
+      <div><b>93/93</b>testes passaram</div>
       <div><b>0</b>falhas</div>
       <div><b>0</b>testes pulados</div>
       <div><b>15</b>prints reais</div>
@@ -48,6 +48,8 @@ ul{margin:6px 0;padding-left:20px}
 
 <section id="s1" class="card"><h2>1. Os quatro pedidos e a resposta</h2>
 <div class="tw"><table><thead><tr><th>Pedido da IA (resumo)</th><th>Resposta</th><th>Status</th></tr></thead><tbody><tr><td><b>Marco 3: OCR e antivírus.</b> Quais componentes, quem provisiona, custo recorrente e demonstração com documentos fictícios.</td><td>Componentes: ClamAV (antivírus), Tesseract (OCR de imagem e de PDF escaneado) e pdftotext (PDF com texto). Todos de código aberto, sem licença. Os adaptadores reais estão prontos e ligados ao fluxo; sem as variáveis de ativação o sistema continua nos adaptadores de laboratório. Seção 4 (responsáveis e custo) e seção 5 (demonstração).</td><td><span class="pill ok">Código pronto e demonstrado</span> <span class="pill wa">Ativação no servidor: aguarda a Nayara</span></td></tr><tr><td><b>Arquivos:</b> "O armazenamento de arquivos não está configurado neste ambiente."</td><td>A causa era a falta da chave de criptografia dos arquivos no ambiente publicado (e de um volume persistente). Foram configurados na homologação. O Dockerfile também foi corrigido (pasta de uploads com o dono certo; <code>uploads/</code> deixou de ir para a imagem).</td><td><span class="pill ok">Atendido</span></td></tr><tr><td><b>Marco 6:</b> regra de margem ativa na "Nayara One — Empresa Dev".</td><td>A margem mínima agora é configurável em Obras → Configurações. O percentual é decisão de negócio da Nayara; o sistema não assume valor e, sem regra, recusa a aprovação de orçamento de propósito. Posso cadastrar um valor de teste rotulado se a Nayara ou a IA indicar qual.</td><td><span class="pill ok">Tela atendida</span> <span class="pill wa">Valor: decisão da Nayara</span></td></tr><tr><td><b>Marco 5:</b> caminho pela tela para solicitar a transferência de água/energia, informar o novo titular e anexar o comprovante.</td><td>O defeito era meu: o serviço existia, a tela não. Agora há "Exige transferência de titularidade" na criação, "Solicitar transferência" nas obrigações ativas (inclusive a do LOC-2026-0124) e "Concluir transferência" com novo titular e comprovante obrigatórios.</td><td><span class="pill ok">Atendido</span></td></tr></tbody></table></div>
+<h3>Commits desta rodada</h3>
+<div class="tw"><table><thead><tr><th>Repositório</th><th>Commit</th><th>O que contém</th></tr></thead><tbody><tr><td>API</td><td><code>a2f6073</code></td><td>feat: solicitar transferência de titularidade e listar tarefas nas obrigações de locação</td></tr><tr><td>API</td><td><code>079918d</code></td><td>feat: antivírus ClamAV e leitura real de documentos (pdftotext + Tesseract) atrás dos adaptadores</td></tr><tr><td>API</td><td><code>56546df</code></td><td>feat: leitura real de documento no caso de financiamento, com pendência para ilegível</td></tr><tr><td>API</td><td><code>4f437bc</code></td><td>fix: reenviar documento do mesmo tipo cria a próxima versão em vez de falhar por unicidade</td></tr><tr><td>API</td><td><code>6031a57</code></td><td>build: leitor de documentos (Tesseract e poppler) opcional na imagem, desligado por padrão</td></tr><tr><td>Front</td><td><code>fd23deb</code></td><td>feat: tela de transferência de titularidade de água/energia na Locação</td></tr><tr><td>Front</td><td><code>1a0e0d4</code></td><td>feat: margem mínima da obra configurável na página de configurações de Obras</td></tr><tr><td>Front</td><td><code>6122372</code></td><td>fix: ações da tabela de obrigações quebram linha em vez de forçar rolagem horizontal</td></tr><tr><td>Front</td><td><code>330de8c</code></td><td>feat: leitura automática de documento na ficha do contato, com revisão humana dos campos</td></tr><tr><td>Front</td><td><code>df1f139</code></td><td>test: leitura de documento do caso de financiamento pela tela</td></tr><tr><td>Front</td><td><code>6cdec0c</code></td><td>fix: ficha do contato não mostra mais o código interno do arquivo e preserva os dados lidos ao validar</td></tr></tbody></table></div>
 <p>Além dos quatro pedidos, apliquei o mesmo leitor real ao fluxo de documentos do Marco 8 (R07), porque o caderno repete a cadeia "malware scan → hash → OCR/IA → sugestão → validação" naquele marco.</p>
 </section>
 
@@ -57,24 +59,27 @@ ul{margin:6px 0;padding-left:20px}
 
 <section id="s3" class="card"><h2>3. Matriz requisito × evidência</h2>
 <p>Cada linha cita o requisito, onde ele está implementado, o teste (arquivo, nome e resultado desta execução), a evidência ao vivo (print) e a evidência em dados (bloco do JSON).</p>
-<div class="tw"><table><thead><tr><th>ID</th><th>Requisito (citação)</th><th>Implementação</th><th>Teste automatizado</th><th>Evidência ao vivo</th><th>Evidência em dados</th><th>Status</th></tr></thead><tbody><tr><td>R01</td><td><i>Caderno do Marco 3, seção 5</i><br>"Upload -&gt; antivírus -&gt; hash -&gt; classificação -&gt; OCR/IA -&gt; dados sugeridos."</td><td>documentIngestion.service.js (ingestPersonDocument); rota POST /people/:id/documents/ingest; tela "Ler documento automaticamente" na ficha do contato. Antivírus em ClamAvAdapter.js e leitura em LocalOcrAdapter.js, escolhidos por resolveDocumentAdapters.js.</td><td>people.documentAdapters.real.test.js — "pipeline completo com motores reais: EICAR é recusado, PDF legível guarda origem e confiança, ilegível abre pendência" — passou<br>people.documentAdapters.real.test.js — "OCR real: PDF com texto é lido pelo pdftotext com origem e confiança" — passou<br>people.documentAdapters.real.test.js — "OCR real: imagem do mesmo documento é lida pelo Tesseract" — passou<br>people.documentAdapters.real.test.js — "OCR real: PDF escaneado (sem texto) cai no Tesseract" — passou</td><td>P10, P11, P12</td><td><a href="#dados-motores">#dados-motores</a></td><td>Atendido no código e demonstrado com os motores reais. A ativação no servidor depende da aprovação da Nayara (seção 4).</td></tr><tr><td>R02</td><td><i>Caderno do Marco 3, seção 5</i><br>"Dados extraídos ficam com source_file_id e confidence."</td><td>extractedDataJson guarda sourceFileId, confidence, illegible e extractionMeta (motor, tipo de fonte, confiança média, tamanho do texto e o trecho do documento de onde cada campo saiu).</td><td>people.documentAdapters.real.test.js — "pipeline completo com motores reais: EICAR é recusado, PDF legível guarda origem e confiança, ilegível abre pendência" — passou<br>people.documentIngestion.test.js — "ingestPersonDocument: documento legível com dados válidos é persistido com sourceFileId/confidence (sem auto-verificar)" — passou</td><td>P11</td><td><a href="#dados-motores">#dados-motores (campo raw.fieldSources de cada leitura)</a></td><td>Atendido</td></tr><tr><td>R03</td><td><i>Caderno do Marco 3, seção 5</i><br>"CPF/CNPJ, nome, renda, conta e datas críticas exigem validação antes de persistir quando não houver fonte confiável estruturada."</td><td>Os dados lidos ficam como PENDENTE; a tela mostra os campos editáveis e só "Confirmar dados e validar" muda o status para Verificado. A validação grava auditoria com antes e depois.</td><td>people.documentAdapters.real.test.js — "auditoria: a leitura do documento e a validação humana gravam antes/depois" — passou<br>people.documentIngestion.test.js — "ingestPersonDocument: documento legível com dados válidos é persistido com sourceFileId/confidence (sem auto-verificar)" — passou</td><td>P11</td><td><a href="#dados-auditoria">#dados-auditoria</a></td><td>Atendido</td></tr><tr><td>R04</td><td><i>Caderno do Marco 3, seção 5</i><br>"IA nunca sobrescreve cadastro existente silenciosamente."</td><td>A leitura só cria um documento novo (nova versão) para a pessoa; nenhum campo do cadastro é alterado. Reenviar o mesmo tipo cria a versão seguinte e preserva a anterior.</td><td>people.documentAdapters.real.test.js — "enviar de novo um documento do mesmo tipo cria a versão seguinte e preserva a anterior (sem erro de unicidade)" — passou<br>people.documentIngestion.test.js — "ingestPersonDocument: documento legível com dados válidos é persistido com sourceFileId/confidence (sem auto-verificar)" — passou</td><td>P11</td><td><a href="#dados-auditoria">#dados-auditoria</a></td><td>Atendido</td></tr><tr><td>R05</td><td><i>Caderno do Marco 3, seção 5</i><br>"Documento ilegível gera pendência, não dado inventado."</td><td>Sem texto reconhecível, o documento vira "ilegível", sem nenhum campo, e abre uma tarefa de revisão (Marco 3) ou uma tarefa vinculada ao caso (Marco 8). O botão de validar fica desabilitado.</td><td>people.documentAdapters.real.test.js — "OCR real: página em branco, bytes aleatórios e PDF corrompido viram ILEGÍVEL, sem campo inventado" — passou<br>people.documentAdapters.real.test.js — "Marco 8: documento do caso passa pela leitura real; ilegível abre pendência e a sugestão traz origem e confiança" — passou</td><td>P12, P14</td><td><a href="#dados-motores">#dados-motores (leituras ilegíveis)</a></td><td>Atendido</td></tr><tr><td>R06</td><td><i>Caderno do Marco 3, seção 5 e Arquitetura (arquivos)</i><br>"Upload -&gt; antivírus ..."</td><td>Todo upload passa pelo antivírus em files.service.js. Com ANTIVIRUS_PROVIDER=clamav a varredura é do ClamAV; se o daemon não responde, o arquivo é recusado (falha fechada).</td><td>people.documentAdapters.real.test.js — "ClamAV real: arquivo com a assinatura de teste EICAR é recusado e um arquivo comum passa" — passou<br>people.documentAdapters.real.test.js — "ClamAV: antivírus fora do ar falha FECHADO (nunca aprova sem varredura)" — passou</td><td>P10, P15</td><td><a href="#dados-motores">#dados-motores (varreduras)</a></td><td>Atendido</td></tr><tr><td>R07</td><td><i>Caderno do Marco 8 (Documentos/OCR)</i><br>"Upload → malware scan → hash → OCR/IA → sugestão → validação."</td><td>caseDocuments.service.js (uploadDocument) lê o arquivo com o leitor real quando OCR_PROVIDER=local e grava a sugestão com origem, confiança e dados lidos. Ilegível abre tarefa. A validação humana continua em validateRequirement.</td><td>people.documentAdapters.real.test.js — "Marco 8: documento do caso passa pela leitura real; ilegível abre pendência e a sugestão traz origem e confiança" — passou<br>correspondent.caseDocuments.test.js — "CORRESPONDENT-DOC-03: enviar documento marca requirement como SUBMITTED e cria versão 1" — passou</td><td>P13, P14, P15</td><td><a href="#dados-motores">#dados-motores</a></td><td>Atendido no código e demonstrado com os motores reais. A ativação no servidor depende da aprovação da Nayara (seção 4).</td></tr><tr><td>R08</td><td><i>Contrato, cláusula 5-A.1 e Arquitetura (ARC-003)</i><br>"A Contratada disponibiliza o ambiente/recursos para teste. Arquivos ficam fora do banco; o banco guarda metadados e hashes."</td><td>Os arquivos ficam fora do banco, criptografados (AES-256-GCM) em disco, com hash SHA-256 conferido na leitura. A variável FILES_ENCRYPTION_KEY e o volume persistente em /app/uploads foram configurados na homologação. O Dockerfile cria a pasta com o dono correto e não leva mais uploads/ para a imagem.</td><td>files.uploadSecurity.test.js — 3 testes — passaram<br>billing.test.js — "billing: completeOwnershipTransfer exige comprovante (evidenceFileId) e destinatário (A05)" — passou</td><td>P06 (comprovante anexado e exibido na homologação)</td><td><a href="#dados-testes">#dados-testes</a></td><td>Atendido. Armazenamento S3 compatível é decisão da Nayara (seção 4).</td></tr><tr><td>R09</td><td><i>Caderno do Marco 5, seção 12</i><br>"Troca de titularidade é requirement/tarefa com evidência."</td><td>locacao/page.js: campo "Exige transferência de titularidade" na criação, ação "Solicitar transferência" nas obrigações ativas e ação "Concluir transferência" (novo titular e comprovante obrigatórios). API: POST /billing/utility-obligations/:id/ownership-transfer e POST /billing/ownership-transfer-tasks/:id/complete.</td><td>billing.test.js — "billing: requestOwnershipTransfer abre tarefa numa obrigação existente, recusa duplicada e a conclusão grava o comprovante na obrigação" — passou<br>billing.test.js — "billing: completeOwnershipTransfer exige comprovante (evidenceFileId) e destinatário (A05)" — passou<br>billing.test.js — "billing: closeout bloqueia com transferência de utilidade pendente" — passou</td><td>P01, P02, P03, P05, P06, P07</td><td><a href="#dados-auditoria">#dados-auditoria</a></td><td>Atendido</td></tr><tr><td>R10</td><td><i>Caderno do Marco 6</i><br>"Margem mínima, economia e comissão vêm do Motor de Regras e guardam rule_version_id. Margem abaixo da regra gera alerta/bloqueio configurado."</td><td>obras/configuracoes/page.js: card "Margem mínima da obra" (margem, economia, comissão e modo alertar/bloquear). Cada publicação cria uma nova versão; sem regra publicada a aprovação de orçamento é recusada. O percentual é definido por quem configura; o sistema não assume valor.</td><td>Regra de margem coberta pelos testes do Marco 6 já entregues; esta rodada só moveu a tela de configuração para o menu de Obras e conferiu a interface.</td><td>P04, P08, P09</td><td><a href="#dados-testes">#dados-testes</a></td><td>Atendido. O valor do percentual depende da Nayara.</td></tr></tbody></table></div>
+<div class="tw"><table><thead><tr><th>ID</th><th>Requisito (citação)</th><th>Implementação</th><th>Teste automatizado</th><th>Evidência ao vivo</th><th>Evidência em dados</th><th>Status</th></tr></thead><tbody><tr><td>R01</td><td><i>Caderno do Marco 3, seção 5</i><br>"Upload -&gt; antivírus -&gt; hash -&gt; classificação -&gt; OCR/IA -&gt; dados sugeridos."</td><td>documentIngestion.service.js (ingestPersonDocument); rota POST /people/:id/documents/ingest; tela "Ler documento automaticamente" na ficha do contato. Antivírus em ClamAvAdapter.js e leitura em LocalOcrAdapter.js, escolhidos por resolveDocumentAdapters.js.</td><td>people.documentAdapters.real.test.js — "pipeline completo com motores reais: EICAR é recusado, PDF legível guarda origem e confiança, ilegível abre pendência" — passou<br>people.documentAdapters.real.test.js — "OCR real: PDF com texto é lido pelo pdftotext com origem e confiança" — passou<br>people.documentAdapters.real.test.js — "OCR real: imagem do mesmo documento é lida pelo Tesseract" — passou<br>people.documentAdapters.real.test.js — "OCR real: PDF escaneado (sem texto) cai no Tesseract" — passou</td><td>P10, P11, P12</td><td><a href="#dados-motores">#dados-motores</a></td><td>Atendido no código e demonstrado com os motores reais. A ativação no servidor depende da aprovação da Nayara (seção 4).</td></tr><tr><td>R02</td><td><i>Caderno do Marco 3, seção 5</i><br>"Dados extraídos ficam com source_file_id e confidence."</td><td>extractedDataJson guarda sourceFileId, confidence, illegible e extractionMeta (motor, tipo de fonte, confiança média, tamanho do texto e o trecho do documento de onde cada campo saiu).</td><td>people.documentAdapters.real.test.js — "pipeline completo com motores reais: EICAR é recusado, PDF legível guarda origem e confiança, ilegível abre pendência" — passou<br>people.documentIngestion.test.js — "ingestPersonDocument: documento legível com dados válidos é persistido com sourceFileId/confidence (sem auto-verificar)" — passou</td><td>P11</td><td><a href="#dados-motores">#dados-motores (campo raw.fieldSources de cada leitura)</a></td><td>Atendido</td></tr><tr><td>R03</td><td><i>Caderno do Marco 3, seção 5</i><br>"CPF/CNPJ, nome, renda, conta e datas críticas exigem validação antes de persistir quando não houver fonte confiável estruturada."</td><td>Os dados lidos ficam como PENDENTE; a tela mostra os campos editáveis e só "Confirmar dados e validar" muda o status para Verificado. A validação grava auditoria com antes e depois.</td><td>people.documentAdapters.real.test.js — "auditoria: a leitura do documento e a validação humana gravam antes/depois" — passou<br>people.documentIngestion.test.js — "ingestPersonDocument: documento legível com dados válidos é persistido com sourceFileId/confidence (sem auto-verificar)" — passou</td><td>P11</td><td><a href="#dados-auditoria">#dados-auditoria</a></td><td>Atendido</td></tr><tr><td>R04</td><td><i>Caderno do Marco 3, seção 5</i><br>"IA nunca sobrescreve cadastro existente silenciosamente."</td><td>A leitura só cria um documento novo (nova versão) para a pessoa; nenhum campo do cadastro é alterado. Reenviar o mesmo tipo cria a versão seguinte e preserva a anterior.</td><td>people.documentAdapters.real.test.js — "enviar de novo um documento do mesmo tipo cria a versão seguinte e preserva a anterior (sem erro de unicidade)" — passou<br>people.documentIngestion.test.js — "ingestPersonDocument: documento legível com dados válidos é persistido com sourceFileId/confidence (sem auto-verificar)" — passou</td><td>P11</td><td><a href="#dados-auditoria">#dados-auditoria</a></td><td>Atendido</td></tr><tr><td>R05</td><td><i>Caderno do Marco 3, seção 5</i><br>"Documento ilegível gera pendência, não dado inventado."</td><td>Sem texto reconhecível, o documento vira "ilegível", sem nenhum campo, e abre uma tarefa de revisão (Marco 3) ou uma tarefa vinculada ao caso (Marco 8). O botão de validar fica desabilitado.</td><td>people.documentAdapters.real.test.js — "OCR real: página em branco, bytes aleatórios e PDF corrompido viram ILEGÍVEL, sem campo inventado" — passou<br>people.documentAdapters.real.test.js — "Marco 8: documento do caso passa pela leitura real; ilegível abre pendência e a sugestão traz origem e confiança" — passou</td><td>P12, P14</td><td><a href="#dados-motores">#dados-motores (leituras ilegíveis)</a></td><td>Atendido</td></tr><tr><td>R06</td><td><i>Caderno do Marco 3, seção 5 e Arquitetura (arquivos)</i><br>"Upload -&gt; antivírus ..."</td><td>Todo upload passa pelo antivírus em files.service.js. Com ANTIVIRUS_PROVIDER=clamav a varredura é do ClamAV; se o daemon não responde, o arquivo é recusado (falha fechada).</td><td>people.documentAdapters.real.test.js — "ClamAV real: arquivo com a assinatura de teste EICAR é recusado e um arquivo comum passa" — passou<br>people.documentAdapters.real.test.js — "ClamAV: antivírus fora do ar falha FECHADO (nunca aprova sem varredura)" — passou</td><td>P10, P15</td><td><a href="#dados-motores">#dados-motores (varreduras)</a></td><td>Atendido</td></tr><tr><td>R07</td><td><i>Caderno do Marco 8 (Documentos/OCR)</i><br>"Upload → malware scan → hash → OCR/IA → sugestão → validação."</td><td>caseDocuments.service.js (uploadDocument) lê o arquivo com o leitor real quando OCR_PROVIDER=local e grava a sugestão com origem, confiança e dados lidos. Ilegível abre tarefa. A validação humana continua em validateRequirement.</td><td>people.documentAdapters.real.test.js — "Marco 8: documento do caso passa pela leitura real; ilegível abre pendência e a sugestão traz origem e confiança" — passou<br>correspondent.caseDocuments.test.js — "CORRESPONDENT-DOC-03: enviar documento marca requirement como SUBMITTED e cria versão 1" — passou</td><td>P13, P14, P15</td><td><a href="#dados-motores">#dados-motores</a></td><td>Atendido no código e demonstrado com os motores reais. A ativação no servidor depende da aprovação da Nayara (seção 4).</td></tr><tr><td>R08</td><td><i>Contrato, cláusula 5-A.1 e Arquitetura (ARC-003)</i><br>"A Contratada disponibiliza o ambiente/recursos para teste. Arquivos ficam fora do banco; o banco guarda metadados e hashes."</td><td>Os arquivos ficam fora do banco, criptografados (AES-256-GCM) em disco, com hash SHA-256 conferido na leitura. A variável FILES_ENCRYPTION_KEY e o volume persistente em /app/uploads foram configurados na homologação. O Dockerfile cria a pasta com o dono correto e não leva mais uploads/ para a imagem.</td><td>files.uploadSecurity.test.js — 3 testes — passaram<br>billing.test.js — "billing: completeOwnershipTransfer exige comprovante (evidenceFileId) e destinatário (A05)" — passou</td><td>P06 (comprovante anexado e exibido na homologação)</td><td><a href="#dados-testes">#dados-testes</a></td><td>Atendido. Armazenamento S3 compatível é decisão da Nayara (seção 4).</td></tr><tr><td>R09</td><td><i>Caderno do Marco 5, seção 12</i><br>"Troca de titularidade é requirement/tarefa com evidência."</td><td>locacao/page.js: campo "Exige transferência de titularidade" na criação, ação "Solicitar transferência" nas obrigações ativas e ação "Concluir transferência" (novo titular e comprovante obrigatórios). API: POST /billing/utility-obligations/:id/ownership-transfer e POST /billing/ownership-transfer-tasks/:id/complete.</td><td>billing.test.js — "billing: requestOwnershipTransfer abre tarefa numa obrigação existente, recusa duplicada e a conclusão grava o comprovante na obrigação" — passou<br>billing.test.js — "billing: completeOwnershipTransfer exige comprovante (evidenceFileId) e destinatário (A05)" — passou<br>billing.test.js — "billing: closeout bloqueia com transferência de utilidade pendente" — passou</td><td>P01, P02, P03, P05, P06, P07</td><td><a href="#dados-auditoria">#dados-auditoria</a></td><td>Atendido</td></tr><tr><td>R10</td><td><i>Caderno do Marco 6</i><br>"Margem mínima, economia e comissão vêm do Motor de Regras e guardam rule_version_id. Margem abaixo da regra gera alerta/bloqueio configurado."</td><td>obras/configuracoes/page.js: card "Margem mínima da obra" (margem, economia, comissão e modo alertar/bloquear). Cada publicação cria uma nova versão; sem regra publicada a aprovação de orçamento é recusada. O percentual é definido por quem configura; o sistema não assume valor.</td><td>construction.budget.test.js — "Aprovar orçamento sem nenhuma margem mínima configurada é bloqueado" — passou<br>construction.budget.test.js — "ENFORCEMENT: enforcementMode=BLOCK recusa approveBudget quando a margem projetada fica abaixo do mínimo configurado" — passou<br>construction.budget.test.js — "ENFORCEMENT: enforcementMode=ALERT (explícito) ou ausente (default) aprova o orçamento normalmente e só sinaliza belowMinMargin no health" — passou</td><td>P04, P08, P09</td><td><a href="#dados-testes">#dados-testes</a></td><td>Atendido. O valor do percentual depende da Nayara.</td></tr><tr><td>R11</td><td><i>Pedido da IA auditora (23/10/2026), item 3</i><br>"Preserve o versionamento de cada publicação e valide as permissões relacionadas, incluindo construction:update."</td><td>Cada publicação cria uma nova versão da regra no Motor de Regras e a anterior fica preservada; o orçamento já aprovado guarda a versão com que foi aprovado. A rota POST /construction/margin-rules exige construction:update; a consulta da regra vigente exige só construction:read.</td><td>construction.budget.test.js — "M6-61: rule_version_id gravado no orçamento é preservado mesmo após nova versão da regra ser criada" — passou<br>construction.httpRoutes.test.js — "HTTP real: POST /construction/margin-rules SEM permissão construction:update é bloqueado (403) e não cria versão" — passou</td><td>P04</td><td><a href="#dados-testes">#dados-testes</a></td><td>Atendido. Na Empresa Dev nenhuma regra foi publicada: a consulta da regra vigente devolve vazio.</td></tr></tbody></table></div>
 </section>
 
 <section id="s4" class="card"><h2>4. Componentes, responsáveis e custo</h2>
 <h3>O que existe e o que falta ativar</h3>
-<div class="tw"><table><thead><tr><th>Componente</th><th>Para quê</th><th>Já existe</th><th>O que falta ativar</th><th>Quem provisiona</th><th>Custo</th></tr></thead><tbody><tr><td>ClamAV (antivírus)</td><td>Varrer todo arquivo enviado antes de gravar.</td><td>Adaptador real <code>ClamAvAdapter</code>, falha fechada e testes.</td><td>Subir um serviço ClamAV (daemon <code>clamd</code> com as assinaturas) e definir <code>ANTIVIRUS_PROVIDER=clamav</code>, <code>CLAMAV_HOST</code> e <code>CLAMAV_PORT</code>.</td><td>A Nayara decide e fornece o recurso de servidor (cláusulas 10.1 e 14.2). Eu conecto, configuro e demonstro.</td><td>Sem licença. Medido: o <code>clamd</code> ocupa cerca de 966 MB de memória e 108 MB de assinaturas em disco (medido no meu computador, um Mac com 16 GB; num servidor Linux o valor pode variar um pouco).</td></tr><tr><td>Tesseract (OCR de imagem e de PDF escaneado)</td><td>Ler texto de imagem e de PDF sem camada de texto, em português.</td><td>Adaptador real <code>LocalOcrAdapter</code> e testes.</td><td>Instalar o Tesseract com o idioma português e o poppler na imagem da API (<code>docker build --build-arg INSTALL_DOCUMENT_ENGINES=true</code>) e definir <code>OCR_PROVIDER=local</code>.</td><td>A Nayara aprova o recurso; eu preparo a imagem e a configuração. Não testei o build do Docker, porque a minha máquina não tem Docker.</td><td>Sem licença. Medido: 368 ms para uma imagem e 694 ms para um PDF escaneado, com uso de CPU só durante a leitura.</td></tr><tr><td>pdftotext (PDF com texto)</td><td>Ler PDFs que já têm texto, sem OCR.</td><td>Mesmo adaptador de leitura.</td><td>Vem junto com o poppler acima.</td><td>Mesmo item acima.</td><td>Sem licença. Medido: 22 ms.</td></tr><tr><td>Armazenamento de arquivos em disco</td><td>Guardar os arquivos fora do banco, criptografados.</td><td>Configurado na homologação: <code>FILES_ENCRYPTION_KEY</code> e volume persistente em <code>/app/uploads</code>.</td><td>Backup do volume, se a Nayara quiser retenção maior.</td><td>Eu, no ambiente de homologação.</td><td>Usa o disco do servidor já existente; sem contratação externa.</td></tr><tr><td>Armazenamento de objetos S3 compatível</td><td>O caderno prevê armazenamento de objetos (ARC-003) e lista "definir armazenamento S3 compatível, retenção e custo" entre as decisões da Nayara.</td><td>O código guarda só a chave relativa do arquivo, então a troca não muda as telas.</td><td>Escolha do fornecedor e migração dos arquivos.</td><td>A Nayara decide e contrata (cláusulas 10.1, 14.1 e 14.2).</td><td>Custo recorrente externo, a definir pela Nayara.</td></tr></tbody></table></div>
+<div class="tw"><table><thead><tr><th>Componente</th><th>Para quê</th><th>Já existe</th><th>O que falta ativar</th><th>Quem provisiona</th><th>Custo</th></tr></thead><tbody><tr><td>ClamAV (antivírus)</td><td>Varrer todo arquivo enviado antes de gravar.</td><td>Adaptador real <code>ClamAvAdapter</code>, falha fechada e testes.</td><td>Subir um serviço ClamAV (daemon <code>clamd</code> com as assinaturas) e definir <code>ANTIVIRUS_PROVIDER=clamav</code>, <code>CLAMAV_HOST</code> e <code>CLAMAV_PORT</code>.</td><td>A Nayara decide e fornece o recurso de servidor (cláusulas 10.1 e 14.2). Eu conecto, configuro e demonstro.</td><td>Sem licença. Medido: o <code>clamd</code> ocupa cerca de 963 MB de memória e 108 MB de assinaturas em disco (medido no meu computador, um Mac com 16 GB; num servidor Linux o valor pode variar um pouco).</td></tr><tr><td>Tesseract (OCR de imagem e de PDF escaneado)</td><td>Ler texto de imagem e de PDF sem camada de texto, em português.</td><td>Adaptador real <code>LocalOcrAdapter</code> e testes.</td><td>Instalar o Tesseract com o idioma português e o poppler na imagem da API (<code>docker build --build-arg INSTALL_DOCUMENT_ENGINES=true</code>) e definir <code>OCR_PROVIDER=local</code>.</td><td>A Nayara aprova o recurso; eu preparo a imagem e a configuração. Não testei o build do Docker, porque a minha máquina não tem Docker.</td><td>Sem licença. Medido: 350 ms para uma imagem e 697 ms para um PDF escaneado, com uso de CPU só durante a leitura.</td></tr><tr><td>pdftotext (PDF com texto)</td><td>Ler PDFs que já têm texto, sem OCR.</td><td>Mesmo adaptador de leitura.</td><td>Vem junto com o poppler acima.</td><td>Mesmo item acima.</td><td>Sem licença. Medido: 23 ms.</td></tr><tr><td>Armazenamento de arquivos em disco</td><td>Guardar os arquivos fora do banco, criptografados.</td><td>Configurado na homologação: <code>FILES_ENCRYPTION_KEY</code> e volume persistente em <code>/app/uploads</code>.</td><td>Backup do volume, se a Nayara quiser retenção maior.</td><td>Eu, no ambiente de homologação.</td><td>Usa o disco do servidor já existente; sem contratação externa.</td></tr><tr><td>Armazenamento de objetos S3 compatível</td><td>O caderno prevê armazenamento de objetos (ARC-003) e lista "definir armazenamento S3 compatível, retenção e custo" entre as decisões da Nayara.</td><td>O código guarda só a chave relativa do arquivo, então a troca não muda as telas.</td><td>Escolha do fornecedor e migração dos arquivos.</td><td>A Nayara decide e contrata (cláusulas 10.1, 14.1 e 14.2).</td><td>Custo recorrente externo, a definir pela Nayara.</td></tr></tbody></table></div>
+<h3>Proposta objetiva para a decisão da Nayara</h3>
+<div class="tw"><table><thead><tr><th>Opção</th><th>O que é</th><th>Capacidade necessária</th><th>Custo adicional</th></tr></thead><tbody><tr><td>A. Usar a infraestrutura que já existe (recomendada)</td><td>ClamAV como um serviço novo no mesmo servidor do Easypanel e Tesseract com poppler dentro da imagem da API. Sem contratar nada externo.</td><td>Cerca de 963 MB de memória livre para o ClamAV (medido), 108 MB de disco para as assinaturas e CPU em picos curtos durante o OCR (de 23 ms a 697 ms por documento nas leituras acima). Antes de ligar, eu confirmo a memória livre do servidor atual.</td><td>Sem licença. Sem custo extra se o servidor tem essa folga; se não tem, o custo é o do aumento de memória do servidor, valor que depende do provedor da Nayara.</td></tr><tr><td>B. Servidor separado só para leitura e antivírus</td><td>Um segundo servidor pequeno só para o ClamAV e o OCR, para não disputar memória com a API.</td><td>O mesmo consumo da opção A, isolado.</td><td>Mensalidade de um servidor adicional, a cotar pela Nayara.</td></tr><tr><td>C. Serviço gerenciado</td><td>Antivírus e/ou OCR de um fornecedor em nuvem, ligado por um novo adaptador.</td><td>Nenhuma no servidor da Nayara.</td><td>Cobrança recorrente por uso, a definir com o fornecedor que a Nayara escolher.</td></tr></tbody></table></div>
+<p>Nada disso é ativado nem gera custo recorrente antes da aprovação da Nayara (cláusula 14.2). Nesta rodada eu não alterei nenhum servidor publicado além da configuração de arquivos.</p>
 <h3>Como a Nayara escolhe</h3>
 <ul><li>Contratar depois, como o contrato já previu: o item fica registrado como "fluxo implementado; operação real pendente de ativação no servidor". Quando ela aprovar o recurso, eu ativo e demonstro no ambiente publicado, sem mudar o restante do sistema.</li><li>Contratar agora: ela aprova o recurso de servidor, eu ativo as variáveis acima e repito a demonstração da seção 5 no ambiente publicado, para a IA conferir pela tela.</li></ul>
 <p>Não há exigência de marca nem de provedor pago. Um serviço gerenciado também serve, a critério da Nayara: basta me indicar o serviço e as credenciais, que eu conecto um adaptador novo.</p>
 </section>
 
 <section id="s5" class="card"><h2>5. Demonstração com documentos fictícios</h2>
-<p>Estas leituras foram feitas de verdade, com o ClamAV ClamAV 1.5.4/28162/Fri Oct 23 03:24:08 2026, o Tesseract tesseract 5.5.3 e o pdftotext, em 23/10/2026 16:43:24. Os documentos são fictícios (nome e CPF de teste). Cada linha tem o hash SHA-256 do arquivo no JSON (seção 10).</p>
+<p>Estas leituras foram feitas de verdade, com o ClamAV ClamAV 1.5.4/28162/Fri Oct 23 03:24:08 2026, o Tesseract tesseract 5.5.3 e o pdftotext, em 24/10/2026 09:58:42. Os documentos são fictícios (nome e CPF de teste). Cada linha tem o hash SHA-256 do arquivo no JSON (seção 10).</p>
 <h3>Antivírus</h3>
-<div class="tw"><table><thead><tr><th>Arquivo</th><th>Tamanho</th><th>Resultado</th><th>Assinatura</th><th>Tempo</th></tr></thead><tbody><tr><td>Arquivo de teste de antivírus (EICAR, domínio público)</td><td>68 bytes</td><td>Infectado, recusado</td><td>Eicar-Test-Signature</td><td>8 ms</td></tr><tr><td>PDF fictício legível</td><td>733 bytes</td><td>Limpo, aceito</td><td>Nenhuma</td><td>2 ms</td></tr><tr><td>Texto comum</td><td>44 bytes</td><td>Limpo, aceito</td><td>Nenhuma</td><td>3 ms</td></tr></tbody></table></div>
+<div class="tw"><table><thead><tr><th>Arquivo</th><th>Tamanho</th><th>Resultado</th><th>Assinatura</th><th>Tempo</th></tr></thead><tbody><tr><td>Arquivo de teste de antivírus (EICAR, domínio público)</td><td>68 bytes</td><td>Infectado, recusado</td><td>Eicar-Test-Signature</td><td>6 ms</td></tr><tr><td>PDF fictício legível</td><td>733 bytes</td><td>Limpo, aceito</td><td>Nenhuma</td><td>3 ms</td></tr><tr><td>Texto comum</td><td>44 bytes</td><td>Limpo, aceito</td><td>Nenhuma</td><td>2 ms</td></tr></tbody></table></div>
 <p>Com o daemon fora do ar, a varredura devolve o erro <code>ANTIVIRUS_UNAVAILABLE</code> e o arquivo é recusado: o sistema nunca aprova um arquivo sem varredura.</p>
 <h3>Leitura de documento</h3>
-<div class="tw"><table><thead><tr><th>Documento</th><th>Motor e fonte</th><th>Confiança</th><th>Ilegível</th><th>Campos lidos</th><th>Tempo</th></tr></thead><tbody><tr><td>PDF com texto (tipo IR)</td><td>pdftotext / pdf-text</td><td>95%</td><td>Não</td><td>name: MARIA FICTICIA DA SILVA; taxId: 52998224725; income: 4500; issuedAt: 2026-01-10; expiresAt: 2036-01-10</td><td>22 ms</td></tr><tr><td>Imagem PNG do mesmo documento</td><td>tesseract / image</td><td>95%</td><td>Não</td><td>name: MARIA FICTICIA DA SILVA; taxId: 52998224725; income: 4500; issuedAt: 2026-01-10; expiresAt: 2036-01-10</td><td>368 ms</td></tr><tr><td>PDF escaneado, sem texto (só imagem)</td><td>tesseract / pdf-scan</td><td>95%</td><td>Não</td><td>name: MARIA FICTICIA DA SILVA; taxId: 52998224725; income: 4500; issuedAt: 2026-01-10; expiresAt: 2036-01-10</td><td>694 ms</td></tr><tr><td>Página em branco (PNG)</td><td>tesseract / image</td><td>0%</td><td>Sim (TEXTO_INSUFICIENTE)</td><td>Nenhum (nada foi inventado)</td><td>119 ms</td></tr><tr><td>PDF corrompido</td><td>local</td><td>0%</td><td>Sim (ARQUIVO_NAO_LEGIVEL)</td><td>Nenhum (nada foi inventado)</td><td>18 ms</td></tr><tr><td>Arquivo que não é documento</td><td>local</td><td>0%</td><td>Sim (FORMATO_NAO_SUPORTADO)</td><td>Nenhum (nada foi inventado)</td><td>0 ms</td></tr></tbody></table></div>
+<div class="tw"><table><thead><tr><th>Documento</th><th>Motor e fonte</th><th>Confiança</th><th>Ilegível</th><th>Campos lidos</th><th>Tempo</th></tr></thead><tbody><tr><td>PDF com texto (tipo IR)</td><td>pdftotext / pdf-text</td><td>95%</td><td>Não</td><td>name: MARIA FICTICIA DA SILVA; taxId: 52998224725; income: 4500; issuedAt: 2026-01-10; expiresAt: 2036-01-10</td><td>23 ms</td></tr><tr><td>Imagem PNG do mesmo documento</td><td>tesseract / image</td><td>95%</td><td>Não</td><td>name: MARIA FICTICIA DA SILVA; taxId: 52998224725; income: 4500; issuedAt: 2026-01-10; expiresAt: 2036-01-10</td><td>350 ms</td></tr><tr><td>PDF escaneado, sem texto (só imagem)</td><td>tesseract / pdf-scan</td><td>95%</td><td>Não</td><td>name: MARIA FICTICIA DA SILVA; taxId: 52998224725; income: 4500; issuedAt: 2026-01-10; expiresAt: 2036-01-10</td><td>697 ms</td></tr><tr><td>Página em branco (PNG)</td><td>tesseract / image</td><td>0%</td><td>Sim (TEXTO_INSUFICIENTE)</td><td>Nenhum (nada foi inventado)</td><td>116 ms</td></tr><tr><td>PDF corrompido</td><td>local</td><td>0%</td><td>Sim (ARQUIVO_NAO_LEGIVEL)</td><td>Nenhum (nada foi inventado)</td><td>18 ms</td></tr><tr><td>Arquivo que não é documento</td><td>local</td><td>0%</td><td>Sim (FORMATO_NAO_SUPORTADO)</td><td>Nenhum (nada foi inventado)</td><td>0 ms</td></tr></tbody></table></div>
 <p>Para cada campo lido, o JSON guarda o trecho do documento de onde ele saiu (<code>raw.fieldSources</code>). A revisão dos campos críticos é humana: a tela mostra os campos editáveis e só "Confirmar dados e validar" grava o status Verificado, com auditoria do antes e do depois (seção 8).</p>
 </section>
 
@@ -83,16 +88,16 @@ ul{margin:6px 0;padding-left:20px}
 </section>
 
 <section id="s7" class="card"><h2>7. Testes automatizados</h2>
-<div class="tw"><table><thead><tr><th>Arquivo</th><th>Testes</th><th>Passaram</th><th>Falharam</th><th>Pulados</th></tr></thead><tbody><tr><td>test/billing.test.js</td><td>18</td><td>18</td><td>0</td><td>0</td></tr><tr><td>test/people.documentAdapters.real.test.js</td><td>12</td><td>12</td><td>0</td><td>0</td></tr><tr><td>test/people.documentIngestion.test.js</td><td>5</td><td>5</td><td>0</td><td>0</td></tr><tr><td>test/correspondent.caseDocuments.test.js</td><td>9</td><td>9</td><td>0</td><td>0</td></tr><tr><td>test/files.uploadSecurity.test.js</td><td>3</td><td>3</td><td>0</td><td>0</td></tr><tr><td><b>Total</b></td><td><b>47</b></td><td><b>47</b></td><td><b>0</b></td><td><b>0</b></td></tr></tbody></table></div>
-<p>Comando, na pasta da API, com o <code>clamd</code> rodando em 127.0.0.1:3310 e o Tesseract instalado: <code>node --test test/billing.test.js test/people.documentAdapters.real.test.js test/people.documentIngestion.test.js test/correspondent.caseDocuments.test.js test/files.uploadSecurity.test.js</code>, um arquivo por vez. Node v24.18.0. Os testes dos motores reais pulam sozinhos onde o ClamAV ou o Tesseract não existem; aqui nenhum foi pulado. Não há run de CI para estes commits.</p>
+<div class="tw"><table><thead><tr><th>Arquivo</th><th>Testes</th><th>Passaram</th><th>Falharam</th><th>Pulados</th></tr></thead><tbody><tr><td>test/billing.test.js</td><td>18</td><td>18</td><td>0</td><td>0</td></tr><tr><td>test/people.documentAdapters.real.test.js</td><td>12</td><td>12</td><td>0</td><td>0</td></tr><tr><td>test/people.documentIngestion.test.js</td><td>5</td><td>5</td><td>0</td><td>0</td></tr><tr><td>test/correspondent.caseDocuments.test.js</td><td>9</td><td>9</td><td>0</td><td>0</td></tr><tr><td>test/files.uploadSecurity.test.js</td><td>3</td><td>3</td><td>0</td><td>0</td></tr><tr><td>test/construction.httpRoutes.test.js</td><td>7</td><td>7</td><td>0</td><td>0</td></tr><tr><td>test/construction.budget.test.js</td><td>39</td><td>39</td><td>0</td><td>0</td></tr><tr><td><b>Total</b></td><td><b>93</b></td><td><b>93</b></td><td><b>0</b></td><td><b>0</b></td></tr></tbody></table></div>
+<p>Comando, na pasta da API, com o <code>clamd</code> rodando em 127.0.0.1:3310 e o Tesseract instalado: <code>node --test test/billing.test.js test/people.documentAdapters.real.test.js test/people.documentIngestion.test.js test/correspondent.caseDocuments.test.js test/files.uploadSecurity.test.js test/construction.httpRoutes.test.js test/construction.budget.test.js</code>, um arquivo por vez. Node v24.18.0. Os testes dos motores reais pulam sozinhos onde o ClamAV ou o Tesseract não existem; aqui nenhum foi pulado. Não há run de CI para estes commits.</p>
 <p>Também executei testes de interface com o Playwright, clicando na tela: transferência de titularidade (10 verificações), configuração de margem (5), cadastro por documento (7) e documentos do caso do Marco 8 (5). Todos passaram na última execução; os prints da seção 9 saem deles.</p>
-<details><summary>Lista completa dos testes desta execução</summary><div class="tw"><table><thead><tr><th>Arquivo</th><th>Teste</th><th>Resultado</th></tr></thead><tbody><tr><td>billing.test.js</td><td>billing: gerar cobrança duas vezes para a mesma competência é bloqueado com erro claro</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: pagamento parcial recompõe saldo e só fecha quando quitado totalmente</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: reajuste sem fonte de índice disponível vira PENDING_SOURCE sem inventar percentual</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: reajuste com fonte de índice disponível aplica o percentual (raw pode divergir de applied)</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: aluguel garantido e antecipação são produtos/tabelas separados</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: reembolso é criado quando a imobiliária paga utilidade da responsabilidade da outra parte</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: closeout bloqueia com cobrança em aberto e libera quando quitada</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: completeOwnershipTransfer exige comprovante (evidenceFileId) e destinatário (A05)</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: requestOwnershipTransfer abre tarefa numa obrigação existente, recusa duplicada e a conclusão grava o comprovante na obrigação</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: closeout bloqueia com transferência de utilidade pendente</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: closeout sem pendências avança o contrato ACTIVE até CLOSED</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: closeout bloqueado por garantia ACTIVE pendente (gate único de encerramento)</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: caso de cobrança dentro da carência (REG-LOC-002) é bloqueado</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: duas aberturas CONCORRENTES de caso de cobrança para a mesma competência não duplicam</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: duas recuperações CONCORRENTES da mesma antecipação de aluguel não perdem incremento (lost update)</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: dois pagamentos CONCORRENTES de aluguel garantido para a mesma competência não duplicam</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: duas conclusões CONCORRENTES da última tarefa de transferência não travam a obrigação em TRANSFER_PENDING</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: RLS está corretamente configurada (ENABLE+FORCE+policy tenant_isolation) em todas as tabelas novas</td><td>Passou</td></tr><tr><td>people.documentAdapters.real.test.js</td><td>resolvers: sem variável de ambiente continuam nos adaptadores de laboratório; com ela entram os reais</td><td>Passou</td></tr><tr><td>people.documentAdapters.real.test.js</td><td>ClamAV: antivírus fora do ar falha FECHADO (nunca aprova sem varredura)</td><td>Passou</td></tr><tr><td>people.documentAdapters.real.test.js</td><td>ClamAV real: arquivo com a assinatura de teste EICAR é recusado e um arquivo comum passa</td><td>Passou</td></tr><tr><td>people.documentAdapters.real.test.js</td><td>extractFields: só preenche campo que está no texto, nunca inventa</td><td>Passou</td></tr><tr><td>people.documentAdapters.real.test.js</td><td>OCR real: PDF com texto é lido pelo pdftotext com origem e confiança</td><td>Passou</td></tr><tr><td>people.documentAdapters.real.test.js</td><td>OCR real: imagem do mesmo documento é lida pelo Tesseract</td><td>Passou</td></tr><tr><td>people.documentAdapters.real.test.js</td><td>OCR real: PDF escaneado (sem texto) cai no Tesseract</td><td>Passou</td></tr><tr><td>people.documentAdapters.real.test.js</td><td>OCR real: página em branco, bytes aleatórios e PDF corrompido viram ILEGÍVEL, sem campo inventado</td><td>Passou</td></tr><tr><td>people.documentAdapters.real.test.js</td><td>pipeline completo com motores reais: EICAR é recusado, PDF legível guarda origem e confiança, ilegível abre pendência</td><td>Passou</td></tr><tr><td>people.documentAdapters.real.test.js</td><td>auditoria: a leitura do documento e a validação humana gravam antes/depois</td><td>Passou</td></tr><tr><td>people.documentAdapters.real.test.js</td><td>Marco 8: documento do caso passa pela leitura real; ilegível abre pendência e a sugestão traz origem e confiança</td><td>Passou</td></tr><tr><td>people.documentAdapters.real.test.js</td><td>enviar de novo um documento do mesmo tipo cria a versão seguinte e preserva a anterior (sem erro de unicidade)</td><td>Passou</td></tr><tr><td>people.documentIngestion.test.js</td><td>ingestPersonDocument: documento legível com dados válidos é persistido com sourceFileId/confidence (sem auto-verificar)</td><td>Passou</td></tr><tr><td>people.documentIngestion.test.js</td><td>ingestPersonDocument: documento ilegível (OCR sem extrair nada) gera pendência (Task) e NÃO inventa dados</td><td>Passou</td></tr><tr><td>people.documentIngestion.test.js</td><td>ingestPersonDocument: confiança abaixo do mínimo também gera pendência, mesmo com fields presentes</td><td>Passou</td></tr><tr><td>people.documentIngestion.test.js</td><td>ingestPersonDocument: CPF extraído em formato inválido (IR) é rejeitado antes de persistir</td><td>Passou</td></tr><tr><td>people.documentIngestion.test.js</td><td>ingestPersonDocument: arquivo com assinatura de malware (EICAR) é rejeitado em quarentena, nunca persistido</td><td>Passou</td></tr><tr><td>correspondent.caseDocuments.test.js</td><td>CORRESPONDENT-DOC-01: cria requirement PENDING e lista no checklist do caso</td><td>Passou</td></tr><tr><td>correspondent.caseDocuments.test.js</td><td>CORRESPONDENT-DOC-02: rejeita documentType inválido</td><td>Passou</td></tr><tr><td>correspondent.caseDocuments.test.js</td><td>CORRESPONDENT-DOC-03: enviar documento marca requirement como SUBMITTED e cria versão 1</td><td>Passou</td></tr><tr><td>correspondent.caseDocuments.test.js</td><td>CORRESPONDENT-DOC-04: substituir documento preserva a versão anterior (nunca apaga/sobrescreve) e incrementa a versão</td><td>Passou</td></tr><tr><td>correspondent.caseDocuments.test.js</td><td>CORRESPONDENT-DOC-05: rejeita arquivo de outra empresa</td><td>Passou</td></tr><tr><td>correspondent.caseDocuments.test.js</td><td>CORRESPONDENT-DOC-06: sem canSeeDocuments, a listagem nunca inclui documents/fileId (permissão RESTRICTED)</td><td>Passou</td></tr><tr><td>correspondent.caseDocuments.test.js</td><td>CORRESPONDENT-DOC-07: RLS — outra empresa não enxerga requirements/documents via SELECT direto</td><td>Passou</td></tr><tr><td>correspondent.caseDocuments.test.js</td><td>CORRESPONDENT-DOC-08: requirementId obrigatório ao enviar documento</td><td>Passou</td></tr><tr><td>correspondent.caseDocuments.test.js</td><td>CORRESPONDENT-DOC-09: índice único garante no máximo uma versão vigente por requirement (nível de banco)</td><td>Passou</td></tr><tr><td>files.uploadSecurity.test.js</td><td>files: uploadFile recusa mimeType fora da allowlist (html/script, executável)</td><td>Passou</td></tr><tr><td>files.uploadSecurity.test.js</td><td>files: uploadFile recusa arquivo vazio com mensagem de negócio, não vaza nome de parâmetro interno</td><td>Passou</td></tr><tr><td>files.uploadSecurity.test.js</td><td>files: uploadFile aceita mimeType permitido (imagem, PDF)</td><td>Passou</td></tr></tbody></table></div></details>
+<details><summary>Lista completa dos testes desta execução</summary><div class="tw"><table><thead><tr><th>Arquivo</th><th>Teste</th><th>Resultado</th></tr></thead><tbody><tr><td>billing.test.js</td><td>billing: gerar cobrança duas vezes para a mesma competência é bloqueado com erro claro</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: pagamento parcial recompõe saldo e só fecha quando quitado totalmente</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: reajuste sem fonte de índice disponível vira PENDING_SOURCE sem inventar percentual</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: reajuste com fonte de índice disponível aplica o percentual (raw pode divergir de applied)</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: aluguel garantido e antecipação são produtos/tabelas separados</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: reembolso é criado quando a imobiliária paga utilidade da responsabilidade da outra parte</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: closeout bloqueia com cobrança em aberto e libera quando quitada</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: completeOwnershipTransfer exige comprovante (evidenceFileId) e destinatário (A05)</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: requestOwnershipTransfer abre tarefa numa obrigação existente, recusa duplicada e a conclusão grava o comprovante na obrigação</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: closeout bloqueia com transferência de utilidade pendente</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: closeout sem pendências avança o contrato ACTIVE até CLOSED</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: closeout bloqueado por garantia ACTIVE pendente (gate único de encerramento)</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: caso de cobrança dentro da carência (REG-LOC-002) é bloqueado</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: duas aberturas CONCORRENTES de caso de cobrança para a mesma competência não duplicam</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: duas recuperações CONCORRENTES da mesma antecipação de aluguel não perdem incremento (lost update)</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: dois pagamentos CONCORRENTES de aluguel garantido para a mesma competência não duplicam</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: duas conclusões CONCORRENTES da última tarefa de transferência não travam a obrigação em TRANSFER_PENDING</td><td>Passou</td></tr><tr><td>billing.test.js</td><td>billing: RLS está corretamente configurada (ENABLE+FORCE+policy tenant_isolation) em todas as tabelas novas</td><td>Passou</td></tr><tr><td>people.documentAdapters.real.test.js</td><td>resolvers: sem variável de ambiente continuam nos adaptadores de laboratório; com ela entram os reais</td><td>Passou</td></tr><tr><td>people.documentAdapters.real.test.js</td><td>ClamAV: antivírus fora do ar falha FECHADO (nunca aprova sem varredura)</td><td>Passou</td></tr><tr><td>people.documentAdapters.real.test.js</td><td>ClamAV real: arquivo com a assinatura de teste EICAR é recusado e um arquivo comum passa</td><td>Passou</td></tr><tr><td>people.documentAdapters.real.test.js</td><td>extractFields: só preenche campo que está no texto, nunca inventa</td><td>Passou</td></tr><tr><td>people.documentAdapters.real.test.js</td><td>OCR real: PDF com texto é lido pelo pdftotext com origem e confiança</td><td>Passou</td></tr><tr><td>people.documentAdapters.real.test.js</td><td>OCR real: imagem do mesmo documento é lida pelo Tesseract</td><td>Passou</td></tr><tr><td>people.documentAdapters.real.test.js</td><td>OCR real: PDF escaneado (sem texto) cai no Tesseract</td><td>Passou</td></tr><tr><td>people.documentAdapters.real.test.js</td><td>OCR real: página em branco, bytes aleatórios e PDF corrompido viram ILEGÍVEL, sem campo inventado</td><td>Passou</td></tr><tr><td>people.documentAdapters.real.test.js</td><td>pipeline completo com motores reais: EICAR é recusado, PDF legível guarda origem e confiança, ilegível abre pendência</td><td>Passou</td></tr><tr><td>people.documentAdapters.real.test.js</td><td>auditoria: a leitura do documento e a validação humana gravam antes/depois</td><td>Passou</td></tr><tr><td>people.documentAdapters.real.test.js</td><td>Marco 8: documento do caso passa pela leitura real; ilegível abre pendência e a sugestão traz origem e confiança</td><td>Passou</td></tr><tr><td>people.documentAdapters.real.test.js</td><td>enviar de novo um documento do mesmo tipo cria a versão seguinte e preserva a anterior (sem erro de unicidade)</td><td>Passou</td></tr><tr><td>people.documentIngestion.test.js</td><td>ingestPersonDocument: documento legível com dados válidos é persistido com sourceFileId/confidence (sem auto-verificar)</td><td>Passou</td></tr><tr><td>people.documentIngestion.test.js</td><td>ingestPersonDocument: documento ilegível (OCR sem extrair nada) gera pendência (Task) e NÃO inventa dados</td><td>Passou</td></tr><tr><td>people.documentIngestion.test.js</td><td>ingestPersonDocument: confiança abaixo do mínimo também gera pendência, mesmo com fields presentes</td><td>Passou</td></tr><tr><td>people.documentIngestion.test.js</td><td>ingestPersonDocument: CPF extraído em formato inválido (IR) é rejeitado antes de persistir</td><td>Passou</td></tr><tr><td>people.documentIngestion.test.js</td><td>ingestPersonDocument: arquivo com assinatura de malware (EICAR) é rejeitado em quarentena, nunca persistido</td><td>Passou</td></tr><tr><td>correspondent.caseDocuments.test.js</td><td>CORRESPONDENT-DOC-01: cria requirement PENDING e lista no checklist do caso</td><td>Passou</td></tr><tr><td>correspondent.caseDocuments.test.js</td><td>CORRESPONDENT-DOC-02: rejeita documentType inválido</td><td>Passou</td></tr><tr><td>correspondent.caseDocuments.test.js</td><td>CORRESPONDENT-DOC-03: enviar documento marca requirement como SUBMITTED e cria versão 1</td><td>Passou</td></tr><tr><td>correspondent.caseDocuments.test.js</td><td>CORRESPONDENT-DOC-04: substituir documento preserva a versão anterior (nunca apaga/sobrescreve) e incrementa a versão</td><td>Passou</td></tr><tr><td>correspondent.caseDocuments.test.js</td><td>CORRESPONDENT-DOC-05: rejeita arquivo de outra empresa</td><td>Passou</td></tr><tr><td>correspondent.caseDocuments.test.js</td><td>CORRESPONDENT-DOC-06: sem canSeeDocuments, a listagem nunca inclui documents/fileId (permissão RESTRICTED)</td><td>Passou</td></tr><tr><td>correspondent.caseDocuments.test.js</td><td>CORRESPONDENT-DOC-07: RLS — outra empresa não enxerga requirements/documents via SELECT direto</td><td>Passou</td></tr><tr><td>correspondent.caseDocuments.test.js</td><td>CORRESPONDENT-DOC-08: requirementId obrigatório ao enviar documento</td><td>Passou</td></tr><tr><td>correspondent.caseDocuments.test.js</td><td>CORRESPONDENT-DOC-09: índice único garante no máximo uma versão vigente por requirement (nível de banco)</td><td>Passou</td></tr><tr><td>files.uploadSecurity.test.js</td><td>files: uploadFile recusa mimeType fora da allowlist (html/script, executável)</td><td>Passou</td></tr><tr><td>files.uploadSecurity.test.js</td><td>files: uploadFile recusa arquivo vazio com mensagem de negócio, não vaza nome de parâmetro interno</td><td>Passou</td></tr><tr><td>files.uploadSecurity.test.js</td><td>files: uploadFile aceita mimeType permitido (imagem, PDF)</td><td>Passou</td></tr><tr><td>construction.httpRoutes.test.js</td><td>HTTP real: POST /construction/projects/:id/measurements cria a medição (201)</td><td>Passou</td></tr><tr><td>construction.httpRoutes.test.js</td><td>HTTP real: POST /construction/measurements/:id/approve aprova a medição já revisada (200)</td><td>Passou</td></tr><tr><td>construction.httpRoutes.test.js</td><td>HTTP real: POST /construction/measurements/:id/approve SEM permissão construction:approve é bloqueado (403)</td><td>Passou</td></tr><tr><td>construction.httpRoutes.test.js</td><td>HTTP real: POST /construction/margin-rules SEM permissão construction:update é bloqueado (403) e não cria versão</td><td>Passou</td></tr><tr><td>construction.httpRoutes.test.js</td><td>HTTP real: POST /construction/warranty-cases cria o caso de garantia/pós-obra (201)</td><td>Passou</td></tr><tr><td>construction.httpRoutes.test.js</td><td>HTTP real: GET /construction/maintenance-cases devolve formato paginado {data, pagination} (mesmo padrão de GET /construction/projects)</td><td>Passou</td></tr><tr><td>construction.httpRoutes.test.js</td><td>HTTP real: PATCH /construction/budget-lines/:id com baseline APPROVED é bloqueado (400/422 BUDGET_LINE_BASELINE_LOCKED)</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>M6-54: editar plannedAmount de linha de orçamento com baseline APPROVED é bloqueado</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>M6-22: actualAmount não pode ser editado nem em orçamento ainda DRAFT (nunca via UPDATE direto)</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>M6-54: campos não financeiros de uma linha com baseline APPROVED continuam editáveis</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>removeBudgetLine remove linha em DRAFT, mas recusa remover linha de orçamento já APPROVED</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>M6-54/M6-17: não é possível criar linha nova em orçamento já APPROVED</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>M6-17/M6-32: aprovar orçamento fora de DRAFT (já APPROVED) é bloqueado</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>M6-33/M6-82: Change Order aprovado altera o baseline do orçamento já congelado</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>M6-42: projectedMargin não conta o Change Order aprovado duas vezes (baseline já sincronizada)</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>M6-42: consumedInventoryCost soma o custo real de saídas de estoque vinculadas à obra (OUT - RETURN)</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>M6-NOVO-14: projectedMargin consegue ficar POSITIVA, ZERO e NEGATIVA conforme o desempenho de custo real (EAC), nunca mais travada em &lt;= 0</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>M6-NOVO-15: economyAmount/commissionAmount são calculados a partir da margem positiva e preservam o ruleVersionId usado</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>M6-99: wastagePct abate material devolvido (RETURN), não conta a perda já corrigida</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>Change Order não pode ser aprovado se a obra não tem orçamento APPROVED</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>Change Order rejeitado não altera o orçamento</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>M6-61: rule_version_id gravado no orçamento é preservado mesmo após nova versão da regra ser criada</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>M6-61/item 4: margem mínima é avaliada via Motor de Regras genérico com o código REG-OBR-001</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>Aprovar orçamento sem nenhuma margem mínima configurada é bloqueado</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>Uma obra não pode ter dois orçamentos agregados</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>M6-67: duas aprovações concorrentes do mesmo orçamento — só uma vence, a outra recebe conflito</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>M6-57/M6-66: orçamento não é visível fora do contexto de tenant correto (RLS)</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>M6-NOVO-1: createBudgetLine rejeita plannedAmount "Infinity" (categoria 14 do catálogo)</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>M6-NOVO-7: createBudgetLine recusa budgetId que pertence a outra obra</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>M6-NOVO-13: createBudgetLine recusa costCenterId que pertence a outra empresa</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>M6-NOVO-10: createBudget recusa quando o groupId do payload não bate com o groupId real da obra (mesma empresa, grupo diferente)</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>M6-NOVO-2: createChangeOrder rejeita budgetImpact "Infinity" (categoria 14 do catálogo)</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>M6-NOVO-4: createChangeOrder exige scheduleImpactDays (pode ser 0) e evidenceFileIds não vazio</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>M6-NOVO-5: createChangeOrder exige idempotencyKey, e reenviar a MESMA chave devolve o registro original (sem duplicar aditivo)</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>M6-NOVO-11: createChangeOrder recusa quando o groupId do payload não bate com o groupId real da obra (mesma empresa, grupo diferente)</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>M6-NOVO-3: createProject rejeita budgetAmount "NaN"/"Infinity"/negativo/absurdamente grande</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>TAREFA 2: economyPct e commissionPct são salvos e recuperados em createMarginRule/getActiveMarginRule</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>TAREFA 2: economyPct/commissionPct são opcionais (ausentes = null, não quebra criação)</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>TAREFA 2: economyPct/commissionPct rejeitam NaN/Infinity/negativo/&gt;100 (mesma validação de minMarginPct)</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>TAREFA 3: getProjectHealth retorna belowMinMargin=true quando a margem projetada fica abaixo da regra mínima</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>ENFORCEMENT: enforcementMode=BLOCK recusa approveBudget quando a margem projetada fica abaixo do mínimo configurado</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>ENFORCEMENT: enforcementMode=ALERT (explícito) ou ausente (default) aprova o orçamento normalmente e só sinaliza belowMinMargin no health</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>ENFORCEMENT: enforcementMode=BLOCK não bloqueia à toa quando a margem projetada está acima/igual ao mínimo configurado</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>ENFORCEMENT: enforcementMode=BLOCK recusa decideChangeOrder(APPROVE) quando a margem projetada fica abaixo do mínimo configurado</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>ENFORCEMENT: enforcementMode=ALERT permite decideChangeOrder(APPROVE) normalmente mesmo com margem abaixo do mínimo</td><td>Passou</td></tr><tr><td>construction.budget.test.js</td><td>ENFORCEMENT: enforcementMode=BLOCK não bloqueia decideChangeOrder(APPROVE) quando a margem projetada está acima/igual ao mínimo</td><td>Passou</td></tr></tbody></table></div></details>
 </section>
 
 <section id="s8" class="card"><h2>8. Segurança</h2>
 <ul><li>A leitura automática e a validação humana gravam auditoria com o estado antes e depois (amostras reais abaixo).</li><li>Documentos do caso de financiamento continuam classificados como restritos e versionados; a leitura automática não altera a classificação nem valida nada sozinha.</li><li>Rotas novas exigem permissão: <code>people:update</code> para ler documento, <code>billing:update</code> para solicitar e concluir transferência.</li><li>A chave de criptografia dos arquivos e as credenciais não aparecem nesta página nem em nenhum arquivo versionado; elas ficam nas variáveis do ambiente.</li><li>O antivírus falha fechado: sem varredura o arquivo não é aceito.</li></ul>
 <h3 id="dados-auditoria">Amostras reais da auditoria</h3>
-<div class="tw"><table><thead><tr><th>Ação</th><th>Quando</th><th>Antes</th><th>Depois</th></tr></thead><tbody><tr><td>Transferência de titularidade concluída<br><code>billing.ownership_transfer_task.complete</code></td><td>23/10/2026 16:39:00</td><td><code>{"id":"177eb730-fe7f-46aa-a7ec-2c978b5303ed","status":"PENDING","groupId":"51cca01b-6a2e-4815-9aa1-70d40e3aba24","companyId":"110723f9-4ad2-45fb-b6ec-1f2631821f32","createdBy":"33477648-c752-4bed-83cb-a04114224f4d","deletedBy":null,"updatedBy":"33477648-c752-4bed-83cb-a04114224f4d","created_at":"23/10/2026 16:38:56","deleted_at":null,"toPersonId":null,"updated_at":"23/10/2026 1</code></td><td><code>{"id":"177eb730-fe7f-46aa-a7ec-2c978b5303ed","status":"COMPLETED","groupId":"51cca01b-6a2e-4815-9aa1-70d40e3aba24","companyId":"110723f9-4ad2-45fb-b6ec-1f2631821f32","createdBy":"33477648-c752-4bed-83cb-a04114224f4d","deletedBy":null,"updatedBy":"33477648-c752-4bed-83cb-a04114224f4d","created_at":"23/10/2026 16:38:56","deleted_at":null,"toPersonId":"5e1e7cc8-3571-43a3-94b9-1377</code></td></tr><tr><td>Obrigação criada<br><code>billing.utility_obligation.create</code></td><td>23/10/2026 16:38:56</td><td>Não existia (registro criado nesta ação)</td><td><code>{"id":"6fb6c791-d802-4e3c-9338-19766bca71a7","status":"TRANSFER_PENDING","groupId":"51cca01b-6a2e-4815-9aa1-70d40e3aba24","provider":null,"companyId":"110723f9-4ad2-45fb-b6ec-1f2631821f32","createdBy":"33477648-c752-4bed-83cb-a04114224f4d","deletedBy":null,"updatedBy":"33477648-c752-4bed-83cb-a04114224f4d","contractId":"69846352-1d19-482a-a39a-0da46bc2097d","created_at":"23/10/</code></td></tr><tr><td>Leitura automática do documento<br><code>people.document.ingest</code></td><td>23/10/2026 16:33:24</td><td>Não existia (registro criado nesta ação)</td><td><code>{"id":"0516cd1a-5fa6-4fdf-b2f8-e551223d5144","fileId":"e25a0a53-e7f5-4061-aea5-e159d01c2c3e","groupId":"51cca01b-6a2e-4815-9aa1-70d40e3aba24","issuedAt":null,"personId":"e0600543-71ad-47f0-8c9c-d9feb431ecbc","companyId":"110723f9-4ad2-45fb-b6ec-1f2631821f32","createdBy":"33477648-c752-4bed-83cb-a04114224f4d","deletedBy":null,"expiresAt":null,"updatedBy":"33477648-c752-4bed-83cb</code></td></tr><tr><td>Validação humana do documento<br><code>people.document.update</code></td><td>23/10/2026 16:33:19</td><td><code>{"id":"02f8d47b-ee2d-4c46-b7da-f87bffbf361d","fileId":"52ed4259-62df-44ac-8c5c-889afc322407","groupId":"51cca01b-6a2e-4815-9aa1-70d40e3aba24","issuedAt":null,"personId":"e0600543-71ad-47f0-8c9c-d9feb431ecbc","companyId":"110723f9-4ad2-45fb-b6ec-1f2631821f32","createdBy":"33477648-c752-4bed-83cb-a04114224f4d","deletedBy":null,"expiresAt":null,"person_id":"e0600543-71ad-47f0-8c9c</code></td><td><code>{"id":"02f8d47b-ee2d-4c46-b7da-f87bffbf361d","fileId":"52ed4259-62df-44ac-8c5c-889afc322407","groupId":"51cca01b-6a2e-4815-9aa1-70d40e3aba24","issuedAt":null,"personId":"e0600543-71ad-47f0-8c9c-d9feb431ecbc","companyId":"110723f9-4ad2-45fb-b6ec-1f2631821f32","createdBy":"33477648-c752-4bed-83cb-a04114224f4d","deletedBy":null,"expiresAt":null,"person_id":"e0600543-71ad-47f0-8c9c</code></td></tr><tr><td>Transferência de titularidade solicitada<br><code>billing.ownership_transfer.request</code></td><td>23/10/2026 07:56:59</td><td><code>{"id":"b2fdb4a6-2106-46e1-a1bb-c60f1ea650a7","status":"ACTIVE","groupId":"51cca01b-6a2e-4815-9aa1-70d40e3aba24","provider":null,"companyId":"110723f9-4ad2-45fb-b6ec-1f2631821f32","createdBy":"33477648-c752-4bed-83cb-a04114224f4d","deletedBy":null,"updatedBy":"33477648-c752-4bed-83cb-a04114224f4d","contractId":"af240ec8-368c-43d2-aa94-5597a1138da1","created_at":"23/10/2026 07:56</code></td><td><code>{"id":"b2fdb4a6-2106-46e1-a1bb-c60f1ea650a7","status":"TRANSFER_PENDING","groupId":"51cca01b-6a2e-4815-9aa1-70d40e3aba24","provider":null,"companyId":"110723f9-4ad2-45fb-b6ec-1f2631821f32","createdBy":"33477648-c752-4bed-83cb-a04114224f4d","deletedBy":null,"updatedBy":"33477648-c752-4bed-83cb-a04114224f4d","contractId":"af240ec8-368c-43d2-aa94-5597a1138da1","created_at":"23/10/</code></td></tr></tbody></table></div>
+<div class="tw"><table><thead><tr><th>Ação</th><th>Quando</th><th>Antes</th><th>Depois</th></tr></thead><tbody><tr><td>Transferência de titularidade concluída<br><code>billing.ownership_transfer_task.complete</code></td><td>24/10/2026 09:51:37</td><td><code>{"id":"a914dd83-7131-4132-9a40-8766a4c0b857","status":"PENDING","groupId":"51cca01b-6a2e-4815-9aa1-70d40e3aba24","companyId":"110723f9-4ad2-45fb-b6ec-1f2631821f32","createdBy":"33477648-c752-4bed-83cb-a04114224f4d","deletedBy":null,"updatedBy":"33477648-c752-4bed-83cb-a04114224f4d","created_at":"24/10/2026 09:51:34","deleted_at":null,"toPersonId":null,"updated_at":"24/10/2026 0</code></td><td><code>{"id":"a914dd83-7131-4132-9a40-8766a4c0b857","status":"COMPLETED","groupId":"51cca01b-6a2e-4815-9aa1-70d40e3aba24","companyId":"110723f9-4ad2-45fb-b6ec-1f2631821f32","createdBy":"33477648-c752-4bed-83cb-a04114224f4d","deletedBy":null,"updatedBy":"33477648-c752-4bed-83cb-a04114224f4d","created_at":"24/10/2026 09:51:34","deleted_at":null,"toPersonId":"5200082d-57e5-4fb6-a2bf-5ea1</code></td></tr><tr><td>Obrigação criada<br><code>billing.utility_obligation.create</code></td><td>24/10/2026 09:51:34</td><td>Não existia (registro criado nesta ação)</td><td><code>{"id":"cf645cae-835a-4c36-9908-eb0c9a57817e","status":"TRANSFER_PENDING","groupId":"51cca01b-6a2e-4815-9aa1-70d40e3aba24","provider":null,"companyId":"110723f9-4ad2-45fb-b6ec-1f2631821f32","createdBy":"33477648-c752-4bed-83cb-a04114224f4d","deletedBy":null,"updatedBy":"33477648-c752-4bed-83cb-a04114224f4d","contractId":"418e1f96-0728-4d44-8d76-7ec38f4af0ac","created_at":"24/10/</code></td></tr><tr><td>Leitura automática do documento<br><code>people.document.ingest</code></td><td>23/10/2026 16:33:24</td><td>Não existia (registro criado nesta ação)</td><td><code>{"id":"0516cd1a-5fa6-4fdf-b2f8-e551223d5144","fileId":"e25a0a53-e7f5-4061-aea5-e159d01c2c3e","groupId":"51cca01b-6a2e-4815-9aa1-70d40e3aba24","issuedAt":null,"personId":"e0600543-71ad-47f0-8c9c-d9feb431ecbc","companyId":"110723f9-4ad2-45fb-b6ec-1f2631821f32","createdBy":"33477648-c752-4bed-83cb-a04114224f4d","deletedBy":null,"expiresAt":null,"updatedBy":"33477648-c752-4bed-83cb</code></td></tr><tr><td>Validação humana do documento<br><code>people.document.update</code></td><td>23/10/2026 16:33:19</td><td><code>{"id":"02f8d47b-ee2d-4c46-b7da-f87bffbf361d","fileId":"52ed4259-62df-44ac-8c5c-889afc322407","groupId":"51cca01b-6a2e-4815-9aa1-70d40e3aba24","issuedAt":null,"personId":"e0600543-71ad-47f0-8c9c-d9feb431ecbc","companyId":"110723f9-4ad2-45fb-b6ec-1f2631821f32","createdBy":"33477648-c752-4bed-83cb-a04114224f4d","deletedBy":null,"expiresAt":null,"person_id":"e0600543-71ad-47f0-8c9c</code></td><td><code>{"id":"02f8d47b-ee2d-4c46-b7da-f87bffbf361d","fileId":"52ed4259-62df-44ac-8c5c-889afc322407","groupId":"51cca01b-6a2e-4815-9aa1-70d40e3aba24","issuedAt":null,"personId":"e0600543-71ad-47f0-8c9c-d9feb431ecbc","companyId":"110723f9-4ad2-45fb-b6ec-1f2631821f32","createdBy":"33477648-c752-4bed-83cb-a04114224f4d","deletedBy":null,"expiresAt":null,"person_id":"e0600543-71ad-47f0-8c9c</code></td></tr><tr><td>Transferência de titularidade solicitada<br><code>billing.ownership_transfer.request</code></td><td>23/10/2026 07:56:59</td><td><code>{"id":"b2fdb4a6-2106-46e1-a1bb-c60f1ea650a7","status":"ACTIVE","groupId":"51cca01b-6a2e-4815-9aa1-70d40e3aba24","provider":null,"companyId":"110723f9-4ad2-45fb-b6ec-1f2631821f32","createdBy":"33477648-c752-4bed-83cb-a04114224f4d","deletedBy":null,"updatedBy":"33477648-c752-4bed-83cb-a04114224f4d","contractId":"af240ec8-368c-43d2-aa94-5597a1138da1","created_at":"23/10/2026 07:56</code></td><td><code>{"id":"b2fdb4a6-2106-46e1-a1bb-c60f1ea650a7","status":"TRANSFER_PENDING","groupId":"51cca01b-6a2e-4815-9aa1-70d40e3aba24","provider":null,"companyId":"110723f9-4ad2-45fb-b6ec-1f2631821f32","createdBy":"33477648-c752-4bed-83cb-a04114224f4d","deletedBy":null,"updatedBy":"33477648-c752-4bed-83cb-a04114224f4d","contractId":"af240ec8-368c-43d2-aa94-5597a1138da1","created_at":"23/10/</code></td></tr></tbody></table></div>
 </section>
 
 <section id="s9" class="card"><h2>9. Prints</h2>
@@ -115,7 +120,7 @@ ul{margin:6px 0;padding-left:20px}
 </section>
 
 <section id="s10" class="card"><h2>10. Anexo de dados (JSON)</h2>
-<p>O mesmo conteúdo está num bloco <code>application/json</code> da página (<code>id="evidencias-resposta-23-10"</code>). O hash SHA-256 do JSON, calculado antes do campo <code>hashes</code>, é <code>58173643641f9a06670c3d292721e0f87ae5ee178aba07c587f40e10014101bc</code>.</p>
+<p>O mesmo conteúdo está num bloco <code>application/json</code> da página (<code>id="evidencias-resposta-23-10"</code>). O hash SHA-256 do JSON, calculado antes do campo <code>hashes</code>, é <code>5cf887f3b328cabc681477b00dcf65589976bd7440448e48497ddf8106a14917</code>.</p>
 <p><button type="button" id="copiar">Copiar JSON</button> <button type="button" id="baixar">Baixar JSON</button></p>
 <h3 id="dados-motores">Motores (varreduras e leituras)</h3>
 <details><summary>Ver JSON dos motores</summary><pre>{
@@ -124,7 +129,7 @@ ul{margin:6px 0;padding-left:20px}
       "descricao": "Arquivo de teste de antivírus (EICAR, domínio público)",
       "tamanhoBytes": 68,
       "sha256": "275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f",
-      "duracaoMs": 8,
+      "duracaoMs": 6,
       "limpo": false,
       "assinatura": "Eicar-Test-Signature",
       "motor": "clamav"
@@ -133,7 +138,7 @@ ul{margin:6px 0;padding-left:20px}
       "descricao": "PDF fictício legível",
       "tamanhoBytes": 733,
       "sha256": "19d85d0733dfc15e8d494f2116616f5dbf3b69eefa0bcfd69ed949867c45d8dd",
-      "duracaoMs": 2,
+      "duracaoMs": 3,
       "limpo": true,
       "assinatura": null,
       "motor": "clamav"
@@ -142,7 +147,7 @@ ul{margin:6px 0;padding-left:20px}
       "descricao": "Texto comum",
       "tamanhoBytes": 44,
       "sha256": "9141d41683da02b3a4b3c7bac3183d2effcc1282e78a191acee5d0ab1cb1207d",
-      "duracaoMs": 3,
+      "duracaoMs": 2,
       "limpo": true,
       "assinatura": null,
       "motor": "clamav"
@@ -154,7 +159,7 @@ ul{margin:6px 0;padding-left:20px}
       "tipoDeclarado": "IR",
       "tamanhoBytes": 733,
       "sha256": "19d85d0733dfc15e8d494f2116616f5dbf3b69eefa0bcfd69ed949867c45d8dd",
-      "duracaoMs": 22,
+      "duracaoMs": 23,
       "resultado": {
         "fields": {
           "name": "MARIA FICTICIA DA SILVA",
@@ -188,7 +193,7 @@ ul{margin:6px 0;padding-left:20px}
       "tipoDeclarado": "IR",
       "tamanhoBytes": 49816,
       "sha256": "77fc9adaac41939ff2fcf01b83dcf370808987d5ac6ec8a05ee2148335a500a3",
-      "duracaoMs": 368,
+      "duracaoMs": 350,
       "resultado": {
         "fields": {
           "name": "MARIA FICTICIA DA SILVA",
@@ -221,8 +226,8 @@ ul{margin:6px 0;padding-left:20px}
       "descricao": "PDF escaneado, sem texto (só imagem)",
       "tipoDeclarado": "IR",
       "tamanhoBytes": 110199,
-      "sha256": "26690f83c2c9748cb44803eba535ec5ced0a92bb09b18f62e72afa7eb28157d8",
-      "duracaoMs": 694,
+      "sha256": "fc9c0d82252adbd40456c784d7f2b3f08eea6db1ebf6b159d815ea022ffd4026",
+      "duracaoMs": 697,
       "resultado": {
         "fields": {
           "name": "MARIA FICTICIA DA SILVA",
@@ -256,7 +261,7 @@ ul{margin:6px 0;padding-left:20px}
       "tipoDeclarado": "RG",
       "tamanhoBytes": 4538,
       "sha256": "5298f549dda572d780f9773b6d55d1f952c64184e1a2e3c08f9a8281c8ca8a5d",
-      "duracaoMs": 119,
+      "duracaoMs": 116,
       "resultado": {
         "fields": {},
         "confidence": 0,
@@ -313,7 +318,7 @@ ul{margin:6px 0;padding-left:20px}
     "codigo": "ANTIVIRUS_UNAVAILABLE"
   },
   "infra": {
-    "clamdMemoriaMB": 966,
+    "clamdMemoriaMB": 963,
     "assinaturasEmDiscoMB": 108,
     "memoriaTotalDaMaquinaGB": 16
   }
@@ -322,11 +327,11 @@ ul{margin:6px 0;padding-left:20px}
 <details><summary>Ver JSON completo</summary><pre>{
   "meta": {
     "titulo": "Resposta à rodada de 23/10/2026",
-    "geradoEm": "2026-10-23T19:43:24.378Z",
+    "geradoEm": "2026-10-24T12:58:42.538Z",
     "node": "v24.18.0",
     "commits": {
       "api": "6031a575c0c8f06161b8f816f0d267bd65210487",
-      "front": "6cdec0cbb6583fea4072a62c26ba3391d6f60c05"
+      "front": "4adcd0e4ae9cb7d39bb1573c6ba312a224df761f"
     },
     "ci": "Não há run de CI para estes commits: os números são da execução local.",
     "motores": {
@@ -462,11 +467,26 @@ ul{margin:6px 0;padding-left:20px}
       "requisito": "Margem mínima, economia e comissão vêm do Motor de Regras e guardam rule_version_id. Margem abaixo da regra gera alerta/bloqueio configurado.",
       "implementacao": "obras/configuracoes/page.js: card \"Margem mínima da obra\" (margem, economia, comissão e modo alertar/bloquear). Cada publicação cria uma nova versão; sem regra publicada a aprovação de orçamento é recusada. O percentual é definido por quem configura; o sistema não assume valor.",
       "testes": [
-        "Regra de margem coberta pelos testes do Marco 6 já entregues; esta rodada só moveu a tela de configuração para o menu de Obras e conferiu a interface."
+        "construction.budget.test.js — \"Aprovar orçamento sem nenhuma margem mínima configurada é bloqueado\" — passou",
+        "construction.budget.test.js — \"ENFORCEMENT: enforcementMode=BLOCK recusa approveBudget quando a margem projetada fica abaixo do mínimo configurado\" — passou",
+        "construction.budget.test.js — \"ENFORCEMENT: enforcementMode=ALERT (explícito) ou ausente (default) aprova o orçamento normalmente e só sinaliza belowMinMargin no health\" — passou"
       ],
       "evidenciaAoVivo": "P04, P08, P09",
       "evidenciaDados": "#dados-testes",
       "status": "Atendido. O valor do percentual depende da Nayara."
+    },
+    {
+      "id": "R11",
+      "fonte": "Pedido da IA auditora (23/10/2026), item 3",
+      "requisito": "Preserve o versionamento de cada publicação e valide as permissões relacionadas, incluindo construction:update.",
+      "implementacao": "Cada publicação cria uma nova versão da regra no Motor de Regras e a anterior fica preservada; o orçamento já aprovado guarda a versão com que foi aprovado. A rota POST /construction/margin-rules exige construction:update; a consulta da regra vigente exige só construction:read.",
+      "testes": [
+        "construction.budget.test.js — \"M6-61: rule_version_id gravado no orçamento é preservado mesmo após nova versão da regra ser criada\" — passou",
+        "construction.httpRoutes.test.js — \"HTTP real: POST /construction/margin-rules SEM permissão construction:update é bloqueado (403) e não cria versão\" — passou"
+      ],
+      "evidenciaAoVivo": "P04",
+      "evidenciaDados": "#dados-testes",
+      "status": "Atendido. Na Empresa Dev nenhuma regra foi publicada: a consulta da regra vigente devolve vazio."
     }
   ],
   "testes": [
@@ -704,6 +724,236 @@ ul{margin:6px 0;padding-left:20px}
       "arquivo": "test/files.uploadSecurity.test.js",
       "nome": "files: uploadFile aceita mimeType permitido (imagem, PDF)",
       "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.httpRoutes.test.js",
+      "nome": "HTTP real: POST /construction/projects/:id/measurements cria a medição (201)",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.httpRoutes.test.js",
+      "nome": "HTTP real: POST /construction/measurements/:id/approve aprova a medição já revisada (200)",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.httpRoutes.test.js",
+      "nome": "HTTP real: POST /construction/measurements/:id/approve SEM permissão construction:approve é bloqueado (403)",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.httpRoutes.test.js",
+      "nome": "HTTP real: POST /construction/margin-rules SEM permissão construction:update é bloqueado (403) e não cria versão",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.httpRoutes.test.js",
+      "nome": "HTTP real: POST /construction/warranty-cases cria o caso de garantia/pós-obra (201)",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.httpRoutes.test.js",
+      "nome": "HTTP real: GET /construction/maintenance-cases devolve formato paginado {data, pagination} (mesmo padrão de GET /construction/projects)",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.httpRoutes.test.js",
+      "nome": "HTTP real: PATCH /construction/budget-lines/:id com baseline APPROVED é bloqueado (400/422 BUDGET_LINE_BASELINE_LOCKED)",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-54: editar plannedAmount de linha de orçamento com baseline APPROVED é bloqueado",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-22: actualAmount não pode ser editado nem em orçamento ainda DRAFT (nunca via UPDATE direto)",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-54: campos não financeiros de uma linha com baseline APPROVED continuam editáveis",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "removeBudgetLine remove linha em DRAFT, mas recusa remover linha de orçamento já APPROVED",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-54/M6-17: não é possível criar linha nova em orçamento já APPROVED",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-17/M6-32: aprovar orçamento fora de DRAFT (já APPROVED) é bloqueado",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-33/M6-82: Change Order aprovado altera o baseline do orçamento já congelado",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-42: projectedMargin não conta o Change Order aprovado duas vezes (baseline já sincronizada)",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-42: consumedInventoryCost soma o custo real de saídas de estoque vinculadas à obra (OUT - RETURN)",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-NOVO-14: projectedMargin consegue ficar POSITIVA, ZERO e NEGATIVA conforme o desempenho de custo real (EAC), nunca mais travada em &lt;= 0",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-NOVO-15: economyAmount/commissionAmount são calculados a partir da margem positiva e preservam o ruleVersionId usado",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-99: wastagePct abate material devolvido (RETURN), não conta a perda já corrigida",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "Change Order não pode ser aprovado se a obra não tem orçamento APPROVED",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "Change Order rejeitado não altera o orçamento",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-61: rule_version_id gravado no orçamento é preservado mesmo após nova versão da regra ser criada",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-61/item 4: margem mínima é avaliada via Motor de Regras genérico com o código REG-OBR-001",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "Aprovar orçamento sem nenhuma margem mínima configurada é bloqueado",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "Uma obra não pode ter dois orçamentos agregados",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-67: duas aprovações concorrentes do mesmo orçamento — só uma vence, a outra recebe conflito",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-57/M6-66: orçamento não é visível fora do contexto de tenant correto (RLS)",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-NOVO-1: createBudgetLine rejeita plannedAmount \"Infinity\" (categoria 14 do catálogo)",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-NOVO-7: createBudgetLine recusa budgetId que pertence a outra obra",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-NOVO-13: createBudgetLine recusa costCenterId que pertence a outra empresa",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-NOVO-10: createBudget recusa quando o groupId do payload não bate com o groupId real da obra (mesma empresa, grupo diferente)",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-NOVO-2: createChangeOrder rejeita budgetImpact \"Infinity\" (categoria 14 do catálogo)",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-NOVO-4: createChangeOrder exige scheduleImpactDays (pode ser 0) e evidenceFileIds não vazio",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-NOVO-5: createChangeOrder exige idempotencyKey, e reenviar a MESMA chave devolve o registro original (sem duplicar aditivo)",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-NOVO-11: createChangeOrder recusa quando o groupId do payload não bate com o groupId real da obra (mesma empresa, grupo diferente)",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-NOVO-3: createProject rejeita budgetAmount \"NaN\"/\"Infinity\"/negativo/absurdamente grande",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "TAREFA 2: economyPct e commissionPct são salvos e recuperados em createMarginRule/getActiveMarginRule",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "TAREFA 2: economyPct/commissionPct são opcionais (ausentes = null, não quebra criação)",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "TAREFA 2: economyPct/commissionPct rejeitam NaN/Infinity/negativo/&gt;100 (mesma validação de minMarginPct)",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "TAREFA 3: getProjectHealth retorna belowMinMargin=true quando a margem projetada fica abaixo da regra mínima",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "ENFORCEMENT: enforcementMode=BLOCK recusa approveBudget quando a margem projetada fica abaixo do mínimo configurado",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "ENFORCEMENT: enforcementMode=ALERT (explícito) ou ausente (default) aprova o orçamento normalmente e só sinaliza belowMinMargin no health",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "ENFORCEMENT: enforcementMode=BLOCK não bloqueia à toa quando a margem projetada está acima/igual ao mínimo configurado",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "ENFORCEMENT: enforcementMode=BLOCK recusa decideChangeOrder(APPROVE) quando a margem projetada fica abaixo do mínimo configurado",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "ENFORCEMENT: enforcementMode=ALERT permite decideChangeOrder(APPROVE) normalmente mesmo com margem abaixo do mínimo",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "ENFORCEMENT: enforcementMode=BLOCK não bloqueia decideChangeOrder(APPROVE) quando a margem projetada está acima/igual ao mínimo",
+      "status": "passou"
     }
   ],
   "motores": {
@@ -712,7 +962,7 @@ ul{margin:6px 0;padding-left:20px}
         "descricao": "Arquivo de teste de antivírus (EICAR, domínio público)",
         "tamanhoBytes": 68,
         "sha256": "275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f",
-        "duracaoMs": 8,
+        "duracaoMs": 6,
         "limpo": false,
         "assinatura": "Eicar-Test-Signature",
         "motor": "clamav"
@@ -721,7 +971,7 @@ ul{margin:6px 0;padding-left:20px}
         "descricao": "PDF fictício legível",
         "tamanhoBytes": 733,
         "sha256": "19d85d0733dfc15e8d494f2116616f5dbf3b69eefa0bcfd69ed949867c45d8dd",
-        "duracaoMs": 2,
+        "duracaoMs": 3,
         "limpo": true,
         "assinatura": null,
         "motor": "clamav"
@@ -730,7 +980,7 @@ ul{margin:6px 0;padding-left:20px}
         "descricao": "Texto comum",
         "tamanhoBytes": 44,
         "sha256": "9141d41683da02b3a4b3c7bac3183d2effcc1282e78a191acee5d0ab1cb1207d",
-        "duracaoMs": 3,
+        "duracaoMs": 2,
         "limpo": true,
         "assinatura": null,
         "motor": "clamav"
@@ -742,7 +992,7 @@ ul{margin:6px 0;padding-left:20px}
         "tipoDeclarado": "IR",
         "tamanhoBytes": 733,
         "sha256": "19d85d0733dfc15e8d494f2116616f5dbf3b69eefa0bcfd69ed949867c45d8dd",
-        "duracaoMs": 22,
+        "duracaoMs": 23,
         "resultado": {
           "fields": {
             "name": "MARIA FICTICIA DA SILVA",
@@ -776,7 +1026,7 @@ ul{margin:6px 0;padding-left:20px}
         "tipoDeclarado": "IR",
         "tamanhoBytes": 49816,
         "sha256": "77fc9adaac41939ff2fcf01b83dcf370808987d5ac6ec8a05ee2148335a500a3",
-        "duracaoMs": 368,
+        "duracaoMs": 350,
         "resultado": {
           "fields": {
             "name": "MARIA FICTICIA DA SILVA",
@@ -809,8 +1059,8 @@ ul{margin:6px 0;padding-left:20px}
         "descricao": "PDF escaneado, sem texto (só imagem)",
         "tipoDeclarado": "IR",
         "tamanhoBytes": 110199,
-        "sha256": "26690f83c2c9748cb44803eba535ec5ced0a92bb09b18f62e72afa7eb28157d8",
-        "duracaoMs": 694,
+        "sha256": "fc9c0d82252adbd40456c784d7f2b3f08eea6db1ebf6b159d815ea022ffd4026",
+        "duracaoMs": 697,
         "resultado": {
           "fields": {
             "name": "MARIA FICTICIA DA SILVA",
@@ -844,7 +1094,7 @@ ul{margin:6px 0;padding-left:20px}
         "tipoDeclarado": "RG",
         "tamanhoBytes": 4538,
         "sha256": "5298f549dda572d780f9773b6d55d1f952c64184e1a2e3c08f9a8281c8ca8a5d",
-        "duracaoMs": 119,
+        "duracaoMs": 116,
         "resultado": {
           "fields": {},
           "confidence": 0,
@@ -901,7 +1151,7 @@ ul{margin:6px 0;padding-left:20px}
       "codigo": "ANTIVIRUS_UNAVAILABLE"
     },
     "infra": {
-      "clamdMemoriaMB": 966,
+      "clamdMemoriaMB": 963,
       "assinaturasEmDiscoMB": 108,
       "memoriaTotalDaMaquinaGB": 16
     }
@@ -910,54 +1160,54 @@ ul{margin:6px 0;padding-left:20px}
     {
       "acao": "billing.ownership_transfer_task.complete",
       "entidade": "OwnershipTransferTask",
-      "quando": "2026-10-23T19:39:00.804Z",
+      "quando": "2026-10-24T12:51:37.063Z",
       "antes": {
-        "id": "177eb730-fe7f-46aa-a7ec-2c978b5303ed",
+        "id": "a914dd83-7131-4132-9a40-8766a4c0b857",
         "status": "PENDING",
         "groupId": "51cca01b-6a2e-4815-9aa1-70d40e3aba24",
         "companyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32",
         "createdBy": "33477648-c752-4bed-83cb-a04114224f4d",
         "deletedBy": null,
         "updatedBy": "33477648-c752-4bed-83cb-a04114224f4d",
-        "created_at": "2026-10-23T19:38:56.046Z",
+        "created_at": "2026-10-24T12:51:34.547Z",
         "deleted_at": null,
         "toPersonId": null,
-        "updated_at": "2026-10-23T19:38:56.046Z",
+        "updated_at": "2026-10-24T12:51:34.547Z",
         "completedAt": null,
         "lockVersion": 0,
         "fromPersonId": null,
         "evidenceFileId": null,
-        "utilityObligationId": "6fb6c791-d802-4e3c-9338-19766bca71a7",
-        "utility_obligation_id": "6fb6c791-d802-4e3c-9338-19766bca71a7"
+        "utilityObligationId": "cf645cae-835a-4c36-9908-eb0c9a57817e",
+        "utility_obligation_id": "cf645cae-835a-4c36-9908-eb0c9a57817e"
       },
       "depois": {
-        "id": "177eb730-fe7f-46aa-a7ec-2c978b5303ed",
+        "id": "a914dd83-7131-4132-9a40-8766a4c0b857",
         "status": "COMPLETED",
         "groupId": "51cca01b-6a2e-4815-9aa1-70d40e3aba24",
         "companyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32",
         "createdBy": "33477648-c752-4bed-83cb-a04114224f4d",
         "deletedBy": null,
         "updatedBy": "33477648-c752-4bed-83cb-a04114224f4d",
-        "created_at": "2026-10-23T19:38:56.046Z",
+        "created_at": "2026-10-24T12:51:34.547Z",
         "deleted_at": null,
-        "toPersonId": "5e1e7cc8-3571-43a3-94b9-137703279a28",
-        "updated_at": "2026-10-23T19:38:58.967Z",
-        "completedAt": "2026-10-23T19:38:58.967Z",
+        "toPersonId": "5200082d-57e5-4fb6-a2bf-5ea148934d42",
+        "updated_at": "2026-10-24T12:51:35.927Z",
+        "completedAt": "2026-10-24T12:51:35.927Z",
         "lockVersion": 1,
         "fromPersonId": null,
-        "evidenceFileId": "7cabb1bc-5e81-4980-8689-7f5906a4aa9b",
-        "utilityObligationId": "6fb6c791-d802-4e3c-9338-19766bca71a7",
-        "utility_obligation_id": "6fb6c791-d802-4e3c-9338-19766bca71a7"
+        "evidenceFileId": "d4323fa0-b256-457d-8010-78b9fe58c48f",
+        "utilityObligationId": "cf645cae-835a-4c36-9908-eb0c9a57817e",
+        "utility_obligation_id": "cf645cae-835a-4c36-9908-eb0c9a57817e"
       },
       "motivo": "Transferência de titularidade de utilidade concluída."
     },
     {
       "acao": "billing.utility_obligation.create",
       "entidade": "UtilityObligation",
-      "quando": "2026-10-23T19:38:56.380Z",
+      "quando": "2026-10-24T12:51:34.419Z",
       "antes": null,
       "depois": {
-        "id": "6fb6c791-d802-4e3c-9338-19766bca71a7",
+        "id": "cf645cae-835a-4c36-9908-eb0c9a57817e",
         "status": "TRANSFER_PENDING",
         "groupId": "51cca01b-6a2e-4815-9aa1-70d40e3aba24",
         "provider": null,
@@ -965,10 +1215,10 @@ ul{margin:6px 0;padding-left:20px}
         "createdBy": "33477648-c752-4bed-83cb-a04114224f4d",
         "deletedBy": null,
         "updatedBy": "33477648-c752-4bed-83cb-a04114224f4d",
-        "contractId": "69846352-1d19-482a-a39a-0da46bc2097d",
-        "created_at": "2026-10-23T19:38:55.863Z",
+        "contractId": "418e1f96-0728-4d44-8d76-7ec38f4af0ac",
+        "created_at": "2026-10-24T12:51:34.040Z",
         "deleted_at": null,
-        "updated_at": "2026-10-23T19:38:55.863Z",
+        "updated_at": "2026-10-24T12:51:34.040Z",
         "lockVersion": 0,
         "utilityType": "ELECTRICITY",
         "accountNumber": null,
@@ -1168,6 +1418,63 @@ ul{margin:6px 0;padding-left:20px}
       "motivo": "Transferência de titularidade de utilidade solicitada."
     }
   ],
+  "commitsDaRodada": [
+    {
+      "repo": "API",
+      "hash": "a2f6073",
+      "msg": "feat: solicitar transferência de titularidade e listar tarefas nas obrigações de locação"
+    },
+    {
+      "repo": "API",
+      "hash": "079918d",
+      "msg": "feat: antivírus ClamAV e leitura real de documentos (pdftotext + Tesseract) atrás dos adaptadores"
+    },
+    {
+      "repo": "API",
+      "hash": "56546df",
+      "msg": "feat: leitura real de documento no caso de financiamento, com pendência para ilegível"
+    },
+    {
+      "repo": "API",
+      "hash": "4f437bc",
+      "msg": "fix: reenviar documento do mesmo tipo cria a próxima versão em vez de falhar por unicidade"
+    },
+    {
+      "repo": "API",
+      "hash": "6031a57",
+      "msg": "build: leitor de documentos (Tesseract e poppler) opcional na imagem, desligado por padrão"
+    },
+    {
+      "repo": "Front",
+      "hash": "fd23deb",
+      "msg": "feat: tela de transferência de titularidade de água/energia na Locação"
+    },
+    {
+      "repo": "Front",
+      "hash": "1a0e0d4",
+      "msg": "feat: margem mínima da obra configurável na página de configurações de Obras"
+    },
+    {
+      "repo": "Front",
+      "hash": "6122372",
+      "msg": "fix: ações da tabela de obrigações quebram linha em vez de forçar rolagem horizontal"
+    },
+    {
+      "repo": "Front",
+      "hash": "330de8c",
+      "msg": "feat: leitura automática de documento na ficha do contato, com revisão humana dos campos"
+    },
+    {
+      "repo": "Front",
+      "hash": "df1f139",
+      "msg": "test: leitura de documento do caso de financiamento pela tela"
+    },
+    {
+      "repo": "Front",
+      "hash": "6cdec0c",
+      "msg": "fix: ficha do contato não mostra mais o código interno do arquivo e preserva os dados lidos ao validar"
+    }
+  ],
   "prints": [
     {
       "id": "P01",
@@ -1276,7 +1583,7 @@ ul{margin:6px 0;padding-left:20px}
     }
   ],
   "hashes": {
-    "jsonSemOsHashes": "58173643641f9a06670c3d292721e0f87ae5ee178aba07c587f40e10014101bc",
+    "jsonSemOsHashes": "5cf887f3b328cabc681477b00dcf65589976bd7440448e48497ddf8106a14917",
     "prints": {
       "P01": "65ae0718c53a27fbd534810423fe0f8330fea1ec744cdfda5c3a05b0d7953436",
       "P02": "a9bf23f97bc181d9f89b61874b10f171e8a1c9816d3c2bbf76cb97839f70f639",
@@ -1299,11 +1606,11 @@ ul{margin:6px 0;padding-left:20px}
 <script type="application/json" id="evidencias-resposta-23-10">{
   "meta": {
     "titulo": "Resposta à rodada de 23/10/2026",
-    "geradoEm": "2026-10-23T19:43:24.378Z",
+    "geradoEm": "2026-10-24T12:58:42.538Z",
     "node": "v24.18.0",
     "commits": {
       "api": "6031a575c0c8f06161b8f816f0d267bd65210487",
-      "front": "6cdec0cbb6583fea4072a62c26ba3391d6f60c05"
+      "front": "4adcd0e4ae9cb7d39bb1573c6ba312a224df761f"
     },
     "ci": "Não há run de CI para estes commits: os números são da execução local.",
     "motores": {
@@ -1439,11 +1746,26 @@ ul{margin:6px 0;padding-left:20px}
       "requisito": "Margem mínima, economia e comissão vêm do Motor de Regras e guardam rule_version_id. Margem abaixo da regra gera alerta/bloqueio configurado.",
       "implementacao": "obras/configuracoes/page.js: card \"Margem mínima da obra\" (margem, economia, comissão e modo alertar/bloquear). Cada publicação cria uma nova versão; sem regra publicada a aprovação de orçamento é recusada. O percentual é definido por quem configura; o sistema não assume valor.",
       "testes": [
-        "Regra de margem coberta pelos testes do Marco 6 já entregues; esta rodada só moveu a tela de configuração para o menu de Obras e conferiu a interface."
+        "construction.budget.test.js — \"Aprovar orçamento sem nenhuma margem mínima configurada é bloqueado\" — passou",
+        "construction.budget.test.js — \"ENFORCEMENT: enforcementMode=BLOCK recusa approveBudget quando a margem projetada fica abaixo do mínimo configurado\" — passou",
+        "construction.budget.test.js — \"ENFORCEMENT: enforcementMode=ALERT (explícito) ou ausente (default) aprova o orçamento normalmente e só sinaliza belowMinMargin no health\" — passou"
       ],
       "evidenciaAoVivo": "P04, P08, P09",
       "evidenciaDados": "#dados-testes",
       "status": "Atendido. O valor do percentual depende da Nayara."
+    },
+    {
+      "id": "R11",
+      "fonte": "Pedido da IA auditora (23/10/2026), item 3",
+      "requisito": "Preserve o versionamento de cada publicação e valide as permissões relacionadas, incluindo construction:update.",
+      "implementacao": "Cada publicação cria uma nova versão da regra no Motor de Regras e a anterior fica preservada; o orçamento já aprovado guarda a versão com que foi aprovado. A rota POST /construction/margin-rules exige construction:update; a consulta da regra vigente exige só construction:read.",
+      "testes": [
+        "construction.budget.test.js — \"M6-61: rule_version_id gravado no orçamento é preservado mesmo após nova versão da regra ser criada\" — passou",
+        "construction.httpRoutes.test.js — \"HTTP real: POST /construction/margin-rules SEM permissão construction:update é bloqueado (403) e não cria versão\" — passou"
+      ],
+      "evidenciaAoVivo": "P04",
+      "evidenciaDados": "#dados-testes",
+      "status": "Atendido. Na Empresa Dev nenhuma regra foi publicada: a consulta da regra vigente devolve vazio."
     }
   ],
   "testes": [
@@ -1681,6 +2003,236 @@ ul{margin:6px 0;padding-left:20px}
       "arquivo": "test/files.uploadSecurity.test.js",
       "nome": "files: uploadFile aceita mimeType permitido (imagem, PDF)",
       "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.httpRoutes.test.js",
+      "nome": "HTTP real: POST /construction/projects/:id/measurements cria a medição (201)",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.httpRoutes.test.js",
+      "nome": "HTTP real: POST /construction/measurements/:id/approve aprova a medição já revisada (200)",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.httpRoutes.test.js",
+      "nome": "HTTP real: POST /construction/measurements/:id/approve SEM permissão construction:approve é bloqueado (403)",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.httpRoutes.test.js",
+      "nome": "HTTP real: POST /construction/margin-rules SEM permissão construction:update é bloqueado (403) e não cria versão",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.httpRoutes.test.js",
+      "nome": "HTTP real: POST /construction/warranty-cases cria o caso de garantia/pós-obra (201)",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.httpRoutes.test.js",
+      "nome": "HTTP real: GET /construction/maintenance-cases devolve formato paginado {data, pagination} (mesmo padrão de GET /construction/projects)",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.httpRoutes.test.js",
+      "nome": "HTTP real: PATCH /construction/budget-lines/:id com baseline APPROVED é bloqueado (400/422 BUDGET_LINE_BASELINE_LOCKED)",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-54: editar plannedAmount de linha de orçamento com baseline APPROVED é bloqueado",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-22: actualAmount não pode ser editado nem em orçamento ainda DRAFT (nunca via UPDATE direto)",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-54: campos não financeiros de uma linha com baseline APPROVED continuam editáveis",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "removeBudgetLine remove linha em DRAFT, mas recusa remover linha de orçamento já APPROVED",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-54/M6-17: não é possível criar linha nova em orçamento já APPROVED",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-17/M6-32: aprovar orçamento fora de DRAFT (já APPROVED) é bloqueado",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-33/M6-82: Change Order aprovado altera o baseline do orçamento já congelado",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-42: projectedMargin não conta o Change Order aprovado duas vezes (baseline já sincronizada)",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-42: consumedInventoryCost soma o custo real de saídas de estoque vinculadas à obra (OUT - RETURN)",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-NOVO-14: projectedMargin consegue ficar POSITIVA, ZERO e NEGATIVA conforme o desempenho de custo real (EAC), nunca mais travada em \u003c= 0",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-NOVO-15: economyAmount/commissionAmount são calculados a partir da margem positiva e preservam o ruleVersionId usado",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-99: wastagePct abate material devolvido (RETURN), não conta a perda já corrigida",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "Change Order não pode ser aprovado se a obra não tem orçamento APPROVED",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "Change Order rejeitado não altera o orçamento",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-61: rule_version_id gravado no orçamento é preservado mesmo após nova versão da regra ser criada",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-61/item 4: margem mínima é avaliada via Motor de Regras genérico com o código REG-OBR-001",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "Aprovar orçamento sem nenhuma margem mínima configurada é bloqueado",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "Uma obra não pode ter dois orçamentos agregados",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-67: duas aprovações concorrentes do mesmo orçamento — só uma vence, a outra recebe conflito",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-57/M6-66: orçamento não é visível fora do contexto de tenant correto (RLS)",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-NOVO-1: createBudgetLine rejeita plannedAmount \"Infinity\" (categoria 14 do catálogo)",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-NOVO-7: createBudgetLine recusa budgetId que pertence a outra obra",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-NOVO-13: createBudgetLine recusa costCenterId que pertence a outra empresa",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-NOVO-10: createBudget recusa quando o groupId do payload não bate com o groupId real da obra (mesma empresa, grupo diferente)",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-NOVO-2: createChangeOrder rejeita budgetImpact \"Infinity\" (categoria 14 do catálogo)",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-NOVO-4: createChangeOrder exige scheduleImpactDays (pode ser 0) e evidenceFileIds não vazio",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-NOVO-5: createChangeOrder exige idempotencyKey, e reenviar a MESMA chave devolve o registro original (sem duplicar aditivo)",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-NOVO-11: createChangeOrder recusa quando o groupId do payload não bate com o groupId real da obra (mesma empresa, grupo diferente)",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-NOVO-3: createProject rejeita budgetAmount \"NaN\"/\"Infinity\"/negativo/absurdamente grande",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "TAREFA 2: economyPct e commissionPct são salvos e recuperados em createMarginRule/getActiveMarginRule",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "TAREFA 2: economyPct/commissionPct são opcionais (ausentes = null, não quebra criação)",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "TAREFA 2: economyPct/commissionPct rejeitam NaN/Infinity/negativo/>100 (mesma validação de minMarginPct)",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "TAREFA 3: getProjectHealth retorna belowMinMargin=true quando a margem projetada fica abaixo da regra mínima",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "ENFORCEMENT: enforcementMode=BLOCK recusa approveBudget quando a margem projetada fica abaixo do mínimo configurado",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "ENFORCEMENT: enforcementMode=ALERT (explícito) ou ausente (default) aprova o orçamento normalmente e só sinaliza belowMinMargin no health",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "ENFORCEMENT: enforcementMode=BLOCK não bloqueia à toa quando a margem projetada está acima/igual ao mínimo configurado",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "ENFORCEMENT: enforcementMode=BLOCK recusa decideChangeOrder(APPROVE) quando a margem projetada fica abaixo do mínimo configurado",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "ENFORCEMENT: enforcementMode=ALERT permite decideChangeOrder(APPROVE) normalmente mesmo com margem abaixo do mínimo",
+      "status": "passou"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "ENFORCEMENT: enforcementMode=BLOCK não bloqueia decideChangeOrder(APPROVE) quando a margem projetada está acima/igual ao mínimo",
+      "status": "passou"
     }
   ],
   "motores": {
@@ -1689,7 +2241,7 @@ ul{margin:6px 0;padding-left:20px}
         "descricao": "Arquivo de teste de antivírus (EICAR, domínio público)",
         "tamanhoBytes": 68,
         "sha256": "275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f",
-        "duracaoMs": 8,
+        "duracaoMs": 6,
         "limpo": false,
         "assinatura": "Eicar-Test-Signature",
         "motor": "clamav"
@@ -1698,7 +2250,7 @@ ul{margin:6px 0;padding-left:20px}
         "descricao": "PDF fictício legível",
         "tamanhoBytes": 733,
         "sha256": "19d85d0733dfc15e8d494f2116616f5dbf3b69eefa0bcfd69ed949867c45d8dd",
-        "duracaoMs": 2,
+        "duracaoMs": 3,
         "limpo": true,
         "assinatura": null,
         "motor": "clamav"
@@ -1707,7 +2259,7 @@ ul{margin:6px 0;padding-left:20px}
         "descricao": "Texto comum",
         "tamanhoBytes": 44,
         "sha256": "9141d41683da02b3a4b3c7bac3183d2effcc1282e78a191acee5d0ab1cb1207d",
-        "duracaoMs": 3,
+        "duracaoMs": 2,
         "limpo": true,
         "assinatura": null,
         "motor": "clamav"
@@ -1719,7 +2271,7 @@ ul{margin:6px 0;padding-left:20px}
         "tipoDeclarado": "IR",
         "tamanhoBytes": 733,
         "sha256": "19d85d0733dfc15e8d494f2116616f5dbf3b69eefa0bcfd69ed949867c45d8dd",
-        "duracaoMs": 22,
+        "duracaoMs": 23,
         "resultado": {
           "fields": {
             "name": "MARIA FICTICIA DA SILVA",
@@ -1753,7 +2305,7 @@ ul{margin:6px 0;padding-left:20px}
         "tipoDeclarado": "IR",
         "tamanhoBytes": 49816,
         "sha256": "77fc9adaac41939ff2fcf01b83dcf370808987d5ac6ec8a05ee2148335a500a3",
-        "duracaoMs": 368,
+        "duracaoMs": 350,
         "resultado": {
           "fields": {
             "name": "MARIA FICTICIA DA SILVA",
@@ -1786,8 +2338,8 @@ ul{margin:6px 0;padding-left:20px}
         "descricao": "PDF escaneado, sem texto (só imagem)",
         "tipoDeclarado": "IR",
         "tamanhoBytes": 110199,
-        "sha256": "26690f83c2c9748cb44803eba535ec5ced0a92bb09b18f62e72afa7eb28157d8",
-        "duracaoMs": 694,
+        "sha256": "fc9c0d82252adbd40456c784d7f2b3f08eea6db1ebf6b159d815ea022ffd4026",
+        "duracaoMs": 697,
         "resultado": {
           "fields": {
             "name": "MARIA FICTICIA DA SILVA",
@@ -1821,7 +2373,7 @@ ul{margin:6px 0;padding-left:20px}
         "tipoDeclarado": "RG",
         "tamanhoBytes": 4538,
         "sha256": "5298f549dda572d780f9773b6d55d1f952c64184e1a2e3c08f9a8281c8ca8a5d",
-        "duracaoMs": 119,
+        "duracaoMs": 116,
         "resultado": {
           "fields": {},
           "confidence": 0,
@@ -1878,7 +2430,7 @@ ul{margin:6px 0;padding-left:20px}
       "codigo": "ANTIVIRUS_UNAVAILABLE"
     },
     "infra": {
-      "clamdMemoriaMB": 966,
+      "clamdMemoriaMB": 963,
       "assinaturasEmDiscoMB": 108,
       "memoriaTotalDaMaquinaGB": 16
     }
@@ -1887,54 +2439,54 @@ ul{margin:6px 0;padding-left:20px}
     {
       "acao": "billing.ownership_transfer_task.complete",
       "entidade": "OwnershipTransferTask",
-      "quando": "2026-10-23T19:39:00.804Z",
+      "quando": "2026-10-24T12:51:37.063Z",
       "antes": {
-        "id": "177eb730-fe7f-46aa-a7ec-2c978b5303ed",
+        "id": "a914dd83-7131-4132-9a40-8766a4c0b857",
         "status": "PENDING",
         "groupId": "51cca01b-6a2e-4815-9aa1-70d40e3aba24",
         "companyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32",
         "createdBy": "33477648-c752-4bed-83cb-a04114224f4d",
         "deletedBy": null,
         "updatedBy": "33477648-c752-4bed-83cb-a04114224f4d",
-        "created_at": "2026-10-23T19:38:56.046Z",
+        "created_at": "2026-10-24T12:51:34.547Z",
         "deleted_at": null,
         "toPersonId": null,
-        "updated_at": "2026-10-23T19:38:56.046Z",
+        "updated_at": "2026-10-24T12:51:34.547Z",
         "completedAt": null,
         "lockVersion": 0,
         "fromPersonId": null,
         "evidenceFileId": null,
-        "utilityObligationId": "6fb6c791-d802-4e3c-9338-19766bca71a7",
-        "utility_obligation_id": "6fb6c791-d802-4e3c-9338-19766bca71a7"
+        "utilityObligationId": "cf645cae-835a-4c36-9908-eb0c9a57817e",
+        "utility_obligation_id": "cf645cae-835a-4c36-9908-eb0c9a57817e"
       },
       "depois": {
-        "id": "177eb730-fe7f-46aa-a7ec-2c978b5303ed",
+        "id": "a914dd83-7131-4132-9a40-8766a4c0b857",
         "status": "COMPLETED",
         "groupId": "51cca01b-6a2e-4815-9aa1-70d40e3aba24",
         "companyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32",
         "createdBy": "33477648-c752-4bed-83cb-a04114224f4d",
         "deletedBy": null,
         "updatedBy": "33477648-c752-4bed-83cb-a04114224f4d",
-        "created_at": "2026-10-23T19:38:56.046Z",
+        "created_at": "2026-10-24T12:51:34.547Z",
         "deleted_at": null,
-        "toPersonId": "5e1e7cc8-3571-43a3-94b9-137703279a28",
-        "updated_at": "2026-10-23T19:38:58.967Z",
-        "completedAt": "2026-10-23T19:38:58.967Z",
+        "toPersonId": "5200082d-57e5-4fb6-a2bf-5ea148934d42",
+        "updated_at": "2026-10-24T12:51:35.927Z",
+        "completedAt": "2026-10-24T12:51:35.927Z",
         "lockVersion": 1,
         "fromPersonId": null,
-        "evidenceFileId": "7cabb1bc-5e81-4980-8689-7f5906a4aa9b",
-        "utilityObligationId": "6fb6c791-d802-4e3c-9338-19766bca71a7",
-        "utility_obligation_id": "6fb6c791-d802-4e3c-9338-19766bca71a7"
+        "evidenceFileId": "d4323fa0-b256-457d-8010-78b9fe58c48f",
+        "utilityObligationId": "cf645cae-835a-4c36-9908-eb0c9a57817e",
+        "utility_obligation_id": "cf645cae-835a-4c36-9908-eb0c9a57817e"
       },
       "motivo": "Transferência de titularidade de utilidade concluída."
     },
     {
       "acao": "billing.utility_obligation.create",
       "entidade": "UtilityObligation",
-      "quando": "2026-10-23T19:38:56.380Z",
+      "quando": "2026-10-24T12:51:34.419Z",
       "antes": null,
       "depois": {
-        "id": "6fb6c791-d802-4e3c-9338-19766bca71a7",
+        "id": "cf645cae-835a-4c36-9908-eb0c9a57817e",
         "status": "TRANSFER_PENDING",
         "groupId": "51cca01b-6a2e-4815-9aa1-70d40e3aba24",
         "provider": null,
@@ -1942,10 +2494,10 @@ ul{margin:6px 0;padding-left:20px}
         "createdBy": "33477648-c752-4bed-83cb-a04114224f4d",
         "deletedBy": null,
         "updatedBy": "33477648-c752-4bed-83cb-a04114224f4d",
-        "contractId": "69846352-1d19-482a-a39a-0da46bc2097d",
-        "created_at": "2026-10-23T19:38:55.863Z",
+        "contractId": "418e1f96-0728-4d44-8d76-7ec38f4af0ac",
+        "created_at": "2026-10-24T12:51:34.040Z",
         "deleted_at": null,
-        "updated_at": "2026-10-23T19:38:55.863Z",
+        "updated_at": "2026-10-24T12:51:34.040Z",
         "lockVersion": 0,
         "utilityType": "ELECTRICITY",
         "accountNumber": null,
@@ -2145,6 +2697,63 @@ ul{margin:6px 0;padding-left:20px}
       "motivo": "Transferência de titularidade de utilidade solicitada."
     }
   ],
+  "commitsDaRodada": [
+    {
+      "repo": "API",
+      "hash": "a2f6073",
+      "msg": "feat: solicitar transferência de titularidade e listar tarefas nas obrigações de locação"
+    },
+    {
+      "repo": "API",
+      "hash": "079918d",
+      "msg": "feat: antivírus ClamAV e leitura real de documentos (pdftotext + Tesseract) atrás dos adaptadores"
+    },
+    {
+      "repo": "API",
+      "hash": "56546df",
+      "msg": "feat: leitura real de documento no caso de financiamento, com pendência para ilegível"
+    },
+    {
+      "repo": "API",
+      "hash": "4f437bc",
+      "msg": "fix: reenviar documento do mesmo tipo cria a próxima versão em vez de falhar por unicidade"
+    },
+    {
+      "repo": "API",
+      "hash": "6031a57",
+      "msg": "build: leitor de documentos (Tesseract e poppler) opcional na imagem, desligado por padrão"
+    },
+    {
+      "repo": "Front",
+      "hash": "fd23deb",
+      "msg": "feat: tela de transferência de titularidade de água/energia na Locação"
+    },
+    {
+      "repo": "Front",
+      "hash": "1a0e0d4",
+      "msg": "feat: margem mínima da obra configurável na página de configurações de Obras"
+    },
+    {
+      "repo": "Front",
+      "hash": "6122372",
+      "msg": "fix: ações da tabela de obrigações quebram linha em vez de forçar rolagem horizontal"
+    },
+    {
+      "repo": "Front",
+      "hash": "330de8c",
+      "msg": "feat: leitura automática de documento na ficha do contato, com revisão humana dos campos"
+    },
+    {
+      "repo": "Front",
+      "hash": "df1f139",
+      "msg": "test: leitura de documento do caso de financiamento pela tela"
+    },
+    {
+      "repo": "Front",
+      "hash": "6cdec0c",
+      "msg": "fix: ficha do contato não mostra mais o código interno do arquivo e preserva os dados lidos ao validar"
+    }
+  ],
   "prints": [
     {
       "id": "P01",
@@ -2253,7 +2862,7 @@ ul{margin:6px 0;padding-left:20px}
     }
   ],
   "hashes": {
-    "jsonSemOsHashes": "58173643641f9a06670c3d292721e0f87ae5ee178aba07c587f40e10014101bc",
+    "jsonSemOsHashes": "5cf887f3b328cabc681477b00dcf65589976bd7440448e48497ddf8106a14917",
     "prints": {
       "P01": "65ae0718c53a27fbd534810423fe0f8330fea1ec744cdfda5c3a05b0d7953436",
       "P02": "a9bf23f97bc181d9f89b61874b10f171e8a1c9816d3c2bbf76cb97839f70f639",
@@ -2278,6 +2887,15 @@ ul{margin:6px 0;padding-left:20px}
 <section id="s11" class="card"><h2>11. Como conferir sem acesso</h2>
 <div class="tw"><table><thead><tr><th>Para provar</th><th>Veja</th></tr></thead><tbody><tr><td>O antivírus real recusa o arquivo de teste e aceita o comum.</td><td>Seção 5, tabela "Antivírus"; JSON <code>motores.varreduras</code>; prints P10 e P15.</td></tr><tr><td>A leitura real extrai campos com origem e confiança e trata o ilegível sem inventar.</td><td>Seção 5, tabela "Leitura de documento"; JSON <code>motores.leituras</code> (campo <code>raw.fieldSources</code>); prints P11, P12, P13 e P14.</td></tr><tr><td>A validação é humana e fica auditada.</td><td>Seção 8, amostras de auditoria; matriz R03.</td></tr><tr><td>A transferência de titularidade funciona pela tela.</td><td>Prints P01 a P03 (local) e P05 a P07 (homologação); matriz R09; auditoria "Transferência de titularidade solicitada" e "concluída".</td></tr><tr><td>O armazenamento de arquivos está configurado.</td><td>Print P06 (comprovante anexado na homologação) e a matriz R08.</td></tr><tr><td>A margem é configurável e não tem valor presumido.</td><td>Prints P04, P08 e P09; matriz R10.</td></tr></tbody></table></div>
 <p>Para quem tem acesso à homologação, o roteiro pela tela é: Contratos → Locação → Obrigações (água/luz) para a transferência; Obras → Configurações para a margem; Contatos → um contato → "Ler documento automaticamente" para o Marco 3 (essa tela só lê de verdade depois da ativação no servidor, seção 4); Correspondente → um caso → Documentos para o Marco 8.</p>
+</section>
+
+<section id="s11b" class="card"><h2>Persistência dos anexos e valor de teste da margem</h2>
+<h3>Os anexos continuam acessíveis depois de republicar?</h3>
+<p>O volume persistente está montado em <code>/app/uploads</code> e a chave de criptografia dos arquivos está definida na homologação. O teste que prova a persistência é este: o anexo da não conformidade "QA-DEPLOY NC 01" foi enviado na homologação <b>antes</b> do deploy desta rodada. Depois do deploy, abrir esse mesmo anexo prova que os arquivos sobrevivem à republicação. O resultado desse teste vai na mensagem de aviso, e não nesta página, porque ele só pode ser feito depois que os commits estiverem publicados.</p>
+<h3>Valor de teste recomendado para a margem (somente com autorização da Nayara)</h3>
+<p>Eu não cadastro percentual por conta própria, e a "Nayara One — Empresa Dev" continua sem regra: a consulta da regra vigente devolve vazio (teste da matriz, linha R11). Se a Nayara autorizar um teste, eu recomendo <b>10% de margem mínima</b>, primeiro no modo "Apenas alertar" e depois uma segunda versão no modo "Bloquear aprovação", para a IA conferir o alerta e o bloqueio, com a descrição "TESTE" e só nesta empresa. Dois avisos importantes: cada publicação é uma nova versão e as anteriores ficam no histórico; e, depois de publicar a primeira, a empresa deixa de estar "sem regra", e voltar a esse estado exige uma intervenção minha no banco.</p>
+<h3>Registros de teste preparados</h3>
+<div class="tw"><table><thead><tr><th>Registro</th><th>Onde</th><th>Situação</th></tr></thead><tbody><tr><td>LOC-2026-0124 (obrigação de água)</td><td>Contratos → Locação → Obrigações</td><td>Intacto: "Ativa / Sem comprovante", com o botão "Solicitar transferência" disponível para a IA testar.</td></tr><tr><td>Obrigações de água em contratos "QA-GUARANTEED-RACE-…"</td><td>Contratos → Locação → Obrigações</td><td>Registros dos meus testes, em vários estados (Transferência pendente e Transferida). Podem ser ignorados na validação funcional.</td></tr><tr><td>Obra 63a7582a-897a-41f5-a07f-804086704e9e</td><td>Obras</td><td>Preservada, sem nenhuma alteração.</td></tr><tr><td>Não conformidade "QA-DEPLOY NC 01" com anexo</td><td>Obras → Qualidade</td><td>Criada na homologação antes deste deploy; é o anexo do teste de persistência.</td></tr><tr><td>Documentos fictícios (nome de teste e CPF de teste)</td><td>Contatos → ficha de um contato de teste</td><td>Versões 1 e 2 do Imposto de Renda e um documento ilegível, para a IA ver o histórico de versões.</td></tr><tr><td>Regra de margem da Empresa Dev</td><td>Obras → Configurações</td><td>Nenhuma regra publicada, de propósito.</td></tr></tbody></table></div>
 </section>
 
 <section id="s12" class="card"><h2>12. Fora do escopo e decisões da Nayara</h2>
