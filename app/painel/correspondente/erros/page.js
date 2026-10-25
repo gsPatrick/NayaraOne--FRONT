@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Table from "@/components/organisms/Table/Table";
@@ -27,14 +27,18 @@ export default function ErrosIntegracaoPage() {
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const pedido = useRef(0);
 
+  // Troca rápida de filtro: só a resposta do pedido mais recente vale (a antiga não sobrescreve a tela).
   function load(status = filter) {
+    pedido.current += 1;
+    const meu = pedido.current;
     setLoading(true);
     setLoadError("");
     listIntegrationErrors(status || undefined)
-      .then((data) => setRows(data || []))
-      .catch((err) => setLoadError(err?.message || "Não foi possível carregar os erros de integração."))
-      .finally(() => setLoading(false));
+      .then((data) => { if (meu === pedido.current) setRows(data || []); })
+      .catch((err) => { if (meu === pedido.current) setLoadError(err?.message || "Não foi possível carregar os erros de integração."); })
+      .finally(() => { if (meu === pedido.current) setLoading(false); });
   }
 
   useEffect(() => { load(filter); }, [filter]); // eslint-disable-line react-hooks/exhaustive-deps
