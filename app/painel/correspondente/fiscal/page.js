@@ -69,8 +69,15 @@ const OBLIGATION_TYPE_LABEL = { DIMOB_ANNUAL: "DIMOB anual" };
 const SOURCE_TYPE_LABEL = { COMMISSION_ENTITLEMENT: "Comissão de correspondente", NFSE: "NFS-e" };
 
 // humanizeText tira códigos internos do texto e pode deixar um travessão solto no fim.
+const TERMOS_INTERNOS = {
+  CONTRATO_ASSINADO: "Contrato assinado",
+  RECURSO_LIBERADO: "Recurso liberado pelo banco",
+  REGISTRO_MANUAL: "Registro manual",
+};
+
 function limpaDescricao(text) {
-  return humanizeText(text).replace(/\s*[—–-]\s*$/, "");
+  const legivel = Object.entries(TERMOS_INTERNOS).reduce((acc, [codigo, rotulo]) => acc.split(codigo).join(rotulo), String(text ?? ""));
+  return humanizeText(legivel).replace(/\s*[—–-]\s*$/, "");
 }
 
 function plural(n, um, varios) {
@@ -272,11 +279,11 @@ export default function FiscalPage() {
     try {
       const result = await runFiscalReconciliations();
       const checked = Object.values(result?.checked || {}).reduce((sum, n) => sum + n, 0);
-      const opened = (result?.opened || []).length;
+      const aberto = result?.openTotal ?? (result?.opened || []).length;
       setActionMessage(
-        opened === 0
-          ? `Conferência concluída: ${plural(checked, "item conferido", "itens conferidos")} e nenhuma divergência.`
-          : `Conferência concluída: ${plural(checked, "item conferido", "itens conferidos")} e ${plural(opened, "divergência em aberto", "divergências em aberto")}.`
+        aberto === 0
+          ? `Conferência concluída: ${plural(checked, "item conferido", "itens conferidos")} e nenhuma divergência em aberto.`
+          : `Conferência concluída: ${plural(checked, "item conferido", "itens conferidos")}. Há ${plural(aberto, "divergência em aberto", "divergências em aberto")} no total, veja a aba Reconciliações.`
       );
       load();
     } catch (err) {
