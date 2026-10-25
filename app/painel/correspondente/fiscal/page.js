@@ -73,6 +73,10 @@ function limpaDescricao(text) {
   return humanizeText(text).replace(/\s*[—–-]\s*$/, "");
 }
 
+function plural(n, um, varios) {
+  return `${n} ${n === 1 ? um : varios}`;
+}
+
 function currentPeriod() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
@@ -271,8 +275,8 @@ export default function FiscalPage() {
       const opened = (result?.opened || []).length;
       setActionMessage(
         opened === 0
-          ? `Conferência concluída: ${checked} item(ns) conferido(s) e nenhuma divergência.`
-          : `Conferência concluída: ${checked} item(ns) conferido(s) e ${opened} divergência(s) em aberto.`
+          ? `Conferência concluída: ${plural(checked, "item conferido", "itens conferidos")} e nenhuma divergência.`
+          : `Conferência concluída: ${plural(checked, "item conferido", "itens conferidos")} e ${plural(opened, "divergência em aberto", "divergências em aberto")}.`
       );
       load();
     } catch (err) {
@@ -435,7 +439,7 @@ export default function FiscalPage() {
     { key: "referenceYear", label: "Ano" },
     { key: "version", label: "Versão" },
     { key: "status", label: "Status", render: (row) => <Badge tone={row.status === "CLOSED" ? "success" : "neutral"}>{row.status === "CLOSED" ? "Fechado" : "Rascunho"}</Badge> },
-    { key: "snapshotHash", label: "Hash do snapshot", render: (row) => <code className={styles.hash}>{(row.snapshotHash || "").slice(0, 16)}…</code> },
+    { key: "snapshotHash", label: "Hash do snapshot", render: (row) => <code className={styles.hash}>{row.snapshotHash}</code> },
     { key: "createdAt", label: "Gerado em", render: (row) => formatDateTime(row.createdAt || row.created_at) },
     {
       key: "actions",
@@ -476,7 +480,7 @@ export default function FiscalPage() {
   const exportColumns = [
     { key: "referencePeriod", label: "Período", render: (row) => formatCompetence(row.referencePeriod) },
     { key: "status", label: "Status", render: (row) => <Badge tone="success">Exportado</Badge> },
-    { key: "batchHash", label: "Hash do batch", render: (row) => <code className={styles.hash}>{(row.batchHash || "").slice(0, 16)}…</code> },
+    { key: "batchHash", label: "Hash do batch", render: (row) => <code className={styles.hash}>{row.batchHash}</code> },
     { key: "createdAt", label: "Gerado em", render: (row) => formatDateTime(row.createdAt || row.created_at) },
     { key: "actions", label: "", render: (row) => <Button variant="secondary" size="sm" onClick={() => openBatch(row.id)}>Abrir</Button> },
   ];
@@ -579,8 +583,8 @@ export default function FiscalPage() {
                 <Card title="Exportação para o contador">
                   <div className={styles.toolbarRow}>
                     <div className={styles.inlineField}>
-                      <FormField label="Período (AAAA-MM)" htmlFor="export-period">
-                        <Input id="export-period" value={exportPeriod} onChange={(e) => { setExportPeriod(e.target.value); setCandidates(null); }} />
+                      <FormField label="Mês de referência" htmlFor="export-period">
+                        <Input id="export-period" type="month" value={exportPeriod} onChange={(e) => { setExportPeriod(e.target.value); setCandidates(null); }} />
                       </FormField>
                     </div>
                     <Button variant="secondary" onClick={handleLoadCandidates} loading={exportBusy}>Ver lançamentos pendentes</Button>
@@ -590,7 +594,7 @@ export default function FiscalPage() {
                       <Table columns={candidateColumns} rows={candidates} emptyMessage="Nada pendente de exportação neste período." />
                       {candidates.length > 0 ? (
                         <div className={styles.toolbarRow}>
-                          <Button onClick={handleCreateExport} loading={exportBusy}>Gerar batch com {candidates.length} lançamento(s)</Button>
+                          <Button onClick={handleCreateExport} loading={exportBusy}>Gerar batch com {plural(candidates.length, "lançamento", "lançamentos")}</Button>
                         </div>
                       ) : null}
                     </div>
@@ -661,8 +665,8 @@ export default function FiscalPage() {
         <FormField label="Ano-base" htmlFor="obl-year">
           <Input id="obl-year" value={obligationForm.referenceYear} onChange={(e) => setObligationForm((f) => ({ ...f, referenceYear: e.target.value }))} />
         </FormField>
-        <FormField label="Prazo (AAAA-MM-DD)" htmlFor="obl-due" helper="Vazio usa o último dia útil de fevereiro do ano seguinte. Feriados não são considerados: confirme com o contador.">
-          <Input id="obl-due" value={obligationForm.dueAt} onChange={(e) => setObligationForm((f) => ({ ...f, dueAt: e.target.value }))} placeholder="Prazo padrão" />
+        <FormField label="Prazo da entrega" htmlFor="obl-due" helper="Vazio usa o último dia útil de fevereiro do ano seguinte. Feriados não são considerados: confirme com o contador.">
+          <Input id="obl-due" type="date" value={obligationForm.dueAt} onChange={(e) => setObligationForm((f) => ({ ...f, dueAt: e.target.value }))} />
         </FormField>
         <div className={styles.modalActions}>
           <Button variant="secondary" onClick={() => setObligationOpen(false)}>Voltar</Button>

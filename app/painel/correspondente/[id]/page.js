@@ -775,7 +775,7 @@ export default function FinancingCaseDetailPage() {
                       <td style={{ padding: "8px 12px" }}>
                         <Badge tone={SUBMISSION_STATUS_TONE[sub.status] || "neutral"}>{submissionStatusLabel(sub)}</Badge>
                       </td>
-                      <td style={{ padding: "8px 12px" }}>{sub.externalCaseId || "Sem identificador no provider"}</td>
+                      <td style={{ padding: "8px 12px" }}>{sub.providerCode === "manual" ? "Conduzido manualmente com o banco" : sub.externalCaseId || "Sem identificador no provider"}</td>
                     </tr>
                   ))}
                 </tbody>

@@ -33,6 +33,7 @@
 .hash {
   font-size: var(--text-caption);
   color: var(--color-ink-muted);
+  word-break: break-all;
 }
 
 .inlineField {
