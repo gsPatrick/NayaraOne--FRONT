@@ -365,9 +365,10 @@ export default function FinancingCaseDetailPage() {
 
   async function handleCreateCommission() {
     setCommissionFormError("");
-    const baseAmount = toNumber(commissionBaseAmount);
-    if (!baseAmount || baseAmount <= 0) {
-      setCommissionFormError("Informe um valor-base maior que zero.");
+    const informado = String(commissionBaseAmount || "").trim() !== "";
+    const baseAmount = informado ? toNumber(commissionBaseAmount) : undefined;
+    if (informado && (!baseAmount || baseAmount <= 0)) {
+      setCommissionFormError("Informe um valor-base maior que zero ou deixe vazio para usar o valor aprovado da proposta vigente.");
       return;
     }
     setCreatingCommission(true);
@@ -870,7 +871,7 @@ export default function FinancingCaseDetailPage() {
       >
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <div style={{ display: "flex", gap: 12, alignItems: "flex-end", flexWrap: "wrap" }}>
-            <FormField label="Valor-base (R$)" htmlFor="commission-base-amount">
+            <FormField label="Valor-base (R$)" htmlFor="commission-base-amount" helper="Vazio usa o valor aprovado da proposta vigente do banco.">
               <DecimalInput id="commission-base-amount" value={commissionBaseAmount} onChange={(e) => setCommissionBaseAmount(e.target.value)} placeholder="0,00" />
             </FormField>
             <FormField label="Fato gerador" htmlFor="commission-trigger">
