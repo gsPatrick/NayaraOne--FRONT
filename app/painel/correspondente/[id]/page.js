@@ -37,6 +37,7 @@ import {
   requestInvoice,
 } from "@/lib/api/correspondent";
 import { uploadFile } from "@/lib/api/legal";
+import NaySummary from "@/components/organisms/NaySummary/NaySummary";
 import FinancingCaseWorkflow from "@/components/organisms/FinancingCaseWorkflow/FinancingCaseWorkflow";
 import { formatDateTime, formatBRL, formatPercent, toNumber } from "@/lib/format";
 
@@ -859,6 +860,8 @@ export default function FinancingCaseDetailPage() {
           )}
         </div>
       </Card>
+
+      <NaySummary financingCaseId={id} />
 
       <Card
         title="Comissão"

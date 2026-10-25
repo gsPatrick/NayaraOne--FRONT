@@ -32,6 +32,7 @@ import {
   createFiscalObligation,
   completeFiscalObligation,
   downloadInvoiceFile,
+  downloadDimobFile,
 } from "@/lib/api/correspondent";
 import Select from "@/components/atoms/Select/Select";
 import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
@@ -252,12 +253,21 @@ export default function FiscalPage() {
     }
   }
 
+  async function handleDownloadDimob(batch) {
+    setActionError("");
+    try {
+      await downloadDimobFile(batch.id);
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível baixar o arquivo do DIMOB.");
+    }
+  }
+
   async function handleRunReconciliations() {
     setReconciling(true);
     setActionError("");
     try {
       const result = await runFiscalReconciliations();
-      const checked = (result?.checked?.FINANCE_X_NFSE || 0) + (result?.checked?.DIMOB_X_CONTRACTS || 0);
+      const checked = Object.values(result?.checked || {}).reduce((sum, n) => sum + n, 0);
       const opened = (result?.opened || []).length;
       setActionMessage(
         opened === 0
@@ -433,6 +443,7 @@ export default function FiscalPage() {
       render: (row) => (
         <div className={styles.rowActions}>
           <Button variant="secondary" size="sm" onClick={() => handleViewDimob(row)}>Ver registros</Button>
+          <Button variant="secondary" size="sm" onClick={() => handleDownloadDimob(row)}>Baixar arquivo</Button>
           {row.status !== "CLOSED" ? <Button variant="secondary" size="sm" onClick={() => handleCloseDimob(row.id)}>Fechar batch</Button> : null}
         </div>
       ),
@@ -497,9 +508,10 @@ export default function FiscalPage() {
   ];
 
   const dimobRecordColumns = [
-    { key: "commission", label: "Comissão", render: (row) => <code className={styles.hash}>{String(row.sourceRefs?.commissionEntitlementId || "").slice(0, 8)}…</code> },
-    { key: "case", label: "Caso", render: (row) => <code className={styles.hash}>{String(row.sourceRefs?.financingCaseId || "").slice(0, 8)}…</code> },
-    { key: "amount", label: "Valor", render: (row) => formatBRL(row.amount) },
+    { key: "recordType", label: "Origem", render: (row) => (row.recordType === "LEASE" ? `Locação ${row.detailJson?.contractNumber || ""}`.trim() : "Comissão de correspondente") },
+    { key: "amount", label: "Valor no ano", render: (row) => formatBRL(row.amount) },
+    { key: "validationStatus", label: "Cadastro", render: (row) => <Badge tone={row.validationStatus === "VALID" ? "success" : "danger"}>{row.validationStatus === "VALID" ? "Completo" : "Com pendência"}</Badge> },
+    { key: "validationIssues", label: "Pendências", render: (row) => ((row.validationIssues || []).length ? (row.validationIssues || []).map((i) => i.message).join(" ") : "Nenhuma pendência") },
   ];
 
   const reconciliationColumns = [
@@ -672,9 +684,9 @@ export default function FiscalPage() {
         {dimobView ? (
           <>
             <p className={styles.helper}>
-              Total do batch: {formatBRL(dimobView.records.reduce((sum, r) => sum + Number(r.amount), 0))} em {dimobView.records.length} registro(s). Cada registro aponta para a comissão e o caso de origem.
+              Total do batch: {formatBRL(dimobView.records.reduce((sum, r) => sum + Number(r.amount), 0))} em {dimobView.records.length} registro(s), {dimobView.records.filter((r) => r.validationStatus === "INVALID").length} com pendência de cadastro. Batch com pendência não pode ser fechado: corrija o cadastro e gere uma nova versão.
             </p>
-            <Table columns={dimobRecordColumns} rows={dimobView.records} emptyMessage="Este batch não tem registros: não havia comissão recebível no ano." />
+            <Table columns={dimobRecordColumns} rows={dimobView.records} emptyMessage="Este batch não tem registros: não havia aluguel recebido nem comissão recebível no ano." />
           </>
         ) : null}
       </Modal>

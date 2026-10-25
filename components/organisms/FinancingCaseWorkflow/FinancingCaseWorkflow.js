@@ -11,7 +11,7 @@ import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import FormField from "@/components/molecules/FormField/FormField";
 import Modal from "@/components/organisms/Modal/Modal";
 import Table from "@/components/organisms/Table/Table";
-import { registerManualStatus, cancelFinancingCase, listFinancingProposals } from "@/lib/api/correspondent";
+import { registerManualStatus, cancelFinancingCase, listFinancingProposals, reviewDuplicate } from "@/lib/api/correspondent";
 import { formatBRL, formatDate, formatDateTime, toNumber } from "@/lib/format";
 
 const MANUAL_OPTIONS = [
@@ -44,7 +44,15 @@ export default function FinancingCaseWorkflow({ financingCase, onChanged }) {
   const [canceling, setCanceling] = useState(false);
   const [cancelError, setCancelError] = useState("");
 
+  const [dupOpen, setDupOpen] = useState(false);
+  const [dupDecision, setDupDecision] = useState("DISMISS");
+  const [dupNote, setDupNote] = useState("");
+  const [dupSaving, setDupSaving] = useState(false);
+  const [dupError, setDupError] = useState("");
+
   const id = financingCase.id;
+  const dupPending = (financingCase.duplicateReviewStatus || financingCase.duplicate_review_status) === "PENDING";
+  const dupOfId = financingCase.possibleDuplicateOfCaseId || financingCase.possible_duplicate_of_case_id;
   const isManual = financingCase.providerCode === "manual" || financingCase.provider_code === "manual";
   const current = financingCase.status;
   const canRegister = isManual && !PRE_SUBMISSION.includes(current) && !FINAL.includes(current);
@@ -92,6 +100,21 @@ export default function FinancingCaseWorkflow({ financingCase, onChanged }) {
     }
   }
 
+  async function handleReviewDuplicate() {
+    setDupSaving(true);
+    setDupError("");
+    try {
+      await reviewDuplicate(id, { decision: dupDecision, note: dupNote.trim() });
+      setDupOpen(false);
+      setDupNote("");
+      onChanged?.();
+    } catch (err) {
+      setDupError(err?.message || "Não foi possível registrar a decisão.");
+    } finally {
+      setDupSaving(false);
+    }
+  }
+
   async function handleCancel() {
     setCanceling(true);
     setCancelError("");
@@ -120,6 +143,16 @@ export default function FinancingCaseWorkflow({ financingCase, onChanged }) {
 
   return (
     <>
+      {dupPending ? (
+        <Alert tone="warning" title="Possível duplicata aguardando revisão">
+          Este caso tem o mesmo proponente e imóvel de outro caso aberto nas últimas 24 horas. O sistema não bloqueia nada sozinho: uma pessoa decide.
+          <div style={{ marginTop: 8, display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {dupOfId ? <Button variant="secondary" href={`/painel/correspondente/${dupOfId}`}>Ver o caso original</Button> : null}
+            <Button onClick={() => { setDupDecision("DISMISS"); setDupNote(""); setDupError(""); setDupOpen(true); }}>Revisar</Button>
+          </div>
+        </Alert>
+      ) : null}
+
       {current === "CANCELED" ? (
         <Alert tone="danger" title="Caso cancelado">
           Motivo: {financingCase.canceledReason || financingCase.canceled_reason}. Cancelado em {formatDateTime(financingCase.canceledAt || financingCase.canceled_at)}.
@@ -182,6 +215,29 @@ export default function FinancingCaseWorkflow({ financingCase, onChanged }) {
           <Button variant="danger" onClick={() => { setCancelReason(""); setCancelError(""); setCancelOpen(true); }}>Cancelar este caso</Button>
         </Card>
       ) : null}
+
+      <Modal
+        open={dupOpen}
+        onClose={() => !dupSaving && setDupOpen(false)}
+        title="Revisar possível duplicata"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setDupOpen(false)} disabled={dupSaving}>Voltar</Button>
+            <Button onClick={handleReviewDuplicate} loading={dupSaving} disabled={dupNote.trim().length < 3}>Registrar decisão</Button>
+          </>
+        }
+      >
+        {dupError ? <Alert tone="danger">{dupError}</Alert> : null}
+        <FormField label="Decisão" htmlFor="dup-decision">
+          <Select id="dup-decision" value={dupDecision} onChange={(e) => setDupDecision(e.target.value)}>
+            <option value="DISMISS">Não é duplicata: este caso segue normalmente</option>
+            <option value="CONFIRM">É duplicata: cancelar este caso e continuar no original</option>
+          </Select>
+        </FormField>
+        <FormField label="Observação" htmlFor="dup-note" required helper="Obrigatória. Fica registrada na auditoria.">
+          <Input id="dup-note" value={dupNote} onChange={(e) => setDupNote(e.target.value)} />
+        </FormField>
+      </Modal>
 
       <Modal
         open={cancelOpen}

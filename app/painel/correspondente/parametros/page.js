@@ -66,6 +66,7 @@ export default function ParametrosCorrespondentePage() {
       defaultBrokerSharePct: numberText(c.defaultBrokerSharePct),
       allowedTriggerEvents: c.allowedTriggerEvents || [],
       defaultTriggerEvent: c.defaultTriggerEvent || "",
+      invoiceGraceDays: String(c.invoiceGraceDays ?? 5),
     });
   }
 
@@ -115,6 +116,7 @@ export default function ParametrosCorrespondentePage() {
           defaultBrokerSharePct: parseOrNull(commission.defaultBrokerSharePct),
           allowedTriggerEvents: commission.allowedTriggerEvents,
           defaultTriggerEvent: commission.defaultTriggerEvent,
+          invoiceGraceDays: parseOrNull(commission.invoiceGraceDays),
         },
         commissionReason
       );
@@ -138,7 +140,7 @@ export default function ParametrosCorrespondentePage() {
       render: (row) =>
         kind === "eligibility"
           ? `${(row.action.allowedProviders || []).length} provider(s), ${(row.action.allowedPurposes || []).length} finalidade(s)${row.action.allowedProducts ? `, ${row.action.allowedProducts.length} produto(s)` : ""}`
-          : `Padrão ${row.action.defaultPercentage}% — corretor ${row.action.defaultBrokerSharePct ?? 100}%`,
+          : `Padrão ${row.action.defaultPercentage}% — corretor ${row.action.defaultBrokerSharePct ?? 100}% — nota em ${row.action.invoiceGraceDays ?? 5} dia(s)`,
     },
   ];
 
@@ -292,6 +294,11 @@ export default function ParametrosCorrespondentePage() {
                             <option key={t.value} value={t.value}>{t.label}</option>
                           ))}
                       </Select>
+                    </FormField>
+                  </div>
+                  <div className={styles.grid} style={{ marginTop: 16 }}>
+                    <FormField label="Prazo para emitir a NFS-e da comissão (dias)" htmlFor="co-grace" helper="Depois deste prazo, comissão recebível sem nota aparece como divergência em Fiscal.">
+                      <Input id="co-grace" type="number" min="0" max="365" value={commission.invoiceGraceDays} onChange={(e) => setCommission((s) => ({ ...s, invoiceGraceDays: e.target.value }))} />
                     </FormField>
                   </div>
                   <FormField label="Motivo da alteração" htmlFor="co-reason" helper="Obrigatório. Fica registrado na auditoria.">

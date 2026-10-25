@@ -14,7 +14,7 @@ import StickyActionBar from "@/components/organisms/StickyActionBar/StickyAction
 import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
 import PersonPicker from "@/components/molecules/PersonPicker/PersonPicker";
-import { listFinancingCases, createFinancingCase, getNayStalledCases } from "@/lib/api/correspondent";
+import { listFinancingCases, createFinancingCase, getNayStalledCases, listPendingDuplicates } from "@/lib/api/correspondent";
 import { listProperties } from "@/lib/api/properties";
 import { formatDateTime } from "@/lib/format";
 
@@ -89,6 +89,7 @@ export default function CorrespondentePage() {
   const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [stalled, setStalled] = useState(null);
+  const [duplicates, setDuplicates] = useState([]);
 
   const [createOpen, setCreateOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -112,6 +113,7 @@ export default function CorrespondentePage() {
     // NAY Correspondente: só sinaliza casos sem atividade recente, nunca decide ou altera nada —
     // falha silenciosa aqui é aceitável (é um aviso complementar, não dado essencial da tela).
     getNayStalledCases().then(setStalled).catch(() => setStalled(null));
+    listPendingDuplicates().then((rows) => setDuplicates(rows || [])).catch(() => setDuplicates([]));
   }, []);
 
   function openCreateModal() {
@@ -230,6 +232,21 @@ export default function CorrespondentePage() {
           {" "}
           {[...new Set(stalled.cases.map((c) => c.reason))].slice(0, 2).join(" ")}
         </Alert>
+      ) : null}
+
+      {duplicates.length > 0 ? (
+        <Card title="Possíveis duplicatas para revisar" subtitle="Casos criados com o mesmo proponente e imóvel de outro caso nas últimas 24 horas. Abra o caso para decidir.">
+          <Table
+            columns={[
+              { key: "principal", label: "Proponente", render: (row) => (row.applicants || []).map((a) => a.person?.legalName).filter(Boolean).join(", ") || "Sem proponente" },
+              { key: "status", label: "Situação", render: (row) => STATUS_LABELS[row.status] || row.status },
+              { key: "created", label: "Criado em", render: (row) => formatDateTime(row.createdAt || row.created_at) },
+              { key: "original", label: "Caso original", render: (row) => (row.originalCase ? `${STATUS_LABELS[row.originalCase.status] || row.originalCase.status}, criado em ${formatDateTime(row.originalCase.createdAt || row.originalCase.created_at)}` : "Caso original indisponível") },
+              { key: "actions", label: "", render: (row) => <Button variant="secondary" size="sm" onClick={() => router.push(`/painel/correspondente/${row.id}`)}>Revisar</Button> },
+            ]}
+            rows={duplicates}
+          />
+        </Card>
       ) : null}
 
       <Card title="Casos de financiamento" subtitle="Correspondente bancário — proponentes vinculados ao cadastro real de contatos.">
