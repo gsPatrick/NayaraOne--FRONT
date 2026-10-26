@@ -129,6 +129,7 @@ export default function FiscalPage() {
   const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [actionMessage, setActionMessage] = useState("");
+  const [reconMessage, setReconMessage] = useState("");
 
   const [dimobYearOpen, setDimobYearOpen] = useState(false);
   const [dimobYear, setDimobYear] = useState(String(new Date().getFullYear()));
@@ -276,14 +277,16 @@ export default function FiscalPage() {
   async function handleRunReconciliations() {
     setReconciling(true);
     setActionError("");
+    setReconMessage("");
     try {
       const result = await runFiscalReconciliations();
       const checked = Object.values(result?.checked || {}).reduce((sum, n) => sum + n, 0);
       const aberto = result?.openTotal ?? (result?.opened || []).length;
-      setActionMessage(
+      // Mensagem junto ao botão (a faixa do topo pode ficar fora da tela e repetia o mesmo texto).
+      setReconMessage(
         aberto === 0
           ? `Conferência concluída: ${plural(checked, "item conferido", "itens conferidos")} e nenhuma divergência em aberto.`
-          : `Conferência concluída: ${plural(checked, "item conferido", "itens conferidos")}. Há ${plural(aberto, "divergência em aberto", "divergências em aberto")} no total, veja a aba Reconciliações.`
+          : `Conferência concluída: ${plural(checked, "item conferido", "itens conferidos")}. Há ${plural(aberto, "divergência em aberto", "divergências em aberto")} no total, listadas abaixo.`
       );
       load();
     } catch (err) {
@@ -617,6 +620,7 @@ export default function FiscalPage() {
                   <div className={styles.toolbarRow}>
                     <Button onClick={handleRunReconciliations} loading={reconciling}>Conferir agora</Button>
                   </div>
+                  {reconMessage ? <div role="status"><Alert tone="success">{reconMessage}</Alert></div> : null}
                   <Table
                     columns={reconciliationColumns}
                     rows={reconciliations}
