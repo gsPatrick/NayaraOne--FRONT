@@ -89,6 +89,19 @@ function maskTaxId(digits) {
   return String(digits);
 }
 
+// Mesmos campos críticos do servidor (documentIngestion.service): o servidor é quem barra; aqui só se oferece o preenchimento.
+const CRITICAL_FIELDS_BY_TYPE = {
+  RG: ["name"], CIN: ["name"], CNH: ["name", "issuedAt", "expiresAt"], IR: ["name", "taxId", "income"],
+  HOLERITE: ["name", "income"], BANK_STATEMENT: ["name", "accountNumber"], CPF: ["name", "taxId"], RG_CPF: ["name", "taxId"], CNPJ: ["taxId"],
+};
+
+// Campos lidos + os críticos que a leitura não achou, em branco, para quem revisa informar conferindo o arquivo original.
+function withCriticalFields(editable, documentType) {
+  const present = new Set(editable.filter((f) => f.value !== "").map((f) => f.key));
+  const missing = (CRITICAL_FIELDS_BY_TYPE[String(documentType || "").toUpperCase()] || []).filter((key) => !present.has(key));
+  return [...editable.filter((f) => f.value !== ""), ...missing.map((key) => ({ key, value: "" }))];
+}
+
 function toEditableFields(fields) {
   return Object.entries(fields || {}).map(([key, value]) => ({
     key,
@@ -239,7 +252,7 @@ export default function PersonDetailPage({ params }) {
       illegible: !!data.illegible,
       engine: data.extractionMeta?.engine || "",
       source: data.extractionMeta?.source || "",
-      fields: toEditableFields(data.fields),
+      fields: withCriticalFields(toEditableFields(data.fields), d.type),
       data,
     });
     setDocOpen(true);
@@ -261,7 +274,7 @@ export default function PersonDetailPage({ params }) {
         illegible: !!data.illegible,
         engine: data.extractionMeta?.engine || "",
         source: data.extractionMeta?.source || "",
-        fields: toEditableFields(data.fields),
+        fields: withCriticalFields(toEditableFields(data.fields), doc.documentType),
         data,
         taskOpened: !!result.pendingTask,
       });
@@ -811,7 +824,7 @@ export default function PersonDetailPage({ params }) {
               <p className={styles.meta}>Nenhum campo conhecido foi encontrado no texto do documento.</p>
             ) : null}
             {docResult.fields.map((f, index) => (
-              <FormField key={f.key} label={DOC_FIELD_LABELS[f.key] || f.key} htmlFor={`doc-field-${f.key}`}>
+              <FormField key={f.key} label={DOC_FIELD_LABELS[f.key] || f.key} htmlFor={`doc-field-${f.key}`} helper={f.value === "" && docResult.pending ? "A leitura não encontrou este dado. Confira no arquivo original e preencha para poder validar." : undefined}>
                 <Input
                   id={`doc-field-${f.key}`}
                   value={f.value}
