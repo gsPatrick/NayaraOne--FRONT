@@ -52,7 +52,14 @@ const FIELD_LABELS = {
   confirmRequiresFinancePermission: "Confirmar exige permissão financeira",
   receivableDueDays: "Prazo para o banco pagar (dias)",
   dimobExcludedKeywords: "Palavras fora do aluguel no DIMOB",
+  dimobLayoutLabel: "Versão do layout do arquivo da DIMOB",
+  dimobFileColumns: "Colunas do arquivo da DIMOB",
+  dimobFileDelimiter: "Separador do arquivo da DIMOB",
+  dimobFileNotice: "Aviso do arquivo da DIMOB",
 };
+
+const DIMOB_COLUMNS = "tipo, contrato, locador_documento, locador_nome, locatario_documento, locatario_nome, imovel, valor_no_ano, situacao, pendencias";
+const DIMOB_COLUMN_LIST = DIMOB_COLUMNS.split(", ");
 
 const VALUE_LABELS = { ...PROVIDER_LABELS, ...PURPOSE_LABELS, ...DOCUMENT_LABELS, ...STATUS_LABELS, ...TRIGGER_EVENT_LABELS };
 
@@ -150,6 +157,15 @@ function validateCommissionForm(c, providers) {
   const keywords = String(c.dimobExcludedKeywords || "").split(/[,;]+/).map((k) => k.trim()).filter(Boolean);
   if (keywords.length > 50) errors.dimobExcludedKeywords = "Use no máximo 50 palavras.";
   if (keywords.some((k) => k.length > 60)) errors.dimobExcludedKeywords = "Cada palavra pode ter no máximo 60 caracteres.";
+  const label = String(c.dimobLayoutLabel || "").trim();
+  if (!label) errors.dimobLayoutLabel = "Informe a versão do layout.";
+  else if (label.replace(/\{ano\}/gi, "2026").length > 16) errors.dimobLayoutLabel = "Use no máximo 16 caracteres (o {ano} conta 4).";
+  else if (/[;\r\n]/.test(label)) errors.dimobLayoutLabel = "Não use ponto e vírgula.";
+  const cols = String(c.dimobFileColumns || "").split(/[,;\s]+/).filter(Boolean);
+  if (!cols.length) errors.dimobFileColumns = "Informe ao menos uma coluna.";
+  else if (cols.some((x) => !DIMOB_COLUMN_LIST.includes(x))) errors.dimobFileColumns = `Coluna desconhecida: ${cols.filter((x) => !DIMOB_COLUMN_LIST.includes(x)).join(", ")}.`;
+  else if (new Set(cols).size !== cols.length) errors.dimobFileColumns = "Não repita a mesma coluna.";
+  if (String(c.dimobFileNotice || "").length > 200) errors.dimobFileNotice = "Use no máximo 200 caracteres.";
   return errors;
 }
 
@@ -213,6 +229,10 @@ export default function ParametrosCorrespondentePage() {
       confirmRequiresFinancePermission: c.confirmRequiresFinancePermission !== false,
       receivableDueDays: String(c.receivableDueDays ?? 30),
       dimobExcludedKeywords: (c.dimobExcludedKeywords || []).join(", "),
+      dimobLayoutLabel: c.dimobLayoutLabel || "DIMOB-{ano}-v1",
+      dimobFileColumns: (c.dimobFileColumns || DIMOB_COLUMN_LIST).join(", "),
+      dimobFileDelimiter: c.dimobFileDelimiter || ";",
+      dimobFileNotice: c.dimobFileNotice ?? "",
     });
   }
 
@@ -283,6 +303,10 @@ export default function ParametrosCorrespondentePage() {
             confirmRequiresFinancePermission: commission.confirmRequiresFinancePermission,
             receivableDueDays: parseOrNull(commission.receivableDueDays),
             dimobExcludedKeywords: commission.dimobExcludedKeywords,
+            dimobLayoutLabel: commission.dimobLayoutLabel.trim(),
+            dimobFileColumns: commission.dimobFileColumns.split(/[,;\s]+/).filter(Boolean),
+            dimobFileDelimiter: commission.dimobFileDelimiter,
+            dimobFileNotice: commission.dimobFileNotice.trim(),
           },
           commissionReason,
           params.commission.ruleVersionId
@@ -642,6 +666,25 @@ export default function ParametrosCorrespondentePage() {
                       checked={commission.dimobIncludeCommissions}
                       onChange={() => setC({ dimobIncludeCommissions: !commission.dimobIncludeCommissions })}
                     />
+                  </div>
+                  <div className={styles.group} style={{ marginTop: 16 }}>
+                    <span className={styles.groupTitle}>Arquivo da DIMOB (layout definido pela empresa e pelo contador)</span>
+                    <FormField label="Versão do layout" htmlFor="co-dimob-layout" helper="Aparece no cabeçalho do arquivo e no batch. Use {ano} para o ano-base (ex.: DIMOB-{ano}-v1). Até 16 caracteres." error={cErr.dimobLayoutLabel} required>
+                      <Input id="co-dimob-layout" value={commission.dimobLayoutLabel} onChange={(e) => setC({ dimobLayoutLabel: e.target.value })} />
+                    </FormField>
+                    <FormField label="Colunas do arquivo, na ordem" htmlFor="co-dimob-columns" helper={`Separe por vírgula. Disponíveis: ${DIMOB_COLUMNS}.`} error={cErr.dimobFileColumns} required>
+                      <Input id="co-dimob-columns" value={commission.dimobFileColumns} onChange={(e) => setC({ dimobFileColumns: e.target.value })} />
+                    </FormField>
+                    <FormField label="Separador" htmlFor="co-dimob-delimiter" helper="O Excel em português abre melhor com ponto e vírgula.">
+                      <Select id="co-dimob-delimiter" value={commission.dimobFileDelimiter} onChange={(e) => setC({ dimobFileDelimiter: e.target.value })}>
+                        <option value=";">Ponto e vírgula ( ; )</option>
+                        <option value=",">Vírgula ( , )</option>
+                        <option value="|">Barra vertical ( | )</option>
+                      </Select>
+                    </FormField>
+                    <FormField label="Aviso no cabeçalho do arquivo" htmlFor="co-dimob-notice" helper="Texto da primeira linha. Deixe em branco depois que o contador validar o layout oficial." error={cErr.dimobFileNotice}>
+                      <Input id="co-dimob-notice" value={commission.dimobFileNotice} onChange={(e) => setC({ dimobFileNotice: e.target.value })} />
+                    </FormField>
                   </div>
                   {/*NEW_COMMISSION_PARAMS*/}
                   <FormField label="Motivo da alteração" htmlFor="co-reason" helper="Obrigatório (mínimo 3 caracteres). Fica registrado na auditoria.">
