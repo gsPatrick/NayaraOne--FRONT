@@ -439,11 +439,11 @@ export default function SegurosPage() {
     : policies;
 
   const columns = [
-    { key: "status", label: "Status", width: "12%", render: (row) => <PolicyStatusBadge policy={row} /> },
+    { key: "status", label: "Status", width: "16%", render: (row) => <PolicyStatusBadge policy={row} /> },
     {
       key: "coverage",
       label: "Cobertura / segurado",
-      width: "26%",
+      width: "22%",
       render: (row) => {
         const insuredName = (row.parties || []).map(partyName).filter(Boolean)[0];
         return (

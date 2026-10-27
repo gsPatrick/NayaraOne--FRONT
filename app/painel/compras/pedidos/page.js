@@ -273,12 +273,12 @@ export default function PedidosDeCompraPage() {
       render: (row) => (Array.isArray(row.invoiceNumbers) && row.invoiceNumbers.length > 0 ? row.invoiceNumbers.join(", ") : "Sem notas fiscais"),
     },
     { key: "amount", label: "Custo comprometido", width: "16%", render: (row) => formatBRL(row.committedAmount) },
-    { key: "status", label: "Status", width: "12%", render: (row) => <Badge tone={STATUS_TONE[row.status]}>{STATUS_LABELS[row.status]}</Badge> },
-    { key: "created", label: "Criado em", width: "16%", render: (row) => formatDateTime(row.created_at) },
+    { key: "status", label: "Status", width: "16%", render: (row) => <Badge tone={STATUS_TONE[row.status]}>{STATUS_LABELS[row.status]}</Badge> },
+    { key: "created", label: "Criado em", width: "14%", render: (row) => formatDateTime(row.created_at) },
     {
       key: "actions",
       label: "",
-      width: "26%",
+      width: "24%",
       render: (row) => (
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
           {row.status === "OPEN" ? <Button size="sm" onClick={() => openReceive(row)}>Receber material</Button> : null}

@@ -274,7 +274,11 @@ export default function ContagemDetailPage() {
                 </Card>
               ) : (
                 <Card title="Divergência por item">
-                  <EmptyState icon="check" title="Sem divergência" description="Todos os itens contados batem com o saldo esperado." />
+                  {count.status === "OPEN" ? (
+                    <EmptyState icon="layers" title="Divergência calculada ao fechar" description="O saldo esperado de cada item só é comparado com o contado quando a contagem é fechada." />
+                  ) : (
+                    <EmptyState icon="check" title="Sem divergência" description="Todos os itens contados batem com o saldo esperado." />
+                  )}
                 </Card>
               )}
               {statusDistribution.length > 0 ? (

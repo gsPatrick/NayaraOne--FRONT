@@ -68,13 +68,13 @@ export default function FornecedoresPage() {
     {
       key: "supplier",
       label: "Fornecedor",
-      width: "26%",
+      width: "22%",
       render: (row) => <Link href={`/painel/compras/fornecedores/${row.id}`}>{nameById.get(row.id) || "Fornecedor sem nome"}</Link>,
     },
     {
       key: "risk",
       label: "Risco",
-      width: "12%",
+      width: "16%",
       render: (row) => (!row.qualification ? <Badge tone="neutral">Não qualificado</Badge> : row.qualification.highRisk ? <Badge tone="danger">Alto risco</Badge> : <Badge tone="success">Padrão</Badge>),
     },
     {

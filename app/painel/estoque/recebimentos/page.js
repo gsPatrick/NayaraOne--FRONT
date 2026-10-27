@@ -241,12 +241,12 @@ export default function RecebimentosPage() {
     { key: "invoice", label: "NF", width: "12%", render: (row) => row.invoiceNumber || "Sem nota fiscal" },
     { key: "supplier", label: "Fornecedor", width: "14%", render: (row) => row.supplier?.legalName || "Sem fornecedor" },
     { key: "dest", label: "Destino", width: "16%", render: (row) => locationName(row.destinationLocationId) },
-    { key: "status", label: "Status", width: "12%", render: (row) => <Badge tone={STATUS_TONE[row.status]}>{STATUS_LABELS[row.status]}</Badge> },
+    { key: "status", label: "Status", width: "16%", render: (row) => <Badge tone={STATUS_TONE[row.status]}>{STATUS_LABELS[row.status]}</Badge> },
     { key: "created", label: "Criado em", width: "16%", render: (row) => formatDateTime(row.created_at) },
     {
       key: "actions",
       label: "",
-      width: "26%",
+      width: "22%",
       render: (row) => (
         <div style={{ display: "flex", gap: 8 }}>
           {row.status === "DRAFT" ? (

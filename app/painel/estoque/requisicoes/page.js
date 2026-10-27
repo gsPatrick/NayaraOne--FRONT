@@ -194,14 +194,14 @@ export default function RequisicoesPage() {
     {
       key: "items",
       label: "Itens",
-      width: "22%",
+      width: "18%",
       render: (row) => (
         <span style={{ fontSize: "var(--text-body-sm)" }}>
           {(row.items || []).map((it) => `${itemName(it.inventoryItemId)} (${formatQuantity(it.quantity)})`).join(", ") || "Sem itens"}
         </span>
       ),
     },
-    { key: "status", label: "Status", width: "12%", render: (row) => <Badge tone={STATUS_TONE[row.status]}>{STATUS_LABELS[row.status]}</Badge> },
+    { key: "status", label: "Status", width: "16%", render: (row) => <Badge tone={STATUS_TONE[row.status]}>{STATUS_LABELS[row.status]}</Badge> },
     // ACHADO REAL (auditoria Marco 7 "r2", 2026-10-17): a obra aparecia, mas o nome de quem
     // pediu não aparecia em lugar nenhum — mesmo padrão já corrigido antes em Requisições de
     // compra. O backend agora inclui requestedByUser na listagem.

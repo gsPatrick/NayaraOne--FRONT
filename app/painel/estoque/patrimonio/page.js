@@ -370,8 +370,8 @@ export default function PatrimonioPage() {
   // empréstimos manualmente pra saber quem está com a ferramenta.
   const columns = [
     { key: "tag", label: "QR / Tag", width: "12%", render: (row) => row.assetTag || "Sem etiqueta" },
-    { key: "name", label: "Nome", width: "18%" },
-    { key: "status", label: "Status", width: "12%", render: (row) => <Badge tone={STATUS_TONE[row.status]}>{STATUS_LABELS[row.status] || row.status}</Badge> },
+    { key: "name", label: "Nome", width: "14%" },
+    { key: "status", label: "Status", width: "16%", render: (row) => <Badge tone={STATUS_TONE[row.status]}>{STATUS_LABELS[row.status] || row.status}</Badge> },
     { key: "custodian", label: "Custodiante", width: "14%", render: (row) => (row.assignedToUserId ? userName(row.assignedToUserId) : "Sem responsável definido") },
     { key: "location", label: "Local", width: "14%", render: (row) => (row.currentLocationId ? locationName(row.currentLocationId) : "Sem local definido") },
     { key: "value", label: "Valor aquisição", width: "12%", render: (row) => (row.acquisitionValue != null ? formatBRL(row.acquisitionValue) : "Sem valor registrado") },
@@ -703,7 +703,7 @@ export default function PatrimonioPage() {
                 </Alert>
               ) : null}
             </FormField>
-            <FormField label="Condição na saída" required helper="Obrigatória (EST-006) — registre o estado da ferramenta no momento da saída.">
+            <FormField label="Condição na saída" required helper="Obrigatória — registre o estado da ferramenta no momento da saída.">
               <Select value={loanConditionOut} onChange={(e) => setLoanConditionOut(e.target.value)}>
                 <option value="">Selecione…</option>
                 <option value="OK">Boa</option>

@@ -238,7 +238,7 @@ export default function MovimentosPage() {
   ];
 
   const proposalColumns = [
-    { key: "createdAt", label: "Proposto em", render: (row) => formatDateTime(row.createdAt) },
+    { key: "createdAt", label: "Proposto em", render: (row) => formatDateTime(row.createdAt || row.created_at) },
     { key: "type", label: "Tipo", render: (row) => <Badge tone={MOVEMENT_TYPE_TONE[row.movementType]}>{MOVEMENT_TYPE_LABELS[row.movementType]}</Badge> },
     { key: "item", label: "Item", render: (row) => row.inventoryItem?.name || "Sem nome" },
     {
@@ -282,7 +282,7 @@ export default function MovimentosPage() {
 
       {notice ? <Alert tone="success">{notice}</Alert> : null}
 
-      <Card title="Ajustes aguardando aprovação" subtitle="Ajuste e descarte manuais só mexem no saldo depois da aprovação de outra pessoa (EST-008)">
+      <Card title="Ajustes aguardando aprovação" subtitle="Ajuste e descarte manuais só mexem no saldo depois da aprovação de outra pessoa">
         {proposalsError ? <Alert tone="danger" title="Não foi possível carregar os ajustes pendentes">{proposalsError}</Alert> : null}
         <Table columns={proposalColumns} rows={proposals} loading={proposalsLoading} emptyMessage="Nenhum ajuste aguardando aprovação." />
       </Card>
