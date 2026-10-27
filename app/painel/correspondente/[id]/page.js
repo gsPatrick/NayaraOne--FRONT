@@ -208,6 +208,9 @@ export default function FinancingCaseDetailPage() {
   const [commissionsError, setCommissionsError] = useState("");
   const [commissionBaseAmount, setCommissionBaseAmount] = useState("");
   const [commissionTrigger, setCommissionTrigger] = useState("");
+  // Aparece quando o servidor recusa a base por diferir da proposta vigente além da tolerância dos Parâmetros.
+  const [commissionNeedsJustification, setCommissionNeedsJustification] = useState(false);
+  const [commissionBaseJustification, setCommissionBaseJustification] = useState("");
   const [triggerOptions, setTriggerOptions] = useState([]);
   const [creatingCommission, setCreatingCommission] = useState(false);
   const [commissionFormError, setCommissionFormError] = useState("");
@@ -524,11 +527,14 @@ export default function FinancingCaseDetailPage() {
     }
     setCreatingCommission(true);
     try {
-      await createCommissionEntitlement(id, { baseAmount, triggerEvent: commissionTrigger });
+      await createCommissionEntitlement(id, { baseAmount, triggerEvent: commissionTrigger, baseJustification: commissionNeedsJustification ? commissionBaseJustification.trim() : undefined });
       setCommissionBaseAmount("");
+      setCommissionNeedsJustification(false);
+      setCommissionBaseJustification("");
       setCommissionNotice("Direito à comissão registrado.");
       loadCommissions();
     } catch (err) {
+      if (err?.code === "COMMISSION_BASE_DIVERGES_FROM_PROPOSAL") setCommissionNeedsJustification(true);
       setCommissionFormError(err?.message || "Não foi possível registrar o direito à comissão.");
     } finally {
       setCreatingCommission(false);
@@ -1358,6 +1364,11 @@ export default function FinancingCaseDetailPage() {
               <FormField label="Valor-base (R$)" htmlFor="commission-base-amount" helper="Vazio usa o valor aprovado da proposta vigente do banco.">
                 <DecimalInput id="commission-base-amount" maxDecimals={2} value={commissionBaseAmount} onChange={(e) => setCommissionBaseAmount(e.target.value)} placeholder="0,00" />
               </FormField>
+              {commissionNeedsJustification ? (
+                <FormField label="Justificativa da diferença" htmlFor="commission-base-justification" helper="O valor-base difere da proposta vigente do banco. Explique o motivo (mínimo 5 caracteres).">
+                  <Input id="commission-base-justification" value={commissionBaseJustification} maxLength={300} onChange={(e) => setCommissionBaseJustification(e.target.value)} placeholder="Motivo da diferença" />
+                </FormField>
+              ) : null}
               <FormField label="Fato gerador" htmlFor="commission-trigger" helper={triggerOptions.length === 0 ? "Nenhum fato gerador carregado: confira os Parâmetros." : undefined}>
                 <Select id="commission-trigger" value={commissionTrigger} onChange={(e) => setCommissionTrigger(e.target.value)} disabled={triggerOptions.length === 0}>
                   {triggerOptions.length === 0 ? <option value="">Sem fatos geradores disponíveis</option> : null}
