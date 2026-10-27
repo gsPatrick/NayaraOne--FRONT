@@ -68,13 +68,13 @@ export default function FornecedoresPage() {
     {
       key: "supplier",
       label: "Fornecedor",
-      width: "22%",
+      width: "20%",
       render: (row) => <Link href={`/painel/compras/fornecedores/${row.id}`}>{nameById.get(row.id) || "Fornecedor sem nome"}</Link>,
     },
     {
       key: "risk",
       label: "Risco",
-      width: "16%",
+      width: "14%",
       render: (row) => (!row.qualification ? <Badge tone="neutral">Não qualificado</Badge> : row.qualification.highRisk ? <Badge tone="danger">Alto risco</Badge> : <Badge tone="success">Padrão</Badge>),
     },
     {
@@ -97,11 +97,11 @@ export default function FornecedoresPage() {
         );
       },
     },
-    { key: "docs", label: "Documentos", width: "10%", render: (row) => (row.qualification ? (row.qualification.documentFileIds || []).length : "Fornecedor sem qualificação") },
+    { key: "docs", label: "Documentos", width: "12%", render: (row) => (row.qualification ? (row.qualification.documentFileIds || []).length : "Fornecedor sem qualificação") },
     {
       key: "award",
-      label: "Pode receber pedido de compra?",
-      width: "12%",
+      label: "Pode receber?",
+      width: "14%",
       render: (row) => (row.qualification && awardBlockReason(row.qualification) ? <Badge tone="danger">Bloqueado</Badge> : <Badge tone="success">Sim</Badge>),
     },
     {
