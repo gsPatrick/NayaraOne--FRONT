@@ -13,6 +13,8 @@ import Modal from "@/components/organisms/Modal/Modal";
 import Table from "@/components/organisms/Table/Table";
 import { registerManualStatus, cancelFinancingCase, listFinancingProposals, reviewDuplicate } from "@/lib/api/correspondent";
 import { formatBRL, formatDate, formatDateTime, toNumber } from "@/lib/format";
+import { hasPermission } from "@/lib/rbac/permissions";
+import { canMoveManually } from "@/app/painel/correspondente/_labels";
 
 const MANUAL_OPTIONS = [
   { value: "UNDER_ANALYSIS", label: "Em análise no banco" },
@@ -28,12 +30,14 @@ const FINAL = ["COMPLETED", "CANCELED"];
 const WITH_PROPOSAL = ["APPROVED", "CONTRACTING"];
 const EMPTY_PROPOSAL = { approvedAmount: "", annualRatePct: "", termMonths: "", monthlyPayment: "", validUntil: "" };
 
+const todayIso = () => new Date().toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" });
 const percent = (v) => `${Number(v).toLocaleString("pt-BR", { maximumFractionDigits: 4 })}%`;
 
 export default function FinancingCaseWorkflow({ financingCase, onChanged }) {
   const [proposals, setProposals] = useState([]);
   const [proposalsLoading, setProposalsLoading] = useState(true);
-  const [status, setStatus] = useState("UNDER_ANALYSIS");
+  const [status, setStatus] = useState("");
+  const [canWrite, setCanWrite] = useState(false);
   const [note, setNote] = useState("");
   const [proposal, setProposal] = useState(EMPTY_PROPOSAL);
   const [saving, setSaving] = useState(false);
@@ -57,6 +61,12 @@ export default function FinancingCaseWorkflow({ financingCase, onChanged }) {
   const current = financingCase.status;
   const canRegister = isManual && !PRE_SUBMISSION.includes(current) && !FINAL.includes(current);
   const canCancel = !FINAL.includes(current);
+  const manualOptions = MANUAL_OPTIONS.filter((o) => canMoveManually(current, o.value));
+  useEffect(() => { setCanWrite(hasPermission("correspondent:create")); }, []);
+  // Mantém a opção escolhida sempre válida para a etapa atual.
+  useEffect(() => {
+    if (!manualOptions.some((o) => o.value === status)) setStatus(manualOptions[0]?.value || "");
+  }, [current]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function loadProposals() {
     setProposalsLoading(true);
@@ -70,9 +80,12 @@ export default function FinancingCaseWorkflow({ financingCase, onChanged }) {
   const proposalNeeded = WITH_PROPOSAL.includes(status);
   const proposalFilled = Object.values(proposal).some((v) => v !== "");
   const proposalValid = !proposalFilled || (proposal.approvedAmount !== "" && toNumber(proposal.approvedAmount) > 0 && proposal.termMonths !== "" && Number.isInteger(Number(proposal.termMonths)) && Number(proposal.termMonths) >= 1 && Number(proposal.termMonths) <= 480);
-  const canSave = !saving && proposalValid && (status !== "REJECTED" || note.trim().length >= 3);
+  const validUntilPast = proposal.validUntil !== "" && proposal.validUntil < todayIso();
+  const paymentAboveAmount = proposal.monthlyPayment !== "" && proposal.approvedAmount !== "" && toNumber(proposal.monthlyPayment) > toNumber(proposal.approvedAmount);
+  const canSave = canWrite && Boolean(status) && !validUntilPast && !paymentAboveAmount && !saving && proposalValid && (status !== "REJECTED" || note.trim().length >= 3);
 
   async function handleRegister() {
+    if (saving || !canSave) return;
     setSaving(true);
     setError("");
     setNotice("");
@@ -101,6 +114,7 @@ export default function FinancingCaseWorkflow({ financingCase, onChanged }) {
   }
 
   async function handleReviewDuplicate() {
+    if (dupSaving) return;
     setDupSaving(true);
     setDupError("");
     try {
@@ -116,6 +130,7 @@ export default function FinancingCaseWorkflow({ financingCase, onChanged }) {
   }
 
   async function handleCancel() {
+    if (canceling) return;
     setCanceling(true);
     setCancelError("");
     try {
@@ -136,26 +151,28 @@ export default function FinancingCaseWorkflow({ financingCase, onChanged }) {
     { key: "termMonths", label: "Prazo", render: (p) => `${p.termMonths} meses` },
     { key: "monthlyPayment", label: "Parcela", render: (p) => (p.monthlyPayment ? formatBRL(p.monthlyPayment) : "Sem parcela informada pelo banco") },
     { key: "validUntil", label: "Válida até", render: (p) => (p.validUntil ? formatDate(p.validUntil) : "Sem validade definida") },
-    { key: "source", label: "Origem", render: (p) => (p.source === "PROVIDER" ? "Enviada pelo provider" : "Informada por uma pessoa") },
+    { key: "source", label: "Origem", render: (p) => (p.source === "PROVIDER" ? "Enviada pelo provider" : p.source === "MANUAL" ? "Informada por uma pessoa" : "Origem não identificada") },
     { key: "createdAt", label: "Registrada em", render: (p) => formatDateTime(p.createdAt || p.created_at) },
     { key: "status", label: "Situação", render: (p) => <Badge tone={p.status === "ACTIVE" ? "success" : "neutral"}>{p.status === "ACTIVE" ? "Vigente" : "Substituída"}</Badge> },
   ];
 
   return (
     <>
+      {notice ? <Alert tone="success">{notice}</Alert> : null}
+      {error && !canRegister ? <Alert tone="danger">{error}</Alert> : null}
       {dupPending ? (
         <Alert tone="warning" title="Possível duplicata aguardando revisão">
-          Este caso tem o mesmo proponente e imóvel de outro caso aberto nas últimas 24 horas. O sistema não bloqueia nada sozinho: uma pessoa decide.
+          Este caso tem o mesmo proponente e imóvel de outro caso aberto dentro da janela de possível duplicata definida em Parâmetros. O sistema não bloqueia nada sozinho: uma pessoa decide.
           <div style={{ marginTop: 8, display: "flex", gap: 8, flexWrap: "wrap" }}>
             {dupOfId ? <Button variant="secondary" href={`/painel/correspondente/${dupOfId}`}>Ver o caso original</Button> : null}
-            <Button onClick={() => { setDupDecision("DISMISS"); setDupNote(""); setDupError(""); setDupOpen(true); }}>Revisar</Button>
+            {canWrite ? <Button onClick={() => { setDupDecision("DISMISS"); setDupNote(""); setDupError(""); setDupOpen(true); }}>Revisar</Button> : null}
           </div>
         </Alert>
       ) : null}
 
       {current === "CANCELED" ? (
         <Alert tone="danger" title="Caso cancelado">
-          Motivo: {financingCase.canceledReason || financingCase.canceled_reason}. Cancelado em {formatDateTime(financingCase.canceledAt || financingCase.canceled_at)}.
+          Motivo: {financingCase.canceledReason || financingCase.canceled_reason || "não informado"}. Cancelado em {formatDateTime(financingCase.canceledAt || financingCase.canceled_at)}.
           O caso não aceita novos documentos, simulações, avaliações nem envios, e o histórico continua preservado.
         </Alert>
       ) : null}
@@ -166,39 +183,39 @@ export default function FinancingCaseWorkflow({ financingCase, onChanged }) {
           subtitle="Este caso é conduzido manualmente com o banco. Aqui você informa o que o banco respondeu: o caso segue pelos mesmos estados e eventos de um caso com integração."
           style={{ marginTop: 16 }}
         >
-          {notice ? <Alert tone="success">{notice}</Alert> : null}
           {error ? <Alert tone="danger">{error}</Alert> : null}
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <FormField label="Resultado" htmlFor="manual-status">
+            <FormField label="Resultado" htmlFor="manual-status" helper="Só aparecem os resultados possíveis a partir da etapa atual do caso.">
               <Select id="manual-status" value={status} onChange={(e) => setStatus(e.target.value)}>
-                {MANUAL_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                {manualOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
               </Select>
             </FormField>
             <FormField label={status === "REJECTED" ? "Motivo da recusa" : "Observação"} htmlFor="manual-note" required={status === "REJECTED"} helper={status === "REJECTED" ? "Obrigatório: o motivo fica registrado na auditoria." : "Opcional: com quem você falou, o que o banco pediu."}>
-              <Input id="manual-note" value={note} onChange={(e) => setNote(e.target.value)} />
+              <Input id="manual-note" maxLength={300} value={note} onChange={(e) => setNote(e.target.value)} />
             </FormField>
             {proposalNeeded ? (
               <>
                 <p style={{ margin: 0, fontSize: 13 }}>Condições da proposta do banco (opcional; se preencher, valor aprovado e prazo são obrigatórios):</p>
                 <FormField label="Valor aprovado (R$)" htmlFor="proposal-amount">
-                  <DecimalInput id="proposal-amount" value={proposal.approvedAmount} onChange={(e) => setProposal((p) => ({ ...p, approvedAmount: e.target.value }))} placeholder="0,00" />
+                  <DecimalInput id="proposal-amount" maxDecimals={2} value={proposal.approvedAmount} onChange={(e) => setProposal((p) => ({ ...p, approvedAmount: e.target.value }))} placeholder="0,00" />
                 </FormField>
                 <FormField label="Taxa ao ano (%)" htmlFor="proposal-rate">
-                  <DecimalInput id="proposal-rate" value={proposal.annualRatePct} onChange={(e) => setProposal((p) => ({ ...p, annualRatePct: e.target.value }))} placeholder="0,00" />
+                  <DecimalInput id="proposal-rate" maxDecimals={4} value={proposal.annualRatePct} onChange={(e) => setProposal((p) => ({ ...p, annualRatePct: e.target.value }))} placeholder="0,00" />
                 </FormField>
-                <FormField label="Prazo (meses)" htmlFor="proposal-term">
-                  <Input id="proposal-term" type="number" min="1" max="480" value={proposal.termMonths} onChange={(e) => setProposal((p) => ({ ...p, termMonths: e.target.value }))} />
+                <FormField label="Prazo (meses)" htmlFor="proposal-term" helper="De 1 a 480 meses.">
+                  <Input id="proposal-term" inputMode="numeric" value={proposal.termMonths} onChange={(e) => setProposal((p) => ({ ...p, termMonths: e.target.value.replace(/\D/g, "") }))} />
                 </FormField>
-                <FormField label="Parcela (R$)" htmlFor="proposal-payment">
-                  <DecimalInput id="proposal-payment" value={proposal.monthlyPayment} onChange={(e) => setProposal((p) => ({ ...p, monthlyPayment: e.target.value }))} placeholder="0,00" />
+                <FormField label="Parcela (R$)" htmlFor="proposal-payment" error={paymentAboveAmount ? "A parcela não pode ser maior que o valor aprovado." : undefined}>
+                  <DecimalInput id="proposal-payment" maxDecimals={2} value={proposal.monthlyPayment} onChange={(e) => setProposal((p) => ({ ...p, monthlyPayment: e.target.value }))} placeholder="0,00" />
                 </FormField>
-                <FormField label="Proposta válida até" htmlFor="proposal-valid">
+                <FormField label="Proposta válida até" htmlFor="proposal-valid" error={validUntilPast ? "A validade não pode estar no passado." : undefined}>
                   <Input id="proposal-valid" type="date" value={proposal.validUntil} onChange={(e) => setProposal((p) => ({ ...p, validUntil: e.target.value }))} />
                 </FormField>
               </>
             ) : null}
             <div>
               <Button onClick={handleRegister} loading={saving} disabled={!canSave}>Registrar resultado do banco</Button>
+              {!canWrite ? <p style={{ margin: "8px 0 0", fontSize: 13 }}>Seu perfil não tem permissão para registrar o resultado do banco.</p> : null}
             </div>
           </div>
         </Card>
@@ -210,19 +227,19 @@ export default function FinancingCaseWorkflow({ financingCase, onChanged }) {
         </Card>
       ) : null}
 
-      {canCancel ? (
+      {canCancel && canWrite ? (
         <Card title="Cancelar caso" subtitle="Use quando o cliente desistir ou o caso não vai mais seguir. Exige um motivo, fica na auditoria e impede novas ações no caso." style={{ marginTop: 16 }}>
-          <Button variant="danger" onClick={() => { setCancelReason(""); setCancelError(""); setCancelOpen(true); }}>Cancelar este caso</Button>
+          <Button variant="danger" onClick={() => { setCancelReason(""); setCancelError(""); setNotice(""); setCancelOpen(true); }}>Cancelar este caso</Button>
         </Card>
       ) : null}
 
       <Modal
         open={dupOpen}
-        onClose={() => !dupSaving && setDupOpen(false)}
+        onClose={() => { if (!dupSaving) { setDupOpen(false); setDupError(""); } }}
         title="Revisar possível duplicata"
         footer={
           <>
-            <Button variant="secondary" onClick={() => setDupOpen(false)} disabled={dupSaving}>Voltar</Button>
+            <Button variant="secondary" onClick={() => { setDupOpen(false); setDupError(""); }} disabled={dupSaving}>Voltar</Button>
             <Button onClick={handleReviewDuplicate} loading={dupSaving} disabled={dupNote.trim().length < 3}>Registrar decisão</Button>
           </>
         }
@@ -235,24 +252,24 @@ export default function FinancingCaseWorkflow({ financingCase, onChanged }) {
           </Select>
         </FormField>
         <FormField label="Observação" htmlFor="dup-note" required helper="Obrigatória. Fica registrada na auditoria.">
-          <Input id="dup-note" value={dupNote} onChange={(e) => setDupNote(e.target.value)} />
+          <Input id="dup-note" maxLength={300} value={dupNote} onChange={(e) => setDupNote(e.target.value)} />
         </FormField>
       </Modal>
 
       <Modal
         open={cancelOpen}
-        onClose={() => !canceling && setCancelOpen(false)}
+        onClose={() => { if (!canceling) { setCancelOpen(false); setCancelError(""); } }}
         title="Cancelar caso de financiamento"
         footer={
           <>
-            <Button variant="secondary" onClick={() => setCancelOpen(false)} disabled={canceling}>Voltar</Button>
+            <Button variant="secondary" onClick={() => { setCancelOpen(false); setCancelError(""); }} disabled={canceling}>Voltar</Button>
             <Button variant="danger" onClick={handleCancel} loading={canceling} disabled={cancelReason.trim().length < 3}>Cancelar caso</Button>
           </>
         }
       >
         {cancelError ? <Alert tone="danger">{cancelError}</Alert> : null}
         <FormField label="Motivo do cancelamento" htmlFor="cancel-reason" required helper="Obrigatório. Fica registrado na auditoria e não pode ser desfeito.">
-          <Input id="cancel-reason" value={cancelReason} onChange={(e) => setCancelReason(e.target.value)} />
+          <Input id="cancel-reason" maxLength={300} value={cancelReason} onChange={(e) => setCancelReason(e.target.value)} />
         </FormField>
       </Modal>
     </>

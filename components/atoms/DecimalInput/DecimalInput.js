@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Input from "@/components/atoms/Input/Input";
 
-export const NEGATIVE_VALUE_MESSAGE = "O valor deve ser maior que zero";
+export const NEGATIVE_VALUE_MESSAGE = "Não use sinal negativo: o sinal foi removido, confira o valor.";
 
 // BUG REAL CRÍTICO CORRIGIDO (achado numa auditoria final do Marco 6, 30/09/2026): todo campo
 // monetário/percentual/quantidade fracionária do módulo usava <input type="number">. Esse tipo
@@ -24,25 +24,25 @@ export const NEGATIVE_VALUE_MESSAGE = "O valor deve ser maior que zero";
 // R3 (reconferência 20/10/2026): o "-" era apagado em silêncio e -10 virava R$ 10,00. Agora o
 // sinal é recusado com aviso visível. Campos que aceitam negativo de verdade (ex.: impacto de
 // aditivo) usam allowNegative.
-export default function DecimalInput({ value, onChange, allowNegative = false, ...rest }) {
+export default function DecimalInput({ value, onChange, allowNegative = false, maxDecimals, ...rest }) {
   const [negativeWarning, setNegativeWarning] = useState(false);
   function handleChange(e) {
     const raw = e.target.value;
     if (allowNegative) {
       const neg = raw.trim().startsWith("-");
       const body = raw.replace(/-/g, "");
-      const normalized = normalize(body);
+      const normalized = limitDecimals(normalize(body), maxDecimals);
       onChange({ target: { value: neg ? `-${normalized}` : normalized } });
       return;
     }
     if (raw.includes("-")) {
-      // Não converte negativo em positivo: esvazia o campo e avisa (impede salvar o valor errado).
+      // Remove só o sinal (o resto do que foi digitado é mantido) e avisa de forma visível.
       setNegativeWarning(true);
-      onChange({ target: { value: "" } });
+      onChange({ target: { value: limitDecimals(normalize(raw.replace(/-/g, "")), maxDecimals) } });
       return;
     }
     setNegativeWarning(false);
-    const cleaned = normalize(raw);
+    const cleaned = limitDecimals(normalize(raw), maxDecimals);
     if (cleaned === raw) {
       onChange(e);
     } else {
@@ -85,6 +85,9 @@ function normalize(raw) {
       cleaned = cleaned.replace(/\./g, "");
       const firstComma = cleaned.indexOf(",");
       cleaned = cleaned.slice(0, firstComma + 1) + cleaned.slice(firstComma + 1).replace(/,/g, "");
+    } else if ((cleaned.match(/\./g) || []).length > 1) {
+      // Mais de um ponto e nenhuma vírgula (ex.: "2.000.000"): os pontos são separadores de milhar.
+      cleaned = cleaned.replace(/\./g, "");
     } else {
       const firstDot = cleaned.indexOf(".");
       if (firstDot !== -1) {
@@ -93,4 +96,11 @@ function normalize(raw) {
     }
     return cleaned;
   }
+}
+
+function limitDecimals(text, maxDecimals) {
+  if (maxDecimals === undefined || maxDecimals === null) return text;
+  const sep = text.search(/[,.]/);
+  if (sep === -1) return text;
+  return text.slice(0, sep + 1) + text.slice(sep + 1, sep + 1 + maxDecimals);
 }

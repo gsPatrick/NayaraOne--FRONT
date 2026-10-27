@@ -13,66 +13,20 @@ import Alert from "@/components/molecules/Alert/Alert";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
+import Input from "@/components/atoms/Input/Input";
 import PersonPicker from "@/components/molecules/PersonPicker/PersonPicker";
-import { listFinancingCases, createFinancingCase, getNayStalledCases, listPendingDuplicates } from "@/lib/api/correspondent";
+import { listFinancingCases, createFinancingCase, getNayStalledCases, listPendingDuplicates, getCorrespondentParameters } from "@/lib/api/correspondent";
 import { listProperties } from "@/lib/api/properties";
+import { listOpportunities, stageLabelPt } from "@/lib/api/crm";
 import { formatDateTime } from "@/lib/format";
-
-const STATUS_LABELS = {
-  DRAFT: "Rascunho",
-  DOCUMENTS_PENDING: "Aguardando documentos",
-  READY_TO_SUBMIT: "Pronto para enviar",
-  SUBMITTED: "Enviado ao provider",
-  UNDER_ANALYSIS: "Em análise",
-  PENDING_CUSTOMER: "Aguardando documentos do cliente",
-  PENDING_PROPERTY: "Aguardando dados do imóvel",
-  APPROVED: "Aprovado",
-  REJECTED: "Rejeitado",
-  CONTRACTING: "Em contratação",
-  COMPLETED: "Concluído",
-  CANCELED: "Cancelado",
-};
-
-function financingStatusLabel(row) {
-  if (row?.providerCode === "manual" && row?.status === "SUBMITTED") return "Aguardando ação manual no banco";
-  return STATUS_LABELS[row?.status] || row?.status;
-}
-const STATUS_TONE = {
-  DRAFT: "neutral",
-  DOCUMENTS_PENDING: "warning",
-  READY_TO_SUBMIT: "info",
-  SUBMITTED: "info",
-  UNDER_ANALYSIS: "info",
-  PENDING_CUSTOMER: "warning",
-  PENDING_PROPERTY: "warning",
-  APPROVED: "success",
-  REJECTED: "danger",
-  CONTRACTING: "info",
-  COMPLETED: "success",
-  CANCELED: "danger",
-};
-
-const PROVIDER_LABELS = {
-  sandbox: "Sandbox (simulação)",
-  manual: "Manual (sem banco real integrado)",
-};
-
-const PURPOSE_LABELS = {
-  RESIDENCIAL: "Residencial",
-  COMERCIAL: "Comercial",
-};
-
-const PRODUCT_LABELS = {
-  FINANCIAMENTO_IMOBILIARIO: "Financiamento imobiliário",
-  REFINANCIAMENTO: "Refinanciamento",
-  CREDITO_COM_GARANTIA: "Crédito com garantia de imóvel",
-  CONSTRUCAO: "Financiamento de construção",
-};
+import { hasPermission } from "@/lib/rbac/permissions";
+import { STATUS_LABELS, STATUS_TONE, PROVIDER_LABELS, PURPOSE_LABELS, PRODUCT_LABELS, financingStatusLabel, providerLabel, productLabel, statusLabel, brl } from "./_labels";
 
 const EMPTY_FORM = {
   product: "FINANCIAMENTO_IMOBILIARIO",
   propertyId: "",
-  providerCode: "sandbox",
+  providerCode: "",
+  opportunityId: "",
   purpose: "RESIDENCIAL",
   principalName: "",
   principalPersonId: "",
@@ -85,47 +39,87 @@ export default function CorrespondentePage() {
   const router = useRouter();
   const [cases, setCases] = useState([]);
   const [properties, setProperties] = useState([]);
+  const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [stalled, setStalled] = useState(null);
   const [duplicates, setDuplicates] = useState([]);
+  const [auxWarnings, setAuxWarnings] = useState([]);
+  const [eligibility, setEligibility] = useState(null);
+  const [canCreate, setCanCreate] = useState(false);
+  const [statusFilter, setStatusFilter] = useState("");
+  const [search, setSearch] = useState("");
 
   const [createOpen, setCreateOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [visibleCount, setVisibleCount] = useState(25);
 
+  // Só a lista de casos é essencial; imóveis, oportunidades, alertas e parâmetros são complementos:
+  // se um deles falhar, a tela continua e avisa o que ficou de fora.
   function load() {
     setLoading(true);
     setLoadError("");
-    Promise.all([listFinancingCases(), listProperties()])
-      .then(([c, p]) => {
-        setCases(c || []);
-        setProperties(p || []);
-      })
-      .catch((err) => setLoadError(err?.message || "Não foi possível carregar os casos de financiamento."))
-      .finally(() => setLoading(false));
+    const warnings = [];
+    Promise.allSettled([
+      listFinancingCases(),
+      listProperties(),
+      listOpportunities(),
+      getCorrespondentParameters(),
+      getNayStalledCases(),
+      listPendingDuplicates(),
+    ]).then(([c, p, o, par, st, du]) => {
+      if (c.status === "rejected") {
+        setLoadError(c.reason?.message || "Não foi possível carregar os casos de financiamento.");
+      } else {
+        setCases(c.value || []);
+      }
+      if (p.status === "fulfilled") setProperties(p.value || []);
+      else { setProperties([]); warnings.push("a lista de imóveis"); }
+      if (o.status === "fulfilled") {
+        setOpportunities((o.value || []).map((opp) => ({
+          id: opp.id,
+          label: `${stageLabelPt(opp.stage)}${opp.expectedValue ? ` · ${brl(opp.expectedValue)}` : ""}${opp.nextAction ? ` · ${opp.nextAction}` : ""}${opp.createdAt ? ` · criada em ${formatDateTime(opp.createdAt)}` : ""}`,
+        })));
+      } else { setOpportunities([]); warnings.push("as oportunidades do CRM"); }
+      if (par.status === "fulfilled") setEligibility(par.value?.eligibility?.action || null);
+      else { setEligibility(null); warnings.push("os parâmetros de elegibilidade (todas as opções aparecem no formulário)"); }
+      if (st.status === "fulfilled") setStalled(st.value);
+      else { setStalled(null); warnings.push("o alerta de casos parados"); }
+      if (du.status === "fulfilled") setDuplicates(du.value || []);
+      else { setDuplicates([]); warnings.push("o alerta de possíveis duplicatas"); }
+      setAuxWarnings(warnings);
+    }).finally(() => setLoading(false));
   }
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); setCanCreate(hasPermission("correspondent:create")); }, []);
 
-  useEffect(() => {
-    // NAY Correspondente: só sinaliza casos sem atividade recente, nunca decide ou altera nada —
-    // falha silenciosa aqui é aceitável (é um aviso complementar, não dado essencial da tela).
-    getNayStalledCases().then(setStalled).catch(() => setStalled(null));
-    listPendingDuplicates().then((rows) => setDuplicates(rows || [])).catch(() => setDuplicates([]));
-  }, []);
+  // Opções do formulário respeitam Parâmetros (providers, produtos e finalidades habilitados).
+  const allowedProducts = Object.keys(PRODUCT_LABELS).filter((v) => !eligibility?.allowedProducts || eligibility.allowedProducts.includes(v));
+  const allowedPurposes = Object.keys(PURPOSE_LABELS).filter((v) => !eligibility?.allowedPurposes || eligibility.allowedPurposes.includes(v));
+  const allowedProviders = Object.keys(PROVIDER_LABELS).filter((v) => !eligibility?.allowedProviders || eligibility.allowedProviders.includes(v));
+
+  function closeCreateModal() {
+    if (saving) return;
+    setCreateOpen(false);
+    setActionError("");
+  }
 
   function openCreateModal() {
-    setForm(EMPTY_FORM);
+    setForm({
+      ...EMPTY_FORM,
+      product: allowedProducts.includes(EMPTY_FORM.product) ? EMPTY_FORM.product : (allowedProducts[0] || ""),
+      purpose: allowedPurposes.includes(EMPTY_FORM.purpose) ? EMPTY_FORM.purpose : (allowedPurposes[0] || ""),
+    });
     setActionError("");
     setCreateOpen(true);
   }
 
-  const isValid = Boolean(form.principalPersonId) && (!form.includeCoApplicant || Boolean(form.coApplicantPersonId));
+  const samePerson = form.includeCoApplicant && form.coApplicantPersonId && form.coApplicantPersonId === form.principalPersonId;
+  const isValid = Boolean(form.principalPersonId) && Boolean(form.product) && Boolean(form.purpose) && !samePerson && (!form.includeCoApplicant || Boolean(form.coApplicantPersonId));
 
   async function handleCreate() {
-    if (!isValid) return;
+    if (!isValid || saving) return;
     setSaving(true);
     setActionError("");
     try {
@@ -135,7 +129,8 @@ export default function CorrespondentePage() {
       }
       const created = await createFinancingCase({
         propertyId: form.propertyId || null,
-        providerCode: form.providerCode,
+        providerCode: form.providerCode || undefined,
+        opportunityId: form.opportunityId || undefined,
         purpose: form.purpose,
         product: form.product,
         applicants,
@@ -152,6 +147,19 @@ export default function CorrespondentePage() {
       setSaving(false);
     }
   }
+
+  const needle = search.trim().toLowerCase();
+  const filtered = cases.filter((row) => {
+    if (statusFilter && row.status !== statusFilter) return false;
+    if (!needle) return true;
+    const text = [
+      ...(row.applicants || []).map((a) => a.person?.legalName),
+      row.property?.internalCode,
+      row.property?.title,
+      row.property?.name,
+    ].filter(Boolean).join(" ").toLowerCase();
+    return text.includes(needle);
+  });
 
   const columns = [
     {
@@ -191,19 +199,19 @@ export default function CorrespondentePage() {
       key: "property",
       label: "Imóvel",
       width: "280px",
-      render: (row) => (row.property ? `${row.property.internalCode ? `${row.property.internalCode} — ` : ""}${row.property.title || ""}` : "Sem imóvel vinculado"),
+      render: (row) => (row.property ? [row.property.internalCode, row.property.title || row.property.name].filter(Boolean).join(" · ") || "Imóvel sem título" : "Sem imóvel vinculado"),
     },
     {
       key: "product",
       label: "Produto",
       width: "220px",
-      render: (row) => PRODUCT_LABELS[row.product] || row.product,
+      render: (row) => productLabel(row.product),
     },
     {
       key: "provider",
       label: "Provider",
       width: "220px",
-      render: (row) => PROVIDER_LABELS[row.providerCode] || row.providerCode,
+      render: (row) => providerLabel(row.providerCode),
     },
     { key: "created", label: "Criado em", width: "168px", render: (row) => formatDateTime(row.created_at || row.createdAt) },
     {
@@ -219,30 +227,42 @@ export default function CorrespondentePage() {
 
   return (
     <AppShell title="Financiamentos" backHref="/painel">
-      {loadError ? <Alert tone="danger" title="Não foi possível carregar os casos de financiamento">{loadError}</Alert> : null}
-      {actionError ? (
-        <div style={{ position: "fixed", top: "var(--space-4)", left: "50%", transform: "translateX(-50%)", zIndex: 200, width: "min(560px, calc(100vw - 2 * var(--space-4)))" }}>
-          <Alert tone="danger">{actionError}</Alert>
-        </div>
+      {loadError ? (
+        <>
+          <Alert tone="danger" title="Não foi possível carregar os casos de financiamento">{loadError}</Alert>
+          <div style={{ margin: "8px 0" }}><Button variant="secondary" onClick={load}>Tentar de novo</Button></div>
+        </>
       ) : null}
+      {auxWarnings.length > 0 ? (
+        <Alert tone="warning" title="Parte das informações não carregou">
+          Não foi possível carregar {auxWarnings.join("; ")}. A lista de casos continua disponível.
+        </Alert>
+      ) : null}
+      {auxWarnings.length > 0 ? <div style={{ margin: "8px 0" }}><Button variant="secondary" size="sm" onClick={load}>Tentar de novo</Button></div> : null}
 
       {stalled && stalled.cases?.length > 0 ? (
-        <Alert tone="warning" title={`${stalled.cases.length} caso(s) sem atividade há mais de ${stalled.thresholdDays} dia(s)`}>
-          Sinalização automática de acompanhamento — não decide nem altera nenhum caso.
-          {" "}
-          {[...new Set(stalled.cases.map((c) => c.reason))].slice(0, 2).join(" ")}
-        </Alert>
+        <Card title={`${stalled.cases.length} caso(s) sem atividade há mais de ${stalled.thresholdDays} dia(s)`} subtitle="Sinalização automática de acompanhamento: não decide nem altera nenhum caso. Abra o caso para agir.">
+          <Table
+            columns={[
+              { key: "status", label: "Situação", render: (row) => statusLabel(row.status) },
+              { key: "idleDays", label: "Parado há", render: (row) => `${row.idleDays} dia(s)` },
+              { key: "reason", label: "Motivo", render: (row) => row.reason || "Sem atividade recente" },
+              { key: "actions", label: "", render: (row) => <Button variant="secondary" size="sm" onClick={() => router.push(`/painel/correspondente/${row.financingCaseId}`)}>Abrir caso</Button> },
+            ]}
+            rows={stalled.cases}
+          />
+        </Card>
       ) : null}
 
       {duplicates.length > 0 ? (
-        <Card title="Possíveis duplicatas para revisar" subtitle="Casos criados com o mesmo proponente e imóvel de outro caso nas últimas 24 horas. Abra o caso para decidir.">
+        <Card title="Possíveis duplicatas para revisar" subtitle="Casos criados com o mesmo proponente e imóvel de outro caso dentro da janela definida em Parâmetros. Abra o caso para decidir.">
           <Table
             columns={[
               { key: "principal", label: "Proponente", render: (row) => (row.applicants || []).map((a) => a.person?.legalName).filter(Boolean).join(", ") || "Sem proponente" },
-              { key: "status", label: "Situação", render: (row) => STATUS_LABELS[row.status] || row.status },
+              { key: "status", label: "Situação", render: (row) => statusLabel(row.status) },
               { key: "created", label: "Criado em", render: (row) => formatDateTime(row.createdAt || row.created_at) },
-              { key: "original", label: "Caso original", render: (row) => (row.originalCase ? `${STATUS_LABELS[row.originalCase.status] || row.originalCase.status}, criado em ${formatDateTime(row.originalCase.createdAt || row.originalCase.created_at)}` : "Caso original indisponível") },
-              { key: "actions", label: "", render: (row) => <Button variant="secondary" size="sm" onClick={() => router.push(`/painel/correspondente/${row.id}`)}>Revisar</Button> },
+              { key: "original", label: "Caso original", render: (row) => (row.originalCase ? `${statusLabel(row.originalCase.status)}, criado em ${formatDateTime(row.originalCase.createdAt || row.originalCase.created_at)}` : "Caso original indisponível") },
+              { key: "actions", label: "", render: (row) => <Button variant="secondary" size="sm" onClick={() => router.push(`/painel/correspondente/${row.id}`)}>{canCreate ? "Revisar" : "Abrir"}</Button> },
             ]}
             rows={duplicates}
           />
@@ -250,61 +270,92 @@ export default function CorrespondentePage() {
       ) : null}
 
       <Card title="Casos de financiamento" subtitle="Correspondente bancário — proponentes vinculados ao cadastro real de contatos.">
-        <Table columns={columns} minWidth="1636px" rows={loading ? [] : cases.slice(0, visibleCount)} loading={loading} emptyMessage="Nenhum caso de financiamento registrado." />
-        {!loading && cases.length > visibleCount ? (
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
+          <div style={{ minWidth: 220 }}>
+            <FormField label="Situação" htmlFor="fc-filter-status">
+              <Select id="fc-filter-status" value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setVisibleCount(25); }}>
+                <option value="">Todas as situações</option>
+                {Object.entries(STATUS_LABELS).map(([value, text]) => <option key={value} value={value}>{text}</option>)}
+              </Select>
+            </FormField>
+          </div>
+          <div style={{ minWidth: 260, flex: 1 }}>
+            <FormField label="Buscar por proponente ou imóvel" htmlFor="fc-filter-search">
+              <Input id="fc-filter-search" value={search} onChange={(e) => { setSearch(e.target.value); setVisibleCount(25); }} placeholder="Nome, código ou título do imóvel" />
+            </FormField>
+          </div>
+        </div>
+        <Table columns={columns} minWidth="1636px" rows={loading ? [] : filtered.slice(0, visibleCount)} loading={loading} emptyMessage={cases.length ? "Nenhum caso encontrado com este filtro." : "Nenhum caso de financiamento registrado."} />
+        {!loading && filtered.length > visibleCount ? (
           <div style={{ marginTop: 12 }}>
             <Button variant="secondary" onClick={() => setVisibleCount((n) => n + 25)}>
-              Mostrar mais ({cases.length - visibleCount} restantes)
+              Mostrar mais ({filtered.length - visibleCount} restantes)
             </Button>
           </div>
         ) : null}
       </Card>
 
-      <StickyActionBar>
-        <Button onClick={openCreateModal}>
-          <Icon name="plus" size={18} /> Novo caso de financiamento
-        </Button>
-      </StickyActionBar>
+      {canCreate ? (
+        <StickyActionBar>
+          <Button onClick={openCreateModal}>
+            <Icon name="plus" size={18} /> Novo caso de financiamento
+          </Button>
+        </StickyActionBar>
+      ) : null}
 
       <Modal
         open={createOpen}
-        onClose={() => setCreateOpen(false)}
+        onClose={closeCreateModal}
         title="Novo caso de financiamento"
         footer={
           <>
-            <Button variant="secondary" onClick={() => setCreateOpen(false)}>Cancelar</Button>
-            <Button onClick={handleCreate} loading={saving} disabled={!isValid}>Criar</Button>
+            <Button variant="secondary" onClick={closeCreateModal} disabled={saving}>Cancelar</Button>
+            <Button onClick={handleCreate} loading={saving} disabled={!isValid || saving}>Criar</Button>
           </>
         }
       >
+        {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
+        {samePerson ? <Alert tone="warning">O co-proponente precisa ser uma pessoa diferente do proponente principal.</Alert> : null}
         <FormField label="Imóvel (opcional)" htmlFor="fc-property">
           <Select id="fc-property" value={form.propertyId} onChange={(e) => setForm((p) => ({ ...p, propertyId: e.target.value }))}>
             <option value="">Sem imóvel vinculado ainda</option>
             {properties.map((prop) => (
-              <option key={prop.id} value={prop.id}>{prop.internalCode ? `${prop.internalCode} — ` : ""}{prop.name}</option>
+              <option key={prop.id} value={prop.id}>{[prop.internalCode, prop.name || prop.title].filter(Boolean).join(" · ") || "Imóvel sem título"}</option>
+            ))}
+          </Select>
+        </FormField>
+
+        <FormField label="Oportunidade do CRM (opcional)" htmlFor="fc-opportunity" helper="Vincula o caso à oportunidade: o andamento do financiamento aparece na linha do tempo dela.">
+          <Select id="fc-opportunity" value={form.opportunityId} onChange={(e) => setForm((p) => ({ ...p, opportunityId: e.target.value }))}>
+            <option value="">Sem oportunidade vinculada</option>
+            {opportunities.map((opp) => (
+              <option key={opp.id} value={opp.id}>{opp.label}</option>
             ))}
           </Select>
         </FormField>
 
         <FormField label="Produto" htmlFor="fc-product">
           <Select id="fc-product" value={form.product} onChange={(e) => setForm((p) => ({ ...p, product: e.target.value }))}>
-            {Object.entries(PRODUCT_LABELS).map(([value, label]) => (
-              <option key={value} value={value}>{label}</option>
+            {allowedProducts.map((value) => (
+              <option key={value} value={value}>{PRODUCT_LABELS[value]}</option>
             ))}
           </Select>
         </FormField>
 
         <FormField label="Finalidade" htmlFor="fc-purpose">
           <Select id="fc-purpose" value={form.purpose} onChange={(e) => setForm((p) => ({ ...p, purpose: e.target.value }))}>
-            <option value="RESIDENCIAL">{PURPOSE_LABELS.RESIDENCIAL}</option>
-            <option value="COMERCIAL">{PURPOSE_LABELS.COMERCIAL}</option>
+            {allowedPurposes.map((value) => (
+              <option key={value} value={value}>{PURPOSE_LABELS[value]}</option>
+            ))}
           </Select>
         </FormField>
 
         <FormField label="Provider" htmlFor="fc-provider" helper="Sandbox simula um banco fictício; nenhum banco real está integrado ainda nesta fase.">
           <Select id="fc-provider" value={form.providerCode} onChange={(e) => setForm((p) => ({ ...p, providerCode: e.target.value }))}>
-            <option value="sandbox">{PROVIDER_LABELS.sandbox}</option>
-            <option value="manual">{PROVIDER_LABELS.manual}</option>
+            <option value="">Padrão da empresa (Configurações)</option>
+            {allowedProviders.map((value) => (
+              <option key={value} value={value}>{PROVIDER_LABELS[value]}</option>
+            ))}
           </Select>
         </FormField>
 

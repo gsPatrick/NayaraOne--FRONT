@@ -14,6 +14,7 @@ export default function NaySummary({ financingCaseId }) {
   const [error, setError] = useState("");
 
   async function load() {
+    if (loading) return;
     setLoading(true);
     setError("");
     try {
@@ -39,24 +40,24 @@ export default function NaySummary({ financingCaseId }) {
         {summary ? (
           <>
             <ul style={{ margin: 0, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 6 }}>
-              {summary.lines.map((line) => (
-                <li key={line.topic}>
+              {(summary.lines || []).map((line, index) => (
+                <li key={`${line.topic}-${index}`}>
                   <strong>{line.topic}:</strong> {line.text}
                 </li>
               ))}
             </ul>
             <div>
               <strong>Próximos passos sugeridos</strong>
-              {summary.suggestions.length === 0 ? (
+              {(summary.suggestions || []).length === 0 ? (
                 <p style={{ margin: "4px 0 0" }}>Nenhuma ação sugerida para o estado atual do caso.</p>
               ) : (
                 <ul style={{ margin: "4px 0 0", paddingLeft: 18 }}>
-                  {summary.suggestions.map((text) => <li key={text}>{text}</li>)}
+                  {(summary.suggestions || []).map((text, index) => <li key={`${index}-${text}`}>{text}</li>)}
                 </ul>
               )}
             </div>
             <p style={{ margin: 0, fontSize: 12, color: "var(--color-ink-muted)" }}>
-              {summary.disclaimer} Gerado em {formatDateTime(summary.generatedAt)}.
+              {summary.disclaimer || "A NAY só resume o que já está registrado e não decide nada."} Gerado em {formatDateTime(summary.generatedAt)}.
             </p>
           </>
         ) : null}
