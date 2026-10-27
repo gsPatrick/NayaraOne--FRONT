@@ -611,6 +611,7 @@ export default function FiscalPage() {
   const dimobColumns = [
     { key: "referenceYear", label: "Ano" },
     { key: "version", label: "Versão" },
+    { key: "layoutVersion", label: "Layout do arquivo", render: (row) => row.layoutVersion || row.layout_version || "Sem layout registrado" },
     { key: "status", label: "Status", render: (row) => <Badge tone={row.status === "CLOSED" ? "success" : "neutral"}>{row.status === "CLOSED" ? "Fechado" : row.status === "DRAFT" ? "Rascunho" : "Status não identificado"}</Badge> },
     { key: "snapshotHash", label: "Código de integridade", render: (row) => <code className={styles.hash}>{row.snapshotHash}</code> },
     { key: "createdAt", label: "Gerado em", render: (row) => formatDateTime(row.createdAt || row.created_at) },

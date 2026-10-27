@@ -833,7 +833,7 @@ export default function FinancingCaseDetailPage() {
         title={
           <span style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
             Status: <Badge tone={STATUS_TONE[caseStatus] || "neutral"}>{financingStatusLabel(financingCase)}</Badge>
-            {financingCase.possibleDuplicateOfCaseId || financingCase.possible_duplicate_of_case_id ? (
+            {(financingCase.possibleDuplicateOfCaseId || financingCase.possible_duplicate_of_case_id) && caseStatus !== "CANCELED" ? (
               <Badge tone="warning">Possível duplicata</Badge>
             ) : null}
           </span>
@@ -1000,7 +1000,7 @@ export default function FinancingCaseDetailPage() {
                             id={`manual-${field}-${req.id}`}
                             value={manualFields[field] || ""}
                             maxLength={120}
-                            onChange={(e) => setManualFields((prev) => ({ ...prev, [field]: e.target.value }))}
+                            onChange={(e) => { setDocumentsError(""); setManualFields((prev) => ({ ...prev, [field]: e.target.value })); }}
                             placeholder={`${CRITICAL_FIELD_LABELS[field]} (conferido no arquivo original)`}
                             aria-label={`${CRITICAL_FIELD_LABELS[field]} informado por quem valida`}
                           />

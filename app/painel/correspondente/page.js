@@ -169,7 +169,7 @@ export default function CorrespondentePage() {
       render: (row) => (
         <>
           <Badge tone={STATUS_TONE[row.status] || "neutral"}>{financingStatusLabel(row)}</Badge>
-          {row.possibleDuplicateOfCaseId ? (
+          {row.possibleDuplicateOfCaseId && row.status !== "CANCELED" ? (
             <div style={{ marginTop: 4 }}>
               <Badge tone="warning">Possível duplicata</Badge>
             </div>
