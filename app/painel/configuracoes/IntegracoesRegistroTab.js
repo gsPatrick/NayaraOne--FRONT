@@ -74,6 +74,20 @@ const REGISTRO_GROUPS = [
   },
 ];
 
+// Cofre de segredos (M9-D202): o segredo mora no cofre; aqui só as regras de uso, rotação e vencimento.
+REGISTRO_GROUPS.push({
+  title: "Cofre de segredos",
+  subtitle: "Regras de leitura, rotação e vencimento das credenciais das integrações. O valor do segredo nunca é digitado nem exibido aqui: o cadastro guarda só a referência do cofre.",
+  fields: [
+    { key: "integration.secret.cache_ttl_s", label: "Tempo (segundos) que o segredo lido fica em memória", type: "integer", defaultValue: 60, helper: "De 0 a 3600. Zero desliga o cache: uma troca de segredo vale na próxima leitura." },
+    { key: "integration.secret.grace_period_min", label: "Janela de graça da rotação (minutos)", type: "integer", defaultValue: 30, helper: "De 0 a 1440. A versão antiga continua aceita nesse tempo, para webhooks já em andamento." },
+    { key: "integration.secret.rotation_max_age_days.BANK", label: "Idade máxima da credencial bancária (dias)", type: "integer", defaultValue: 90, helper: "De 1 a 365. Passado esse prazo a integração bancária fica com falha de autenticação até a rotação." },
+    { key: "integration.secret.expiry_alert_days", label: "Avisos de credencial expirando (dias antes, separados por vírgula)", type: "text", defaultValue: "30,14,7" },
+    { key: "integration.secret.require_company_prefix", label: "Exigir que a referência do cofre comece por company/<id da empresa>/", type: "boolean", defaultValue: true },
+    { key: "integration.secret.mfa_on_bank_secret_change", label: "Exigir verificação MFA recente para trocar ou rotacionar a credencial bancária", type: "boolean", defaultValue: true },
+  ],
+});
+
 // Criticidade de cada uma das 14 famílias do catálogo (M9-D201). Padrão = o do catálogo; define o SLO e se a família
 // exige contingência (CRITICAL). A API valida a chave `integration.catalog.criticality.<família>`.
 const CRITICIDADE_OPCOES = [
