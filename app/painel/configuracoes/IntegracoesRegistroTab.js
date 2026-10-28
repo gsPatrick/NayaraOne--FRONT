@@ -124,6 +124,22 @@ REGISTRO_GROUPS.push({
   })),
 });
 
+// Sincronização retomável (M9-D208): páginas, lease do worker, janela de sobreposição e quando um fluxo é dado como parado.
+REGISTRO_GROUPS.push({
+  title: "Sincronização com fornecedores",
+  subtitle: "Leituras periódicas (extratos, status de anúncios, mensagens) que continuam do ponto onde pararam, sem perder nem repetir dados.",
+  fields: [
+    { key: "integration.sync.page_size", label: "Itens por página lida", type: "integer", defaultValue: 200, helper: "De 1 a 5000. Cada página é gravada e o ponto de leitura avança juntos." },
+    { key: "integration.sync.lease_s", label: "Tempo (segundos) que um worker reserva o fluxo", type: "integer", defaultValue: 300, helper: "De 10 a 3600. Passado esse tempo sem avanço, outro worker assume." },
+    { key: "integration.sync.overlap_s", label: "Sobreposição da leitura por data (segundos)", type: "integer", defaultValue: 60, helper: "De 0 a 86400. A leitura recomeça esses segundos antes do ponto salvo; itens repetidos são descartados." },
+    { key: "integration.sync.failures_to_stall", label: "Falhas seguidas até o fluxo ser dado como parado", type: "integer", defaultValue: 5, helper: "De 1 a 100. Fluxo parado só volta com nova tentativa manual." },
+    { key: "integration.sync.stalled_after_minutes.CRITICAL", label: "Alerta de sync parado - integração crítica (minutos sem sucesso)", type: "integer", defaultValue: 15, helper: "De 1 a 10080." },
+    { key: "integration.sync.stalled_after_minutes.HIGH", label: "Alerta de sync parado - integração alta (minutos sem sucesso)", type: "integer", defaultValue: 30, helper: "De 1 a 10080." },
+    { key: "integration.sync.stalled_after_minutes.MEDIUM", label: "Alerta de sync parado - integração média (minutos sem sucesso)", type: "integer", defaultValue: 120, helper: "De 1 a 10080." },
+    { key: "integration.sync.stalled_after_minutes.LOW", label: "Alerta de sync parado - integração baixa (minutos sem sucesso)", type: "integer", defaultValue: 1440, helper: "De 1 a 10080." },
+  ],
+});
+
 const ALL_FIELDS = REGISTRO_GROUPS.flatMap((group) => group.fields);
 
 function initialValues() {
