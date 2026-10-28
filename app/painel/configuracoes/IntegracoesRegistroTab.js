@@ -59,6 +59,19 @@ const REGISTRO_GROUPS = [
       },
     ],
   },
+  {
+    title: "Fila de eventos (publicação interna)",
+    subtitle: "Esperas entre as tentativas quando um evento do sistema não consegue ser entregue. A falha do fornecedor externo não entra aqui: ela segue a política própria do envio.",
+    fields: [
+      {
+        key: "integration.outbox.backoff_ms",
+        label: "Esperas entre tentativas, em milissegundos, separadas por vírgula",
+        type: "text",
+        defaultValue: "60000,300000,900000,3600000,14400000",
+        helper: "Padrão: 1 min, 5 min, 15 min, 1 h e 4 h. A quantidade de números é o limite de tentativas: depois da última, o evento vai para a fila de falhas.",
+      },
+    ],
+  },
 ];
 
 const ALL_FIELDS = REGISTRO_GROUPS.flatMap((group) => group.fields);
@@ -204,7 +217,7 @@ export default function IntegracoesRegistroTab() {
                   }
                   return (
                     <FormField key={field.key} label={field.label} htmlFor={id} helper={field.helper}>
-                      <Input id={id} inputMode="numeric" value={values[field.key] ?? ""} onChange={(e) => handleChange(field.key, e.target.value)} />
+                      <Input id={id} inputMode={field.type === "text" ? "text" : "numeric"} value={values[field.key] ?? ""} onChange={(e) => handleChange(field.key, e.target.value)} />
                     </FormField>
                   );
                 })}
