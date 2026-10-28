@@ -28,6 +28,47 @@ const BI_GROUPS = [
       },
     ],
   },
+  {
+    title: "Segurança dos painéis e dos dados",
+    subtitle: "Quem vê o quê no BI. O mascaramento de CPF, CNPJ, conta, e-mail e telefone vale para todos e não pode ser desligado; aqui você só acrescenta campos.",
+    fields: [
+      {
+        key: "analytics.abac.mapa_dominio_permissao",
+        label: "Permissão de leitura de cada área",
+        type: "text",
+        defaultValue: "Financeiro=finance:read; Comercial/Imóveis e Marketing/Atendimento=crm:opportunities:read; Locação e Jurídico=legal:read; Obras=construction:read; Estoque=inventory:read; Correspondente=correspondent:read; Tecnologia=analytics:read:tech",
+        helper: "Quem não tem a permissão da área não vê os indicadores dela. Formato: Área=permissão, separadas por ponto e vírgula. Entrada inválida volta ao padrão.",
+      },
+      {
+        key: "analytics.abac.equipes",
+        label: "Equipe de cada gerente (visão por carteira)",
+        type: "text",
+        defaultValue: "nenhuma",
+        helper: "Corretor só vê a própria carteira. Para o gerente ver também a equipe, informe: id do gerente=id,id; outro gerente=id. Use \"nenhuma\" para não ter equipes.",
+      },
+      {
+        key: "analytics.mascaramento.campos_extras",
+        label: "Campos extras a mascarar",
+        type: "text",
+        defaultValue: "nenhum",
+        helper: "Nomes de campo, separados por vírgula, que também saem mascarados no detalhe e na exportação. Use \"nenhum\" para não acrescentar.",
+      },
+      {
+        key: "analytics.log_acesso.abertura_painel",
+        label: "Aberturas de painel registradas no log de acesso",
+        type: "text",
+        defaultValue: "CRITICAL",
+        helper: "CRITICAL registra só painéis com indicador crítico; TODOS registra qualquer abertura. Detalhes, exportações e briefings são sempre registrados.",
+      },
+      {
+        key: "analytics.log_acesso.consulta_max_linhas",
+        label: "Máximo de linhas por consulta ao log de acesso",
+        type: "number",
+        defaultValue: 200,
+        helper: "De 1 a 1.000.",
+      },
+    ],
+  },
 ];
 
 const ALL_FIELDS = BI_GROUPS.flatMap((group) => group.fields);
@@ -137,12 +178,16 @@ export default function BiTab() {
               <div className={styles.formGrid}>
                 {group.fields.map((field) => (
                   <div key={field.key}>
-                    {field.type === "text" ? (
+                    {field.type === "text" || field.type === "number" ? (
                       <FormField label={field.label} htmlFor={`bi-${field.key}`} helper={field.helper}>
                         <Input
                           id={`bi-${field.key}`}
+                          type={field.type === "number" ? "number" : "text"}
                           value={values[field.key] ?? ""}
-                          onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                          onChange={(e) => setValues((prev) => ({
+                            ...prev,
+                            [field.key]: field.type === "number" ? (e.target.value === "" ? "" : Number(e.target.value)) : e.target.value,
+                          }))}
                         />
                       </FormField>
                     ) : (
