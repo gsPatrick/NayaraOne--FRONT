@@ -69,6 +69,32 @@ const BI_GROUPS = [
       },
     ],
   },
+  {
+    title: "Desempenho dos painéis",
+    subtitle: "Meta de tempo de resposta dos painéis.",
+    fields: [
+      {
+        key: "analytics.painel.p95_ms_padrao",
+        label: "Meta p95 padrão do painel (milissegundos)",
+        type: "number",
+        defaultValue: 3000,
+        helper: "Usada ao publicar um painel que não informa a própria meta. De 100 a 60.000.",
+      },
+    ],
+  },
+  {
+    title: "Versões dos indicadores",
+    subtitle: "Mudar a fórmula de um indicador cria uma nova versão e nunca altera os números já registrados. Toda nova versão exige o motivo da mudança.",
+    fields: [
+      {
+        key: "analytics.metrica.motivo_minimo_caracteres",
+        label: "Mínimo de caracteres do motivo de uma nova versão",
+        type: "number",
+        defaultValue: 10,
+        helper: "Número inteiro de 1 a 500. Padrão do livro: 10.",
+      },
+    ],
+  },
 ];
 
 const ALL_FIELDS = BI_GROUPS.flatMap((group) => group.fields);
@@ -128,7 +154,7 @@ export default function BiTab() {
     try {
       const changed = ALL_FIELDS.filter((field) => values[field.key] !== original[field.key]);
       for (const field of changed) {
-        await updateSetting(field.key, values[field.key]);
+        await updateSetting(field.key, field.type === "number" ? Number(values[field.key]) : values[field.key]);
       }
       setOriginal(values);
       setSuccess("Configurações do BI salvas.");
