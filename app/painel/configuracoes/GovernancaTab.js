@@ -38,6 +38,8 @@ const GOVERNANCA_GROUPS = [
       { key: "governanca.calendario.janela_padrao_dias", label: "Janela padrão da consulta (dias a partir de hoje)", type: "integer", defaultValue: 30, min: 1, max: 366 },
       { key: "governanca.calendario.tamanho_pagina_padrao", label: "Itens por página quando não informado", type: "integer", defaultValue: 50, min: 1, max: 200 },
       { key: "governanca.calendario.duracao_padrao_min", label: "Duração padrão de compromisso sem fim (minutos)", type: "integer", defaultValue: 60, min: 1, max: 1440 },
+      { key: "governanca.calendario.garantia_obra_meses", label: "Prazo da garantia da obra entregue (meses a partir da entrega)", type: "integer", defaultValue: 60, min: 1, max: 600 },
+      { key: "governanca.calendario.varredura_hora", label: "Hora da varredura diária das fontes de obras e garantias (0 a 23, horário de Brasília)", type: "integer", defaultValue: 6, min: 0, max: 23 },
       {
         key: "governanca.calendario.severidade_por_fonte",
         label: "Severidade por tipo de origem",
