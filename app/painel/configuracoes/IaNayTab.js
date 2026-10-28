@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Card from "@/components/molecules/Card/Card";
 import Checkbox from "@/components/atoms/Checkbox/Checkbox";
+import Input from "@/components/atoms/Input/Input";
+import FormField from "@/components/molecules/FormField/FormField";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
 import Spinner from "@/components/atoms/Spinner/Spinner";
@@ -13,6 +15,26 @@ import styles from "./page.module.css";
 // o de Maturacao/demandas/parametros.csv e só vale enquanto a empresa não configurou nada. Cada demanda do bloco acrescenta
 // as suas entradas em IA_GROUPS.
 const IA_GROUPS = [
+  {
+    title: "Chave geral da NAY",
+    subtitle: "Liga ou desliga a NAY inteira nesta empresa. Desligada, toda função da NAY responde que está desativada. Só quem administra a NAY altera.",
+    fields: [
+      {
+        key: "ia.habilitada",
+        label: "NAY habilitada nesta empresa",
+        type: "boolean",
+        defaultValue: false,
+        helper: "Desligada por padrão: a NAY está em fase de laboratório e só roda onde o administrador a liga.",
+      },
+      {
+        key: "ai.agents.enabled",
+        label: "Agentes habilitados",
+        type: "text",
+        defaultValue: "*",
+        helper: "Use * para todos os agentes ou liste os códigos separados por vírgula. Agente fora da lista responde que está desativado.",
+      },
+    ],
+  },
   {
     title: "Memória da NAY",
     subtitle: "A NAY guarda só fatos estruturados. Guardar a conversa inteira é exceção e segue regras fixas.",
@@ -52,10 +74,10 @@ export default function IaNayTab() {
     setLoading(true);
     setError("");
     setForbidden(false);
-    listSettings("ia.")
-      .then((data) => {
+    Promise.all([listSettings("ia."), listSettings("ai.")])
+      .then((results) => {
         if (cancelled) return;
-        const list = Array.isArray(data) ? data : Object.values(data || {});
+        const list = results.flatMap((data) => (Array.isArray(data) ? data : Object.values(data || {})));
         const next = initialValues();
         list.forEach((item) => {
           if (!item || !item.key || !Object.prototype.hasOwnProperty.call(next, item.key)) return;
@@ -135,13 +157,25 @@ export default function IaNayTab() {
               <div className={styles.formGrid}>
                 {group.fields.map((field) => (
                   <div key={field.key}>
-                    <Checkbox
-                      id={`ia-nay-${field.key}`}
-                      label={field.label}
-                      checked={Boolean(values[field.key])}
-                      onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.checked }))}
-                    />
-                    {field.helper ? <p>{field.helper}</p> : null}
+                    {field.type === "text" ? (
+                      <FormField label={field.label} htmlFor={`ia-nay-${field.key}`} helper={field.helper}>
+                        <Input
+                          id={`ia-nay-${field.key}`}
+                          value={values[field.key] ?? ""}
+                          onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                        />
+                      </FormField>
+                    ) : (
+                      <>
+                        <Checkbox
+                          id={`ia-nay-${field.key}`}
+                          label={field.label}
+                          checked={Boolean(values[field.key])}
+                          onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.checked }))}
+                        />
+                        {field.helper ? <p>{field.helper}</p> : null}
+                      </>
+                    )}
                   </div>
                 ))}
               </div>
