@@ -19,6 +19,7 @@ import JuntoSegurosLogo from "@/components/atoms/JuntoSegurosLogo/JuntoSegurosLo
 import YelumLogo from "@/components/atoms/YelumLogo/YelumLogo";
 import { listSettings, updateSetting, getIntegrationsStatus } from "@/lib/api/settings";
 import GovernancaTab from "./GovernancaTab";
+import IntegracoesRegistroTab from "./IntegracoesRegistroTab";
 import styles from "./page.module.css";
 
 // Cor oficial de marca de cada provedor integrado (mesma fonte que alimenta os componentes de
@@ -1203,6 +1204,7 @@ export default function ConfiguracoesPage() {
             { label: "Cobrança", content: <CobrancaTab /> },
             { label: "Segurança", content: <SegurancaTab /> },
             { label: "Integrações", content: <IntegracoesTab /> },
+            { label: "Registro de integrações", content: <IntegracoesRegistroTab /> },
             { label: "Governança", content: <GovernancaTab /> },
           ]}
         />
