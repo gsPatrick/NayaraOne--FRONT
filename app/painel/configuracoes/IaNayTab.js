@@ -99,6 +99,21 @@ const IA_GROUPS = [
     ],
   },
   {
+    title: "Fontes da resposta",
+    subtitle: "Cada execução da NAY guarda as fontes que usou. O trecho guardado é sempre curto e sem credenciais, nunca o documento inteiro.",
+    fields: [
+      {
+        key: "ia.fonte.excerpt_max_caracteres",
+        label: "Tamanho máximo do trecho guardado por fonte (caracteres)",
+        type: "integer",
+        min: 50,
+        max: 2000,
+        defaultValue: 500,
+        helper: "Número inteiro de 50 a 2000. Trechos maiores são cortados antes de gravar.",
+      },
+    ],
+  },
+  {
     title: "Memória da NAY",
     subtitle: "A NAY guarda só fatos estruturados. Guardar a conversa inteira é exceção e segue regras fixas.",
     fields: [
