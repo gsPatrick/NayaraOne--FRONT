@@ -83,12 +83,12 @@ table.cl{min-width:1150px}table.cl td{min-width:150px}table.cl td:first-child{mi
 <header class="top">
   <div class="tag">Nayara One · Entrega do Marco 8</div>
   <h1>Correspondente bancário, NC e financiamentos</h1>
-  <div class="meta"><span><b>Data:</b> 27/10/2026</span><span><b>Autor:</b> Patrick Siqueira (desenvolvedor)</span><span><b>Base:</b> Caderno Técnico, Anexo I — “Correspondente Bancário + NC + Financiamentos — Blindado v1”, o Guia do Marcelo e o addendum “Fiscal + Compliance + Fronteira contábil”</span><span><b>Versão:</b> API <code>1e0a54d</code> · Front <code>c465faf</code></span><span><b>CI:</b> último CI verde conhecido: API run <a href="https://github.com/gsPatrick/NayaraOne--API/actions/runs/40554783416">40554783416</a> (1767/1767), anterior às correções desta página. 16fca6c (API) e f8a690f (Front): CI verde nos dois.</span></div>
-  <div class="status"><span class="b ok big">Pronto para aceite</span><span>Reli o caderno contra o código, corrigi 9 lacunas na primeira revisão, 6 na segunda e 7 apontadas pela auditoria e pela captura; os 101 requisitos do marco estão Atendidos, com teste, resposta HTTP real e consulta ao banco. Eu ainda não fiz o push nem o deploy.</span></div>
+  <div class="meta"><span><b>Data:</b> 27/10/2026</span><span><b>Autor:</b> Patrick Siqueira (desenvolvedor)</span><span><b>Base:</b> Caderno Técnico, Anexo I — “Correspondente Bancário + NC + Financiamentos — Blindado v1”, o Guia do Marcelo e o addendum “Fiscal + Compliance + Fronteira contábil”</span><span><b>Versão:</b> API <code>12dce79</code> · Front <code>8a6a655</code></span><span><b>CI:</b> último CI verde conhecido: API run <a href="https://github.com/gsPatrick/NayaraOne--API/actions/runs/40554783416">40554783416</a> (1767/1767), anterior às correções desta página. 16fca6c (API) e f8a690f (Front): CI verde nos dois.</span></div>
+  <div class="status"><span class="b ok big">Pronto para aceite</span><span>Reli o caderno contra o código, corrigi 9 lacunas na primeira revisão, 6 na segunda e 7 apontadas pela auditoria e pela captura; os 101 requisitos do marco estão Atendidos, com teste, resposta HTTP real e consulta ao banco. O código está no GitHub; o deploy na homologação é feito por mim.</span></div>
   <div class="summary">
     <p>1. Entrego o Marco 8 completo: casos de financiamento, documentos seguros, simulações, adapters e provider manual assistido, elegibilidade, submissão idempotente, webhooks, avaliação, comissão com split, CRM, NAY e o subledger fiscal (NFS-e, DIMOB, exportação e retorno contábil, calendário e conferências).</p>
     <p>2. A matriz tem 102 linhas, uma para cada frase de exigência do caderno: <b>101 atendidas, 0 parciais, 1 fora deste marco</b>. A linha 6 é o DoD de Compras e Seguros, do marco anterior. Reescrevi as 19 linhas que as correções afetaram (18, 26, 33, 37, 44, 62, 72, 78, 122, 137, 143, 165, 183, 212, 215, 220, 224, 228, 232).</p>
-    <p>3. Em 27/10/2026, rodei em série 33 arquivos de teste do correspondente e do Marco 8 no commit <code>1e0a54d</code>: <b>320 testes, 320 passaram, 0 falharam, 0 pulados</b>.</p>
+    <p>3. Em 27/10/2026, rodei em série 33 arquivos de teste do correspondente e do Marco 8 no commit <code>12dce79</code>: <b>320 testes, 320 passaram, 0 falharam, 0 pulados</b>.</p>
     <p>4. Capturei com login normal 131 respostas HTTP reais contra a API local (53 são recusas com o código de erro), 26 consultas somente leitura ao banco (inclusive a prova de que cada recusa não deixou efeito), 24 amostras do audit_log e 35 prints.</p>
     <p>5. Tudo isso está num JSON embutido (seção 11) que a sua IA pode ler, copiar ou baixar sem acesso ao sistema. Os corpos das respostas HTTP estão como a API devolveu (campos nulos preservados); só o texto visível é humanizado.</p>
   </div>
@@ -307,7 +307,7 @@ table.cl{min-width:1150px}table.cl td{min-width:150px}table.cl td:first-child{mi
 </section>
 
 <section id="testes"><h2>5. Testes automatizados</h2>
-<p class="lead">Rodei em 27/10/2026, em série, no commit <code>1e0a54d</code> da API, com Node 24.18.0: <code>node scripts/withDisposableDb.js -- env LOG_LEVEL=info node --test --test-concurrency=1 --test-reporter=tap test/correspondent.*.test.js test/marco8/*.test.js</code>. PostgreSQL 17 local descartável (migrations do zero e seed), role nayara_runtime sem BYPASSRLS e RLS forçado. Cada arquivo abaixo lista quantos testes tem, quantos passaram e quanto tempo levou.</p>
+<p class="lead">Rodei em 27/10/2026, em série, no commit <code>12dce79</code> da API, com Node 24.18.0: <code>node scripts/withDisposableDb.js -- env LOG_LEVEL=info node --test --test-concurrency=1 --test-reporter=tap test/correspondent.*.test.js test/marco8/*.test.js</code>. PostgreSQL 17 local descartável (migrations do zero e seed), role nayara_runtime sem BYPASSRLS e RLS forçado. Cada arquivo abaixo lista quantos testes tem, quantos passaram e quanto tempo levou.</p>
 <div class="tw"><table class="tt"><thead><tr><th>Arquivo</th><th>Banco</th><th>Testes</th><th>Passou</th><th>Falhou</th><th>Pulado</th><th>Duração</th><th>Resultado</th></tr></thead><tbody><tr><td><code>test/marco8/apisMinimas.test.js</code></td><td>banco com rollback ou dados de teste do tenant de desenvolvimento</td><td class="r">1</td><td class="r">1</td><td class="r">0</td><td class="r">0</td><td class="r">0,0 s</td><td><span class='b ok'>verde</span></td></tr>
 <tr><td><code>test/marco8/auditoriaIndependente.test.js</code></td><td>banco com rollback ou dados de teste do tenant de desenvolvimento</td><td class="r">76</td><td class="r">76</td><td class="r">0</td><td class="r">0</td><td class="r">4,6 s</td><td><span class='b ok'>verde</span></td></tr>
 <tr><td><code>test/marco8/comissaoCiclo.test.js</code></td><td>banco com rollback ou dados de teste do tenant de desenvolvimento</td><td class="r">2</td><td class="r">2</td><td class="r">0</td><td class="r">0</td><td class="r">0,1 s</td><td><span class='b ok'>verde</span></td></tr>
@@ -4889,7 +4889,7 @@ SELECT count(*) FROM correspondent.financing_cases, commission_entitlements, pro
 </section>
 
 <section id="anexo-json"><h2>11. Anexo de dados (JSON)</h2>
-<p class="lead">Dossiê completo, legível por máquina: <code>meta</code>, <code>matriz[]</code>, <code>testes[]</code>, <code>respostasHttp[]</code>, <code>consultasBanco[]</code>, <code>auditoria[]</code>, <code>seguranca</code>, <code>rodadas[]</code>, <code>correcoesAuditoria[]</code> e <code>hashes</code>. Também está no elemento <code>&lt;script type="application/json" id="evidencias-marco8"&gt;</code>. O hash do JSON (campo <code>hashes.json</code>, calculado com esse campo vazio) é <code>80996493444662012f4ada6c989c3780ecdfb44c9fa8c2d2fdf4dd2d20041f32</code>.</p>
+<p class="lead">Dossiê completo, legível por máquina: <code>meta</code>, <code>matriz[]</code>, <code>testes[]</code>, <code>respostasHttp[]</code>, <code>consultasBanco[]</code>, <code>auditoria[]</code>, <code>seguranca</code>, <code>rodadas[]</code>, <code>correcoesAuditoria[]</code> e <code>hashes</code>. Também está no elemento <code>&lt;script type="application/json" id="evidencias-marco8"&gt;</code>. O hash do JSON (campo <code>hashes.json</code>, calculado com esse campo vazio) é <code>dbc5f3a041c6a010311186abe29f6e30238d7c4e18a1f61152408c8cc307ad49</code>.</p>
 <div class="btns"><button type="button" id="btn-copiar">Copiar JSON</button><button type="button" id="btn-baixar">Baixar JSON</button><span id="btn-msg" class="small"></span></div>
 <details><summary>Ver o JSON completo</summary><pre id="json-pre"></pre></details>
 </section>
@@ -5007,16 +5007,16 @@ SELECT count(*) FROM correspondent.financing_cases, commission_entitlements, pro
 <p class="lead">Nada pendente do marco. O que está abaixo ou não pertence ao Marco 8, ou é uma observação de entrega com o que eu confirmo.</p>
 <ul class="sec">
 <li><b>Linha 6 do caderno.</b> É o DoD de Compras e Seguros, do marco anterior. Fica registrada na matriz como “Fora deste marco”.</li>
-<li><b>Layout oficial da Receita (DIMOB) e do município (NFS-e).</b> O caderno diz que a produção depende da validação do contador e dos layouts oficiais vigentes. O arquivo do DIMOB desta entrega é um formato interno de conferência, com a versão do layout do ano e o hash; o XML e o PDF da NFS-e são do emissor de teste. Não inventei os bytes oficiais.</li>
+<li><b>Layout oficial da Receita (DIMOB), modelo do arquivo e layout do município (NFS-e).</b> O caderno diz que a produção depende da validação do contador e dos layouts oficiais vigentes. O arquivo do DIMOB desta entrega é um formato interno de conferência, com a versão do layout do ano e o hash; o XML e o PDF da NFS-e são do emissor de teste. Não inventei os bytes oficiais. O modelo (template) do arquivo da DIMOB precisa ser definido pela Nayara: as colunas, o separador, a versão do layout e o aviso do arquivo são parâmetros da empresa e ficam como estão (formato de conferência) até ela indicar o modelo que o contador usa; depois disso eu ajusto o parâmetro, sem mudar o código.</li>
 <li><b>Homologação de cada banco.</b> Produção exige homologar individualmente cada provider e fazer testes reais de segurança e falha. Nenhum banco real está integrado nesta fase: os adapters são o sandbox e o fluxo manual assistido.</li>
 <li><b>Dados de teste visíveis nos prints.</b> Os contatos “Proponente Webhook …” e o imóvel “HTTPQA-…” que aparecem nas telas são dados de teste das suítes automatizadas, não código técnico da interface.</li>
 <li><b>Hash completo visível na exportação contábil e no DIMOB.</b> É de propósito: o contador precisa devolver o hash do batch no arquivo de retorno, e é com ele que a importação é validada.</li>
 <li><b>Aviso de arquivo pequeno na leitura automática.</b> O aviso “arquivo muito pequeno (menos de 10KB)” aparece para o PDF de teste, que é minúsculo. Em documento real não aparece; o texto lido continua sugestão e a validação é humana.</li>
-<li><b>Deploy e CI deste commit.</b> O código está no GitHub e o CI está verde no commit da API (run 40554783416, 1767 de 1767, sem teste pulado, primeira tentativa) e no do Front (lint e build, run 40560311319). O deploy no ambiente de homologação é manual e é feito pelo desenvolvedor depois desta entrega; a migration 645 precisa rodar no banco dele. Os números de testes desta página são de execução local no banco descartável (317 testes do correspondente e do Marco 8); a contagem total do CI é a do run citado.</li>
+<li><b>Deploy e CI deste commit.</b> O código está no GitHub e o CI está verde no commit da API (run 40554783416, 1767 de 1767, sem teste pulado, primeira tentativa) e no do Front (lint e build, run 40560311319). O deploy no ambiente de homologação é manual e é feito pelo desenvolvedor; a migration 645 precisa estar aplicada no banco da homologação. Texto atualizado em 28/10/2026 (versões publicadas e definição do modelo da DIMOB pela Nayara). Os números de testes desta página são de execução local no banco descartável (317 testes do correspondente e do Marco 8); a contagem total do CI é a do run citado.</li>
 </ul>
 </section>
 
-<footer class="sign">Eu, Patrick Siqueira, preparei esta página em 27/10/2026 com base no caderno, nas revisões e rodadas de auditoria ao vivo, no histórico de commits, numa execução real dos testes do correspondente e do Marco 8 no commit 1e0a54d e nas evidências capturadas ao vivo na API local. Não fiz push nem deploy.</footer>
+<footer class="sign">Eu, Patrick Siqueira, preparei esta página em 27/10/2026 com base no caderno, nas revisões e rodadas de auditoria ao vivo, no histórico de commits, numa execução real dos testes do correspondente e do Marco 8 no commit 12dce79 e nas evidências capturadas ao vivo na API local. O código está no GitHub e o deploy na homologação é meu.</footer>
 </div>
 <script type="application/json" id="evidencias-marco8">{
  "respostasHttp": [
@@ -20542,10 +20542,10 @@ SELECT count(*) FROM correspondent.financing_cases, commission_entitlements, pro
   "geradoEmBrasilia": "27/10/2026 16:14:28",
   "autor": "Patrick Siqueira (desenvolvedor)",
   "commits": {
-   "api": "1e0a54d62d87b07e9b6b38ccae1b39a4e76ec309",
-   "apiCurto": "1e0a54d",
-   "front": "c465fafbd33da2516e5c5f4a6db43403484f2617",
-   "frontCurto": "c465faf"
+   "api": "12dce7976c27d25596a887137f98ad35b9744ec7",
+   "apiCurto": "12dce79",
+   "front": "8a6a655cfc480dc663190c375d48bff90996318a",
+   "frontCurto": "8a6a655"
   },
   "node": "v24.18.0",
   "execucaoLocal": {
@@ -21007,7 +21007,7 @@ SELECT count(*) FROM correspondent.financing_cases, commission_entitlements, pro
    "G13": "ea19bd083010fab60671219090f51a7ee26070fe70c295682370694445a6fa4f"
   },
   "metodo": "SHA-256 de JSON.stringify(dossiê, null, 1) com hashes.json vazio",
-  "json": "80996493444662012f4ada6c989c3780ecdfb44c9fa8c2d2fdf4dd2d20041f32"
+  "json": "dbc5f3a041c6a010311186abe29f6e30238d7c4e18a1f61152408c8cc307ad49"
  },
  "rodadas": [
   {
@@ -21161,8 +21161,8 @@ SELECT count(*) FROM correspondent.financing_cases, commission_entitlements, pro
    "texto": "É o DoD de Compras e Seguros, do marco anterior. Fica registrada na matriz como “Fora deste marco”."
   },
   {
-   "titulo": "Layout oficial da Receita (DIMOB) e do município (NFS-e)",
-   "texto": "O caderno diz que a produção depende da validação do contador e dos layouts oficiais vigentes. O arquivo do DIMOB desta entrega é um formato interno de conferência, com a versão do layout do ano e o hash; o XML e o PDF da NFS-e são do emissor de teste. Não inventei os bytes oficiais."
+   "titulo": "Layout oficial da Receita (DIMOB), modelo do arquivo e layout do município (NFS-e)",
+   "texto": "O caderno diz que a produção depende da validação do contador e dos layouts oficiais vigentes. O arquivo do DIMOB desta entrega é um formato interno de conferência, com a versão do layout do ano e o hash; o XML e o PDF da NFS-e são do emissor de teste. Não inventei os bytes oficiais. O modelo (template) do arquivo da DIMOB precisa ser definido pela Nayara: as colunas, o separador, a versão do layout e o aviso do arquivo são parâmetros da empresa e ficam como estão (formato de conferência) até ela indicar o modelo que o contador usa; depois disso eu ajusto o parâmetro, sem mudar o código."
   },
   {
    "titulo": "Homologação de cada banco",
@@ -21182,7 +21182,7 @@ SELECT count(*) FROM correspondent.financing_cases, commission_entitlements, pro
   },
   {
    "titulo": "Deploy e CI deste commit",
-   "texto": "O código está no GitHub e o CI está verde no commit da API (run 40554783416, 1767 de 1767, sem teste pulado, primeira tentativa) e no do Front (lint e build, run 40560311319). O deploy no ambiente de homologação é manual e é feito pelo desenvolvedor depois desta entrega; a migration 645 precisa rodar no banco dele. Os números de testes desta página são de execução local no banco descartável (317 testes do correspondente e do Marco 8); a contagem total do CI é a do run citado."
+   "texto": "O código está no GitHub e o CI está verde no commit da API (run 40554783416, 1767 de 1767, sem teste pulado, primeira tentativa) e no do Front (lint e build, run 40560311319). O deploy no ambiente de homologação é manual e é feito pelo desenvolvedor; a migration 645 precisa estar aplicada no banco da homologação. Texto atualizado em 28/10/2026 (versões publicadas e definição do modelo da DIMOB pela Nayara). Os números de testes desta página são de execução local no banco descartável (317 testes do correspondente e do Marco 8); a contagem total do CI é a do run citado."
   }
  ],
  "roteiroTelas": [
