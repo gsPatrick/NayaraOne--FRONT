@@ -107,6 +107,17 @@ const MARKETING_GROUPS = [
       },
     ],
   },
+  {
+    title: "Campanhas de Marketing",
+    subtitle: "O sistema inicia e encerra as campanhas sozinho, no horário agendado, e dispara os steps na data prevista. Quando o público é grande, cada rodada (a cada minuto) processa só uma parte dos destinatários de cada step; o restante sai nas rodadas seguintes.",
+    fields: [
+      {
+        key: "marketing.campanhas.lote_destinatarios",
+        label: "Destinatários processados por step a cada rodada",
+        type: "integer",
+        defaultValue: 200,
+        helper: "Número inteiro de 1 a 10000.",
+      },
 ];
 
 const ALL_FIELDS = MARKETING_GROUPS.flatMap((group) => group.fields);
