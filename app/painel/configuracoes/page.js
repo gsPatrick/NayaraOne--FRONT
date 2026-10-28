@@ -21,6 +21,7 @@ import { listSettings, updateSetting, getIntegrationsStatus } from "@/lib/api/se
 import GovernancaTab from "./GovernancaTab";
 import IntegracoesRegistroTab from "./IntegracoesRegistroTab";
 import IaNayTab from "./IaNayTab";
+import MarketingTab from "./MarketingTab";
 import styles from "./page.module.css";
 
 // Cor oficial de marca de cada provedor integrado (mesma fonte que alimenta os componentes de
@@ -1208,6 +1209,7 @@ export default function ConfiguracoesPage() {
             { label: "Registro de integrações", content: <IntegracoesRegistroTab /> },
             { label: "Governança", content: <GovernancaTab /> },
             { label: "IA NAY", content: <IaNayTab /> },
+            { label: "Marketing", content: <MarketingTab /> },
           ]}
         />
       </div>

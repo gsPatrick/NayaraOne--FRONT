@@ -1,0 +1,187 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Card from "@/components/molecules/Card/Card";
+import Input from "@/components/atoms/Input/Input";
+import Button from "@/components/atoms/Button/Button";
+import Alert from "@/components/molecules/Alert/Alert";
+import FormField from "@/components/molecules/FormField/FormField";
+import Spinner from "@/components/atoms/Spinner/Spinner";
+import { listSettings, updateSetting } from "@/lib/api/settings";
+import { toNumber } from "@/lib/format";
+import styles from "./page.module.css";
+
+// Parâmetros de Marketing que o administrador controla (Marco 9, bloco C). Cada demanda do bloco acrescenta as suas
+// entradas aqui, sempre com o padrão do catálogo (Maturacao/demandas/parametros.csv). A API é a fonte da validação
+// (SETTINGS_SCHEMA); o padrão mostrado é só o valor inicial quando a empresa ainda não configurou nada.
+const MARKETING_GROUPS = [
+  {
+    title: "Mensagem em massa",
+    subtitle: "Limites de destinatários por disparo. Acima do primeiro limite, só quem tem a permissão de envio em massa dispara; acima do teto absoluto, o disparo é sempre recusado.",
+    fields: [
+      {
+        key: "marketing.mass.max_recipients_sem_aprovacao",
+        label: "Destinatários permitidos sem a permissão de envio em massa",
+        type: "integer",
+        defaultValue: 50,
+        helper: "Número inteiro de 1 a 100000.",
+      },
+      {
+        key: "marketing.mass.max_recipients_absoluto",
+        label: "Teto absoluto de destinatários por disparo",
+        type: "integer",
+        defaultValue: 5000,
+        helper: "Número inteiro de 1 a 1000000. Nem quem tem permissão ultrapassa este valor.",
+      },
+    ],
+  },
+  {
+    title: "Perfis padrão de Marketing",
+    subtitle: "Nomes dos perfis (separados por vírgula) que recebem cada pacote de permissões de Marketing. O Assistente cria e edita rascunhos; o Gerente também aprova, publica e gere campanhas e automações; a Diretoria também liga e desliga o kill switch. Só o administrador recebe todas as permissões.",
+    fields: [
+      { key: "marketing.permissoes.perfis_assistente", label: "Perfis de Assistente de Marketing", type: "text", defaultValue: "ASSISTENTE DE MARKETING", helper: "Ex.: ASSISTENTE DE MARKETING, ANALISTA DE MARKETING" },
+      { key: "marketing.permissoes.perfis_gerente", label: "Perfis de Gerente de Marketing", type: "text", defaultValue: "GERENTE DE MARKETING", helper: "Ex.: GERENTE DE MARKETING" },
+      { key: "marketing.permissoes.perfis_diretoria", label: "Perfis da Diretoria", type: "text", defaultValue: "DIRETORIA", helper: "Ex.: DIRETORIA, SOCIO" },
+    ],
+  },
+];
+
+const ALL_FIELDS = MARKETING_GROUPS.flatMap((group) => group.fields);
+
+function initialValues() {
+  const values = {};
+  ALL_FIELDS.forEach((field) => {
+    values[field.key] = field.type === "integer" ? String(field.defaultValue) : field.defaultValue;
+  });
+  return values;
+}
+
+export default function MarketingTab() {
+  const [values, setValues] = useState(initialValues);
+  const [original, setOriginal] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [forbidden, setForbidden] = useState(false);
+  const [success, setSuccess] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError("");
+    setForbidden(false);
+    listSettings("marketing.")
+      .then((data) => {
+        if (cancelled) return;
+        const list = Array.isArray(data) ? data : Object.values(data || {});
+        const next = initialValues();
+        list.forEach((item) => {
+          if (item && item.key && Object.prototype.hasOwnProperty.call(next, item.key)) {
+            const field = ALL_FIELDS.find((f) => f.key === item.key);
+            next[item.key] = field && field.type === "integer" ? String(item.value) : item.value;
+          }
+        });
+        setValues(next);
+        setOriginal(next);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        if (err?.status === 403) setForbidden(true);
+        else setError(err?.message || "Não foi possível carregar as configurações de Marketing.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  function handleChange(key, value) {
+    setValues((prev) => ({ ...prev, [key]: value }));
+  }
+
+  async function handleSave() {
+    if (!original) return;
+    setSaving(true);
+    setError("");
+    setSuccess("");
+    try {
+      const changed = ALL_FIELDS.filter((field) => values[field.key] !== original[field.key]);
+      for (const field of changed) {
+        const value = values[field.key];
+        if (field.type === "integer") {
+          const numeric = toNumber(value);
+          if (Number.isNaN(numeric) || !Number.isInteger(numeric) || numeric < 1) {
+            throw new Error(`Informe um número inteiro maior que zero em "${field.label}".`);
+          }
+          await updateSetting(field.key, numeric);
+        } else {
+          if (typeof value !== "string" || value.trim() === "") continue; // vazio não é aceito pela API
+          await updateSetting(field.key, value);
+        }
+      }
+      setOriginal(values);
+      setSuccess("Configurações de Marketing salvas.");
+    } catch (err) {
+      if (err?.status === 403) setForbidden(true);
+      else setError(err?.message || "Não foi possível salvar as configurações de Marketing.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (forbidden) {
+    return (
+      <Card title="Marketing">
+        <Alert tone="warning" title="Sem permissão">
+          Você não tem permissão para visualizar ou alterar as configurações de Marketing.
+        </Alert>
+      </Card>
+    );
+  }
+
+  return (
+    <Card
+      title="Marketing"
+      subtitle="Regras de Marketing desta empresa: limites de mensagem em massa e perfis padrão de permissão."
+      actions={
+        <Button onClick={handleSave} loading={saving} disabled={loading}>
+          Salvar
+        </Button>
+      }
+    >
+      {loading ? (
+        <Spinner />
+      ) : (
+        <div className={styles.formGrid}>
+          {error || success ? (
+            <div className="formGridFull">
+              {error ? <Alert tone="danger" title="Erro">{error}</Alert> : null}
+              {success ? <Alert tone="success">{success}</Alert> : null}
+            </div>
+          ) : null}
+
+          {MARKETING_GROUPS.map((group) => (
+            <div key={group.title} className="formGridFull">
+              <h3>{group.title}</h3>
+              <p>{group.subtitle}</p>
+              <div className={styles.formGrid}>
+                {group.fields.map((field) => (
+                  <FormField key={field.key} label={field.label} htmlFor={`mkt-${field.key}`} helper={field.helper}>
+                    <Input
+                      id={`mkt-${field.key}`}
+                      inputMode={field.type === "integer" ? "numeric" : undefined}
+                      value={values[field.key] ?? ""}
+                      onChange={(e) => handleChange(field.key, e.target.value)}
+                    />
+                  </FormField>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
+  );
+}
