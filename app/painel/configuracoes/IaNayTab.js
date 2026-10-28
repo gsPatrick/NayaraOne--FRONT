@@ -114,6 +114,30 @@ const IA_GROUPS = [
     ],
   },
   {
+    title: "Ferramentas da NAY: limites dos argumentos",
+    subtitle: "Cada pedido da NAY a uma ferramenta é conferido pelo servidor. Estes limites valem para o campo que a ferramenta não limita por conta própria; pedido fora do limite é recusado inteiro.",
+    fields: [
+      {
+        key: "ia.tool.string_max_caracteres",
+        label: "Tamanho máximo de cada texto enviado a uma ferramenta (caracteres)",
+        type: "integer",
+        min: 1,
+        max: 100000,
+        defaultValue: 500,
+        helper: "Número inteiro de 1 a 100000. Texto maior que isso faz o pedido ser recusado.",
+      },
+      {
+        key: "ia.tool.array_max_itens",
+        label: "Máximo de itens de cada lista enviada a uma ferramenta",
+        type: "integer",
+        min: 1,
+        max: 1000,
+        defaultValue: 50,
+        helper: "Número inteiro de 1 a 1000. Lista maior que isso faz o pedido ser recusado.",
+      },
+    ],
+  },
+  {
     title: "Memória da NAY",
     subtitle: "A NAY guarda só fatos estruturados. Guardar a conversa inteira é exceção e segue regras fixas.",
     fields: [
