@@ -90,6 +90,19 @@ const MARKETING_GROUPS = [
       },
     ],
   },
+  {
+    title: "Templates de Marketing",
+    subtitle: "Template é o molde (texto, cores, logo) do conteúdo. Alguns canais só aceitam template aprovado pelo provedor: nesses, o template só pode ser publicado com a referência oficial informada.",
+    fields: [
+      {
+        key: "marketing.templates.canais_com_template_oficial",
+        label: "Canais que exigem template oficial aprovado",
+        type: "text",
+        defaultValue: "WHATSAPP",
+        helper: "Canais separados por vírgula (WHATSAPP, EMAIL, SITE, INSTAGRAM, FACEBOOK, LINKEDIN, YOUTUBE, TIKTOK, PORTAL). Pelo menos um canal.",
+      },
+    ],
+  },
 ];
 
 const ALL_FIELDS = MARKETING_GROUPS.flatMap((group) => group.fields);
