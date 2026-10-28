@@ -74,6 +74,42 @@ const REGISTRO_GROUPS = [
   },
 ];
 
+// Criticidade de cada uma das 14 famílias do catálogo (M9-D201). Padrão = o do catálogo; define o SLO e se a família
+// exige contingência (CRITICAL). A API valida a chave `integration.catalog.criticality.<família>`.
+const CRITICIDADE_OPCOES = [
+  { value: "CRITICAL", label: "Crítica" },
+  { value: "HIGH", label: "Alta" },
+  { value: "MEDIUM", label: "Média" },
+  { value: "LOW", label: "Baixa" },
+];
+const CRITICIDADE_FAMILIAS = [
+  ["messaging", "WhatsApp e atendimento", "HIGH"],
+  ["email", "E-mail", "MEDIUM"],
+  ["site", "Site", "MEDIUM"],
+  ["portal", "Portais imobiliários", "MEDIUM"],
+  ["signature", "Assinatura digital", "CRITICAL"],
+  ["bank", "Bancos, extratos e pagamentos", "CRITICAL"],
+  ["insurance", "Seguradoras e garantias", "HIGH"],
+  ["financing", "Financiamento e promotoras", "CRITICAL"],
+  ["fiscal", "NFS-e e fiscal", "HIGH"],
+  ["social", "Redes sociais e publicação", "LOW"],
+  ["storage", "Armazenamento de objetos", "HIGH"],
+  ["identity", "Identidade e autenticação", "CRITICAL"],
+  ["ai", "Modelos de IA", "MEDIUM"],
+  ["analytics", "Analytics e monitoramento", "LOW"],
+];
+REGISTRO_GROUPS.push({
+  title: "Criticidade das famílias de integração",
+  subtitle: "Define o nível de cada família do catálogo (SLO e contingência). Famílias críticas precisam de modo de contingência definido.",
+  fields: CRITICIDADE_FAMILIAS.map(([familia, label, defaultValue]) => ({
+    key: `integration.catalog.criticality.${familia}`,
+    label,
+    type: "enum",
+    defaultValue,
+    options: CRITICIDADE_OPCOES,
+  })),
+});
+
 const ALL_FIELDS = REGISTRO_GROUPS.flatMap((group) => group.fields);
 
 function initialValues() {
@@ -168,7 +204,7 @@ export default function IntegracoesRegistroTab() {
   return (
     <Card
       title="Registro de integrações"
-      subtitle="Regras do cadastro único de fornecedores e conexões: segurança em produção e escolha entre conexões."
+      subtitle="Regras do cadastro único de fornecedores e conexões: segurança em produção, escolha entre conexões e criticidade das famílias."
       actions={
         <Button onClick={handleSave} loading={saving} disabled={loading}>
           Salvar
