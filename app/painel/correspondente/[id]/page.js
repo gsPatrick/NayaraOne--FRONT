@@ -779,8 +779,10 @@ export default function FinancingCaseDetailPage() {
     }
     setVersionsOf((prev) => ({ ...prev, [requirementId]: { loading: true } }));
     try {
-      const rows = await listRequirementDocuments(id, requirementId);
-      setVersionsOf((prev) => ({ ...prev, [requirementId]: { rows: rows || [] } }));
+      const result = await listRequirementDocuments(id, requirementId);
+      // A API devolve { requirement, versions: [...] }; aceita também uma lista direta.
+      const rows = Array.isArray(result) ? result : (Array.isArray(result?.versions) ? result.versions : []);
+      setVersionsOf((prev) => ({ ...prev, [requirementId]: { rows } }));
     } catch (err) {
       setVersionsOf((prev) => ({ ...prev, [requirementId]: { error: err?.message || "Não foi possível carregar as versões deste documento." } }));
     }
