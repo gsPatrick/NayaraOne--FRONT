@@ -12,6 +12,7 @@ import Modal from "@/components/organisms/Modal/Modal";
 import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import FormField from "@/components/molecules/FormField/FormField";
+import Checkbox from "@/components/atoms/Checkbox/Checkbox";
 import Input from "@/components/atoms/Input/Input";
 import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import Select from "@/components/atoms/Select/Select";
@@ -307,6 +308,7 @@ export default function ObraDetalhePage({ params }) {
       plannedCost: stage.plannedCost != null ? String(Number(stage.plannedCost)) : "",
       startsAt: stage.startsAt ? stage.startsAt.slice(0, 10) : "",
       endsAt: stage.endsAt ? stage.endsAt.slice(0, 10) : "",
+      publicVisible: Boolean(stage.publicVisible),
     });
     setStageDateErrors({});
     setStageOpen(true);
@@ -331,6 +333,7 @@ export default function ObraDetalhePage({ params }) {
         endsAt: dateOnlyInputToIso(stageForm.endsAt) || null,
       };
       if (editingStageId) {
+        payload.publicVisible = Boolean(stageForm.publicVisible);
         const updated = await updateProjectStage(editingStageId, payload);
         setStages((prev) => prev.map((s) => (s.id === editingStageId ? updated : s)));
       } else {
@@ -930,6 +933,14 @@ export default function ObraDetalhePage({ params }) {
               onBlur={(e) => setStageDateErrors((p) => ({ ...p, endsAt: isDateInputInvalid(e.target.validity) }))}
             />
           </FormField>
+          {editingStageId ? (
+            <Checkbox
+              id="m-stage-public"
+              label="Pode aparecer em conteúdo público (Marketing)"
+              checked={Boolean(stageForm.publicVisible)}
+              onChange={(e) => setStageForm((p) => ({ ...p, publicVisible: e.target.checked }))}
+            />
+          ) : null}
         </div>
       </Modal>
     </AppShell>

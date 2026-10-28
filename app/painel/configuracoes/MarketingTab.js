@@ -44,6 +44,26 @@ const MARKETING_GROUPS = [
       { key: "marketing.permissoes.perfis_diretoria", label: "Perfis da Diretoria", type: "text", defaultValue: "DIRETORIA", helper: "Ex.: DIRETORIA, SOCIO" },
     ],
   },
+  {
+    title: "Campos publicáveis em conteúdo público",
+    subtitle: "Só os campos desta lista saem em posts, site, portais e e-mails; endereço, ocorrência interna, documentos e dados do proprietário nunca saem. Remover um campo é sempre permitido; incluir um campo exige a permissão de gerir templates de Marketing. Toda mudança fica na auditoria.",
+    fields: [
+      {
+        key: "marketing.public_fields.allowlist",
+        label: "Campos publicáveis",
+        type: "text",
+        defaultValue: "publicId, tipo, finalidade, bairro, cidade, uf, quartos, suites, banheiros, vagas, areaUtilM2, areaTotalM2, precoVenda, precoLocacao, precoAnterior, condominio, iptu, features, fotosAutorizadas, logradouro, numeroEndereco, publicadoEm, enderecoPublico, nomeEmpreendimento, etapaPublica, titulo, texto, legenda, descricao, assunto, corpo",
+        helper: "Nomes separados por vírgula. Nomes fora desta lista de campos conhecidos são recusados. Rua e número só saem se a política de endereço do imóvel permitir.",
+      },
+      {
+        key: "marketing.public_fields.features_permitidas",
+        label: "Características do imóvel permitidas",
+        type: "text",
+        defaultValue: "piscina, churrasqueira, varanda, elevador, academia, playground, salão de festas, portaria 24h, ar-condicionado, mobiliado, aceita pets, vaga coberta",
+        helper: "Só estas características podem aparecer em conteúdo público.",
+      },
+    ],
+  },
 ];
 
 const ALL_FIELDS = MARKETING_GROUPS.flatMap((group) => group.fields);
@@ -124,7 +144,8 @@ export default function MarketingTab() {
       setOriginal(values);
       setSuccess("Configurações de Marketing salvas.");
     } catch (err) {
-      if (err?.status === 403) setForbidden(true);
+      // MKT_FORBIDDEN (incluir campo publicável sem a permissão de templates) é aviso da ação, não falta de acesso à aba.
+      if (err?.status === 403 && err?.code !== "MKT_FORBIDDEN") setForbidden(true);
       else setError(err?.message || "Não foi possível salvar as configurações de Marketing.");
     } finally {
       setSaving(false);

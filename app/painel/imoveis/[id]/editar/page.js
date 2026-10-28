@@ -67,6 +67,7 @@ function toEditableProperty(property) {
       type: property.type,
       publicationStatus: property.publicationStatus,
       availabilityStatus: property.availabilityStatus,
+      publicAddressPolicy: property.publicAddressPolicy || "SO_BAIRRO",
       areaM2: property.areaM2,
       bedrooms: property.bedrooms,
       parkingSpots: property.parkingSpots,
@@ -291,6 +292,7 @@ export default function EditPropertyPage({ params }) {
           propertyType: toApiPropertyType(basic.type),
           publicationStatus: basic.publicationStatus,
           availabilityStatus: basic.availabilityStatus,
+          publicAddressPolicy: basic.publicAddressPolicy,
           areaTotalM2: basic.areaM2 || null,
           bedrooms: basic.bedrooms || null,
           parkingSpots: basic.parkingSpots || null,
@@ -424,6 +426,18 @@ export default function EditPropertyPage({ params }) {
                   <option value="SOLD">Vendido</option>
                   <option value="RENTED">Alugado</option>
                   <option value="WITHDRAWN">Retirado</option>
+                </Select>
+              </FormField>
+              <FormField
+                label="Endereço em conteúdo público"
+                htmlFor="e-public-address-policy"
+                helper="O que o Marketing pode mostrar do endereço em posts, site e e-mails. Padrão: só o bairro."
+              >
+                <Select id="e-public-address-policy" value={basic.publicAddressPolicy} onChange={(e) => setBasic({ ...basic, publicAddressPolicy: e.target.value })}>
+                  <option value="COMPLETO">Rua e número</option>
+                  <option value="RUA_SEM_NUMERO">Rua, sem o número</option>
+                  <option value="SO_BAIRRO">Só o bairro</option>
+                  <option value="OCULTO">Oculto (endereço sob consulta)</option>
                 </Select>
               </FormField>
               <div className={styles.span2}>
