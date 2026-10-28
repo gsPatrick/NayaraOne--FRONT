@@ -223,6 +223,39 @@ const IA_GROUPS = [
       },
     ],
   },
+  {
+    title: "Defesa contra instruções escondidas em documentos",
+    subtitle: "Documentos, e-mails e mensagens lidos pela NAY são só texto para ler, nunca ordem. A NAY dá uma nota de 0 a 1 para cada trecho. Acima do limite de bloqueio o trecho é descartado e a resposta avisa; entre o de alerta e o de bloqueio o trecho é mantido, marcado como suspeito, e o fato é registrado.",
+    fields: [
+      {
+        key: "ia.injecao.limiar_bloqueio",
+        label: "Nota a partir da qual o trecho é descartado",
+        type: "decimal",
+        min: 0,
+        max: 1,
+        defaultValue: 0.7,
+        helper: "Número de 0 a 1 (use vírgula). Quanto menor, mais trechos são descartados.",
+      },
+      {
+        key: "ia.injecao.limiar_alerta",
+        label: "Nota a partir da qual o trecho é marcado como suspeito",
+        type: "decimal",
+        min: 0,
+        max: 1,
+        defaultValue: 0.4,
+        helper: "Número de 0 a 1. Se for maior que o limite de descarte, vale o limite de descarte.",
+      },
+      {
+        key: "ia.injecao.derivado_min_caracteres",
+        label: "Tamanho mínimo de um valor para contar como copiado de documento",
+        type: "integer",
+        min: 1,
+        max: 100,
+        defaultValue: 4,
+        helper: "Número inteiro de 1 a 100. Valor copiado de um documento para um pedido que altera dados ou envia algo para fora vira proposta para aprovação humana, nunca execução direta.",
+      },
+    ],
+  },
 ];
 
 const ALL_FIELDS = IA_GROUPS.flatMap((group) => group.fields);
