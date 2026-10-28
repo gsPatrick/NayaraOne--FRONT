@@ -9,6 +9,7 @@ import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
 import Spinner from "@/components/atoms/Spinner/Spinner";
 import { listSettings, updateSetting } from "@/lib/api/settings";
+import { toNumber } from "@/lib/format";
 import styles from "./page.module.css";
 
 // Parâmetros da NAY (Marco 9, bloco A) que o administrador controla. A API valida (SETTINGS_SCHEMA); o padrão mostrado é
@@ -36,6 +37,68 @@ const IA_GROUPS = [
     ],
   },
   {
+    title: "Agentes: limites por consulta",
+    subtitle: "Valem para a versão do agente que não define o próprio limite. O limite escrito na versão do agente vence o valor daqui.",
+    fields: [
+      {
+        key: "ia.agente.max_tool_calls_por_run",
+        label: "Máximo de ferramentas por consulta",
+        type: "integer",
+        min: 1,
+        max: 50,
+        defaultValue: 5,
+        helper: "Número inteiro de 1 a 50. Passando disso, a consulta é encerrada com o aviso de limite de ferramentas.",
+      },
+      {
+        key: "ia.agente.max_tokens_run",
+        label: "Máximo de processamento por consulta (tokens)",
+        type: "integer",
+        min: 100,
+        max: 1000000,
+        defaultValue: 8000,
+        helper: "Número inteiro de 100 a 1000000, somando entrada e saída. Passando disso, a consulta falha com o aviso de limite de processamento.",
+      },
+      {
+        key: "ia.agente.max_runs_por_minuto_usuario",
+        label: "Máximo de consultas por minuto, por pessoa",
+        type: "integer",
+        min: 1,
+        max: 600,
+        defaultValue: 10,
+        helper: "Número inteiro de 1 a 600. Passando disso, a pessoa precisa esperar um instante.",
+      },
+      {
+        key: "ia.agente.timeout_ms",
+        label: "Tempo máximo de cada chamada ao agente (milissegundos)",
+        type: "integer",
+        min: 1000,
+        max: 300000,
+        defaultValue: 30000,
+        helper: "Número inteiro de 1000 a 300000.",
+      },
+    ],
+  },
+  {
+    title: "Agentes: homologação e ativação",
+    subtitle: "Regras para uma nova versão de agente entrar em uso. A decisão final continua sendo de uma pessoa.",
+    fields: [
+      {
+        key: "ia.agente.avaliacao_verde_obrigatoria",
+        label: "Exigir avaliação aprovada antes de homologar a versão",
+        type: "boolean",
+        defaultValue: true,
+        helper: "Ligado por padrão. Desligado, a pessoa autorizada pode homologar sem avaliação aprovada.",
+      },
+      {
+        key: "ia.agente.segregacao_funcoes",
+        label: "Separar quem cria, quem homologa e quem ativa a versão",
+        type: "boolean",
+        defaultValue: true,
+        helper: "Ligado por padrão: quem criou não homologa, e quem homologou não ativa. Desligado, a mesma pessoa pode fazer os passos.",
+      },
+    ],
+  },
+  {
     title: "Memória da NAY",
     subtitle: "A NAY guarda só fatos estruturados. Guardar a conversa inteira é exceção e segue regras fixas.",
     fields: [
@@ -55,7 +118,7 @@ const ALL_FIELDS = IA_GROUPS.flatMap((group) => group.fields);
 function initialValues() {
   const values = {};
   ALL_FIELDS.forEach((field) => {
-    values[field.key] = field.defaultValue;
+    values[field.key] = field.type === "integer" ? String(field.defaultValue) : field.defaultValue;
   });
   return values;
 }
@@ -81,7 +144,8 @@ export default function IaNayTab() {
         const next = initialValues();
         list.forEach((item) => {
           if (!item || !item.key || !Object.prototype.hasOwnProperty.call(next, item.key)) return;
-          next[item.key] = item.value;
+          const field = ALL_FIELDS.find((f) => f.key === item.key);
+          next[item.key] = field && field.type === "integer" ? String(item.value) : item.value;
         });
         setValues(next);
         setOriginal(next);
@@ -107,7 +171,15 @@ export default function IaNayTab() {
     try {
       const changed = ALL_FIELDS.filter((field) => values[field.key] !== original[field.key]);
       for (const field of changed) {
-        await updateSetting(field.key, values[field.key]);
+        if (field.type === "integer") {
+          const numeric = toNumber(values[field.key]);
+          if (Number.isNaN(numeric) || !Number.isInteger(numeric) || numeric < field.min || numeric > field.max) {
+            throw new Error(`Informe um número inteiro de ${field.min} a ${field.max} em "${field.label}".`);
+          }
+          await updateSetting(field.key, numeric);
+        } else {
+          await updateSetting(field.key, values[field.key]);
+        }
       }
       setOriginal(values);
       setSuccess("Configurações da NAY salvas.");
@@ -157,10 +229,11 @@ export default function IaNayTab() {
               <div className={styles.formGrid}>
                 {group.fields.map((field) => (
                   <div key={field.key}>
-                    {field.type === "text" ? (
+                    {field.type === "text" || field.type === "integer" ? (
                       <FormField label={field.label} htmlFor={`ia-nay-${field.key}`} helper={field.helper}>
                         <Input
                           id={`ia-nay-${field.key}`}
+                          inputMode={field.type === "integer" ? "numeric" : undefined}
                           value={values[field.key] ?? ""}
                           onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
                         />
