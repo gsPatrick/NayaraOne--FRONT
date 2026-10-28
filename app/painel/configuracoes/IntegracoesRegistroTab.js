@@ -195,6 +195,17 @@ REGISTRO_GROUPS.push({
   ],
 });
 
+// Chamadas aos fornecedores (M9-D209): todo fornecedor fica atrás de um adaptador; aqui ficam os tempos máximos das chamadas e do teste de saúde.
+REGISTRO_GROUPS.push({
+  title: "Chamadas aos fornecedores",
+  subtitle: "Quanto tempo o sistema espera por um fornecedor antes de desistir de uma consulta, de um envio ou de um teste de saúde.",
+  fields: [
+    { key: "integration.dispatch.timeout_ms.read", label: "Tempo máximo de uma consulta ao fornecedor (milissegundos)", type: "integer", defaultValue: 10000, helper: "De 1000 a 300000. Vale para chamadas que só leem informação." },
+    { key: "integration.dispatch.timeout_ms.write", label: "Tempo máximo de um envio ao fornecedor (milissegundos)", type: "integer", defaultValue: 20000, helper: "De 1000 a 300000. Vale para chamadas que criam ou alteram algo no fornecedor; ao esgotar, o envio fica como desconhecido até conferir." },
+    { key: "integration.health.check_timeout_ms", label: "Tempo máximo do teste de saúde de um fornecedor (milissegundos)", type: "integer", defaultValue: 5000, helper: "De 500 a 120000. Teste que demora mais conta como falha." },
+  ],
+});
+
 const ALL_FIELDS = REGISTRO_GROUPS.flatMap((group) => group.fields);
 
 function initialValues() {
