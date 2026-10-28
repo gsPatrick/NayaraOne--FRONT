@@ -772,6 +772,14 @@ export default function FinancingCaseDetailPage() {
     }
   }
 
+  // A validação vale para a versão vigente; a substituída não afirma validação.
+  function versionValidationText(doc) {
+    const v = doc.validation;
+    if (v?.status === "VALIDADA") return ` · Validada${v.at ? ` em ${formatDateTime(v.at)}` : ""}${v.byName ? ` por ${v.byName}` : ""}`;
+    if (v?.status === "SUBSTITUIDA" || doc.supersededAt || doc.superseded_at) return " · Versão substituída (a validação vale para a versão vigente)";
+    return " · Aguardando validação";
+  }
+
   async function toggleVersions(requirementId) {
     if (versionsOf[requirementId]) {
       setVersionsOf((prev) => { const next = { ...prev }; delete next[requirementId]; return next; });
@@ -1051,7 +1059,7 @@ export default function FinancingCaseDetailPage() {
                                   Versão {doc.version} · enviada em {formatDateTime(doc.createdAt || doc.created_at)}
                                   {doc.supersededAt || doc.superseded_at ? ` · substituída em ${formatDateTime(doc.supersededAt || doc.superseded_at)}` : " · vigente"}
                                   {doc.file?.fileName ? ` · ${doc.file.fileName}` : ""}
-                                  {doc.validatedAt || doc.validated_at ? ` · validada em ${formatDateTime(doc.validatedAt || doc.validated_at)}` : " · sem validação"}
+                                  {versionValidationText(doc)}
                                 </li>
                               ))}
                             </ul>
