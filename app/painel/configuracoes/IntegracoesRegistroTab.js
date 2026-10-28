@@ -168,6 +168,21 @@ REGISTRO_GROUPS.push({
   ],
 });
 
+// Caixa de entrada de webhooks (M9-D203): tentativas, retenção do corpo e da linha, espera entre tentativas, tamanho e cabeçalhos guardados.
+REGISTRO_GROUPS.push({
+  title: "Caixa de entrada de webhooks",
+  subtitle: "Os avisos que os fornecedores enviam (pagamento, mensagem, assinatura) são gravados uma única vez antes de qualquer processamento. Aqui você define por quanto tempo ficam guardados e quantas vezes o sistema tenta processá-los.",
+  fields: [
+    { key: "integration.inbox.max_attempts", label: "Tentativas de processar um evento até a fila morta", type: "integer", defaultValue: 6, helper: "De 1 a 50. Esgotadas as tentativas, o evento vai para a fila morta e abre um erro de integração." },
+    { key: "integration.inbox.retry_backoff_ms", label: "Esperas entre as tentativas (milissegundos)", type: "text", defaultValue: "60000,300000,900000,3600000,14400000", helper: "Lista separada por vírgula; a última espera se repete." },
+    { key: "integration.inbox.raw_retention_days", label: "Dias que o conteúdo de um evento processado fica guardado", type: "integer", defaultValue: 30, helper: "De 1 a 3650. Depois disso só a impressão digital (hash) do conteúdo permanece." },
+    { key: "integration.inbox.retention_days", label: "Dias que o registro do evento fica guardado", type: "integer", defaultValue: 90, helper: "De 1 a 3650. Evento em fila morta com erro aberto não é apagado." },
+    { key: "integration.inbox.dlq_retry_retention_days", label: "Dias que o conteúdo de um evento na fila morta fica guardado para nova tentativa", type: "integer", defaultValue: 7, helper: "De 1 a 365. Vale para evento que esgotou as tentativas; evento com dado inválido nunca guarda o conteúdo." },
+    { key: "integration.webhook.max_body_bytes", label: "Tamanho máximo do conteúdo guardado por evento (bytes)", type: "integer", defaultValue: 1048576, helper: "De 1024 a 52428800. Acima disso só o hash e o tamanho ficam gravados." },
+    { key: "integration.inbox.header_allowlist", label: "Cabeçalhos da entrega que ficam gravados", type: "text", defaultValue: "content-type,user-agent,x-request-id,x-webhook-id,x-event-id,x-event-type,x-api-version,x-webhook-timestamp", helper: "Nomes separados por vírgula. Authorization e cookies nunca são gravados, mesmo que estejam na lista." },
+  ],
+});
+
 const ALL_FIELDS = REGISTRO_GROUPS.flatMap((group) => group.fields);
 
 function initialValues() {
