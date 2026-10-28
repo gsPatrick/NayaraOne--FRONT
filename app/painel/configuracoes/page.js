@@ -18,6 +18,7 @@ import PortoSeguroLogo from "@/components/atoms/PortoSeguroLogo/PortoSeguroLogo"
 import JuntoSegurosLogo from "@/components/atoms/JuntoSegurosLogo/JuntoSegurosLogo";
 import YelumLogo from "@/components/atoms/YelumLogo/YelumLogo";
 import { listSettings, updateSetting, getIntegrationsStatus } from "@/lib/api/settings";
+import GovernancaTab from "./GovernancaTab";
 import styles from "./page.module.css";
 
 // Cor oficial de marca de cada provedor integrado (mesma fonte que alimenta os componentes de
@@ -1202,6 +1203,7 @@ export default function ConfiguracoesPage() {
             { label: "Cobrança", content: <CobrancaTab /> },
             { label: "Segurança", content: <SegurancaTab /> },
             { label: "Integrações", content: <IntegracoesTab /> },
+            { label: "Governança", content: <GovernancaTab /> },
           ]}
         />
       </div>

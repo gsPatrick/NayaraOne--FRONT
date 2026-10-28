@@ -1,0 +1,190 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Card from "@/components/molecules/Card/Card";
+import Input from "@/components/atoms/Input/Input";
+import Checkbox from "@/components/atoms/Checkbox/Checkbox";
+import Button from "@/components/atoms/Button/Button";
+import Alert from "@/components/molecules/Alert/Alert";
+import FormField from "@/components/molecules/FormField/FormField";
+import Spinner from "@/components/atoms/Spinner/Spinner";
+import { listSettings, updateSetting } from "@/lib/api/settings";
+import styles from "./page.module.css";
+
+// Parâmetros de governança que o administrador controla (Marco 9, bloco E/F). Cada demanda do bloco acrescenta as suas
+// entradas aqui, sempre com o padrão do catálogo (Maturacao/demandas/parametros.csv). A API é a fonte da validação
+// (SETTINGS_SCHEMA); o padrão mostrado é só o valor inicial quando a empresa ainda não configurou nada.
+const GOVERNANCA_GROUPS = [
+  {
+    title: "Módulos de governança",
+    subtitle: "Liga ou desliga cada módulo para esta empresa. Desligado, a API recusa as rotas do módulo com aviso claro.",
+    fields: [
+      { key: "governanca.modulos.calendar.habilitado", label: "Calendário unificado", type: "boolean", defaultValue: true },
+      { key: "governanca.modulos.data_quality.habilitado", label: "Dados mestres e qualidade", type: "boolean", defaultValue: true },
+      { key: "governanca.modulos.lineage.habilitado", label: "Linhagem de dados", type: "boolean", defaultValue: true },
+      { key: "governanca.modulos.dlp.habilitado", label: "Proteção contra vazamento (DLP)", type: "boolean", defaultValue: true },
+      { key: "governanca.modulos.bcp.habilitado", label: "Continuidade operacional (BCP)", type: "boolean", defaultValue: true },
+      { key: "governanca.modulos.api_governance.habilitado", label: "Governança de API", type: "boolean", defaultValue: true },
+      { key: "governanca.modulos.finops.habilitado", label: "FinOps", type: "boolean", defaultValue: true },
+      { key: "governanca.modulos.feature_flags.habilitado", label: "Feature flags e configuração", type: "boolean", defaultValue: true },
+    ],
+  },
+  {
+    title: "Permissões padrão por perfil",
+    subtitle: "Nomes dos perfis (separados por vírgula) que recebem o pacote de Gestão e o do Financeiro; os demais perfis recebem só a leitura do calendário. Só o administrador recebe as permissões sensíveis.",
+    fields: [
+      { key: "governanca.permissoes.perfis_gestao", label: "Perfis de Gestão", type: "text", defaultValue: "GESTAO, GESTÃO, DIRETOR, GERENTE, GESTOR", helper: "Ex.: DIRETOR, GERENTE" },
+      { key: "governanca.permissoes.perfis_financeiro", label: "Perfis do Financeiro", type: "text", defaultValue: "FINANCEIRO", helper: "Ex.: FINANCEIRO, TESOURARIA" },
+    ],
+  },
+  {
+    title: "Padrão de erros",
+    subtitle: "Códigos de erro da plataforma que continuam sem o prefixo GOV_ nas rotas de governança.",
+    fields: [
+      {
+        key: "governanca.erros.excecoes_prefixo_gov",
+        label: "Códigos sem o prefixo GOV_",
+        type: "text",
+        defaultValue: "PERMISSION_DENIED, MISSING_ACCESS_TOKEN, MFA_STEP_UP_REQUIRED, MFA_REQUIRED_NOT_ENABLED, INTERNAL_ERROR, VALIDATION_ERROR",
+      },
+    ],
+  },
+];
+
+const ALL_FIELDS = GOVERNANCA_GROUPS.flatMap((group) => group.fields);
+
+function initialValues() {
+  const values = {};
+  ALL_FIELDS.forEach((field) => {
+    values[field.key] = field.defaultValue;
+  });
+  return values;
+}
+
+export default function GovernancaTab() {
+  const [values, setValues] = useState(initialValues);
+  const [original, setOriginal] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [forbidden, setForbidden] = useState(false);
+  const [success, setSuccess] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError("");
+    setForbidden(false);
+    listSettings("governanca.")
+      .then((data) => {
+        if (cancelled) return;
+        const list = Array.isArray(data) ? data : Object.values(data || {});
+        const next = initialValues();
+        list.forEach((item) => {
+          if (item && item.key && Object.prototype.hasOwnProperty.call(next, item.key)) next[item.key] = item.value;
+        });
+        setValues(next);
+        setOriginal(next);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        if (err?.status === 403) setForbidden(true);
+        else setError(err?.message || "Não foi possível carregar as configurações de governança.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  function handleChange(key, value) {
+    setValues((prev) => ({ ...prev, [key]: value }));
+  }
+
+  async function handleSave() {
+    if (!original) return;
+    setSaving(true);
+    setError("");
+    setSuccess("");
+    try {
+      const changed = ALL_FIELDS.filter((field) => values[field.key] !== original[field.key]);
+      for (const field of changed) {
+        const value = values[field.key];
+        if (field.type === "text" && (typeof value !== "string" || value.trim() === "")) continue; // vazio não é aceito pela API
+        await updateSetting(field.key, value);
+      }
+      setOriginal(values);
+      setSuccess("Configurações de governança salvas.");
+    } catch (err) {
+      if (err?.status === 403) setForbidden(true);
+      else setError(err?.message || "Não foi possível salvar as configurações de governança.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (forbidden) {
+    return (
+      <Card title="Governança">
+        <Alert tone="warning" title="Sem permissão">
+          Você não tem permissão para visualizar ou alterar as configurações de governança.
+        </Alert>
+      </Card>
+    );
+  }
+
+  return (
+    <Card
+      title="Governança"
+      subtitle="Regras de governança operacional desta empresa: módulos, permissões padrão e padrão de erros."
+      actions={
+        <Button onClick={handleSave} loading={saving} disabled={loading}>
+          Salvar
+        </Button>
+      }
+    >
+      {loading ? (
+        <Spinner />
+      ) : (
+        <div className={styles.formGrid}>
+          {error || success ? (
+            <div className="formGridFull">
+              {error ? <Alert tone="danger" title="Erro">{error}</Alert> : null}
+              {success ? <Alert tone="success">{success}</Alert> : null}
+            </div>
+          ) : null}
+
+          {GOVERNANCA_GROUPS.map((group) => (
+            <div key={group.title} className="formGridFull">
+              <h3>{group.title}</h3>
+              <p>{group.subtitle}</p>
+              <div className={styles.formGrid}>
+                {group.fields.map((field) =>
+                  field.type === "boolean" ? (
+                    <Checkbox
+                      key={field.key}
+                      id={`gov-${field.key}`}
+                      label={field.label}
+                      checked={Boolean(values[field.key])}
+                      onChange={(e) => handleChange(field.key, e.target.checked)}
+                    />
+                  ) : (
+                    <FormField key={field.key} label={field.label} htmlFor={`gov-${field.key}`} helper={field.helper}>
+                      <Input
+                        id={`gov-${field.key}`}
+                        value={values[field.key] ?? ""}
+                        onChange={(e) => handleChange(field.key, e.target.value)}
+                      />
+                    </FormField>
+                  )
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
+  );
+}
