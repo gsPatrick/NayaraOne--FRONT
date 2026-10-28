@@ -88,6 +88,17 @@ REGISTRO_GROUPS.push({
   ],
 });
 
+// Fila de erros de integração (M9-D207): agrupamento de falhas repetidas, tempo de guarda e quando a gravidade sobe.
+REGISTRO_GROUPS.push({
+  title: "Erros de integração",
+  subtitle: "Como a fila de erros das integrações agrupa falhas repetidas, por quanto tempo guarda cada erro e quando uma falha passageira passa a ser tratada como grave. O conteúdo dos erros nunca guarda segredo nem dado pessoal.",
+  fields: [
+    { key: "integration.errors.group_window_min", label: "Janela para agrupar falhas repetidas (minutos)", type: "integer", defaultValue: 10, helper: "De 1 a 1440. Falhas iguais da mesma conexão dentro dessa janela viram uma só linha, com a contagem de tentativas." },
+    { key: "integration.errors.retention_days", label: "Dias que o erro fica guardado", type: "integer", defaultValue: 180, helper: "De 1 a 3650. Passado o prazo, o expurgo automático remove o erro." },
+    { key: "integration.errors.exhausted_attempts", label: "Tentativas até uma falha passageira virar gravidade alta", type: "integer", defaultValue: 5, helper: "De 1 a 100. Falhas de rede ou de limite de uso começam com gravidade baixa e sobem para alta ao chegar nesse número." },
+  ],
+});
+
 // Criticidade de cada uma das 14 famílias do catálogo (M9-D201). Padrão = o do catálogo; define o SLO e se a família
 // exige contingência (CRITICAL). A API valida a chave `integration.catalog.criticality.<família>`.
 const CRITICIDADE_OPCOES = [
