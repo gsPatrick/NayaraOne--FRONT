@@ -140,6 +140,23 @@ REGISTRO_GROUPS.push({
   ],
 });
 
+// Saúde dos fornecedores (M9-D206): quando o dado vira "desconhecido", a janela do cálculo, a retenção e as metas por criticidade.
+const SLO_AJUDA = "Formato: 99.5% / p95 5 s / p99 12 s / backlog 15 min (sucesso mínimo, tempo de resposta p95 e p99, espera máxima da fila).";
+REGISTRO_GROUPS.push({
+  title: "Saúde dos fornecedores",
+  subtitle: "Como o sistema mede se cada integração está bem: a meta de cada criticidade e quando a informação deixa de ser confiável.",
+  fields: [
+    { key: "integration.health.stale_after_s", label: "Segundos sem nenhum dado até a saúde virar “desconhecida”", type: "integer", defaultValue: 180, helper: "De 30 a 86400." },
+    { key: "integration.health.aggregate_interval_s", label: "Intervalo (segundos) do cálculo da saúde", type: "integer", defaultValue: 60, helper: "De 10 a 3600." },
+    { key: "integration.health.history_retention_days", label: "Dias de histórico das janelas de saúde", type: "integer", defaultValue: 30, helper: "De 1 a 3650. As janelas mais antigas são removidas." },
+    { key: "integration.health.down_after_failures", label: "Testes de saúde falhos seguidos até marcar como fora do ar", type: "integer", defaultValue: 3, helper: "De 1 a 20." },
+    { key: "integration.slo.CRITICAL", label: "Meta da criticidade Crítica", type: "text", defaultValue: "99.9% / p95 3 s / p99 8 s / backlog 5 min", helper: SLO_AJUDA },
+    { key: "integration.slo.HIGH", label: "Meta da criticidade Alta", type: "text", defaultValue: "99.5% / p95 5 s / p99 12 s / backlog 15 min", helper: SLO_AJUDA },
+    { key: "integration.slo.MEDIUM", label: "Meta da criticidade Média", type: "text", defaultValue: "99.0% / p95 8 s / p99 20 s / backlog 60 min", helper: SLO_AJUDA },
+    { key: "integration.slo.LOW", label: "Meta da criticidade Baixa", type: "text", defaultValue: "95.0% / p95 15 s / p99 40 s / backlog 24 h", helper: SLO_AJUDA },
+  ],
+});
+
 const ALL_FIELDS = REGISTRO_GROUPS.flatMap((group) => group.fields);
 
 function initialValues() {
