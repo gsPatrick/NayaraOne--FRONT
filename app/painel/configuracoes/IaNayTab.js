@@ -198,6 +198,19 @@ const IA_GROUPS = [
     ],
   },
   {
+    title: "Privacidade dos dados enviados à NAY",
+    subtitle: "Antes de qualquer texto sair para um provedor de IA, a NAY retira CPF, telefone, conta bancária e segredos. Conteúdo restrito só entra nas condições fixas do livro.",
+    fields: [
+      {
+        key: "ia.privacidade.pseudonimizar_nomes",
+        label: "Trocar nomes de pessoas por \"Cliente A\", \"Cliente B\" quando a tarefa não precisa do nome",
+        type: "boolean",
+        defaultValue: true,
+        helper: "Ligado por padrão e vale para provedores externos. O nome volta a aparecer só na resposta mostrada à própria pessoa que perguntou.",
+      },
+    ],
+  },
+  {
     title: "Memória da NAY",
     subtitle: "A NAY guarda só fatos estruturados. Guardar a conversa inteira é exceção e segue regras fixas.",
     fields: [
