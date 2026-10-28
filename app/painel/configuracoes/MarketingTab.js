@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Card from "@/components/molecules/Card/Card";
 import Input from "@/components/atoms/Input/Input";
+import Checkbox from "@/components/atoms/Checkbox/Checkbox";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
 import FormField from "@/components/molecules/FormField/FormField";
@@ -61,6 +62,31 @@ const MARKETING_GROUPS = [
         type: "text",
         defaultValue: "piscina, churrasqueira, varanda, elevador, academia, playground, salão de festas, portaria 24h, ar-condicionado, mobiliado, aceita pets, vaga coberta",
         helper: "Só estas características podem aparecer em conteúdo público.",
+      },
+    ],
+  },
+  {
+    title: "Conteúdo e mudança na fonte",
+    subtitle: "Quando uma informação do imóvel muda depois da publicação, o post publicado nunca é reescrito: o sistema cria uma atualização em rascunho, ligada ao conteúdo anterior. Conteúdo ainda não publicado com dado velho volta sempre para revisão, com ou sem esta opção.",
+    fields: [
+      {
+        key: "marketing.conteudo.atualizacao_automatica_fonte",
+        label: "Criar a atualização automaticamente quando o imóvel mudar",
+        type: "boolean",
+        defaultValue: true,
+      },
+    ],
+  },
+  {
+    title: "Templates de Marketing",
+    subtitle: "Template é o molde (texto, cores, logo) do conteúdo. Alguns canais só aceitam template aprovado pelo provedor: nesses, o template só pode ser publicado com a referência oficial informada.",
+    fields: [
+      {
+        key: "marketing.templates.canais_com_template_oficial",
+        label: "Canais que exigem template oficial aprovado",
+        type: "text",
+        defaultValue: "WHATSAPP",
+        helper: "Canais separados por vírgula (WHATSAPP, EMAIL, SITE, INSTAGRAM, FACEBOOK, LINKEDIN, YOUTUBE, TIKTOK, PORTAL). Pelo menos um canal.",
       },
     ],
   },
@@ -136,6 +162,8 @@ export default function MarketingTab() {
             throw new Error(`Informe um número inteiro maior que zero em "${field.label}".`);
           }
           await updateSetting(field.key, numeric);
+        } else if (field.type === "boolean") {
+          await updateSetting(field.key, Boolean(value));
         } else {
           if (typeof value !== "string" || value.trim() === "") continue; // vazio não é aceito pela API
           await updateSetting(field.key, value);
@@ -188,7 +216,15 @@ export default function MarketingTab() {
               <h3>{group.title}</h3>
               <p>{group.subtitle}</p>
               <div className={styles.formGrid}>
-                {group.fields.map((field) => (
+                {group.fields.map((field) => (field.type === "boolean" ? (
+                  <Checkbox
+                    key={field.key}
+                    id={`mkt-${field.key}`}
+                    label={field.label}
+                    checked={Boolean(values[field.key])}
+                    onChange={(e) => handleChange(field.key, e.target.checked)}
+                  />
+                ) : (
                   <FormField key={field.key} label={field.label} htmlFor={`mkt-${field.key}`} helper={field.helper}>
                     <Input
                       id={`mkt-${field.key}`}
@@ -197,7 +233,7 @@ export default function MarketingTab() {
                       onChange={(e) => handleChange(field.key, e.target.value)}
                     />
                   </FormField>
-                ))}
+                )))}
               </div>
             </div>
           ))}
