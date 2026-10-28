@@ -8,6 +8,8 @@ import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
 import FormField from "@/components/molecules/FormField/FormField";
 import Spinner from "@/components/atoms/Spinner/Spinner";
+import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
+import { toNumber } from "@/lib/format";
 import { listSettings, updateSetting } from "@/lib/api/settings";
 import styles from "./page.module.css";
 
@@ -27,6 +29,29 @@ const GOVERNANCA_GROUPS = [
       { key: "governanca.modulos.api_governance.habilitado", label: "Governança de API", type: "boolean", defaultValue: true },
       { key: "governanca.modulos.finops.habilitado", label: "FinOps", type: "boolean", defaultValue: true },
       { key: "governanca.modulos.feature_flags.habilitado", label: "Feature flags e configuração", type: "boolean", defaultValue: true },
+    ],
+  },
+  {
+    title: "Calendário unificado",
+    subtitle: "Consulta da agenda (GET /calendar): janela e página padrão, quem enxerga cada tipo de item, severidade por origem e duração padrão de compromisso.",
+    fields: [
+      { key: "governanca.calendario.janela_padrao_dias", label: "Janela padrão da consulta (dias a partir de hoje)", type: "integer", defaultValue: 30, min: 1, max: 366 },
+      { key: "governanca.calendario.tamanho_pagina_padrao", label: "Itens por página quando não informado", type: "integer", defaultValue: 50, min: 1, max: 200 },
+      { key: "governanca.calendario.duracao_padrao_min", label: "Duração padrão de compromisso sem fim (minutos)", type: "integer", defaultValue: 60, min: 1, max: 1440 },
+      {
+        key: "governanca.calendario.severidade_por_fonte",
+        label: "Severidade por tipo de origem",
+        type: "text",
+        defaultValue: "LEGAL_DEADLINE=CRITICAL, FISCAL=CRITICAL, BILLING=WARNING, GUARANTEE=WARNING",
+        helper: "Formato TIPO=NIVEL (INFO, WARNING ou CRITICAL). Tipo fora da lista fica INFO.",
+      },
+      {
+        key: "governanca.calendario.permissao_por_fonte",
+        label: "Permissão exigida para ver cada tipo de origem",
+        type: "text",
+        defaultValue: "CRM_TASK=crm:tasks:read, VISIT=crm:visits:read, LEGAL_DEADLINE=legal:read, RENEWAL=procurement:read|legal:read, GUARANTEE=legal:read|construction:read, BILLING=billing:read, CONSTRUCTION=construction:read, MAINTENANCE=construction:read, FISCAL=correspondent:fiscal, COMMITMENT=governance:calendar:read",
+        helper: "Formato TIPO=permissão; use | para aceitar qualquer uma de várias. Tipo sem permissão listada fica oculto para todos.",
+      },
     ],
   },
   {
@@ -109,10 +134,16 @@ export default function GovernancaTab() {
     setError("");
     setSuccess("");
     try {
-      const changed = ALL_FIELDS.filter((field) => values[field.key] !== original[field.key]);
+      const changed = ALL_FIELDS.filter((field) => String(values[field.key]) !== String(original[field.key]));
       for (const field of changed) {
-        const value = values[field.key];
+        let value = values[field.key];
         if (field.type === "text" && (typeof value !== "string" || value.trim() === "")) continue; // vazio não é aceito pela API
+        if (field.type === "integer") {
+          value = toNumber(value);
+          if (Number.isNaN(value) || !Number.isInteger(value) || value < field.min || value > field.max) {
+            throw new Error(`"${field.label}" deve ser um número inteiro entre ${field.min} e ${field.max}.`);
+          }
+        }
         await updateSetting(field.key, value);
       }
       setOriginal(values);
@@ -170,6 +201,15 @@ export default function GovernancaTab() {
                       checked={Boolean(values[field.key])}
                       onChange={(e) => handleChange(field.key, e.target.checked)}
                     />
+                  ) : field.type === "integer" ? (
+                    <FormField key={field.key} label={field.label} htmlFor={`gov-${field.key}`} helper={`Entre ${field.min} e ${field.max}.`}>
+                      <DecimalInput
+                        id={`gov-${field.key}`}
+                        maxDecimals={0}
+                        value={String(values[field.key] ?? "")}
+                        onChange={(e) => handleChange(field.key, e.target.value)}
+                      />
+                    </FormField>
                   ) : (
                     <FormField key={field.key} label={field.label} htmlFor={`gov-${field.key}`} helper={field.helper}>
                       <Input
