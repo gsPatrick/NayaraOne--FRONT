@@ -95,6 +95,19 @@ const BI_GROUPS = [
       },
     ],
   },
+  {
+    title: "Versões dos indicadores",
+    subtitle: "Mudar a fórmula de um indicador cria uma nova versão e nunca altera os números já registrados. Toda nova versão exige o motivo da mudança.",
+    fields: [
+      {
+        key: "analytics.metrica.motivo_minimo_caracteres",
+        label: "Mínimo de caracteres do motivo de uma nova versão",
+        type: "number",
+        defaultValue: 10,
+        helper: "Número inteiro de 1 a 500. Padrão do livro: 10.",
+      },
+    ],
+  },
 ];
 
 const ALL_FIELDS = BI_GROUPS.flatMap((group) => group.fields);
