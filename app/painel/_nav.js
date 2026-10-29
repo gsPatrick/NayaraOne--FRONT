@@ -15,6 +15,8 @@ export const NAV_SECTIONS = [
           { label: "Propostas", href: "/painel/crm/propostas" },
           { label: "Painel de indicadores", href: "/painel/crm/dashboard" },
           { label: "Vendas/CRM (BI)", href: "/painel/analytics/crm" },
+          { label: "Marketing (BI)", href: "/painel/analytics/marketing", permission: "marketing:attribution:read" },
+          { label: "Atendimento (BI)", href: "/painel/analytics/atendimento", permission: "crm:feedback:read" },
           { label: "Feedback & Reclamações", href: "/painel/crm/feedback" },
         ],
       },
