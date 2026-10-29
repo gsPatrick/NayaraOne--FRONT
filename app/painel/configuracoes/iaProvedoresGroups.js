@@ -25,7 +25,14 @@ export const IA_PROVEDORES_GROUPS = [
         label: "Ambiente da NAY",
         type: "text",
         defaultValue: "LAB",
-        helper: "LAB ou PRODUCAO. Em PRODUCAO o provedor de testes é recusado para usuário final, sem exceção.",
+        helper: "LAB ou PRODUCAO. Em PRODUCAO o provedor de testes é recusado para usuário final, sem exceção. Ir a PRODUCAO só é aceito com o portão de liberação completo (red-team, pentest, avaliação por agente, revisão de privacidade e dos provedores, e a aprovação final de outra pessoa); sem ele a API recusa e lista o que falta.",
+      },
+      {
+        key: "ia.empresa.lab",
+        label: "Esta empresa é de laboratório",
+        type: "boolean",
+        defaultValue: false,
+        helper: "Desligado por padrão. Em ambiente LAB, o provedor real de modelo só roda em empresa marcada como laboratório (dados sintéticos); nas demais, só o provedor de testes responde.",
       },
       {
         key: "ia.provedor.safety_tier_minimo_critico",
