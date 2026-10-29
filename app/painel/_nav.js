@@ -58,6 +58,7 @@ export const NAV_SECTIONS = [
           { label: "Visão geral", href: "/painel/contratos" },
           { label: "Contratos", href: "/painel/contratos/lista" },
           { label: "Locação (cobrança e reajuste)", href: "/painel/contratos/locacao" },
+          { label: "Locação (BI)", href: "/painel/analytics/locacao" },
           { label: "Garantias", href: "/painel/contratos/garantias" },
           { label: "Vistorias", href: "/painel/contratos/vistorias" },
           { label: "Entrega de chaves", href: "/painel/contratos/entrega-chaves" },
