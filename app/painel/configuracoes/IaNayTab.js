@@ -22,6 +22,7 @@ import { IA_ROTEAMENTO_GROUPS } from "./iaRoteamentoGroups";
 import { IA_FALLBACK_GROUPS } from "./iaFallbackGroups";
 import { IA_CACHE_GROUPS } from "./iaCacheGroups";
 import { IA_EXECUCAO_GROUPS } from "./iaExecucaoGroups";
+import { IA_CORRESPONDENTE_GROUPS } from "./iaCorrespondenteGroups";
 import { IA_CONVERSA_GROUPS } from "./iaConversaGroups";
 
 // Parâmetros da NAY (Marco 9, bloco A) que o administrador controla. A API valida (SETTINGS_SCHEMA); o padrão mostrado é
@@ -39,6 +40,7 @@ const IA_GROUPS = [
   ...IA_FALLBACK_GROUPS,
   ...IA_CACHE_GROUPS,
   ...IA_EXECUCAO_GROUPS,
+  ...IA_CORRESPONDENTE_GROUPS,
   ...IA_CONVERSA_GROUPS,
   {
     title: "Chave geral da NAY",
