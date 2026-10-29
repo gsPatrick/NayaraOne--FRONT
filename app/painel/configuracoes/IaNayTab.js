@@ -22,6 +22,7 @@ import { IA_ROTEAMENTO_GROUPS } from "./iaRoteamentoGroups";
 import { IA_FALLBACK_GROUPS } from "./iaFallbackGroups";
 import { IA_CACHE_GROUPS } from "./iaCacheGroups";
 import { IA_EXECUCAO_GROUPS } from "./iaExecucaoGroups";
+import { IA_OBRAS_GROUPS } from "./iaObrasGroups";
 import { IA_ATENDIMENTO_GROUPS } from "./iaAtendimentoGroups";
 import { IA_CORRESPONDENTE_GROUPS } from "./iaCorrespondenteGroups";
 import { IA_CONVERSA_GROUPS } from "./iaConversaGroups";
@@ -43,6 +44,7 @@ const IA_GROUPS = [
   ...IA_FALLBACK_GROUPS,
   ...IA_CACHE_GROUPS,
   ...IA_EXECUCAO_GROUPS,
+  ...IA_OBRAS_GROUPS,
   ...IA_ATENDIMENTO_GROUPS,
   ...IA_CORRESPONDENTE_GROUPS,
   ...IA_CONVERSA_GROUPS,
