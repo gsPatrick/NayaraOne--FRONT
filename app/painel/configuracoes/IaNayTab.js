@@ -19,6 +19,7 @@ import { IA_PROVEDORES_GROUPS } from "./iaProvedoresGroups";
 import { IA_MEMORIA_GROUPS } from "./iaMemoriaGroups";
 import { IA_RAG_GROUPS } from "./iaRagGroups";
 import { IA_ROTEAMENTO_GROUPS } from "./iaRoteamentoGroups";
+import { IA_FALLBACK_GROUPS } from "./iaFallbackGroups";
 import { IA_EXECUCAO_GROUPS } from "./iaExecucaoGroups";
 import { IA_CONVERSA_GROUPS } from "./iaConversaGroups";
 
@@ -34,6 +35,7 @@ const IA_GROUPS = [
   ...IA_MEMORIA_GROUPS,
   ...IA_RAG_GROUPS,
   ...IA_ROTEAMENTO_GROUPS,
+  ...IA_FALLBACK_GROUPS,
   ...IA_EXECUCAO_GROUPS,
   ...IA_CONVERSA_GROUPS,
   {
