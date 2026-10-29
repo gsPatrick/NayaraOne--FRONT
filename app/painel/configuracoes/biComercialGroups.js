@@ -15,8 +15,8 @@ export const BI_COMERCIAL_GROUPS = [
         key: "analytics.comercial.primeira_resposta_inclui_nay",
         label: "A resposta da NAY conta como primeira resposta ao lead",
         type: "boolean",
-        defaultValue: true,
-        helper: "Ligado por padrão. Desligado, só a resposta de uma pessoa da equipe conta para o tempo de primeira resposta.",
+        defaultValue: false,
+        helper: "Desligado por padrão: resposta automática não conta, só a mensagem de saída de uma pessoa da equipe vale para o tempo de primeira resposta. Ligado, a primeira resposta da NAY também conta.",
       },
       {
         key: "analytics.comercial.janela_recalculo_dias",
