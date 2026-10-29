@@ -1,4 +1,4 @@
-// Envio a fornecedores (Marco 9, bloco B: M9-D214, M9-D216 e M9-D218). Padrão = Maturacao/demandas/parametros.csv; a API valida a faixa.
+// Envio a fornecedores (Marco 9, bloco B: M9-D214, M9-D215, M9-D216 e M9-D218). Padrão = Maturacao/demandas/parametros.csv; a API valida a faixa.
 // Entra na aba "Registro de integrações".
 export const ENVIO_GROUPS = [
   {
@@ -31,6 +31,17 @@ export const ENVIO_GROUPS = [
     fields: [
       { key: "integration.rate_limit.reserve_pct", label: "Reserva da cota para operações essenciais (%)", type: "integer", defaultValue: 20, helper: "De 0 a 100. Quando o que resta da cota do fornecedor fica abaixo deste percentual do limite, um alerta é aberto e só operações essenciais ou perigosas continuam saindo." },
       { key: "integration.rate_limit.fallback_wait_s", label: "Espera quando a cota acaba sem data de renovação (segundos)", type: "integer", defaultValue: 300, helper: "De 1 a 86400. Usado quando o fornecedor não informa quando a cota volta." },
+    ],
+  },
+  {
+    title: "Envio sem resposta (timeout): conferir com o fornecedor antes de repetir",
+    subtitle:
+      "Quando um pedido perigoso (como um pagamento) fica sem resposta, o sistema não sabe se o fornecedor executou. Ele marca o envio como incerto, pergunta ao fornecedor o que aconteceu e só repete se o fornecedor garantir que não existe registro. Esgotadas as consultas, o envio vai para a fila morta e uma pessoa confere no extrato.",
+    fields: [
+      { key: "integration.unknown.max_reconcile_attempts", label: "Consultas ao fornecedor antes de pedir revisão humana", type: "integer", defaultValue: 5, helper: "De 1 a 20. Cada consulta que não deu resposta conclusiva conta; ao esgotar, o envio vai para a fila morta com um incidente crítico." },
+      { key: "integration.unknown.reconcile_intervals_s", label: "Espera antes de cada consulta (segundos)", type: "text", defaultValue: "30,120,600,3600,21600", helper: "Segundos inteiros separados por vírgula, de 1 a 20 valores. A primeira espera conta a partir do envio incerto; se houver mais consultas que esperas, a última se repete. Padrão do livro: 30 s, 2 min, 10 min, 1 h e 6 h." },
+      { key: "integration.unknown.reconcile_job_interval_s", label: "Intervalo entre as rodadas de conferência (segundos)", type: "integer", defaultValue: 10, helper: "De 1 a 3600. De quanto em quanto tempo o sistema procura envios incertos com a consulta vencida." },
+      { key: "integration.dispatch.orphan_interval_s", label: "Intervalo da busca por envios presos em andamento (segundos)", type: "integer", defaultValue: 60, helper: "De 5 a 3600. Procura envios que ficaram em andamento depois de uma queda do sistema; o tempo para considerar um envio preso é o parâmetro de envios em andamento sem resposta." },
     ],
   },
   {
