@@ -141,6 +141,19 @@ const BI_GROUPS = [
     ],
   },
   {
+    title: "NAY Diretoria no BI",
+    subtitle: "A NAY explica os indicadores só com as ferramentas de leitura do BI (valor, variação, decomposição, alertas, origem, painel e frescor). Ela nunca escreve consulta ao banco e nunca recebe dado mascarado.",
+    fields: [
+      {
+        key: "analytics.nay.max_itens_resposta",
+        label: "Máximo de itens por resposta de ferramenta da NAY",
+        type: "number",
+        defaultValue: 50,
+        helper: "De 1 a 200. Decomposição por dimensão, alertas e referências de origem vêm cortados neste tamanho e marcados como truncados. Padrão: 50.",
+      },
+    ],
+  },
+  {
     title: "Atualização dos painéis",
     subtitle: "Como os números dos painéis são recalculados quando algo acontece (um lançamento liquidado, uma oportunidade ganha) e pela passagem do tempo.",
     fields: [
