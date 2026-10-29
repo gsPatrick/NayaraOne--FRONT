@@ -121,6 +121,54 @@ const GOVERNANCA_GROUPS = [
       { key: "governanca.dados.merge.area_diferenca_max_pct", label: "Fila de união de cadastros: diferença máxima de área entre imóveis (%)", type: "integer", defaultValue: 3, min: 0, max: 100 },
       { key: "governanca.dados.merge.deteccao_hora", label: "Fila de união de cadastros: hora da detecção noturna (0 a 23, horário de Brasília)", type: "integer", defaultValue: 3, min: 0, max: 23 },
       { key: "governanca.dados.merge.lista_tamanho_padrao", label: "Fila de união de cadastros: itens por página", type: "integer", defaultValue: 50, min: 1, max: 200 },
+      {
+        key: "governanca.dados.qualidade.pesos",
+        label: "Qualidade de cadastro: peso de cada regra",
+        type: "text",
+        defaultValue:
+          "PERSON_TAX_ID_PRESENT=20, PERSON_TAX_ID_VALID=25, PERSON_CONTACT_PRESENT=15, PERSON_ADDRESS_COMPLETE=15, PERSON_BIRTH_COHERENT=10, PERSON_NAME_NO_DIGITS=5, PERSON_ROLE_DEFINED=10, PROPERTY_REGISTRY_PRESENT=20, PROPERTY_ADDRESS_COMPLETE=20, PROPERTY_OWNER_LINKED=25, PROPERTY_AREA_POSITIVE=15, PROPERTY_PURPOSE_DEFINED=10, PROPERTY_MEDIA_MIN=10, SUPPLIER_TAX_ID_VALID=30, SUPPLIER_CONTACT_PRESENT=20, SUPPLIER_BANK_VALIDATED=25, SUPPLIER_CATEGORY_DEFINED=10, SUPPLIER_QUALIFICATION_VALID=15",
+        helper:
+          "Formato REGRA=peso (0 a 999). A nota do cadastro é 100 x (soma dos pesos das regras que passam) / (soma dos pesos das regras que se aplicam). Pessoa: PERSON_*; imóvel: PROPERTY_*; fornecedor: SUPPLIER_*.",
+      },
+      {
+        key: "governanca.dados.qualidade.severidades",
+        label: "Qualidade de cadastro: severidade de cada regra",
+        type: "text",
+        defaultValue:
+          "PERSON_TAX_ID_PRESENT=HIGH, PERSON_TAX_ID_VALID=CRITICAL, PERSON_CONTACT_PRESENT=MEDIUM, PERSON_ADDRESS_COMPLETE=MEDIUM, PERSON_BIRTH_COHERENT=MEDIUM, PERSON_NAME_NO_DIGITS=LOW, PERSON_ROLE_DEFINED=LOW, PROPERTY_REGISTRY_PRESENT=HIGH, PROPERTY_ADDRESS_COMPLETE=HIGH, PROPERTY_OWNER_LINKED=CRITICAL, PROPERTY_AREA_POSITIVE=MEDIUM, PROPERTY_PURPOSE_DEFINED=MEDIUM, PROPERTY_MEDIA_MIN=LOW, SUPPLIER_TAX_ID_VALID=CRITICAL, SUPPLIER_CONTACT_PRESENT=MEDIUM, SUPPLIER_BANK_VALIDATED=HIGH, SUPPLIER_CATEGORY_DEFINED=LOW, SUPPLIER_QUALIFICATION_VALID=MEDIUM",
+        helper: "Formato REGRA=LOW, MEDIUM, HIGH ou CRITICAL. A regra reprovada abre um problema com essa severidade.",
+      },
+      {
+        key: "governanca.dados.qualidade.regras_desativadas",
+        label: "Qualidade de cadastro: regras fora do cálculo",
+        type: "text",
+        defaultValue: "NENHUMA",
+        helper: "NENHUMA ou a lista de regras (separadas por vírgula) que deixam de valer. Os problemas abertos dessas regras são encerrados na próxima avaliação.",
+      },
+      {
+        key: "governanca.dados.qualidade.endereco_campos",
+        label: "Qualidade de cadastro: campos que o endereço completo exige",
+        type: "text",
+        defaultValue: "zip_code, street, number, neighborhood, city, state",
+        helper: "Campos entre zip_code (CEP), street (logradouro), number (número), neighborhood (bairro), city (cidade) e state (UF).",
+      },
+      { key: "governanca.dados.qualidade.midia_minima", label: "Qualidade de cadastro: quantidade mínima de fotos/mídias do imóvel", type: "integer", defaultValue: 1, min: 0, max: 100 },
+      {
+        key: "governanca.dados.qualidade.categorias_qualificacao",
+        label: "Qualidade de cadastro: categorias de fornecedor que exigem qualificação vigente",
+        type: "text",
+        defaultValue: "*",
+        helper: "* vale para todo fornecedor (Compras já exige qualificação de todos); ou liste categorias separadas por vírgula.",
+      },
+      {
+        key: "governanca.dados.qualidade.severidade_revisao",
+        label: "Qualidade de cadastro: a partir de qual severidade o problema vai à fila de revisão do curador",
+        type: "text",
+        defaultValue: "CRITICAL",
+        helper: "LOW, MEDIUM, HIGH ou CRITICAL. Padrão CRITICAL.",
+      },
+      { key: "governanca.dados.qualidade.varredura_hora", label: "Qualidade de cadastro: hora da varredura noturna (0 a 23, horário de Brasília)", type: "integer", defaultValue: 3, min: 0, max: 23 },
+      { key: "governanca.dados.qualidade.lista_tamanho_padrao", label: "Qualidade de cadastro: itens por página da consulta", type: "integer", defaultValue: 50, min: 1, max: 200 },
     ],
   },
   {
