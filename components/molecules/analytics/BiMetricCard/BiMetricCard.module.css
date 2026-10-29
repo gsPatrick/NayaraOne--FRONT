@@ -1,0 +1,20 @@
+.card { background: var(--color-canvas-raised); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); box-shadow: var(--shadow-sm); min-width: 0; }
+.alert { border-color: var(--color-danger); }
+.top { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-2); }
+.title { margin: 0; font-size: var(--text-caption); font-weight: 600; color: var(--color-ink-muted); text-transform: uppercase; letter-spacing: var(--tracking-wide); }
+.nature { font-size: var(--text-micro); font-weight: 600; color: var(--color-ink-muted); border: 1px solid var(--color-border); border-radius: 999px; padding: 0 var(--space-2); white-space: nowrap; }
+.value { margin: 0; font-family: var(--font-display); font-size: var(--text-h2); font-weight: 800; letter-spacing: var(--tracking-tight); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.muted { color: var(--color-ink-muted); font-size: var(--text-body); font-weight: 600; white-space: normal; }
+.alertText { margin: 0; color: var(--color-danger); font-size: var(--text-caption); font-weight: 600; }
+.series { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.seriesItem { display: flex; justify-content: space-between; gap: var(--space-3); align-items: baseline; }
+.seriesLabel small { color: var(--color-ink-muted); }
+.seriesValue { font-family: var(--font-display); font-size: var(--text-h5, var(--text-body)); white-space: nowrap; }
+.facts { margin: 0; display: grid; gap: var(--space-1); }
+.fact { display: flex; justify-content: space-between; gap: var(--space-3); font-size: var(--text-caption); }
+.fact dt { color: var(--color-ink-muted); }
+.fact dd { margin: 0; font-weight: 600; }
+.items { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-1); font-size: var(--text-caption); }
+.item { display: flex; justify-content: space-between; gap: var(--space-3); }
+.footer { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; margin-top: auto; }
+.link { font-size: var(--text-caption); font-weight: 600; color: var(--color-brand); }

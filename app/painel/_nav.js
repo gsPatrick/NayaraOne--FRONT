@@ -14,6 +14,7 @@ export const NAV_SECTIONS = [
           { label: "Funil", href: "/painel/crm" },
           { label: "Propostas", href: "/painel/crm/propostas" },
           { label: "Painel de indicadores", href: "/painel/crm/dashboard" },
+          { label: "Vendas/CRM (BI)", href: "/painel/analytics/crm" },
           { label: "Feedback & Reclamações", href: "/painel/crm/feedback" },
         ],
       },
