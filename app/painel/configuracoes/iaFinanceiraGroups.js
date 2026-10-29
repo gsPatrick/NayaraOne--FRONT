@@ -14,6 +14,24 @@ export const IA_FINANCEIRA_GROUPS = [
         helper: "Número inteiro de 1 a 200. Limita quantos casos de anomalia abertos a NAY Financeira lista na resposta."
       },
       {
+        key: "ia.financeira.sugestoes_max_itens",
+        label: "Máximo de sugestões de cobrança por consulta",
+        type: "integer",
+        min: 1,
+        max: 50,
+        defaultValue: 10,
+        helper: "Número inteiro de 1 a 50. Quantos títulos vencidos a NAY Financeira sugere cobrar ou renegociar por consulta; cada sugestão vira uma recomendação para a equipe decidir, e nada é cobrado pela NAY."
+      },
+      {
+        key: "ia.financeira.dias_renegociacao",
+        label: "Dias de atraso a partir dos quais a sugestão é renegociação",
+        type: "integer",
+        min: 1,
+        max: 365,
+        defaultValue: 30,
+        helper: "Número inteiro de 1 a 365. Título vencido há até este número de dias gera sugestão de cobrança; acima, sugestão de avaliar renegociação."
+      },
+      {
         key: "ia.financeira.termos_escopo",
         label: "Termos do assunto da Financeira",
         type: "text",
