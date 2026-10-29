@@ -1,0 +1,65 @@
+// Parâmetros do RAG da NAY (Marco 9, M9-D022): o que a NAY pode ler de documentos, links e conhecimento, e como divide o texto. Padrão de Maturacao/demandas/parametros.csv; a API valida.
+export const IA_RAG_GROUPS = [
+  {
+    title: "Documentos e links que a NAY pode ler",
+    subtitle: "Antes de a NAY ler um documento ou um link, ele passa por verificação de vírus, classificação, retirada de senhas e chaves e divisão em trechos. Só entra o que foi autorizado e classificado. A NAY nunca busca um link sozinha: só quando uma pessoa que administra a NAY pede.",
+    fields: [
+      {
+        key: "ia.rag.indexar_restricted",
+        label: "Permitir que documentos restritos sejam lidos pela NAY",
+        type: "boolean",
+        defaultValue: false,
+        helper: "Desligado por padrão: documento classificado como restrito não entra na base da NAY. Ligando, ele só é usado por quem tem a permissão de conteúdo restrito e informa a finalidade.",
+      },
+      {
+        key: "ia.rag.dominios_permitidos",
+        label: "Sites que a NAY pode ler (links)",
+        type: "text",
+        defaultValue: "",
+        helper: "Lista de domínios separados por vírgula, aceita *.dominio.com. Vazio (padrão) = nenhum link. O domínio também precisa estar na lista de endereços do uso nay_document em Integrações (as duas listas valem; a mais restrita vence).",
+      },
+      {
+        key: "ia.rag.segredos_rejeitar_percentual",
+        label: "Rejeitar documento com mais de quantos % de senhas e chaves",
+        type: "integer",
+        min: 1,
+        max: 100,
+        defaultValue: 50,
+        helper: "Número inteiro de 1 a 100. Trechos com senha, chave ou string de conexão são sempre retirados; acima deste percentual do texto o documento inteiro é rejeitado.",
+      },
+    ],
+  },
+  {
+    title: "Como a NAY divide os documentos",
+    subtitle: "A base da NAY guarda trechos com a origem, a versão, a classificação e a vigência.",
+    fields: [
+      {
+        key: "ia.rag.chunk_tokens",
+        label: "Tamanho de cada trecho (palavras)",
+        type: "integer",
+        min: 50,
+        max: 2000,
+        defaultValue: 400,
+        helper: "Número inteiro de 50 a 2000. Vale para os documentos indexados daqui em diante; para refazer os antigos, peça nova indexação.",
+      },
+      {
+        key: "ia.rag.chunk_overlap",
+        label: "Repetição entre trechos vizinhos (palavras)",
+        type: "integer",
+        min: 0,
+        max: 500,
+        defaultValue: 50,
+        helper: "Número inteiro de 0 a 500, sempre menor que o tamanho do trecho. Evita perder o sentido no corte.",
+      },
+      {
+        key: "ia.rag.embedding_lote",
+        label: "Trechos enviados por vez ao modelo de leitura",
+        type: "integer",
+        min: 1,
+        max: 256,
+        defaultValue: 16,
+        helper: "Número inteiro de 1 a 256. Lote menor é mais lento, maior pode ser recusado pelo fornecedor.",
+      },
+    ],
+  },
+];

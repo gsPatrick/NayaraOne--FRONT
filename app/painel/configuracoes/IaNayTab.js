@@ -17,6 +17,7 @@ import { IA_ORCAMENTO_GROUPS } from "./iaOrcamentoGroups";
 import { IA_AVALIACAO_GROUPS } from "./iaAvaliacaoGroups";
 import { IA_PROVEDORES_GROUPS } from "./iaProvedoresGroups";
 import { IA_MEMORIA_GROUPS } from "./iaMemoriaGroups";
+import { IA_RAG_GROUPS } from "./iaRagGroups";
 import { IA_ROTEAMENTO_GROUPS } from "./iaRoteamentoGroups";
 
 // Parâmetros da NAY (Marco 9, bloco A) que o administrador controla. A API valida (SETTINGS_SCHEMA); o padrão mostrado é
@@ -29,6 +30,7 @@ const IA_GROUPS = [
   ...IA_AVALIACAO_GROUPS,
   ...IA_PROVEDORES_GROUPS,
   ...IA_MEMORIA_GROUPS,
+  ...IA_RAG_GROUPS,
   ...IA_ROTEAMENTO_GROUPS,
   {
     title: "Chave geral da NAY",
