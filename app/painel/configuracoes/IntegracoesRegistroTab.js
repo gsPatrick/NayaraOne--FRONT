@@ -19,6 +19,7 @@ import { ENVIO_GROUPS } from "./integracoesEnvioGroups";
 import { SAUDE_GROUPS } from "./integracoesSaudeGroups";
 import { CONTINGENCIA_GROUPS } from "./integracoesContingenciaGroups";
 import { ACOES_GROUPS } from "./integracoesAcoesGroups";
+import { WEBHOOK_GROUPS } from "./integracoesWebhookGroups";
 
 // Parâmetros do registro de integrações (Marco 9, M9-D200 e seguintes do bloco B) que o administrador controla.
 // A API valida (SETTINGS_SCHEMA); o padrão mostrado é o do catálogo (Maturacao/demandas/parametros.csv) e só vale
@@ -185,7 +186,7 @@ REGISTRO_GROUPS.push({
     { key: "integration.inbox.raw_retention_days", label: "Dias que o conteúdo de um evento processado fica guardado", type: "integer", defaultValue: 30, helper: "De 1 a 3650. Depois disso só a impressão digital (hash) do conteúdo permanece." },
     { key: "integration.inbox.retention_days", label: "Dias que o registro do evento fica guardado", type: "integer", defaultValue: 90, helper: "De 1 a 3650. Evento em fila morta com erro aberto não é apagado." },
     { key: "integration.inbox.dlq_retry_retention_days", label: "Dias que o conteúdo de um evento na fila morta fica guardado para nova tentativa", type: "integer", defaultValue: 7, helper: "De 1 a 365. Vale para evento que esgotou as tentativas; evento com dado inválido nunca guarda o conteúdo." },
-    { key: "integration.webhook.max_body_bytes", label: "Tamanho máximo do conteúdo guardado por evento (bytes)", type: "integer", defaultValue: 1048576, helper: "De 1024 a 52428800. Acima disso só o hash e o tamanho ficam gravados." },
+    { key: "integration.webhook.max_body_bytes", label: "Tamanho máximo do conteúdo guardado por evento (bytes)", type: "integer", defaultValue: 1048576, helper: "De 1024 a 52428800. Webhook com conteúdo maior que isso é recusado (413); o valor só aperta o teto da plataforma (1 MiB por padrão), não o aumenta." },
     { key: "integration.inbox.header_allowlist", label: "Cabeçalhos da entrega que ficam gravados", type: "text", defaultValue: "content-type,user-agent,x-request-id,x-webhook-id,x-event-id,x-event-type,x-api-version,x-webhook-timestamp", helper: "Nomes separados por vírgula. Authorization e cookies nunca são gravados, mesmo que estejam na lista." },
   ],
 });
@@ -227,6 +228,8 @@ REGISTRO_GROUPS.push(...SAUDE_GROUPS);
 // Contingência (M9-D226): prazo da fila por modo, avisos, tarefa manual e encerramento.
 REGISTRO_GROUPS.push(...CONTINGENCIA_GROUPS);
 REGISTRO_GROUPS.push(...ACOES_GROUPS);
+// Rota pública de webhooks (M9-D211): alias curto, limite por minuto e tamanho do canal.
+REGISTRO_GROUPS.push(...WEBHOOK_GROUPS);
 
 // Segurança das integrações (M9-D248, M9-D244, M9-D245): grupos no arquivo ao lado para esta aba não crescer sem limite.
 REGISTRO_GROUPS.push(...INTEGRACOES_SEGURANCA_GROUPS);
