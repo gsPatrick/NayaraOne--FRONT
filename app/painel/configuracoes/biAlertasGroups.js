@@ -49,6 +49,20 @@ export const BI_ALERTAS_GROUPS = [
         defaultValue: "/painel/centro-de-comando",
         helper: "Caminho dentro do sistema, começando por /. É o link que vai no aviso e na tarefa do alerta.",
       },
+      {
+        key: "analytics.alert.lista_tamanho_padrao",
+        label: "Alertas por página na lista",
+        type: "number",
+        defaultValue: 25,
+        helper: "De 1 a 100. Vale quando o pedido não informa o tamanho da página.",
+      },
+      {
+        key: "analytics.alert.lista_tamanho_maximo",
+        label: "Maior página aceita na lista de alertas",
+        type: "number",
+        defaultValue: 100,
+        helper: "De 1 a 100 (o livro limita em 100). Pedido com página maior é recusado.",
+      },
     ],
   },
   {
