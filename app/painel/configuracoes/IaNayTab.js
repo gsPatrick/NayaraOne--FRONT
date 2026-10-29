@@ -12,6 +12,7 @@ import { listSettings, updateSetting } from "@/lib/api/settings";
 import { toNumber } from "@/lib/format";
 import styles from "./page.module.css";
 import { IA_SEGURANCA_GROUPS } from "./iaSegurancaGroups";
+import { IA_APROVACAO_GROUPS } from "./iaAprovacaoGroups";
 import { IA_ORCAMENTO_GROUPS } from "./iaOrcamentoGroups";
 import { IA_AVALIACAO_GROUPS } from "./iaAvaliacaoGroups";
 
@@ -20,6 +21,7 @@ import { IA_AVALIACAO_GROUPS } from "./iaAvaliacaoGroups";
 // as suas entradas em IA_GROUPS.
 const IA_GROUPS = [
   ...IA_SEGURANCA_GROUPS,
+  ...IA_APROVACAO_GROUPS,
   ...IA_ORCAMENTO_GROUPS,
   ...IA_AVALIACAO_GROUPS,
   {
