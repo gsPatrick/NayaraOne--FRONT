@@ -28,6 +28,7 @@ import { BI_CARGA_GROUPS } from "./biCargaGroups";
 import { BI_SNAPSHOT_GROUPS } from "./biSnapshotGroups";
 import { BI_ALERTAS_GROUPS } from "./biAlertasGroups";
 import { BI_IMOVEIS_KPI_GROUPS } from "./biImoveisKpiGroups";
+import { BI_CORRETORES_KPI_GROUPS } from "./biCorretoresKpiGroups";
 
 // Parâmetros do BI e Centro de Comando (Marco 9, bloco D) que o administrador controla. A API valida (SETTINGS_SCHEMA); o padrão
 // mostrado é o de Maturacao/demandas/parametros.csv e só vale enquanto a empresa não configurou nada. Cada demanda do bloco
@@ -215,7 +216,7 @@ const BI_GROUPS = [
   },
 ];
 
-const ALL_GROUPS = [...BI_GROUPS, ...BI_QUALIDADE_GROUPS, ...BI_OBRAS_GROUPS, ...BI_OBRAS_KPI_GROUPS, ...BI_COMERCIAL_GROUPS, ...BI_LOCACAO_GROUPS, ...BI_JURIDICO_GROUPS, ...BI_DESEMPENHO_GROUPS, ...BI_DRILLDOWN_GROUPS, ...BI_FINANCEIRO_GROUPS, ...BI_CAIXA_GROUPS, ...BI_FINANCEIRO_JANELAS_GROUPS, ...BI_FINANCEIRO_RESULTADOS_GROUPS, ...BI_CARGA_GROUPS, ...BI_SNAPSHOT_GROUPS, ...BI_ALERTAS_GROUPS, ...BI_FUNIL_COMERCIAL_GROUPS, ...BI_IMOVEIS_KPI_GROUPS];
+const ALL_GROUPS = [...BI_GROUPS, ...BI_QUALIDADE_GROUPS, ...BI_OBRAS_GROUPS, ...BI_OBRAS_KPI_GROUPS, ...BI_COMERCIAL_GROUPS, ...BI_LOCACAO_GROUPS, ...BI_JURIDICO_GROUPS, ...BI_DESEMPENHO_GROUPS, ...BI_DRILLDOWN_GROUPS, ...BI_FINANCEIRO_GROUPS, ...BI_CAIXA_GROUPS, ...BI_FINANCEIRO_JANELAS_GROUPS, ...BI_FINANCEIRO_RESULTADOS_GROUPS, ...BI_CARGA_GROUPS, ...BI_SNAPSHOT_GROUPS, ...BI_ALERTAS_GROUPS, ...BI_FUNIL_COMERCIAL_GROUPS, ...BI_IMOVEIS_KPI_GROUPS, ...BI_CORRETORES_KPI_GROUPS];
 const ALL_FIELDS = ALL_GROUPS.flatMap((group) => group.fields);
 
 function initialValues() {
