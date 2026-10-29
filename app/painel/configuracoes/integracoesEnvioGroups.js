@@ -24,4 +24,13 @@ export const ENVIO_GROUPS = [
       { key: "integration.retry.rate_limit_max_deferrals", label: "Adiamentos seguidos por limite do fornecedor antes de contar como falha", type: "integer", defaultValue: 100, helper: "De 1 a 10000. Evita que um fornecedor que sempre pede calma segure o envio para sempre." },
     ],
   },
+  {
+    title: "Limite e cota dos fornecedores",
+    subtitle:
+      "O sistema reduz o ritmo antes de chegar no limite do fornecedor. Perto do fim da cota, só o que é essencial (como a confirmação de um pagamento) e as operações perigosas saem; mensagens em massa esperam a renovação. O limite de chamadas por segundo, minuto e dia de cada integração fica na política dela.",
+    fields: [
+      { key: "integration.rate_limit.reserve_pct", label: "Reserva da cota para operações essenciais (%)", type: "integer", defaultValue: 20, helper: "De 0 a 100. Quando o que resta da cota do fornecedor fica abaixo deste percentual do limite, um alerta é aberto e só operações essenciais ou perigosas continuam saindo." },
+      { key: "integration.rate_limit.fallback_wait_s", label: "Espera quando a cota acaba sem data de renovação (segundos)", type: "integer", defaultValue: 300, helper: "De 1 a 86400. Usado quando o fornecedor não informa quando a cota volta." },
+    ],
+  },
 ];
