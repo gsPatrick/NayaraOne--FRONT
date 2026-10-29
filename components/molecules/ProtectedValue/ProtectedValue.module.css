@@ -1,0 +1,38 @@
+.wrap {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* RESTRICTED: o texto é desenhado por CSS (data-dlp-text), não existe como nó de texto; nem "selecionar tudo" o leva. */
+.locked,
+.drawn {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.drawn::before {
+  content: attr(data-dlp-text);
+}
+
+.copy {
+  border: 1px solid var(--color-border, #d0d5dd);
+  background: transparent;
+  color: inherit;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1;
+  padding: 3px 8px;
+  cursor: pointer;
+}
+
+.copy:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.message {
+  font-size: 12px;
+  opacity: 0.8;
+}
