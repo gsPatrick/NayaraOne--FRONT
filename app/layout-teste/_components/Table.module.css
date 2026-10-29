@@ -1,0 +1,22 @@
+.wrap { overflow: auto; max-height: var(--table-max, none); }
+.table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+.table th { position: sticky; top: 0; z-index: 1; background: var(--color-canvas-sunken); height: 32px; padding: 0 10px; text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); border-bottom: 1px solid var(--color-border-strong); white-space: nowrap; }
+.table td { height: 38px; padding: 0 10px; border-bottom: 1px solid var(--color-border); vertical-align: middle; white-space: nowrap; }
+.table tbody tr:hover td { background: var(--color-canvas-sunken); }
+.clickable { cursor: pointer; }
+.sel td { background: var(--color-brand-soft); }
+.right { text-align: right; font-variant-numeric: tabular-nums; }
+.num { font-variant-numeric: tabular-nums; }
+.center { text-align: center; }
+.chk { width: 36px; }
+.sortBtn { display: inline-flex; align-items: center; gap: 3px; background: none; border: 0; padding: 0; font: inherit; color: inherit; text-transform: inherit; letter-spacing: inherit; cursor: pointer; }
+.sortBtn:focus-visible, .rowLink:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 2px; }
+.rowLink { color: var(--color-ink); font-weight: 600; text-decoration: none; font-family: var(--font-mono); font-size: 12px; }
+.table tfoot td { position: sticky; bottom: 0; background: var(--color-canvas-sunken); border-top: 1px solid var(--color-border-strong); border-bottom: 0; font-weight: 600; height: 34px; }
+.strong { font-weight: 500; }
+.sub { display: block; font-size: 11.5px; color: var(--muted); line-height: 14px; }
+.cell2 { line-height: 16px; }
+.table tbody tr.tall td { height: 38px; }
+.pager { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; border-top: 1px solid var(--color-border); font-size: 12px; color: var(--muted); flex-wrap: wrap; }
+.pgBtns { display: flex; gap: 4px; align-items: center; }
+.empty { padding: 28px; text-align: center; color: var(--muted); }

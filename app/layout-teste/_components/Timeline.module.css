@@ -1,0 +1,11 @@
+.list { list-style: none; position: relative; }
+.item { position: relative; display: flex; gap: 10px; padding: 0 0 12px 0; }
+.item:not(:last-child)::before { content: ""; position: absolute; left: 4px; top: 12px; bottom: 0; width: 1px; background: var(--color-border-strong); }
+.dot { width: 9px; height: 9px; border-radius: 50%; margin-top: 4px; flex: none; background: var(--color-border-strong); border: 2px solid var(--color-canvas); box-sizing: content-box; margin-left: -1px; }
+.success .dot { background: var(--color-success); }
+.warning .dot { background: var(--color-warning); }
+.danger .dot { background: var(--color-danger); }
+.info .dot { background: var(--color-info); }
+.brand .dot { background: var(--color-brand); }
+.title { font-size: 13px; font-weight: 500; line-height: 18px; }
+.meta { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }

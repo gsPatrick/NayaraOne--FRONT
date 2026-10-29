@@ -1,0 +1,8 @@
+.chip { display: inline-flex; align-items: center; gap: 5px; height: 20px; padding: 0 7px; border-radius: 4px; font-size: 11.5px; font-weight: 500; white-space: nowrap; border: 1px solid transparent; }
+.dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.neutral { background: var(--color-canvas-sunken); color: var(--color-ink-soft); border-color: var(--color-border); }
+.info { background: var(--color-info-soft); color: var(--color-info); }
+.warning { background: var(--color-warning-soft); color: var(--color-warning); }
+.success { background: var(--color-success-soft); color: var(--color-success); }
+.danger { background: var(--color-danger-soft); color: var(--color-danger); }
+.brand { background: var(--color-accent); color: var(--color-brand); }
