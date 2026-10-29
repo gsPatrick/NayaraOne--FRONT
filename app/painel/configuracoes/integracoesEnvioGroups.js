@@ -33,4 +33,12 @@ export const ENVIO_GROUPS = [
       { key: "integration.rate_limit.fallback_wait_s", label: "Espera quando a cota acaba sem data de renovação (segundos)", type: "integer", defaultValue: 300, helper: "De 1 a 86400. Usado quando o fornecedor não informa quando a cota volta." },
     ],
   },
+  {
+    title: "Métricas e eventos de monitoramento",
+    subtitle:
+      "As métricas e os eventos do sistema (contadores, erros de aplicação com a pilha já sem dado pessoal) saem para o serviço de analytics em segundo plano. Se o serviço estiver fora do ar, o trabalho do ERP não é afetado: o que não sair a tempo é descartado.",
+    fields: [
+      { key: "integration.analytics.drop_after_s", label: "Segundos até descartar uma métrica ou evento que não saiu", type: "integer", defaultValue: 300, helper: "De 1 a 86400. Passado esse tempo, a métrica ou o evento é descartado e não é enviado depois." },
+    ],
+  },
 ];
