@@ -26,6 +26,7 @@ import { IA_JURIDICA_GROUPS } from "./iaJuridicaGroups";
 import { IA_OBRAS_GROUPS } from "./iaObrasGroups";
 import { IA_ATENDIMENTO_GROUPS } from "./iaAtendimentoGroups";
 import { IA_CORRESPONDENTE_GROUPS } from "./iaCorrespondenteGroups";
+import { IA_DOCUMENTAL_GROUPS } from "./iaDocumentalGroups";
 import { IA_CONVERSA_GROUPS } from "./iaConversaGroups";
 import { IA_COMERCIAL_GROUPS } from "./iaComercialGroups";
 import { IA_DIRETORIA_GROUPS } from "./iaDiretoriaGroups";
@@ -49,6 +50,7 @@ const IA_GROUPS = [
   ...IA_OBRAS_GROUPS,
   ...IA_ATENDIMENTO_GROUPS,
   ...IA_CORRESPONDENTE_GROUPS,
+  ...IA_DOCUMENTAL_GROUPS,
   ...IA_CONVERSA_GROUPS,
   ...IA_COMERCIAL_GROUPS,
   ...IA_DIRETORIA_GROUPS,
