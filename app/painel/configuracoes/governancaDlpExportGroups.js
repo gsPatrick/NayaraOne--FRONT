@@ -1,0 +1,118 @@
+// Parâmetros da exportação de arquivos e dos links externos do DLP (Marco 9, M9-D822 e M9-D823) na aba Governança. Padrões de Maturacao/demandas/parametros.csv; a API valida.
+// O prazo do arquivo e do link NÃO está aqui: é o "prazo máximo por classe" do grupo Proteção contra vazamento (DLP).
+export const GOVERNANCA_DLP_EXPORT_GROUPS = [
+  {
+    title: "Exportação de arquivos (DLP)",
+    subtitle:
+      "Como o POST /exports entrega o arquivo: formatos aceitos, separador do CSV, texto da marca d'água, texto no lugar do dado mascarado e o ritmo dos jobs que geram e expiram os arquivos.",
+    fields: [
+      {
+        key: "governanca.dlp.exportacao.formatos",
+        label: "Formatos de arquivo aceitos",
+        type: "text",
+        defaultValue: "CSV,XLSX,PDF",
+        helper: "Entre CSV, XLSX e PDF, separados por vírgula.",
+      },
+      {
+        key: "governanca.dlp.exportacao.csv_separador",
+        label: "Separador das colunas do CSV",
+        type: "text",
+        defaultValue: "PONTO_E_VIRGULA",
+        helper: "PONTO_E_VIRGULA, VIRGULA ou TAB.",
+      },
+      {
+        key: "governanca.dlp.exportacao.marca_dagua.texto",
+        label: "Texto da marca d'água (planilha e PDF)",
+        type: "text",
+        defaultValue: "Nayara One · {usuario} · {data} · {job}",
+        helper: "{usuario}, {data} e {job} são trocados na geração. Aparece na diagonal.",
+      },
+      {
+        key: "governanca.dlp.exportacao.marca_dagua.texto_csv",
+        label: "Linha final da marca d'água no CSV",
+        type: "text",
+        defaultValue: "# Exportado por {usuario} em {data} (job {job})",
+        helper: "Mesmas variáveis. O CSV também ganha a coluna técnica _wm.",
+      },
+      {
+        key: "governanca.dlp.exportacao.mascara_texto",
+        label: "Texto no lugar do dado mascarado",
+        type: "text",
+        defaultValue: "***",
+        helper: "Sai nas colunas RESTRICTED para quem não pode ver em claro.",
+      },
+      {
+        key: "governanca.dlp.exportacao.url_minutos",
+        label: "Validade do endereço de download (minutos)",
+        type: "integer",
+        defaultValue: 15,
+        min: 1,
+        max: 1440,
+        helper: "O endereço nunca vale mais que o arquivo.",
+      },
+      {
+        key: "governanca.dlp.exportacao.job_expiracao_minutos",
+        label: "De quanto em quanto tempo expirar arquivos vencidos (minutos)",
+        type: "integer",
+        defaultValue: 15,
+        min: 1,
+        max: 1440,
+      },
+      {
+        key: "governanca.dlp.exportacao.geracao_timeout_minutos",
+        label: "Tempo máximo para gerar um arquivo (minutos)",
+        type: "integer",
+        defaultValue: 30,
+        min: 1,
+        max: 1440,
+        helper: "Passou disso, o pedido vira falha e a pessoa pede de novo.",
+      },
+    ],
+  },
+  {
+    title: "Links externos (DLP)",
+    subtitle: "Link temporário e revogável de um contrato, laudo ou arquivo para quem não tem login. O prazo vem do teto da classe, no grupo Proteção contra vazamento (DLP).",
+    fields: [
+      {
+        key: "governanca.api.rate_limit.anonimo_por_minuto",
+        label: "Acessos por minuto, por endereço de rede, nas páginas sem login",
+        type: "integer",
+        defaultValue: 60,
+        min: 1,
+        max: 100000,
+        helper: "Passou disso, o acesso recebe 429 e a pessoa espera a janela virar.",
+      },
+      {
+        key: "governanca.dlp.link.url_base",
+        label: "Endereço público que abre o link",
+        type: "text",
+        defaultValue: "AUTO",
+        helper: "AUTO usa o endereço da própria API; ou informe o endereço http(s) público.",
+      },
+      {
+        key: "governanca.dlp.link.prazo_sem_teto_horas",
+        label: "Prazo do link quando a política da classe não tem teto (horas)",
+        type: "integer",
+        defaultValue: 168,
+        min: 1,
+        max: 8760,
+        helper: "Nunca existe link sem prazo.",
+      },
+      {
+        key: "governanca.dlp.link.expiracao_job_minutos",
+        label: "De quanto em quanto tempo marcar links vencidos (minutos)",
+        type: "integer",
+        defaultValue: 5,
+        min: 1,
+        max: 1440,
+      },
+      {
+        key: "governanca.dlp.link.arquivo_texto_marca",
+        label: "Texto da marca d'água do arquivo entregue pelo link",
+        type: "text",
+        defaultValue: "Nayara One · {destinatario} · {data} · {link}",
+        helper: "{destinatario}, {data} e {link} são trocados na entrega.",
+      },
+    ],
+  },
+];
