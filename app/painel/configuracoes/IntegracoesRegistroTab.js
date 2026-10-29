@@ -157,7 +157,7 @@ REGISTRO_GROUPS.push({
 });
 
 // Saúde dos fornecedores (M9-D206): quando o dado vira "desconhecido", a janela do cálculo, a retenção e as metas por criticidade.
-const SLO_AJUDA = "Formato: 99.5% / p95 5 s / p99 12 s / backlog 15 min (sucesso mínimo, tempo de resposta p95 e p99, espera máxima da fila).";
+const SLO_AJUDA = "Formato: 99.5% / p95 5 s / p99 12 s / backlog 15 min (sucesso mínimo em 30 dias, tempo de resposta p95 e p99, espera máxima da fila). O sucesso mínimo vai de 90% a 99,99% e o p99 não pode ser menor que o p95. Só quem gerencia integrações altera; cada mudança fica na auditoria.";
 REGISTRO_GROUPS.push({
   title: "Saúde dos fornecedores",
   subtitle: "Como o sistema mede se cada integração está bem: a meta de cada criticidade e quando a informação deixa de ser confiável.",
