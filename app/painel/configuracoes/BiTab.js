@@ -9,6 +9,7 @@ import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
 import Spinner from "@/components/atoms/Spinner/Spinner";
 import { listSettings, updateSetting } from "@/lib/api/settings";
+import { NatureLegend } from "@/components/molecules/analytics/NatureSeriesChart/NatureSeriesChart";
 import styles from "./page.module.css";
 
 // Parâmetros do BI e Centro de Comando (Marco 9, bloco D) que o administrador controla. A API valida (SETTINGS_SCHEMA); o padrão
@@ -96,15 +97,43 @@ const BI_GROUPS = [
     ],
   },
   {
-    title: "Versões dos indicadores",
-    subtitle: "Mudar a fórmula de um indicador cria uma nova versão e nunca altera os números já registrados. Toda nova versão exige o motivo da mudança.",
+    title: "Atualização dos painéis",
+    subtitle: "Como os números dos painéis são recalculados quando algo acontece (um lançamento liquidado, uma oportunidade ganha) e pela passagem do tempo.",
     fields: [
       {
-        key: "analytics.metrica.motivo_minimo_caracteres",
-        label: "Mínimo de caracteres do motivo de uma nova versão",
+        key: "analytics.refresh.max_linhas_agregado",
+        label: "Máximo de linhas lidas para atualizar um número por evento",
         type: "number",
-        defaultValue: 10,
-        helper: "Número inteiro de 1 a 500. Padrão do livro: 10.",
+        defaultValue: 10000,
+        helper: "De 1 a 1.000.000. Acima disso a atualização espera a janela agendada e o indicador fica marcado como desatualizado. Padrão: 10.000.",
+      },
+      {
+        key: "analytics.refresh.lote_segundos",
+        label: "Intervalo mínimo entre as conferências de qualidade (segundos)",
+        type: "number",
+        defaultValue: 30,
+        helper: "De 1 a 3.600. As conferências rodam ao fim de cada lote de eventos, no máximo uma vez por este intervalo. Padrão: 30.",
+      },
+      {
+        key: "analytics.refresh.lote_linhas",
+        label: "Indicadores recalculados por vez na atualização agendada",
+        type: "number",
+        defaultValue: 5000,
+        helper: "De 1 a 100.000. Padrão: 5.000.",
+      },
+      {
+        key: "analytics.refresh.schedule",
+        label: "Agenda da atualização por passagem do tempo",
+        type: "text",
+        defaultValue: "a cada 15 min e às 00:05 America/Sao_Paulo",
+        helper: "Formato: a cada 15 min e às 00:05 America/Sao_Paulo. Vencimentos e atrasos mudam sem nenhum evento, por isso também são recalculados na agenda.",
+      },
+      {
+        key: "analytics.refresh.timeout_ms",
+        label: "Tempo máximo de cada consulta da atualização (milissegundos)",
+        type: "number",
+        defaultValue: 30000,
+        helper: "De 100 a 600.000. Padrão: 30.000.",
       },
     ],
   },
@@ -245,6 +274,12 @@ export default function BiTab() {
               </div>
             </div>
           ))}
+
+          <div className="formGridFull">
+            <h3>Como os valores aparecem nos painéis</h3>
+            <p>Todo número do BI declara a natureza do valor e é desenhado de um jeito próprio, sem depender só da cor. Totais só somam valores da mesma natureza.</p>
+            <NatureLegend />
+          </div>
         </div>
       )}
     </Card>
