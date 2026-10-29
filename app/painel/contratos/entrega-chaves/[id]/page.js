@@ -31,6 +31,7 @@ import { formatDateTime, formatContractLabel } from "@/lib/format";
 import styles from "./page.module.css";
 
 import { lookupFallback } from "@/lib/asyncState/lookup";
+import { activatable } from "@/lib/a11y/keyboard";
 // M45-RECONF F7: "KD-TERM-v2" é código interno do modelo — na tela, "Modelo versão 2".
 function termVersionLabel(version) {
   const m = /v(\d+)$/i.exec(String(version || "KD-TERM-v1"));
@@ -266,7 +267,7 @@ export default function EntregaChavesDetailPage({ params }) {
           <div className={styles.sideCol}>
             <Card title="Contrato vinculado">
               {contract ? (
-                <div className={styles.linkRow} onClick={() => router.push(`/painel/contratos/lista/${contract.id}`)}>
+                <div className={styles.linkRow} {...activatable(() => router.push(`/painel/contratos/lista/${contract.id}`))}>
                   <div className={styles.linkInfo}>
                     <span className={styles.linkTitle}>{formatContractLabel(contract)}</span>
                     <span className={styles.linkSub}>{CONTRACT_STATUS_LABELS[contract.status]}</span>
@@ -280,7 +281,7 @@ export default function EntregaChavesDetailPage({ params }) {
 
             <Card title="Vistoria de entrada">
               {inspection ? (
-                <div className={styles.linkRow} onClick={() => router.push(`/painel/contratos/vistorias/${inspection.id}`)}>
+                <div className={styles.linkRow} {...activatable(() => router.push(`/painel/contratos/vistorias/${inspection.id}`))}>
                   <div className={styles.linkInfo}>
                     <span className={styles.linkTitle}>Vistoria de {(INSPECTION_TYPE_LABELS[inspection.inspectionType] || "").toLowerCase()}</span>
                     <span className={styles.linkSub}>{INSPECTION_STATUS_LABELS[inspection.status]}</span>

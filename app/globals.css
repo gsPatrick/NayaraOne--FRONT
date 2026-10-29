@@ -21,6 +21,9 @@
      superfícies escuras (sidebar no tema Onyx) troquem por uma cor clara sem
      afetar o resto da interface. Ver fallback de :focus-visible mais abaixo. */
   --color-focus-ring:       var(--color-accent);
+  /* M9-D851: anel de foco de todo elemento focável (WCAG 2.1 AA: 2 px e contraste mínimo 3:1 contra o fundo; preto quente sobre branco = 18:1). */
+  --focus-ring:             var(--color-focus-ring);
+  --focus-ring-width:       2px;
 
   /* CTA primário — token separado do dourado de marca para permitir o tema
      "Onyx" (referência da cliente, preto+dourado com botões pretos) sem
@@ -28,6 +31,9 @@
   --color-cta-primary:        var(--color-brand);
   --color-cta-primary-hover:  var(--color-brand-hover);
   --color-cta-primary-active: var(--color-brand-active);
+  /* M9-D851: texto do botão primário. Texto branco sobre o dourado dá 2,8:1 (reprova); texto escuro dá 6,4:1. No estado pressionado o dourado escuro volta ao texto claro (5,1:1). */
+  --color-cta-primary-ink:        var(--color-ink);
+  --color-cta-primary-ink-active: var(--color-text-inverse);
   --shadow-cta:                var(--shadow-brand);
 
   /* Sidebar — tokens separados pra permitir o tema Onyx (sidebar preta,
@@ -50,9 +56,11 @@
   --color-canvas-sunken:    #F7F5F1; /* neutro claro, quase sem tom, para superfícies rebaixadas */
   --color-ink:              #17130F; /* preto quente */
   --color-ink-soft:         #4A4033;
-  --color-ink-muted:        #8C7F68;
+  --color-ink-muted:        #7A6E59; /* M9-D851: era #8C7F68 (3,9:1); agora 5,0:1 no branco e 4,6:1 no fundo rebaixado */
   --color-border:           #EAE6DE;
   --color-border-strong:    #D9D2C4;
+  /* M9-D851: borda de campos (input, select, checkbox, radio) precisa de 3:1 contra o fundo (WCAG 1.4.11); --color-border-strong fica para divisores. */
+  --color-control-border:   #8A7D66;
 
   /* ── SEMANTIC (business status — separate from brand) ──── */
   --color-success:          #1E7A4C;
@@ -156,6 +164,8 @@
   --color-cta-primary:        #0D0D0D;
   --color-cta-primary-hover:  #000000;
   --color-cta-primary-active: #000000;
+  --color-cta-primary-ink:        var(--color-text-inverse);
+  --color-cta-primary-ink-active: var(--color-text-inverse);
   --shadow-cta:                0 6px 20px rgba(13, 13, 13, 0.30);
 
   --font-display: 'Playfair Display', 'Manrope', system-ui, serif;
@@ -254,7 +264,7 @@ input:focus-visible,
 select:focus-visible,
 textarea:focus-visible,
 [tabindex]:focus-visible {
-  outline: 2px solid var(--color-focus-ring);
+  outline: var(--focus-ring-width) solid var(--focus-ring);
   outline-offset: -2px;
 }
 

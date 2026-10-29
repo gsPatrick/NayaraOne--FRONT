@@ -26,6 +26,7 @@ import {
 import { formatBRL, formatDate, formatContractLabel } from "@/lib/format";
 import styles from "./page.module.css";
 
+import { activatable } from "@/lib/a11y/keyboard";
 // Espelha o enum real de legal_guarantees.status na API (ACTIVE | RELEASED | CANCELLED).
 const STATUS_OPTIONS = ["ACTIVE", "RELEASED", "CANCELLED"];
 
@@ -154,7 +155,7 @@ export default function GarantiaDetailPage({ params }) {
           <div className={styles.sideCol}>
             <Card title="Contrato vinculado">
               {contract ? (
-                <div className={styles.linkRow} onClick={() => router.push(`/painel/contratos/lista/${contract.id}`)}>
+                <div className={styles.linkRow} {...activatable(() => router.push(`/painel/contratos/lista/${contract.id}`))}>
                   <div className={styles.linkInfo}>
                     <span className={styles.linkTitle}>{formatContractLabel(contract)}</span>
                     <span className={styles.linkSub}>{formatBRL(contract.totalValue)}</span>

@@ -54,6 +54,7 @@ import { formatBRL, formatDate, formatDateTime, formatCompetence, formatContract
 import styles from "./page.module.css";
 import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 
+import { activatable } from "@/lib/a11y/keyboard";
 export default function LancamentoDetailPage({ params }) {
   const router = useRouter();
   const [entry, setEntry] = useState(null);
@@ -641,13 +642,13 @@ export default function LancamentoDetailPage({ params }) {
               {reversalTarget || reversedBy ? (
                 <Card title="Histórico de estorno" subtitle="Ledger imutável — correções nunca editam o lançamento original">
                   {reversalTarget ? (
-                    <div className={styles.linkRow} onClick={() => router.push(`/painel/financeiro/lancamentos/${reversalTarget.id}`)}>
+                    <div className={styles.linkRow} {...activatable(() => router.push(`/painel/financeiro/lancamentos/${reversalTarget.id}`))}>
                       <Icon name="document" size={16} />
                       <span>Este lançamento é o estorno de <strong>{humanizeText(reversalTarget.description)}</strong> ({formatBRL(reversalTarget.amount)})</span>
                     </div>
                   ) : null}
                   {reversedBy ? (
-                    <div className={styles.linkRow} onClick={() => router.push(`/painel/financeiro/lancamentos/${reversedBy.id}`)}>
+                    <div className={styles.linkRow} {...activatable(() => router.push(`/painel/financeiro/lancamentos/${reversedBy.id}`))}>
                       <Icon name="document" size={16} />
                       <span>Foi estornado por <strong>{humanizeText(reversedBy.description)}</strong> em {formatDateTime(reversedBy.settledAt)}</span>
                     </div>

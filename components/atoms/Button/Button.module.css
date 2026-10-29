@@ -49,11 +49,11 @@
 
 .primary {
   background: var(--color-cta-primary);
-  color: var(--color-text-inverse);
+  color: var(--color-cta-primary-ink);
   box-shadow: var(--shadow-cta);
 }
 .primary:hover:not(:disabled) { background: var(--color-cta-primary-hover); }
-.primary:active:not(:disabled) { background: var(--color-cta-primary-active); }
+.primary:active:not(:disabled) { background: var(--color-cta-primary-active); color: var(--color-cta-primary-ink-active); }
 
 .secondary {
   background: var(--color-canvas-raised);

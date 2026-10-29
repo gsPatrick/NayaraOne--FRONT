@@ -14,10 +14,11 @@ export default function Table({ columns = [], rows = [], loading = false, emptyM
             {columns.map((col) => (
               <th
                 key={col.key}
+                scope="col"
                 className={col.sticky ? styles.stickyRight : undefined}
                 style={col.width ? { width: col.width } : undefined}
               >
-                {col.label}
+                {col.label || <span className="sr-only">Ações</span>}
               </th>
             ))}
           </tr>

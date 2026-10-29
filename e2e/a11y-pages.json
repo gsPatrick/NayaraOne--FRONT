@@ -1,0 +1,9 @@
+{
+  "descricao": "Telas-chave verificadas pelo axe em CI (M9-D851 §3.6): qualquer violação serious ou critical reprova. 'module' é o arquivo da tela, usado pelo teste sem navegador (test/m9d851.axe.test.mjs); 'path' é a rota aberta pelo e2e com navegador (e2e/a11y-axe.spec.js).",
+  "paginas": [
+    { "nome": "Login", "path": "/entrar", "module": "app/entrar/page.js", "painel": false },
+    { "nome": "Painel inicial", "path": "/painel", "module": "app/painel/page.js", "painel": true },
+    { "nome": "Lista de pessoas", "path": "/painel/pessoas", "module": "app/painel/pessoas/page.js", "painel": true },
+    { "nome": "Formulário de nova pessoa", "path": "/painel/pessoas/novo", "module": "app/painel/pessoas/novo/page.js", "painel": true }
+  ]
+}

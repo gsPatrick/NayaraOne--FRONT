@@ -15,7 +15,9 @@
     "test:e2e": "npm run test:e2e:marco3 && npm run test:e2e:marco4 && npm run test:e2e:marco6 && npm run test:e2e:marco6-change-order",
     "test:unit": "node --import ./test/_loader/register.mjs --test test/*.test.mjs",
     "check:async-state": "node scripts/asyncStateSweep.js",
-    "test:e2e:m9d850": "node e2e/m9d850-sete-estados.spec.js"
+    "test:e2e:m9d850": "node e2e/m9d850-sete-estados.spec.js",
+    "test:a11y": "node --import ./test/_loader/register.mjs --test test/m9d851.*.test.mjs && node scripts/a11yStatic.js",
+    "test:e2e:a11y": "node e2e/a11y-axe.spec.js"
   },
   "dependencies": {
     "leaflet": "^1.9.4",
@@ -25,9 +27,12 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.0",
     "@eslint/eslintrc": "^2.1.4",
+    "axe-core": "^4.14.0",
     "eslint": "^8.57.1",
     "eslint-config-next": "^14.2.35",
+    "jsdom": "^24.1.3",
     "playwright": "^1.63.0"
   }
 }

@@ -31,6 +31,11 @@ jobs:
       # da linha de base documentada em scripts/lint-baseline.json.
       - name: Lint
         run: npm run lint
+      # Marco 9 (M9-D850/D851): testes de unidade (padrão de estados de UI, sessão, contraste) e acessibilidade
+      # (axe-core nas telas-chave de e2e/a11y-pages.json, teclado, foco, rótulos e mensagens). Violação serious
+      # ou critical reprova (GOV_A11Y_VIOLATION). O relatório do axe sai no log do passo.
+      - name: Testes de unidade e acessibilidade
+        run: npm run test:unit && node scripts/a11yStatic.js && node scripts/asyncStateSweep.js
       # Projeto em JavaScript: o "typecheck" possível é compilar todas as rotas — o next build
       # falha com import quebrado, JSX inválido ou erro de módulo.
       - name: Build (checagem de compilação)

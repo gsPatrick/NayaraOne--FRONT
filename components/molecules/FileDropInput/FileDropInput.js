@@ -15,6 +15,7 @@ import styles from "./FileDropInput.module.css";
 // por que isso importa).
 export default function FileDropInput({
   id,
+  ariaLabel,
   accept,
   multiple = false,
   uploading = false,
@@ -42,6 +43,22 @@ export default function FileDropInput({
 
   return (
     <div className={styles.wrap}>
+      <input
+        ref={inputRef}
+        id={id}
+        type="file"
+        accept={accept}
+        multiple={multiple}
+        className={styles.hiddenInput}
+        aria-label={ariaLabel || "Selecionar arquivo"}
+        aria-hidden="true"
+        tabIndex={-1}
+        disabled={uploading}
+        onChange={(event) => {
+          handleFiles(event.target.files);
+          event.target.value = "";
+        }}
+      />
       <div
         className={[styles.dropzone, dragOver ? styles.dropzoneDragOver : "", error ? styles.dropzoneError : ""]
           .filter(Boolean)
@@ -74,19 +91,6 @@ export default function FileDropInput({
         <span className={styles.dropzoneText}>
           {uploading ? "Enviando..." : "Arraste um arquivo aqui, ou clique para selecionar"}
         </span>
-        <input
-          ref={inputRef}
-          id={id}
-          type="file"
-          accept={accept}
-          multiple={multiple}
-          className={styles.hiddenInput}
-          disabled={uploading}
-          onChange={(event) => {
-            handleFiles(event.target.files);
-            event.target.value = "";
-          }}
-        />
       </div>
 
       {fileNames.length > 0 ? (

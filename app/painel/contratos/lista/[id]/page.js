@@ -65,6 +65,7 @@ import { formatBRL, formatDate, formatDateTime, formatContractLabel, humanizeTex
 import styles from "./page.module.css";
 
 import { lookupFallback } from "@/lib/asyncState/lookup";
+import { activatable } from "@/lib/a11y/keyboard";
 const TIMELINE_TYPE_LABELS = { AMENDMENT: "Aditivo", NOTICE: "Notificação", DELINQUENCY: "Inadimplência", REPAIR: "Reparo", STATUS_CHANGE: "Mudança de status" };
 const TIMELINE_TYPE_TONE = { AMENDMENT: "info", NOTICE: "warning", DELINQUENCY: "danger", REPAIR: "neutral", STATUS_CHANGE: "brand" };
 
@@ -707,7 +708,7 @@ export default function ContratoDetailPage({ params }) {
 
             {property ? (
               <Card title="Imóvel vinculado">
-                <div className={styles.partyRow} style={{ cursor: "pointer" }} onClick={() => router.push(`/painel/imoveis/${property.id}`)}>
+                <div className={styles.partyRow} style={{ cursor: "pointer" }} {...activatable(() => router.push(`/painel/imoveis/${property.id}`))}>
                   <div className={styles.partyInfo}>
                     <span className={styles.partyName}>{property.name}</span>
                     <span className={styles.partyRole}>{property.city}</span>

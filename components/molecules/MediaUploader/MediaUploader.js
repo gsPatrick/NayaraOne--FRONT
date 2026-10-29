@@ -219,6 +219,7 @@ export default function MediaUploader({ items = [], onChange }) {
           multiple
           accept="image/*,video/*"
           className={styles.hiddenInput}
+          aria-label="Selecionar fotos e vídeos"
           onChange={(event) => {
             addFiles(event.target.files);
             event.target.value = "";

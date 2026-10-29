@@ -3,7 +3,7 @@
   height: 40px;
   padding: 0 var(--space-3);
   background: var(--color-canvas-raised);
-  border: 1px solid var(--color-border-strong);
+  border: 1px solid var(--color-control-border);
   border-radius: var(--radius-md);
   font-size: var(--text-body);
   color: var(--color-ink);
@@ -13,10 +13,11 @@
 
 .input::placeholder { color: var(--color-ink-muted); }
 
-.input:hover:not(:disabled) { border-color: var(--color-border-strong); }
+.input:hover:not(:disabled) { border-color: var(--color-ink-soft); }
 
 .input:focus {
-  outline: none;
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: 2px;
   border-color: var(--color-brand);
   box-shadow: 0 0 0 3px var(--color-brand-soft);
 }

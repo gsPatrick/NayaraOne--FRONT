@@ -20,6 +20,7 @@
      da sidebar no tema Onyx. Troca pela cor de texto da própria sidebar
      (clara no Onyx, escura no tema padrão), que já garante contraste aqui. */
   --color-focus-ring: var(--color-sidebar-ink);
+  --focus-ring: var(--color-sidebar-ink); /* M9-D851: --focus-ring é resolvido no :root, então a sidebar o redefine */
 }
 
 .collapsed { width: 76px; }

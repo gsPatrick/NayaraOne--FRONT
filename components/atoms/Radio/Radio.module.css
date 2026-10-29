@@ -17,7 +17,7 @@
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  border: 1.5px solid var(--color-border-strong);
+  border: 1.5px solid var(--color-control-border);
   background: var(--color-canvas-raised);
   display: inline-flex;
   align-items: center;
@@ -39,7 +39,7 @@
 .input:checked + .dot::after { transform: scale(1); }
 
 .input:focus-visible + .dot {
-  outline: 2px solid var(--color-accent);
+  outline: var(--focus-ring-width) solid var(--focus-ring);
   outline-offset: 2px;
 }
 

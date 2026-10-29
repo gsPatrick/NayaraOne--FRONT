@@ -39,6 +39,7 @@ import { EMPTY_EVIDENCE, buildChangeEvidence } from "@/lib/changeEvidence";
 import styles from "./page.module.css";
 
 import { lookupFallback } from "@/lib/asyncState/lookup";
+import { activatable } from "@/lib/a11y/keyboard";
 export default function ContaBancariaDetailPage({ params }) {
   const router = useRouter();
   const [account, setAccount] = useState(null);
@@ -209,7 +210,7 @@ export default function ContaBancariaDetailPage({ params }) {
                 ) : (
                   <ul className={styles.list}>
                     {relatedEntries.map((e) => (
-                      <li key={e.id} className={styles.listRow} onClick={() => router.push(`/painel/financeiro/lancamentos/${e.id}`)}>
+                      <li key={e.id} className={styles.listRow} {...activatable(() => router.push(`/painel/financeiro/lancamentos/${e.id}`))}>
                         <Icon name="document" size={16} />
                         <div className={styles.listRowInfo}>
                           <span className={styles.listRowTitle}>{humanizeText(e.description)}</span>

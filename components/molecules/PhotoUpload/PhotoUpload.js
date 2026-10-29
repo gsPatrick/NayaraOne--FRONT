@@ -18,7 +18,7 @@ export default function PhotoUpload({ name, value, onChange, size = "xl" }) {
 
   return (
     <div className={styles.wrap}>
-      <button type="button" className={styles.preview} onClick={() => inputRef.current?.click()}>
+      <button type="button" className={styles.preview} onClick={() => inputRef.current?.click()} aria-label={value ? "Trocar a foto" : "Adicionar a foto"}>
         <Avatar name={name} size={size} src={value} />
         <span className={styles.overlay}>
           <Icon name="upload" size={16} />
@@ -34,7 +34,7 @@ export default function PhotoUpload({ name, value, onChange, size = "xl" }) {
           </button>
         ) : null}
       </div>
-      <input ref={inputRef} type="file" accept="image/*" className={styles.hiddenInput} onChange={handleFile} />
+      <input ref={inputRef} type="file" accept="image/*" className={styles.hiddenInput} onChange={handleFile} aria-label="Escolher a foto" tabIndex={-1} />
     </div>
   );
 }

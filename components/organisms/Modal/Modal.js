@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import Icon from "@/components/atoms/Icon/Icon";
+import { activateModalFocus } from "@/lib/a11y/modalFocus";
 import styles from "./Modal.module.css";
 
 export default function Modal({ open, onClose, title, children, footer, size = "md" }) {
@@ -18,18 +19,9 @@ export default function Modal({ open, onClose, title, children, footer, size = "
   onCloseRef.current = onClose;
 
   useEffect(() => {
-    if (!open) return;
-    function onKey(e) {
-      if (e.key === "Escape") onCloseRef.current?.();
-    }
-    document.addEventListener("keydown", onKey);
-    const previousActive = document.activeElement;
-    ref.current?.focus();
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      previousActive?.focus?.();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (!open || !ref.current) return undefined;
+    // M9-D851: Tab fica preso no diálogo, Esc fecha e o foco volta ao botão que abriu (lib/a11y/modalFocus.js).
+    return activateModalFocus({ container: ref.current, onClose: () => onCloseRef.current?.() });
   }, [open]);
 
   if (!open) return null;
