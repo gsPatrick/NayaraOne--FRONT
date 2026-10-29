@@ -18,6 +18,7 @@ import { BI_COMERCIAL_GROUPS } from "./biComercialGroups";
 import { BI_LOCACAO_GROUPS } from "./biLocacaoGroups";
 import { BI_JURIDICO_GROUPS } from "./biJuridicoGroups";
 import { BI_DRILLDOWN_GROUPS } from "./biDrilldownGroups";
+import { BI_FINANCEIRO_GROUPS } from "./biFinanceiroGroups";
 
 // Parâmetros do BI e Centro de Comando (Marco 9, bloco D) que o administrador controla. A API valida (SETTINGS_SCHEMA); o padrão
 // mostrado é o de Maturacao/demandas/parametros.csv e só vale enquanto a empresa não configurou nada. Cada demanda do bloco
@@ -205,7 +206,7 @@ const BI_GROUPS = [
   },
 ];
 
-const ALL_GROUPS = [...BI_GROUPS, ...BI_QUALIDADE_GROUPS, ...BI_OBRAS_GROUPS, ...BI_COMERCIAL_GROUPS, ...BI_LOCACAO_GROUPS, ...BI_JURIDICO_GROUPS, ...BI_DESEMPENHO_GROUPS, ...BI_DRILLDOWN_GROUPS];
+const ALL_GROUPS = [...BI_GROUPS, ...BI_QUALIDADE_GROUPS, ...BI_OBRAS_GROUPS, ...BI_COMERCIAL_GROUPS, ...BI_LOCACAO_GROUPS, ...BI_JURIDICO_GROUPS, ...BI_DESEMPENHO_GROUPS, ...BI_DRILLDOWN_GROUPS, ...BI_FINANCEIRO_GROUPS];
 const ALL_FIELDS = ALL_GROUPS.flatMap((group) => group.fields);
 
 function initialValues() {
