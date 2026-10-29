@@ -11,6 +11,7 @@ import Spinner from "@/components/atoms/Spinner/Spinner";
 import { listSettings, updateSetting } from "@/lib/api/settings";
 import { NatureLegend } from "@/components/molecules/analytics/NatureSeriesChart/NatureSeriesChart";
 import styles from "./page.module.css";
+import { BI_QUALIDADE_GROUPS } from "./biQualidadeGroups";
 
 // Parâmetros do BI e Centro de Comando (Marco 9, bloco D) que o administrador controla. A API valida (SETTINGS_SCHEMA); o padrão
 // mostrado é o de Maturacao/demandas/parametros.csv e só vale enquanto a empresa não configurou nada. Cada demanda do bloco
@@ -198,7 +199,8 @@ const BI_GROUPS = [
   },
 ];
 
-const ALL_FIELDS = BI_GROUPS.flatMap((group) => group.fields);
+const ALL_GROUPS = [...BI_GROUPS, ...BI_QUALIDADE_GROUPS];
+const ALL_FIELDS = ALL_GROUPS.flatMap((group) => group.fields);
 
 function initialValues() {
   const values = {};
@@ -298,7 +300,7 @@ export default function BiTab() {
             </div>
           ) : null}
 
-          {BI_GROUPS.map((group) => (
+          {ALL_GROUPS.map((group) => (
             <div key={group.title} className="formGridFull">
               <h3>{group.title}</h3>
               <p>{group.subtitle}</p>
