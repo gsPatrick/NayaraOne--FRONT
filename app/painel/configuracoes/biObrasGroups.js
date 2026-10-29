@@ -74,4 +74,14 @@ export const BI_OBRAS_GROUPS = [
       owner("analytics.owner.obra.recurrence", "Recorrência por causa, equipe e material", OBRAS),
     ],
   },
+  {
+    title: "Estoque e Patrimônio: indicadores",
+    subtitle: "Quem responde por cada indicador do painel Estoque/Patrimônio: valor em estoque, itens abaixo do mínimo, perdas e ferramentas em atraso.",
+    fields: [
+      owner("analytics.owner.inv.stock_value", "Valor em estoque", ESTOQUE),
+      owner("analytics.owner.inv.below_minimum", "Itens abaixo do mínimo e rupturas", ESTOQUE),
+      owner("analytics.owner.inv.losses", "Perdas de estoque", ESTOQUE),
+      owner("analytics.owner.inv.tools_overdue", "Ferramentas em atraso e patrimônio em manutenção", ESTOQUE),
+    ],
+  },
 ];
