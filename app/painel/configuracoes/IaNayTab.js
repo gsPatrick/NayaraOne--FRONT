@@ -238,6 +238,21 @@ const IA_GROUPS = [
     ],
   },
   {
+    title: "Registro das chamadas de ferramenta",
+    subtitle: "Cada vez que a NAY usa uma ferramenta fica gravado o que ela pediu (sem dado pessoal) e o que respondeu. O resultado guardado é sempre curto, nunca o documento inteiro.",
+    fields: [
+      {
+        key: "ia.tool_calls.resultado_max_caracteres",
+        label: "Tamanho máximo do resultado guardado por chamada (caracteres)",
+        type: "integer",
+        min: 100,
+        max: 20000,
+        defaultValue: 2000,
+        helper: "Número inteiro de 100 a 20000. Resultados maiores guardam só o início, o tamanho e a assinatura do conteúdo.",
+      },
+    ],
+  },
+  {
     title: "Privacidade dos dados enviados à NAY",
     subtitle: "Antes de qualquer texto sair para um provedor de IA, a NAY retira CPF, telefone, conta bancária e segredos. Conteúdo restrito só entra nas condições fixas do livro.",
     fields: [
