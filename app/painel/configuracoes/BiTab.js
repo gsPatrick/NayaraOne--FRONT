@@ -12,6 +12,7 @@ import { listSettings, updateSetting } from "@/lib/api/settings";
 import { NatureLegend } from "@/components/molecules/analytics/NatureSeriesChart/NatureSeriesChart";
 import styles from "./page.module.css";
 import { BI_QUALIDADE_GROUPS } from "./biQualidadeGroups";
+import { BI_DESEMPENHO_GROUPS } from "./biDesempenhoGroups";
 import { BI_OBRAS_GROUPS } from "./biObrasGroups";
 import { BI_COMERCIAL_GROUPS } from "./biComercialGroups";
 import { BI_LOCACAO_GROUPS } from "./biLocacaoGroups";
@@ -72,19 +73,6 @@ const BI_GROUPS = [
         type: "number",
         defaultValue: 200,
         helper: "De 1 a 1.000.",
-      },
-    ],
-  },
-  {
-    title: "Desempenho dos painéis",
-    subtitle: "Meta de tempo de resposta dos painéis.",
-    fields: [
-      {
-        key: "analytics.painel.p95_ms_padrao",
-        label: "Meta p95 padrão do painel (milissegundos)",
-        type: "number",
-        defaultValue: 3000,
-        helper: "Usada ao publicar um painel que não informa a própria meta. De 100 a 60.000.",
       },
     ],
   },
@@ -216,7 +204,7 @@ const BI_GROUPS = [
   },
 ];
 
-const ALL_GROUPS = [...BI_GROUPS, ...BI_QUALIDADE_GROUPS, ...BI_OBRAS_GROUPS, ...BI_COMERCIAL_GROUPS, ...BI_LOCACAO_GROUPS, ...BI_JURIDICO_GROUPS];
+const ALL_GROUPS = [...BI_GROUPS, ...BI_QUALIDADE_GROUPS, ...BI_OBRAS_GROUPS, ...BI_COMERCIAL_GROUPS, ...BI_LOCACAO_GROUPS, ...BI_JURIDICO_GROUPS, ...BI_DESEMPENHO_GROUPS];
 const ALL_FIELDS = ALL_GROUPS.flatMap((group) => group.fields);
 
 function initialValues() {
