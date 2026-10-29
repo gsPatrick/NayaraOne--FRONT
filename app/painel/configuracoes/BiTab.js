@@ -12,6 +12,7 @@ import { listSettings, updateSetting } from "@/lib/api/settings";
 import { NatureLegend } from "@/components/molecules/analytics/NatureSeriesChart/NatureSeriesChart";
 import styles from "./page.module.css";
 import { BI_QUALIDADE_GROUPS } from "./biQualidadeGroups";
+import { BI_OBRAS_GROUPS } from "./biObrasGroups";
 
 // Parâmetros do BI e Centro de Comando (Marco 9, bloco D) que o administrador controla. A API valida (SETTINGS_SCHEMA); o padrão
 // mostrado é o de Maturacao/demandas/parametros.csv e só vale enquanto a empresa não configurou nada. Cada demanda do bloco
@@ -199,7 +200,7 @@ const BI_GROUPS = [
   },
 ];
 
-const ALL_GROUPS = [...BI_GROUPS, ...BI_QUALIDADE_GROUPS];
+const ALL_GROUPS = [...BI_GROUPS, ...BI_QUALIDADE_GROUPS, ...BI_OBRAS_GROUPS];
 const ALL_FIELDS = ALL_GROUPS.flatMap((group) => group.fields);
 
 function initialValues() {
