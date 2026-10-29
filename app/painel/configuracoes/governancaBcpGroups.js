@@ -1,4 +1,4 @@
-// Parâmetros da continuidade operacional (BCP) na aba Governança (Marco 9, M9-D830, M9-D831 e M9-D834). Padrões de Maturacao/demandas/parametros.csv; a API valida.
+// Parâmetros da continuidade operacional (BCP) na aba Governança (Marco 9, M9-D830, M9-D831, M9-D832 e M9-D834). Padrões de Maturacao/demandas/parametros.csv; a API valida.
 export const GOVERNANCA_BCP_GROUPS = [
   {
     title: "Continuidade operacional (BCP)",
@@ -30,6 +30,24 @@ export const GOVERNANCA_BCP_GROUPS = [
         min: 1,
         max: 5000,
         helper: "Limite de folhas de uma impressão numerada (de/até) dos formulários de contingência. Acima disso a impressão é recusada.",
+      },
+      {
+        key: "governanca.bcp.importacao_lote_max",
+        label: "Máximo de operações por pedido de importação",
+        type: "integer",
+        defaultValue: 200,
+        min: 1,
+        max: 1000,
+        helper: "Quantas operações manuais (formulários em papel) uma única importação aceita. Acima disso o pedido é recusado: importe em partes.",
+      },
+      {
+        key: "governanca.bcp.importacao_lead_prazo_horas",
+        label: "Prazo do primeiro contato de lead ou proposta importados do papel (horas)",
+        type: "integer",
+        defaultValue: 24,
+        min: 1,
+        max: 720,
+        helper: "Quando um lead ou uma proposta de locação do papel é importado, o CRM cobra o próximo contato dentro deste prazo.",
       },
     ],
   },
