@@ -16,11 +16,12 @@ export const GOVERNANCA_BCP_GROUPS = [
       },
       {
         key: "governanca.bcp.listagem_limite",
-        label: "Operações manuais por página na listagem",
+        label: "Tamanho padrão da página nas listas do BCP",
         type: "integer",
         defaultValue: 100,
         min: 1,
-        max: 1000,
+        max: 200,
+        helper: "Itens por página em operações manuais e reconciliações quando o cliente não informa pageSize (de 1 a 200).",
       },
       {
         key: "governanca.bcp.impressao_max_folhas",
