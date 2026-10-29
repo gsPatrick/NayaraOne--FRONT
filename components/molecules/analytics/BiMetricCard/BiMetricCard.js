@@ -41,6 +41,7 @@ export default function BiMetricCard({ widget, projects, onDetail }) {
         {metric.valueNatureLabel ? <span className={styles.nature}>{metric.valueNatureLabel}</span> : null}
       </header>
       {headline ? <p className={[styles.value, headline.muted ? styles.muted : ""].filter(Boolean).join(" ")} data-bi-value>{headline.text}</p> : null}
+      {!metric.incomplete && metric.staleText ? <p className={styles.muted} role="status" data-bi-stale>{metric.staleText}</p> : null}
       {view.noTotal ? <Series series={view.series || []} incomplete={hidden} text={metric.incomplete ? metric.incompleteText : display.text} /> : null}
       {view.alert ? <p className={styles.alertText} role="status">Atenção: há itens que pedem ação.</p> : null}
       {!hidden && !view.noTotal && (view.series || []).length ? <Series series={view.series} incomplete={false} text="" /> : null}

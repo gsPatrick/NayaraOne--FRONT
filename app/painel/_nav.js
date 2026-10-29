@@ -138,6 +138,7 @@ export const NAV_SECTIONS = [
       { label: "Papéis & Permissões", href: "/painel/papeis", icon: "shield", permission: "roles:update" },
       { label: "Atividades", href: "/painel/atividades", icon: "clock", permission: "audit:read" },
       { label: "Integrações: saúde", href: "/painel/integracoes/saude", icon: "radar", permission: "integration:read" },
+      { label: "Segurança, Integrações e IA (BI)", href: "/painel/analytics/tecnologia", icon: "chart", permission: "analytics:read:tech" },
       { label: "Configurações", href: "/painel/configuracoes", icon: "settings", permission: "settings:read" },
     ],
   },
