@@ -12,6 +12,7 @@ import Spinner from "@/components/atoms/Spinner/Spinner";
 import { listSettings, updateSetting } from "@/lib/api/settings";
 import { toNumber } from "@/lib/format";
 import styles from "./page.module.css";
+import { MINIMIZACAO_GROUP } from "./integracoesMinimizacaoGroups";
 
 // Parâmetros do registro de integrações (Marco 9, M9-D200 e seguintes do bloco B) que o administrador controla.
 // A API valida (SETTINGS_SCHEMA); o padrão mostrado é o do catálogo (Maturacao/demandas/parametros.csv) e só vale
@@ -205,6 +206,9 @@ REGISTRO_GROUPS.push({
     { key: "integration.health.check_timeout_ms", label: "Tempo máximo do teste de saúde de um fornecedor (milissegundos)", type: "integer", defaultValue: 5000, helper: "De 500 a 120000. Teste que demora mais conta como falha." },
   ],
 });
+
+// Minimização dos dados enviados (M9-D219): classificação máxima por família.
+REGISTRO_GROUPS.push(MINIMIZACAO_GROUP);
 
 const ALL_FIELDS = REGISTRO_GROUPS.flatMap((group) => group.fields);
 
