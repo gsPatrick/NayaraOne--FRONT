@@ -1,9 +1,9 @@
-// Parâmetros da continuidade operacional (BCP) na aba Governança (Marco 9, M9-D830 e M9-D831). Padrões de Maturacao/demandas/parametros.csv; a API valida.
+// Parâmetros da continuidade operacional (BCP) na aba Governança (Marco 9, M9-D830, M9-D831 e M9-D834). Padrões de Maturacao/demandas/parametros.csv; a API valida.
 export const GOVERNANCA_BCP_GROUPS = [
   {
     title: "Continuidade operacional (BCP)",
     subtitle:
-      "Qual setor de contingência cada perfil da empresa atende e quantas operações manuais a listagem mostra por página. O perfil ADMIN pertence aos seis setores.",
+      "Qual setor de contingência cada perfil da empresa atende e quantas operações manuais a listagem mostra por página e quantas folhas numeradas cada impressão de formulário aceita. O perfil ADMIN pertence aos seis setores.",
     fields: [
       {
         key: "governanca.bcp.setor_por_papel",
@@ -21,6 +21,15 @@ export const GOVERNANCA_BCP_GROUPS = [
         defaultValue: 100,
         min: 1,
         max: 1000,
+      },
+      {
+        key: "governanca.bcp.impressao_max_folhas",
+        label: "Máximo de folhas numeradas por impressão de formulário",
+        type: "integer",
+        defaultValue: 500,
+        min: 1,
+        max: 5000,
+        helper: "Limite de folhas de uma impressão numerada (de/até) dos formulários de contingência. Acima disso a impressão é recusada.",
       },
     ],
   },
