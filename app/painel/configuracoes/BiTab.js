@@ -150,6 +150,26 @@ const BI_GROUPS = [
       },
     ],
   },
+  {
+    title: "Reconstrução dos painéis",
+    subtitle: "A reconstrução apaga e refaz o número de um painel a partir das tabelas de origem (por exemplo, depois de um erro de integração). Ela é um comando de operação; aqui você só diz se este ambiente pode usá-lo.",
+    fields: [
+      {
+        key: "analytics.rebuild.habilitado",
+        label: "Permitir a reconstrução dos painéis neste ambiente",
+        type: "boolean",
+        defaultValue: false,
+        helper: "Enquanto você não escolher, vale o padrão do ambiente: ligado em laboratório (LAB) e desligado em produção. Os números já registrados no histórico nunca são apagados pela reconstrução.",
+      },
+      {
+        key: "analytics.rebuild.janela_reaplicacao_minutos",
+        label: "Janela de busca dos eventos ocorridos durante a reconstrução (minutos)",
+        type: "number",
+        defaultValue: 60,
+        helper: "De 1 a 1.440. Eventos aplicados nesse intervalo antes da fotografia da reconstrução são conferidos e recalculados depois da troca. Padrão: 60.",
+      },
+    ],
+  },
 ];
 
 const ALL_FIELDS = BI_GROUPS.flatMap((group) => group.fields);
