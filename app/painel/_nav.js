@@ -3,6 +3,7 @@ export const NAV_SECTIONS = [
     label: "Operação",
     items: [
       { label: "Painel", href: "/painel", icon: "home" },
+      { label: "Centro de Comando", href: "/painel/centro-de-comando", icon: "chart", permission: "analytics:read" },
       { label: "Imóveis", href: "/painel/imoveis", icon: "building", permission: "properties:read" },
       { label: "Contatos", href: "/painel/pessoas", icon: "users", permission: "people:read" },
       {
