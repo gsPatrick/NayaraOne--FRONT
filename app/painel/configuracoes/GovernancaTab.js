@@ -80,6 +80,19 @@ const GOVERNANCA_GROUPS = [
     ],
   },
   {
+    title: "Dados mestres",
+    subtitle: "Domínios de dados que têm um responsável (owner) e um curador (steward) designados pela API de Dados mestres.",
+    fields: [
+      {
+        key: "governanca.dados.dominios",
+        label: "Domínios de dados",
+        type: "text",
+        defaultValue: "PESSOAS,IMOVEIS,FORNECEDORES,CRM,FINANCEIRO,CONTRATOS,COMISSOES,OBRAS,ESTOQUE,CORRESPONDENTE,FISCAL",
+        helper: "Códigos separados por vírgula (maiúsculas, números e _). Domínio novo aparece sem responsável até alguém ser designado.",
+      },
+    ],
+  },
+  {
     title: "Permissões padrão por perfil",
     subtitle: "Nomes dos perfis (separados por vírgula) que recebem o pacote de Gestão e o do Financeiro; os demais perfis recebem só a leitura do calendário. Só o administrador recebe as permissões sensíveis.",
     fields: [
