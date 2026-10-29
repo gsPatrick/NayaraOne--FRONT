@@ -1,4 +1,8 @@
-// Parâmetros dos painéis de Obras, Estoque e Patrimônio (Marco 9, M9-D618). Padrões do livro e de Maturacao/demandas/parametros.csv; a API valida e audita.
+// Parâmetros dos painéis de Obras, Estoque e Patrimônio (Marco 9, M9-D618, M9-D652 e M9-D653). Padrões do livro e de Maturacao/demandas/parametros.csv; a API valida e audita.
+const OWNER_HELPER = "Papel responsável por conferir o número. Vale para o indicador publicado a partir de agora.";
+const owner = (key, label, value) => ({ key, label: `Responsável pelo indicador ${label}`, type: "text", defaultValue: value, helper: OWNER_HELPER });
+const OBRAS = "Diretoria de Obras (papel obras-gestor)";
+const ESTOQUE = "Almoxarifado (papel estoque-gestor)";
 export const BI_OBRAS_GROUPS = [
   {
     title: "Obras: previsão e receita",
@@ -31,6 +35,43 @@ export const BI_OBRAS_GROUPS = [
         defaultValue: "CONSUMABLE",
         helper: "Tipos separados por vírgula: CONSUMABLE, TOOL, ASSET, SERVICE_ITEM. Padrão: só os materiais de consumo.",
       },
+    ],
+  },
+  {
+    title: "Obras: desperdício, custo pós-obra e recorrência",
+    subtitle: "Como os painéis de Obras mostram o que se perde e o que se repete. O valor é calculado no servidor; aqui você só ajusta as regras. Desperdício com baixa sem custo, e pós-obra com caso sem obra, aparecem como \"Dado incompleto\", sem número.",
+    fields: [
+      {
+        key: "analytics.obra.recorrencia_dias",
+        label: "Recorrência: janela em dias",
+        type: "number",
+        defaultValue: 180,
+        helper: "De 1 a 3650 dias até a data-base. Duas ocorrências da mesma causa, equipe ou material dentro deste prazo contam como recorrência. Padrão: 180.",
+      },
+      {
+        key: "analytics.obra.recorrencia_min_ocorrencias",
+        label: "Recorrência: ocorrências mínimas",
+        type: "number",
+        defaultValue: 2,
+        helper: "De 2 a 100. Quantas ocorrências na janela tornam a combinação recorrente. Padrão: 2.",
+      },
+      {
+        key: "analytics.obra.recorrencia_top",
+        label: "Recorrência: combinações no ranking",
+        type: "number",
+        defaultValue: 10,
+        helper: "De 1 a 100. Quantas combinações aparecem no ranking das maiores. Padrão: 10.",
+      },
+      {
+        key: "analytics.obra.recorrencia_max_sem_classificacao_pct",
+        label: "Recorrência: ocorrências sem causa, equipe ou material aceitas (%)",
+        type: "number",
+        defaultValue: 100,
+        helper: "De 0 a 100. Se a parte das ocorrências da janela sem classificação passar disto, a recorrência aparece como \"Dado incompleto\", sem número. Padrão: 100 (só conta as sem classificação).",
+      },
+      owner("analytics.owner.obra.waste", "Desperdício", OBRAS),
+      owner("analytics.owner.obra.postwork_cost", "Custo pós-obra", OBRAS),
+      owner("analytics.owner.obra.recurrence", "Recorrência por causa, equipe e material", OBRAS),
     ],
   },
 ];
