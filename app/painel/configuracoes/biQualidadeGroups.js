@@ -1,4 +1,42 @@
 // Parâmetros da qualidade de dados do BI (Marco 9, M9-D696). Padrões do livro e de Maturacao/demandas/parametros.csv; a API valida.
+// M9-D696 (reabertura): campos essenciais da fonte dos painéis de Comercial, Imóveis, Locação, Obras, Estoque, Jurídico, Correspondente, Marketing e Atendimento.
+const CAMPOS_ESSENCIAIS = {
+  availability_status: ["imóveis sem situação de disponibilidade", 1],
+  baseline_amount: ["orçamentos aprovados sem valor-base", 0],
+  broker_id: ["oportunidades e imóveis sem corretor", 1],
+  cause_code: ["não conformidades sem causa", 1],
+  channel: ["mensagens sem canal", 1],
+  closed_at: ["oportunidades encerradas sem data de encerramento", 1],
+  commission_amount: ["comissões sem valor", 0],
+  contract_id: ["exigências, vistorias e obrigações sem contrato", 1],
+  cost_actual: ["campanhas sem custo realizado", 0],
+  created_by: ["imóveis sem corretor captador", 1],
+  due_date: ["empréstimos de ferramenta sem prazo de devolução", 1],
+  ends_at: ["garantias e etapas de obra sem data de término", 1],
+  estimated_amount: ["processos jurídicos sem valor estimado", 1],
+  feedback_type: ["ocorrências de atendimento sem tipo", 1],
+  item_cost: ["itens de estoque sem custo médio", 1],
+  lead_source: ["oportunidades sem origem do lead", 1],
+  next_action: ["oportunidades em andamento sem próxima ação", 1],
+  old_price: ["mudanças de preço sem preço anterior", 1],
+  person_id: ["ocorrências e mensagens sem pessoa", 1],
+  planned_end_date: ["obras sem data final planejada", 1],
+  platform: ["avaliações sem plataforma", 1],
+  property_id: ["chamados e cruzamentos do Radar sem imóvel", 1],
+  provider_code: ["casos de financiamento sem instituição", 1],
+  reference_month: ["repasses sem mês de referência", 1],
+  requirement_type: ["exigências contratuais sem tipo", 1],
+  risk_level: ["processos jurídicos sem nível de risco", 1],
+  root_cause_code: ["casos de pós-obra sem causa raiz", 1],
+  satisfaction_score: ["avaliações concluídas sem nota de satisfação", 1],
+  scheduled_at: ["visitas sem data agendada", 1],
+  sla_due_at: ["ocorrências de atendimento sem prazo de SLA", 1],
+  started_at: ["execuções de automação sem início", 1],
+  total_amount: ["medições de obra sem valor", 0],
+  total_cost: ["perdas de estoque sem custo", 1],
+  total_value: ["contratos sem valor total", 0],
+};
+
 export const BI_QUALIDADE_GROUPS = [
   {
     title: "Conferências de qualidade dos dados",
@@ -59,6 +97,13 @@ export const BI_QUALIDADE_GROUPS = [
         type: "number",
         defaultValue: 1,
         helper: "De 0 a 100. Padrão: 1.",
+      },
+      {
+        key: "analytics.qualidade.max_chaves_conciliacao",
+        label: "Quantas linhas recentes cada conferência recalcula da origem",
+        type: "number",
+        defaultValue: 200,
+        helper: "De 1 a 10.000. A conferência de cada painel recalcula direto da origem as linhas atualizadas mais recentemente e compara com o painel. Padrão: 200.",
       },
       {
         key: "analytics.qualidade.severidades",
@@ -158,5 +203,16 @@ export const BI_QUALIDADE_GROUPS = [
         helper: "De 1 a 525.600. Acima disso o número aparece como desatualizado. Padrão: 15.",
       },
     ],
+  },
+  {
+    title: "Campos essenciais dos painéis (vazios tolerados)",
+    subtitle: "Quanto de cada campo pode estar vazio na origem antes de a conferência avisar. Acima do limite é aviso; acima do limite de bloqueio o indicador fica degradado.",
+    fields: Object.entries(CAMPOS_ESSENCIAIS).map(([campo, [rotulo, padrao]]) => ({
+      key: `analytics.qualidade.max_nulos_pct.${campo}`,
+      label: `Tolerado: ${rotulo} (%)`,
+      type: "number",
+      defaultValue: padrao,
+      helper: padrao === 0 ? "De 0 a 100. O campo entra direto nas fórmulas, por isso o padrão é 0." : "De 0 a 100. Padrão: 1.",
+    })),
   },
 ];
