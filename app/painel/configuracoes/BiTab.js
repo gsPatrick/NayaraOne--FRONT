@@ -97,6 +97,19 @@ const BI_GROUPS = [
     ],
   },
   {
+    title: "Rastreio do número até a origem",
+    subtitle: "Cada número do BI traz a conferência de onde veio: quantos registros o compõem e uma amostra dos ids, para quem tem permissão de ver o detalhe.",
+    fields: [
+      {
+        key: "analytics.rastreio.amostra_ids",
+        label: "Quantos ids acompanham cada número",
+        type: "number",
+        defaultValue: 20,
+        helper: "De 0 a 20. Com 0 nenhum id é mostrado (só a contagem). Quem não tem permissão de detalhe nunca vê os ids. Padrão do livro: 20.",
+      },
+    ],
+  },
+  {
     title: "Atualização dos painéis",
     subtitle: "Como os números dos painéis são recalculados quando algo acontece (um lançamento liquidado, uma oportunidade ganha) e pela passagem do tempo.",
     fields: [
