@@ -107,6 +107,20 @@ const GOVERNANCA_GROUPS = [
         min: 1,
         max: 500,
       },
+      { key: "governanca.dados.merge.score_minimo", label: "Fila de união de cadastros: score mínimo para entrar na fila", type: "integer", defaultValue: 70, min: 0, max: 100 },
+      {
+        key: "governanca.dados.merge.scores",
+        label: "Fila de união de cadastros: score de cada regra de detecção",
+        type: "text",
+        defaultValue:
+          "PERSON_TAX_ID=100, PERSON_NAME_CONTACT=85, PERSON_NAME_BIRTH=70, PROPERTY_REGISTRY=95, PROPERTY_ADDRESS_UNIT=95, PROPERTY_ADDRESS_AREA=75, SUPPLIER_CNPJ_ROOT=90, SUPPLIER_NAME=80",
+        helper:
+          "Formato REGRA=score (0 a 100). Pessoa: mesmo CPF/CNPJ (PERSON_TAX_ID), nome igual e mesmo contato (PERSON_NAME_CONTACT), nome parecido e mesmo nascimento (PERSON_NAME_BIRTH). Imóvel: mesma matrícula (PROPERTY_REGISTRY), mesmo endereço com unidade (PROPERTY_ADDRESS_UNIT), mesmo endereço e área parecida (PROPERTY_ADDRESS_AREA). Fornecedor: mesmo CNPJ raiz (SUPPLIER_CNPJ_ROOT) e mesma razão social (SUPPLIER_NAME). Nenhum score une sozinho: toda união é decisão de uma pessoa.",
+      },
+      { key: "governanca.dados.merge.distancia_nome_max", label: "Fila de união de cadastros: diferença máxima entre nomes (letras)", type: "integer", defaultValue: 2, min: 0, max: 10 },
+      { key: "governanca.dados.merge.area_diferenca_max_pct", label: "Fila de união de cadastros: diferença máxima de área entre imóveis (%)", type: "integer", defaultValue: 3, min: 0, max: 100 },
+      { key: "governanca.dados.merge.deteccao_hora", label: "Fila de união de cadastros: hora da detecção noturna (0 a 23, horário de Brasília)", type: "integer", defaultValue: 3, min: 0, max: 23 },
+      { key: "governanca.dados.merge.lista_tamanho_padrao", label: "Fila de união de cadastros: itens por página", type: "integer", defaultValue: 50, min: 1, max: 200 },
     ],
   },
   {
