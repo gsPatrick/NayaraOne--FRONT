@@ -19,6 +19,7 @@ import { IA_PROVEDORES_GROUPS } from "./iaProvedoresGroups";
 import { IA_MEMORIA_GROUPS } from "./iaMemoriaGroups";
 import { IA_RAG_GROUPS } from "./iaRagGroups";
 import { IA_ROTEAMENTO_GROUPS } from "./iaRoteamentoGroups";
+import { IA_EXECUCAO_GROUPS } from "./iaExecucaoGroups";
 
 // Parâmetros da NAY (Marco 9, bloco A) que o administrador controla. A API valida (SETTINGS_SCHEMA); o padrão mostrado é
 // o de Maturacao/demandas/parametros.csv e só vale enquanto a empresa não configurou nada. Cada demanda do bloco acrescenta
@@ -32,6 +33,7 @@ const IA_GROUPS = [
   ...IA_MEMORIA_GROUPS,
   ...IA_RAG_GROUPS,
   ...IA_ROTEAMENTO_GROUPS,
+  ...IA_EXECUCAO_GROUPS,
   {
     title: "Chave geral da NAY",
     subtitle: "Liga ou desliga a NAY inteira nesta empresa. Desligada, toda função da NAY responde que está desativada. Só quem administra a NAY altera.",
