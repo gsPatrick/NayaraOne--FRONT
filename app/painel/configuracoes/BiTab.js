@@ -19,6 +19,7 @@ import { BI_LOCACAO_GROUPS } from "./biLocacaoGroups";
 import { BI_JURIDICO_GROUPS } from "./biJuridicoGroups";
 import { BI_DRILLDOWN_GROUPS } from "./biDrilldownGroups";
 import { BI_FINANCEIRO_GROUPS } from "./biFinanceiroGroups";
+import { BI_FINANCEIRO_JANELAS_GROUPS } from "./biFinanceiroJanelasGroups";
 import { BI_CARGA_GROUPS } from "./biCargaGroups";
 import { BI_SNAPSHOT_GROUPS } from "./biSnapshotGroups";
 
@@ -208,7 +209,7 @@ const BI_GROUPS = [
   },
 ];
 
-const ALL_GROUPS = [...BI_GROUPS, ...BI_QUALIDADE_GROUPS, ...BI_OBRAS_GROUPS, ...BI_COMERCIAL_GROUPS, ...BI_LOCACAO_GROUPS, ...BI_JURIDICO_GROUPS, ...BI_DESEMPENHO_GROUPS, ...BI_DRILLDOWN_GROUPS, ...BI_FINANCEIRO_GROUPS, ...BI_CARGA_GROUPS, ...BI_SNAPSHOT_GROUPS];
+const ALL_GROUPS = [...BI_GROUPS, ...BI_QUALIDADE_GROUPS, ...BI_OBRAS_GROUPS, ...BI_COMERCIAL_GROUPS, ...BI_LOCACAO_GROUPS, ...BI_JURIDICO_GROUPS, ...BI_DESEMPENHO_GROUPS, ...BI_DRILLDOWN_GROUPS, ...BI_FINANCEIRO_GROUPS, ...BI_FINANCEIRO_JANELAS_GROUPS, ...BI_CARGA_GROUPS, ...BI_SNAPSHOT_GROUPS];
 const ALL_FIELDS = ALL_GROUPS.flatMap((group) => group.fields);
 
 function initialValues() {
