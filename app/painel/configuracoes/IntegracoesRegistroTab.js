@@ -12,6 +12,7 @@ import Spinner from "@/components/atoms/Spinner/Spinner";
 import { listSettings, updateSetting } from "@/lib/api/settings";
 import { toNumber } from "@/lib/format";
 import styles from "./page.module.css";
+import { INTEGRACOES_SEGURANCA_GROUPS } from "./integracoesSegurancaGroups";
 import { MINIMIZACAO_GROUP } from "./integracoesMinimizacaoGroups";
 
 // Parâmetros do registro de integrações (Marco 9, M9-D200 e seguintes do bloco B) que o administrador controla.
@@ -209,6 +210,9 @@ REGISTRO_GROUPS.push({
 
 // Minimização dos dados enviados (M9-D219): classificação máxima por família.
 REGISTRO_GROUPS.push(MINIMIZACAO_GROUP);
+
+// Segurança das integrações (M9-D248, M9-D244, M9-D245): grupos no arquivo ao lado para esta aba não crescer sem limite.
+REGISTRO_GROUPS.push(...INTEGRACOES_SEGURANCA_GROUPS);
 
 const ALL_FIELDS = REGISTRO_GROUPS.flatMap((group) => group.fields);
 
