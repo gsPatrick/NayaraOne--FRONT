@@ -37,8 +37,8 @@ import {
 } from "@/lib/api/finance";
 import FormField from "@/components/molecules/FormField/FormField";
 import Input from "@/components/atoms/Input/Input";
-import MfaVerifyModal from "@/components/organisms/MfaVerifyModal/MfaVerifyModal";
-import { downloadEntriesCsv, friendlyFinanceError } from "@/lib/finance/extras";
+import ExportRequestModal from "@/components/organisms/ExportRequestModal/ExportRequestModal";
+import { friendlyFinanceError } from "@/lib/finance/extras";
 import { listPeople } from "@/lib/api/people";
 import { bankAccountLabel } from "@/lib/finance/labels";
 import { formatBRL, formatBRLCompact, formatDate, humanizeText } from "@/lib/format";
@@ -63,26 +63,10 @@ export default function LancamentosPage() {
     setPage(1);
   }, [pageSize]);
   const [deleteTarget, setDeleteTarget] = useState(null);
-  // Exportação (CSV) de uma competência: exige permissão e MFA recente, e o servidor limita o tamanho.
+  // Exportação dos lançamentos de uma competência pelo POST /exports (M9-D822): formato, finalidade, justificativa, verificação em duas etapas e prazo de validade.
   const [exportOpen, setExportOpen] = useState(false);
   const [exportMonth, setExportMonth] = useState("");
-  const [exportMfaOpen, setExportMfaOpen] = useState(false);
-  const [exportBusy, setExportBusy] = useState(false);
   const [exportNotice, setExportNotice] = useState(null);
-
-  async function runExport() {
-    setExportBusy(true);
-    setExportNotice(null);
-    try {
-      const result = await downloadEntriesCsv(exportMonth);
-      setExportNotice({ tone: "success", text: `Arquivo ${result.fileName} gerado (${result.rows} linha(s)). A exportação fica registrada na auditoria.` });
-      setExportOpen(false);
-    } catch (err) {
-      setExportNotice({ tone: "danger", text: friendlyFinanceError(err, "Não foi possível exportar os lançamentos.") });
-    } finally {
-      setExportBusy(false);
-    }
-  }
   // GAP REAL CORRIGIDO (ciclo de verificação adicional, Marco 4, 12/10/2026): fila de
   // pendências de classificação (M4-contrato §10) existia inteira no backend, sem tela —
   // nenhum humano via nem resolvia um excedente aguardando classificação final.
@@ -369,41 +353,28 @@ export default function LancamentosPage() {
       <StickyActionBar>
         <FinanceNavMenu />
         <Button variant="secondary" onClick={() => { setExportNotice(null); setExportOpen(true); }}>
-          <Icon name="document" size={18} /> Exportar lançamentos (CSV)
+          <Icon name="document" size={18} /> Exportar lançamentos
         </Button>
         <Button requires="finance:create" href="/painel/financeiro/lancamentos/novo">
           <Icon name="document" size={18} /> Novo lançamento
         </Button>
       </StickyActionBar>
 
-      <Modal
+      <ExportRequestModal
         open={exportOpen}
         onClose={() => setExportOpen(false)}
-        title="Exportar lançamentos (CSV)"
-        footer={
-          <>
-            <Button variant="secondary" onClick={() => setExportOpen(false)}>Cancelar</Button>
-            <Button onClick={() => setExportMfaOpen(true)} loading={exportBusy}>Exportar</Button>
-          </>
-        }
+        title="Exportar lançamentos"
+        resourceType="finance.entries"
+        filter={exportMonth ? { competenceMonth: exportMonth } : {}}
+        onDone={(result) => {
+          setExportNotice({ tone: "success", text: `Arquivo ${result.fileName} gerado (${result.rowCount} linha(s)). A exportação fica registrada na auditoria e o arquivo expira sozinho.` });
+          setExportOpen(false);
+        }}
       >
-        <Alert tone="info">
-          A exportação exige permissão de leitura do Financeiro e verificação em duas etapas. O arquivo é limitado em tamanho, tem as fórmulas neutralizadas e fica registrado na auditoria.
-        </Alert>
-        <FormField label="Competência (mês)" htmlFor="exp-month" helper="Deixe em branco para exportar todas as competências, se couber no limite.">
+        <FormField label="Competência (mês)" htmlFor="exp-month" helper="Deixe em branco para exportar todas as competências, se couber no limite da classificação.">
           <Input id="exp-month" type="month" value={exportMonth} onChange={(e) => setExportMonth(e.target.value)} />
         </FormField>
-      </Modal>
-
-      <MfaVerifyModal
-        open={exportMfaOpen}
-        onClose={() => setExportMfaOpen(false)}
-        actionLabel="exportar os lançamentos"
-        onVerified={async () => {
-          setExportMfaOpen(false);
-          await runExport();
-        }}
-      />
+      </ExportRequestModal>
 
       <Modal
         open={Boolean(deleteTarget)}

@@ -32,12 +32,12 @@ import {
   createFiscalObligation,
   completeFiscalObligation,
   downloadInvoiceFile,
-  downloadDimobFile,
   getInvoiceEvents,
   requestInvoice,
   getCorrespondentParameters,
 } from "@/lib/api/correspondent";
 import Select from "@/components/atoms/Select/Select";
+import ExportRequestModal from "@/components/organisms/ExportRequestModal/ExportRequestModal";
 import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import { formatDateTime, formatDate, formatBRL, toNumber, humanizeText, formatCompetence } from "@/lib/format";
 import { hasPermission } from "@/lib/rbac/permissions";
@@ -187,6 +187,8 @@ export default function FiscalPage() {
   const [modalError, setModalError] = useState("");
 
   const [dimobYearOpen, setDimobYearOpen] = useState(false);
+  // Arquivo da DIMOB: sai pelo POST /exports (M9-D822), com finalidade, justificativa e verificação em duas etapas.
+  const [dimobExportTarget, setDimobExportTarget] = useState(null);
   const [dimobYear, setDimobYear] = useState(String(currentYear()));
 
   const [cancelTarget, setCancelTarget] = useState(null);
@@ -400,8 +402,9 @@ export default function FiscalPage() {
     });
   }
 
-  async function handleDownloadDimob(batch) {
-    await runAction(`dl-dimob-${batch.id}`, () => downloadDimobFile(batch.id));
+  function handleDownloadDimob(batch) {
+    clearMessages();
+    setDimobExportTarget(batch);
   }
 
   async function handleRunReconciliations() {
@@ -866,6 +869,18 @@ export default function FiscalPage() {
           ]}
         />
       </div>
+
+      <ExportRequestModal
+        open={Boolean(dimobExportTarget)}
+        onClose={() => setDimobExportTarget(null)}
+        title="Baixar arquivo da DIMOB"
+        resourceType="correspondent.dimob"
+        filter={{ batchId: dimobExportTarget?.id }}
+        onDone={(result) => {
+          setActionMessage(`Arquivo ${result.fileName} gerado (${result.rowCount} registro(s)). A exportação fica registrada na auditoria e o arquivo expira sozinho.`);
+          setDimobExportTarget(null);
+        }}
+      />
 
       <Modal open={dimobYearOpen} onClose={() => { if (!busyKey) setDimobYearOpen(false); }} title="Gerar batch DIMOB">
         {modalError ? <Alert tone="danger">{modalError}</Alert> : null}
