@@ -23,6 +23,7 @@ import { dateOnlyInputToIso, formatContractLabel, parseCompetenceInput, toNumber
 import styles from "./page.module.css";
 import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 
+import { lookupFallback, reportLookupProblem } from "@/lib/asyncState/lookup";
 export default function NovoLancamentoPage() {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
@@ -85,9 +86,9 @@ export default function NovoLancamentoPage() {
         setForm((prev) => ({ ...prev, bankAccountId: ba?.[0]?.id || "" }));
       })
       .then(() => Promise.all([
-        listChartAccounts().catch(() => []),
-        listContracts().catch(() => []),
-        listPeople().catch(() => []),
+        listChartAccounts().catch(lookupFallback("o plano de contas")),
+        listContracts().catch(lookupFallback("os contratos")),
+        listPeople().catch(lookupFallback("as pessoas")),
       ]))
       .then(([ca, ct, pp]) => {
         if (cancelled) return;
@@ -161,7 +162,7 @@ export default function NovoLancamentoPage() {
     setPartiesLoading(true);
     listContractParties(contractId)
       .then((items) => setParties(items || []))
-      .catch(() => setParties([]))
+      .catch((error) => { reportLookupProblem("as partes", error); setParties([]); })
       .finally(() => setPartiesLoading(false));
   }
 

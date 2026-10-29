@@ -33,6 +33,7 @@ import { formatBRL, toNumber } from "@/lib/format";
 import { isInvalidNumber } from "../_components/obraShared";
 import styles from "./page.module.css";
 
+import { lookupFallback } from "@/lib/asyncState/lookup";
 export default function OrcamentoObraPage({ params }) {
   const [project, setProject] = useState(null);
   const [notFoundFlag, setNotFoundFlag] = useState(false);
@@ -74,7 +75,7 @@ export default function OrcamentoObraPage({ params }) {
         }
         throw err;
       }),
-      getActiveMarginRule().catch(() => null),
+      getActiveMarginRule().catch(lookupFallback("a regra de margem ativa", null)),
     ])
       .then(([p, marginRule]) => {
         if (cancelled || !p) return;

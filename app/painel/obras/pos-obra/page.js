@@ -24,6 +24,7 @@ import { apiFetch } from "@/lib/api/client";
 import { formatDate } from "@/lib/format";
 import styles from "./page.module.css";
 
+import { lookupFallback } from "@/lib/asyncState/lookup";
 export default function PosObraListaPage() {
   const router = useRouter();
   const [cases, setCases] = useState([]);
@@ -52,7 +53,7 @@ export default function PosObraListaPage() {
     // A lista de imóveis só serve para mostrar o nome do imóvel de cada obra: sem properties:read
     // (ex.: aprovador de Compras, que vê Obras por ter construction:read) ela não pode derrubar a
     // tela inteira — os nomes ficam em branco e o resto carrega (auditoria Marco 7 "final2").
-    Promise.all([listMaintenanceCases(), listProperties().catch(() => []), listProjects(), listPeople(), apiFetch("/users")])
+    Promise.all([listMaintenanceCases(), listProperties().catch(lookupFallback("os imóveis")), listProjects(), listPeople(), apiFetch("/users")])
       .then(([c, props, proj, pp, u]) => {
         if (cancelled) return;
         setCases(c || []);

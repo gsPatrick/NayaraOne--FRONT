@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Alert from "@/components/molecules/Alert/Alert";
 import { listActiveContingencies } from "@/lib/api/integrations";
 
+import { reportLookupProblem } from "@/lib/asyncState/lookup";
 // Faixa de aviso da contingência (Marco 9, M9-D226): uma linha por integração (ou família sem integração ativa) que está no plano B.
 const MODO_LABEL = {
   QUEUE_AND_ALTERNATE: "os pedidos esperam na fila e seguem pelo canal alternativo",
@@ -25,7 +26,7 @@ export default function ContingenciaBanner() {
     let cancelled = false;
     listActiveContingencies()
       .then((data) => { if (!cancelled) setItems(Array.isArray(data) ? data : []); })
-      .catch(() => { if (!cancelled) setItems([]); });
+      .catch((error) => { reportLookupProblem("os avisos de contingência", error); if (!cancelled) setItems([]); });
     return () => { cancelled = true; };
   }, []);
 

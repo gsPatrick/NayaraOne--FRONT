@@ -42,6 +42,7 @@ import { formatBRL } from "@/lib/format";
 import { buildGoogleMapsUrl, buildGoogleMapsEmbedUrl, buildGoogleMapsDirectionsUrl, buildAddressLine } from "@/lib/maps";
 import styles from "./page.module.css";
 
+import { lookupFallback } from "@/lib/asyncState/lookup";
 const AVAILABILITY_TONE = { AVAILABLE: "success", RENTED: "info", SOLD: "brand", WITHDRAWN: "neutral" };
 const OFFER_STATUS_TONE = { ACTIVE: "success", PAUSED: "warning", CLOSED: "neutral" };
 const REG_TONE = { Regularizado: "success", "Em análise": "warning", Pendente: "danger" };
@@ -98,9 +99,9 @@ export default function PropertyDetailPage({ params }) {
     setLoadError("");
     Promise.all([
       getProperty(params.id),
-      listOccurrences(params.id).catch(() => []),
-      listPriceHistory(params.id).catch(() => []),
-      listProperties().catch(() => []),
+      listOccurrences(params.id).catch(lookupFallback("as ocorrências do imóvel")),
+      listPriceHistory(params.id).catch(lookupFallback("o histórico de preços")),
+      listProperties().catch(lookupFallback("os imóveis")),
     ])
       .then(async ([apiProperty, occurrences, priceHistory, allProperties]) => {
         if (cancelled || !apiProperty) return;

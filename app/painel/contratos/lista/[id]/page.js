@@ -64,6 +64,7 @@ import {
 import { formatBRL, formatDate, formatDateTime, formatContractLabel, humanizeText } from "@/lib/format";
 import styles from "./page.module.css";
 
+import { lookupFallback } from "@/lib/asyncState/lookup";
 const TIMELINE_TYPE_LABELS = { AMENDMENT: "Aditivo", NOTICE: "Notificação", DELINQUENCY: "Inadimplência", REPAIR: "Reparo", STATUS_CHANGE: "Mudança de status" };
 const TIMELINE_TYPE_TONE = { AMENDMENT: "info", NOTICE: "warning", DELINQUENCY: "danger", REPAIR: "neutral", STATUS_CHANGE: "brand" };
 
@@ -135,7 +136,7 @@ export default function ContratoDetailPage({ params }) {
       listContractAmendments(params.id),
       listPeople(),
       getContractTimeline(params.id).catch(() => ({ items: [] })),
-      listContractRequirements(params.id).catch(() => []),
+      listContractRequirements(params.id).catch(lookupFallback("as exigências do contrato")),
     ])
       .then(async ([contractRes, partiesRes, versionsRes, guaranteesRes, amendmentsRes, peopleRes, timelineRes, requirementsRes]) => {
         if (cancelled) return;

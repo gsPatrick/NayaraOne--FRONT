@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import AppShell from "@/components/organisms/AppShell/AppShell";
@@ -9,12 +9,14 @@ import Table from "@/components/organisms/Table/Table";
 import Badge from "@/components/atoms/Badge/Badge";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
 import PersonPicker from "@/components/molecules/PersonPicker/PersonPicker";
 import { listSupplierQualifications, listPurchaseOrders } from "@/lib/api/procurement";
 import { listPeople } from "@/lib/api/people";
 import { formatDate } from "@/lib/format";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { DUE_DILIGENCE_LABELS, DUE_DILIGENCE_TONE, isQualificationExpired, awardBlockReason } from "@/lib/procurement/supplierQualification";
 
 // Auditoria contratual Marco 7 (2026-10-07) — "Fornecedores: cadastro mestre; documentos/
@@ -24,26 +26,19 @@ import { DUE_DILIGENCE_LABELS, DUE_DILIGENCE_TONE, isQualificationExpired, award
 // receberam PO sem nenhuma qualificação registrada; a ficha de cada um fica em ./[id].
 export default function FornecedoresPage() {
   const router = useRouter();
-  const [qualifications, setQualifications] = useState([]);
-  const [orders, setOrders] = useState([]);
-  const [people, setPeople] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
+  // M9-D850: as três leituras formam uma só chamada do padrão de estados; 403 mostra acesso negado, nunca "nenhum fornecedor".
+  const query = useAsyncState(
+    async () => {
+      const [q, o, p] = await Promise.all([listSupplierQualifications(), listPurchaseOrders(), listPeople()]);
+      return { qualifications: q || [], orders: o || [], people: p || [] };
+    },
+    { key: "fornecedores", isEmpty: () => false }
+  );
+  const qualifications = useMemo(() => (query.data ? query.data.qualifications : []), [query.data]);
+  const orders = useMemo(() => (query.data ? query.data.orders : []), [query.data]);
+  const people = useMemo(() => (query.data ? query.data.people : []), [query.data]);
   const [pickOpen, setPickOpen] = useState(false);
   const [picked, setPicked] = useState({ name: "", personId: "" });
-
-  useEffect(() => {
-    setLoading(true);
-    setLoadError("");
-    Promise.all([listSupplierQualifications(), listPurchaseOrders(), listPeople()])
-      .then(([q, o, p]) => {
-        setQualifications(q || []);
-        setOrders(o || []);
-        setPeople(p || []);
-      })
-      .catch((err) => setLoadError(err?.message || "Não foi possível carregar os fornecedores."))
-      .finally(() => setLoading(false));
-  }, []);
 
   const nameById = useMemo(() => {
     const map = new Map(people.map((p) => [p.id, p.legalName]));
@@ -114,7 +109,6 @@ export default function FornecedoresPage() {
 
   return (
     <AppShell title="Fornecedores" backHref="/painel/compras">
-      {loadError ? <Alert tone="danger" title="Não foi possível carregar os fornecedores">{loadError}</Alert> : null}
       {pendingCount > 0 ? (
         <Alert tone="warning" title={`${pendingCount} fornecedor(es) de alto risco aguardando due diligence`}>
           Enquanto a due diligence não for aprovada, esses fornecedores não podem ser adjudicados numa cotação.
@@ -126,7 +120,9 @@ export default function FornecedoresPage() {
         subtitle="Documentos, vigência e due diligence para alto risco"
         actions={<Button size="sm" onClick={() => { setPicked({ name: "", personId: "" }); setPickOpen(true); }}>Qualificar fornecedor</Button>}
       >
-        <Table columns={columns} rows={loading ? [] : rows} loading={loading} emptyMessage="Nenhum fornecedor qualificado ou com pedido de compra ainda." />
+        <AsyncState result={query}>
+          {() => <Table columns={columns} rows={rows} emptyMessage="Nenhum fornecedor qualificado ou com pedido de compra ainda." />}
+        </AsyncState>
       </Card>
 
       <Modal

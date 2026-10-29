@@ -24,6 +24,7 @@ import { PROPERTY_TYPE_LABELS, OFFER_TYPE_LABELS } from "@/lib/radarMatching";
 import { formatBRL, formatDate } from "@/lib/format";
 import styles from "./page.module.css";
 
+import { lookupFallback } from "@/lib/asyncState/lookup";
 function buildContactHref(contact) {
   if (contact.type === "WHATSAPP") return `https://wa.me/${contact.value.replace(/\D/g, "")}`;
   if (contact.type === "PHONE") return `tel:${contact.value.replace(/\D/g, "")}`;
@@ -53,15 +54,15 @@ export default function RadarDetailPage({ params }) {
         setRadar(apiRadar);
         setMatches((apiRadar.matches || []).map(mapProperty));
         const [apiPerson, apiOpportunity] = await Promise.all([
-          apiRadar.personId ? getPerson(apiRadar.personId).catch(() => null) : Promise.resolve(null),
-          apiRadar.opportunityId ? getOpportunity(apiRadar.opportunityId).catch(() => null) : Promise.resolve(null),
+          apiRadar.personId ? getPerson(apiRadar.personId).catch(lookupFallback("a pessoa", null)) : Promise.resolve(null),
+          apiRadar.opportunityId ? getOpportunity(apiRadar.opportunityId).catch(lookupFallback("a oportunidade", null)) : Promise.resolve(null),
         ]);
         if (cancelled) return;
         setPerson(apiPerson);
         if (apiOpportunity) {
           const [property, users] = await Promise.all([
-            apiOpportunity.propertyId ? getProperty(apiOpportunity.propertyId).catch(() => null) : Promise.resolve(null),
-            apiFetch("/users").catch(() => []),
+            apiOpportunity.propertyId ? getProperty(apiOpportunity.propertyId).catch(lookupFallback("o imóvel", null)) : Promise.resolve(null),
+            apiFetch("/users").catch(lookupFallback("os usuários")),
           ]);
           if (cancelled) return;
           setOpportunity({

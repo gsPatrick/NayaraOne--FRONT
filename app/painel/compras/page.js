@@ -25,6 +25,7 @@ import { listProjects } from "@/lib/api/construction";
 import { formatDateTime, formatBRL, formatQuantity, toNumber } from "@/lib/format";
 import { getCurrentUser } from "@/lib/auth/session";
 
+import { lookupFallback } from "@/lib/asyncState/lookup";
 const STATUS_LABELS = { REQUESTED: "Solicitada", APPROVED: "Aprovada", REJECTED: "Rejeitada", AWARDED: "Adjudicada", DELIVERED: "Entregue", CLOSED: "Fechada" };
 const STATUS_TONE = { REQUESTED: "neutral", APPROVED: "info", REJECTED: "danger", AWARDED: "success", DELIVERED: "success", CLOSED: "success" };
 
@@ -149,7 +150,7 @@ export default function ComprasPage() {
       // existente (fix no backend), mas o front também precisa carregar as ofertas já
       // submetidas nela — senão reabrir o modal (reload, nova sessão) mostrava a comparação
       // vazia mesmo com ofertas reais já registradas.
-      const offers = await compareOffers(quotation.id).catch(() => []);
+      const offers = await compareOffers(quotation.id).catch(lookupFallback("as propostas da cotação"));
       setQuoteModal({ request: fullRequest, quotation, offers });
     } catch (err) {
       setActionError(err?.message || "Não foi possível abrir a cotação.");

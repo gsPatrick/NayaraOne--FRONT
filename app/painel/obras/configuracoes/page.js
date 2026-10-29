@@ -25,6 +25,7 @@ import { getActiveSlaRule, createSlaRule, getActiveMarginRule, createMarginRule,
 import { toNumber, formatDateTime } from "@/lib/format";
 import styles from "./page.module.css";
 
+import { reportLookupProblem } from "@/lib/asyncState/lookup";
 const SEVERITIES = [
   { key: "CRITICAL", label: "Crítica" },
   { key: "HIGH", label: "Alta" },
@@ -59,7 +60,7 @@ export default function ObrasConfiguracoesPage() {
   }
 
   function loadMargin() {
-    listMarginRuleVersions().then((v) => setMarginVersions(v || [])).catch(() => setMarginVersions([]));
+    listMarginRuleVersions().then((v) => setMarginVersions(v || [])).catch((error) => { reportLookupProblem("as versões da regra de margem", error); setMarginVersions([]); });
     return getActiveMarginRule()
       .then((rule) => {
         setMargin(rule);

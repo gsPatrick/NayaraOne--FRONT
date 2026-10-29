@@ -57,6 +57,7 @@ import { formatBRL, formatDate, formatPercent, formatContractLabel, toNumber, hu
 import { buildMonthlyChartData } from "@/lib/monthlyChartData";
 import styles from "./page.module.css";
 
+import { lookupFallback, reportLookupProblem } from "@/lib/asyncState/lookup";
 // Mensagem de erro sempre em português: a rede que falha chega como "Failed to fetch" em inglês.
 function friendlyMessage(err, fallback) {
   const raw = String(err?.message || "").trim();
@@ -229,7 +230,7 @@ export default function ComissoesRepassesPage() {
     try {
       const { commission } = await createCommission(payload);
       setCommissions((prev) => [commission, ...prev]);
-      const its = await listCommissionInstallments(commission.id).catch(() => []);
+      const its = await listCommissionInstallments(commission.id).catch(lookupFallback("as parcelas da comissão"));
       setInstallments((prev) => [...prev, ...its]);
       setNewCommissionModal(false);
       showNotice("success", "Comissão criada", `Comissão de ${formatBRL(commission.totalAmount)} registrada para ${userName(users, commission.beneficiaryUserId)}.`);
@@ -612,8 +613,8 @@ function NewRepasseModal({ open, error, people, bankAccounts, onClose, onConfirm
     setOwnerQuery("");
     setReceivables([]);
     Promise.all([
-      listProperties().catch(() => []),
-      listContracts().catch(() => []),
+      listProperties().catch(lookupFallback("os imóveis")),
+      listContracts().catch(lookupFallback("os contratos")),
     ]).then(([props, cts]) => {
       setProperties(Array.isArray(props) ? props : props?.items || []);
       setContracts(Array.isArray(cts) ? cts : cts?.items || []);
@@ -841,7 +842,7 @@ function ApproveRepasseModal({ repasse, error, bankAccounts, onClose, onConfirm 
     if (!repasse) return;
     setCostCenterId("");
     setBankAccountId("");
-    listCostCenters().then((list) => setCostCenters(list || [])).catch(() => setCostCenters([]));
+    listCostCenters().then((list) => setCostCenters(list || [])).catch((error) => { reportLookupProblem("os centros de custo", error); setCostCenters([]); });
   }, [repasse]);
   return (
     <Modal
@@ -897,7 +898,7 @@ function NewCommissionModal({ open, error, users, onClose, onConfirm, busy }) {
     setForm(empty);
     listFinancialEntries({ nature: "RECEIVABLE" })
       .then((list) => setReceivables((list || []).filter((e) => e.nature === "RECEIVABLE" && !e.isThirdPartyFunds && !e.parentEntryId && !["CANCELLED", "REVERSED"].includes(e.status))))
-      .catch(() => setReceivables([]));
+      .catch((error) => { reportLookupProblem("os recebíveis", error); setReceivables([]); });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 

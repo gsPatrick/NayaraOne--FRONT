@@ -30,6 +30,7 @@ import {
 import { formatDateTime, formatContractLabel } from "@/lib/format";
 import styles from "./page.module.css";
 
+import { lookupFallback } from "@/lib/asyncState/lookup";
 // M45-RECONF F7: "KD-TERM-v2" é código interno do modelo — na tela, "Modelo versão 2".
 function termVersionLabel(version) {
   const m = /v(\d+)$/i.exec(String(version || "KD-TERM-v1"));
@@ -76,7 +77,7 @@ export default function EntregaChavesDetailPage({ params }) {
           try {
             const [c, ps] = await Promise.all([
               getContract(deliveryRes.contractId),
-              listContractParties(deliveryRes.contractId).catch(() => []),
+              listContractParties(deliveryRes.contractId).catch(lookupFallback("as partes do contrato")),
             ]);
             if (!cancelled) { setContract(c); setParties(ps || []); }
           } catch {

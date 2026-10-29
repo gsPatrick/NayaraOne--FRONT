@@ -19,6 +19,7 @@ import { apiFetch } from "@/lib/api/client";
 import { formatDate, formatPercent, formatBRL } from "@/lib/format";
 import styles from "./page.module.css";
 
+import { lookupFallback } from "@/lib/asyncState/lookup";
 // Visão consolidada de medições de todas as etapas da obra — extraída na divisão do antigo
 // monólito app/painel/obras/lista/[id]/page.js em subrotas. As ações de medição (registrar,
 // enviar para revisão, revisar, aprovar/rejeitar) continuam na tela de detalhe da etapa
@@ -45,7 +46,7 @@ export default function MedicoesObraPage({ params }) {
         }
         throw err;
       }),
-      apiFetch("/users?status=ACTIVE").catch(() => []),
+      apiFetch("/users?status=ACTIVE").catch(lookupFallback("os usuários")),
     ])
       .then(([p, u]) => {
         if (cancelled || !p) return;
@@ -54,7 +55,7 @@ export default function MedicoesObraPage({ params }) {
         return listProjectStages(p.id).then((st) => {
           if (cancelled) return;
           setStages(st || []);
-          return Promise.all((st || []).map((s) => listStageMeasurements(s.id).catch(() => []))).then((results) => {
+          return Promise.all((st || []).map((s) => listStageMeasurements(s.id).catch(lookupFallback("as medições da etapa")))).then((results) => {
             if (cancelled) return;
             const byStage = {};
             (st || []).forEach((s, idx) => {

@@ -37,4 +37,12 @@ export const GOVERNANCA_API_GROUPS = [
       { key: "governanca.api.externo.lead_prazo_horas", label: "Prazo do primeiro contato com lead de parceiro (horas)", type: "integer", defaultValue: 24, min: 1, max: 720, helper: "Todo lead recebido pela API externa entra no funil como Novo, com a próxima ação vencendo neste prazo." },
     ],
   },
+  {
+    title: "Padrão de telas (carregamento, vazio, sem acesso e sem conexão)",
+    subtitle:
+      "Toda tela diz em qual situação está: carregando, vazia, com erro de preenchimento, sem acesso, sem conexão, para tentar de novo ou concluída. Quando a conexão cai, a tela pode continuar mostrando o último dado carregado; passado o tempo abaixo ela o marca como desatualizado.",
+    fields: [
+      { key: "governanca.ui.cache_fresco_s", label: "Tempo em que o último dado carregado conta como atual (segundos)", type: "integer", defaultValue: 60, min: 1, max: 86400, helper: "Só vale quando a conexão cai: o dado mais velho que isso aparece com o aviso \"desatualizado\"." },
+    ],
+  },
 ];

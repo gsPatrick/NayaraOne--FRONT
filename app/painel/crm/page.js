@@ -38,6 +38,7 @@ import { apiFetch } from "@/lib/api/client";
 import { formatDateTime, isOverdue, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE, dateTimeLocalInputToIso, isoToDateTimeLocalInput } from "@/lib/format";
 import styles from "./page.module.css";
 
+import { lookupFallback } from "@/lib/asyncState/lookup";
 const CLOSED_STAGES = ["ganho", "perdido"];
 const VISIT_TONE = { DONE: "success", SCHEDULED: "info", CONFIRMED: "info", CANCELED: "danger", NO_SHOW: "danger" };
 
@@ -357,10 +358,10 @@ function OpportunityDetailModal({ opportunity, stages, users = [], onSave, onClo
     let cancelled = false;
     setLoadingHistory(true);
     Promise.all([
-      listVisits({ opportunityId: opportunity.id }).catch(() => []),
-      listMessages({ opportunityId: opportunity.id }).catch(() => []),
-      listOpportunityTimeline(opportunity.id).catch(() => []),
-      listOpportunityTasks(opportunity.id).catch(() => []),
+      listVisits({ opportunityId: opportunity.id }).catch(lookupFallback("as visitas")),
+      listMessages({ opportunityId: opportunity.id }).catch(lookupFallback("as mensagens")),
+      listOpportunityTimeline(opportunity.id).catch(lookupFallback("a linha do tempo")),
+      listOpportunityTasks(opportunity.id).catch(lookupFallback("as tarefas")),
     ]).then(([v, m, tl, tk]) => {
       if (cancelled) return;
       setVisits(v);

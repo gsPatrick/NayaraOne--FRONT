@@ -24,6 +24,7 @@ import { generateIdempotencyKey } from "@/lib/offline/offlineQueue";
 import { formatQuantity, formatDateTime, formatBRL, toNumber, humanizeText } from "@/lib/format";
 import styles from "../../obras/lista/page.module.css";
 
+import { reportLookupProblem } from "@/lib/asyncState/lookup";
 const MOVEMENT_TYPE_LABELS = { IN: "Entrada", OUT: "Saída", RETURN: "Devolução", TRANSFER: "Transferência", ADJUSTMENT: "Ajuste", LOSS: "Perda", DISPOSAL: "Descarte" };
 const MOVEMENT_TYPE_TONE = { IN: "success", OUT: "info", RETURN: "neutral", TRANSFER: "info", ADJUSTMENT: "warning", LOSS: "danger", DISPOSAL: "danger" };
 const SOURCE_REQUIRED = { OUT: "source", LOSS: "source", DISPOSAL: "source", IN: "destination", RETURN: "destination", TRANSFER: "both", ADJUSTMENT: "either" };
@@ -128,7 +129,7 @@ export default function MovimentosPage() {
       setBalances([]);
       return;
     }
-    getItemBalances(form.inventoryItemId).then(setBalances).catch(() => setBalances([]));
+    getItemBalances(form.inventoryItemId).then(setBalances).catch((error) => { reportLookupProblem("os saldos do item", error); setBalances([]); });
   }, [form.inventoryItemId]);
 
   // A7 — EST-004/§5: saída (OUT) de um canteiro de obra exige a etapa onde o material foi usado.
@@ -144,7 +145,7 @@ export default function MovimentosPage() {
     setStagesLoading(true);
     listProjectStages(siteProjectId)
       .then((rows) => { if (!cancelled) setStages(rows || []); })
-      .catch(() => { if (!cancelled) setStages([]); })
+      .catch((error) => { reportLookupProblem("as etapas", error); if (!cancelled) setStages([]); })
       .finally(() => { if (!cancelled) setStagesLoading(false); });
     return () => { cancelled = true; };
   }, [siteProjectId]);

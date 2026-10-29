@@ -29,6 +29,7 @@ import {
 import { formatDateTime, isOverdue } from "@/lib/format";
 import styles from "./page.module.css";
 
+import { lookupFallback } from "@/lib/asyncState/lookup";
 const TYPE_LABELS = { COMPLAINT: "Reclamação", COMPLIMENT: "Elogio", CONFLICT: "Conflito" };
 const SEVERITY_LABELS = { LOW: "Baixa", MEDIUM: "Média", HIGH: "Alta" };
 const SEVERITY_TONE = { LOW: "neutral", MEDIUM: "warning", HIGH: "danger" };
@@ -65,7 +66,7 @@ export default function FeedbackPage() {
     load();
     apiFetch("/users")
       .then((u) => setUsers(u || []))
-      .catch(() => {});
+      .catch(lookupFallback("os usuários"));
   }, []);
 
   const filtered = useMemo(

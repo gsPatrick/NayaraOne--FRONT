@@ -16,6 +16,7 @@ import { formatBRL, formatDate, formatDateTime, toNumber } from "@/lib/format";
 import { hasPermission } from "@/lib/rbac/permissions";
 import { canMoveManually } from "@/app/painel/correspondente/_labels";
 
+import { reportLookupProblem } from "@/lib/asyncState/lookup";
 const MANUAL_OPTIONS = [
   { value: "UNDER_ANALYSIS", label: "Em análise no banco" },
   { value: "PENDING_CUSTOMER", label: "Aguardando documentos do cliente" },
@@ -72,7 +73,7 @@ export default function FinancingCaseWorkflow({ financingCase, onChanged }) {
     setProposalsLoading(true);
     listFinancingProposals(id)
       .then((rows) => setProposals(rows || []))
-      .catch(() => setProposals([]))
+      .catch((error) => { reportLookupProblem("as propostas", error); setProposals([]); })
       .finally(() => setProposalsLoading(false));
   }
   useEffect(() => { loadProposals(); }, [id, current]); // eslint-disable-line react-hooks/exhaustive-deps

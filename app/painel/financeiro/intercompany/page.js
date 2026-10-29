@@ -36,6 +36,7 @@ import { useCompany } from "@/lib/context/CompanyContext";
 import { formatBRL, formatDateTime, toNumber } from "@/lib/format";
 import styles from "./page.module.css";
 
+import { lookupFallback } from "@/lib/asyncState/lookup";
 // Mensagens técnicas (variável de ambiente, rede em inglês) nunca chegam à tela do usuário.
 function friendly(err, fallback) {
   const raw = String(err?.message || "").trim();
@@ -81,10 +82,10 @@ export default function IntercompanyPage() {
     setLoadError("");
     try {
       const [companyList, transferList, accountList, destList] = await Promise.all([
-        listCompanies().catch(() => []),
+        listCompanies().catch(lookupFallback("as empresas")),
         listIntercompanyTransfers(),
         listBankAccounts(),
-        listIntercompanyDestinationCompanies().catch(() => []),
+        listIntercompanyDestinationCompanies().catch(lookupFallback("as empresas de destino")),
       ]);
       setCompanies([...(companyList || []), ...(destList || []).filter((d) => !(companyList || []).some((c) => c.id === d.id))]);
       setDestCompanies(destList || []);

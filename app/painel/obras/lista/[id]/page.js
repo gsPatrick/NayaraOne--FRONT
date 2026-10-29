@@ -50,6 +50,7 @@ import { apiFetch } from "@/lib/api/client";
 import { formatBRL, formatPercent, formatDate, formatDateTime, dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE, toNumber } from "@/lib/format";
 import styles from "./page.module.css";
 
+import { lookupFallback, reportLookupProblem } from "@/lib/asyncState/lookup";
 // Visão geral da obra — depois da divisão do antigo monólito (orçamento, change orders, RDO/
 // diário, medições, materiais e qualidade/NC agora moram em subrotas dedicadas, veja
 // app/painel/obras/lista/[id]/{orcamento,change-orders,diario,medicoes,materiais,qualidade}/
@@ -127,7 +128,7 @@ export default function ObraDetalhePage({ params }) {
       apiFetch("/users?status=ACTIVE"),
       // Centro de custo é opcional — não pode derrubar a página inteira se o usuário não tiver
       // permissão finance:read (o formulário de edição só perde essa opção específica).
-      listCostCenters().catch(() => []),
+      listCostCenters().catch(lookupFallback("os centros de custo")),
     ])
       .then(([p, props, u, cc]) => {
         if (cancelled || !p) return;
@@ -175,7 +176,7 @@ export default function ObraDetalhePage({ params }) {
       .catch((err) => setNayObrasError(err?.message || "Não foi possível carregar o resumo do NAY Obras."));
     getNayObrasPostObraSummary(params.id)
       .then((s) => setPostObraHealth(s || null))
-      .catch(() => setPostObraHealth(null));
+      .catch((error) => { reportLookupProblem("a saúde do pós-obra", error); setPostObraHealth(null); });
   }
 
   useEffect(() => {

@@ -6,8 +6,7 @@ import AppShell from "@/components/organisms/AppShell/AppShell";
 import Button from "@/components/atoms/Button/Button";
 import Select from "@/components/atoms/Select/Select";
 import Icon from "@/components/atoms/Icon/Icon";
-import Alert from "@/components/molecules/Alert/Alert";
-import { SkeletonCardGrid } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import SearchInput from "@/components/molecules/SearchInput/SearchInput";
 import Pagination from "@/components/molecules/Pagination/Pagination";
 import PropertyCard from "@/components/molecules/PropertyCard/PropertyCard";
@@ -15,6 +14,7 @@ import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import FabLink from "@/components/molecules/FabLink/FabLink";
 import { AVAILABILITY_STATUS_LABELS } from "@/lib/mock/properties";
 import { listProperties } from "@/lib/api/properties";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import styles from "./page.module.css";
 
 
@@ -29,28 +29,9 @@ export default function ImoveisPage() {
   useEffect(() => {
     setPage(1);
   }, [pageSize]);
-  const [properties, setProperties] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    listProperties()
-      .then((data) => {
-        if (!cancelled) setProperties(data);
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar os imóveis.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // M9-D850: carregando, lista vazia, sem acesso (403), sem conexão e "tentar de novo" vêm do padrão único de estados.
+  const propertiesQuery = useAsyncState(() => listProperties(), { key: "imoveis" });
+  const properties = useMemo(() => propertiesQuery.data || [], [propertiesQuery.data]);
 
   const filtered = useMemo(() => {
     return properties.filter((p) => {
@@ -91,27 +72,29 @@ export default function ImoveisPage() {
         </Button>
       </div>
 
-      {loadError ? (
-        <Alert tone="danger" title="Não foi possível carregar os imóveis">{loadError}</Alert>
-      ) : null}
-
-      {loading ? (
-        <SkeletonCardGrid />
-      ) : pageItems.length === 0 ? (
-        <div className={styles.empty}>
-          <EmptyState icon="building" title="Nenhum imóvel encontrado" description="Ajuste os filtros ou o termo de busca para ver outros resultados." />
-        </div>
-      ) : (
-        <div className={styles.grid}>
-          {pageItems.map((property) => (
-            <PropertyCard
-              key={property.id}
-              property={property}
-              onClick={(p) => router.push(`/painel/imoveis/${p.id}`)}
-            />
-          ))}
-        </div>
-      )}
+      <AsyncState
+        result={propertiesQuery}
+        loadingLabel="Carregando imóveis..."
+        emptyTitle="Nenhum imóvel cadastrado"
+        emptyDescription="Cadastre o primeiro imóvel para começar."
+        emptyAction={{ label: "Novo imóvel", href: "/painel/imoveis/novo" }}
+      >
+        {() => (pageItems.length === 0 ? (
+          <div className={styles.empty}>
+            <EmptyState icon="building" title="Nenhum imóvel encontrado" description="Ajuste os filtros ou o termo de busca para ver outros resultados." />
+          </div>
+        ) : (
+          <div className={styles.grid}>
+            {pageItems.map((property) => (
+              <PropertyCard
+                key={property.id}
+                property={property}
+                onClick={(p) => router.push(`/painel/imoveis/${p.id}`)}
+              />
+            ))}
+          </div>
+        ))}
+      </AsyncState>
 
       <div className={styles.paginationRow}>
         <Pagination

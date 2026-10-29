@@ -18,6 +18,7 @@ import { apiFetch } from "@/lib/api/client";
 import { dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE, toNumber } from "@/lib/format";
 import styles from "./page.module.css";
 
+import { lookupFallback } from "@/lib/asyncState/lookup";
 export default function NovaObraPage() {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
@@ -45,7 +46,7 @@ export default function NovaObraPage() {
     // usuários suspensos/de QA na lista.
     // listCostCenters() tem `.catch(() => [])` próprio: centro de custo é opcional e não pode
     // derrubar o formulário inteiro se o usuário não tiver permissão finance:read.
-    Promise.all([listProperties(), apiFetch("/users?status=ACTIVE"), listCostCenters().catch(() => [])])
+    Promise.all([listProperties(), apiFetch("/users?status=ACTIVE"), listCostCenters().catch(lookupFallback("os centros de custo"))])
       .then(([props, u, cc]) => {
         if (cancelled) return;
         setProperties(props || []);

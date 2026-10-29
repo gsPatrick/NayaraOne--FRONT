@@ -23,6 +23,7 @@ import { listProjects, listProjectStages } from "@/lib/api/construction";
 import { formatDateTime, formatQuantity, toNumber } from "@/lib/format";
 import { getCurrentUser } from "@/lib/auth/session";
 
+import { lookupFallback } from "@/lib/asyncState/lookup";
 const STATUS_LABELS = { REQUESTED: "Solicitada", APPROVED: "Aprovada", REJECTED: "Rejeitada", ISSUED: "Entregue" };
 const STATUS_TONE = { REQUESTED: "neutral", APPROVED: "info", REJECTED: "danger", ISSUED: "success" };
 
@@ -74,7 +75,7 @@ export default function RequisicoesPage() {
   function load() {
     setLoading(true);
     setLoadError("");
-    Promise.all([listRequisitions(), listInventoryItems(), listInventoryLocations(), listProjects().catch(() => [])])
+    Promise.all([listRequisitions(), listInventoryItems(), listInventoryLocations(), listProjects().catch(lookupFallback("as obras"))])
       .then(([r, i, l, p]) => {
         setRequisitions(r || []);
         setItems(i || []);

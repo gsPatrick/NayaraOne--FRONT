@@ -29,6 +29,7 @@ import { formatBRL, formatDateTime, humanizeText } from "@/lib/format";
 import { getCurrentUser } from "@/lib/auth/session";
 import styles from "./page.module.css";
 
+import { lookupFallback } from "@/lib/asyncState/lookup";
 const STATUS_LABELS = {
   PENDING: "Pendente",
   APPROVED: "Aprovada",
@@ -107,7 +108,7 @@ export default function IntencoesPagamentoPage() {
     setLoading(true);
     setLoadError("");
     // Contas e pessoas só enriquecem o favorecido: se falharem, a lista continua aparecendo.
-    Promise.all([listPaymentIntents(), listFinancialEntries(), listBankAccounts().catch(() => []), listPeople().catch(() => [])])
+    Promise.all([listPaymentIntents(), listFinancialEntries(), listBankAccounts().catch(lookupFallback("as contas bancárias")), listPeople().catch(lookupFallback("as pessoas"))])
       .then(([pi, fe, ba, pp]) => {
         if (cancelled) return;
         setIntents(pi || []);

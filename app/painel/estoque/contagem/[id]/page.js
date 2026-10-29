@@ -30,6 +30,7 @@ import { formatDateTime, formatQuantity, toNumber } from "@/lib/format";
 import { getCurrentUser } from "@/lib/auth/session";
 import styles from "./page.module.css";
 
+import { lookupFallback } from "@/lib/asyncState/lookup";
 const STATUS_LABELS = { OPEN: "Em contagem", COMPLETED: "Fechado" };
 const STATUS_TONE = { OPEN: "warning", COMPLETED: "success" };
 
@@ -74,8 +75,8 @@ export default function ContagemDetailPage() {
       getCount(id),
       listInventoryItems(),
       listInventoryLocations(),
-      listProjects().catch(() => []),
-      apiFetch("/users").catch(() => []),
+      listProjects().catch(lookupFallback("as obras")),
+      apiFetch("/users").catch(lookupFallback("os usuários")),
     ])
       .then(([c, i, l, p, u]) => {
         setCount(c);

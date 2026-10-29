@@ -21,6 +21,7 @@ import { listProjects } from "@/lib/api/construction";
 import { formatQuantity, formatBRL, toNumber } from "@/lib/format";
 import styles from "../obras/lista/page.module.css";
 
+import { reportLookupProblem } from "@/lib/asyncState/lookup";
 const ITEM_TYPE_LABELS = { CONSUMABLE: "Consumível", TOOL: "Ferramenta", ASSET: "Patrimônio", SERVICE_ITEM: "Serviço" };
 const ITEM_TYPE_TONE = { CONSUMABLE: "neutral", TOOL: "info", ASSET: "success", SERVICE_ITEM: "neutral" };
 const LOCATION_TYPE_LABELS = { WAREHOUSE: "Almoxarifado", PROJECT_SITE: "Canteiro de obra" };
@@ -73,7 +74,7 @@ export default function EstoqueItensPage() {
       })
       .catch((err) => setLoadError(err?.message || "Não foi possível carregar o estoque."))
       .finally(() => setLoading(false));
-    listProjects().then(setProjects).catch(() => setProjects([]));
+    listProjects().then(setProjects).catch((error) => { reportLookupProblem("as obras", error); setProjects([]); });
   }
 
   useEffect(() => { load(); }, []);

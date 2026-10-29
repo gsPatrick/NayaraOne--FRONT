@@ -38,6 +38,7 @@ import ChangeEvidenceFields from "@/components/molecules/ChangeEvidenceFields/Ch
 import { EMPTY_EVIDENCE, buildChangeEvidence } from "@/lib/changeEvidence";
 import styles from "./page.module.css";
 
+import { lookupFallback } from "@/lib/asyncState/lookup";
 export default function ContaBancariaDetailPage({ params }) {
   const router = useRouter();
   const [account, setAccount] = useState(null);
@@ -65,7 +66,7 @@ export default function ContaBancariaDetailPage({ params }) {
         setAccount(acc);
         setEditForm({ bankCode: acc.bankCode || "", agency: acc.agency || "", accountNumber: acc.accountNumber || "", pixKey: acc.pixKey || "" });
         return Promise.all([
-          acc.ownerPersonId ? getPerson(acc.ownerPersonId).catch(() => null) : Promise.resolve(null),
+          acc.ownerPersonId ? getPerson(acc.ownerPersonId).catch(lookupFallback("a pessoa", null)) : Promise.resolve(null),
           listFinancialEntries({ bankAccountId: params.id }),
           listOwnerRepasses(),
         ]);

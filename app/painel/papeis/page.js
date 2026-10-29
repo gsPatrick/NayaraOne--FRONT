@@ -1,44 +1,33 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Button from "@/components/atoms/Button/Button";
 import Badge from "@/components/atoms/Badge/Badge";
 import Icon from "@/components/atoms/Icon/Icon";
 import Alert from "@/components/molecules/Alert/Alert";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import Table from "@/components/organisms/Table/Table";
 import Modal from "@/components/organisms/Modal/Modal";
 import RowActions from "@/components/molecules/RowActions/RowActions";
 import MfaVerifyModal from "@/components/organisms/MfaVerifyModal/MfaVerifyModal";
 import MfaSetupRequiredNotice from "@/components/molecules/MfaSetupRequiredNotice/MfaSetupRequiredNotice";
 import { listRoles, deleteRole } from "@/lib/api/roles";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import styles from "./page.module.css";
 
 export default function PapeisPage() {
   const router = useRouter();
-  const [roles, setRoles] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
+  // M9-D850: o estado da lista (carregando, vazio, sem acesso, sem conexão, tentar de novo) vem do padrão único.
+  const rolesQuery = useAsyncState(() => listRoles(), { key: "papeis" });
+  const roles = rolesQuery.data || [];
   const [actionError, setActionError] = useState("");
 
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [mfaRetryOpen, setMfaRetryOpen] = useState(false);
   const [mfaSetupNeeded, setMfaSetupNeeded] = useState(false);
-
-  function loadRoles() {
-    setLoading(true);
-    setLoadError("");
-    return listRoles()
-      .then(setRoles)
-      .catch((err) => setLoadError(err?.message || "Não foi possível carregar os papéis."))
-      .finally(() => setLoading(false));
-  }
-
-  useEffect(() => {
-    loadRoles();
-  }, []);
 
   async function handleDelete() {
     setDeleting(true);
@@ -47,7 +36,7 @@ export default function PapeisPage() {
     try {
       await deleteRole(deleteTarget.id);
       setDeleteTarget(null);
-      await loadRoles();
+      await rolesQuery.reload();
     } catch (err) {
       if (err?.code === "MFA_STEP_UP_REQUIRED") {
         setMfaRetryOpen(true);
@@ -100,18 +89,24 @@ export default function PapeisPage() {
     <AppShell title="Papéis & Permissões">
       <div className={styles.toolbar}>
         <span className={styles.toolbarInfo}>
-          {roles.length} papel(éis) cadastrado(s) — marque as permissões de cada tela/ação por papel.
+          {rolesQuery.data ? `${roles.length} papel(éis) cadastrado(s) — ` : ""}marque as permissões de cada tela/ação por papel.
         </span>
         <Button href="/painel/papeis/novo">
           <Icon name="plus" size={16} /> Novo papel
         </Button>
       </div>
 
-      {loadError ? <Alert tone="danger" title="Não foi possível carregar os papéis">{loadError}</Alert> : null}
       {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
       {mfaSetupNeeded ? <MfaSetupRequiredNotice /> : null}
 
-      <Table columns={columns} rows={roles} loading={loading} emptyMessage="Nenhum papel cadastrado ainda." />
+      <AsyncState
+        result={rolesQuery}
+        emptyTitle="Nenhum papel cadastrado ainda"
+        emptyDescription="Crie um papel para definir o que cada pessoa pode ver e fazer."
+        emptyAction={{ label: "Novo papel", href: "/painel/papeis/novo" }}
+      >
+        {() => <Table columns={columns} rows={roles} />}
+      </AsyncState>
 
       <Modal
         open={Boolean(deleteTarget)}

@@ -19,6 +19,7 @@ import {
 } from "@/lib/mock/legal";
 import styles from "./page.module.css";
 
+import { reportLookupProblem } from "@/lib/asyncState/lookup";
 export default function NovaEntregaChavesPage() {
   const router = useRouter();
   const [contracts, setContracts] = useState([]);
@@ -66,7 +67,7 @@ export default function NovaEntregaChavesPage() {
     setParties(null);
     listContractParties(form.contractId)
       .then((res) => { if (!cancelled) setParties(res || []); })
-      .catch(() => { if (!cancelled) setParties([]); });
+      .catch((error) => { reportLookupProblem("as partes", error); if (!cancelled) setParties([]); });
     return () => { cancelled = true; };
   }, [form.contractId]);
 

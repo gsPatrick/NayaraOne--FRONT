@@ -32,6 +32,7 @@ import { entityTypeLabel, approvalRequestLabel } from "@/lib/finance/labels";
 import { formatDate, humanizeText } from "@/lib/format";
 import styles from "./page.module.css";
 
+import { lookupFallback } from "@/lib/asyncState/lookup";
 // STALE = a decisão foi tomada sobre uma versão do lançamento que depois foi alterada: a aprovação
 // deixa de valer e é preciso pedir outra.
 const STATUS_LABELS = { ...APPROVAL_STATUS_LABELS, STALE: "Invalidada" };
@@ -84,7 +85,7 @@ export default function AprovacoesPage() {
     setLoading(true);
     setLoadError("");
     // Os nomes dos usuários só enriquecem a lista: se falharem, as aprovações continuam aparecendo.
-    Promise.all([listApprovalRequests(), apiFetch("/users").catch(() => [])])
+    Promise.all([listApprovalRequests(), apiFetch("/users").catch(lookupFallback("os usuários"))])
       .then(([ar, us]) => {
         if (cancelled) return;
         setApprovalRequests(ar || []);

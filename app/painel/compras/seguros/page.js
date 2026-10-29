@@ -28,6 +28,7 @@ import { listFinancialEntries } from "@/lib/api/finance";
 import { listPeople } from "@/lib/api/people";
 import { formatDate, formatDateTime, formatBRL, toNumber, formatContractLabel } from "@/lib/format";
 
+import { lookupFallback } from "@/lib/asyncState/lookup";
 const POLICY_STATUS_LABELS = { DRAFT: "Rascunho", QUOTED: "Cotada", ISSUED: "Emitida", ACTIVE: "Ativa", EXPIRED: "Expirada", CANCELED: "Cancelada" };
 const POLICY_STATUS_TONE = { DRAFT: "neutral", QUOTED: "info", ISSUED: "info", ACTIVE: "success", EXPIRED: "warning", CANCELED: "danger" };
 const CLAIM_ELIGIBLE_STATUSES = ["ACTIVE", "ISSUED"];
@@ -125,7 +126,7 @@ export default function SegurosPage() {
   const [issueForm, setIssueForm] = useState({ effectiveDate: "", expiryDate: "", installmentsCount: "1" });
 
   useEffect(() => {
-    listFinancialEntries({ status: "SETTLED" }).then(setSettledEntries).catch(() => {});
+    listFinancialEntries({ status: "SETTLED" }).then(setSettledEntries).catch(lookupFallback("os lançamentos liquidados"));
   }, []);
 
   async function loadDocuments(policyId) {

@@ -42,6 +42,7 @@ import { formatDate, dateOnlyInputToIso } from "@/lib/format";
 import { QUALITY_CATEGORIES } from "../_components/obraShared";
 import styles from "./page.module.css";
 
+import { lookupFallback } from "@/lib/asyncState/lookup";
 export default function QualidadeObraPage({ params }) {
   const [project, setProject] = useState(null);
   const [notFoundFlag, setNotFoundFlag] = useState(false);
@@ -106,7 +107,7 @@ export default function QualidadeObraPage({ params }) {
         }
         throw err;
       }),
-      apiFetch("/users?status=ACTIVE").catch(() => []),
+      apiFetch("/users?status=ACTIVE").catch(lookupFallback("os usuários")),
     ])
       .then(([p, u]) => {
         if (cancelled || !p) return;

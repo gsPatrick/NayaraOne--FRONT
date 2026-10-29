@@ -23,6 +23,7 @@ import { listRoles } from "@/lib/api/roles";
 import { formatDateTime, formatBRL } from "@/lib/format";
 import styles from "./page.module.css";
 
+import { lookupFallback } from "@/lib/asyncState/lookup";
 const STATUS_TONE = { ACTIVE: "success", SUSPENDED: "danger" };
 const STATUS_LABEL = { ACTIVE: "Ativo", SUSPENDED: "Suspenso" };
 
@@ -70,7 +71,7 @@ export default function UserDetailPage({ params }) {
       apiFetch(`/users/${params.id}`),
       apiFetch(`/memberships?userId=${params.id}`),
       listRoles(),
-      listProperties().catch(() => []),
+      listProperties().catch(lookupFallback("os imóveis")),
     ])
       .then(([apiUser, apiMemberships, apiRoles, apiProperties]) => {
         setUser(apiUser);

@@ -5,6 +5,7 @@ import AppSidebar from "@/components/organisms/AppSidebar/AppSidebar";
 import AppHeader from "@/components/organisms/AppHeader/AppHeader";
 import MobileTabBar from "@/components/organisms/MobileTabBar/MobileTabBar";
 import CommandPalette from "@/components/organisms/CommandPalette/CommandPalette";
+import LookupProblems from "@/components/molecules/AsyncState/LookupProblems";
 import styles from "./AppShell.module.css";
 
 const STORAGE_KEY = "nayara-one:sidebar-collapsed";
@@ -48,7 +49,11 @@ export default function AppShell({ title, backHref, children }) {
       <AppSidebar collapsed={collapsed} onToggle={toggle} />
       <div className={styles.main}>
         <AppHeader title={title} backHref={backHref} onOpenSearch={() => setSearchOpen(true)} />
-        <main className={styles.content}>{children}</main>
+        <main className={styles.content}>
+          {/* M9-D850: falha de lista auxiliar aparece aqui com o motivo, nunca como lista vazia. */}
+          <LookupProblems />
+          {children}
+        </main>
       </div>
       <MobileTabBar />
       <CommandPalette open={searchOpen} onClose={() => setSearchOpen(false)} />

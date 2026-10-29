@@ -47,6 +47,7 @@ import { apiFetch } from "@/lib/api/client";
 import { formatBRL, formatDate, formatDateTime, dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE, toNumber } from "@/lib/format";
 import styles from "./page.module.css";
 
+import { lookupFallback } from "@/lib/asyncState/lookup";
 const STATUS_STEPS = ["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"];
 
 const NEXT_STATUS_OPTIONS = {
@@ -143,11 +144,11 @@ export default function PosObraDetalhePage({ params }) {
         setMaintenanceCase(c);
         return Promise.all([
           apiFetch("/users?status=ACTIVE"),
-          c.propertyId ? getProperty(c.propertyId).catch(() => null) : Promise.resolve(null),
-          c.projectId ? getProject(c.projectId).catch(() => null) : Promise.resolve(null),
-          c.openedByPersonId ? getPerson(c.openedByPersonId).catch(() => null) : Promise.resolve(null),
-          c.propertyId ? listMaintenanceCases({ propertyId: c.propertyId }).catch(() => []) : Promise.resolve([]),
-          listWarrantyActions(c.id).catch(() => []),
+          c.propertyId ? getProperty(c.propertyId).catch(lookupFallback("o imóvel", null)) : Promise.resolve(null),
+          c.projectId ? getProject(c.projectId).catch(lookupFallback("a obra", null)) : Promise.resolve(null),
+          c.openedByPersonId ? getPerson(c.openedByPersonId).catch(lookupFallback("a pessoa", null)) : Promise.resolve(null),
+          c.propertyId ? listMaintenanceCases({ propertyId: c.propertyId }).catch(lookupFallback("os casos de manutenção")) : Promise.resolve([]),
+          listWarrantyActions(c.id).catch(lookupFallback("as ações de garantia")),
         ]).then(([u, prop, proj, person, related, actions]) => {
           if (cancelled) return;
           setUsers(u || []);

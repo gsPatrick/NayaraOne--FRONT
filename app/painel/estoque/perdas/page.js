@@ -27,6 +27,7 @@ import { uploadFile } from "@/lib/api/legal";
 import { formatBRL, formatDateTime, formatQuantity, toNumber } from "@/lib/format";
 import { getCurrentUser } from "@/lib/auth/session";
 
+import { lookupFallback } from "@/lib/asyncState/lookup";
 const STATUS_LABELS = { OPEN: "Em análise", PENDING_APPROVAL: "Acima da alçada — aguarda decisão", APPROVED: "Aprovada (baixa gerada)", REJECTED: "Rejeitada" };
 const STATUS_TONE = { OPEN: "warning", PENDING_APPROVAL: "warning", APPROVED: "danger", REJECTED: "neutral" };
 const EMPTY_DECISION_FORM = { chargeResponsible: false, responsiblePersonId: "", responsibleName: "", chargeAmount: "" };
@@ -78,7 +79,7 @@ export default function PerdasPage() {
       listAssets(),
       // Nome do responsável é só exibição — sem permissão de leitura de Contatos a tela continua
       // funcionando (mostra "Responsável definido").
-      listPeople().catch(() => []),
+      listPeople().catch(lookupFallback("as pessoas")),
     ])
       .then(([c, i, l, a, ppl]) => {
         setCases(c || []);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Input from "@/components/atoms/Input/Input";
@@ -11,6 +11,7 @@ import AuthTransition from "@/components/organisms/AuthTransition/AuthTransition
 import Alert from "@/components/molecules/Alert/Alert";
 import { loginRequest } from "@/lib/api/auth";
 import { saveSession } from "@/lib/auth/session";
+import { readLoginParams, SESSION_EXPIRED_TEXT } from "@/lib/auth/returnTo";
 import styles from "./LoginForm.module.css";
 
 export default function LoginForm() {
@@ -18,6 +19,9 @@ export default function LoginForm() {
   const [stage, setStage] = useState("form"); // form | entering
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  // M9-D850 (K12): vindo de um 401, avisa que a sessão expirou e, depois de entrar, volta à rota de origem.
+  const [params, setParams] = useState({ returnTo: null, expired: false });
+  useEffect(() => { setParams(readLoginParams(window.location.search)); }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -33,7 +37,7 @@ export default function LoginForm() {
       const data = await loginRequest(email, password);
       saveSession(data);
       setStage("entering");
-      window.setTimeout(() => router.push("/painel"), 1500);
+      window.setTimeout(() => router.push(params.returnTo || "/painel"), 1500);
     } catch (err) {
       setError(err?.message || "Não foi possível entrar. Tente novamente.");
       setSubmitting(false);
@@ -48,6 +52,7 @@ export default function LoginForm() {
       </div>
 
       <form className={styles.form} onSubmit={handleSubmit}>
+        {params.expired && !error ? <Alert tone="info">{SESSION_EXPIRED_TEXT}</Alert> : null}
         {error ? <Alert tone="danger" title="Não foi possível entrar">{error}</Alert> : null}
 
         <FormField label="E-mail" htmlFor="login-email" required>

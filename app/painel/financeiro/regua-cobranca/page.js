@@ -27,6 +27,7 @@ import { hasPermission } from "@/lib/rbac/permissions";
 import { formatBRL, formatDate, formatDateTime, formatContractLabel } from "@/lib/format";
 import styles from "./page.module.css";
 
+import { reportLookupProblem } from "@/lib/asyncState/lookup";
 const ACTION_LABELS = {
   NOTIFY: "Notificação interna",
   TASK: "Tarefa de cobrança",
@@ -116,7 +117,7 @@ export default function ReguaCobrancaPage() {
   useEffect(() => {
     listContracts()
       .then((list) => setContracts(list || []))
-      .catch(() => setContracts([]));
+      .catch((error) => { reportLookupProblem("os contratos", error); setContracts([]); });
   }, []);
   const [steps, setSteps] = useState([]);
   const [stepsLoading, setStepsLoading] = useState(true);

@@ -43,6 +43,7 @@ import { enqueueOfflineRecord, generateIdempotencyKey } from "@/lib/offline/offl
 import { useOfflineSync } from "@/lib/offline/useOfflineSync";
 import styles from "./page.module.css";
 
+import { lookupFallback } from "@/lib/asyncState/lookup";
 // Fila offline (Marco 6, contrato §13) — requisição de material.
 const OFFLINE_QUEUE_NAME = "construction.material-requests";
 
@@ -137,8 +138,8 @@ export default function MateriaisObraPage({ params }) {
   }, [params.id]);
 
   useEffect(() => {
-    listInventoryItems().then(setInventoryItems).catch(() => {});
-    listInventoryLocations().then(setInventoryLocations).catch(() => {});
+    listInventoryItems().then(setInventoryItems).catch(lookupFallback("os itens de estoque"));
+    listInventoryLocations().then(setInventoryLocations).catch(lookupFallback("os locais de estoque"));
   }, []);
 
   if (notFoundFlag) return notFound();

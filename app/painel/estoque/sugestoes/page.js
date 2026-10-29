@@ -28,6 +28,7 @@ import { hasPermission } from "@/lib/rbac/permissions";
 import { formatBRL, formatDateTime, formatQuantity, toNumber } from "@/lib/format";
 import styles from "../../obras/lista/page.module.css";
 
+import { reportLookupProblem } from "@/lib/asyncState/lookup";
 // NAY Estoque (EST-013 / Guia §12 / EST-TS-14). A NAY só SUGERE: esta tela lista as sugestões
 // de compra calculadas a partir de consumo, obras ativas, lead time e estoque mínimo, e a
 // ÚNICA ação com efeito é humana ("Aprovar e criar pedido"), que abre uma requisição de compra
@@ -89,7 +90,7 @@ export default function SugestoesNayPage() {
     // Isolado: falha nos indícios de perda nunca derruba a lista de sugestões de compra.
     listLossCaseAnomalies()
       .then((a) => setAnomalies(a || null))
-      .catch(() => setAnomalies(null));
+      .catch((error) => { reportLookupProblem("as sugestões de anomalia", error); setAnomalies(null); });
   }
   useEffect(() => { load(statusFilter); }, [statusFilter]); // eslint-disable-line react-hooks/exhaustive-deps
 

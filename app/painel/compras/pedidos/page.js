@@ -22,6 +22,7 @@ import { hasPermission } from "@/lib/rbac/permissions";
 import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
 import { getSession } from "@/lib/auth/session";
 
+import { lookupFallback } from "@/lib/asyncState/lookup";
 const STATUS_LABELS = { OPEN: "Aberto", RECEIVED: "Recebido", CANCELED: "Cancelado" };
 const STATUS_TONE = { OPEN: "info", RECEIVED: "success", CANCELED: "neutral" };
 // Mesmo conjunto de CANCELABLE_STATUSES de procurement.service.js (cancelPurchaseOrder).
@@ -93,7 +94,7 @@ export default function PedidosDeCompraPage() {
   async function loadSupplierScores(ordersList) {
     const uniqueSuppliers = [...new Set((ordersList || []).map((o) => o.supplierPersonId).filter(Boolean))];
     const results = await Promise.all(
-      uniqueSuppliers.map((id) => listSupplierEvaluations(id).catch(() => null))
+      uniqueSuppliers.map((id) => listSupplierEvaluations(id).catch(lookupFallback("as avaliações do fornecedor", null)))
     );
     const map = {};
     uniqueSuppliers.forEach((id, idx) => {

@@ -34,6 +34,7 @@ import { enqueueOfflineRecord, generateIdempotencyKey } from "@/lib/offline/offl
 import { useOfflineSync } from "@/lib/offline/useOfflineSync";
 import styles from "./page.module.css";
 
+import { lookupFallback } from "@/lib/asyncState/lookup";
 // Fila offline (Marco 6, contrato §13) — mesmo nome usado como chave de armazenamento local e
 // como rótulo do registro pendente.
 const OFFLINE_QUEUE_NAME = "construction.daily-reports";
@@ -99,7 +100,7 @@ export default function DiarioObraPage({ params }) {
         }
         throw err;
       }),
-      listPeople().catch(() => []),
+      listPeople().catch(lookupFallback("as pessoas")),
     ])
       .then(([p, ppl]) => {
         if (cancelled || !p) return;
