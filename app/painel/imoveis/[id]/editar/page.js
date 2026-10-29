@@ -68,6 +68,8 @@ function toEditableProperty(property) {
       publicationStatus: property.publicationStatus,
       availabilityStatus: property.availabilityStatus,
       publicAddressPolicy: property.publicAddressPolicy || "SO_BAIRRO",
+      addressVisibility: property.addressVisibility || "RESTRICTED",
+      descriptionPublic: property.descriptionPublic || "",
       areaM2: property.areaM2,
       bedrooms: property.bedrooms,
       parkingSpots: property.parkingSpots,
@@ -293,6 +295,8 @@ export default function EditPropertyPage({ params }) {
           publicationStatus: basic.publicationStatus,
           availabilityStatus: basic.availabilityStatus,
           publicAddressPolicy: basic.publicAddressPolicy,
+          addressVisibility: basic.addressVisibility,
+          descriptionPublic: basic.descriptionPublic || null,
           areaTotalM2: basic.areaM2 || null,
           bedrooms: basic.bedrooms || null,
           parkingSpots: basic.parkingSpots || null,
@@ -440,6 +444,17 @@ export default function EditPropertyPage({ params }) {
                   <option value="OCULTO">Oculto (endereço sob consulta)</option>
                 </Select>
               </FormField>
+              <FormField
+                label="Endereço no site e nos portais"
+                htmlFor="e-address-visibility"
+                helper="Restrito: só bairro e cidade, sem rua e sem mapa. Aproximado: mapa com ponto deslocado (até 300 m). Público: ponto exato. Padrão: restrito."
+              >
+                <Select id="e-address-visibility" value={basic.addressVisibility} onChange={(e) => setBasic({ ...basic, addressVisibility: e.target.value })}>
+                  <option value="RESTRICTED">Restrito (só bairro e cidade)</option>
+                  <option value="APPROXIMATE">Aproximado (mapa com ponto deslocado)</option>
+                  <option value="PUBLIC">Público (ponto exato)</option>
+                </Select>
+              </FormField>
               <div className={styles.span2}>
                 <div className={styles.featuresExtraGrid}>
                   <FormField label="Metragem (m²)" htmlFor="e-area">
@@ -461,6 +476,22 @@ export default function EditPropertyPage({ params }) {
                     className={styles.textarea}
                     value={basic.description}
                     onChange={(e) => setBasic({ ...basic, description: e.target.value })}
+                  />
+                </FormField>
+              </div>
+              <div className={styles.span2}>
+                <FormField
+                  label="Descrição pública (site e portais)"
+                  htmlFor="e-desc-public"
+                  helper="É o único texto que vai para o site e os portais. CPF, telefone, e-mail e nome de proprietário são removidos automaticamente. A descrição acima é interna."
+                >
+                  <textarea
+                    id="e-desc-public"
+                    rows={4}
+                    maxLength={5000}
+                    className={styles.textarea}
+                    value={basic.descriptionPublic}
+                    onChange={(e) => setBasic({ ...basic, descriptionPublic: e.target.value })}
                   />
                 </FormField>
               </div>

@@ -14,6 +14,7 @@ import { toNumber } from "@/lib/format";
 import styles from "./page.module.css";
 import { INTEGRACOES_SEGURANCA_GROUPS } from "./integracoesSegurancaGroups";
 import { MINIMIZACAO_GROUP } from "./integracoesMinimizacaoGroups";
+import { PUBLICACAO_GROUP } from "./integracoesPublicacaoGroups";
 
 // Parâmetros do registro de integrações (Marco 9, M9-D200 e seguintes do bloco B) que o administrador controla.
 // A API valida (SETTINGS_SCHEMA); o padrão mostrado é o do catálogo (Maturacao/demandas/parametros.csv) e só vale
@@ -210,6 +211,8 @@ REGISTRO_GROUPS.push({
 
 // Minimização dos dados enviados (M9-D219): classificação máxima por família.
 REGISTRO_GROUPS.push(MINIMIZACAO_GROUP);
+// Publicação do site e dos portais (M9-D231): raio do ponto aproximado.
+REGISTRO_GROUPS.push(PUBLICACAO_GROUP);
 
 // Segurança das integrações (M9-D248, M9-D244, M9-D245): grupos no arquivo ao lado para esta aba não crescer sem limite.
 REGISTRO_GROUPS.push(...INTEGRACOES_SEGURANCA_GROUPS);
