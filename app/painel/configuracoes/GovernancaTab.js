@@ -175,6 +175,26 @@ const GOVERNANCA_GROUPS = [
     ],
   },
   {
+    title: "Linhagem de dados",
+    subtitle: "Registro de onde cada número crítico vem (campo de origem, campo de domínio, evento, read model e indicador). A cobertura aparece em GET /data-lineage; o portão de CI cobra sempre todos os indicadores críticos.",
+    fields: [
+      {
+        key: "governanca.lineage.kpis_criticos",
+        label: "KPIs executivos cobrados na visão de cobertura",
+        type: "text",
+        defaultValue: "*",
+        helper: "* cobra todos os KPIs críticos da tabela de criticidade do BI; ou liste códigos separados por vírgula (ex.: fin.free_cash, crm.proposals). Dinheiro, contratos, comissões e DIMOB são sempre cobrados.",
+      },
+      {
+        key: "governanca.lineage.dominios_adicionais",
+        label: "Domínios responsáveis aceitos além dos de dados mestres",
+        type: "text",
+        defaultValue: "TECNOLOGIA",
+        helper: "Códigos separados por vírgula. Um nó de lineage só aceita como responsável um domínio de dados mestres ou um destes.",
+      },
+    ],
+  },
+  {
     title: "Permissões padrão por perfil",
     subtitle: "Nomes dos perfis (separados por vírgula) que recebem o pacote de Gestão e o do Financeiro; os demais perfis recebem só a leitura do calendário. Só o administrador recebe as permissões sensíveis.",
     fields: [
