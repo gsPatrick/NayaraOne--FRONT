@@ -90,6 +90,23 @@ const GOVERNANCA_GROUPS = [
         defaultValue: "PESSOAS,IMOVEIS,FORNECEDORES,CRM,FINANCEIRO,CONTRATOS,COMISSOES,OBRAS,ESTOQUE,CORRESPONDENTE,FISCAL",
         helper: "Códigos separados por vírgula (maiúsculas, números e _). Domínio novo aparece sem responsável até alguém ser designado.",
       },
+      {
+        key: "governanca.dados.campos_criticos",
+        label: "Campos críticos (exigem origem e comprovante)",
+        type: "text",
+        defaultValue:
+          "PERSON.taxIdNormalized, PERSON.legalName, PERSON.birthOrFoundationDate, PERSON.bankCode, PERSON.agency, PERSON.accountNumber, PERSON.pixKey, PERSON.ownerPersonId, PROPERTY.registryNumber, PROPERTY.owner, SUPPLIER.taxIdNormalized, SUPPLIER.bankCode, SUPPLIER.agency, SUPPLIER.accountNumber, SUPPLIER.pixKey, SUPPLIER.ownerPersonId, REPASSE.bankAccountId",
+        helper:
+          "Itens FAMÍLIA.campo separados por vírgula. Famílias: PERSON, PROPERTY, SUPPLIER (fornecedor é pessoa com o papel Fornecedor) e REPASSE. Alterar um destes campos sem informar a origem e o comprovante é recusado.",
+      },
+      {
+        key: "governanca.dados.evidencia.nota_minima",
+        label: "Tamanho mínimo da descrição da origem (caracteres)",
+        type: "integer",
+        defaultValue: 10,
+        min: 1,
+        max: 500,
+      },
     ],
   },
   {

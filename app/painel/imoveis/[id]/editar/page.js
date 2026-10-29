@@ -16,6 +16,8 @@ import FormField from "@/components/molecules/FormField/FormField";
 import MediaUploader from "@/components/molecules/MediaUploader/MediaUploader";
 import LocationPicker from "@/components/molecules/LocationPicker/LocationPicker";
 import PersonPicker from "@/components/molecules/PersonPicker/PersonPicker";
+import ChangeEvidenceFields from "@/components/molecules/ChangeEvidenceFields/ChangeEvidenceFields";
+import { EMPTY_EVIDENCE, buildChangeEvidence } from "@/lib/changeEvidence";
 import {
   FEATURE_LABELS,
   REGULARIZATION_OPTIONS,
@@ -121,6 +123,7 @@ export default function EditPropertyPage({ params }) {
   const [media, setMedia] = useState([]);
   const [offer, setOffer] = useState(null);
   const [owners, setOwners] = useState([]);
+  const [evidence, setEvidence] = useState(EMPTY_EVIDENCE); // M9-D807: origem da alteração de matrícula/proprietário
 
   useEffect(() => {
     let cancelled = false;
@@ -288,7 +291,9 @@ export default function EditPropertyPage({ params }) {
       setSubmitError("");
       try {
         const addressPayload = buildAddressPayload();
+        const changeEvidence = await buildChangeEvidence(evidence);
         await updateProperty(property.id, {
+          ...(changeEvidence ? { changeEvidence } : {}),
           title: basic.name,
           internalCode: basic.internalCode,
           propertyType: toApiPropertyType(basic.type),
@@ -340,7 +345,7 @@ export default function EditPropertyPage({ params }) {
         const keptOwnerIds = new Set(owners.filter((o) => o.id).map((o) => o.id));
         for (const original of property.owners || []) {
           if (!keptOwnerIds.has(original.id)) {
-            await removePropertyOwner(property.id, original.id);
+            await removePropertyOwner(property.id, original.id, changeEvidence);
           }
         }
         for (const o of owners) {
@@ -360,6 +365,7 @@ export default function EditPropertyPage({ params }) {
                 ownershipPercent: o.percentage === "" || o.percentage == null ? "" : Number(o.percentage),
                 validFrom: dateOnlyInputToIso(o.validFrom) || null,
                 validUntil: dateOnlyInputToIso(o.validUntil) || null,
+                changeEvidence,
               });
             }
           } else if (o.personId) {
@@ -781,6 +787,10 @@ export default function EditPropertyPage({ params }) {
 
           {step.id === "revisao" ? (
             <div className={styles.reviewWrap}>
+              <div className={styles.reviewSection}>
+                <p className={styles.reviewTitle}>Origem da alteração</p>
+                <ChangeEvidenceFields idPrefix="imovel-evidence" value={evidence} onChange={setEvidence} />
+              </div>
               <div className={styles.reviewSection}>
                 <p className={styles.reviewTitle}>Informações básicas</p>
                 <p className={styles.reviewName}>{basic.name || "Falta preencher o nome do imóvel"}</p>

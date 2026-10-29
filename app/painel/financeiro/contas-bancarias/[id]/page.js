@@ -34,6 +34,8 @@ import {
   blockBankAccount,
 } from "@/lib/api/finance";
 import { formatBRL, formatDate, formatDateTime, humanizeText, formatCompetence } from "@/lib/format";
+import ChangeEvidenceFields from "@/components/molecules/ChangeEvidenceFields/ChangeEvidenceFields";
+import { EMPTY_EVIDENCE, buildChangeEvidence } from "@/lib/changeEvidence";
 import styles from "./page.module.css";
 
 export default function ContaBancariaDetailPage({ params }) {
@@ -47,6 +49,7 @@ export default function ContaBancariaDetailPage({ params }) {
   const [notFoundFlag, setNotFoundFlag] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editForm, setEditForm] = useState({ bankCode: "", agency: "", accountNumber: "", pixKey: "" });
+  const [evidence, setEvidence] = useState(EMPTY_EVIDENCE); // M9-D807: origem da alteração de dado bancário
   const [notice, setNotice] = useState(null);
   const [revealed, setRevealed] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -119,8 +122,10 @@ export default function ContaBancariaDetailPage({ params }) {
     try {
       // Alterar qualquer dado sensível reabre o resfriamento de 48h automaticamente no
       // backend (bankAccounts.service.js SENSITIVE_FIELDS) — não simulamos isso no front.
-      const updated = await updateBankAccount(account.id, editForm);
+      const changeEvidence = await buildChangeEvidence(evidence);
+      const updated = await updateBankAccount(account.id, { ...editForm, ...(changeEvidence ? { changeEvidence } : {}) });
       setAccount(updated);
+      setEvidence(EMPTY_EVIDENCE);
       setNotice({ tone: "warning", text: "Dados sensíveis alterados — a conta voltou para resfriamento de 48h antes de poder receber pagamentos novamente." });
     } catch (err) {
       setNotice({ tone: "danger", text: err?.message || "Não foi possível salvar os dados sensíveis." });
@@ -268,6 +273,7 @@ export default function ContaBancariaDetailPage({ params }) {
           <FormField label="Chave PIX" htmlFor="e-pix">
             <Input id="e-pix" value={editForm.pixKey} onChange={(e) => setEditForm((p) => ({ ...p, pixKey: e.target.value }))} />
           </FormField>
+          <ChangeEvidenceFields idPrefix="conta-evidence" value={evidence} onChange={setEvidence} />
         </div>
       </Modal>
 

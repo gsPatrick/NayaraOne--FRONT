@@ -27,6 +27,8 @@ import {
 } from "@/lib/api/people";
 import { formatTaxId, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
 import { uploadFile } from "@/lib/api/legal";
+import ChangeEvidenceFields from "@/components/molecules/ChangeEvidenceFields/ChangeEvidenceFields";
+import { EMPTY_EVIDENCE, buildChangeEvidence } from "@/lib/changeEvidence";
 import styles from "./page.module.css";
 
 const EMPTY_CONTACT = { id: null, type: "PHONE", value: "", primary: false };
@@ -47,6 +49,7 @@ export default function EditarPessoaPage({ params }) {
   const [submitError, setSubmitError] = useState("");
 
   const [basic, setBasic] = useState(null);
+  const [evidence, setEvidence] = useState(EMPTY_EVIDENCE); // M9-D807: origem da alteração de campo crítico
   const [birthDateInvalid, setBirthDateInvalid] = useState(false);
   const [initialRoles, setInitialRoles] = useState([]); // [{id, roleCode}]
   const [roles, setRoles] = useState([]); // roleCodes selecionados agora
@@ -159,7 +162,9 @@ export default function EditarPessoaPage({ params }) {
     setSubmitting(true);
     setSubmitError("");
     try {
+      const changeEvidence = await buildChangeEvidence(evidence);
       await updatePerson(params.id, {
+        ...(changeEvidence ? { changeEvidence } : {}),
         legalName: basic.legalName,
         preferredName: basic.preferredName || null,
         personType: basic.personType,
@@ -294,6 +299,10 @@ export default function EditarPessoaPage({ params }) {
               </FormField>
             </div>
           </div>
+        </Card>
+
+        <Card title="Origem da alteração" className={styles.card}>
+          <ChangeEvidenceFields idPrefix="pessoa-evidence" value={evidence} onChange={setEvidence} />
         </Card>
 
         <Card title="Contatos" className={styles.card}>
