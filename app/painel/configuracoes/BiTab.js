@@ -110,6 +110,19 @@ const BI_GROUPS = [
     ],
   },
   {
+    title: "Inadimplência",
+    subtitle: "Como o vencido entra na taxa de inadimplência. O valor total vencido continua somado sem limite de idade; a janela só decide o que entra na taxa.",
+    fields: [
+      {
+        key: "analytics.inadimplencia.janela_dias",
+        label: "Janela da taxa de inadimplência (dias)",
+        type: "number",
+        defaultValue: 90,
+        helper: "De 1 a 3.650. Dívida vencida há mais dias que isto não entra na taxa (que nunca passa de 100%), mas continua no total vencido. Padrão do livro: 90.",
+      },
+    ],
+  },
+  {
     title: "Atualização dos painéis",
     subtitle: "Como os números dos painéis são recalculados quando algo acontece (um lançamento liquidado, uma oportunidade ganha) e pela passagem do tempo.",
     fields: [
