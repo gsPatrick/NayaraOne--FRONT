@@ -35,4 +35,24 @@ export const BI_FINANCEIRO_GROUPS = [
       },
     ],
   },
+  {
+    title: "Painel Financeiro: alerta dos cartões de pendências",
+    subtitle: "Quando os cartões Conciliações pendentes e Anomalias abertas do painel Financeiro acendem o aviso. Se houver um alerta publicado para o indicador, o limiar dele vale no lugar destes números.",
+    fields: [
+      {
+        key: "analytics.painel.financeiro.limiar_conciliacoes_pendentes",
+        label: "Conciliações pendentes: avisar acima de",
+        type: "number",
+        defaultValue: 0,
+        helper: "De 0 a 1.000.000. O cartão acende o aviso quando o número de conciliações pendentes é maior que este. Padrão: 0 (qualquer pendência acende).",
+      },
+      {
+        key: "analytics.painel.financeiro.limiar_anomalias_abertas",
+        label: "Anomalias abertas: avisar acima de",
+        type: "number",
+        defaultValue: 0,
+        helper: "De 0 a 1.000.000. O cartão acende o aviso quando o número de anomalias abertas é maior que este. Padrão: 0 (qualquer anomalia aberta acende).",
+      },
+    ],
+  },
 ];

@@ -28,7 +28,7 @@ function Series({ series, incomplete, text }) {
   );
 }
 
-export default function BiMetricCard({ widget, projects, onDetail }) {
+export default function BiMetricCard({ widget, projects, centers, onDetail }) {
   const { metric, view, drilldown } = widget;
   const display = freshnessDisplay(metric);
   const headline = headlineOf(metric, view, display);
@@ -41,6 +41,8 @@ export default function BiMetricCard({ widget, projects, onDetail }) {
         {metric.valueNatureLabel ? <span className={styles.nature}>{metric.valueNatureLabel}</span> : null}
       </header>
       {headline ? <p className={[styles.value, headline.muted ? styles.muted : ""].filter(Boolean).join(" ")} data-bi-value>{headline.text}</p> : null}
+      {!hidden && view.zeroText ? <p className={styles.muted} role="status" data-bi-zero>{view.zeroText}</p> : null}
+      {view.horizonText ? <p className={styles.muted} data-bi-horizon>{view.horizonText}</p> : null}
       {!metric.incomplete && metric.staleText ? <p className={styles.muted} role="status" data-bi-stale>{metric.staleText}</p> : null}
       {view.noTotal ? <Series series={view.series || []} incomplete={hidden} text={metric.incomplete ? metric.incompleteText : display.text} /> : null}
       {view.alert ? <p className={styles.alertText} role="status">Atenção: há itens que pedem ação.</p> : null}
@@ -55,7 +57,7 @@ export default function BiMetricCard({ widget, projects, onDetail }) {
       {!hidden && (view.items || []).length ? (
         <ul className={styles.items}>
           {view.items.map((i) => (
-            <li key={i.id} className={styles.item}><span>{itemLabel(i, widget.config?.group, view.labelKind, {}, projects)}</span><strong>{i.formatted}</strong></li>
+            <li key={i.id} className={styles.item}><span>{itemLabel(i, widget.config?.group, view.labelKind, {}, projects, centers)}</span><strong>{i.formatted}</strong></li>
           ))}
         </ul>
       ) : null}

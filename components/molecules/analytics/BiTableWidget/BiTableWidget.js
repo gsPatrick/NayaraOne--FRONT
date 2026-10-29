@@ -8,8 +8,8 @@ import styles from "./BiTableWidget.module.css";
 // M9-D634 — tabela de um indicador do painel (por corretor, por provider, por tipo). Linhas e colunas vêm prontas da API, já formatadas.
 // M9-D682 — o quadro de integrações traz o código da linha em partes (`partColumns`: fornecedor, ambiente, família) e as linhas separadas por família (`partGroups`);
 // o indicador desatualizado mostra o aviso `staleText` ao lado do valor da última medição e o cartão em alerta (`view.alert`) avisa.
-function LabelCells({ row, parts, users, projects, widget, view }) {
-  if (!parts.length) return <th scope="row">{itemLabel(row, widget.config?.group, view.labelKind, users, projects)}</th>;
+function LabelCells({ row, parts, users, projects, centers, widget, view }) {
+  if (!parts.length) return <th scope="row">{itemLabel(row, widget.config?.group, view.labelKind, users, projects, centers)}</th>;
   return (row.parts || []).map((part, index) => (index === 0 ? <th key="p0" scope="row">{part}</th> : <td key={`p${index}`}>{part}</td>));
 }
 
@@ -22,7 +22,7 @@ function Rows({ rows, parts, columns, ...rest }) {
   ));
 }
 
-export default function BiTableWidget({ widget, users, projects, onDetail }) {
+export default function BiTableWidget({ widget, users, projects, centers, onDetail }) {
   const { metric, view, drilldown } = widget;
   const display = freshnessDisplay(metric);
   const hidden = metric.incomplete || !display.showValue;
@@ -30,7 +30,7 @@ export default function BiTableWidget({ widget, users, projects, onDetail }) {
   const columns = view.columns || [];
   const parts = view.partColumns || [];
   const groups = hidden ? [] : view.partGroups || [];
-  const shared = { parts, users, projects, widget, view };
+  const shared = { parts, users, projects, centers, widget, view };
   return (
     <article className={styles.card} data-bi-widget={widget.metricCode} data-bi-incomplete={metric.incomplete ? "true" : "false"} title={`${metric.name || widget.title} (${metric.metricCode}), versão ${metric.version ?? "-"}`}>
       <header className={styles.top}>

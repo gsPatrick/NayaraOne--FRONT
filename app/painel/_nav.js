@@ -45,6 +45,7 @@ export const NAV_SECTIONS = [
           { label: "Plano de contas", href: "/painel/financeiro/plano-de-contas" },
           { label: "Centros de custo/resultado", href: "/painel/financeiro/centros" },
           { label: "Relatório financeiro", href: "/painel/financeiro/relatorio" },
+          { label: "Painel (BI)", href: "/painel/analytics/financeiro" },
           { label: "NAY financeira", href: "/painel/financeiro/nay" },
         ],
       },
