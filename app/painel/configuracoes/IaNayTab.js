@@ -30,6 +30,7 @@ import { IA_DOCUMENTAL_GROUPS } from "./iaDocumentalGroups";
 import { IA_CONVERSA_GROUPS } from "./iaConversaGroups";
 import { IA_COMERCIAL_GROUPS } from "./iaComercialGroups";
 import { IA_DIRETORIA_GROUPS } from "./iaDiretoriaGroups";
+import { IA_FINANCEIRA_GROUPS } from "./iaFinanceiraGroups";
 
 // Parâmetros da NAY (Marco 9, bloco A) que o administrador controla. A API valida (SETTINGS_SCHEMA); o padrão mostrado é
 // o de Maturacao/demandas/parametros.csv e só vale enquanto a empresa não configurou nada. Cada demanda do bloco acrescenta
@@ -54,6 +55,7 @@ const IA_GROUPS = [
   ...IA_CONVERSA_GROUPS,
   ...IA_COMERCIAL_GROUPS,
   ...IA_DIRETORIA_GROUPS,
+  ...IA_FINANCEIRA_GROUPS,
   {
     title: "Chave geral da NAY",
     subtitle: "Liga ou desliga a NAY inteira nesta empresa. Desligada, toda função da NAY responde que está desativada. Só quem administra a NAY altera.",
