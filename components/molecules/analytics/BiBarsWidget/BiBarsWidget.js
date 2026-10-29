@@ -12,7 +12,7 @@ function widthOf(item, max) {
   return Math.max((n / max) * 100, 4);
 }
 
-export default function BiBarsWidget({ widget, users, onDetail }) {
+export default function BiBarsWidget({ widget, users, projects, onDetail }) {
   const { metric, view, drilldown } = widget;
   const display = freshnessDisplay(metric);
   const hidden = metric.incomplete || !display.showValue;
@@ -34,7 +34,7 @@ export default function BiBarsWidget({ widget, users, onDetail }) {
           {items.map((item) => (
             <li key={item.id} className={styles.row}>
               <div className={styles.labelRow}>
-                <span>{itemLabel(item, widget.config?.group, view.labelKind, users)}</span>
+                <span>{itemLabel(item, widget.config?.group, view.labelKind, users, projects)}</span>
                 <span className={styles.numbers}>
                   <strong>{item.formatted}</strong>
                   {item.share ? <small> ({item.share.formatted})</small> : null}

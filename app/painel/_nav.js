@@ -72,6 +72,8 @@ export const NAV_SECTIONS = [
           { label: "Visão geral", href: "/painel/obras" },
           { label: "Obras", href: "/painel/obras/lista" },
           { label: "Pós-obra", href: "/painel/obras/pos-obra" },
+          { label: "Obras (BI)", href: "/painel/analytics/obras" },
+          { label: "Pós-obra (BI)", href: "/painel/analytics/pos-obra" },
           { label: "Configurações", href: "/painel/obras/configuracoes" },
         ],
       },
@@ -90,6 +92,7 @@ export const NAV_SECTIONS = [
           { label: "Perdas & Extravios", href: "/painel/estoque/perdas" },
           { label: "Inventário físico", href: "/painel/estoque/contagem" },
           { label: "Sugestões da NAY", href: "/painel/estoque/sugestoes" },
+          { label: "Painel (BI)", href: "/painel/analytics/estoque" },
         ],
       },
       {

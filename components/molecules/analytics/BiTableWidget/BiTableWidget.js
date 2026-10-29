@@ -5,7 +5,7 @@ import { itemLabel } from "@/lib/analytics/panelLabels";
 import styles from "./BiTableWidget.module.css";
 
 // M9-D634 — tabela de um indicador do painel (por corretor, por provider, por tipo). Linhas e colunas vêm prontas da API, já formatadas.
-export default function BiTableWidget({ widget, users, onDetail }) {
+export default function BiTableWidget({ widget, users, projects, onDetail }) {
   const { metric, view, drilldown } = widget;
   const display = freshnessDisplay(metric);
   const hidden = metric.incomplete || !display.showValue;
@@ -32,7 +32,7 @@ export default function BiTableWidget({ widget, users, onDetail }) {
             <tbody>
               {rows.map((row) => (
                 <tr key={row.id}>
-                  <th scope="row">{itemLabel(row, widget.config?.group, view.labelKind, users)}</th>
+                  <th scope="row">{itemLabel(row, widget.config?.group, view.labelKind, users, projects)}</th>
                   {(row.cells || []).map((cell) => <td key={cell.key || "principal"} className={styles.num}>{cell.formatted ?? "-"}</td>)}
                 </tr>
               ))}

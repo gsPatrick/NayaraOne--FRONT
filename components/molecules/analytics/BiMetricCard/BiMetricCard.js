@@ -28,7 +28,7 @@ function Series({ series, incomplete, text }) {
   );
 }
 
-export default function BiMetricCard({ widget, onDetail }) {
+export default function BiMetricCard({ widget, projects, onDetail }) {
   const { metric, view, drilldown } = widget;
   const display = freshnessDisplay(metric);
   const headline = headlineOf(metric, view, display);
@@ -54,7 +54,7 @@ export default function BiMetricCard({ widget, onDetail }) {
       {!hidden && (view.items || []).length ? (
         <ul className={styles.items}>
           {view.items.map((i) => (
-            <li key={i.id} className={styles.item}><span>{itemLabel(i, widget.config?.group, view.labelKind)}</span><strong>{i.formatted}</strong></li>
+            <li key={i.id} className={styles.item}><span>{itemLabel(i, widget.config?.group, view.labelKind, {}, projects)}</span><strong>{i.formatted}</strong></li>
           ))}
         </ul>
       ) : null}

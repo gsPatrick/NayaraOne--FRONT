@@ -12,6 +12,7 @@ import BiTableWidget from "@/components/molecules/analytics/BiTableWidget/BiTabl
 import BiDrilldownModal from "@/components/molecules/analytics/BiDrilldownModal/BiDrilldownModal";
 import { getDashboard } from "@/lib/api/analytics";
 import { apiFetch } from "@/lib/api/client";
+import { listProjects } from "@/lib/api/construction";
 import { formatDateTime } from "@/lib/format";
 import styles from "./BiDashboard.module.css";
 
@@ -25,6 +26,14 @@ function renderWidget(widget, props) {
   return <BiMetricCard key={widget.position} widget={widget} {...props} />;
 }
 
+function projectNames(list) {
+  const rows = Array.isArray(list) ? list : list?.rows || list?.items || [];
+  return Object.fromEntries(rows.map((p) => [p.id, p.name || p.title]).filter(([, name]) => name));
+}
+
+// Só os painéis que listam obras (rótulo PROJECT ou grupo "obra") precisam dos nomes; a lista vem do módulo de Obras (construction:read).
+const listsProjects = (panel) => (panel?.widgets || []).some((w) => w.config?.labelKind === "PROJECT" || w.config?.group === "obra" || (w.config?.groups || []).some((g) => g.group === "obra"));
+
 function userNames(list) {
   return Object.fromEntries((Array.isArray(list) ? list : []).map((u) => [u.id, u.name || u.fullName || u.email]).filter(([, name]) => name));
 }
@@ -34,6 +43,7 @@ export default function BiDashboard({ code, title }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [users, setUsers] = useState({});
+  const [projects, setProjects] = useState({});
   const [detail, setDetail] = useState(null);
 
   useEffect(() => {
@@ -41,7 +51,11 @@ export default function BiDashboard({ code, title }) {
     setLoading(true);
     setError("");
     getDashboard(code)
-      .then((data) => { if (!cancelled) setPanel(data); })
+      .then((data) => {
+        if (cancelled) return;
+        setPanel(data);
+        if (listsProjects(data)) listProjects().then((list) => { if (!cancelled) setProjects(projectNames(list)); }).catch(() => {});
+      })
       .catch((err) => { if (!cancelled) setError(err?.message || "Não foi possível carregar o painel."); })
       .finally(() => { if (!cancelled) setLoading(false); });
     apiFetch("/users").then((list) => { if (!cancelled) setUsers(userNames(list)); }).catch(() => {});
@@ -60,7 +74,7 @@ export default function BiDashboard({ code, title }) {
           <p className={styles.meta}>Posição em {panel.asOfDate.split("-").reverse().join("/")} · gerado em {formatDateTime(panel.generatedAt)}</p>
           {banner ? <BiBanner widget={banner} /> : null}
           <div className={styles.grid}>
-            {body.map((w) => renderWidget(w, { users, onDetail: setDetail }))}
+            {body.map((w) => renderWidget(w, { users, projects, onDetail: setDetail }))}
           </div>
         </div>
       ) : null}
