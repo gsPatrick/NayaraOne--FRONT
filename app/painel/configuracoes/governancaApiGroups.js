@@ -14,4 +14,17 @@ export const GOVERNANCA_API_GROUPS = [
       { key: "governanca.api.limpeza_job_minutos", label: "Intervalo da limpeza de chaves vencidas (minutos)", type: "integer", defaultValue: 10, min: 1, max: 1440 },
     ],
   },
+  {
+    title: "Consumidores e deprecação de rotas",
+    subtitle:
+      "O catálogo de consumidores da API (apps, parceiros e provedores) e o aviso de desligamento de rotas ou versões: quantos dias antes o evento de aviso sai, quanto tempo um consumidor conta como usando a rota e quando o job diário roda. O sistema cadastra o consumidor sozinho; o responsável e o prazo vêm da deprecação.",
+    fields: [
+      { key: "governanca.api.aviso_dias", label: "Dias de antecedência do aviso de desligamento", type: "integer", defaultValue: 30, min: 1, max: 365, helper: "Faltando este número de dias (ou menos) para o desligamento, cada consumidor ainda ativo na rota ou versão recebe o aviso, uma vez." },
+      { key: "governanca.api.deprecacao.consumidor_ativo_dias", label: "Janela em que o consumidor conta como usando a rota (dias)", type: "integer", defaultValue: 30, min: 1, max: 365 },
+      { key: "governanca.api.deprecacao.job_hora", label: "Hora da avaliação diária das deprecações (Brasília)", type: "integer", defaultValue: 7, min: 0, max: 23 },
+      { key: "governanca.api.deprecacao.cache_segundos", label: "Segundos que cada servidor guarda as deprecações e consumidores", type: "integer", defaultValue: 30, min: 1, max: 3600, helper: "Uma deprecação anunciada ou cancelada vale no próprio servidor na hora e nos demais depois deste prazo." },
+      { key: "governanca.api.consumidor.uso_intervalo_minutos", label: "Intervalo mínimo entre registros de uso do mesmo consumidor e rota (minutos)", type: "integer", defaultValue: 60, min: 1, max: 1440 },
+      { key: "governanca.api.consumidor.app_web_chave", label: "Identificador do front web (cabeçalho X-Client-App)", type: "text", defaultValue: "nayara-web", helper: "Letras, números, ponto, hífen e sublinhado. Só mude junto com a configuração do front." },
+    ],
+  },
 ];
