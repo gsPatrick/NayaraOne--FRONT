@@ -56,6 +56,8 @@ export default function ProcessoDetailPage({ params }) {
   const [busy, setBusy] = useState(false);
   const [newEvidence, setNewEvidence] = useState({ type: "DOCUMENT", description: "", referenceId: "" });
   const [custodyByPackage, setCustodyByPackage] = useState({});
+  const [concludingId, setConcludingId] = useState(null);
+  const [conclusionNote, setConclusionNote] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -131,12 +133,21 @@ export default function ProcessoDetailPage({ params }) {
     }
   }
 
+  function startConclude(deadline) {
+    setActionError("");
+    setConcludingId(deadline.id);
+    setConclusionNote("");
+  }
+
   async function handleDeadlineDone(deadline) {
     setActionError("");
     setBusy(true);
     try {
-      const updated = await updateLegalDeadline(deadline.id, { status: "DONE" });
+      // A API exige nota de conclusão (ou evidência) para concluir um prazo.
+      const updated = await updateLegalDeadline(deadline.id, { status: "DONE", conclusionNote });
       setDeadlines((prev) => prev.map((d) => (d.id === deadline.id ? { ...updated, severity: "DONE" } : d)));
+      setConcludingId(null);
+      setConclusionNote("");
     } catch (err) {
       setActionError(err.message || "Erro ao atualizar prazo.");
     } finally {
@@ -253,8 +264,24 @@ export default function ProcessoDetailPage({ params }) {
                       <span className={styles.deadlineDue}>Vencimento em {formatDate(d.dueAt)} · {DEADLINE_STATUS_LABELS[d.status] || d.status}</span>
                     </div>
                     <Badge tone={DEADLINE_API_SEVERITY_TONE[d.severity] || "neutral"}>{DEADLINE_API_SEVERITY_LABELS[d.severity] || d.severity}</Badge>
-                    {d.status === "PENDING" ? (
-                      <Button size="sm" variant="secondary" onClick={() => handleDeadlineDone(d)} disabled={busy}>Concluir</Button>
+                    {d.status === "PENDING" && concludingId !== d.id ? (
+                      <Button size="sm" variant="secondary" onClick={() => startConclude(d)} disabled={busy}>Concluir</Button>
+                    ) : null}
+                    {d.status === "PENDING" && concludingId === d.id ? (
+                      <div className={styles.concludeBox}>
+                        <FormField label="Nota de conclusão (obrigatória)" htmlFor={`f-conclusion-${d.id}`}>
+                          <Input
+                            id={`f-conclusion-${d.id}`}
+                            value={conclusionNote}
+                            onChange={(e) => setConclusionNote(e.target.value)}
+                            placeholder="Ex: Petição protocolada, protocolo nº 123"
+                          />
+                        </FormField>
+                        <Button size="sm" variant="secondary" onClick={() => handleDeadlineDone(d)} disabled={busy || !conclusionNote.trim()}>
+                          Confirmar conclusão
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => setConcludingId(null)} disabled={busy}>Cancelar</Button>
+                      </div>
                     ) : null}
                   </div>
                 ))
