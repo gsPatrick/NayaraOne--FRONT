@@ -49,6 +49,22 @@ export const GOVERNANCA_BCP_GROUPS = [
         max: 720,
         helper: "Quando um lead ou uma proposta de locação do papel é importado, o CRM cobra o próximo contato dentro deste prazo.",
       },
+      {
+        key: "governanca.bcp.conciliar_pagamento_dias",
+        label: "Prazo para conciliar o pagamento emergencial com o extrato (dias úteis)",
+        type: "integer",
+        defaultValue: 3,
+        min: 1,
+        max: 60,
+        helper: "Conta a partir da data da operação no papel. Passado o prazo sem uma saída de mesmo valor no extrato, o sistema avisa com alerta crítico quem confere (governance:bcp:approve) e quem importou, uma vez por dia.",
+      },
+      {
+        key: "governanca.calendario.feriados",
+        label: "Feriados que não contam como dia útil (AAAA-MM-DD, separados por vírgula)",
+        type: "text",
+        defaultValue: "",
+        helper: "Vale para o prazo de conciliação do pagamento emergencial. Sem lista própria valem os feriados nacionais do ano. Segunda a sexta são dias úteis.",
+      },
     ],
   },
 ];
