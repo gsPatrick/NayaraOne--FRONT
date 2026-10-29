@@ -27,4 +27,14 @@ export const GOVERNANCA_API_GROUPS = [
       { key: "governanca.api.consumidor.app_web_chave", label: "Identificador do front web (cabeçalho X-Client-App)", type: "text", defaultValue: "nayara-web", helper: "Letras, números, ponto, hífen e sublinhado. Só mude junto com a configuração do front." },
     ],
   },
+  {
+    title: "API externa (credenciais de parceiros e provedores)",
+    subtitle:
+      "Parceiros e provedores acessam a API com credencial própria (client id e segredo), só com os acessos (scopes) que você liberou, e sem usar o login de nenhum colaborador. Aqui ficam a validade do token, a força do segredo e o prazo do primeiro contato com um lead recebido por parceiro.",
+    fields: [
+      { key: "governanca.api.cliente.token_validade_s", label: "Validade do token da credencial (segundos)", type: "integer", defaultValue: 900, min: 60, max: 3600, helper: "Passado esse tempo o parceiro pede outro token. Revogar a credencial vale na hora, mesmo para tokens ainda dentro da validade." },
+      { key: "governanca.api.cliente.segredo_custo", label: "Custo do hash do segredo da credencial", type: "integer", defaultValue: 10, min: 4, max: 14, helper: "Quanto maior, mais difícil de quebrar e mais lenta a conferência. Vale para as credenciais criadas depois da mudança." },
+      { key: "governanca.api.externo.lead_prazo_horas", label: "Prazo do primeiro contato com lead de parceiro (horas)", type: "integer", defaultValue: 24, min: 1, max: 720, helper: "Todo lead recebido pela API externa entra no funil como Novo, com a próxima ação vencendo neste prazo." },
+    ],
+  },
 ];
