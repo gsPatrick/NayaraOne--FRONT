@@ -123,6 +123,19 @@ const BI_GROUPS = [
     ],
   },
   {
+    title: "Marketing e Atendimento",
+    subtitle: "Os números de campanhas, entrega, avaliações, satisfação, reclamações e SLA mudam por evento e também pela passagem do tempo (status de entrega que chega depois, prazo que vence).",
+    fields: [
+      {
+        key: "analytics.marketing_atendimento.janela_reconferencia_dias",
+        label: "Dias que a agenda reconfere em Marketing e Atendimento",
+        type: "number",
+        defaultValue: 7,
+        helper: "De 1 a 90. A cada passada da agenda, dias e meses dentro desta janela são recalculados a partir dos registros. Padrão: 7.",
+      },
+    ],
+  },
+  {
     title: "Atualização dos painéis",
     subtitle: "Como os números dos painéis são recalculados quando algo acontece (um lançamento liquidado, uma oportunidade ganha) e pela passagem do tempo.",
     fields: [
