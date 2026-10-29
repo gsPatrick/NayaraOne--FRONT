@@ -138,6 +138,44 @@ const IA_GROUPS = [
     ],
   },
   {
+    title: "Recomendações da NAY",
+    subtitle: "A NAY sugere, e sempre uma pessoa decide. A recomendação fica registrada com o motivo de quem aceitou ou rejeitou e, depois, com o resultado.",
+    fields: [
+      {
+        key: "ia.recomendacao.motivo_rejeicao_obrigatorio",
+        label: "Exigir motivo ao rejeitar uma recomendação",
+        type: "boolean",
+        defaultValue: true,
+        helper: "Ligado por padrão. Desligado, a pessoa pode rejeitar sem escrever o motivo.",
+      },
+      {
+        key: "ia.aprovacao.aprovador_distinto",
+        label: "Quem pediu a consulta à NAY não decide a recomendação de risco alto ou crítico dela",
+        type: "boolean",
+        defaultValue: true,
+        helper: "Ligado por padrão: outra pessoa precisa decidir. Desligado, a mesma pessoa pode pedir e decidir.",
+      },
+      {
+        key: "ia.recomendacao.justificativa_max_caracteres",
+        label: "Tamanho máximo da justificativa da recomendação (caracteres)",
+        type: "integer",
+        min: 100,
+        max: 4000,
+        defaultValue: 1000,
+        helper: "Número inteiro de 100 a 4000. Justificativas maiores são cortadas antes de gravar.",
+      },
+      {
+        key: "ia.recomendacao.lista_max_itens",
+        label: "Máximo de recomendações por listagem",
+        type: "integer",
+        min: 1,
+        max: 500,
+        defaultValue: 100,
+        helper: "Número inteiro de 1 a 500.",
+      },
+    ],
+  },
+  {
     title: "Retenção e auditoria da NAY",
     subtitle: "A NAY guarda só um resumo redigido do que recebeu e respondeu, nunca o texto completo. Vencido o prazo, o conteúdo é apagado e ficam só os dados de controle (datas, custo, situação). Quanto mais sensível o dado, menor o prazo; se o contrato com o fornecedor da IA exigir prazo menor, vale o menor.",
     fields: [
