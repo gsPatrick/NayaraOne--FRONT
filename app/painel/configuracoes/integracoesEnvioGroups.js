@@ -1,4 +1,4 @@
-// Envio a fornecedores (Marco 9, bloco B: M9-D214, M9-D215, M9-D216 e M9-D218). Padrão = Maturacao/demandas/parametros.csv; a API valida a faixa.
+// Envio a fornecedores (Marco 9, bloco B: M9-D214, M9-D215, M9-D216, M9-D218 e M9-D239). Padrão = Maturacao/demandas/parametros.csv; a API valida a faixa.
 // Entra na aba "Registro de integrações".
 export const ENVIO_GROUPS = [
   {
@@ -42,6 +42,15 @@ export const ENVIO_GROUPS = [
       { key: "integration.unknown.reconcile_intervals_s", label: "Espera antes de cada consulta (segundos)", type: "text", defaultValue: "30,120,600,3600,21600", helper: "Segundos inteiros separados por vírgula, de 1 a 20 valores. A primeira espera conta a partir do envio incerto; se houver mais consultas que esperas, a última se repete. Padrão do livro: 30 s, 2 min, 10 min, 1 h e 6 h." },
       { key: "integration.unknown.reconcile_job_interval_s", label: "Intervalo entre as rodadas de conferência (segundos)", type: "integer", defaultValue: 10, helper: "De 1 a 3600. De quanto em quanto tempo o sistema procura envios incertos com a consulta vencida." },
       { key: "integration.dispatch.orphan_interval_s", label: "Intervalo da busca por envios presos em andamento (segundos)", type: "integer", defaultValue: 60, helper: "De 5 a 3600. Procura envios que ficaram em andamento depois de uma queda do sistema; o tempo para considerar um envio preso é o parâmetro de envios em andamento sem resposta." },
+    ],
+  },
+  {
+    title: "Redes sociais: publicação sem duplicar",
+    subtitle:
+      "Só sai nas redes o conteúdo aprovado, e cada rede é uma conexão com a própria credencial: se uma rede falha, as outras seguem. Uma nova tentativa nunca cria o mesmo post duas vezes. O conteúdo escrito pela NAY nasce como rascunho e só sai com aprovação de uma pessoa.",
+    fields: [
+      { key: "integration.social.auto_publish_enabled", label: "Permitir publicação automática nas redes", type: "boolean", defaultValue: false, helper: "Desligado por padrão: sem uma pessoa mandando publicar, nada sai. Ligado, o conteúdo ainda precisa de aprovação específica ou de uma regra pré-aprovada, e o kill switch do Marketing sempre vale." },
+      { key: "integration.social.post_dedup_window_days", label: "Dias para trás ao procurar um post igual depois de um timeout", type: "integer", defaultValue: 7, helper: "De 1 a 90. Se a rede não respondeu ao pedido, o sistema olha os posts recentes da conta dessa janela antes de decidir se publica de novo." },
     ],
   },
   {
