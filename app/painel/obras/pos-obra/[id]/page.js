@@ -274,8 +274,18 @@ export default function PosObraDetalhePage({ params }) {
     }
   }
 
+  // Chamado fechado mantém causa raiz e as duas evidências em qualquer edição (o servidor recusa com 422).
+  const closedMissing = maintenanceCase?.status === "CLOSED"
+    ? [
+        !editForm.rootCauseCode ? "causa raiz" : null,
+        beforeEvidenceFileIds.length === 0 ? 'evidência "antes"' : null,
+        afterEvidenceFileIds.length === 0 ? 'evidência "depois"' : null,
+      ].filter(Boolean)
+    : [];
+
   async function handleSaveEdit() {
     if (!editForm.description.trim()) return;
+    if (closedMissing.length > 0) return;
     setSavingEdit(true);
     setActionError("");
     try {
@@ -656,10 +666,16 @@ export default function PosObraDetalhePage({ params }) {
         footer={
           <>
             <Button variant="secondary" onClick={() => setEditOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSaveEdit} loading={savingEdit} disabled={!editForm.description.trim() || warrantyDateInvalid}>Salvar alterações</Button>
+            <Button onClick={handleSaveEdit} loading={savingEdit} disabled={!editForm.description.trim() || warrantyDateInvalid || closedMissing.length > 0}>Salvar alterações</Button>
           </>
         }
       >
+        {maintenanceCase?.status === "CLOSED" ? (
+          <Alert tone="warning" title="Chamado fechado">
+            A causa raiz e as evidências de antes e depois não podem ser retiradas de um chamado fechado: você pode trocá-las por outras, mas não deixá-las vazias.
+            {closedMissing.length > 0 ? ` Falta preencher: ${closedMissing.join(", ")}.` : ""}
+          </Alert>
+        ) : null}
         <div className={styles.formGrid}>
           <div className={styles.span2}>
             <FormField label="Descrição" htmlFor="e-description" required>
@@ -715,9 +731,9 @@ export default function PosObraDetalhePage({ params }) {
               ))}
             </Select>
           </FormField>
-          <FormField label="Causa raiz" htmlFor="e-root-cause" helper="Opcional">
+          <FormField label="Causa raiz" htmlFor="e-root-cause" helper={maintenanceCase?.status === "CLOSED" ? "Obrigatória em chamado fechado." : "Opcional"} required={maintenanceCase?.status === "CLOSED"}>
             <Select id="e-root-cause" value={editForm.rootCauseCode} onChange={(e) => setEditForm((p) => ({ ...p, rootCauseCode: e.target.value }))}>
-              <option value="">Não identificada</option>
+              {maintenanceCase?.status === "CLOSED" ? null : <option value="">Não identificada</option>}
               {Object.entries(MAINTENANCE_ROOT_CAUSE_LABELS).map(([value, label]) => (
                 <option key={value} value={value}>{label}</option>
               ))}
