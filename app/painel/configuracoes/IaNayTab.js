@@ -249,6 +249,51 @@ const IA_GROUPS = [
     ],
   },
   {
+    title: "Fundamentação das respostas",
+    subtitle: "Toda resposta da NAY sobre dado da empresa cita fontes. Sem fonte suficiente, ela diz que não sabe em vez de inventar.",
+    fields: [
+      {
+        key: "ia.grounding.relevancia_minima",
+        label: "Relevância mínima para uma fonte valer como base",
+        type: "decimal",
+        min: 0,
+        max: 1,
+        defaultValue: 0.5,
+        helper: "Número de 0 a 1 (use vírgula). Fonte menos relevante que isso não sustenta a resposta.",
+      },
+      {
+        key: "ia.grounding.bloquear_sem_fonte",
+        label: "Bloquear resposta factual sem fonte (em vez de responder que não há informação)",
+        type: "boolean",
+        defaultValue: false,
+        helper: "Desligado por padrão: a NAY responde que não tem informações suficientes. Ligado, a resposta é bloqueada com aviso.",
+      },
+      {
+        key: "ia.grounding.peso_relevancia",
+        label: "Peso da relevância na confiança estimada",
+        type: "decimal",
+        min: 0,
+        max: 1,
+        defaultValue: 0.6,
+        helper: "Número de 0 a 1. A confiança é só um sinal auxiliar: nunca libera ação nem dispensa a fonte.",
+      },
+      {
+        key: "ia.grounding.tarefas_nao_factuais",
+        label: "Tipos de tarefa que não afirmam dado da empresa",
+        type: "text",
+        defaultValue: "conversa,saudacao,formatacao,traducao",
+        helper: "Códigos separados por vírgula. Respostas dessas tarefas, sem números, datas ou códigos, não exigem fonte.",
+      },
+      {
+        key: "ia.grounding.termos_criticos",
+        label: "Termos que marcam prazo ou contrato crítico",
+        type: "text",
+        defaultValue: "prazo legal,prazo contratual,vencimento do contrato,vencimento de contrato,contrato vence,vence o contrato,multa,rescisão,obrigação",
+        helper: "Termos separados por vírgula. Resposta com algum deles exige fonte exata (contrato, versão, cláusula) e confirmação humana.",
+      },
+    ],
+  },
+  {
     title: "Memória da NAY",
     subtitle: "A NAY guarda só fatos estruturados. Guardar a conversa inteira é exceção e segue regras fixas.",
     fields: [
@@ -301,7 +346,7 @@ const ALL_FIELDS = IA_GROUPS.flatMap((group) => group.fields);
 function initialValues() {
   const values = {};
   ALL_FIELDS.forEach((field) => {
-    values[field.key] = field.type === "integer" ? String(field.defaultValue) : field.defaultValue;
+    values[field.key] = field.type === "integer" ? String(field.defaultValue) : field.type === "decimal" ? String(field.defaultValue).replace(".", ",") : field.defaultValue;
   });
   return values;
 }
@@ -328,7 +373,7 @@ export default function IaNayTab() {
         list.forEach((item) => {
           if (!item || !item.key || !Object.prototype.hasOwnProperty.call(next, item.key)) return;
           const field = ALL_FIELDS.find((f) => f.key === item.key);
-          next[item.key] = field && field.type === "integer" ? String(item.value) : item.value;
+          next[item.key] = field && field.type === "integer" ? String(item.value) : field && field.type === "decimal" ? String(item.value).replace(".", ",") : item.value;
         });
         setValues(next);
         setOriginal(next);
@@ -358,6 +403,12 @@ export default function IaNayTab() {
           const numeric = toNumber(values[field.key]);
           if (Number.isNaN(numeric) || !Number.isInteger(numeric) || numeric < field.min || numeric > field.max) {
             throw new Error(`Informe um número inteiro de ${field.min} a ${field.max} em "${field.label}".`);
+          }
+          await updateSetting(field.key, numeric);
+        } else if (field.type === "decimal") {
+          const numeric = toNumber(values[field.key]);
+          if (Number.isNaN(numeric) || numeric < field.min || numeric > field.max) {
+            throw new Error(`Informe um número de ${String(field.min).replace(".", ",")} a ${String(field.max).replace(".", ",")} em "${field.label}".`);
           }
           await updateSetting(field.key, numeric);
         } else {
@@ -412,11 +463,11 @@ export default function IaNayTab() {
               <div className={styles.formGrid}>
                 {group.fields.map((field) => (
                   <div key={field.key}>
-                    {field.type === "text" || field.type === "integer" ? (
+                    {field.type === "text" || field.type === "integer" || field.type === "decimal" ? (
                       <FormField label={field.label} htmlFor={`ia-nay-${field.key}`} helper={field.helper}>
                         <Input
                           id={`ia-nay-${field.key}`}
-                          inputMode={field.type === "integer" ? "numeric" : undefined}
+                          inputMode={field.type === "integer" ? "numeric" : field.type === "decimal" ? "decimal" : undefined}
                           value={values[field.key] ?? ""}
                           onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
                         />
