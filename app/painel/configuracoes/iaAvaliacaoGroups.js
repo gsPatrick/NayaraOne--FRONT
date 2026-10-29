@@ -47,4 +47,26 @@ export const IA_AVALIACAO_GROUPS = [
       },
     ],
   },
+  {
+    title: "Conjunto de testes de ouro (golden) dos agentes",
+    subtitle: "Cada agente tem casos de teste congelados por categoria. Mudar o prompt, o modelo ou o provedor exige rodar tudo de novo e passar antes de homologar ou ativar. O caso nunca muda: corrigir cria a versão seguinte.",
+    fields: [
+      {
+        key: "ia.golden.exigir_dataset_cadastrado",
+        label: "Exigir conjunto de testes cadastrado para cada categoria",
+        type: "boolean",
+        defaultValue: false,
+        helper: "Desligado, valem os casos cadastrados mais os casos de base do sistema, derivados das ferramentas do agente. Ligado, só vale o que foi cadastrado, com ao menos um caso por categoria aplicável; sem isso a avaliação é recusada.",
+      },
+      {
+        key: "ia.golden.max_casos_por_agente",
+        label: "Máximo de casos de teste ativos por agente",
+        type: "integer",
+        min: 10,
+        max: 5000,
+        defaultValue: 500,
+        helper: "Número inteiro de 10 a 5.000. Acima disso, cadastrar mais um caso novo é recusado (corrigir um caso existente continua valendo).",
+      },
+    ],
+  },
 ];

@@ -14,6 +14,13 @@ export const IA_PROVEDORES_GROUPS = [
         helper: "Código do provedor no catálogo de integrações (ai-sandbox, anthropic, openai...). Padrão: o provedor de testes, o mais seguro em custo.",
       },
       {
+        key: "ia.provedor.modelo_padrao",
+        label: "Modelo usado com o provedor padrão",
+        type: "text",
+        defaultValue: "auto",
+        helper: "Código do modelo ou auto (o primeiro modelo de geração do provedor). Trocar o provedor ou o modelo padrão só é aceito depois que uma avaliação aprovada (golden e adversarial) existir para o novo par; a API recusa antes disso.",
+      },
+      {
         key: "ia.ambiente",
         label: "Ambiente da NAY",
         type: "text",
