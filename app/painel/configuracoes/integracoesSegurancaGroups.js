@@ -28,4 +28,17 @@ export const INTEGRACOES_SEGURANCA_GROUPS = [
       { key: "integration.retention.job_hour", label: "Hora do expurgo diário dos registros vencidos (horário de São Paulo)", type: "integer", defaultValue: 2, helper: "De 0 a 23. Os prazos de cada tabela ficam nos grupos de erros, caixa de entrada, envios e saúde." },
     ],
   },
+  {
+    title: "Busca de arquivos por endereço de terceiros",
+    subtitle: "Quando um fornecedor ou uma pessoa de fora manda um link (foto de portal, mídia de mensagem, documento assinado), o sistema só baixa de endereços liberados para aquele uso, nunca de rede interna, e coloca o arquivo em quarentena antes de usar.",
+    fields: [
+      { key: "integration.ssrf.allowed_schemes", label: "Esquemas de endereço aceitos", type: "text", defaultValue: "https", helper: "Só https é aceito. http, file, ftp e outros são sempre recusados." },
+      { key: "integration.ssrf.max_redirects", label: "Redirecionamentos seguidos", type: "integer", defaultValue: 0, helper: "De 0 a 5. Zero recusa qualquer redirecionamento; cada salto permitido passa por todas as verificações de novo." },
+      { key: "integration.ssrf.max_bytes", label: "Tamanho máximo do arquivo baixado (bytes)", type: "integer", defaultValue: 26214400, helper: "De 1024 a 104857600 (25 MiB é o padrão). A leitura é cortada ao passar disso." },
+      { key: "integration.ssrf.timeout_ms", label: "Tempo máximo de uma busca (milissegundos)", type: "integer", defaultValue: 10000, helper: "De 1000 a 60000." },
+      { key: "integration.ssrf.allowed_ports", label: "Portas aceitas", type: "text", defaultValue: "443", helper: "Números separados por vírgula." },
+      { key: "integration.ssrf.content_types", label: "Tipos de arquivo aceitos", type: "text", defaultValue: "image/jpeg,image/png,image/webp,image/gif,application/pdf", helper: "Tipos separados por vírgula; HTML nunca é aceito. Cada uso ainda pode aceitar menos que esta lista." },
+      { key: "integration.ssrf.fetch_allowlist", label: "Endereços liberados por uso", type: "text", defaultValue: "", helper: "Formato uso:endereço1,endereço2;outro_uso:endereço3 (aceita *.dominio.com). Usos: signature_download, portal_photo, message_media, nay_document, import_by_url. Vazio mantém só os endereços que o próprio uso já traz." },
+    ],
+  },
 ];
