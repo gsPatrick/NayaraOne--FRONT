@@ -1,9 +1,9 @@
-// Parâmetros da continuidade operacional (BCP) na aba Governança (Marco 9, M9-D830). Padrões de Maturacao/demandas/parametros.csv; a API valida.
+// Parâmetros da continuidade operacional (BCP) na aba Governança (Marco 9, M9-D830 e M9-D831). Padrões de Maturacao/demandas/parametros.csv; a API valida.
 export const GOVERNANCA_BCP_GROUPS = [
   {
     title: "Continuidade operacional (BCP)",
     subtitle:
-      "Qual setor de contingência cada perfil da empresa atende. O perfil ADMIN pertence aos seis setores.",
+      "Qual setor de contingência cada perfil da empresa atende e quantas operações manuais a listagem mostra por página. O perfil ADMIN pertence aos seis setores.",
     fields: [
       {
         key: "governanca.bcp.setor_por_papel",
@@ -13,6 +13,14 @@ export const GOVERNANCA_BCP_GROUPS = [
           '{"ATENDIMENTO":["ATENDIMENTO","ATENDENTE","CORRETOR","RECEPCAO"],"LOCACAO":["LOCACAO","LOCAÇÃO","LOCADOR"],"FINANCEIRO":["FINANCEIRO"],"OBRAS":["OBRAS","ENGENHARIA","MESTRE DE OBRAS"],"CORRESPONDENTE":["CORRESPONDENTE"],"JURIDICO":["JURIDICO","JURÍDICO"]}',
         helper:
           'JSON no formato {"SETOR":["NOME DO PERFIL"]}, com os setores ATENDIMENTO, LOCACAO, FINANCEIRO, OBRAS, CORRESPONDENTE e JURIDICO. Quem tem um perfil listado registra e consulta as operações manuais do setor. Usuário sem setor não usa o BCP.',
+      },
+      {
+        key: "governanca.bcp.listagem_limite",
+        label: "Operações manuais por página na listagem",
+        type: "integer",
+        defaultValue: 100,
+        min: 1,
+        max: 1000,
       },
     ],
   },
