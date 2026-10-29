@@ -54,6 +54,13 @@ const GOVERNANCA_GROUPS = [
         defaultValue: "CRM_TASK=crm:tasks:read, VISIT=crm:visits:read, LEGAL_DEADLINE=legal:read, RENEWAL=procurement:read|legal:read, GUARANTEE=legal:read|construction:read, BILLING=billing:read, CONSTRUCTION=construction:read, MAINTENANCE=construction:read, FISCAL=correspondent:fiscal, COMMITMENT=governance:calendar:read",
         helper: "Formato TIPO=permissão; use | para aceitar qualquer uma de várias. Tipo sem permissão listada fica oculto para todos.",
       },
+      {
+        key: "governanca.calendario.permissao_por_tipo_origem",
+        label: "Permissão extra por tipo de item dentro da origem (fiança x garantia de obra)",
+        type: "text",
+        defaultValue: "LEGAL_GUARANTEE=legal:read, WARRANTY_CASE=construction:read, PROJECT_WARRANTY=construction:read",
+        helper: "Formato TIPO=permissão (LEGAL_GUARANTEE, WARRANTY_CASE, PROJECT_WARRANTY, STAGE, PROJECT); use | para aceitar qualquer uma. Tipo fora da lista segue só a regra da origem.",
+      },
     ],
   },
   {
