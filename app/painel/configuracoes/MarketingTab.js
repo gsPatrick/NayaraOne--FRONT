@@ -15,6 +15,7 @@ import { MARKETING_CADENCE_GROUPS } from "./marketingCadenceGroups";
 import { MARKETING_RUNNER_GROUPS } from "./marketingRunnerGroups";
 import { MARKETING_AGENDAMENTO_GROUPS } from "./marketingAgendamentoGroups";
 import { MARKETING_CONSENT_GROUPS } from "./marketingConsentGroups";
+import { MARKETING_TIPOS_CONTEUDO_GROUPS } from "./marketingTiposConteudoGroups";
 import { MARKETING_FACTUAL_GROUPS } from "./marketingFactualGroups";
 
 // Parâmetros de Marketing que o administrador controla (Marco 9, bloco C). Cada demanda do bloco acrescenta as suas
@@ -25,6 +26,7 @@ const MARKETING_GROUPS = [
   ...MARKETING_RUNNER_GROUPS,
   ...MARKETING_AGENDAMENTO_GROUPS,
   ...MARKETING_CONSENT_GROUPS,
+  ...MARKETING_TIPOS_CONTEUDO_GROUPS,
   ...MARKETING_FACTUAL_GROUPS,
   {
     title: "Mensagem em massa",
