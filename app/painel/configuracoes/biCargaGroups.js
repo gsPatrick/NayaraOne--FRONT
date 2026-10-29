@@ -12,6 +12,13 @@ export const BI_CARGA_GROUPS = [
         defaultValue: 10,
         helper: "De 0 a 1.000. Se o tempo p95 de uma operação subir mais que isto sobre a medição sem painéis, a etapa de carga reprova a liberação e aponta o painel responsável. Padrão: 10.",
       },
+      {
+        key: "analytics.carga.tolerancia_absoluta_ms",
+        label: "Tolerância absoluta das operações com os painéis sob carga (ms)",
+        type: "number",
+        defaultValue: 2,
+        helper: "De 0 a 1.000. Operações de poucos milissegundos oscilam mais que o percentual só por ruído da máquina: a operação também passa quando o p95 sobe até este tanto de milissegundos sobre a medição sem painéis. 0 desliga a tolerância. Padrão: 2.",
+      },
     ],
   },
 ];
