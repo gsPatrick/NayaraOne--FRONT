@@ -1,0 +1,23 @@
+.page { display: flex; flex-direction: column; gap: var(--space-5); }
+.meta { margin: 0; font-size: var(--text-caption); color: var(--color-ink-muted); }
+.summary { display: flex; gap: var(--space-3); flex-wrap: wrap; margin: 0; padding: 0; list-style: none; font-size: var(--text-caption); }
+.areas { display: flex; flex-direction: column; gap: var(--space-4); }
+.area { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-4); border: 1px solid var(--color-border); border-left-width: 6px; border-radius: var(--radius-md); background: var(--color-surface); }
+.VERDE { border-left-color: var(--color-success, #2e7d32); }
+.AMARELO { border-left-color: var(--color-warning, #b7791f); }
+.VERMELHO { border-left-color: var(--color-danger, #c62828); }
+.CINZA { border-left-color: var(--color-border); }
+.head { display: flex; gap: var(--space-3); align-items: center; flex-wrap: wrap; justify-content: space-between; }
+.name { margin: 0; font-size: var(--text-body); font-weight: 600; }
+.name a { color: inherit; text-decoration: underline; }
+.light { display: inline-flex; gap: var(--space-2); align-items: center; font-weight: 600; font-size: var(--text-caption); padding: var(--space-1) var(--space-3); border: 1px solid currentColor; border-radius: 999px; }
+.light::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: currentColor; }
+.light.VERDE { color: var(--color-success, #2e7d32); }
+.light.AMARELO { color: var(--color-warning-strong, #8a5a00); }
+.light.VERMELHO { color: var(--color-danger, #c62828); }
+.light.CINZA { color: var(--color-ink-muted); }
+.info { display: flex; gap: var(--space-3); flex-wrap: wrap; align-items: center; font-size: var(--text-caption); color: var(--color-ink-muted); }
+.reasons { margin: 0; padding-left: var(--space-5); font-size: var(--text-caption); }
+.kpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap: var(--space-3); align-items: stretch; }
+.kpi { display: flex; flex-direction: column; gap: var(--space-1); }
+.kpiLight { font-size: var(--text-caption); font-weight: 600; }
