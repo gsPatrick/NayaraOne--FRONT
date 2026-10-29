@@ -26,7 +26,7 @@ export const BI_OBRAS_GROUPS = [
   },
   {
     title: "Estoque: itens considerados",
-    subtitle: "Quais tipos de item entram no valor em estoque, nos itens abaixo do mínimo e nas rupturas. Ferramentas e patrimônio têm painel próprio.",
+    subtitle: "Quais tipos de item entram no valor em estoque, nos itens abaixo do mínimo e nas rupturas, e por quantos dias uma perda decidida conta no indicador de perdas. Ferramentas e patrimônio têm painel próprio.",
     fields: [
       {
         key: "analytics.estoque.tipos_item",
@@ -34,6 +34,13 @@ export const BI_OBRAS_GROUPS = [
         type: "text",
         defaultValue: "CONSUMABLE",
         helper: "Tipos separados por vírgula: CONSUMABLE, TOOL, ASSET, SERVICE_ITEM. Padrão: só os materiais de consumo.",
+      },
+      {
+        key: "analytics.estoque.janela_perdas_dias",
+        label: "Perdas de estoque: janela em dias",
+        type: "number",
+        defaultValue: 30,
+        helper: "De 1 a 365 dias até a data-base. Perdas decididas como perda dentro deste prazo entram no indicador de perdas de estoque. Padrão: 30.",
       },
     ],
   },
