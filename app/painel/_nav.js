@@ -129,6 +129,7 @@ export const NAV_SECTIONS = [
       { label: "Usuários & Acessos", href: "/painel/usuarios", icon: "shield", permission: "users:update" },
       { label: "Papéis & Permissões", href: "/painel/papeis", icon: "shield", permission: "roles:update" },
       { label: "Atividades", href: "/painel/atividades", icon: "clock", permission: "audit:read" },
+      { label: "Integrações: saúde", href: "/painel/integracoes/saude", icon: "radar", permission: "integration:read" },
       { label: "Configurações", href: "/painel/configuracoes", icon: "settings", permission: "settings:read" },
     ],
   },
