@@ -17,6 +17,7 @@ import { BI_OBRAS_GROUPS } from "./biObrasGroups";
 import { BI_COMERCIAL_GROUPS } from "./biComercialGroups";
 import { BI_LOCACAO_GROUPS } from "./biLocacaoGroups";
 import { BI_JURIDICO_GROUPS } from "./biJuridicoGroups";
+import { BI_DRILLDOWN_GROUPS } from "./biDrilldownGroups";
 
 // Parâmetros do BI e Centro de Comando (Marco 9, bloco D) que o administrador controla. A API valida (SETTINGS_SCHEMA); o padrão
 // mostrado é o de Maturacao/demandas/parametros.csv e só vale enquanto a empresa não configurou nada. Cada demanda do bloco
@@ -43,7 +44,7 @@ const BI_GROUPS = [
         key: "analytics.abac.mapa_dominio_permissao",
         label: "Permissão de leitura de cada área",
         type: "text",
-        defaultValue: "Financeiro=finance:read; Comercial/Imóveis e Marketing/Atendimento=crm:opportunities:read; Locação e Jurídico=legal:read; Obras=construction:read; Estoque=inventory:read; Correspondente=correspondent:read; Tecnologia=analytics:read:tech",
+        defaultValue: "Financeiro=finance:read; Comercial/Imóveis=crm:opportunities:read; Marketing=marketing:attribution:read; Atendimento=crm:feedback:read; Locação e Jurídico=legal:read; Obras=construction:read; Estoque=inventory:read; Correspondente=correspondent:read; Tecnologia=analytics:read:tech",
         helper: "Quem não tem a permissão da área não vê os indicadores dela. Formato: Área=permissão, separadas por ponto e vírgula. Entrada inválida volta ao padrão.",
       },
       {
@@ -204,7 +205,7 @@ const BI_GROUPS = [
   },
 ];
 
-const ALL_GROUPS = [...BI_GROUPS, ...BI_QUALIDADE_GROUPS, ...BI_OBRAS_GROUPS, ...BI_COMERCIAL_GROUPS, ...BI_LOCACAO_GROUPS, ...BI_JURIDICO_GROUPS, ...BI_DESEMPENHO_GROUPS];
+const ALL_GROUPS = [...BI_GROUPS, ...BI_QUALIDADE_GROUPS, ...BI_OBRAS_GROUPS, ...BI_COMERCIAL_GROUPS, ...BI_LOCACAO_GROUPS, ...BI_JURIDICO_GROUPS, ...BI_DESEMPENHO_GROUPS, ...BI_DRILLDOWN_GROUPS];
 const ALL_FIELDS = ALL_GROUPS.flatMap((group) => group.fields);
 
 function initialValues() {
