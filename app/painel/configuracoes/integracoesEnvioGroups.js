@@ -11,4 +11,17 @@ export const ENVIO_GROUPS = [
       { key: "integration.dispatch.blocked_recheck_s", label: "Espera quando a integração está pausada, desativada ou com credencial recusada (segundos)", type: "integer", defaultValue: 60, helper: "De 5 a 86400. O envio espera sem gastar tentativa e volta a ser conferido depois desse tempo." },
     ],
   },
+  {
+    title: "Nova tentativa de envio por tipo de erro",
+    subtitle:
+      "Erro transitório espera cada vez mais entre as tentativas (com uma variação para não bater todo mundo no mesmo instante). Erro de dado e de credencial nunca entram em repetição. Cada integração pode ter valores próprios na política dela.",
+    fields: [
+      { key: "integration.retry.base_delay_ms", label: "Espera antes da 1ª nova tentativa (milissegundos)", type: "integer", defaultValue: 5000, helper: "De 100 a 3600000. Cada nova espera multiplica a anterior pelo fator, até o teto." },
+      { key: "integration.retry.factor", label: "Fator de crescimento da espera", type: "integer", defaultValue: 2, helper: "De 1 a 10. Com 2 as esperas são 5, 10, 20, 40 segundos e assim por diante." },
+      { key: "integration.retry.cap_delay_ms", label: "Teto da espera entre tentativas (milissegundos)", type: "integer", defaultValue: 1800000, helper: "De 1000 a 86400000 (24 horas). Padrão do livro: 30 minutos." },
+      { key: "integration.retry.jitter_pct", label: "Variação aleatória da espera (%)", type: "integer", defaultValue: 25, helper: "De 0 a 50. A espera varia para mais ou para menos até esse percentual." },
+      { key: "integration.retry.rate_limit_max_wait_s", label: "Espera máxima atendida quando o fornecedor pede calma (segundos)", type: "integer", defaultValue: 3600, helper: "De 1 a 86400. Se o fornecedor pedir mais que isso, o envio espera este tempo e a integração ganha um alerta." },
+      { key: "integration.retry.rate_limit_max_deferrals", label: "Adiamentos seguidos por limite do fornecedor antes de contar como falha", type: "integer", defaultValue: 100, helper: "De 1 a 10000. Evita que um fornecedor que sempre pede calma segure o envio para sempre." },
+    ],
+  },
 ];

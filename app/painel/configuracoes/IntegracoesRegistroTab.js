@@ -193,7 +193,7 @@ REGISTRO_GROUPS.push({
   subtitle: "Pagamentos, mensagens e outras ordens enviadas a fornecedores ficam registradas antes de sair, com o conteúdo aprovado e uma chave que impede envio duplicado.",
   fields: [
     { key: "integration.dispatch.sending_stale_s", label: "Segundos sem resposta até um envio ser dado como desconhecido", type: "integer", defaultValue: 120, helper: "De 10 a 86400. Um envio que ficou \u201cenviando\u201d por mais tempo que isso passa a \u201cdesconhecido\u201d e só é repetido depois de conferir com o fornecedor." },
-    { key: "integration.retry.max_attempts", label: "Tentativas de um envio antes da fila morta", type: "integer", defaultValue: 8, helper: "De 1 a 50. Um reenvio autorizado por pessoa soma mais 3 tentativas." },
+    { key: "integration.retry.max_attempts", label: "Tentativas de um envio antes da fila morta", type: "integer", defaultValue: 8, helper: "De 1 a 20. Um reenvio autorizado por pessoa soma mais 3 tentativas." },
     { key: "integration.dispatch.payload_retention_days", label: "Dias até o conteúdo de um envio concluído virar só a impressão digital (hash)", type: "integer", defaultValue: 90, helper: "De 1 a 3650." },
     { key: "integration.dispatch.retention_days", label: "Dias que um envio concluído ou cancelado fica guardado", type: "integer", defaultValue: 365, helper: "De 1 a 3650." },
   ],
