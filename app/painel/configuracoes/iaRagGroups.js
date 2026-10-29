@@ -1,4 +1,4 @@
-// Parâmetros do RAG da NAY (Marco 9, M9-D022): o que a NAY pode ler de documentos, links e conhecimento, e como divide o texto. Padrão de Maturacao/demandas/parametros.csv; a API valida.
+// Parâmetros do RAG da NAY (Marco 9, M9-D022 e M9-D023): o que a NAY pode ler de documentos, links e conhecimento, e como busca. Padrão de Maturacao/demandas/parametros.csv; a API valida.
 export const IA_RAG_GROUPS = [
   {
     title: "Documentos e links que a NAY pode ler",
@@ -30,8 +30,8 @@ export const IA_RAG_GROUPS = [
     ],
   },
   {
-    title: "Como a NAY divide os documentos",
-    subtitle: "A base da NAY guarda trechos com a origem, a versão, a classificação e a vigência.",
+    title: "Como a NAY divide e busca nos documentos",
+    subtitle: "A base da NAY guarda trechos com a origem, a versão, a classificação e a vigência. Na busca, empresa e permissão são conferidas antes de qualquer trecho ser lido; achar um trecho nunca dá permissão nova.",
     fields: [
       {
         key: "ia.rag.chunk_tokens",
@@ -59,6 +59,33 @@ export const IA_RAG_GROUPS = [
         max: 256,
         defaultValue: 16,
         helper: "Número inteiro de 1 a 256. Lote menor é mais lento, maior pode ser recusado pelo fornecedor.",
+      },
+      {
+        key: "ia.rag.top_k",
+        label: "Candidatos considerados em cada busca",
+        type: "integer",
+        min: 1,
+        max: 100,
+        defaultValue: 20,
+        helper: "Número inteiro de 1 a 100. Só entram na conta os trechos que a pessoa pode ler.",
+      },
+      {
+        key: "ia.rag.contexto_max_chunks",
+        label: "Máximo de trechos levados à resposta",
+        type: "integer",
+        min: 1,
+        max: 30,
+        defaultValue: 6,
+        helper: "Número inteiro de 1 a 30. Os mais relevantes e mais recentes primeiro.",
+      },
+      {
+        key: "ia.rag.reconciliar_minutos",
+        label: "Intervalo para atualizar as permissões dos trechos (minutos)",
+        type: "integer",
+        min: 1,
+        max: 1440,
+        defaultValue: 5,
+        helper: "Número inteiro de 1 a 1440. Quando a permissão ou a classificação do documento muda, os trechos se acertam neste prazo; até lá a NAY confere o documento de origem a cada leitura.",
       },
     ],
   },
