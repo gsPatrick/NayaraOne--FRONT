@@ -1,4 +1,4 @@
-// Parâmetros do RAG da NAY (Marco 9, M9-D022 e M9-D023): o que a NAY pode ler de documentos, links e conhecimento, e como busca. Padrão de Maturacao/demandas/parametros.csv; a API valida.
+// Parâmetros do RAG da NAY (Marco 9, M9-D022, M9-D023 e M9-D024): o que a NAY pode ler de documentos, links e conhecimento, e como busca. Padrão de Maturacao/demandas/parametros.csv; a API valida.
 export const IA_RAG_GROUPS = [
   {
     title: "Documentos e links que a NAY pode ler",
@@ -86,6 +86,37 @@ export const IA_RAG_GROUPS = [
         max: 1440,
         defaultValue: 5,
         helper: "Número inteiro de 1 a 1440. Quando a permissão ou a classificação do documento muda, os trechos se acertam neste prazo; até lá a NAY confere o documento de origem a cada leitura.",
+      },
+    ],
+  },
+  {
+    title: "Documento vencido, revogado e fontes que divergem",
+    subtitle: "A NAY só responde com o que está em vigor hoje (horário de São Paulo). Documento revogado, vencido, substituído por versão mais nova ou que ainda não começou a valer nunca é usado como resposta; quando duas fontes em vigor dizem coisas diferentes sobre o mesmo assunto, a NAY mostra a divergência e não escolhe uma.",
+    fields: [
+      {
+        key: "ia.rag.conflito.marcador",
+        label: "Palavra que abre a linha de um fato no documento",
+        type: "text",
+        defaultValue: "Fato",
+        helper: "Para comparar fontes, o documento declara o fato em uma linha própria, por exemplo: Fato: prazo_entrega_dias = 60. Esta é a palavra antes dos dois pontos (até 30 letras, números, espaço, hífen ou sublinhado). Números soltos, sem a chave do fato, nunca são comparados.",
+      },
+      {
+        key: "ia.rag.nao_vigentes_registrar_max",
+        label: "Fontes fora de vigência anotadas em cada consulta",
+        type: "integer",
+        min: 0,
+        max: 50,
+        defaultValue: 5,
+        helper: "Número inteiro de 0 a 50. Quando a pergunta casa com fonte revogada, vencida, substituída ou que ainda não começou, ela fica anotada na consulta como não usada, para auditoria. 0 = não anotar.",
+      },
+      {
+        key: "ia.rag.vigencia.intervalo_horas",
+        label: "Intervalo para marcar como vencidos os conteúdos fora do prazo (horas)",
+        type: "integer",
+        min: 1,
+        max: 168,
+        defaultValue: 24,
+        helper: "Número inteiro de 1 a 168. A busca já ignora o que venceu; esta rotina só atualiza o estado do conhecimento e dos trechos vencidos.",
       },
     ],
   },
