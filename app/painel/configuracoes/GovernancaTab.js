@@ -40,6 +40,22 @@ const GOVERNANCA_GROUPS = [
       { key: "governanca.calendario.duracao_padrao_min", label: "Duração padrão de compromisso sem fim (minutos)", type: "integer", defaultValue: 60, min: 1, max: 1440 },
       { key: "governanca.calendario.garantia_obra_meses", label: "Prazo da garantia da obra entregue (meses a partir da entrega)", type: "integer", defaultValue: 60, min: 1, max: 600 },
       { key: "governanca.calendario.varredura_hora", label: "Hora da varredura diária das fontes de obras e garantias (0 a 23, horário de Brasília)", type: "integer", defaultValue: 6, min: 0, max: 23 },
+      { key: "governanca.calendario.alerta_vencido_hora", label: "Hora do alerta diário de itens vencidos (0 a 23, horário de Brasília)", type: "integer", defaultValue: 6, min: 0, max: 23 },
+      { key: "governanca.calendario.conflito_intervalo_min", label: "Intervalo do detector de conflito de agenda (minutos)", type: "integer", defaultValue: 15, min: 1, max: 1440 },
+      {
+        key: "governanca.calendario.fontes_conflito",
+        label: "Tipos de origem que entram no conflito de agenda",
+        type: "text",
+        defaultValue: "VISIT, COMMITMENT, MAINTENANCE",
+        helper: "Tipos separados por vírgula (CRM_TASK, VISIT, LEGAL_DEADLINE, RENEWAL, GUARANTEE, BILLING, CONSTRUCTION, MAINTENANCE, FISCAL, COMMITMENT). Dois itens abertos do mesmo responsável com horários que se sobrepõem geram o aviso.",
+      },
+      {
+        key: "governanca.calendario.papel_por_fonte",
+        label: "Perfil que recebe o aviso quando a origem não tem responsável",
+        type: "text",
+        defaultValue: "BILLING=financeiro, FISCAL=fiscal",
+        helper: "Formato TIPO=nome do perfil. Sem responsável, o aviso de item vencido vai a todos os usuários ativos desse perfil.",
+      },
       {
         key: "governanca.calendario.severidade_por_fonte",
         label: "Severidade por tipo de origem",
