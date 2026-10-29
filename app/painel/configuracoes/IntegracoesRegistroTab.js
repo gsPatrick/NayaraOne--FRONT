@@ -17,6 +17,7 @@ import { MINIMIZACAO_GROUP } from "./integracoesMinimizacaoGroups";
 import { PUBLICACAO_GROUP } from "./integracoesPublicacaoGroups";
 import { ENVIO_GROUPS } from "./integracoesEnvioGroups";
 import { SAUDE_GROUPS } from "./integracoesSaudeGroups";
+import { CONTINGENCIA_GROUPS } from "./integracoesContingenciaGroups";
 
 // Parâmetros do registro de integrações (Marco 9, M9-D200 e seguintes do bloco B) que o administrador controla.
 // A API valida (SETTINGS_SCHEMA); o padrão mostrado é o do catálogo (Maturacao/demandas/parametros.csv) e só vale
@@ -221,6 +222,9 @@ REGISTRO_GROUPS.push(...ENVIO_GROUPS);
 
 // Saúde e resiliência dos fornecedores (M9-D217, M9-D223, M9-D224): disjuntor, teste de saúde e alertas.
 REGISTRO_GROUPS.push(...SAUDE_GROUPS);
+
+// Contingência (M9-D226): prazo da fila por modo, avisos, tarefa manual e encerramento.
+REGISTRO_GROUPS.push(...CONTINGENCIA_GROUPS);
 
 // Segurança das integrações (M9-D248, M9-D244, M9-D245): grupos no arquivo ao lado para esta aba não crescer sem limite.
 REGISTRO_GROUPS.push(...INTEGRACOES_SEGURANCA_GROUPS);

@@ -8,6 +8,7 @@ import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
 import Table from "@/components/organisms/Table/Table";
 import { listIntegrationsHealth } from "@/lib/api/integrations";
+import ContingenciaBanner from "./ContingenciaBanner";
 import {
   SAUDE_LABEL, SAUDE_TONE, CIRCUITO_LABEL, CIRCUITO_TONE, AMBIENTE_LABEL, CRITICIDADE_LABEL, ALERTA_LABEL, ALERTA_TONE,
   formatPercent, formatMs, formatCount, formatDateTime, formatDays,
@@ -88,6 +89,8 @@ export default function IntegracoesSaudePage() {
           <Button variant="secondary" onClick={() => load(environment)}>Atualizar</Button>
         </div>
       </div>
+
+      <ContingenciaBanner />
 
       {loadError ? <Alert tone="danger" title="Não foi possível carregar a saúde das integrações">{loadError}</Alert> : null}
 
