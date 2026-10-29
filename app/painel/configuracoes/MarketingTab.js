@@ -18,6 +18,7 @@ import { MARKETING_CONSENT_GROUPS } from "./marketingConsentGroups";
 import { MARKETING_TIPOS_CONTEUDO_GROUPS } from "./marketingTiposConteudoGroups";
 import { MARKETING_FACTUAL_GROUPS } from "./marketingFactualGroups";
 import { MARKETING_SEGMENTACAO_GROUPS } from "./marketingSegmentacaoGroups";
+import { MARKETING_ATRIBUICAO_GROUPS } from "./marketingAtribuicaoGroups";
 
 // Parâmetros de Marketing que o administrador controla (Marco 9, bloco C). Cada demanda do bloco acrescenta as suas
 // entradas aqui, sempre com o padrão do catálogo (Maturacao/demandas/parametros.csv). A API é a fonte da validação
@@ -30,6 +31,7 @@ const MARKETING_GROUPS = [
   ...MARKETING_TIPOS_CONTEUDO_GROUPS,
   ...MARKETING_FACTUAL_GROUPS,
   ...MARKETING_SEGMENTACAO_GROUPS,
+  ...MARKETING_ATRIBUICAO_GROUPS,
   {
     title: "Mensagem em massa",
     subtitle: "Limites de destinatários por disparo. Acima do primeiro limite, só quem tem a permissão de envio em massa dispara; acima do teto absoluto, o disparo é sempre recusado.",
