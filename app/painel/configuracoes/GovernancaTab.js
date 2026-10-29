@@ -169,6 +169,9 @@ const GOVERNANCA_GROUPS = [
       },
       { key: "governanca.dados.qualidade.varredura_hora", label: "Qualidade de cadastro: hora da varredura noturna (0 a 23, horário de Brasília)", type: "integer", defaultValue: 3, min: 0, max: 23 },
       { key: "governanca.dados.qualidade.lista_tamanho_padrao", label: "Qualidade de cadastro: itens por página da consulta", type: "integer", defaultValue: 50, min: 1, max: 200 },
+      { key: "governanca.dados.bulk.max_registros", label: "Alteração em massa: limite de registros de um lote", type: "integer", defaultValue: 5000, min: 1, max: 100000, helper: "Lote que casa com mais registros que isso é recusado e a tentativa fica na auditoria." },
+      { key: "governanca.dados.bulk.motivo_minimo", label: "Alteração em massa: tamanho mínimo do motivo (caracteres)", type: "integer", defaultValue: 10, min: 1, max: 500 },
+      { key: "governanca.dados.bulk.pagina_tamanho", label: "Alteração em massa: itens por página das consultas de lotes", type: "integer", defaultValue: 50, min: 1, max: 200 },
     ],
   },
   {
