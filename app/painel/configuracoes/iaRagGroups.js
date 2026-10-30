@@ -61,6 +61,15 @@ export const IA_RAG_GROUPS = [
         helper: "Número inteiro de 1 a 256. Lote menor é mais lento, maior pode ser recusado pelo fornecedor.",
       },
       {
+        key: "ia.rag.consulta_max_caracteres",
+        label: "Tamanho máximo da pergunta da busca (caracteres)",
+        type: "integer",
+        min: 1,
+        max: 20000,
+        defaultValue: 2000,
+        helper: "Número inteiro de 1 a 20000. Pergunta maior que isso é recusada pela busca nos documentos da NAY.",
+      },
+      {
         key: "ia.rag.top_k",
         label: "Candidatos considerados em cada busca",
         type: "integer",

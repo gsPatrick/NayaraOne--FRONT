@@ -14,6 +14,15 @@ export const IA_CONVERSA_GROUPS = [
         helper: "Número inteiro de 1 a 600000. Passando desse tempo, a consulta continua em segundo plano e a tela recebe o aviso de que ela está em andamento, para consultar o resultado depois.",
       },
       {
+        key: "ia.run.entrada_max_caracteres",
+        label: "Tamanho máximo do pedido à NAY (caracteres)",
+        type: "integer",
+        min: 1,
+        max: 100000,
+        defaultValue: 8000,
+        helper: "Número inteiro de 1 a 100000. Pedido maior que isso é recusado com aviso, antes de gastar com o modelo. Vale para a consulta e para o chat.",
+      },
+      {
         key: "ia.chat.max_mensagens",
         label: "Mensagens anteriores usadas como contexto na conversa",
         type: "integer",
