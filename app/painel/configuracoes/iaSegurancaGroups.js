@@ -22,4 +22,24 @@ export const IA_SEGURANCA_GROUPS = [
       },
     ],
   },
+  {
+    title: "Defesa contra tentativa de alterar as regras da NAY",
+    subtitle: "Antes de qualquer consulta, a NAY confere o pedido contra uma lista de frases-gatilho (ignorar regras, esquecer instruções, fingir ser o administrador, pedir dados de outra empresa, pedir senha ou chave). A conferência vale também para letras espaçadas, troca de letras por números, texto escondido em base64, espanhol e francês. Ajuste a lista da sua empresa aqui.",
+    fields: [
+      {
+        key: "ia.injecao.frases_extra",
+        label: "Frases extras que a NAY trata como tentativa de burlar as regras",
+        type: "text",
+        defaultValue: "",
+        helper: "Separe as frases por ponto e vírgula. Uma frase sozinha bloqueia o pedido; use peso|frase (peso de 1 a 100) para dar um peso menor, por exemplo 40|abra o cofre agora. Frases com menos de 8 letras são ignoradas. Deixe vazio para usar só a lista do sistema.",
+      },
+      {
+        key: "ia.injecao.frases_desativadas",
+        label: "Grupos da lista do sistema que ficam desligados",
+        type: "text",
+        defaultValue: "",
+        helper: "Códigos separados por vírgula: FRASE_IGNORAR_INSTRUCOES, FRASE_ESQUECER_CONTEXTO, FRASE_ROLEPLAY_PRIVILEGIO, FRASE_DADOS_OUTRA_EMPRESA, FRASE_PEDIR_SEGREDO, FRASE_REVELAR_PROMPT. Deixe vazio para manter todos ligados. Os padrões fixos do sistema continuam valendo.",
+      },
+    ],
+  },
 ];
