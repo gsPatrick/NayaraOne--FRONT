@@ -71,6 +71,9 @@ export const ENVIO_GROUPS = [
     fields: [
       { key: "integration.portal.reconcile_interval_min", label: "Intervalo da leitura de status dos anúncios nos portais (minutos)", type: "integer", defaultValue: 15, helper: "De 1 a 1440. De quanto em quanto tempo o sistema pergunta a cada portal o status dos anúncios." },
       { key: "integration.portal.sync_page_size", label: "Anúncios lidos por página a cada rodada", type: "integer", defaultValue: 50, helper: "De 5 a 500. A leitura segue por páginas, retomando do ponto em que parou se for interrompida." },
+      { key: "integration.portal.unpublish_confirm_deadline_min", label: "Prazo para o portal confirmar a remoção de um anúncio (minutos)", type: "integer", defaultValue: 60, helper: "De 1 a 10080. A remoção só termina quando o portal confirma; passado esse prazo o sistema consulta o portal e, se o anúncio segue no ar, pede a remoção de novo." },
+      { key: "integration.portal.unpublish_retry_interval_min", label: "Intervalo entre os pedidos de remoção repetidos (minutos)", type: "integer", defaultValue: 30, helper: "De 1 a 1440. Depois do prazo, o pedido é repetido nesse intervalo, sem aumentar a espera a cada vez." },
+      { key: "integration.portal.unpublish_max_attempts", label: "Pedidos de remoção repetidos antes de chamar uma pessoa", type: "integer", defaultValue: 8, helper: "De 1 a 50. Esgotados os pedidos, abre-se uma tarefa urgente para o responsável e um alerta alto: o anúncio de um imóvel indisponível continua no ar." },
     ],
   },
   {

@@ -16,6 +16,7 @@ import Modal from "@/components/organisms/Modal/Modal";
 import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import PriceHistoryTimeline from "@/components/molecules/PriceHistoryTimeline/PriceHistoryTimeline";
+import PortalListingsCard from "@/components/organisms/PortalListingsCard/PortalListingsCard";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import {
   FEATURE_LABELS,
@@ -377,6 +378,8 @@ export default function PropertyDetailPage({ params }) {
               </div>
               )}
             </Card>
+
+            <PortalListingsCard propertyId={property.id} />
 
             <Card title="Localização">
               <p className={styles.meta}>
