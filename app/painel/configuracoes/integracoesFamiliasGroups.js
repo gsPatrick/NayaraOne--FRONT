@@ -19,6 +19,19 @@ export const EMAIL_GROUP = {
   ],
 };
 
+export const EMAIL_INBOUND_GROUP = {
+  title: "E-mail recebido: anexos, dado pessoal e vínculo",
+  subtitle:
+    "Todo e-mail recebido passa pela quarentena e pelo antivírus antes de virar arquivo, e CPF, CNPJ, cartão e conta são mascarados antes de gravar. O e-mail nunca é a única fonte de um documento: o que vale é o arquivo promovido.",
+  fields: [
+    { key: "integration.email.inbound_max_attachments", label: "Anexos aceitos por mensagem recebida", type: "integer", defaultValue: 20, helper: "De 1 a 100. O que passar disso fica registrado como anexo bloqueado, sem guardar o conteúdo." },
+    { key: "integration.email.inbound_reference_prefixes", label: "Prefixos da referência no assunto (ex.: [PROC-1234])", type: "text", defaultValue: "PROC", helper: "De 1 a 10 prefixos de 2 a 12 letras ou números, separados por vírgula. Sem referência reconhecida nem resposta a um e-mail enviado, a mensagem fica não vinculada." },
+    { key: "integration.email.inbound_verify_immediately", label: "Verificar os anexos na chegada da mensagem", type: "boolean", defaultValue: true, helper: "Ligado por padrão. Desligado, os anexos esperam em quarentena pela rodada de verificação." },
+    { key: "integration.email.inbound_body_max_chars", label: "Tamanho máximo do corpo guardado (caracteres)", type: "integer", defaultValue: 20000, helper: "De 100 a 200000. O corpo é guardado já mascarado; o excedente é cortado." },
+    { key: "integration.email.inbound_poll_interval_min", label: "Intervalo da leitura periódica do e-mail recebido (minutos)", type: "integer", defaultValue: 5, helper: "De 1 a 1440. Vale só para conexões de e-mail configuradas com leitura periódica; quem recebe por aviso do provedor (webhook) não depende disso." },
+  ],
+};
+
 export const SEGUROS_GROUP = {
   title: "Seguradoras: vencimento, renovação e fluxo manual",
   subtitle:
@@ -42,4 +55,4 @@ export const NFSE_GROUP = {
 
 import { INFRA_GROUPS } from "./integracoesInfraGroups";
 
-export const FAMILIAS_GROUPS = [EMAIL_GROUP, SEGUROS_GROUP, NFSE_GROUP, ...INFRA_GROUPS];
+export const FAMILIAS_GROUPS = [EMAIL_GROUP, EMAIL_INBOUND_GROUP, SEGUROS_GROUP, NFSE_GROUP, ...INFRA_GROUPS];
