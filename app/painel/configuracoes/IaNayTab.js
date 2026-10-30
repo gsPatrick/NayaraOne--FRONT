@@ -29,6 +29,7 @@ import { IA_CORRESPONDENTE_GROUPS } from "./iaCorrespondenteGroups";
 import { IA_DOCUMENTAL_GROUPS } from "./iaDocumentalGroups";
 import { IA_CONVERSA_GROUPS } from "./iaConversaGroups";
 import { IA_COMERCIAL_GROUPS } from "./iaComercialGroups";
+import { IA_OBSERVABILIDADE_GROUPS } from "./iaObservabilidadeGroups";
 import { IA_DIRETORIA_GROUPS } from "./iaDiretoriaGroups";
 import { IA_FINANCEIRA_GROUPS } from "./iaFinanceiraGroups";
 
@@ -54,6 +55,7 @@ const IA_GROUPS = [
   ...IA_DOCUMENTAL_GROUPS,
   ...IA_CONVERSA_GROUPS,
   ...IA_COMERCIAL_GROUPS,
+  ...IA_OBSERVABILIDADE_GROUPS,
   ...IA_DIRETORIA_GROUPS,
   ...IA_FINANCEIRA_GROUPS,
   {
