@@ -28,4 +28,24 @@ export const MARKETING_AUTOMACOES_PRONTAS_GROUPS = [
       },
     ],
   },
+  {
+    title: "Lembretes de restrição e regularização",
+    subtitle: "Pendência de documento, restrição ou regularização gera um lembrete a cada tantos dias, sem revelar o motivo na mensagem. Quando a série expira, ela para e uma tarefa é criada para o responsável. Resolver ou cancelar a pendência encerra a série.",
+    fields: [
+      {
+        key: "marketing.restricao.intervalo_dias",
+        label: "Dias entre um lembrete e o seguinte",
+        type: "integer",
+        defaultValue: 7,
+        helper: "Número inteiro de 1 a 365, contado em dias corridos desde a abertura da pendência.",
+      },
+      {
+        key: "marketing.restricao.expiracao_dias",
+        label: "Dias para a série de lembretes expirar",
+        type: "integer",
+        defaultValue: 60,
+        helper: "Número inteiro de 1 a 3650. No primeiro dia a partir deste, a série para e a tarefa ao responsável é criada.",
+      },
+    ],
+  },
 ];
