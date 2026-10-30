@@ -11,5 +11,12 @@ export const PUBLICACAO_GROUP = {
       defaultValue: 300,
       helper: "De 50 a 300. O ponto publicado é deslocado dentro desse raio e é sempre o mesmo para o mesmo imóvel; o ponto exato nunca sai.",
     },
+    {
+      key: "integration.site.default_locale",
+      label: "Idioma padrão das páginas do site",
+      type: "text",
+      defaultValue: "pt-BR",
+      helper: "Código como pt-BR ou en. Cada idioma é uma página própria no site; a página só aparece como publicada aqui depois que o site confirma.",
+    },
   ],
 };
