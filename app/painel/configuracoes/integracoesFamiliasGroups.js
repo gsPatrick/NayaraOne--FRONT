@@ -31,4 +31,13 @@ export const SEGUROS_GROUP = {
   ],
 };
 
-export const FAMILIAS_GROUPS = [EMAIL_GROUP, SEGUROS_GROUP];
+export const NFSE_GROUP = {
+  title: "NFS-e: RPS e emissor",
+  subtitle:
+    "Cada nota nasce com um RPS (série e número) único e crescente, que é também a chave que impede a nota de sair duas vezes: se a resposta do emissor se perde, o sistema consulta o RPS antes de emitir de novo. A nota recusada pela prefeitura nunca é editada: a correção sai com outro RPS. O cancelamento exige motivo e a confirmação do emissor.",
+  fields: [
+    { key: "correspondent.nfse.rps_series", label: "Série do RPS da empresa", type: "text", defaultValue: "A", helper: "De 1 a 8 letras ou números, a série cadastrada na prefeitura. O número do RPS é contado dentro da série; mudar a série recomeça a contagem em 1 sem repetir nenhuma nota já emitida." },
+  ],
+};
+
+export const FAMILIAS_GROUPS = [EMAIL_GROUP, SEGUROS_GROUP, NFSE_GROUP];
