@@ -30,4 +30,20 @@ export const GOVERNANCA_FINOPS_GROUPS = [
       { key: "governanca.finops.detectores_hora", label: "Hora da rodada diária dos detectores (0 a 23, Brasília)", type: "integer", defaultValue: 3, min: 0, max: 23 },
     ],
   },
+  {
+    title: "FinOps: degradação por custo",
+    subtitle:
+      "A produção nunca é desligada por custo. Quando o gasto do mês chega ao limiar de um orçamento, a política cadastrada pode reduzir só funções opcionais e reversíveis (modelo de IA mais barato, pausa de novos agendamentos de Marketing, menos log, exportação menor e jobs de baixa prioridade na madrugada) e desfaz tudo quando o mês recomeça. Funções críticas como login, financeiro, jurídico e pagamentos nunca entram na política.",
+    fields: [
+      { key: "governanca.finops.degradacao.ligada", label: "Aplicar a política de degradação automaticamente", type: "boolean", defaultValue: true, helper: "Desligado, o job só desfaz o que estiver aplicado." },
+      { key: "governanca.finops.degradacao.limiar_primeiro", label: "Limiar padrão do 1º passo (% do orçamento)", type: "integer", defaultValue: 90, min: 50, max: 100, helper: "Um dos limiares de alerta: 50, 75, 90 ou 100." },
+      { key: "governanca.finops.degradacao.limiar_demais", label: "Limiar padrão dos demais passos (% do orçamento)", type: "integer", defaultValue: 100, min: 50, max: 100, helper: "Um dos limiares de alerta: 50, 75, 90 ou 100." },
+      { key: "governanca.finops.degradacao.minuto_job", label: "Minuto de cada hora em que o job roda (0 a 59)", type: "integer", defaultValue: 20, min: 0, max: 59 },
+      { key: "governanca.finops.degradacao.log_nivel", label: "Nível de log durante a redução (warn, error ou fatal)", type: "text", defaultValue: "warn" },
+      { key: "governanca.finops.degradacao.exportacao_percentual", label: "Percentual do limite de linhas da exportação que sobra (1 a 99)", type: "integer", defaultValue: 50, min: 1, max: 99, helper: "50 reduz o limite pela metade." },
+      { key: "governanca.finops.degradacao.jobs_baixa_prioridade", label: "Jobs de baixa prioridade que esperam a janela noturna (separados por vírgula)", type: "text", defaultValue: "dataQualityScanJob,dataQualityMergeDetectionJob,calendarConflictJob,idempotencyCleanupJob,exportExpiryJob" },
+      { key: "governanca.finops.degradacao.jobs_hora_inicio", label: "Hora em que a janela dos jobs adiados começa (0 a 23, Brasília)", type: "integer", defaultValue: 0, min: 0, max: 23 },
+      { key: "governanca.finops.degradacao.jobs_hora_fim", label: "Hora em que a janela dos jobs adiados termina (1 a 24, exclusiva)", type: "integer", defaultValue: 5, min: 1, max: 24 },
+    ],
+  },
 ];
