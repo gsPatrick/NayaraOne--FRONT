@@ -11,4 +11,14 @@ export const GOVERNANCA_FLAGS_GROUPS = [
       { key: "governanca.flags.valor_max_caracteres", label: "Tamanho máximo do valor de texto ou JSON de uma chave (caracteres)", type: "integer", defaultValue: 2000, min: 100, max: 100000 },
     ],
   },
+  {
+    title: "Flags temporárias: expiração e aviso",
+    subtitle:
+      "A flag temporária tem data de fim. Passada a data, o job diário a marca como expirada (ela deixa de valer) e avisa o responsável com notificação crítica. O livro fixa 06:30; aqui você ajusta o horário e se o aviso se repete todo dia enquanto a flag continuar vencida no registro.",
+    fields: [
+      { key: "governanca.flags.expiracao_hora", label: "Hora do job de expiração (Brasília)", type: "integer", defaultValue: 6, min: 0, max: 23 },
+      { key: "governanca.flags.expiracao_minuto", label: "Minuto do job de expiração", type: "integer", defaultValue: 30, min: 0, max: 59 },
+      { key: "governanca.flags.expiracao_lembrete_diario", label: "Avisar o responsável todo dia enquanto a flag vencida continuar no registro", type: "boolean", defaultValue: true },
+    ],
+  },
 ];
