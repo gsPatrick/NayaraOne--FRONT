@@ -14,6 +14,7 @@ import styles from "./page.module.css";
 import { MARKETING_CADENCE_GROUPS } from "./marketingCadenceGroups";
 import { MARKETING_RUNNER_GROUPS } from "./marketingRunnerGroups";
 import { MARKETING_AGENDAMENTO_GROUPS } from "./marketingAgendamentoGroups";
+import { MARKETING_PUBLICACOES_GROUPS } from "./marketingPublicacoesGroups";
 import { MARKETING_CONSENT_GROUPS } from "./marketingConsentGroups";
 import { MARKETING_TIPOS_CONTEUDO_GROUPS } from "./marketingTiposConteudoGroups";
 import { MARKETING_FACTUAL_GROUPS } from "./marketingFactualGroups";
@@ -32,6 +33,7 @@ const MARKETING_GROUPS = [
   ...MARKETING_CADENCE_GROUPS,
   ...MARKETING_RUNNER_GROUPS,
   ...MARKETING_AGENDAMENTO_GROUPS,
+  ...MARKETING_PUBLICACOES_GROUPS,
   ...MARKETING_CONSENT_GROUPS,
   ...MARKETING_TIPOS_CONTEUDO_GROUPS,
   ...MARKETING_FACTUAL_GROUPS,
