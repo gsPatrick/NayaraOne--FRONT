@@ -27,6 +27,13 @@ export const MARKETING_CADENCE_GROUPS = [
         defaultValue: "[1,3,7]",
         helper: "Lista crescente de dias, ex.: [1,3,7].",
       },
+      {
+        key: "marketing.cadencia.horario_envio",
+        label: "Horário de envio das mensagens agendadas por cadência",
+        type: "text",
+        defaultValue: "10:00",
+        helper: "Formato HH:MM, no fuso do horário de silêncio. Vale para as sequências novas.",
+      },
     ],
   },
   {
