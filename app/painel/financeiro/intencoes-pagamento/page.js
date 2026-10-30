@@ -35,7 +35,8 @@ const STATUS_LABELS = {
   APPROVED: "Aprovada",
   // B1/B2 (revisão 18/10/2026): SUBMITTING = enviada ao banco sem resposta confiável (incerta).
   SUBMITTING: "Envio ao banco incerto",
-  SUBMITTED: "Em trânsito no banco",
+  // M9-D237: a resposta do banco à ordem (HTTP 200/202) só diz que ele recebeu; pago só com o status final do banco.
+  SUBMITTED: "Enviado ao banco, aguardando confirmação",
   EXECUTED: "Executada",
   FAILED: "Falhou no banco",
   CANCELLED: "Cancelada",
@@ -370,6 +371,7 @@ export default function IntencoesPagamentoPage() {
                       </div>
                       <div className={styles.rowRight}>
                         <Badge tone={invalidated ? "warning" : STATUS_TONE[intent.status]}>{invalidated ? "Invalidada" : STATUS_LABELS[intent.status] || "Situação não reconhecida"}</Badge>
+                        {intent.reconciledAt ? <Badge tone="success">Conciliado com o extrato</Badge> : null}
                         {intent.status === "PENDING" ? (
                           <>
                             <Button requires="finance:approve" size="sm" onClick={() => handleApprove(intent)} loading={busyId === intent.id}>Aprovar</Button>

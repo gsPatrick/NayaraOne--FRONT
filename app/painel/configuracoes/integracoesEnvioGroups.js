@@ -54,6 +54,17 @@ export const ENVIO_GROUPS = [
     ],
   },
   {
+    title: "Pagamento bancário: extrato e conciliação",
+    subtitle:
+      "A resposta do banco à ordem de pagamento só diz que ele recebeu: o pagamento só vale como pago quando o banco informa o status final e o valor confere. O extrato do banco é lido por páginas e cada lançamento entra uma única vez; a saída do extrato que confere com o pagamento o marca como conciliado.",
+    fields: [
+      { key: "integration.bank.statement_page_size", label: "Lançamentos do extrato lidos por página", type: "integer", defaultValue: 100, helper: "De 10 a 500. A leitura segue por páginas, retomando do ponto em que parou." },
+      { key: "integration.bank.reconcile_date_tolerance_days", label: "Tolerância de data na conciliação (dias)", type: "integer", defaultValue: 3, helper: "De 0 a 30. Ao casar a saída do extrato com o pagamento por valor e favorecido, a data do lançamento pode diferir da data do envio em até esse número de dias." },
+      { key: "integration.bank.reconcile_min_age_min", label: "Idade mínima para consultar o banco sobre um pagamento (minutos)", type: "integer", defaultValue: 2, helper: "De 0 a 1440. Um pagamento enviado ou incerto só é consultado depois desse tempo." },
+      { key: "integration.bank.confirm_without_amount", label: "Confirmar pagamento quando o status final do banco não traz o valor", type: "boolean", defaultValue: true, helper: "Ligado: o status final sem valor confirma (como sempre foi). Desligado: sem o valor para conferir, o pagamento não é confirmado e abre revisão humana." },
+    ],
+  },
+  {
     title: "Métricas e eventos de monitoramento",
     subtitle:
       "As métricas e os eventos do sistema (contadores, erros de aplicação com a pilha já sem dado pessoal) saem para o serviço de analytics em segundo plano. Se o serviço estiver fora do ar, o trabalho do ERP não é afetado: o que não sair a tempo é descartado.",
