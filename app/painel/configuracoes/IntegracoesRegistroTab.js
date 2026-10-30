@@ -23,6 +23,7 @@ import { WEBHOOK_GROUPS } from "./integracoesWebhookGroups";
 import { FAMILIAS_GROUPS } from "./integracoesFamiliasGroups";
 import { MENSAGERIA_GROUPS } from "./integracoesMensageriaGroups";
 import { CONTRATO_GROUPS } from "./integracoesContratoGroups";
+import { LIBERACAO_GROUPS } from "./integracoesLiberacaoGroups";
 import { CONTINGENCIA_CANAIS_GROUPS } from "./integracoesContingenciaCanaisGroups";
 
 // Parâmetros do registro de integrações (Marco 9, M9-D200 e seguintes do bloco B) que o administrador controla.
@@ -241,6 +242,8 @@ REGISTRO_GROUPS.push(...MENSAGERIA_GROUPS);
 REGISTRO_GROUPS.push(...CONTINGENCIA_CANAIS_GROUPS);
 // Testes de contrato dos fornecedores (M9-D222): validade do relatório.
 REGISTRO_GROUPS.push(...CONTRATO_GROUPS);
+// Liberação para produção e teste de carga (M9-D255, M9-D256).
+REGISTRO_GROUPS.push(...LIBERACAO_GROUPS);
 
 // Segurança das integrações (M9-D248, M9-D244, M9-D245): grupos no arquivo ao lado para esta aba não crescer sem limite.
 REGISTRO_GROUPS.push(...INTEGRACOES_SEGURANCA_GROUPS);
