@@ -23,6 +23,7 @@ import { WEBHOOK_GROUPS } from "./integracoesWebhookGroups";
 import { FAMILIAS_GROUPS } from "./integracoesFamiliasGroups";
 import { MENSAGERIA_GROUPS } from "./integracoesMensageriaGroups";
 import { CONTRATO_GROUPS } from "./integracoesContratoGroups";
+import { CONTINGENCIA_CANAIS_GROUPS } from "./integracoesContingenciaCanaisGroups";
 
 // Parâmetros do registro de integrações (Marco 9, M9-D200 e seguintes do bloco B) que o administrador controla.
 // A API valida (SETTINGS_SCHEMA); o padrão mostrado é o do catálogo (Maturacao/demandas/parametros.csv) e só vale
@@ -237,6 +238,7 @@ REGISTRO_GROUPS.push(...WEBHOOK_GROUPS);
 REGISTRO_GROUPS.push(...FAMILIAS_GROUPS);
 // Mensageria do CRM (M9-D229): código do país e prazo do contato novo.
 REGISTRO_GROUPS.push(...MENSAGERIA_GROUPS);
+REGISTRO_GROUPS.push(...CONTINGENCIA_CANAIS_GROUPS);
 // Testes de contrato dos fornecedores (M9-D222): validade do relatório.
 REGISTRO_GROUPS.push(...CONTRATO_GROUPS);
 
