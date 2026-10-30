@@ -31,6 +31,7 @@ import { MARKETING_FUNIL_GROUPS } from "./marketingFunilGroups";
 import { MARKETING_VIDEO_GROUPS } from "./marketingVideoGroups";
 import { MARKETING_REDES_GROUPS } from "./marketingRedesGroups";
 import { MARKETING_URL_GROUPS } from "./marketingUrlGroups";
+import { MARKETING_DRILL_GROUPS } from "./marketingDrillGroups";
 
 // Parâmetros de Marketing que o administrador controla (Marco 9, bloco C). Cada demanda do bloco acrescenta as suas
 // entradas aqui, sempre com o padrão do catálogo (Maturacao/demandas/parametros.csv). A API é a fonte da validação
@@ -56,6 +57,7 @@ const MARKETING_GROUPS = [
   ...MARKETING_VIDEO_GROUPS,
   ...MARKETING_REDES_GROUPS,
   ...MARKETING_URL_GROUPS,
+  ...MARKETING_DRILL_GROUPS,
   {
     title: "Mensagem em massa",
     subtitle: "Limites de destinatários por disparo. Acima do primeiro limite, só quem tem a permissão de envio em massa dispara; acima do teto absoluto, o disparo é sempre recusado.",
