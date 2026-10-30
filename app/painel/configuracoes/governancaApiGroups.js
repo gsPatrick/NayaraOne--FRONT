@@ -45,4 +45,15 @@ export const GOVERNANCA_API_GROUPS = [
       { key: "governanca.ui.cache_fresco_s", label: "Tempo em que o último dado carregado conta como atual (segundos)", type: "integer", defaultValue: 60, min: 1, max: 86400, helper: "Só vale quando a conexão cai: o dado mais velho que isso aparece com o aviso \"desatualizado\"." },
     ],
   },
+  {
+    title: "Confirmação de ações destrutivas e códigos de erro",
+    subtitle:
+      "Ações difíceis de desfazer (cancelar, excluir, revogar, desativar) mostram o impacto calculado pelo servidor e pedem confirmação. Nível 1: resumo. Nível 2: lista do que será afetado e \"Entendi o impacto\". Nível 3: também digitar o código do registro e escrever a justificativa. Quando algo dá errado, a tela mostra um código para o suporte, sem texto técnico.",
+    fields: [
+      { key: "governanca.ui.confirmacao_por_nivel", label: "Nível de confirmação de cada ação (chave=nível, separadas por ponto e vírgula)", type: "text", defaultValue: "legal.contract.terminate=3; finance.entry.reverse=3; finance.payment_intent.cancel=3; procurement.order.cancel=2; property.delete=2; file.delete=2; user.deactivate=2; construction.project.cancel=3; data_quality.merge=3; data_quality.bulk=3; retention.apply=3; legal_hold.release=3; dlp.share_link.revoke=2; api_client.revoke=3; api_client.create=3; kill_switch.activate=2; kill_switch.restore=3; migration.canary.rollback=3; integration.error.retry_dangerous=3; integration.connection.disable=3; marketing.publication.cancel=2; ai.agent.deactivate=2", helper: "O padrão é o do livro. Troque o número (1, 2 ou 3) da ação que quiser; ação que não estiver na lista vale o padrão. Só valem as ações do inventário." },
+      { key: "governanca.acoes.impacto_validade_min", label: "Validade da simulação de impacto (minutos)", type: "integer", defaultValue: 10, min: 1, max: 60, helper: "Passado esse tempo a pessoa precisa ver o impacto de novo antes de confirmar." },
+      { key: "governanca.acoes.impacto_itens_max", label: "Itens afetados listados na confirmação", type: "integer", defaultValue: 50, min: 1, max: 200, helper: "A contagem é sempre completa; só a lista de itens é cortada neste número." },
+      { key: "governanca.ui.exibir_debug", label: "Mostrar detalhe técnico do erro (somente desenvolvimento)", type: "boolean", defaultValue: false, helper: "Em produção este ajuste é recusado e nunca aparece texto técnico para o usuário." },
+    ],
+  },
 ];

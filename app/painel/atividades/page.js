@@ -18,6 +18,7 @@ import Pagination from "@/components/molecules/Pagination/Pagination";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import { listAuditLog } from "@/lib/api/audit";
 import { apiFetch } from "@/lib/api/client";
+import ConfirmAction from "@/components/molecules/ConfirmAction/ConfirmAction";
 import { entityTypeLabel, actionVerb, ACTION_TONE, ACTION_ICON, ENTITY_TYPE_LABELS } from "@/lib/audit/labels";
 import { summarizeChanges } from "@/lib/audit/humanize";
 import { hasPermission } from "@/lib/rbac/permissions";
@@ -32,12 +33,15 @@ const REVERSIBLE_ENTITY_TYPES = {
   FinancialEntry: {
     label: "Estornar lançamento",
     permission: "finance:settle",
-    run: (entityId, reason) => apiFetch(`/finance/entries/${entityId}/reverse`, { method: "POST", body: { reason } }),
+    impactPath: (entityId) => `/finance/entries/${entityId}/impact`,
+    // M9-D852 (linha 2): o estorno leva a confirmação nível 3 (impacto, código digitado e justificativa) do ConfirmAction.
+    run: (entityId, reason, confirmation) => apiFetch(`/finance/entries/${entityId}/reverse`, { method: "POST", body: { reason, confirmation } }),
   },
   Contract: {
     label: "Cancelar contrato",
     permission: "legal:approve",
-    run: (entityId) => apiFetch(`/legal/contracts/${entityId}/transition`, { method: "POST", body: { targetStatus: "CANCELLED" } }),
+    impactPath: (entityId) => `/legal/contracts/${entityId}/impact?targetStatus=CANCELLED`,
+    run: (entityId, reason, confirmation) => apiFetch(`/legal/contracts/${entityId}/transition`, { method: "POST", body: { targetStatus: "CANCELLED", reason, confirmation } }),
   },
 };
 
@@ -197,9 +201,7 @@ export default function AtividadesPage() {
 }
 
 function ActivityDetailModal({ entry, actor, onClose, onBlocked, onReverted }) {
-  const [blocking, setBlocking] = useState(false);
-  const [reverting, setReverting] = useState(false);
-  const [actionError, setActionError] = useState("");
+  // M9-D852: bloquear acesso (linha 6) e estornar/cancelar (linhas 1 e 2) abrem o ConfirmAction, que mostra o impacto calculado pelo servidor.
   const [confirmBlock, setConfirmBlock] = useState(false);
   const [confirmRevert, setConfirmRevert] = useState(false);
 
@@ -208,35 +210,19 @@ function ActivityDetailModal({ entry, actor, onClose, onBlocked, onReverted }) {
   const canRevert = reversible && hasPermission(reversible.permission) && entry.entityId;
   const canBlockUser = hasPermission("users:update") && entry.userId && actor?.status !== "SUSPENDED";
 
-  async function handleBlock() {
-    setBlocking(true);
-    setActionError("");
-    try {
-      await apiFetch(`/users/${entry.userId}`, { method: "PATCH", body: { status: "SUSPENDED" } });
-      onBlocked();
-    } catch (err) {
-      setActionError(err?.message || "Não foi possível bloquear o acesso deste usuário.");
-      setBlocking(false);
-    }
+  async function handleBlock(confirmation) {
+    await apiFetch(`/users/${entry.userId}/deactivate`, { method: "PATCH", body: { status: "SUSPENDED", confirmation } });
+    onBlocked();
   }
 
-  async function handleRevert() {
-    setReverting(true);
-    setActionError("");
-    try {
-      await reversible.run(entry.entityId, `Revertido via tela de Atividades — registro ${entry.id}.`);
-      onReverted();
-    } catch (err) {
-      setActionError(err?.message || "Não foi possível reverter esta ação.");
-      setReverting(false);
-    }
+  async function handleRevert(confirmation) {
+    await reversible.run(entry.entityId, confirmation.justification || `Revertido via tela de Atividades — registro ${entry.id}.`, confirmation);
+    onReverted();
   }
 
   return (
     <Modal open onClose={onClose} title="Detalhes da atividade">
       <div className={styles.detailWrap}>
-        {actionError ? <Alert tone="danger" title="Não foi possível concluir a ação">{actionError}</Alert> : null}
-
         <div className={styles.detailRow}><dt>Quem</dt><dd>{actor?.name || "Sistema (automático)"} {actor?.email ? `— ${actor.email}` : ""}</dd></div>
         <div className={styles.detailRow}><dt>O que</dt><dd>{entry.reason || entry.action}</dd></div>
         <div className={styles.detailRow}><dt>Onde</dt><dd>{entityTypeLabel(entry.entityType)}</dd></div>
@@ -268,36 +254,16 @@ function ActivityDetailModal({ entry, actor, onClose, onBlocked, onReverted }) {
           <p className={styles.actionsTitle}>Ações</p>
 
           {canBlockUser ? (
-            confirmBlock ? (
-              <div className={styles.confirmRow}>
-                <span>Bloquear o acesso de <strong>{actor.name}</strong>?</span>
-                <div className={styles.confirmButtons}>
-                  <Button variant="secondary" size="sm" onClick={() => setConfirmBlock(false)}>Cancelar</Button>
-                  <Button variant="danger" size="sm" onClick={handleBlock} loading={blocking}>Confirmar bloqueio</Button>
-                </div>
-              </div>
-            ) : (
-              <Button variant="danger" size="sm" onClick={() => setConfirmBlock(true)}>
-                <Icon name="ban" size={14} /> Bloquear acesso de {actor?.name}
-              </Button>
-            )
+            <Button variant="danger" size="sm" onClick={() => setConfirmBlock(true)}>
+              <Icon name="ban" size={14} /> Bloquear acesso de {actor?.name}
+            </Button>
           ) : null}
 
           {reversible ? (
             canRevert ? (
-              confirmRevert ? (
-                <div className={styles.confirmRow}>
-                  <span>{reversible.label} vinculado a este registro?</span>
-                  <div className={styles.confirmButtons}>
-                    <Button variant="secondary" size="sm" onClick={() => setConfirmRevert(false)}>Cancelar</Button>
-                    <Button variant="danger" size="sm" onClick={handleRevert} loading={reverting}>Confirmar</Button>
-                  </div>
-                </div>
-              ) : (
-                <Button variant="secondary" size="sm" onClick={() => setConfirmRevert(true)}>
-                  <Icon name="refreshCcw" size={14} /> {reversible.label}
-                </Button>
-              )
+              <Button variant="secondary" size="sm" onClick={() => setConfirmRevert(true)}>
+                <Icon name="refreshCcw" size={14} /> {reversible.label}
+              </Button>
             ) : (
               <p className={styles.emptyText}>Você não tem permissão para reverter este tipo de registro.</p>
             )
@@ -309,6 +275,25 @@ function ActivityDetailModal({ entry, actor, onClose, onBlocked, onReverted }) {
           )}
         </div>
       </div>
+
+      <ConfirmAction
+        open={confirmBlock}
+        onClose={() => setConfirmBlock(false)}
+        title={`Bloquear o acesso de ${actor?.name || "este usuário"}`}
+        confirmLabel="Confirmar bloqueio"
+        target={{ method: "GET", path: `/users/${entry.userId}/impact` }}
+        onConfirm={handleBlock}
+      />
+      {reversible && entry.entityId ? (
+        <ConfirmAction
+          open={confirmRevert}
+          onClose={() => setConfirmRevert(false)}
+          title={reversible.label}
+          confirmLabel="Confirmar"
+          target={{ method: "GET", path: reversible.impactPath(entry.entityId) }}
+          onConfirm={handleRevert}
+        />
+      ) : null}
     </Modal>
   );
 }

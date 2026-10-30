@@ -15,6 +15,7 @@ import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import { useRouter } from "next/navigation";
+import ConfirmAction from "@/components/molecules/ConfirmAction/ConfirmAction";
 import { listPurchaseOrders, getPurchaseOrder, confirmGoodsReceipt, listGoodsReceipts, listDiscrepancies, resolveDiscrepancy, evaluateSupplier, listSupplierEvaluations, cancelPurchaseOrder } from "@/lib/api/procurement";
 import { listInventoryLocations } from "@/lib/api/inventory";
 import { formatBRL, formatDateTime, formatQuantity, toNumber } from "@/lib/format";
@@ -80,6 +81,7 @@ export default function PedidosDeCompraPage() {
   useEffect(() => { setCanApprove(hasPermission("procurement:approve")); }, []);
   const [busyCancelId, setBusyCancelId] = useState(null);
   const [cancelResult, setCancelResult] = useState(null); // { order, items, discrepancies }
+  const [cancelTarget, setCancelTarget] = useState(null); // { row, pendingItems }
   const cancelReasonRef = useRef("");
   const rejectReasonRef = useRef("");
 
@@ -199,49 +201,18 @@ export default function PedidosDeCompraPage() {
     }
     const pendingItems = (full.items || []).filter((it) => toNumber(it.receivedQuantity) < toNumber(it.quantity));
     cancelReasonRef.current = "";
-    const ok = await confirm({
-      title: "Cancelar pedido de compra?",
-      tone: "danger",
-      confirmLabel: "Cancelar pedido",
-      cancelLabel: "Voltar",
-      message: (
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)" }}>
-          <p style={{ margin: 0 }}>
-            O pedido de <strong>{row.supplierPersonName || "fornecedor"}</strong> ({formatBRL(row.committedAmount)} comprometidos) será
-            marcado como <strong>Cancelado</strong> e não poderá mais receber material. Esta ação não pode ser desfeita.
-          </p>
-          {pendingItems.length > 0 ? (
-            <Alert tone="warning" title="Saldo que não vai mais chegar">
-              <ul style={{ margin: "4px 0 0", paddingLeft: 18 }}>
-                {pendingItems.map((it) => (
-                  <li key={it.id}>
-                    {it.description}: pedido {formatQuantity(it.quantity)}, recebido {formatQuantity(it.receivedQuantity)} — falta{" "}
-                    {formatQuantity(toNumber(it.quantity) - toNumber(it.receivedQuantity))}
-                  </li>
-                ))}
-              </ul>
-              <div style={{ marginTop: 6 }}>
-                Para itens que já tiveram recebimento parcial, uma divergência <strong>Saldo não recebido</strong> é aberta
-                automaticamente como registro da compensação. O que já foi recebido/lançado no Financeiro não é estornado aqui.
-              </div>
-            </Alert>
-          ) : (
-            <Alert tone="info">Todos os itens já foram recebidos — nenhum saldo pendente será registrado.</Alert>
-          )}
-          <FormField label="Motivo do cancelamento (opcional — fica registrado na auditoria)">
-            <Input defaultValue="" maxLength={500} onChange={(e) => { cancelReasonRef.current = e.target.value; }} placeholder="Ex.: fornecedor não vai entregar o restante" />
-          </FormField>
-        </div>
-      ),
-    });
-    if (!ok) return;
+    // M9-D852 (linha 3): o cancelamento passa pelo ConfirmAction (impacto calculado pelo servidor + "Entendi o impacto"); o texto e o motivo do pedido ficam acima do impacto.
+    setCancelTarget({ row, pendingItems });
+  }
+
+  async function handleCancelConfirmed(confirmation) {
+    const { row, pendingItems } = cancelTarget;
     setBusyCancelId(row.id);
     try {
-      const result = await cancelPurchaseOrder(row.id, cancelReasonRef.current.trim());
+      const result = await cancelPurchaseOrder(row.id, cancelReasonRef.current.trim(), confirmation);
       setCancelResult({ order: { ...row, ...(result?.order || {}) }, items: pendingItems, discrepancies: result?.discrepancies || [] });
+      setCancelTarget(null);
       load();
-    } catch (err) {
-      setActionError(err?.message || "Não foi possível cancelar o pedido de compra.");
     } finally {
       setBusyCancelId(null);
     }
@@ -549,6 +520,46 @@ export default function PedidosDeCompraPage() {
         ) : null}
       </Modal>
 
+            {cancelTarget ? (
+        <ConfirmAction
+          open
+          onClose={() => setCancelTarget(null)}
+          title="Cancelar pedido de compra?"
+          confirmLabel="Cancelar pedido"
+          cancelLabel="Voltar"
+          target={{ method: "GET", path: `/procurement/purchase-orders/${cancelTarget.row.id}/impact` }}
+          onConfirm={handleCancelConfirmed}
+        >
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)" }}>
+          <p style={{ margin: 0 }}>
+            O pedido de <strong>{cancelTarget.row.supplierPersonName || "fornecedor"}</strong> ({formatBRL(cancelTarget.row.committedAmount)} comprometidos) será
+            marcado como <strong>Cancelado</strong> e não poderá mais receber material. Esta ação não pode ser desfeita.
+          </p>
+          {cancelTarget.pendingItems.length > 0 ? (
+            <Alert tone="warning" title="Saldo que não vai mais chegar">
+              <ul style={{ margin: "4px 0 0", paddingLeft: 18 }}>
+                {cancelTarget.pendingItems.map((it) => (
+                  <li key={it.id}>
+                    {it.description}: pedido {formatQuantity(it.quantity)}, recebido {formatQuantity(it.receivedQuantity)} — falta{" "}
+                    {formatQuantity(toNumber(it.quantity) - toNumber(it.receivedQuantity))}
+                  </li>
+                ))}
+              </ul>
+              <div style={{ marginTop: 6 }}>
+                Para itens que já tiveram recebimento parcial, uma divergência <strong>Saldo não recebido</strong> é aberta
+                automaticamente como registro da compensação. O que já foi recebido/lançado no Financeiro não é estornado aqui.
+              </div>
+            </Alert>
+          ) : (
+            <Alert tone="info">Todos os itens já foram recebidos — nenhum saldo pendente será registrado.</Alert>
+          )}
+          <FormField label="Motivo do cancelamento (opcional — fica registrado na auditoria)">
+            <Input defaultValue="" maxLength={500} onChange={(e) => { cancelReasonRef.current = e.target.value; }} placeholder="Ex.: fornecedor não vai entregar o restante" />
+          </FormField>
+        </div>
+        </ConfirmAction>
+      ) : null}
       <ConfirmDialog />
     </AppShell>
   );

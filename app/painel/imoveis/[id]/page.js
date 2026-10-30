@@ -13,6 +13,7 @@ import Input from "@/components/atoms/Input/Input";
 import FormField from "@/components/molecules/FormField/FormField";
 import Card from "@/components/molecules/Card/Card";
 import Modal from "@/components/organisms/Modal/Modal";
+import ConfirmAction from "@/components/molecules/ConfirmAction/ConfirmAction";
 import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import PriceHistoryTimeline from "@/components/molecules/PriceHistoryTimeline/PriceHistoryTimeline";
@@ -67,8 +68,6 @@ function hashCode(str = "") {
 export default function PropertyDetailPage({ params }) {
   const router = useRouter();
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [editOpen, setEditOpen] = useState(false);
 
   const [property, setProperty] = useState(null);
@@ -208,16 +207,10 @@ export default function PropertyDetailPage({ params }) {
     );
   }
 
-  async function handleDelete() {
-    setDeleting(true);
-    setActionError("");
-    try {
-      await deleteProperty(property.id);
-      router.push("/painel/imoveis");
-    } catch (err) {
-      setActionError(err?.message || "Não foi possível excluir o imóvel.");
-      setDeleting(false);
-    }
+  // M9-D852 (linha 4): a exclusão passa pelo ConfirmAction (impacto calculado pelo servidor + "Entendi o impacto").
+  async function handleDelete(confirmation) {
+    await deleteProperty(property.id, confirmation);
+    router.push("/painel/imoveis");
   }
 
   function handleConfirmEdit() {
@@ -762,50 +755,14 @@ export default function PropertyDetailPage({ params }) {
         </div>
       ) : null}
 
-      <Modal
+      <ConfirmAction
         open={deleteOpen}
-        onClose={() => {
-          setDeleteOpen(false);
-          setDeleteConfirmText("");
-        }}
+        onClose={() => setDeleteOpen(false)}
         title="Excluir imóvel"
-        footer={
-          <>
-            <Button
-              variant="secondary"
-              onClick={() => {
-                setDeleteOpen(false);
-                setDeleteConfirmText("");
-              }}
-            >
-              Cancelar
-            </Button>
-            <Button
-              variant="danger"
-              onClick={handleDelete}
-              loading={deleting}
-              disabled={deleteConfirmText.trim() !== property.name}
-            >
-              Excluir imóvel
-            </Button>
-          </>
-        }
-      >
-        <p className={styles.description}>
-          Tem certeza que deseja excluir <strong>{property.name}</strong>? Esta ação não pode ser
-          desfeita.
-        </p>
-        <p className={styles.deleteConfirmLabel}>
-          Digite <strong>{property.name}</strong> para confirmar:
-        </p>
-        <input
-          className={styles.deleteConfirmInput}
-          value={deleteConfirmText}
-          onChange={(e) => setDeleteConfirmText(e.target.value)}
-          placeholder={property.name}
-          autoFocus
-        />
-      </Modal>
+        confirmLabel="Excluir imóvel"
+        target={{ method: "GET", path: `/properties/${property.id}/impact` }}
+        onConfirm={handleDelete}
+      />
 
       <Modal
         open={editOpen}

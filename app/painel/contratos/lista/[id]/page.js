@@ -13,6 +13,7 @@ import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import Avatar from "@/components/atoms/Avatar/Avatar";
 import Modal from "@/components/organisms/Modal/Modal";
+import ConfirmAction from "@/components/molecules/ConfirmAction/ConfirmAction";
 import FileViewerModal from "@/components/organisms/FileViewerModal/FileViewerModal";
 import FormField from "@/components/molecules/FormField/FormField";
 import Input from "@/components/atoms/Input/Input";
@@ -121,6 +122,8 @@ export default function ContratoDetailPage({ params }) {
   // GAP CORRIGIDO (varredura completa do Marco 5, 12/10/2026): suspender/reativar/encerrar/fechar
   // contrato (Anexo I "5. Estado do contrato") — backend já existia, tela nunca expunha.
   const [stateActionModal, setStateActionModal] = useState(null); // { action, label, tone }
+  // M9-D852 (linha 1 do inventário): cancelar e rescindir passam pela confirmação com impacto (ConfirmAction); o servidor calcula o impacto.
+  const [criticalAction, setCriticalAction] = useState(null); // "cancel" | "terminate"
   const [stateActionReason, setStateActionReason] = useState("");
   const [stateActionBusy, setStateActionBusy] = useState(false);
   const [stateActionError, setStateActionError] = useState("");
@@ -214,31 +217,27 @@ export default function ContratoDetailPage({ params }) {
     }
   }
 
-  async function handleCancel() {
-    const ok = await confirm({
-      title: "Cancelar este contrato?",
-      message: "O contrato será cancelado definitivamente. Esta ação não pode ser desfeita.",
-      confirmLabel: "Cancelar contrato",
-      tone: "danger",
-    });
-    if (!ok) return;
+  function handleCancel() {
     setActionError("");
-    setBusy(true);
-    try {
-      const updated = await transitionContract(contract.id, "CANCELLED");
+    setCriticalAction("cancel");
+  }
+
+  async function handleCriticalConfirm(confirmation) {
+    if (criticalAction === "cancel") {
+      const updated = await transitionContract(contract.id, "CANCELLED", confirmation);
       setContract(updated);
       setNotice({ tone: "danger", text: "Contrato cancelado." });
-    } catch (err) {
-      setActionError(err.message || "Erro ao cancelar contrato.");
-    } finally {
-      setBusy(false);
+    } else {
+      const updated = await terminateContract(contract.id, confirmation.justification, confirmation);
+      setContract(updated);
+      setNotice({ tone: "info", text: 'Contrato rescindido ("TERMINATED").' });
     }
+    setCriticalAction(null);
   }
 
   const STATE_ACTIONS = {
     suspend: { fn: suspendContract, label: "Suspender contrato", confirmLabel: "Suspender", successText: 'Contrato suspenso ("SUSPENDED").', tone: "danger" },
     reactivate: { fn: reactivateContract, label: "Reativar contrato", confirmLabel: "Reativar", successText: 'Contrato reativado ("ACTIVE").', tone: "success" },
-    terminate: { fn: terminateContract, label: "Rescindir contrato", confirmLabel: "Rescindir", successText: 'Contrato rescindido ("TERMINATED").', tone: "danger" },
     close: { fn: closeContract, label: "Encerrar contrato", confirmLabel: "Encerrar", successText: 'Contrato encerrado ("CLOSED").', tone: "success" },
   };
 
@@ -466,7 +465,7 @@ export default function ContratoDetailPage({ params }) {
               <Button variant="secondary" onClick={() => openStateActionModal("reactivate")} disabled={busy}><Icon name="check" size={16} /> Reativar</Button>
             ) : null}
             {contract.status === "ACTIVE" || contract.status === "SUSPENDED" ? (
-              <Button variant="secondary" onClick={() => openStateActionModal("terminate")} disabled={busy}><Icon name="ban" size={16} /> Rescindir</Button>
+              <Button variant="secondary" onClick={() => { setActionError(""); setCriticalAction("terminate"); }} disabled={busy}><Icon name="ban" size={16} /> Rescindir</Button>
             ) : null}
             {contract.status === "TERMINATED" ? (
               <Button onClick={() => openStateActionModal("close")} disabled={busy}><Icon name="check" size={16} /> Encerrar</Button>
@@ -857,6 +856,15 @@ export default function ContratoDetailPage({ params }) {
         onClose={() => setViewerFile(null)}
         file={viewerFile}
         fileId={viewerFile?.id}
+      />
+
+      <ConfirmAction
+        open={criticalAction !== null}
+        onClose={() => setCriticalAction(null)}
+        title={criticalAction === "cancel" ? "Cancelar contrato" : "Rescindir contrato"}
+        confirmLabel={criticalAction === "cancel" ? "Cancelar contrato" : "Rescindir"}
+        target={{ method: "GET", path: `/legal/contracts/${contract.id}/impact${criticalAction === "cancel" ? "?targetStatus=CANCELLED" : ""}` }}
+        onConfirm={handleCriticalConfirm}
       />
 
       <ConfirmDialog />

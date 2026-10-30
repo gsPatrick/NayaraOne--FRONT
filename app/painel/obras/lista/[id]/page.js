@@ -9,6 +9,7 @@ import Button from "@/components/atoms/Button/Button";
 import Badge from "@/components/atoms/Badge/Badge";
 import Icon from "@/components/atoms/Icon/Icon";
 import Modal from "@/components/organisms/Modal/Modal";
+import ConfirmAction from "@/components/molecules/ConfirmAction/ConfirmAction";
 import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import FormField from "@/components/molecules/FormField/FormField";
@@ -232,6 +233,13 @@ export default function ObraDetalhePage({ params }) {
     } finally {
       setBusy(false);
     }
+  }
+
+  // M9-D852 (linha 7): cancelar a obra (transição CANCELLED) passa pelo ConfirmAction com impacto e código digitado.
+  async function handleCancelProject(confirmation) {
+    const updated = await transitionProject(project.id, "CANCELLED", confirmation);
+    setProject(updated);
+    setCancelConfirmOpen(false);
   }
 
   async function handleDelete() {
@@ -845,28 +853,15 @@ export default function ObraDetalhePage({ params }) {
         <p>Tem certeza que deseja excluir a obra <strong>{project.name}</strong>? Esta ação não pode ser desfeita.</p>
       </Modal>
 
-      <Modal
+      <ConfirmAction
         open={cancelConfirmOpen}
         onClose={() => setCancelConfirmOpen(false)}
         title="Cancelar obra"
-        footer={
-          <>
-            <Button variant="secondary" onClick={() => setCancelConfirmOpen(false)}>Voltar</Button>
-            <Button
-              variant="danger"
-              loading={busy}
-              onClick={async () => {
-                await handleAdvanceStatus("CANCELLED");
-                setCancelConfirmOpen(false);
-              }}
-            >
-              Cancelar obra
-            </Button>
-          </>
-        }
-      >
-        <p>Tem certeza que deseja cancelar a obra <strong>{project.name}</strong>? Esta ação não pode ser desfeita.</p>
-      </Modal>
+        confirmLabel="Cancelar obra"
+        cancelLabel="Voltar"
+        target={{ method: "GET", path: `/construction/projects/${project.id}/impact` }}
+        onConfirm={handleCancelProject}
+      />
 
       <Modal
         open={stageOpen}

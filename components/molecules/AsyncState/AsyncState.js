@@ -6,6 +6,7 @@ import Button from "@/components/atoms/Button/Button";
 import Spinner from "@/components/atoms/Spinner/Spinner";
 import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
+import SupportCode from "@/components/molecules/SupportCode/SupportCode";
 import { UI_STATE, fieldErrorsOf, missingPermissionOf } from "@/lib/asyncState/states";
 import { MESSAGES, genericErrorText } from "@/lib/asyncState/messages";
 import { buildLoginUrl } from "@/lib/auth/returnTo";
@@ -101,7 +102,8 @@ export default function AsyncState({ result, onRetry, children, emptyTitle, empt
     case UI_STATE.RETRY:
       return (
         <div data-ui-state={UI_STATE.RETRY}>
-          <Alert tone="danger" title={MESSAGES.retryTitle}>{(error && error.message) || genericErrorText(traceId)}{traceId ? ` Código de suporte: ${traceId}.` : ""}</Alert>
+          <Alert tone="danger" title={MESSAGES.retryTitle}>{(error && error.message) || genericErrorText(traceId)}</Alert>
+          <SupportCode traceId={traceId} />
           <div className={styles.actions}>{retry ? <Button size="sm" onClick={retry}>{MESSAGES.retryButton}</Button> : null}</div>
         </div>
       );
@@ -115,7 +117,12 @@ export default function AsyncState({ result, onRetry, children, emptyTitle, empt
     case UI_STATE.SESSION_EXPIRED:
       return <SessionExpired />;
     case UI_STATE.ERROR:
-      return <Alert tone="danger">{genericErrorText(traceId)}</Alert>;
+      return (
+        <div data-ui-state={UI_STATE.ERROR}>
+          <Alert tone="danger">{genericErrorText(traceId)}</Alert>
+          <SupportCode traceId={traceId} />
+        </div>
+      );
     default:
       return null;
   }

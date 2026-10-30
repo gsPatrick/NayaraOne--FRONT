@@ -7,6 +7,7 @@ import Card from "@/components/molecules/Card/Card";
 import Badge from "@/components/atoms/Badge/Badge";
 import Icon from "@/components/atoms/Icon/Icon";
 import Button from "@/components/atoms/Button/Button";
+import ConfirmAction from "@/components/molecules/ConfirmAction/ConfirmAction";
 import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
@@ -81,6 +82,7 @@ export default function LancamentoDetailPage({ params }) {
   const [notFoundFlag, setNotFoundFlag] = useState(false);
   const [notice, setNotice] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [reverseOpen, setReverseOpen] = useState(false);
   const [mfaOpen, setMfaOpen] = useState(false);
   const [mfaAction, setMfaAction] = useState("settle");
   const [partialOpen, setPartialOpen] = useState(false);
@@ -397,22 +399,19 @@ export default function LancamentoDetailPage({ params }) {
     }
   }
 
-  async function handleReverse() {
-    const ok = await confirm({
-      title: "Estornar este lançamento?",
-      message: `Um lançamento compensatório será criado para reverter "${humanizeText(entry?.description) || ""}" (${formatBRL(entry?.amount)}). O lançamento original nunca é editado (ledger imutável) — esta ação não pode ser desfeita.`,
-      confirmLabel: "Estornar",
-      tone: "danger",
-    });
-    if (!ok) return;
+  // M9-D852 (linha 2): o estorno passa pelo ConfirmAction (impacto, código digitado e justificativa).
+  function handleReverse() {
+    setReverseOpen(true);
+  }
+
+  async function handleReverseConfirmed(confirmation) {
     setBusy(true);
     setNotice(null);
     try {
-      const result = await reverseFinancialEntry(entry.id);
+      const result = await reverseFinancialEntry(entry.id, confirmation.justification, confirmation);
       setEntry(result.original || result);
       setNotice({ tone: "info", text: "Lançamento estornado — um lançamento compensatório foi criado (o original nunca é editado, ledger imutável)." });
-    } catch (err) {
-      setNotice({ tone: "danger", text: friendlyFinanceError(err, "Não foi possível estornar o lançamento.") });
+      setReverseOpen(false);
     } finally {
       setBusy(false);
     }
@@ -731,3 +730,11 @@ export default function LancamentoDetailPage({ params }) {
     </AppShell>
   );
 }
+      <ConfirmAction
+        open={reverseOpen}
+        onClose={() => setReverseOpen(false)}
+        title="Estornar este lançamento?"
+        confirmLabel="Estornar"
+        target={{ method: "GET", path: `/finance/entries/${entry?.id}/impact` }}
+        onConfirm={handleReverseConfirmed}
+      />

@@ -6,6 +6,7 @@ import Card from "@/components/molecules/Card/Card";
 import Badge from "@/components/atoms/Badge/Badge";
 import Icon from "@/components/atoms/Icon/Icon";
 import Button from "@/components/atoms/Button/Button";
+import ConfirmAction from "@/components/molecules/ConfirmAction/ConfirmAction";
 import Alert from "@/components/molecules/Alert/Alert";
 import { SkeletonList } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import StatTile from "@/components/molecules/StatTile/StatTile";
@@ -95,6 +96,7 @@ export default function IntencoesPagamentoPage() {
   const [loadError, setLoadError] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [notice, setNotice] = useState(null);
+  const [cancelTarget, setCancelTarget] = useState(null);
   const [busyId, setBusyId] = useState(null);
   const [rowResult, setRowResult] = useState({});
   // B2 — resolver a incerteza de um envio ao banco exige motivo (e só dá como falha com
@@ -250,21 +252,19 @@ export default function IntencoesPagamentoPage() {
     }
   }
 
-  async function handleCancel(intent) {
-    const ok = await confirm({
-      title: "Cancelar esta intenção de pagamento?",
-      message: "A intenção será cancelada e não poderá mais ser aprovada nem executada.",
-      confirmLabel: "Cancelar intenção",
-      tone: "danger",
-    });
-    if (!ok) return;
+  // M9-D852 (linha 2): cancelar o pagamento passa pelo ConfirmAction (impacto, código digitado e justificativa).
+  function handleCancel(intent) {
+    setCancelTarget(intent);
+  }
+
+  async function handleCancelConfirmed(confirmation) {
+    const intent = cancelTarget;
     setBusyId(intent.id);
     try {
-      const updated = await cancelPaymentIntent(intent.id, "Cancelada pelo usuário na tela de intenções de pagamento.");
+      const updated = await cancelPaymentIntent(intent.id, confirmation.justification, confirmation);
       setIntents((prev) => prev.map((i) => (i.id === intent.id ? updated : i)));
+      setCancelTarget(null);
       showNotice("info", "Intenção cancelada.");
-    } catch (err) {
-      showNotice("danger", msg(err, "Não foi possível cancelar."));
     } finally {
       setBusyId(null);
     }
@@ -414,6 +414,16 @@ export default function IntencoesPagamentoPage() {
       </StickyActionBar>
 
       <ConfirmDialog />
+      {cancelTarget ? (
+        <ConfirmAction
+          open
+          onClose={() => setCancelTarget(null)}
+          title="Cancelar esta intenção de pagamento?"
+          confirmLabel="Cancelar intenção"
+          target={{ method: "GET", path: `/finance/payment-intents/${cancelTarget.id}/impact` }}
+          onConfirm={handleCancelConfirmed}
+        />
+      ) : null}
     </AppShell>
   );
 }
