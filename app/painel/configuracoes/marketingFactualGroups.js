@@ -19,6 +19,13 @@ export const MARKETING_FACTUAL_GROUPS = [
         helper: "Formato: característica: sinônimo, sinônimo; outra característica: sinônimo. Só vale característica da lista de características publicáveis.",
       },
       {
+        key: "marketing.factual.termos_internos",
+        label: "Termos que indicam ocorrência ou anotação interna",
+        type: "text",
+        defaultValue: "ocorrência, reclamação, anotação interna, observação interna, nota interna, caso aberto, não conformidade",
+        helper: "Termos separados por vírgula. Texto que cita qualquer um deles não segue: ocorrência e reclamação interna nunca vão a canal público.",
+      },
+      {
         key: "marketing.factual.telefones_empresa",
         label: "Telefones da empresa que o texto pode citar",
         type: "text",
