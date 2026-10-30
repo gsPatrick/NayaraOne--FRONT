@@ -21,6 +21,7 @@ import { MARKETING_SEGMENTACAO_GROUPS } from "./marketingSegmentacaoGroups";
 import { MARKETING_ATRIBUICAO_GROUPS } from "./marketingAtribuicaoGroups";
 import { MARKETING_CUSTOS_GROUPS } from "./marketingCustosGroups";
 import { MARKETING_CANAIS_GROUPS } from "./marketingCanaisGroups";
+import { MARKETING_SEO_BLOG_GROUPS } from "./marketingSeoBlogGroups";
 
 // Parâmetros de Marketing que o administrador controla (Marco 9, bloco C). Cada demanda do bloco acrescenta as suas
 // entradas aqui, sempre com o padrão do catálogo (Maturacao/demandas/parametros.csv). A API é a fonte da validação
@@ -36,6 +37,7 @@ const MARKETING_GROUPS = [
   ...MARKETING_ATRIBUICAO_GROUPS,
   ...MARKETING_CUSTOS_GROUPS,
   ...MARKETING_CANAIS_GROUPS,
+  ...MARKETING_SEO_BLOG_GROUPS,
   {
     title: "Mensagem em massa",
     subtitle: "Limites de destinatários por disparo. Acima do primeiro limite, só quem tem a permissão de envio em massa dispara; acima do teto absoluto, o disparo é sempre recusado.",
@@ -202,8 +204,9 @@ export default function MarketingTab() {
         const value = values[field.key];
         if (field.type === "integer") {
           const numeric = toNumber(value);
-          if (Number.isNaN(numeric) || !Number.isInteger(numeric) || numeric < 1) {
-            throw new Error(`Informe um número inteiro maior que zero em "${field.label}".`);
+          const minimum = field.min ?? 1;
+          if (Number.isNaN(numeric) || !Number.isInteger(numeric) || numeric < minimum) {
+            throw new Error(minimum === 0 ? `Informe um número inteiro igual ou maior que zero em "${field.label}".` : `Informe um número inteiro maior que zero em "${field.label}".`);
           }
           await updateSetting(field.key, numeric);
         } else if (field.type === "boolean") {
