@@ -1031,6 +1031,7 @@ function IntegracoesTab() {
                 <option value="porto_seguro">Porto Seguro</option>
                 <option value="junto_seguros">Junto Seguros</option>
                 <option value="yelum">Yelum Seguros</option>
+                <option value="manual">Fluxo manual (seguradora sem API)</option>
               </Select>
             </FormField>
 
@@ -1078,6 +1079,17 @@ function IntegracoesTab() {
                   </Alert>
                 </div>
               </>
+            ) : null}
+
+            {values.insuranceProvider === "manual" ? (
+              <div className="formGridFull">
+                <Alert tone="info" title="Seguradora sem API: o trabalho vira tarefa">
+                  Cotar e emitir não chamam a seguradora. O sistema abre uma tarefa para uma pessoa (anexar a
+                  cotação recebida por e-mail ou portal, registrar o número da proposta e anexar a apólice) e,
+                  ao concluir cada uma, segue o mesmo caminho e gera os mesmos avisos que a integração por API.
+                  O prazo das tarefas e os marcos de vencimento ficam em Registro de integrações.
+                </Alert>
+              </div>
             ) : null}
 
             {values.insuranceProvider === "junto_seguros" ? (

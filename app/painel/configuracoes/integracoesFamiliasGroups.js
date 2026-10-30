@@ -19,4 +19,16 @@ export const EMAIL_GROUP = {
   ],
 };
 
-export const FAMILIAS_GROUPS = [EMAIL_GROUP];
+export const SEGUROS_GROUP = {
+  title: "Seguradoras: vencimento, renovação e fluxo manual",
+  subtitle:
+    "Cotação, proposta e apólice passam pela seguradora escolhida em Integrações (ou pelo fluxo manual, quando ela não tem API: o trabalho vira tarefa para uma pessoa, com o mesmo resultado e os mesmos avisos). Cada apólice vigente avisa o vencimento nos prazos abaixo e pede a cotação de renovação pela mesma seguradora.",
+  fields: [
+    { key: "integration.insurance.renewal_alert_days", label: "Avisos de vencimento da apólice (dias antes do fim da vigência, separados por vírgula)", type: "text", defaultValue: "60,30,15,7", helper: "De 1 a 10 prazos, de 1 a 730 dias. Cada prazo gera um aviso por apólice e vigência, sem repetir. O padrão do livro é 60, 30, 15 e 7 dias." },
+    { key: "integration.insurance.renewal_quote_enabled", label: "Pedir sozinho a cotação de renovação", type: "boolean", defaultValue: true, helper: "Ligado, quando a apólice chega ao prazo abaixo o sistema pede a nova cotação à mesma seguradora (ou abre a tarefa, no fluxo manual) e avisa a pessoa responsável." },
+    { key: "integration.insurance.renewal_quote_days", label: "Dias antes do fim da vigência para pedir a cotação de renovação", type: "integer", defaultValue: 30, helper: "De 1 a 365. Vale a primeira faixa de aviso que chegar a esse prazo." },
+    { key: "integration.insurance.manual_task_due_days", label: "Prazo das tarefas do fluxo manual (dias)", type: "integer", defaultValue: 3, helper: "De 1 a 60. Prazo para anexar a cotação, registrar a proposta ou anexar a apólice quando a seguradora não tem API." },
+  ],
+};
+
+export const FAMILIAS_GROUPS = [EMAIL_GROUP, SEGUROS_GROUP];
