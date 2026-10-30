@@ -11,6 +11,20 @@ export const MARKETING_RUNNER_GROUPS = [
         defaultValue: 300,
         helper: "Número inteiro de 1 a 86400.",
       },
+      {
+        key: "marketing.runner.acao_timeout_s",
+        label: "Tempo máximo de cada ação da automação (segundos)",
+        type: "integer",
+        defaultValue: 30,
+        helper: "Número inteiro de 1 a 3600. Uma ação que passa deste tempo fica com resultado desconhecido e não é repetida sem conferir antes.",
+      },
+      {
+        key: "marketing.runner.canais_automaticos",
+        label: "Ordem dos canais quando a ação de envio pede canal automático",
+        type: "text",
+        defaultValue: "WHATSAPP, EMAIL",
+        helper: "Canais separados por vírgula (WHATSAPP, EMAIL). O primeiro em que a pessoa tem contato é o usado; se não tiver nenhum, a automação não envia.",
+      },
     ],
   },
 ];
