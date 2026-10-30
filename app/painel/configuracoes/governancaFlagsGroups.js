@@ -21,4 +21,15 @@ export const GOVERNANCA_FLAGS_GROUPS = [
       { key: "governanca.flags.expiracao_lembrete_diario", label: "Avisar o responsável todo dia enquanto a flag vencida continuar no registro", type: "boolean", defaultValue: true },
     ],
   },
+  {
+    title: "Kill switch: teste periódico",
+    subtitle:
+      "Todo kill switch crítico é acionado de verdade, em homologação ou desenvolvimento (nunca em produção), a cada período, e o resultado fica registrado. O livro pede teste periódico sem dizer o prazo: o padrão é 30 dias. Sem teste válido dentro do prazo, o responsável recebe alerta crítico; o teste que falha marca o switch como não verificado e se repete todo dia no horário abaixo até passar.",
+    fields: [
+      { key: "governanca.flags.kill_teste_dias", label: "Periodicidade do teste do kill switch (dias)", type: "integer", defaultValue: 30, min: 1, max: 365 },
+      { key: "governanca.flags.kill_teste_hora", label: "Hora do job de teste (Brasília)", type: "integer", defaultValue: 5, min: 0, max: 23 },
+      { key: "governanca.flags.kill_teste_minuto", label: "Minuto do job de teste", type: "integer", defaultValue: 0, min: 0, max: 59 },
+      { key: "governanca.flags.kill_teste_tolerancia_min", label: "Minutos de um teste em andamento antes de ser dado como interrompido", type: "integer", defaultValue: 10, min: 1, max: 1440, helper: "Passado esse tempo, a execução seguinte devolve o switch ao estado anterior." },
+    ],
+  },
 ];
