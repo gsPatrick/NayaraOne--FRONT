@@ -20,6 +20,7 @@ import { SAUDE_GROUPS } from "./integracoesSaudeGroups";
 import { CONTINGENCIA_GROUPS } from "./integracoesContingenciaGroups";
 import { ACOES_GROUPS } from "./integracoesAcoesGroups";
 import { WEBHOOK_GROUPS } from "./integracoesWebhookGroups";
+import { FAMILIAS_GROUPS } from "./integracoesFamiliasGroups";
 
 // Parâmetros do registro de integrações (Marco 9, M9-D200 e seguintes do bloco B) que o administrador controla.
 // A API valida (SETTINGS_SCHEMA); o padrão mostrado é o do catálogo (Maturacao/demandas/parametros.csv) e só vale
@@ -230,6 +231,8 @@ REGISTRO_GROUPS.push(...CONTINGENCIA_GROUPS);
 REGISTRO_GROUPS.push(...ACOES_GROUPS);
 // Rota pública de webhooks (M9-D211): alias curto, limite por minuto e tamanho do canal.
 REGISTRO_GROUPS.push(...WEBHOOK_GROUPS);
+// E-mail de saída, seguradoras e NFS-e (M9-D234, M9-D238, M9-D241): grupos no arquivo ao lado.
+REGISTRO_GROUPS.push(...FAMILIAS_GROUPS);
 
 // Segurança das integrações (M9-D248, M9-D244, M9-D245): grupos no arquivo ao lado para esta aba não crescer sem limite.
 REGISTRO_GROUPS.push(...INTEGRACOES_SEGURANCA_GROUPS);
