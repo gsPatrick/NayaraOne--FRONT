@@ -65,6 +65,15 @@ export const ENVIO_GROUPS = [
     ],
   },
   {
+    title: "Portais imobiliários: anúncios e status",
+    subtitle:
+      "Cada portal é uma conexão com o próprio formato de anúncio: o sistema converte o imóvel para o formato do portal, guarda o código do anúncio e confere o status dele no portal de tempos em tempos. O que o portal reprovar aparece no vínculo do imóvel com aquele portal.",
+    fields: [
+      { key: "integration.portal.reconcile_interval_min", label: "Intervalo da leitura de status dos anúncios nos portais (minutos)", type: "integer", defaultValue: 15, helper: "De 1 a 1440. De quanto em quanto tempo o sistema pergunta a cada portal o status dos anúncios." },
+      { key: "integration.portal.sync_page_size", label: "Anúncios lidos por página a cada rodada", type: "integer", defaultValue: 50, helper: "De 5 a 500. A leitura segue por páginas, retomando do ponto em que parou se for interrompida." },
+    ],
+  },
+  {
     title: "Métricas e eventos de monitoramento",
     subtitle:
       "As métricas e os eventos do sistema (contadores, erros de aplicação com a pilha já sem dado pessoal) saem para o serviço de analytics em segundo plano. Se o serviço estiver fora do ar, o trabalho do ERP não é afetado: o que não sair a tempo é descartado.",
