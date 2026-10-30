@@ -20,4 +20,12 @@ export const CONTINGENCIA_CANAIS_GROUPS = [
       { key: "integration.portal.manual_task_assignee_role", label: "Papel que recebe a tarefa do anúncio pendente no portal", type: "text", defaultValue: "Gerente de Marketing", helper: "Nome do papel. Sem ninguém ativo nele, vale o papel das tarefas manuais da contingência." },
     ],
   },
+  {
+    title: "Banco fora: conferência no internet banking",
+    subtitle:
+      "Com o banco fora, nenhum pagamento é dado como pago: a ordem fica aguardando confirmação do banco. Ao voltar, cada ordem é consultada pela chave de idempotência e pelo extrato antes de qualquer reenvio. Passado o prazo de pendência do banco (o campo horas que um pagamento pode ficar pendente, em Contingência: prazo da fila por modo), uma tarefa vai ao financeiro para conferir no internet banking e localizar a evidência.",
+    fields: [
+      { key: "integration.bank.manual_task_assignee_role", label: "Papel que recebe a tarefa de conferência do pagamento pendente", type: "text", defaultValue: "Financeiro", helper: "Nome do papel. Sem ninguém ativo nele, vale o papel das tarefas manuais da contingência." },
+    ],
+  },
 ];

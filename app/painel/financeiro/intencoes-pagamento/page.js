@@ -371,6 +371,7 @@ export default function IntencoesPagamentoPage() {
                       </div>
                       <div className={styles.rowRight}>
                         <Badge tone={invalidated ? "warning" : STATUS_TONE[intent.status]}>{invalidated ? "Invalidada" : STATUS_LABELS[intent.status] || "Situação não reconhecida"}</Badge>
+                        {!invalidated && intent.statusMessage ? <span className={styles.rowSubtitle}>{intent.statusMessage}</span> : null}
                         {intent.reconciledAt ? <Badge tone="success">Conciliado com o extrato</Badge> : null}
                         {intent.status === "PENDING" ? (
                           <>
