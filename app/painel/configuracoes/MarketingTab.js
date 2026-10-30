@@ -23,6 +23,7 @@ import { MARKETING_CUSTOS_GROUPS } from "./marketingCustosGroups";
 import { MARKETING_CANAIS_GROUPS } from "./marketingCanaisGroups";
 import { MARKETING_SEO_BLOG_GROUPS } from "./marketingSeoBlogGroups";
 import { MARKETING_MENSAGENS_GROUPS } from "./marketingMensagensGroups";
+import { MARKETING_KILLSWITCH_GROUPS } from "./marketingKillSwitchGroups";
 
 // Parâmetros de Marketing que o administrador controla (Marco 9, bloco C). Cada demanda do bloco acrescenta as suas
 // entradas aqui, sempre com o padrão do catálogo (Maturacao/demandas/parametros.csv). A API é a fonte da validação
@@ -40,6 +41,7 @@ const MARKETING_GROUPS = [
   ...MARKETING_CANAIS_GROUPS,
   ...MARKETING_SEO_BLOG_GROUPS,
   ...MARKETING_MENSAGENS_GROUPS,
+  ...MARKETING_KILLSWITCH_GROUPS,
   {
     title: "Mensagem em massa",
     subtitle: "Limites de destinatários por disparo. Acima do primeiro limite, só quem tem a permissão de envio em massa dispara; acima do teto absoluto, o disparo é sempre recusado.",
