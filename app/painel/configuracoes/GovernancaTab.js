@@ -18,6 +18,7 @@ import { GOVERNANCA_BCP_GROUPS } from "./governancaBcpGroups";
 import { GOVERNANCA_API_GROUPS } from "./governancaApiGroups";
 import { GOVERNANCA_FINOPS_GROUPS } from "./governancaFinopsGroups";
 import { GOVERNANCA_FLAGS_GROUPS } from "./governancaFlagsGroups";
+import { GOVERNANCA_RETENCAO_GROUPS } from "./governancaRetencaoGroups";
 
 // Parâmetros de governança que o administrador controla (Marco 9, bloco E/F). Cada demanda do bloco acrescenta as suas
 // entradas aqui, sempre com o padrão do catálogo (Maturacao/demandas/parametros.csv). A API é a fonte da validação
@@ -206,6 +207,7 @@ const GOVERNANCA_GROUPS = [
   ...GOVERNANCA_API_GROUPS,
   ...GOVERNANCA_FINOPS_GROUPS,
   ...GOVERNANCA_FLAGS_GROUPS,
+  ...GOVERNANCA_RETENCAO_GROUPS,
   {
     title: "Permissões padrão por perfil",
     subtitle: "Nomes dos perfis (separados por vírgula) que recebem o pacote de Gestão e o do Financeiro; os demais perfis recebem só a leitura do calendário. Só o administrador recebe as permissões sensíveis.",
