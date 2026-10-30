@@ -128,6 +128,13 @@ export const BI_QUALIDADE_GROUPS = [
         helper: "De 1 a 1.000. Acima de (limite da área x este valor) o dado vencido degrada o indicador e não aparece como atual. Padrão: 4.",
       },
       {
+        key: "analytics.freshness.tolerancia_futuro_minutos",
+        label: "Folga para relógio adiantado da fonte (minutos)",
+        type: "number",
+        defaultValue: 5,
+        helper: "De 0 a 1.440. Se a data da fonte estiver à frente do relógio do sistema por mais que isso, o dado é tratado como inválido (indicador incompleto, sem valor) em vez de aparecer como atualizado. Padrão: 5.",
+      },
+      {
         key: "analytics.freshness.max_minutos.FINANCE",
         label: "Idade máxima dos dados de Financeiro (minutos)",
         type: "number",
