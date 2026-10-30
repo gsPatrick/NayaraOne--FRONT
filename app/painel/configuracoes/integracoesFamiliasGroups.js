@@ -40,4 +40,6 @@ export const NFSE_GROUP = {
   ],
 };
 
-export const FAMILIAS_GROUPS = [EMAIL_GROUP, SEGUROS_GROUP, NFSE_GROUP];
+import { INFRA_GROUPS } from "./integracoesInfraGroups";
+
+export const FAMILIAS_GROUPS = [EMAIL_GROUP, SEGUROS_GROUP, NFSE_GROUP, ...INFRA_GROUPS];
