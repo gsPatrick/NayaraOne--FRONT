@@ -30,6 +30,8 @@ import { formatDateTime, isOverdue } from "@/lib/format";
 import styles from "./page.module.css";
 
 import { lookupFallback } from "@/lib/asyncState/lookup";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 const TYPE_LABELS = { COMPLAINT: "Reclamação", COMPLIMENT: "Elogio", CONFLICT: "Conflito" };
 const SEVERITY_LABELS = { LOW: "Baixa", MEDIUM: "Média", HIGH: "Alta" };
 const SEVERITY_TONE = { LOW: "neutral", MEDIUM: "warning", HIGH: "danger" };
@@ -40,8 +42,6 @@ const OPEN_LIKE = ["OPEN", "IN_PROGRESS"];
 export default function FeedbackPage() {
   const [cases, setCases] = useState([]);
   const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
@@ -53,17 +53,17 @@ export default function FeedbackPage() {
     return users.find((u) => u.id === id)?.name || "Sem responsável definido";
   }
 
-  function load() {
-    setLoading(true);
-    setLoadError("");
-    return listFeedbackCases()
-      .then(setCases)
-      .catch((err) => setLoadError(err?.message || "Não foi possível carregar os casos."))
-      .finally(() => setLoading(false));
-  }
+  // M9-D850: os casos carregam pelo padrão de estados (carregando, 403, sem conexão, tentar de novo); falha nunca vira "nenhum caso".
+  const casesQuery = useAsyncState(
+    async () => {
+      const data = await listFeedbackCases();
+      setCases(data || []);
+      return { cases: data || [] };
+    },
+    { isEmpty: () => false }
+  );
 
   useEffect(() => {
-    load();
     apiFetch("/users")
       .then((u) => setUsers(u || []))
       .catch(lookupFallback("os usuários"));
@@ -122,9 +122,11 @@ export default function FeedbackPage() {
 
   return (
     <AppShell title="Feedback & Reclamações">
-      {loadError ? <Alert tone="danger">{loadError}</Alert> : null}
       {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
 
+      <AsyncState result={casesQuery} loadingLabel="Carregando casos...">
+        {() => (
+          <>
       <div className={styles.grid}>
         <StatTile label="Casos no total" value={cases.length} tone="neutral" icon="mail" />
         <StatTile label="Abertos" value={cases.filter((c) => OPEN_LIKE.includes(c.status)).length} tone="info" icon="clock" />
@@ -150,7 +152,6 @@ export default function FeedbackPage() {
 
         <Table
           rows={filtered}
-          loading={loading}
           emptyMessage="Nenhum caso encontrado."
           columns={[
             { key: "type", label: "Tipo", render: (r) => TYPE_LABELS[r.type] || r.type },
@@ -184,6 +185,9 @@ export default function FeedbackPage() {
           ]}
         />
       </Card>
+          </>
+        )}
+      </AsyncState>
 
       <StickyActionBar>
         <CrmNavMenu />

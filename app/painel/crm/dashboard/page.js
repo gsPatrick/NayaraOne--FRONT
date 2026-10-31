@@ -1,12 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Badge from "@/components/atoms/Badge/Badge";
 import StatTile from "@/components/molecules/StatTile/StatTile";
-import Alert from "@/components/molecules/Alert/Alert";
-import Spinner from "@/components/atoms/Spinner/Spinner";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import Table from "@/components/organisms/Table/Table";
@@ -14,6 +11,8 @@ import CrmNavMenu from "@/components/molecules/CrmNavMenu/CrmNavMenu";
 import { getCrmDashboard, fromApiStage, stageLabelPt, LOST_REASON_LABELS } from "@/lib/api/crm";
 import { STAGES } from "@/lib/mock/opportunities";
 import { formatBRL, formatDateTime } from "@/lib/format";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import styles from "./page.module.css";
 
 const PROPOSAL_STATUS_LABELS = {
@@ -31,36 +30,14 @@ function stageLabel(apiStage) {
 }
 
 export default function CrmDashboardPage() {
-  const [dashboard, setDashboard] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    getCrmDashboard()
-      .then((data) => {
-        if (!cancelled) setDashboard(data);
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar o painel de indicadores.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => { cancelled = true; };
-  }, []);
+  // M9-D850: carregando, vazio real, 403, sem conexão e "tentar de novo" vêm do padrão único de estados.
+  const dashboardQuery = useAsyncState(() => getCrmDashboard(), { key: "crm-dashboard" });
+  const dashboard = dashboardQuery.data;
 
   return (
     <AppShell title="Painel de indicadores">
-      {loadError ? <Alert tone="danger">{loadError}</Alert> : null}
-
-      {loading ? (
-        <Spinner size="lg" />
-      ) : !dashboard ? (
-        <EmptyState icon="chart" title="Sem dados" description="Nenhum indicador disponível." />
-      ) : (
+      <AsyncState result={dashboardQuery} loadingLabel="Carregando indicadores..." emptyTitle="Sem dados" emptyDescription="Nenhum indicador disponível.">
+        {() => (
         <>
           <div className={styles.grid}>
             <StatTile label="Oportunidades no total" value={dashboard.opportunities.total} tone="neutral" icon="chart" />
@@ -181,7 +158,8 @@ export default function CrmDashboardPage() {
 
           <p className={styles.generatedAt}>Gerado em {formatDateTime(dashboard.generatedAt)}</p>
         </>
-      )}
+        )}
+      </AsyncState>
 
       <StickyActionBar>
         <CrmNavMenu />

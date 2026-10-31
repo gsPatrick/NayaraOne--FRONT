@@ -15,6 +15,8 @@ import Alert from "@/components/molecules/Alert/Alert";
 import Table from "@/components/organisms/Table/Table";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import CrmNavMenu from "@/components/molecules/CrmNavMenu/CrmNavMenu";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import {
   listProposals,
   createProposal,
@@ -58,30 +60,23 @@ export default function PropostasPage() {
   const [opportunities, setOpportunities] = useState([]);
   const [properties, setProperties] = useState([]);
   const [people, setPeople] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
   const [statusTarget, setStatusTarget] = useState(null);
 
-  function load() {
-    setLoading(true);
-    setLoadError("");
-    return Promise.all([listProposals(), listOpportunities(), listProperties(), listPeople()])
-      .then(([p, o, props, ppl]) => {
-        setProposals(p);
-        setOpportunities(o);
-        setProperties(props);
-        setPeople(ppl || []);
-      })
-      .catch((err) => setLoadError(err?.message || "Não foi possível carregar as propostas."))
-      .finally(() => setLoading(false));
-  }
-
-  useEffect(() => {
-    load();
-  }, []);
+  // M9-D850: propostas, oportunidades, imóveis e pessoas carregam pelo padrão de estados (carregando, 403, sem conexão, tentar de novo).
+  const loadQuery = useAsyncState(
+    async () => {
+      const [p, o, props, ppl] = await Promise.all([listProposals(), listOpportunities(), listProperties(), listPeople()]);
+      setProposals(p);
+      setOpportunities(o);
+      setProperties(props);
+      setPeople(ppl || []);
+      return { proposals: p };
+    },
+    { isEmpty: () => false }
+  );
 
   const filtered = useMemo(
     () => (statusFilter ? proposals.filter((p) => p.status === statusFilter) : proposals),
@@ -126,9 +121,11 @@ export default function PropostasPage() {
 
   return (
     <AppShell title="Propostas">
-      {loadError ? <Alert tone="danger">{loadError}</Alert> : null}
       {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
 
+      <AsyncState result={loadQuery} loadingLabel="Carregando propostas...">
+        {() => (
+          <>
       <div className={styles.grid}>
         <StatTile label="Total de propostas" value={proposals.length} tone="neutral" icon="signature" />
         <StatTile label="Enviadas" value={proposals.filter((p) => p.status === "SENT").length} tone="info" icon="mail" />
@@ -148,7 +145,6 @@ export default function PropostasPage() {
 
         <Table
           rows={filtered}
-          loading={loading}
           emptyMessage="Nenhuma proposta encontrada."
           columns={[
             { key: "opportunity", label: "Oportunidade", render: (r) => opportunityLabel(r.opportunityId) },
@@ -171,6 +167,9 @@ export default function PropostasPage() {
           ]}
         />
       </Card>
+          </>
+        )}
+      </AsyncState>
 
       <StickyActionBar>
         <CrmNavMenu />

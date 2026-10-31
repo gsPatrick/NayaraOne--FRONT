@@ -35,6 +35,8 @@ import CrmNavMenu from "@/components/molecules/CrmNavMenu/CrmNavMenu";
 import { listProperties } from "@/lib/api/properties";
 import { listPeople } from "@/lib/api/people";
 import { apiFetch } from "@/lib/api/client";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { formatDateTime, isOverdue, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE, dateTimeLocalInputToIso, isoToDateTimeLocalInput } from "@/lib/format";
 import styles from "./page.module.css";
 
@@ -78,8 +80,6 @@ export default function CrmPage() {
   const [createStageKey, setCreateStageKey] = useState(null);
   const [addStageOpen, setAddStageOpen] = useState(false);
   const [newStageName, setNewStageName] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [reasonPrompt, setReasonPrompt] = useState(null); // { itemId, stageKey } | null
 
@@ -87,32 +87,22 @@ export default function CrmPage() {
   const propertyName = (id) => properties.find((p) => p.id === id)?.name || "Sem imóvel vinculado";
   const repName = (id) => users.find((u) => u.id === id)?.name || "Sem responsável definido";
 
-  function loadOpportunities() {
-    setLoading(true);
-    setLoadError("");
-    // FIX (reportado pela cliente 18/09/2026): usuário suspenso podia ser pré-selecionado
-    // como vendedor padrão — agora só busca usuários ACTIVE.
-    return Promise.all([listOpportunities(), listPeople(), listProperties(), apiFetch("/users?status=ACTIVE")])
-      .then(([opps, apiPeople, apiProperties, apiUsers]) => {
-        setOpportunities(opps);
-        setPeople(apiPeople || []);
-        setProperties(apiProperties);
-        setUsers(apiUsers || []);
-      })
-      .catch((err) => setLoadError(err?.message || "Não foi possível carregar o funil de oportunidades."))
-      .finally(() => setLoading(false));
-  }
-
-  useEffect(() => {
-    let cancelled = false;
-    loadOpportunities().then(() => {
-      if (cancelled) return;
-    });
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // M9-D850: o funil carrega pelo padrão de estados (carregando, 403, sem conexão, tentar de novo); falha nunca vira "funil vazio".
+  // FIX (reportado pela cliente 18/09/2026): usuário suspenso podia ser pré-selecionado
+  // como vendedor padrão — agora só busca usuários ACTIVE.
+  const funnelQuery = useAsyncState(
+    async () => {
+      const [opps, apiPeople, apiProperties, apiUsers] = await Promise.all([listOpportunities(), listPeople(), listProperties(), apiFetch("/users?status=ACTIVE")]);
+      setOpportunities(opps);
+      setPeople(apiPeople || []);
+      setProperties(apiProperties);
+      setUsers(apiUsers || []);
+      return { opportunities: opps };
+    },
+    { isEmpty: () => false }
+  );
+  const loading = funnelQuery.status === "LOADING";
+  const funnelFailed = !["LOADING", "CONTENT", "EMPTY"].includes(funnelQuery.status);
 
   function openCreateForStage(stageKey) {
     setCreateStageKey(stageKey);
@@ -251,11 +241,12 @@ export default function CrmPage() {
         </div>
       </div>
 
-      {loadError ? <Alert tone="danger" title="Não foi possível carregar o funil">{loadError}</Alert> : null}
       {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
 
       {loading ? (
         <SkeletonKanban />
+      ) : funnelFailed ? (
+        <AsyncState result={funnelQuery} />
       ) : (
         <KanbanBoard
           columns={stages}
