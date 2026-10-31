@@ -51,4 +51,38 @@ export const GOVERNANCA_MIGRACAO_GROUPS = [
       { key: "migracao.rollback.itens_por_pagina", label: "Operações listadas por página no relatório de rollback", type: "integer", defaultValue: 100, min: 1, max: 1000, helper: "Quando você abre um tipo de operação no relatório, é este o número de operações mostradas de cada vez. Os tipos, as compensações e os responsáveis são cadastrados pela API do plano de rollback." },
     ],
   },
+  {
+    title: "Migração do sistema antigo: relógios",
+    subtitle:
+      "Antes de cada lote o sistema confere se os relógios do servidor da aplicação, do banco de destino, da internet (NTP) e do sistema antigo estão alinhados. Um relógio 3 minutos atrasado muda a data de vencimento de um boleto. Acima do limite a carga pausa sozinha e volta sozinha, do ponto em que parou, quando a medição voltar ao limite.",
+    fields: [
+      { key: "migracao.relogio.deriva_max_s", label: "Diferença máxima entre os relógios (segundos)", type: "integer", defaultValue: 2, min: 0, max: 3600, helper: "Acima disso a Torre de controle mostra a pendência de relógio e a carga pausa." },
+      { key: "migracao.relogio.reverificar_min", label: "Reverificar o relógio a cada (minutos)", type: "integer", defaultValue: 5, min: 1, max: 1440, helper: "Com a carga pausada ou a diferença aberta, a conferência se repete neste ritmo; ao voltar ao limite a carga retoma." },
+      { key: "migracao.relogio.ntp_ativo", label: "Conferir também o relógio da internet (NTP)", type: "boolean", defaultValue: true, helper: "Desligue só num laboratório sem acesso à internet: o relógio do banco e do sistema antigo continuam conferidos." },
+      { key: "migracao.relogio.ntp_servidor", label: "Servidor NTP", type: "text", defaultValue: "pool.ntp.org", helper: "Nome do servidor, ou servidor:porta." },
+      { key: "migracao.relogio.ntp_timeout_ms", label: "Tempo máximo de espera pelo NTP (milissegundos)", type: "integer", defaultValue: 3000, min: 100, max: 60000, helper: "Sem resposta neste tempo o relógio conta como não medido e a carga não parte." },
+    ],
+  },
+  {
+    title: "Migração do sistema antigo: fuso horário",
+    subtitle:
+      "Datas e horas do sistema antigo que vêm sem fuso são lidas no fuso de origem e convertidas para UTC (com o horário de verão brasileiro até 2019). Datas sem hora, como o vencimento, nunca mudam de dia.",
+    fields: [
+      { key: "migracao.fuso_origem", label: "Fuso do sistema antigo", type: "text", defaultValue: "America/Sao_Paulo", helper: "Nome do fuso, por exemplo America/Sao_Paulo." },
+      { key: "migracao.fuso.ambiguo", label: "Horário que ocorre duas vezes (fim do horário de verão)", type: "text", defaultValue: "FIRST_OCCURRENCE", helper: "FIRST_OCCURRENCE usa a primeira vez, SECOND_OCCURRENCE a segunda e QUARANTINE manda o registro para a quarentena. Horário que não existe (início do horário de verão) sempre vai para a quarentena." },
+      { key: "migracao.fuso.amostra_por_entidade", label: "Registros conferidos com datas de borda no ensaio", type: "integer", defaultValue: 1000, min: 1, max: 1000000, helper: "Por entidade, o ensaio compara ponto a ponto com a origem registros com meia-noite, 29/02 e 31/12 23:59:59 primeiro." },
+    ],
+  },
+  {
+    title: "Migração do sistema antigo: ensaio DRY3",
+    subtitle:
+      "O terceiro ensaio roda o fluxo completo com o volume real, num banco descartável, e termina em APROVADO ou REPROVADO pelos critérios do livro, sem aprovação manual. O relatório mostra dados pessoais sempre mascarados, a não ser que o ambiente de ensaio possa vê-los.",
+    fields: [
+      { key: "migracao.dry3.janela_comparacao_min", label: "Duração da janela de comparação do ensaio (minutos)", type: "integer", defaultValue: 10, min: 1, max: 1440, helper: "O ensaio abre uma janela curta de comparação paralela e a fecha ao terminar." },
+      { key: "migracao.dry3.exemplos_no_relatorio", label: "Registros de exemplo no relatório", type: "integer", defaultValue: 10, min: 0, max: 100, helper: "Quantos registros o relatório do ensaio mostra, com a máscara de dados pessoais." },
+      { key: "migracao.dry3.dados_pessoais_em_claro", label: "O ambiente de ensaio pode ver dados pessoais em claro", type: "boolean", defaultValue: false, helper: "Desligado, os exemplos do relatório saem mascarados. A máscara vale só para o que é exibido: a verificação de hash e a comparação usam sempre o valor real." },
+      { key: "migracao.dry3.timeout_min", label: "Minutos até considerar interrompido um ensaio sem fim", type: "integer", defaultValue: 720, min: 1, max: 10080, helper: "Se o processo cair no meio do ensaio, ele fica ocupado por este tempo; depois é marcado como interrompido (nunca aprovado) e um novo pode começar." },
+      { key: "migracao.paralelo.prazo_dias", label: "Dias de tolerância de uma janela de comparação vencida", type: "integer", defaultValue: 7, min: 1, max: 365, helper: "Uma janela de comparação ainda aberta depois do fim por mais dias que isto gera alerta crítico ao responsável pelo encerramento da comparação." },
+    ],
+  },
 ];
