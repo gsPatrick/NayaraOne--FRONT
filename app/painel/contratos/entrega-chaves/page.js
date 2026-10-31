@@ -6,8 +6,7 @@ import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Badge from "@/components/atoms/Badge/Badge";
 import Button from "@/components/atoms/Button/Button";
-import Alert from "@/components/molecules/Alert/Alert";
-import { SkeletonList } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import StatTile from "@/components/molecules/StatTile/StatTile";
 import Icon from "@/components/atoms/Icon/Icon";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
@@ -21,16 +20,12 @@ import {
   KEY_DELIVERY_STATUS_LABELS,
   KEY_DELIVERY_STATUS_TONE,
 } from "@/lib/mock/legal";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { formatDateTime, formatContractLabel } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function EntregaChavesPage() {
   const router = useRouter();
-  const [deliveries, setDeliveries] = useState([]);
-  const [contracts, setContracts] = useState([]);
-  const [people, setPeople] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
@@ -39,21 +34,14 @@ export default function EntregaChavesPage() {
     setPage(1);
   }, [pageSize]);
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    Promise.all([listKeyDeliveries(), listContracts(), listPeople()])
-      .then(([deliveriesRes, contractsRes, peopleRes]) => {
-        if (cancelled) return;
-        setDeliveries(deliveriesRes || []);
-        setContracts(contractsRes || []);
-        setPeople(peopleRes || []);
-      })
-      .catch((err) => { if (!cancelled) setLoadError(err.message || "Erro ao carregar entregas de chave."); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, []);
+  // M9-D940: carregando, vazio, erro com "tentar de novo", 403 e offline vêm do padrão único de estados.
+  const query = useAsyncState(async () => {
+    const [deliveriesRes, contractsRes, peopleRes] = await Promise.all([listKeyDeliveries(), listContracts(), listPeople()]);
+    return { deliveries: deliveriesRes || [], contracts: contractsRes || [], people: peopleRes || [] };
+  }, { key: "contratos-entrega-chaves", isEmpty: (d) => !d || d.deliveries.length === 0 });
+  const deliveries = query.data?.deliveries || [];
+  const contracts = query.data?.contracts || [];
+  const people = query.data?.people || [];
 
   function personOf(id) {
     return people.find((p) => p.id === id) || null;
@@ -81,8 +69,6 @@ export default function EntregaChavesPage() {
 
   return (
     <AppShell title="Entrega de chaves" backHref="/painel/contratos">
-      {loadError ? <Alert tone="danger">{loadError}</Alert> : null}
-
       <div className={styles.grid}>
         <StatTile label="Entregas registradas" value={deliveries.length} tone="neutral" icon="key" />
         <StatTile label="Pendentes" value={pendingCount} tone={pendingCount > 0 ? "warning" : "success"} icon="calendar" />
@@ -91,8 +77,9 @@ export default function EntregaChavesPage() {
       </div>
 
       <Card title="Entregas de chave" subtitle="A liberação só é permitida com contrato assinado ou ativo e vistoria de entrada concluída">
+        <AsyncState result={query} loadingLabel="Carregando entregas de chave..." emptyTitle="Nenhuma entrega de chaves registrada" emptyDescription="Registre a primeira entrega para acompanhar a liberação das chaves." emptyAction={{ label: "Nova entrega", href: "/painel/contratos/entrega-chaves/novo" }}>
         <div className={styles.list}>
-          {loading ? <SkeletonList /> : pageItems.map((delivery) => {
+          {pageItems.map((delivery) => {
             const contract = contractOf(delivery.contractId);
             const person = personOf(delivery.deliveredToPersonId);
             return (
@@ -118,6 +105,7 @@ export default function EntregaChavesPage() {
             );
           })}
         </div>
+        </AsyncState>
         <div className={styles.paginationRow}>
           <Pagination
             page={page}

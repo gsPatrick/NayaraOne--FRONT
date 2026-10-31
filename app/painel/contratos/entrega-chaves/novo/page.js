@@ -9,7 +9,9 @@ import Select from "@/components/atoms/Select/Select";
 import SearchInput from "@/components/molecules/SearchInput/SearchInput";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
-import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { UI_STATE } from "@/lib/asyncState/states";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { listContracts, listInspections, createKeyDelivery, listContractParties } from "@/lib/api/legal";
 import { listPeople } from "@/lib/api/people";
 import { formatContractLabel, formatDate } from "@/lib/format";
@@ -25,8 +27,6 @@ export default function NovaEntregaChavesPage() {
   const [contracts, setContracts] = useState([]);
   const [inspections, setInspections] = useState([]);
   const [people, setPeople] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
@@ -36,13 +36,10 @@ export default function NovaEntregaChavesPage() {
     notes: "",
   });
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    Promise.all([listContracts(), listInspections(), listPeople()])
+  // M9-D940: carregando, erro com "tentar de novo", 403 e offline vêm do padrão único de estados.
+  const loadQuery = useAsyncState(() => {
+    return Promise.all([listContracts(), listInspections(), listPeople()])
       .then(([contractsRes, inspectionsRes, peopleRes]) => {
-        if (cancelled) return;
         // O7: sem duplicados (por id) e ordenado pelo número.
         const seen = new Set();
         setContracts((contractsRes || []).filter((c) => (seen.has(c.id) ? false : seen.add(c.id))));
@@ -53,10 +50,8 @@ export default function NovaEntregaChavesPage() {
           contractId: prev.contractId || contractsRes?.[0]?.id || "",
         }));
       })
-      .catch((err) => { if (!cancelled) setLoadError(err.message || "Erro ao carregar dados."); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, []);
+      .then(() => true);
+  }, { deps: [], isEmpty: () => false });
 
   // F6 (auditoria M45): recebedor só pode ser PARTE do contrato (a API também recusa).
   const [parties, setParties] = useState(null);
@@ -134,10 +129,10 @@ export default function NovaEntregaChavesPage() {
     }
   }
 
-  if (loading) {
+  if (loadQuery.status !== UI_STATE.CONTENT) {
     return (
       <AppShell title="Nova entrega de chaves" backHref="/painel/contratos/entrega-chaves">
-        <SkeletonDetail sections={1} />
+        <AsyncState result={loadQuery} loadingLabel="Carregando dados..." />
       </AppShell>
     );
   }
@@ -145,7 +140,6 @@ export default function NovaEntregaChavesPage() {
   return (
     <AppShell title="Nova entrega de chaves" backHref="/painel/contratos/entrega-chaves">
       <div className={styles.wrap}>
-        {loadError ? <Alert tone="danger">{loadError}</Alert> : null}
         {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
 
         <Alert tone="info" title="Trava de liberação">

@@ -12,6 +12,7 @@ import Select from "@/components/atoms/Select/Select";
 import StatTile from "@/components/molecules/StatTile/StatTile";
 import Icon from "@/components/atoms/Icon/Icon";
 import Alert from "@/components/molecules/Alert/Alert";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import ContractsNavMenu from "@/components/molecules/ContractsNavMenu/ContractsNavMenu";
 import Pagination from "@/components/molecules/Pagination/Pagination";
@@ -25,15 +26,12 @@ import {
   CONTRACT_STATUS_LABELS,
   CONTRACT_STATUS_TONE,
 } from "@/lib/mock/legal";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { formatBRL, formatContractLabel } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function ContratosListaPage() {
   const router = useRouter();
-  const [contracts, setContracts] = useState([]);
-  const [properties, setProperties] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
@@ -46,20 +44,14 @@ export default function ContratosListaPage() {
   }, [pageSize]);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    Promise.all([listContracts(), listProperties()])
-      .then(([contractsRes, propertiesRes]) => {
-        if (cancelled) return;
-        setContracts(contractsRes || []);
-        setProperties(propertiesRes || []);
-      })
-      .catch((err) => { if (!cancelled) setLoadError(err.message || "Erro ao carregar contratos."); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, []);
+  // M9-D940: carregando, vazio, erro com "tentar de novo", 403 e offline vêm do padrão único de estados.
+  const listQuery = useAsyncState(async () => {
+    const [contractsRes, propertiesRes] = await Promise.all([listContracts(), listProperties()]);
+    return { contracts: contractsRes || [], properties: propertiesRes || [] };
+  }, { key: "contratos-lista", isEmpty: (d) => !d || d.contracts.length === 0 });
+  const loaded = listQuery.data;
+  const contracts = useMemo(() => loaded?.contracts || [], [loaded]);
+  const properties = useMemo(() => loaded?.properties || [], [loaded]);
 
   function propertyOf(id) {
     return properties.find((p) => p.id === id) || null;
@@ -140,7 +132,6 @@ export default function ContratosListaPage() {
 
   return (
     <AppShell title="Contratos" backHref="/painel/contratos">
-      {loadError ? <Alert tone="danger">{loadError}</Alert> : null}
       {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
 
       <div className={styles.grid}>
@@ -170,7 +161,9 @@ export default function ContratosListaPage() {
             ))}
           </Select>
         </div>
-        <Table columns={columns} rows={loading ? [] : pageItems} loading={loading} emptyMessage="Nenhum contrato encontrado." />
+        <AsyncState result={listQuery} loadingLabel="Carregando contratos..." emptyTitle="Nenhum contrato cadastrado" emptyDescription="Cadastre o primeiro contrato." emptyAction={{ label: "Novo contrato", href: "/painel/contratos/lista/novo" }}>
+          <Table columns={columns} rows={pageItems} emptyMessage="Nenhum contrato encontrado." />
+        </AsyncState>
         <div className={styles.paginationRow}>
           <Pagination
             page={page}

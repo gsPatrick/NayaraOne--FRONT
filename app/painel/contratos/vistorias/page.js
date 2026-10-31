@@ -11,7 +11,7 @@ import SearchInput from "@/components/molecules/SearchInput/SearchInput";
 import Select from "@/components/atoms/Select/Select";
 import StatTile from "@/components/molecules/StatTile/StatTile";
 import Icon from "@/components/atoms/Icon/Icon";
-import Alert from "@/components/molecules/Alert/Alert";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import ContractsNavMenu from "@/components/molecules/ContractsNavMenu/ContractsNavMenu";
 import RowActions from "@/components/molecules/RowActions/RowActions";
@@ -24,15 +24,12 @@ import {
   INSPECTION_STATUS_LABELS,
   INSPECTION_STATUS_TONE,
 } from "@/lib/mock/legal";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { formatDate } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function VistoriasPage() {
   const router = useRouter();
-  const [inspections, setInspections] = useState([]);
-  const [properties, setProperties] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
@@ -43,20 +40,14 @@ export default function VistoriasPage() {
     setPage(1);
   }, [pageSize]);
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    Promise.all([listInspections(), listProperties()])
-      .then(([inspectionsRes, propertiesRes]) => {
-        if (cancelled) return;
-        setInspections(inspectionsRes || []);
-        setProperties(propertiesRes || []);
-      })
-      .catch((err) => { if (!cancelled) setLoadError(err.message || "Erro ao carregar vistorias."); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, []);
+  // M9-D940: carregando, vazio, erro com "tentar de novo", 403 e offline vêm do padrão único de estados.
+  const listQuery = useAsyncState(async () => {
+    const [inspectionsRes, propertiesRes] = await Promise.all([listInspections(), listProperties()]);
+    return { inspections: inspectionsRes || [], properties: propertiesRes || [] };
+  }, { key: "contratos-vistorias", isEmpty: (d) => !d || d.inspections.length === 0 });
+  const loaded = listQuery.data;
+  const inspections = useMemo(() => loaded?.inspections || [], [loaded]);
+  const properties = useMemo(() => loaded?.properties || [], [loaded]);
 
   function propertyOf(id) {
     return properties.find((p) => p.id === id) || null;
@@ -117,7 +108,6 @@ export default function VistoriasPage() {
 
   return (
     <AppShell title="Vistorias" backHref="/painel/contratos">
-      {loadError ? <Alert tone="danger">{loadError}</Alert> : null}
 
       <div className={styles.grid}>
         <StatTile label="Total de vistorias" value={inspections.length} tone="neutral" icon="eye" />
@@ -142,7 +132,9 @@ export default function VistoriasPage() {
             ))}
           </Select>
         </div>
-        <Table columns={columns} rows={loading ? [] : pageItems} loading={loading} emptyMessage="Nenhuma vistoria encontrada." />
+        <AsyncState result={listQuery} loadingLabel="Carregando vistorias..." emptyTitle="Nenhuma vistoria agendada" emptyDescription="Agende a primeira vistoria." emptyAction={{ label: "Nova vistoria", href: "/painel/contratos/vistorias/novo" }}>
+          <Table columns={columns} rows={pageItems} emptyMessage="Nenhuma vistoria encontrada." />
+        </AsyncState>
         <div className={styles.paginationRow}>
           <Pagination
             page={page}

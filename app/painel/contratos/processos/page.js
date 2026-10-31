@@ -11,7 +11,7 @@ import SearchInput from "@/components/molecules/SearchInput/SearchInput";
 import Select from "@/components/atoms/Select/Select";
 import StatTile from "@/components/molecules/StatTile/StatTile";
 import Icon from "@/components/atoms/Icon/Icon";
-import Alert from "@/components/molecules/Alert/Alert";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import ContractsNavMenu from "@/components/molecules/ContractsNavMenu/ContractsNavMenu";
 import RowActions from "@/components/molecules/RowActions/RowActions";
@@ -24,16 +24,12 @@ import {
   CASE_STATUS_LABELS,
   CASE_STATUS_TONE,
 } from "@/lib/mock/legal";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { formatContractLabel } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function ProcessosPage() {
   const router = useRouter();
-  const [legalCases, setLegalCases] = useState([]);
-  const [contracts, setContracts] = useState([]);
-  const [properties, setProperties] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
@@ -44,21 +40,15 @@ export default function ProcessosPage() {
     setPage(1);
   }, [pageSize]);
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    Promise.all([listLegalCases(), listContracts(), listProperties()])
-      .then(([casesRes, contractsRes, propertiesRes]) => {
-        if (cancelled) return;
-        setLegalCases(casesRes || []);
-        setContracts(contractsRes || []);
-        setProperties(propertiesRes || []);
-      })
-      .catch((err) => { if (!cancelled) setLoadError(err.message || "Erro ao carregar processos."); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, []);
+  // M9-D940: carregando, vazio, erro com "tentar de novo", 403 e offline vêm do padrão único de estados.
+  const listQuery = useAsyncState(async () => {
+    const [legalCasesRes, contractsRes, propertiesRes] = await Promise.all([listLegalCases(), listContracts(), listProperties()]);
+    return { legalCases: legalCasesRes || [], contracts: contractsRes || [], properties: propertiesRes || [] };
+  }, { key: "contratos-processos", isEmpty: (d) => !d || d.legalCases.length === 0 });
+  const loaded = listQuery.data;
+  const legalCases = useMemo(() => loaded?.legalCases || [], [loaded]);
+  const contracts = useMemo(() => loaded?.contracts || [], [loaded]);
+  const properties = useMemo(() => loaded?.properties || [], [loaded]);
 
   function propertyOf(id) {
     return properties.find((p) => p.id === id) || null;
@@ -137,7 +127,6 @@ export default function ProcessosPage() {
 
   return (
     <AppShell title="Processos jurídicos" backHref="/painel/contratos">
-      {loadError ? <Alert tone="danger">{loadError}</Alert> : null}
 
       <div className={styles.grid}>
         <StatTile label="Total de processos" value={legalCases.length} tone="neutral" icon="scale" />
@@ -162,7 +151,9 @@ export default function ProcessosPage() {
             ))}
           </Select>
         </div>
-        <Table columns={columns} rows={loading ? [] : pageItems} loading={loading} emptyMessage="Nenhum processo encontrado." />
+        <AsyncState result={listQuery} loadingLabel="Carregando processos..." emptyTitle="Nenhum processo cadastrado" emptyDescription="Cadastre o primeiro processo jurídico." emptyAction={{ label: "Novo processo", href: "/painel/contratos/processos/novo" }}>
+          <Table columns={columns} rows={pageItems} emptyMessage="Nenhum processo encontrado." />
+        </AsyncState>
         <div className={styles.paginationRow}>
           <Pagination
             page={page}

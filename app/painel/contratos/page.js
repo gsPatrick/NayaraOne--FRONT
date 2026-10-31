@@ -1,14 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import StatTile from "@/components/molecules/StatTile/StatTile";
 import Card from "@/components/molecules/Card/Card";
 import Badge from "@/components/atoms/Badge/Badge";
 import Icon from "@/components/atoms/Icon/Icon";
-import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
-import Alert from "@/components/molecules/Alert/Alert";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import SwitchableChart from "@/components/molecules/SwitchableChart/SwitchableChart";
 import Button from "@/components/atoms/Button/Button";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
@@ -19,35 +18,23 @@ import {
 } from "@/lib/mock/legal";
 import { listContracts, listInspections, listKeyDeliveries, listLegalCases } from "@/lib/api/legal";
 import { listProperties } from "@/lib/api/properties";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { formatBRL, formatDate } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function ContratosHubPage() {
-  const [contracts, setContracts] = useState([]);
-  const [inspections, setInspections] = useState([]);
-  const [keyDeliveries, setKeyDeliveries] = useState([]);
-  const [legalCases, setLegalCases] = useState([]);
-  const [properties, setProperties] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    Promise.all([listContracts(), listInspections(), listKeyDeliveries(), listLegalCases(), listProperties()])
-      .then(([contractsRes, inspectionsRes, keyDeliveriesRes, legalCasesRes, propertiesRes]) => {
-        if (cancelled) return;
-        setContracts(contractsRes || []);
-        setInspections(inspectionsRes || []);
-        setKeyDeliveries(keyDeliveriesRes || []);
-        setLegalCases(legalCasesRes || []);
-        setProperties(propertiesRes || []);
-      })
-      .catch((err) => { if (!cancelled) setLoadError(err.message || "Erro ao carregar dados."); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, []);
+  // M9-D940: carregando, erro com "tentar de novo", 403 e offline vêm do padrão único de estados.
+  // O painel é um resumo: contagem zero é resposta válida, então o estado "vazio" não substitui a página.
+  const query = useAsyncState(async () => {
+    const [contractsRes, inspectionsRes, keyDeliveriesRes, legalCasesRes, propertiesRes] = await Promise.all([listContracts(), listInspections(), listKeyDeliveries(), listLegalCases(), listProperties()]);
+    return { contracts: contractsRes || [], inspections: inspectionsRes || [], keyDeliveries: keyDeliveriesRes || [], legalCases: legalCasesRes || [], properties: propertiesRes || [] };
+  }, { key: "contratos-hub", isEmpty: () => false });
+  const loaded = query.data;
+  const contracts = useMemo(() => loaded?.contracts || [], [loaded]);
+  const inspections = useMemo(() => loaded?.inspections || [], [loaded]);
+  const keyDeliveries = useMemo(() => loaded?.keyDeliveries || [], [loaded]);
+  const legalCases = useMemo(() => loaded?.legalCases || [], [loaded]);
+  const properties = useMemo(() => loaded?.properties || [], [loaded]);
 
   function propertyOf(id) {
     return properties.find((p) => p.id === id) || null;
@@ -73,18 +60,9 @@ export default function ContratosHubPage() {
 
   const totalActiveValue = activeContracts.reduce((s, c) => s + Number(c.totalValue || 0), 0);
 
-  if (loading) {
-    return (
-      <AppShell title="Contratos e Locação">
-        <SkeletonDetail sections={3} />
-      </AppShell>
-    );
-  }
-
   return (
     <AppShell title="Contratos e Locação">
-      {loadError ? <Alert tone="danger">{loadError}</Alert> : null}
-
+      <AsyncState result={query} loadingLabel="Carregando contratos...">
       <div className={styles.grid}>
         <StatTile label="Contratos ativos" value={activeContracts.length} tone="success" icon="signature" />
         <StatTile label="Em assinatura" value={signingContracts.length} tone="info" icon="pencil" />
@@ -152,6 +130,7 @@ export default function ContratosHubPage() {
           )}
         </Card>
       </div>
+      </AsyncState>
 
       <StickyActionBar>
         <ContractsNavMenu />

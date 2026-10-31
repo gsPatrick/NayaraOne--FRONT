@@ -10,7 +10,9 @@ import Select from "@/components/atoms/Select/Select";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
 import Icon from "@/components/atoms/Icon/Icon";
-import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { UI_STATE } from "@/lib/asyncState/states";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { listProperties } from "@/lib/api/properties";
 import { listPeople } from "@/lib/api/people";
 import { listProjects } from "@/lib/api/construction";
@@ -63,8 +65,6 @@ export default function NovoContratoPage() {
   const [properties, setProperties] = useState([]);
   const [people, setPeople] = useState([]);
   const [templates, setTemplates] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
@@ -99,23 +99,18 @@ export default function NovoContratoPage() {
   // decidido pelo servidor com os dados deste contrato. Mostrado antes de criar.
   const [clausePreview, setClausePreview] = useState(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    Promise.all([listProperties(), listPeople(), listContractTemplates()])
+  // M9-D940: carregando, erro com "tentar de novo", 403 e offline vêm do padrão único de estados.
+  const loadQuery = useAsyncState(() => {
+    return Promise.all([listProperties(), listPeople(), listContractTemplates()])
       .then(([propertiesRes, peopleRes, templatesRes]) => {
-        if (cancelled) return;
         setProperties(propertiesRes || []);
         setPeople(peopleRes || []);
         setTemplates(templatesRes || []);
         setForm((prev) => ({ ...prev, propertyId: prev.propertyId || propertiesRes?.[0]?.id || "" }));
         setNewParty((prev) => ({ ...prev, personId: prev.personId || peopleRes?.[0]?.id || "" }));
       })
-      .catch((err) => { if (!cancelled) setLoadError(err.message || "Erro ao carregar dados."); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, []);
+      .then(() => true);
+  }, { deps: [], isEmpty: () => false });
 
   const templatesForType = templates.filter((t) => t.contractType === form.contractType);
 
@@ -251,10 +246,10 @@ export default function NovoContratoPage() {
     setClausePreview(null);
   }
 
-  if (loading) {
+  if (loadQuery.status !== UI_STATE.CONTENT) {
     return (
       <AppShell title="Novo contrato" backHref="/painel/contratos/lista">
-        <SkeletonDetail sections={2} />
+        <AsyncState result={loadQuery} loadingLabel="Carregando dados..." />
       </AppShell>
     );
   }
@@ -262,7 +257,6 @@ export default function NovoContratoPage() {
   return (
     <AppShell title="Novo contrato" backHref="/painel/contratos/lista">
       <div className={styles.wrap}>
-        {loadError ? <Alert tone="danger">{loadError}</Alert> : null}
         {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
 
         <Alert tone="info" title="Máquina de estados">

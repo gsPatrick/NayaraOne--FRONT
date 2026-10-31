@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter, notFound } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -8,7 +8,9 @@ import Badge from "@/components/atoms/Badge/Badge";
 import Icon from "@/components/atoms/Icon/Icon";
 import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
-import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { UI_STATE } from "@/lib/asyncState/states";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import RowActions from "@/components/molecules/RowActions/RowActions";
 import Modal from "@/components/organisms/Modal/Modal";
 import Button from "@/components/atoms/Button/Button";
@@ -35,55 +37,41 @@ export default function GarantiaDetailPage({ params }) {
   const [guarantee, setGuarantee] = useState(null);
   const [contract, setContract] = useState(null);
   const [people, setPeople] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [notice, setNotice] = useState(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    Promise.all([getGuarantee(params.id), listPeople()])
+  // M9-D940: carregando, erro com "tentar de novo", 403 e offline vêm do padrão único de estados.
+  const loadQuery = useAsyncState(() => {
+    return Promise.all([getGuarantee(params.id), listPeople()])
       .then(async ([guaranteeRes, peopleRes]) => {
-        if (cancelled) return;
         setGuarantee(guaranteeRes);
         setPeople(peopleRes || []);
         if (guaranteeRes?.contractId) {
           try {
             const c = await getContract(guaranteeRes.contractId);
-            if (!cancelled) setContract(c);
+            setContract(c);
           } catch {
             // Contrato pode não existir mais — segue sem vínculo.
           }
         }
       })
-      .catch((err) => { if (!cancelled) setLoadError(err.message || "Erro ao carregar garantia."); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, [params.id]);
+      .then(() => true);
+  }, { deps: [params.id], isEmpty: () => false });
 
   function personOf(id) {
     return people.find((p) => p.id === id) || null;
   }
 
-  if (loading) {
+  if (loadQuery.status !== UI_STATE.CONTENT) {
     return (
       <AppShell title="Garantia" backHref="/painel/contratos/garantias">
-        <SkeletonDetail sections={2} />
+        <AsyncState result={loadQuery} loadingLabel="Carregando garantia..." />
       </AppShell>
     );
   }
 
-  if (loadError) {
-    return (
-      <AppShell title="Garantia" backHref="/painel/contratos/garantias">
-        <Alert tone="danger">{loadError}</Alert>
-      </AppShell>
-    );
-  }
 
   if (!guarantee) return notFound();
 

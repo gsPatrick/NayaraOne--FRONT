@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { notFound } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -11,7 +11,9 @@ import Input from "@/components/atoms/Input/Input";
 import FormField from "@/components/molecules/FormField/FormField";
 import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
-import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { UI_STATE } from "@/lib/asyncState/states";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { listProperties, getProperty } from "@/lib/api/properties";
 import { apiFetch } from "@/lib/api/client";
 import {
@@ -51,8 +53,6 @@ export default function ProcessoDetailPage({ params }) {
   const [users, setUsers] = useState([]);
   const [deadlines, setDeadlines] = useState([]);
   const [evidencePackages, setEvidencePackages] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [notice, setNotice] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -61,18 +61,15 @@ export default function ProcessoDetailPage({ params }) {
   // M9-D920: a exportação do dossiê passa pela DLP; quando a API pede finalidade e justificativa, o pacote fica aqui até a pessoa preencher.
   const [exportAsk, setExportAsk] = useState(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    Promise.all([
+  // M9-D940: carregando, erro com "tentar de novo", 403 e offline vêm do padrão único de estados.
+  const loadQuery = useAsyncState(() => {
+    return Promise.all([
       getLegalCase(params.id),
       listLegalDeadlines({ legalCaseId: params.id }),
       listEvidencePackages(params.id),
       apiFetch("/users?status=ACTIVE"),
     ])
       .then(async ([caseRes, deadlinesRes, evidenceRes, usersRes]) => {
-        if (cancelled) return;
         setLegalCase(caseRes);
         setDeadlines(deadlinesRes || []);
         setEvidencePackages(evidenceRes || []);
@@ -80,7 +77,7 @@ export default function ProcessoDetailPage({ params }) {
         if (caseRes?.contractId) {
           try {
             const c = await getContract(caseRes.contractId);
-            if (!cancelled) setContract(c);
+            setContract(c);
           } catch {
             // Contrato pode não estar disponível.
           }
@@ -88,36 +85,27 @@ export default function ProcessoDetailPage({ params }) {
         if (caseRes?.propertyId) {
           try {
             const p = await getProperty(caseRes.propertyId);
-            if (!cancelled) setProperty(p);
+            setProperty(p);
           } catch {
             // Imóvel pode não estar disponível.
           }
         }
       })
-      .catch((err) => { if (!cancelled) setLoadError(err.message || "Erro ao carregar processo."); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, [params.id]);
+      .then(() => true);
+  }, { deps: [params.id], isEmpty: () => false });
 
   function userName(id) {
     return users.find((u) => u.id === id)?.name || "Usuário não identificado";
   }
 
-  if (loading) {
+  if (loadQuery.status !== UI_STATE.CONTENT) {
     return (
       <AppShell title="Processo" backHref="/painel/contratos/processos">
-        <SkeletonDetail sections={2} />
+        <AsyncState result={loadQuery} loadingLabel="Carregando processo..." />
       </AppShell>
     );
   }
 
-  if (loadError) {
-    return (
-      <AppShell title="Processo" backHref="/painel/contratos/processos">
-        <Alert tone="danger">{loadError}</Alert>
-      </AppShell>
-    );
-  }
 
   if (!legalCase) return notFound();
 

@@ -22,6 +22,8 @@ import Modal from "@/components/organisms/Modal/Modal";
 import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import { SkeletonList } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import ContractsNavMenu from "@/components/molecules/ContractsNavMenu/ContractsNavMenu";
 import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
@@ -61,8 +63,7 @@ function canApproveCondition(clause) {
 
 export default function ClausulasPage() {
   const [clauses, setClauses] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
+  const [loadError, setLoadError] = useState(""); // erros das ações (desativar, aprovar etc.); a leitura usa o AsyncState
   const [query, setQuery] = useState("");
 
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -83,16 +84,11 @@ export default function ClausulasPage() {
 
   const { confirm, ConfirmDialog } = useConfirm();
 
-  function load() {
-    setLoading(true);
-    setLoadError("");
-    listClauses()
-      .then((res) => setClauses(res || []))
-      .catch((err) => setLoadError(err.message || "Erro ao carregar a biblioteca de cláusulas."))
-      .finally(() => setLoading(false));
-  }
-
-  useEffect(() => { load(); }, []);
+  // M9-D940: carregando, erro com "tentar de novo", 403 e offline vêm do padrão único de estados.
+  // A lista é editada no lugar (criar/desativar/aprovar), então o vazio fica dentro da tela e a leitura só alimenta `clauses`.
+  const listQuery = useAsyncState(async () => (await listClauses()) || [], { key: "contratos-clausulas", isEmpty: () => false });
+  const loaded = listQuery.data;
+  useEffect(() => { if (loaded) setClauses(loaded); }, [loaded]);
 
   const filtered = useMemo(() => {
     if (!query) return clauses;
@@ -222,9 +218,8 @@ export default function ClausulasPage() {
           <SearchInput placeholder="Buscar por código ou título..." value={query} onChange={(e) => setQuery(e.target.value)} />
         </div>
 
-        {loading ? (
-          <SkeletonList />
-        ) : filtered.length === 0 ? (
+        <AsyncState result={listQuery} loadingLabel="Carregando cláusulas...">
+        {filtered.length === 0 ? (
           <EmptyState icon="document" title="Nenhuma cláusula cadastrada" description="Crie a primeira cláusula da biblioteca." />
         ) : (
           <div className={styles.list}>
@@ -253,6 +248,7 @@ export default function ClausulasPage() {
             ))}
           </div>
         )}
+        </AsyncState>
       </Card>
 
       <StickyActionBar>

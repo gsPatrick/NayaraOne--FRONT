@@ -7,7 +7,7 @@
 // (billingSchedule/rentAdjustment/utilities services) já existia pronto e testado; esta tela
 // é o que faltava para um usuário conseguir operar isso de ponta a ponta.
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Table from "@/components/organisms/Table/Table";
@@ -21,6 +21,8 @@ import Checkbox from "@/components/atoms/Checkbox/Checkbox";
 import FileDropInput from "@/components/molecules/FileDropInput/FileDropInput";
 import PersonPicker from "@/components/molecules/PersonPicker/PersonPicker";
 import Alert from "@/components/molecules/Alert/Alert";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import Modal from "@/components/organisms/Modal/Modal";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import ContractsNavMenu from "@/components/molecules/ContractsNavMenu/ContractsNavMenu";
@@ -88,8 +90,6 @@ export default function LocacaoPage() {
   const [utilities, setUtilities] = useState([]);
   const [guaranteedRents, setGuaranteedRents] = useState([]);
   const [rentAdvances, setRentAdvances] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
 
   const [generateOpen, setGenerateOpen] = useState(false);
@@ -130,30 +130,26 @@ export default function LocacaoPage() {
   const [closeoutResult, setCloseoutResult] = useState(null);
   const [closeoutBusy, setCloseoutBusy] = useState(false);
 
-  function load() {
-    setLoading(true);
-    setLoadError("");
-    Promise.all([
-      listContracts(),
-      listBillingSchedules(),
-      listRentAdjustments(),
-      listUtilityObligations(),
-      listGuaranteedRentContracts(),
-      listRentAdvances(),
-    ])
-      .then(([c, s, a, u, g, r]) => {
-        setContracts(c || []);
-        setSchedules(s || []);
-        setAdjustments(a || []);
-        setUtilities(u || []);
-        setGuaranteedRents(g || []);
-        setRentAdvances(r || []);
-      })
-      .catch((err) => setLoadError(err.message || "Erro ao carregar dados de locação."))
-      .finally(() => setLoading(false));
-  }
+  // M9-D940: carregando, erro com "tentar de novo", 403 e offline vêm do padrão único de estados.
+  const loadQuery = useAsyncState(() => Promise.all([
+    listContracts(),
+    listBillingSchedules(),
+    listRentAdjustments(),
+    listUtilityObligations(),
+    listGuaranteedRentContracts(),
+    listRentAdvances(),
+  ]).then(([c, s, a, u, g, r]) => {
+    setContracts(c || []);
+    setSchedules(s || []);
+    setAdjustments(a || []);
+    setUtilities(u || []);
+    setGuaranteedRents(g || []);
+    setRentAdvances(r || []);
+    return true;
+  }), { isEmpty: () => false });
 
-  useEffect(() => { load(); }, []);
+  // As ações recarregam as listas; o AsyncState mantém as abas na tela durante a releitura.
+  function load() { loadQuery.reload(); }
 
   // Subtipos de locação (JUR, Caderno seção 3): LEASE genérico + LEASE_RESIDENTIAL/
   // LEASE_COMMERCIAL/LEASE_SEASONAL/PROPERTY_ADMIN.
@@ -485,7 +481,6 @@ export default function LocacaoPage() {
   return (
     <AppShell title="Locação (cobrança e reajuste)" backHref="/painel/contratos">
       <div className={styles.wrap}>
-        {loadError ? <Alert tone="danger">{loadError}</Alert> : null}
         {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
 
         <p className={styles.helper}>
@@ -494,6 +489,7 @@ export default function LocacaoPage() {
           de locação ativos — use “Gerar cobrança” aqui só para competências adicionais ou itens extras (IPTU/condomínio).
         </p>
 
+        <AsyncState result={loadQuery} loadingLabel="Carregando dados de locação...">
         <Tabs
           items={[
             {
@@ -503,7 +499,7 @@ export default function LocacaoPage() {
                   <div className={styles.toolbarRow}>
                     <Button onClick={() => setGenerateOpen(true)}>Gerar cobrança</Button>
                   </div>
-                  <Table columns={scheduleColumns} rows={schedules} loading={loading} emptyMessage="Nenhuma cobrança gerada ainda." />
+                  <Table columns={scheduleColumns} rows={schedules} emptyMessage="Nenhuma cobrança gerada ainda." />
                 </Card>
               ),
             },
@@ -514,7 +510,7 @@ export default function LocacaoPage() {
                   <div className={styles.toolbarRow}>
                     <Button onClick={() => setAdjustOpen(true)}>Solicitar reajuste</Button>
                   </div>
-                  <Table columns={adjustmentColumns} rows={adjustments} loading={loading} emptyMessage="Nenhum reajuste solicitado ainda." />
+                  <Table columns={adjustmentColumns} rows={adjustments} emptyMessage="Nenhum reajuste solicitado ainda." />
                 </Card>
               ),
             },
@@ -525,7 +521,7 @@ export default function LocacaoPage() {
                   <div className={styles.toolbarRow}>
                     <Button onClick={() => setUtilityOpen(true)}>Nova obrigação</Button>
                   </div>
-                  <Table columns={utilityColumns} rows={utilities} loading={loading} emptyMessage="Nenhuma obrigação cadastrada ainda." />
+                  <Table columns={utilityColumns} rows={utilities} emptyMessage="Nenhuma obrigação cadastrada ainda." />
                 </Card>
               ),
             },
@@ -536,7 +532,7 @@ export default function LocacaoPage() {
                   <div className={styles.toolbarRow}>
                     <Button onClick={() => setGuaranteedOpen(true)}>Matricular contrato</Button>
                   </div>
-                  <Table columns={guaranteedRentColumns} rows={guaranteedRents} loading={loading} emptyMessage="Nenhum contrato matriculado em aluguel garantido." />
+                  <Table columns={guaranteedRentColumns} rows={guaranteedRents} emptyMessage="Nenhum contrato matriculado em aluguel garantido." />
                 </Card>
               ),
             },
@@ -547,7 +543,7 @@ export default function LocacaoPage() {
                   <div className={styles.toolbarRow}>
                     <Button onClick={() => setAdvanceOpen(true)}>Solicitar antecipação</Button>
                   </div>
-                  <Table columns={rentAdvanceColumns} rows={rentAdvances} loading={loading} emptyMessage="Nenhuma antecipação solicitada ainda." />
+                  <Table columns={rentAdvanceColumns} rows={rentAdvances} emptyMessage="Nenhuma antecipação solicitada ainda." />
                 </Card>
               ),
             },
@@ -584,6 +580,7 @@ export default function LocacaoPage() {
             },
           ]}
         />
+        </AsyncState>
       </div>
 
       <StickyActionBar>

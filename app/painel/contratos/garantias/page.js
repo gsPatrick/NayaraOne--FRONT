@@ -10,13 +10,14 @@ import SearchInput from "@/components/molecules/SearchInput/SearchInput";
 import Select from "@/components/atoms/Select/Select";
 import StatTile from "@/components/molecules/StatTile/StatTile";
 import Icon from "@/components/atoms/Icon/Icon";
-import { SkeletonList } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import Alert from "@/components/molecules/Alert/Alert";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import ContractsNavMenu from "@/components/molecules/ContractsNavMenu/ContractsNavMenu";
 import RowActions from "@/components/molecules/RowActions/RowActions";
 import Modal from "@/components/organisms/Modal/Modal";
 import Pagination from "@/components/molecules/Pagination/Pagination";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { listPeople } from "@/lib/api/people";
 import { listContracts, listGuarantees, deleteGuarantee } from "@/lib/api/legal";
 import {
@@ -30,11 +31,6 @@ import styles from "./page.module.css";
 
 export default function GarantiasPage() {
   const router = useRouter();
-  const [guarantees, setGuarantees] = useState([]);
-  const [contracts, setContracts] = useState([]);
-  const [people, setPeople] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
@@ -46,21 +42,15 @@ export default function GarantiasPage() {
     setPage(1);
   }, [pageSize]);
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    Promise.all([listGuarantees(), listContracts(), listPeople()])
-      .then(([guaranteesRes, contractsRes, peopleRes]) => {
-        if (cancelled) return;
-        setGuarantees(guaranteesRes || []);
-        setContracts(contractsRes || []);
-        setPeople(peopleRes || []);
-      })
-      .catch((err) => { if (!cancelled) setLoadError(err.message || "Erro ao carregar garantias."); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, []);
+  // M9-D940: carregando, vazio, erro com "tentar de novo", 403 e offline vêm do padrão único de estados.
+  const listQuery = useAsyncState(async () => {
+    const [guaranteesRes, contractsRes, peopleRes] = await Promise.all([listGuarantees(), listContracts(), listPeople()]);
+    return { guarantees: guaranteesRes || [], contracts: contractsRes || [], people: peopleRes || [] };
+  }, { key: "contratos-garantias", isEmpty: (d) => !d || d.guarantees.length === 0 });
+  const loaded = listQuery.data;
+  const guarantees = useMemo(() => loaded?.guarantees || [], [loaded]);
+  const contracts = useMemo(() => loaded?.contracts || [], [loaded]);
+  const people = useMemo(() => loaded?.people || [], [loaded]);
 
   function contractOf(id) {
     return contracts.find((c) => c.id === id) || null;
@@ -86,7 +76,7 @@ export default function GarantiasPage() {
     setActionError("");
     try {
       await deleteGuarantee(deleteTarget.id);
-      setGuarantees((prev) => prev.filter((g) => g.id !== deleteTarget.id));
+      listQuery.reload();
     } catch (err) {
       setActionError(err.message || "Erro ao excluir garantia.");
     } finally {
@@ -99,7 +89,6 @@ export default function GarantiasPage() {
 
   return (
     <AppShell title="Garantias" backHref="/painel/contratos">
-      {loadError ? <Alert tone="danger">{loadError}</Alert> : null}
       {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
 
       <div className={styles.grid}>
@@ -124,9 +113,8 @@ export default function GarantiasPage() {
           </Select>
         </div>
 
-        {loading ? (
-          <SkeletonList />
-        ) : filtered.length === 0 ? (
+        <AsyncState result={listQuery} loadingLabel="Carregando garantias..." emptyTitle="Nenhuma garantia cadastrada" emptyDescription="Cadastre a primeira garantia de um contrato." emptyAction={{ label: "Nova garantia", href: "/painel/contratos/garantias/novo" }}>
+        {filtered.length === 0 ? (
           <p className={styles.emptyText}>Nenhuma garantia encontrada.</p>
         ) : (
           <div className={styles.cardsGrid}>
@@ -167,6 +155,7 @@ export default function GarantiasPage() {
             })}
           </div>
         )}
+        </AsyncState>
         <div className={styles.paginationRow}>
           <Pagination
             page={page}

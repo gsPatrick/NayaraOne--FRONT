@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -9,7 +9,9 @@ import Input from "@/components/atoms/Input/Input";
 import Select from "@/components/atoms/Select/Select";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
-import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { UI_STATE } from "@/lib/asyncState/states";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { listContracts, createLegalCase } from "@/lib/api/legal";
 import { listProperties } from "@/lib/api/properties";
 import { apiFetch } from "@/lib/api/client";
@@ -22,8 +24,6 @@ export default function NovoProcessoPage() {
   const [contracts, setContracts] = useState([]);
   const [properties, setProperties] = useState([]);
   const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
@@ -35,24 +35,19 @@ export default function NovoProcessoPage() {
     summary: "",
   });
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
+  // M9-D940: carregando, erro com "tentar de novo", 403 e offline vêm do padrão único de estados.
+  const loadQuery = useAsyncState(() => {
     // FIX (reportado pela cliente): usuário suspenso/de QA aparecia no seletor e, pior, vinha
     // PRÉ-SELECIONADO por padrão. Além de filtrar por ACTIVE, agora nunca pré-selecionamos
     // nenhum usuário — o campo começa vazio e obriga escolha explícita.
-    Promise.all([listContracts(), listProperties(), apiFetch("/users?status=ACTIVE")])
+    return Promise.all([listContracts(), listProperties(), apiFetch("/users?status=ACTIVE")])
       .then(([contractsRes, propertiesRes, usersRes]) => {
-        if (cancelled) return;
         setContracts(contractsRes || []);
         setProperties(propertiesRes || []);
         setUsers(usersRes || []);
       })
-      .catch((err) => { if (!cancelled) setLoadError(err.message || "Erro ao carregar dados."); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, []);
+      .then(() => true);
+  }, { deps: [], isEmpty: () => false });
 
   const isValid = form.caseNumber.trim() && form.caseType && form.summary.trim();
 
@@ -81,10 +76,10 @@ export default function NovoProcessoPage() {
     }
   }
 
-  if (loading) {
+  if (loadQuery.status !== UI_STATE.CONTENT) {
     return (
       <AppShell title="Novo processo" backHref="/painel/contratos/processos">
-        <SkeletonDetail sections={1} />
+        <AsyncState result={loadQuery} loadingLabel="Carregando dados..." />
       </AppShell>
     );
   }
@@ -92,7 +87,6 @@ export default function NovoProcessoPage() {
   return (
     <AppShell title="Novo processo" backHref="/painel/contratos/processos">
       <div className={styles.wrap}>
-        {loadError ? <Alert tone="danger">{loadError}</Alert> : null}
         {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
 
         <Alert tone="info" title="Contencioso, consultivo ou cobrança">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -11,7 +11,9 @@ import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
 import Icon from "@/components/atoms/Icon/Icon";
 import Badge from "@/components/atoms/Badge/Badge";
-import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { UI_STATE } from "@/lib/asyncState/states";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { listProperties } from "@/lib/api/properties";
 import { listContracts, createInspectionWithItems } from "@/lib/api/legal";
 import { INSPECTION_TYPE_LABELS, CONDITION_LABELS, CONDITION_TONE, RESPONSIBLE_PARTY_LABELS } from "@/lib/mock/legal";
@@ -23,8 +25,6 @@ export default function NovaVistoriaPage() {
   const router = useRouter();
   const [properties, setProperties] = useState([]);
   const [contracts, setContracts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
@@ -64,21 +64,16 @@ export default function NovaVistoriaPage() {
   const [scheduledAtBadInput, setScheduledAtBadInput] = useState(false);
   const scheduledAtInvalid = scheduledAtTouched && (scheduledAtBadInput || !form.scheduledAt);
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    Promise.all([listProperties(), listContracts()])
+  // M9-D940: carregando, erro com "tentar de novo", 403 e offline vêm do padrão único de estados.
+  const loadQuery = useAsyncState(() => {
+    return Promise.all([listProperties(), listContracts()])
       .then(([propertiesRes, contractsRes]) => {
-        if (cancelled) return;
         setProperties(propertiesRes || []);
         setContracts(contractsRes || []);
         setForm((prev) => ({ ...prev, propertyId: prev.propertyId || propertiesRes?.[0]?.id || "" }));
       })
-      .catch((err) => { if (!cancelled) setLoadError(err.message || "Erro ao carregar dados."); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, []);
+      .then(() => true);
+  }, { deps: [], isEmpty: () => false });
 
   const isValid = form.propertyId && form.inspectionType && form.scheduledAt && !scheduledAtInvalid;
 
@@ -177,10 +172,10 @@ export default function NovaVistoriaPage() {
     }
   }
 
-  if (loading) {
+  if (loadQuery.status !== UI_STATE.CONTENT) {
     return (
       <AppShell title="Nova vistoria" backHref="/painel/contratos/vistorias">
-        <SkeletonDetail sections={2} />
+        <AsyncState result={loadQuery} loadingLabel="Carregando dados..." />
       </AppShell>
     );
   }
@@ -188,9 +183,8 @@ export default function NovaVistoriaPage() {
   return (
     <AppShell title="Nova vistoria" backHref="/painel/contratos/vistorias">
       <div className={styles.wrap}>
-        {loadError ? <Alert tone="danger">{loadError}</Alert> : null}
         {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
-        {!loading && !loadError && properties.length === 0 ? (
+        {properties.length === 0 ? (
           <Alert tone="danger" title="Nenhum imóvel disponível">
             Não há imóveis cadastrados para vincular a esta vistoria — cadastre um imóvel antes de continuar. Sem isso o botão “Criar vistoria” fica desabilitado, mesmo com os outros campos preenchidos.
           </Alert>

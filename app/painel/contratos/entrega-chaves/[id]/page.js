@@ -8,7 +8,9 @@ import Badge from "@/components/atoms/Badge/Badge";
 import Icon from "@/components/atoms/Icon/Icon";
 import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
-import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { UI_STATE } from "@/lib/asyncState/states";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import RowActions from "@/components/molecules/RowActions/RowActions";
 import Modal from "@/components/organisms/Modal/Modal";
 import Button from "@/components/atoms/Button/Button";
@@ -44,8 +46,6 @@ export default function EntregaChavesDetailPage({ params }) {
   const [contract, setContract] = useState(null);
   const [inspection, setInspection] = useState(null);
   const [people, setPeople] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [notice, setNotice] = useState(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -65,13 +65,10 @@ export default function EntregaChavesDetailPage({ params }) {
     }
   }, []);
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    Promise.all([getKeyDelivery(params.id), listPeople()])
+  // M9-D940: carregando, erro com "tentar de novo", 403 e offline vêm do padrão único de estados.
+  const loadQuery = useAsyncState(() => {
+    return Promise.all([getKeyDelivery(params.id), listPeople()])
       .then(async ([deliveryRes, peopleRes]) => {
-        if (cancelled) return;
         setDelivery(deliveryRes);
         setPeople(peopleRes || []);
         if (deliveryRes?.contractId) {
@@ -80,7 +77,7 @@ export default function EntregaChavesDetailPage({ params }) {
               getContract(deliveryRes.contractId),
               listContractParties(deliveryRes.contractId).catch(lookupFallback("as partes do contrato")),
             ]);
-            if (!cancelled) { setContract(c); setParties(ps || []); }
+            { setContract(c); setParties(ps || []); }
           } catch {
             // Contrato pode não estar disponível.
           }
@@ -88,16 +85,14 @@ export default function EntregaChavesDetailPage({ params }) {
         if (deliveryRes?.inspectionId) {
           try {
             const i = await getInspection(deliveryRes.inspectionId);
-            if (!cancelled) setInspection(i);
+            setInspection(i);
           } catch {
             // Vistoria pode não estar disponível.
           }
         }
       })
-      .catch((err) => { if (!cancelled) setLoadError(err.message || "Erro ao carregar entrega de chaves."); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, [params.id]);
+      .then(() => true);
+  }, { deps: [params.id], isEmpty: () => false });
 
   // F7: prévia do termo (gerada no servidor) atualizada conforme o formulário de liberação;
   // depois de liberado, o mesmo endpoint devolve o termo gravado.
@@ -121,21 +116,14 @@ export default function EntregaChavesDetailPage({ params }) {
     return people.find((p) => p.id === id) || null;
   }
 
-  if (loading) {
+  if (loadQuery.status !== UI_STATE.CONTENT) {
     return (
       <AppShell title="Entrega de chaves" backHref="/painel/contratos/entrega-chaves">
-        <SkeletonDetail sections={3} />
+        <AsyncState result={loadQuery} loadingLabel="Carregando entrega de chaves..." />
       </AppShell>
     );
   }
 
-  if (loadError) {
-    return (
-      <AppShell title="Entrega de chaves" backHref="/painel/contratos/entrega-chaves">
-        <Alert tone="danger">{loadError}</Alert>
-      </AppShell>
-    );
-  }
 
   if (!delivery) return notFound();
 

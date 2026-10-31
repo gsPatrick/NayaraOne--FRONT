@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -9,7 +9,9 @@ import Input from "@/components/atoms/Input/Input";
 import Select from "@/components/atoms/Select/Select";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
-import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { UI_STATE } from "@/lib/asyncState/states";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { listPeople } from "@/lib/api/people";
 import { listContracts, createGuarantee } from "@/lib/api/legal";
 import { GUARANTEE_TYPE_LABELS, GUARANTEE_TYPES_REQUIRING_VALIDITY } from "@/lib/mock/legal";
@@ -21,8 +23,6 @@ export default function NovaGarantiaPage() {
   const router = useRouter();
   const [contracts, setContracts] = useState([]);
   const [people, setPeople] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
@@ -34,13 +34,10 @@ export default function NovaGarantiaPage() {
     endsAt: "",
   });
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    Promise.all([listContracts(), listPeople()])
+  // M9-D940: carregando, erro com "tentar de novo", 403 e offline vêm do padrão único de estados.
+  const loadQuery = useAsyncState(() => {
+    return Promise.all([listContracts(), listPeople()])
       .then(([contractsRes, peopleRes]) => {
-        if (cancelled) return;
         setContracts(contractsRes || []);
         setPeople(peopleRes || []);
         setForm((prev) => ({
@@ -49,10 +46,8 @@ export default function NovaGarantiaPage() {
           guarantorPersonId: prev.guarantorPersonId || peopleRes?.[0]?.id || "",
         }));
       })
-      .catch((err) => { if (!cancelled) setLoadError(err.message || "Erro ao carregar dados."); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, []);
+      .then(() => true);
+  }, { deps: [], isEmpty: () => false });
 
   const isGuarantor = form.guaranteeType === "GUARANTOR";
   const requiresValidity = GUARANTEE_TYPES_REQUIRING_VALIDITY.includes(form.guaranteeType);
@@ -100,10 +95,10 @@ export default function NovaGarantiaPage() {
     }
   }
 
-  if (loading) {
+  if (loadQuery.status !== UI_STATE.CONTENT) {
     return (
       <AppShell title="Nova garantia" backHref="/painel/contratos/garantias">
-        <SkeletonDetail sections={1} />
+        <AsyncState result={loadQuery} loadingLabel="Carregando dados..." />
       </AppShell>
     );
   }
@@ -111,7 +106,6 @@ export default function NovaGarantiaPage() {
   return (
     <AppShell title="Nova garantia" backHref="/painel/contratos/garantias">
       <div className={styles.wrap}>
-        {loadError ? <Alert tone="danger">{loadError}</Alert> : null}
         {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
 
         <Alert tone="info" title="Fiador exige pessoa vinculada">

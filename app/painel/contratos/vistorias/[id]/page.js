@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { notFound } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -14,7 +14,10 @@ import MfaVerifyModal from "@/components/organisms/MfaVerifyModal/MfaVerifyModal
 import FileViewerModal from "@/components/organisms/FileViewerModal/FileViewerModal";
 import FormField from "@/components/molecules/FormField/FormField";
 import Input from "@/components/atoms/Input/Input";
-import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { reportLookupProblem } from "@/lib/asyncState/lookup";
+import { UI_STATE } from "@/lib/asyncState/states";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { getProperty } from "@/lib/api/properties";
 import { apiFetch } from "@/lib/api/client";
 import {
@@ -55,8 +58,6 @@ export default function VistoriaDetailPage({ params }) {
   const [items, setItems] = useState([]);
   const [users, setUsers] = useState([]);
   const [counterpart, setCounterpart] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [busy, setBusy] = useState(false);
   const [confirmCompleteOpen, setConfirmCompleteOpen] = useState(false);
@@ -77,13 +78,10 @@ export default function VistoriaDetailPage({ params }) {
   const [reportBusy, setReportBusy] = useState(false);
   const [reportError, setReportError] = useState("");
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    Promise.all([getInspection(params.id), listInspectionItems(params.id), apiFetch("/users"), listInspections()])
+  // M9-D940: carregando, erro com "tentar de novo", 403 e offline vêm do padrão único de estados.
+  const loadQuery = useAsyncState(() => {
+    return Promise.all([getInspection(params.id), listInspectionItems(params.id), apiFetch("/users"), listInspections()])
       .then(async ([inspectionRes, itemsRes, usersRes, allInspections]) => {
-        if (cancelled) return;
         setInspection(inspectionRes);
         setItems(itemsRes || []);
         setUsers(usersRes || []);
@@ -91,9 +89,9 @@ export default function VistoriaDetailPage({ params }) {
         if ((itemsRes || []).length > 0) {
           try {
             const mediaEntries = await Promise.all(
-              itemsRes.map((item) => listInspectionItemMedia(item.id).then((media) => [item.id, media || []]).catch(() => [item.id, []]))
+              itemsRes.map((item) => listInspectionItemMedia(item.id).then((media) => [item.id, media || []]).catch((error) => { reportLookupProblem("as mídias do item", error); return [item.id, []]; }))
             );
-            if (!cancelled) setMediaByItem(Object.fromEntries(mediaEntries));
+            setMediaByItem(Object.fromEntries(mediaEntries));
           } catch {
             // Mídia é auxiliar — não bloqueia a exibição da vistoria se falhar.
           }
@@ -102,7 +100,7 @@ export default function VistoriaDetailPage({ params }) {
         if (inspectionRes?.propertyId) {
           try {
             const prop = await getProperty(inspectionRes.propertyId);
-            if (!cancelled) setProperty(prop);
+            setProperty(prop);
           } catch {
             // Imóvel pode não estar disponível.
           }
@@ -110,7 +108,7 @@ export default function VistoriaDetailPage({ params }) {
         if (inspectionRes?.contractId) {
           try {
             const c = await getContract(inspectionRes.contractId);
-            if (!cancelled) setContract(c);
+            setContract(c);
           } catch {
             // Contrato pode não estar disponível.
           }
@@ -119,7 +117,7 @@ export default function VistoriaDetailPage({ params }) {
         if (inspectionRes?.status === "COMPLETED") {
           try {
             const sigs = await listInspectionSignatures(inspectionRes.id);
-            if (!cancelled) setSignatures(sigs || []);
+            setSignatures(sigs || []);
           } catch {
             // Assinaturas podem não estar disponíveis ainda.
           }
@@ -130,33 +128,24 @@ export default function VistoriaDetailPage({ params }) {
           const found = (allInspections || []).find(
             (i) => i.propertyId === inspectionRes.propertyId && i.inspectionType === counterpartType && i.id !== inspectionRes.id
           );
-          if (!cancelled) setCounterpart(found || null);
+          setCounterpart(found || null);
         }
       })
-      .catch((err) => { if (!cancelled) setLoadError(err.message || "Erro ao carregar vistoria."); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, [params.id]);
+      .then(() => true);
+  }, { deps: [params.id], isEmpty: () => false });
 
   function userName(id) {
     return users.find((u) => u.id === id)?.name || "Usuário não identificado";
   }
 
-  if (loading) {
+  if (loadQuery.status !== UI_STATE.CONTENT) {
     return (
       <AppShell title="Vistoria" backHref="/painel/contratos/vistorias">
-        <SkeletonDetail sections={2} />
+        <AsyncState result={loadQuery} loadingLabel="Carregando vistoria..." />
       </AppShell>
     );
   }
 
-  if (loadError) {
-    return (
-      <AppShell title="Vistoria" backHref="/painel/contratos/vistorias">
-        <Alert tone="danger">{loadError}</Alert>
-      </AppShell>
-    );
-  }
 
   if (!inspection) return notFound();
 

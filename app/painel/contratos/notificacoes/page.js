@@ -18,7 +18,7 @@ import Select from "@/components/atoms/Select/Select";
 import Modal from "@/components/organisms/Modal/Modal";
 import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
-import { SkeletonList } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import ContractsNavMenu from "@/components/molecules/ContractsNavMenu/ContractsNavMenu";
 import MfaVerifyModal from "@/components/organisms/MfaVerifyModal/MfaVerifyModal";
@@ -33,15 +33,13 @@ import {
   registerNoticeDeliveryEvidence,
   uploadFile,
 } from "@/lib/api/legal";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { NOTICE_CHANNEL_LABELS, NOTICE_STATUS_LABELS, NOTICE_STATUS_TONE } from "@/lib/mock/legal";
 import { formatDateTime, formatContractLabel } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function NotificacoesPage() {
   const [notices, setNotices] = useState([]);
-  const [contracts, setContracts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
 
@@ -60,19 +58,15 @@ export default function NotificacoesPage() {
   const [mfaOpen, setMfaOpen] = useState(false);
   const [pendingSendId, setPendingSendId] = useState(null);
 
-  function load() {
-    setLoading(true);
-    setLoadError("");
-    Promise.all([listNotices(), listContracts()])
-      .then(([noticesRes, contractsRes]) => {
-        setNotices(noticesRes || []);
-        setContracts(contractsRes || []);
-      })
-      .catch((err) => setLoadError(err.message || "Erro ao carregar notificações."))
-      .finally(() => setLoading(false));
-  }
-
-  useEffect(() => { load(); }, []);
+  // M9-D940: carregando, erro com "tentar de novo", 403 e offline vêm do padrão único de estados.
+  // A lista é editada no lugar (criar/aprovar/enviar), então o vazio fica dentro da tela e a leitura só alimenta `notices`.
+  const listQuery = useAsyncState(async () => {
+    const [noticesRes, contractsRes] = await Promise.all([listNotices(), listContracts()]);
+    return { notices: noticesRes || [], contracts: contractsRes || [] };
+  }, { key: "contratos-notificacoes", isEmpty: () => false });
+  const loaded = listQuery.data;
+  const contracts = useMemo(() => loaded?.contracts || [], [loaded]);
+  useEffect(() => { if (loaded) setNotices(loaded.notices); }, [loaded]);
 
   function contractOf(id) {
     return contracts.find((c) => c.id === id) || null;
@@ -155,7 +149,6 @@ export default function NotificacoesPage() {
 
   return (
     <AppShell title="Notificações" backHref="/painel/contratos">
-      {loadError ? <Alert tone="danger">{loadError}</Alert> : null}
       {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
 
       <Card
@@ -170,9 +163,8 @@ export default function NotificacoesPage() {
           </Select>
         </div>
 
-        {loading ? (
-          <SkeletonList />
-        ) : filtered.length === 0 ? (
+        <AsyncState result={listQuery} loadingLabel="Carregando notificações...">
+        {filtered.length === 0 ? (
           <EmptyState icon="document" title="Nenhuma notificação" description="Crie a primeira notificação formal vinculada a um contrato." />
         ) : (
           <div className={styles.list}>
@@ -207,6 +199,7 @@ export default function NotificacoesPage() {
             })}
           </div>
         )}
+        </AsyncState>
       </Card>
 
       <StickyActionBar>

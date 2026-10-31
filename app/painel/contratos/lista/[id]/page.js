@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
 import { useRouter, notFound } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
@@ -10,7 +10,9 @@ import Icon from "@/components/atoms/Icon/Icon";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
-import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { UI_STATE } from "@/lib/asyncState/states";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import Avatar from "@/components/atoms/Avatar/Avatar";
 import Modal from "@/components/organisms/Modal/Modal";
 import ConfirmAction from "@/components/molecules/ConfirmAction/ConfirmAction";
@@ -81,8 +83,6 @@ export default function ContratoDetailPage({ params }) {
   const [guarantees, setGuarantees] = useState([]);
   const [amendments, setAmendments] = useState([]);
   const [timeline, setTimeline] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [notice, setNotice] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -128,22 +128,19 @@ export default function ContratoDetailPage({ params }) {
   const [stateActionBusy, setStateActionBusy] = useState(false);
   const [stateActionError, setStateActionError] = useState("");
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    Promise.all([
+  // M9-D940: carregando, erro com "tentar de novo", 403 e offline vêm do padrão único de estados.
+  const loadQuery = useAsyncState(() => {
+    return Promise.all([
       getContract(params.id),
       listContractParties(params.id),
       listContractVersions(params.id),
       listGuarantees({ contractId: params.id }),
       listContractAmendments(params.id),
       listPeople(),
-      getContractTimeline(params.id).catch(() => ({ items: [] })),
+      getContractTimeline(params.id).catch(lookupFallback("a linha do tempo do contrato", { items: [] })),
       listContractRequirements(params.id).catch(lookupFallback("as exigências do contrato")),
     ])
       .then(async ([contractRes, partiesRes, versionsRes, guaranteesRes, amendmentsRes, peopleRes, timelineRes, requirementsRes]) => {
-        if (cancelled) return;
         setContract(contractRes);
         setParties(partiesRes || []);
         setVersions(versionsRes || []);
@@ -155,7 +152,7 @@ export default function ContratoDetailPage({ params }) {
         if (contractRes?.propertyId) {
           try {
             const prop = await getProperty(contractRes.propertyId);
-            if (!cancelled) setProperty(prop);
+            setProperty(prop);
           } catch {
             // Imóvel pode não estar disponível — mantém property nulo, tela continua.
           }
@@ -163,33 +160,24 @@ export default function ContratoDetailPage({ params }) {
         const latestVersion = (versionsRes || [])[versionsRes.length - 1] || null;
         if (latestVersion) {
           const sigs = await listSignatures(latestVersion.id);
-          if (!cancelled) setSignatures(sigs || []);
+          setSignatures(sigs || []);
         }
       })
-      .catch((err) => { if (!cancelled) setLoadError(err.message || "Erro ao carregar contrato."); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, [params.id]);
+      .then(() => true);
+  }, { deps: [params.id], isEmpty: () => false });
 
   function personOf(id) {
     return people.find((p) => p.id === id) || null;
   }
 
-  if (loading) {
+  if (loadQuery.status !== UI_STATE.CONTENT) {
     return (
       <AppShell title="Contrato" backHref="/painel/contratos/lista">
-        <SkeletonDetail sections={4} />
+        <AsyncState result={loadQuery} loadingLabel="Carregando contrato..." />
       </AppShell>
     );
   }
 
-  if (loadError) {
-    return (
-      <AppShell title="Contrato" backHref="/painel/contratos/lista">
-        <Alert tone="danger">{loadError}</Alert>
-      </AppShell>
-    );
-  }
 
   if (!contract) return notFound();
 
