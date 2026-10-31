@@ -17,7 +17,7 @@ export const MARKETING_CONSENT_GROUPS = [
         label: "Finalidades que não exigem consentimento",
         type: "text",
         defaultValue: "TRANSACTIONAL, ACOMPANHAMENTO",
-        helper: "Nomes separados por vírgula. Uma finalidade que está nas duas listas conta como exigindo consentimento.",
+        helper: "Nomes separados por vírgula. Uma finalidade que está nas duas listas conta como exigindo consentimento. MARKETING nunca pode estar aqui: o sistema recusa, porque o envio de marketing exige consentimento sempre.",
       },
     ],
   },
