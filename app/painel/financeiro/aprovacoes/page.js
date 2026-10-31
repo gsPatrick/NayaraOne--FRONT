@@ -8,7 +8,8 @@ import Avatar from "@/components/atoms/Avatar/Avatar";
 import Icon from "@/components/atoms/Icon/Icon";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
-import { SkeletonList } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import SearchInput from "@/components/molecules/SearchInput/SearchInput";
 import Select from "@/components/atoms/Select/Select";
 import StatTile from "@/components/molecules/StatTile/StatTile";
@@ -65,8 +66,6 @@ export default function AprovacoesPage() {
   const currentUser = getCurrentUser();
   const [approvalRequests, setApprovalRequests] = useState([]);
   const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [notice, setNotice] = useState(null);
@@ -80,27 +79,17 @@ export default function AprovacoesPage() {
   const { confirm, ConfirmDialog } = useConfirm();
   const [pendingDecision, setPendingDecision] = useState(null); // { request, decision }
 
+  // M9-D940: carregando, erro, sem acesso e sem conexão vêm do padrão único; as decisões atualizam a lista local.
+  // Os nomes dos usuários só enriquecem a lista: se falharem, a falha é registrada (lookupFallback) e as aprovações continuam aparecendo.
+  const approvalsQuery = useAsyncState(async () => {
+    const [ar, us] = await Promise.all([listApprovalRequests(), apiFetch("/users").catch(lookupFallback("os usuários"))]);
+    return { requests: ar || [], users: us || [] };
+  }, { key: "aprovacoes", isEmpty: () => false });
   useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    // Os nomes dos usuários só enriquecem a lista: se falharem, as aprovações continuam aparecendo.
-    Promise.all([listApprovalRequests(), apiFetch("/users").catch(lookupFallback("os usuários"))])
-      .then(([ar, us]) => {
-        if (cancelled) return;
-        setApprovalRequests(ar || []);
-        setUsers(us || []);
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(msg(err, "Não foi possível carregar as aprovações."));
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    if (!approvalsQuery.data) return;
+    setApprovalRequests(approvalsQuery.data.requests);
+    setUsers(approvalsQuery.data.users);
+  }, [approvalsQuery.data]);
 
   function showNotice(tone, title, message) {
     setNotice({ tone, title, message });
@@ -184,12 +173,9 @@ export default function AprovacoesPage() {
 
   return (
     <AppShell title="Aprovações" backHref="/painel/financeiro">
-      {loadError ? <Alert tone="danger" title="Não foi possível carregar as aprovações">{loadError}</Alert> : null}
       {notice ? <Alert tone={notice.tone} title={notice.title} className={styles.notice}>{notice.message}</Alert> : null}
 
-      {loading ? (
-        <SkeletonList rows={5} />
-      ) : (
+      <AsyncState result={approvalsQuery} loadingLabel="Carregando aprovações...">
         <>
           <div className={styles.grid}>
             <StatTile label="Pendentes" value={pendingApprovals.length} tone={pendingApprovals.length > 0 ? "warning" : "success"} icon="shield" />
@@ -279,7 +265,7 @@ export default function AprovacoesPage() {
             </div>
           </div>
         </>
-      )}
+      </AsyncState>
 
       <MfaVerifyModal
         open={Boolean(pendingDecision)}

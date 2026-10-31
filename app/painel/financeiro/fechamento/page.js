@@ -7,6 +7,8 @@
 // (achado na verificação cética final do Marco 4, 11/10/2026).
 
 import { useEffect, useRef, useState } from "react";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Table from "@/components/organisms/Table/Table";
@@ -53,10 +55,12 @@ const HUMAN_CHECKS = {
 };
 
 export default function FechamentoPage() {
-  const [closures, setClosures] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
-  const [closuresLoaded, setClosuresLoaded] = useState(false);
+  // M9-D940: a lista de fechamentos vem do padrão único de estados (carregando, erro com "tentar de novo", sem acesso, sem conexão).
+  const closuresQuery = useAsyncState(() => listPeriodClosures().then((items) => items || []), { key: "fechamento", isEmpty: () => false });
+  const closures = closuresQuery.data || [];
+  const loading = closuresQuery.status === "LOADING";
+  const closuresLoaded = Boolean(closuresQuery.data);
+  const reload = closuresQuery.reload;
 
   const [monthToClose, setMonthToClose] = useState(currentReferenceMonth());
   const [closing, setClosing] = useState(false);
@@ -73,20 +77,6 @@ export default function FechamentoPage() {
   const [reopenReason, setReopenReason] = useState("");
   const [reopening, setReopening] = useState(false);
   const [reopenError, setReopenError] = useState("");
-
-  async function reload() {
-    setLoading(true);
-    setLoadError("");
-    try {
-      const items = await listPeriodClosures();
-      setClosures(items || []);
-      setClosuresLoaded(true);
-    } catch (err) {
-      setLoadError(msg(err, "Não foi possível carregar os fechamentos."));
-    } finally {
-      setLoading(false);
-    }
-  }
 
   // Só a resposta do pedido mais recente vale: trocar de mês rápido não pode deixar o
   // checklist de um mês aparecer em outro.
@@ -108,10 +98,6 @@ export default function FechamentoPage() {
       if (requestId === checklistRequestRef.current) setChecklistLoading(false);
     }
   }
-
-  useEffect(() => {
-    reload();
-  }, []);
 
   useEffect(() => {
     setChecklist(null);
@@ -259,14 +245,7 @@ export default function FechamentoPage() {
   return (
     <AppShell title="Fechamento de período" backHref="/painel/financeiro">
       <div className={styles.wrap}>
-        {loadError ? (
-          <Alert tone="danger">
-            {loadError}{" "}
-            <Button type="button" size="sm" variant="secondary" disabled={loading} onClick={reload}>
-              Tentar de novo
-            </Button>
-          </Alert>
-        ) : null}
+        {!loading && !closuresLoaded ? <AsyncState result={closuresQuery} /> : null}
 
         <Card className={styles.formCard}>
           <h2 className={styles.sectionTitle}>Fechar um mês</h2>

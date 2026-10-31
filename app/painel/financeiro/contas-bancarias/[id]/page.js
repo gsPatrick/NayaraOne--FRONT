@@ -9,7 +9,8 @@ import Icon from "@/components/atoms/Icon/Icon";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
-import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
 import Input from "@/components/atoms/Input/Input";
@@ -35,6 +36,8 @@ import {
 } from "@/lib/api/finance";
 import { formatBRL, formatDate, formatDateTime, humanizeText, formatCompetence } from "@/lib/format";
 import ChangeEvidenceFields from "@/components/molecules/ChangeEvidenceFields/ChangeEvidenceFields";
+import ProtectedValue from "@/components/molecules/ProtectedValue/ProtectedValue";
+import { dropMaskedFields, isServerMasked } from "@/lib/dlp/protectedValue.logic";
 import { EMPTY_EVIDENCE, buildChangeEvidence } from "@/lib/changeEvidence";
 import styles from "./page.module.css";
 
@@ -46,9 +49,6 @@ export default function ContaBancariaDetailPage({ params }) {
   const [owner, setOwner] = useState(null);
   const [relatedEntries, setRelatedEntries] = useState([]);
   const [relatedRepasses, setRelatedRepasses] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
-  const [notFoundFlag, setNotFoundFlag] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editForm, setEditForm] = useState({ bankCode: "", agency: "", accountNumber: "", pixKey: "" });
   const [evidence, setEvidence] = useState(EMPTY_EVIDENCE); // M9-D807: origem da alteração de dado bancário
@@ -57,42 +57,28 @@ export default function ContaBancariaDetailPage({ params }) {
   const [busy, setBusy] = useState(false);
   const [mfaOpen, setMfaOpen] = useState(false);
 
+  // M9-D940: carregando, erro, sem acesso e sem conexão vêm do padrão único; 404 continua indo para a página "não encontrado".
+  const accountQuery = useAsyncState(async () => {
+    const acc = await getBankAccount(params.id);
+    const [ownerData, entries, repasses] = await Promise.all([
+      acc.ownerPersonId ? getPerson(acc.ownerPersonId).catch(lookupFallback("a pessoa", null)) : Promise.resolve(null),
+      listFinancialEntries({ bankAccountId: params.id }),
+      listOwnerRepasses(),
+    ]);
+    return { acc, ownerData, entries: entries || [], repasses: (repasses || []).filter((r) => r.bankAccountId === params.id) };
+  }, { key: `conta-bancaria:${params.id}`, deps: [params.id], isEmpty: () => false });
   useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    getBankAccount(params.id)
-      .then((acc) => {
-        if (cancelled) return;
-        setAccount(acc);
-        setEditForm({ bankCode: acc.bankCode || "", agency: acc.agency || "", accountNumber: acc.accountNumber || "", pixKey: acc.pixKey || "" });
-        return Promise.all([
-          acc.ownerPersonId ? getPerson(acc.ownerPersonId).catch(lookupFallback("a pessoa", null)) : Promise.resolve(null),
-          listFinancialEntries({ bankAccountId: params.id }),
-          listOwnerRepasses(),
-        ]);
-      })
-      .then((result) => {
-        if (cancelled || !result) return;
-        const [ownerData, entries, repasses] = result;
-        setOwner(ownerData);
-        setRelatedEntries(entries || []);
-        setRelatedRepasses((repasses || []).filter((r) => r.bankAccountId === params.id));
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        if (err?.status === 404) setNotFoundFlag(true);
-        else setLoadError(err?.message || "Não foi possível carregar a conta bancária.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [params.id]);
+    const data = accountQuery.data;
+    if (!data) return;
+    const acc = data.acc;
+    setAccount(acc);
+    setEditForm({ bankCode: acc.bankCode || "", agency: acc.agency || "", accountNumber: isServerMasked(acc.accountNumber) ? "" : acc.accountNumber || "", pixKey: isServerMasked(acc.pixKey) ? "" : acc.pixKey || "" });
+    setOwner(data.ownerData);
+    setRelatedEntries(data.entries);
+    setRelatedRepasses(data.repasses);
+  }, [accountQuery.data]);
 
-  if (notFoundFlag) return notFound();
+  if (accountQuery.error?.status === 404) return notFound();
 
   const remaining = account ? bankAccountCooldownRemainingHours({ ...account, updatedAt: account.updatedAt || account.updated_at }) : 0;
 
@@ -125,7 +111,8 @@ export default function ContaBancariaDetailPage({ params }) {
       // Alterar qualquer dado sensível reabre o resfriamento de 48h automaticamente no
       // backend (bankAccounts.service.js SENSITIVE_FIELDS) — não simulamos isso no front.
       const changeEvidence = await buildChangeEvidence(evidence);
-      const updated = await updateBankAccount(account.id, { ...editForm, ...(changeEvidence ? { changeEvidence } : {}) });
+      // M9-D825: o valor que o servidor devolveu mascarado nunca volta na edição (campo em branco = manter).
+      const updated = await updateBankAccount(account.id, { ...dropMaskedFields(editForm, account, ["accountNumber", "pixKey"]), ...(changeEvidence ? { changeEvidence } : {}) });
       setAccount(updated);
       setEvidence(EMPTY_EVIDENCE);
       setNotice({ tone: "warning", text: "Dados sensíveis alterados — a conta voltou para resfriamento de 48h antes de poder receber pagamentos novamente." });
@@ -138,11 +125,8 @@ export default function ContaBancariaDetailPage({ params }) {
 
   return (
     <AppShell title={account?.bankCode ? getBankName(account.bankCode) : "Conta bancária"} backHref="/painel/financeiro/contas-bancarias">
-      {loadError ? <Alert tone="danger" title="Não foi possível carregar a conta bancária">{loadError}</Alert> : null}
-
-      {loading ? (
-        <SkeletonDetail sections={3} />
-      ) : !account ? null : (
+      <AsyncState result={accountQuery} loadingLabel="Carregando conta bancária...">
+      {!account ? null : (
         <div className={styles.wrap}>
           <div className={styles.headerRow}>
             <BankLogo bankCode={account.bankCode} size={48} />
@@ -189,15 +173,15 @@ export default function ContaBancariaDetailPage({ params }) {
                   <div className={styles.detailRow}><dt>Banco</dt><dd>{account.bankCode ? `${getBankName(account.bankCode)} (${account.bankCode})` : "Sem banco cadastrado"}</dd></div>
                   <div className={styles.detailRow}>
                     <dt>Agência</dt>
-                    <dd className={styles.mono}>{account.agency ? (revealed ? account.agency : maskAgency(account.agency)) : "Sem agência cadastrada"}</dd>
+                    <dd className={styles.mono}>{account.agency ? <ProtectedValue classification="HIGH" resourceType="finance.bank_account" resourceId={account.id} field="agency" value={account.agency}>{revealed ? account.agency : maskAgency(account.agency)}</ProtectedValue> : "Sem agência cadastrada"}</dd>
                   </div>
                   <div className={styles.detailRow}>
                     <dt>Conta</dt>
-                    <dd className={styles.mono}>{account.accountNumber ? (revealed ? account.accountNumber : maskAccountNumber(account.accountNumber)) : "Sem número da conta cadastrado"}</dd>
+                    <dd className={styles.mono}>{account.accountNumber ? <ProtectedValue classification="RESTRICTED" resourceType="finance.bank_account" resourceId={account.id} field="accountNumber" value={account.accountNumber}>{revealed ? account.accountNumber : maskAccountNumber(account.accountNumber)}</ProtectedValue> : "Sem número da conta cadastrado"}</dd>
                   </div>
                   <div className={styles.detailRow}>
                     <dt>Chave PIX</dt>
-                    <dd className={styles.mono}>{account.pixKey ? (revealed ? account.pixKey : maskPixKey(account.pixKey)) : "Sem chave PIX cadastrada"}</dd>
+                    <dd className={styles.mono}>{account.pixKey ? <ProtectedValue classification="RESTRICTED" resourceType="finance.bank_account" resourceId={account.id} field="pixKey" value={account.pixKey}>{revealed ? account.pixKey : maskPixKey(account.pixKey)}</ProtectedValue> : "Sem chave PIX cadastrada"}</dd>
                   </div>
                   <div className={styles.detailRow}><dt>Última alteração</dt><dd>{formatDateTime(account.updatedAt || account.updated_at)}</dd></div>
                   <div className={styles.detailRow}><dt>ID</dt><dd className={styles.mono}>{account.id}</dd></div>
@@ -247,6 +231,7 @@ export default function ContaBancariaDetailPage({ params }) {
           </div>
         </div>
       )}
+      </AsyncState>
 
       <Modal
         open={editOpen}

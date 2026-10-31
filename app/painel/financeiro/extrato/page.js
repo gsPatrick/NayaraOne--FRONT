@@ -7,6 +7,8 @@
 // ordem exata (ver NayaraOne--API/src/features/finance/bankTransactions.service.js).
 
 import { useEffect, useState } from "react";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Table from "@/components/organisms/Table/Table";
@@ -23,6 +25,7 @@ import { listBankAccounts, listBankTransactions, importBankStatement } from "@/l
 import { getBankName } from "@/lib/mock/banks";
 import { formatCalendarDay } from "@/lib/finance/extras";
 import { formatBRL } from "@/lib/format";
+import { maskAccountNumber } from "@/lib/mask";
 import styles from "./page.module.css";
 
 const CSV_HEADER = "externalTransactionId,transactionDate,description,amount";
@@ -31,59 +34,32 @@ export default function ExtratoBancarioPage() {
   const canImport = useHasPermission("finance:create");
   const [accounts, setAccounts] = useState([]);
   const [bankAccountId, setBankAccountId] = useState("");
-  const [transactions, setTransactions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
 
   const [fileName, setFileName] = useState("");
   const [fileError, setFileError] = useState("");
   const [uploading, setUploading] = useState(false);
   const [result, setResult] = useState(null);
 
+  // M9-D940: contas e extrato vêm do padrão único de estados (carregando, erro com "tentar de novo", sem acesso, sem conexão).
+  const accountsQuery = useAsyncState(() => listBankAccounts().then((items) => items || []), { key: "extrato:contas", isEmpty: () => false });
   useEffect(() => {
-    let cancelled = false;
-    listBankAccounts()
-      .then((items) => {
-        if (cancelled) return;
-        setAccounts(items || []);
-        if (items?.length && !bankAccountId) setBankAccountId(items[0].id);
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar as contas bancárias.");
-      });
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    const items = accountsQuery.data;
+    if (!items) return;
+    setAccounts(items);
+    setBankAccountId((current) => current || (items.length ? items[0].id : ""));
+  }, [accountsQuery.data]);
 
-  useEffect(() => {
-    if (!bankAccountId) {
-      setTransactions([]);
-      setLoading(false);
-      return;
-    }
-    let cancelled = false;
-    setLoading(true);
-    listBankTransactions({ bankAccountId })
-      .then((items) => {
-        if (!cancelled) setTransactions(items || []);
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar o extrato.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [bankAccountId]);
+  const transactionsQuery = useAsyncState(() => listBankTransactions({ bankAccountId }).then((items) => items || []), {
+    key: `extrato:${bankAccountId}`,
+    deps: [bankAccountId],
+    enabled: Boolean(bankAccountId),
+    isEmpty: () => false,
+  });
+  const transactions = transactionsQuery.data || [];
 
   async function reloadTransactions() {
     if (!bankAccountId) return;
-    const items = await listBankTransactions({ bankAccountId });
-    setTransactions(items || []);
+    await transactionsQuery.reload();
   }
 
   function handleFiles(files) {
@@ -131,12 +107,7 @@ export default function ExtratoBancarioPage() {
   return (
     <AppShell title="Extrato bancário" backHref="/painel/financeiro">
       <div className={styles.wrap}>
-        {loadError ? (
-          <div style={{ position: "fixed", top: "var(--space-4)", left: "50%", transform: "translateX(-50%)", zIndex: 200, width: "min(560px, calc(100vw - 2 * var(--space-4)))" }}>
-            <Alert tone="danger">{loadError}</Alert>
-          </div>
-        ) : null}
-
+        <AsyncState result={accountsQuery} loadingLabel="Carregando contas bancárias...">
         <Card className={styles.importCard}>
           <h2 className={styles.sectionTitle}>Importar extrato (CSV)</h2>
           <p className={styles.helper}>
@@ -152,7 +123,7 @@ export default function ExtratoBancarioPage() {
             >
               {accounts.map((acc) => (
                 <option key={acc.id} value={acc.id}>
-                  {getBankName(acc.bankCode) || acc.bankCode} — ag {acc.agency} / cc {acc.accountNumber}
+                  {getBankName(acc.bankCode) || acc.bankCode} — ag {acc.agency} / cc {maskAccountNumber(acc.accountNumber)}
                 </option>
               ))}
             </Select>
@@ -188,8 +159,15 @@ export default function ExtratoBancarioPage() {
 
         <Card>
           <h2 className={styles.sectionTitle}>Histórico importado</h2>
-          <Table columns={columns} rows={transactions} loading={loading} emptyMessage="Nenhuma transação importada para esta conta ainda." />
+          {bankAccountId ? (
+            <AsyncState result={transactionsQuery} loadingLabel="Carregando extrato...">
+              <Table columns={columns} rows={transactions} emptyMessage="Nenhuma transação importada para esta conta ainda." />
+            </AsyncState>
+          ) : (
+            <Table columns={columns} rows={[]} emptyMessage="Cadastre uma conta bancária para importar e consultar o extrato." />
+          )}
         </Card>
+        </AsyncState>
       </div>
 
       <StickyActionBar>

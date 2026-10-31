@@ -11,6 +11,8 @@ import Button from "@/components/atoms/Button/Button";
 import FormField from "@/components/molecules/FormField/FormField";
 import Input from "@/components/atoms/Input/Input";
 import Alert from "@/components/molecules/Alert/Alert";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import MfaVerifyModal from "@/components/organisms/MfaVerifyModal/MfaVerifyModal";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu";
@@ -43,50 +45,37 @@ const COMPONENTS = [
 ];
 
 export default function CommissionRulePage() {
-  const [rule, setRule] = useState(null);
-  const [ruleMessage, setRuleMessage] = useState("");
+  // M9-D940: a regra vigente e o histórico vêm do padrão único de estados. "Nenhuma regra publicada" é só o 404 da API;
+  // sem acesso, sem conexão e erro de servidor aparecem com o estado certo (nunca como "sem regra").
+  const ruleQuery = useAsyncState(
+    () => getCommissionRule().then((current) => ({ current })).catch((err) => {
+      if (err?.status === 404) return { current: null };
+      throw err;
+    }),
+    { key: "regra-comissao", isEmpty: () => false }
+  );
+  const rule = ruleQuery.data?.current || null;
+  const ruleMessage = ruleQuery.data ? "Nenhuma regra de comissão publicada ainda." : "";
+  const versionsQuery = useAsyncState(() => listCommissionRuleVersions().then((list) => (Array.isArray(list) ? list : [])), { key: "regra-comissao:versoes", isEmpty: () => false });
+  const versions = versionsQuery.data || [];
   const [values, setValues] = useState({ BROKER: "", MANAGER: "", CORRESPONDENT: "" });
   const [formError, setFormError] = useState("");
   const [success, setSuccess] = useState("");
   const [mfaOpen, setMfaOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [versions, setVersions] = useState([]);
-  const [versionsError, setVersionsError] = useState("");
-  const [versionsLoading, setVersionsLoading] = useState(true);
-
-  async function loadVersions() {
-    setVersionsLoading(true);
-    setVersionsError("");
-    try {
-      const list = await listCommissionRuleVersions();
-      setVersions(Array.isArray(list) ? list : []);
-    } catch (err) {
-      setVersionsError(/failed to fetch/i.test(err?.message || "") ? "Não foi possível conectar ao servidor para carregar o histórico de versões." : err?.message || "Não foi possível carregar o histórico de versões.");
-    } finally {
-      setVersionsLoading(false);
-    }
-  }
-
-  async function load() {
-    loadVersions();
-    setRuleMessage("");
-    try {
-      const current = await getCommissionRule();
-      setRule(current);
-      const next = { BROKER: "", MANAGER: "", CORRESPONDENT: "" };
-      Object.entries(current?.components || {}).forEach(([k, v]) => {
-        next[k] = String(v);
-      });
-      setValues(next);
-    } catch (err) {
-      setRule(null);
-      setRuleMessage(err?.message || "Nenhuma regra de comissão publicada ainda.");
-    }
-  }
 
   useEffect(() => {
-    load();
-  }, []);
+    const current = ruleQuery.data?.current;
+    const next = { BROKER: "", MANAGER: "", CORRESPONDENT: "" };
+    Object.entries(current?.components || {}).forEach(([k, v]) => {
+      next[k] = String(v);
+    });
+    if (ruleQuery.data) setValues(next);
+  }, [ruleQuery.data]);
+
+  async function load() {
+    await Promise.all([ruleQuery.reload(), versionsQuery.reload()]);
+  }
 
   function buildPayload() {
     const payload = {};
@@ -139,17 +128,19 @@ export default function CommissionRulePage() {
               Versão {rule.versionNumber ?? "vigente"}{rule.effectiveFrom ? ` (publicada em ${formatDateTime(rule.effectiveFrom)})` : ""} · base: valor do recebimento ·{" "}
               {COMPONENTS.map(({ key, label }) => `${label.replace(" (%)", "")}: ${rule.components?.[key] != null ? formatPercent(rule.components[key]) : "não se aplica"}`).join(" · ")}
             </p>
+          ) : ruleQuery.data ? (
+            <p className={styles.helper}>{ruleMessage}</p>
           ) : (
-            <p className={styles.helper}>{ruleMessage || "Carregando..."}</p>
+            <AsyncState result={ruleQuery} loadingLabel="Carregando regra vigente..." />
           )}
         </Card>
 
         <Card className={styles.formCard}>
           <h2 className={styles.sectionTitle}>Histórico de versões</h2>
           <p className={styles.helper}>Todas as versões publicadas, da mais nova para a mais antiga. Comissões já calculadas guardam a versão que usaram.</p>
-          {versionsError ? <Alert tone="danger">{versionsError}</Alert> : null}
+          {versionsQuery.status !== "LOADING" && !versionsQuery.data ? <AsyncState result={versionsQuery} /> : null}
           <Table
-            loading={versionsLoading}
+            loading={versionsQuery.status === "LOADING" && !versionsQuery.data}
             rows={versions}
             emptyMessage="Nenhuma versão publicada ainda."
             columns={[

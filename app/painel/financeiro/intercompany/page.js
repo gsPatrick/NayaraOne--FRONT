@@ -6,6 +6,8 @@
 // service, mas nunca ganhou tela — mesma classe de gap do extrato, orçamento e fechamento.
 
 import { useEffect, useState } from "react";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Table from "@/components/organisms/Table/Table";
@@ -34,6 +36,7 @@ import { uploadFile } from "@/lib/api/legal";
 import { listCompanies } from "@/lib/api/companies";
 import { useCompany } from "@/lib/context/CompanyContext";
 import { formatBRL, formatDateTime, toNumber } from "@/lib/format";
+import { maskAccountNumber } from "@/lib/mask";
 import styles from "./page.module.css";
 
 import { lookupFallback } from "@/lib/asyncState/lookup";
@@ -54,8 +57,6 @@ export default function IntercompanyPage() {
   const [companies, setCompanies] = useState([]);
   const [destCompanies, setDestCompanies] = useState([]);
   const [transfers, setTransfers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
 
   const [toCompanyId, setToCompanyId] = useState("");
   const [amount, setAmount] = useState("");
@@ -77,30 +78,26 @@ export default function IntercompanyPage() {
   const [rejectError, setRejectError] = useState("");
   const [rejecting, setRejecting] = useState(false);
 
-  async function reload() {
-    setLoading(true);
-    setLoadError("");
-    try {
-      const [companyList, transferList, accountList, destList] = await Promise.all([
-        listCompanies().catch(lookupFallback("as empresas")),
-        listIntercompanyTransfers(),
-        listBankAccounts(),
-        listIntercompanyDestinationCompanies().catch(lookupFallback("as empresas de destino")),
-      ]);
-      setCompanies([...(companyList || []), ...(destList || []).filter((d) => !(companyList || []).some((c) => c.id === d.id))]);
-      setDestCompanies(destList || []);
-      setTransfers(transferList || []);
-      setOwnAccounts((accountList || []).filter((a) => a.status !== "BLOCKED"));
-    } catch (err) {
-      setLoadError(friendly(err, "Não foi possível carregar as transferências intercompany."));
-    } finally {
-      setLoading(false);
-    }
-  }
-
+  // M9-D940: carregando, erro com "tentar de novo", sem acesso e sem conexão vêm do padrão único de estados.
+  const transfersQuery = useAsyncState(async () => {
+    const [companyList, transferList, accountList, destList] = await Promise.all([
+      listCompanies().catch(lookupFallback("as empresas")),
+      listIntercompanyTransfers(),
+      listBankAccounts(),
+      listIntercompanyDestinationCompanies().catch(lookupFallback("as empresas de destino")),
+    ]);
+    return { companyList: companyList || [], transferList: transferList || [], accountList: accountList || [], destList: destList || [] };
+  }, { key: "intercompany", isEmpty: () => false });
+  const loading = transfersQuery.status === "LOADING";
+  const reload = transfersQuery.reload;
   useEffect(() => {
-    reload();
-  }, []);
+    const data = transfersQuery.data;
+    if (!data) return;
+    setCompanies([...data.companyList, ...data.destList.filter((d) => !data.companyList.some((c) => c.id === d.id))]);
+    setDestCompanies(data.destList);
+    setTransfers(data.transferList);
+    setOwnAccounts(data.accountList.filter((a) => a.status !== "BLOCKED"));
+  }, [transfersQuery.data]);
 
   // M45 F8: só empresas onde o usuário tem finance:read entram como destino; as demais são
   // explicadas abaixo do campo (o backend recusa listar contas sem essa permissão — regra correta).
@@ -118,7 +115,7 @@ export default function IntercompanyPage() {
   }, [toCompanyId]);
 
   function accountLabel(a) {
-    return `${a.bankCode} · ag. ${a.agency || "sem agência"} · ${a.accountNumber}`;
+    return `${a.bankCode} · ag. ${a.agency || "sem agência"} · ${maskAccountNumber(a.accountNumber)}`;
   }
 
   function handleCreateClick(e) {
@@ -292,12 +289,7 @@ export default function IntercompanyPage() {
   return (
     <AppShell title="Transferências intercompany" backHref="/painel/financeiro">
       <div className={styles.wrap}>
-        {loadError ? (
-          <Alert tone="danger">
-            {loadError}{" "}
-            <Button type="button" size="sm" variant="secondary" onClick={() => { setLoadError(""); reload(); }}>Tentar de novo</Button>
-          </Alert>
-        ) : null}
+        {!loading && !transfersQuery.data ? <AsyncState result={transfersQuery} /> : null}
 
         <Card className={styles.formCard}>
           <h2 className={styles.sectionTitle}>Nova transferência</h2>

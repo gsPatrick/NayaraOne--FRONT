@@ -6,7 +6,7 @@
 // etapas executadas por competência. Uma versão nova só vale para competências que ainda não
 // começaram a cadência — as já em andamento continuam na versão em que começaram.
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Table from "@/components/organisms/Table/Table";
@@ -28,6 +28,8 @@ import { formatBRL, formatDate, formatDateTime, formatContractLabel } from "@/li
 import styles from "./page.module.css";
 
 import { reportLookupProblem } from "@/lib/asyncState/lookup";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 const ACTION_LABELS = {
   NOTIFY: "Notificação interna",
   TASK: "Tarefa de cobrança",
@@ -97,8 +99,10 @@ function validateDraft(draft, limits) {
 }
 
 export default function ReguaCobrancaPage() {
-  const [rule, setRule] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // M9-D940: a régua vigente e as etapas executadas vêm do padrão único de estados (carregando, erro com "tentar de novo", sem acesso, sem conexão).
+  const ruleQuery = useAsyncState(() => getCollectionCadence(), { key: "regua-cobranca", isEmpty: () => false });
+  const rule = ruleQuery.data || null;
+  const loading = ruleQuery.status === "LOADING";
   const [actionError, setActionError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -111,7 +115,6 @@ export default function ReguaCobrancaPage() {
   const [filters, setFilters] = useState({ period: "", outcome: "", action: "", contractId: "" });
   const [appliedFilters, setAppliedFilters] = useState({});
   const [page, setPage] = useState(1);
-  const [stepsTotal, setStepsTotal] = useState(0);
   const [contracts, setContracts] = useState([]);
 
   useEffect(() => {
@@ -119,46 +122,22 @@ export default function ReguaCobrancaPage() {
       .then((list) => setContracts(list || []))
       .catch((error) => { reportLookupProblem("os contratos", error); setContracts([]); });
   }, []);
-  const [steps, setSteps] = useState([]);
-  const [stepsLoading, setStepsLoading] = useState(true);
+  const stepsQuery = useAsyncState(() => fetchStepsPage({ ...appliedFilters, page, pageSize: PAGE_SIZE }), {
+    key: `regua-cobranca:etapas:${JSON.stringify(appliedFilters)}:${page}`,
+    deps: [appliedFilters, page],
+    isEmpty: () => false,
+  });
+  const steps = stepsQuery.data?.rows || [];
+  const stepsLoading = stepsQuery.status === "LOADING";
 
   useEffect(() => {
     setCanManage(hasPermission("billing:cadence:manage"));
   }, []);
 
-  const loadRule = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await getCollectionCadence();
-      setRule(data);
-      setDraft(toEditable(data?.current?.steps || data?.defaultSteps));
-    } catch (err) {
-      setActionError(err?.message || "Não foi possível carregar a régua de cobrança.");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const loadSteps = useCallback(async () => {
-    setStepsLoading(true);
-    try {
-      const { rows, total } = await fetchStepsPage({ ...appliedFilters, page, pageSize: PAGE_SIZE });
-      setSteps(rows);
-      setStepsTotal(total);
-    } catch (err) {
-      setActionError(err?.message || "Não foi possível carregar as etapas executadas.");
-    } finally {
-      setStepsLoading(false);
-    }
-  }, [appliedFilters, page]);
-
+  const loadRule = ruleQuery.reload;
   useEffect(() => {
-    loadRule();
-  }, [loadRule]);
-
-  useEffect(() => {
-    loadSteps();
-  }, [loadSteps]);
+    if (ruleQuery.data) setDraft(toEditable(ruleQuery.data?.current?.steps || ruleQuery.data?.defaultSteps));
+  }, [ruleQuery.data]);
 
   function updateStep(index, field, value) {
     setDraft((prev) => prev.map((s, i) => (i === index ? { ...s, [field]: value } : s)));
@@ -215,6 +194,7 @@ export default function ReguaCobrancaPage() {
     setAppliedFilters({ ...filters });
   }
 
+  const stepsTotal = stepsQuery.data?.total || 0;
   const totalPages = Math.max(1, Math.ceil(stepsTotal / PAGE_SIZE));
   const current = rule?.current;
   const sortedPreview = [...draft]
@@ -264,8 +244,8 @@ export default function ReguaCobrancaPage() {
 
         <Card className={styles.formCard}>
           <h2 className={styles.sectionTitle}>Versão vigente</h2>
-          {loading ? (
-            <p className={styles.helper}>Carregando...</p>
+          {!rule ? (
+            <AsyncState result={ruleQuery} loadingLabel="Carregando régua de cobrança..." />
           ) : current ? (
             <p className={styles.helper}>
               Versão v{current.versionNumber}, vigente desde {formatDateTime(current.effectiveFrom)}. Uma nova versão vale só para competências que ainda não iniciaram a cadência.
@@ -381,6 +361,7 @@ export default function ReguaCobrancaPage() {
               Filtrar
             </Button>
           </form>
+          {!stepsQuery.data && !stepsLoading ? <AsyncState result={stepsQuery} /> : null}
           <Table columns={stepColumns} rows={steps} loading={stepsLoading} emptyMessage="Nenhuma etapa executada com esses filtros." />
           <div className={styles.paginationRow}>
             <Button type="button" size="sm" variant="ghost" disabled={page <= 1 || stepsLoading} onClick={() => setPage((p) => Math.max(1, p - 1))}>

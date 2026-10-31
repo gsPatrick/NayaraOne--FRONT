@@ -9,7 +9,7 @@
 // finance.routes.js (GET /finance/anomaly-cases, POST /finance/anomaly-cases/:id/resolve); esta
 // tela é a primeira forma de um humano realmente operar essa fila.
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Badge from "@/components/atoms/Badge/Badge";
@@ -19,7 +19,8 @@ import Modal from "@/components/organisms/Modal/Modal";
 import Input from "@/components/atoms/Input/Input";
 import FormField from "@/components/molecules/FormField/FormField";
 import Select from "@/components/atoms/Select/Select";
-import { SkeletonList } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import StatTile from "@/components/molecules/StatTile/StatTile";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu";
@@ -36,31 +37,20 @@ const STATUS_LABELS = { OPEN: "Aberto", RESOLVED: "Resolvido" };
 const STATUS_TONE = { OPEN: "warning", RESOLVED: "success" };
 
 export default function AntifraudePage() {
-  const [cases, setCases] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [statusFilter, setStatusFilter] = useState("OPEN");
   const [riskFilter, setRiskFilter] = useState("");
   const [notice, setNotice] = useState(null);
   const [busyId, setBusyId] = useState(null);
   const [resolveModal, setResolveModal] = useState(null);
 
-  function load() {
-    setLoading(true);
-    setLoadError("");
+  // M9-D940: carregando, vazio, erro, sem acesso e sem conexão vêm do padrão único de estados.
+  const casesQuery = useAsyncState(() => {
     const params = {};
     if (statusFilter) params.status = statusFilter;
     if (riskFilter) params.riskLevel = riskFilter;
-    listAnomalyCases(params)
-      .then((items) => setCases(items || []))
-      .catch((err) => setLoadError(err?.message || "Não foi possível carregar os casos de anomalia."))
-      .finally(() => setLoading(false));
-  }
-
-  useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter, riskFilter]);
+    return listAnomalyCases(params).then((items) => items || []);
+  }, { key: `antifraude:${statusFilter}:${riskFilter}`, deps: [statusFilter, riskFilter] });
+  const cases = useMemo(() => casesQuery.data || [], [casesQuery.data]);
 
   function showNotice(tone, title, message) {
     setNotice({ tone, title, message });
@@ -71,8 +61,8 @@ export default function AntifraudePage() {
   async function handleResolve(anomalyCase, resolutionNote) {
     setBusyId(anomalyCase.id);
     try {
-      const updated = await resolveAnomalyCase(anomalyCase.id, resolutionNote);
-      setCases((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+      await resolveAnomalyCase(anomalyCase.id, resolutionNote);
+      casesQuery.reload();
       setResolveModal(null);
       showNotice("success", "Caso resolvido", "Caso de anomalia marcado como resolvido.");
     } catch (err) {
@@ -88,7 +78,6 @@ export default function AntifraudePage() {
   return (
     <AppShell title="Antifraude" subtitle="Financeiro">
       <FinanceNavMenu />
-      {loadError ? <Alert tone="danger" title="Não foi possível carregar">{loadError}</Alert> : null}
       {notice ? <Alert tone={notice.tone} title={notice.title} className={styles.notice}>{notice.message}</Alert> : null}
 
       <div className={styles.grid}>
@@ -112,11 +101,7 @@ export default function AntifraudePage() {
           </Select>
         </div>
 
-        {loading ? (
-          <SkeletonList rows={4} />
-        ) : cases.length === 0 ? (
-          <p className={styles.emptyText}>Nenhum caso de anomalia encontrado para este filtro.</p>
-        ) : (
+        <AsyncState result={casesQuery} loadingLabel="Carregando casos de anomalia..." emptyTitle="Nenhum caso de anomalia encontrado" emptyDescription="Não há casos para este filtro.">
           <ul className={styles.list}>
             {cases.map((c) => (
               <li key={c.id} className={styles.row}>
@@ -147,7 +132,7 @@ export default function AntifraudePage() {
               </li>
             ))}
           </ul>
-        )}
+        </AsyncState>
       </Card>
 
       <StickyActionBar>

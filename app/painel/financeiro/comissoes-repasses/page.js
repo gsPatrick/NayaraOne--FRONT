@@ -9,6 +9,8 @@ import Avatar from "@/components/atoms/Avatar/Avatar";
 import Icon from "@/components/atoms/Icon/Icon";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useCommissionsRepassesData } from "./useCommissionsRepassesData";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import SearchInput from "@/components/molecules/SearchInput/SearchInput";
 import Select from "@/components/atoms/Select/Select";
@@ -55,6 +57,7 @@ import { apiFetch } from "@/lib/api/client";
 import { commissionDescription } from "@/lib/finance/labels";
 import { formatBRL, formatDate, formatPercent, formatContractLabel, toNumber, humanizeText, formatCompetence } from "@/lib/format";
 import { buildMonthlyChartData } from "@/lib/monthlyChartData";
+import { maskAccountNumber } from "@/lib/mask";
 import styles from "./page.module.css";
 
 import { lookupFallback, reportLookupProblem } from "@/lib/asyncState/lookup";
@@ -79,18 +82,9 @@ function personOf(people, id) {
 }
 
 export default function ComissoesRepassesPage() {
-  const [commissions, setCommissions] = useState([]);
-  const [installments, setInstallments] = useState([]);
+  // M9-D940: cada bloco carrega pelo padrão único de estados (ver useCommissionsRepassesData).
+  const { commissions, setCommissions, installments, setInstallments, repasses, setRepasses, bankAccounts, pendingEntries, people, users, failed, loading, reload } = useCommissionsRepassesData();
   const [newRepasseModal, setNewRepasseModal] = useState(false);
-  const [repasses, setRepasses] = useState([]);
-  const [bankAccounts, setBankAccounts] = useState([]);
-  const [pendingEntries, setPendingEntries] = useState([]);
-  const [people, setPeople] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  // Cada bloco carrega sozinho: se um falha, os outros continuam aparecendo.
-  const [blockErrors, setBlockErrors] = useState({});
-  const [reloadTick, setReloadTick] = useState(0);
   const [modalError, setModalError] = useState("");
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
@@ -137,48 +131,6 @@ export default function ComissoesRepassesPage() {
       setCompositionModal({ repasse, loading: false, data: null, error: err?.message || "Não foi possível carregar a composição." });
     }
   }
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    const blocks = [
-      {
-        key: "comissoes",
-        label: "as comissões",
-        run: () => listCommissions({ includeInstallments: true }),
-        apply: (com) => {
-          setCommissions(com || []);
-          // O2 (auditoria M45): parcelas vêm junto da listagem (uma chamada), sem N+1.
-          setInstallments((com || []).flatMap((c) => c.installments || []));
-        },
-      },
-      { key: "repasses", label: "os repasses", run: () => listOwnerRepasses(), apply: (rep) => setRepasses(rep || []) },
-      { key: "contas", label: "as contas bancárias", run: () => listBankAccounts(), apply: (ba) => setBankAccounts(ba || []) },
-      { key: "lancamentos", label: "os lançamentos pendentes", run: () => listFinancialEntries({ status: "PENDING" }), apply: (e) => setPendingEntries(e || []) },
-      { key: "pessoas", label: "as pessoas", run: () => listPeople(), apply: (pp) => setPeople(pp || []) },
-      { key: "usuarios", label: "os usuários", run: () => apiFetch("/users"), apply: (us) => setUsers(us || []) },
-    ];
-    setBlockErrors({});
-    Promise.all(
-      blocks.map((b) =>
-        b
-          .run()
-          .then((result) => {
-            if (!cancelled) b.apply(result);
-          })
-          .catch((err) => {
-            if (!cancelled) {
-              setBlockErrors((prev) => ({ ...prev, [b.key]: `Não foi possível carregar ${b.label}. ${friendlyMessage(err, "")}`.trim() }));
-            }
-          })
-      )
-    ).finally(() => {
-      if (!cancelled) setLoading(false);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [reloadTick]);
 
   function showNotice(tone, title, message) {
     setNotice({ tone, title, message });
@@ -279,7 +231,7 @@ export default function ComissoesRepassesPage() {
       setApproveModal(repasse);
     } finally {
       setBusyId(null);
-      setReloadTick((n) => n + 1);
+      reload();
     }
   }
 
@@ -351,17 +303,10 @@ export default function ComissoesRepassesPage() {
 
   return (
     <AppShell title="Comissões & Repasses" backHref="/painel/financeiro">
-      {Object.entries(blockErrors).map(([key, message]) => (
-        <Alert key={key} tone="danger" className={styles.notice}>
-          {message}{" "}
-          <Button size="sm" variant="secondary" onClick={() => setReloadTick((t) => t + 1)}>Tentar de novo</Button>
-        </Alert>
-      ))}
+      {failed.map((query, index) => <AsyncState key={index} result={query} />)}
       {notice ? <Alert tone={notice.tone} title={notice.title} className={styles.notice}>{notice.message}</Alert> : null}
 
-      {loading ? (
-        <SkeletonDetail sections={3} />
-      ) : (
+      {loading ? <AsyncState result={{ status: "LOADING", data: null }} loadingLabel="Carregando comissões e repasses..." /> : (
         <>
           <div className={styles.grid}>
             <StatTile label="Comissões (total)" value={formatBRL(totalCommissions)} tone="info" icon="chart" />
@@ -750,7 +695,7 @@ function NewRepasseModal({ open, error, people, bankAccounts, onClose, onConfirm
         <Select id="nr-bank" value={form.bankAccountId} onChange={update("bankAccountId")}>
           <option value="">Definir depois</option>
           {activeAccounts.map((a) => (
-            <option key={a.id} value={a.id}>{a.bankName || a.bankCode} · ag. {a.agency} · cc {a.accountNumber}</option>
+            <option key={a.id} value={a.id}>{a.bankName || a.bankCode} · ag. {a.agency} · cc {maskAccountNumber(a.accountNumber)}</option>
           ))}
         </Select>
       </FormField>
@@ -866,7 +811,7 @@ function ApproveRepasseModal({ repasse, error, bankAccounts, onClose, onConfirm 
           <Select id="ar-ba" value={bankAccountId} onChange={(e) => setBankAccountId(e.target.value)}>
             <option value="">Selecionar…</option>
             {activeAccounts.map((a) => (
-              <option key={a.id} value={a.id}>{a.bankName || a.bankCode} · ag. {a.agency} · cc {a.accountNumber}</option>
+              <option key={a.id} value={a.id}>{a.bankName || a.bankCode} · ag. {a.agency} · cc {maskAccountNumber(a.accountNumber)}</option>
             ))}
           </Select>
         </FormField>

@@ -6,7 +6,9 @@ import Card from "@/components/molecules/Card/Card";
 import Icon from "@/components/atoms/Icon/Icon";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
-import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import { reportLookupProblem } from "@/lib/asyncState/lookup";
 import Modal from "@/components/organisms/Modal/Modal";
 import Select from "@/components/atoms/Select/Select";
 import SearchInput from "@/components/molecules/SearchInput/SearchInput";
@@ -45,8 +47,6 @@ export default function ConciliacaoPage() {
   const [bankAccounts, setBankAccounts] = useState([]);
   const [reconciliations, setReconciliations] = useState([]);
   const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [query, setQuery] = useState("");
   const [notice, setNotice] = useState(null);
   const [reconcileModal, setReconcileModal] = useState(null);
@@ -70,29 +70,20 @@ export default function ConciliacaoPage() {
     setPage3(1);
   }, [pageSize3]);
 
+  // M9-D940: carregando, erro, sem acesso e sem conexão vêm do padrão único; as conciliações feitas atualizam a lista local.
+  const reconQuery = useAsyncState(async () => {
+    const [e, t, ba, r, u] = await Promise.all([listFinancialEntries(), listBankTransactions(), listBankAccounts(), listReconciliations(), apiFetch("/users")]);
+    return { entries: e || [], transactions: t || [], bankAccounts: ba || [], reconciliations: r || [], users: u || [] };
+  }, { key: "conciliacao", isEmpty: () => false });
   useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    Promise.all([listFinancialEntries(), listBankTransactions(), listBankAccounts(), listReconciliations(), apiFetch("/users")])
-      .then(([e, t, ba, r, u]) => {
-        if (cancelled) return;
-        setEntries(e || []);
-        setTransactions(t || []);
-        setBankAccounts(ba || []);
-        setReconciliations(r || []);
-        setUsers(u || []);
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar a conciliação bancária.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    const data = reconQuery.data;
+    if (!data) return;
+    setEntries(data.entries);
+    setTransactions(data.transactions);
+    setBankAccounts(data.bankAccounts);
+    setReconciliations(data.reconciliations);
+    setUsers(data.users);
+  }, [reconQuery.data]);
 
   function showNotice(tone, title, message) {
     setNotice({ tone, title, message });
@@ -145,7 +136,11 @@ export default function ConciliacaoPage() {
       unreconciledTransactions.map((t) =>
         suggestReconciliationMatches(t.id)
           .then((s) => [t.id, s])
-          .catch(() => [t.id, { finalClass: "NO_MATCH", candidates: [] }])
+          .catch((err) => {
+            // A sugestão que falhou não vira "sem correspondência" em silêncio: a falha aparece no aviso de listas auxiliares.
+            reportLookupProblem("as sugestões de conciliação", err);
+            return [t.id, { finalClass: "NO_MATCH", candidates: [] }];
+          })
       )
     ).then((pairs) => {
       if (cancelled) return;
@@ -207,12 +202,9 @@ export default function ConciliacaoPage() {
 
   return (
     <AppShell title="Conciliação bancária" backHref="/painel/financeiro">
-      {loadError ? <Alert tone="danger" title="Não foi possível carregar a conciliação bancária">{loadError}</Alert> : null}
       {notice ? <Alert tone={notice.tone} title={notice.title} className={styles.notice}>{notice.message}</Alert> : null}
 
-      {loading ? (
-        <SkeletonDetail sections={3} />
-      ) : (
+      <AsyncState result={reconQuery} loadingLabel="Carregando conciliação bancária...">
         <>
           <div className={styles.grid}>
             <StatTile label="Não conciliadas" value={unreconciledTransactions.length} tone={unreconciledTransactions.length > 0 ? "warning" : "success"} icon="document" />
@@ -366,7 +358,7 @@ export default function ConciliacaoPage() {
             </div>
           </div>
         </>
-      )}
+      </AsyncState>
 
       <StickyActionBar>
         <FinanceNavMenu />

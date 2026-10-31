@@ -7,7 +7,7 @@
 // orçada (despesa por centro de custo ou receita por centro de resultado) para um mês de
 // competência, e comparar orçado x realizado desse mês (GET /finance/budget-forecasts/compare).
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Table from "@/components/organisms/Table/Table";
@@ -17,6 +17,8 @@ import FormField from "@/components/molecules/FormField/FormField";
 import Input from "@/components/atoms/Input/Input";
 import Select from "@/components/atoms/Select/Select";
 import Alert from "@/components/molecules/Alert/Alert";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu";
 import {
@@ -37,12 +39,6 @@ function currentCompetenceMonth() {
 
 export default function OrcamentoPage() {
   const [competenceMonth, setCompetenceMonth] = useState(currentCompetenceMonth());
-  const [costCenters, setCostCenters] = useState([]);
-  const [resultCenters, setResultCenters] = useState([]);
-  const [forecasts, setForecasts] = useState([]);
-  const [comparison, setComparison] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
 
   const [nature, setNature] = useState("PAYABLE");
   const [centerId, setCenterId] = useState("");
@@ -51,42 +47,23 @@ export default function OrcamentoPage() {
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
 
-  useEffect(() => {
-    let cancelled = false;
-    Promise.all([listCostCenters(), listResultCenters()])
-      .then(([cc, rc]) => {
-        if (cancelled) return;
-        setCostCenters(cc || []);
-        setResultCenters(rc || []);
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar os centros.");
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  async function reload(month) {
-    setLoading(true);
-    try {
-      const [list, compare] = await Promise.all([
-        listBudgetForecasts({ competenceMonth: month }),
-        compareBudgetForecastToRealized(month),
-      ]);
-      setForecasts(list || []);
-      setComparison(compare || []);
-    } catch (err) {
-      setLoadError(err?.message || "Não foi possível carregar o orçamento do mês.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    reload(competenceMonth);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [competenceMonth]);
+  // M9-D940: centros e orçamento do mês vêm do padrão único de estados (carregando, erro com "tentar de novo", sem acesso, sem conexão).
+  const centersQuery = useAsyncState(async () => {
+    const [cc, rc] = await Promise.all([listCostCenters(), listResultCenters()]);
+    return { costCenters: cc || [], resultCenters: rc || [] };
+  }, { key: "orcamento:centros", isEmpty: () => false });
+  const costCenters = centersQuery.data?.costCenters || [];
+  const resultCenters = centersQuery.data?.resultCenters || [];
+  const monthQuery = useAsyncState(async () => {
+    const [list, compare] = await Promise.all([
+      listBudgetForecasts({ competenceMonth }),
+      compareBudgetForecastToRealized(competenceMonth),
+    ]);
+    return { forecasts: list || [], comparison: compare || [] };
+  }, { key: `orcamento:${competenceMonth}`, deps: [competenceMonth], isEmpty: () => false });
+  const forecasts = monthQuery.data?.forecasts || [];
+  const comparison = monthQuery.data?.comparison || [];
+  const reload = () => monthQuery.reload();
 
   const centerOptions = nature === "PAYABLE" ? costCenters : resultCenters;
 
@@ -114,7 +91,7 @@ export default function OrcamentoPage() {
       setDescription("");
       setForecastedAmount("");
       setCenterId("");
-      await reload(competenceMonth);
+      await reload();
     } catch (err) {
       setFormError(err?.message || "Falha ao lançar a projeção.");
     } finally {
@@ -145,11 +122,7 @@ export default function OrcamentoPage() {
   return (
     <AppShell title="Orçamento x realizado" backHref="/painel/financeiro">
       <div className={styles.wrap}>
-        {loadError ? (
-          <div style={{ position: "fixed", top: "var(--space-4)", left: "50%", transform: "translateX(-50%)", zIndex: 200, width: "min(560px, calc(100vw - 2 * var(--space-4)))" }}>
-            <Alert tone="danger">{loadError}</Alert>
-          </div>
-        ) : null}
+        {centersQuery.status !== "LOADING" && !centersQuery.data ? <AsyncState result={centersQuery} /> : null}
 
         <Card>
           <h2 className={styles.sectionTitle}>Mês de competência</h2>
@@ -213,12 +186,16 @@ export default function OrcamentoPage() {
 
         <Card>
           <h2 className={styles.sectionTitle}>Orçado x realizado — {formatCompetence(competenceMonth)}</h2>
-          <Table columns={compareColumns} rows={comparison} loading={loading} emptyMessage="Sem comparativo para este mês ainda." />
+          <AsyncState result={monthQuery} loadingLabel="Carregando orçamento do mês...">
+            <Table columns={compareColumns} rows={comparison} emptyMessage="Sem comparativo para este mês ainda." />
+          </AsyncState>
         </Card>
 
         <Card>
           <h2 className={styles.sectionTitle}>Projeções lançadas no mês</h2>
-          <Table columns={forecastColumns} rows={forecasts} loading={loading} emptyMessage="Nenhuma projeção lançada para este mês ainda." />
+          <AsyncState result={monthQuery} loadingLabel="Carregando projeções do mês...">
+            <Table columns={forecastColumns} rows={forecasts} emptyMessage="Nenhuma projeção lançada para este mês ainda." />
+          </AsyncState>
         </Card>
       </div>
 

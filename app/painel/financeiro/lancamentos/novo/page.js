@@ -10,7 +10,8 @@ import Select from "@/components/atoms/Select/Select";
 import Checkbox from "@/components/atoms/Checkbox/Checkbox";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
-import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import NatureBadge from "@/components/molecules/NatureBadge/NatureBadge";
 import BankAccountSelect from "@/components/molecules/BankAccountSelect/BankAccountSelect";
 import { ENTRY_NATURE_LABELS } from "@/lib/mock/finance";
@@ -27,8 +28,6 @@ import { lookupFallback, reportLookupProblem } from "@/lib/asyncState/lookup";
 export default function NovoLancamentoPage() {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [bankAccounts, setBankAccounts] = useState([]);
   const [costCenters, setCostCenters] = useState([]);
@@ -73,39 +72,28 @@ export default function NovoLancamentoPage() {
   // uma chave própria (ex. reprocessar import), e nesse caso ela tem prioridade.
   const entryIdempotencyKeyRef = useRef(null);
 
+  // M9-D940: carregando, erro, sem acesso e sem conexão vêm do padrão único de estados. Listas de apoio (plano de contas,
+  // contratos, pessoas) que falham são registradas (lookupFallback) e avisadas pelo aviso de listas auxiliares.
+  const formDataQuery = useAsyncState(async () => {
+    const [ba, cc, rc] = await Promise.all([listBankAccounts(), listCostCenters(), listResultCenters()]);
+    const [ca, ct, pp] = await Promise.all([
+      listChartAccounts().catch(lookupFallback("o plano de contas")),
+      listContracts().catch(lookupFallback("os contratos")),
+      listPeople().catch(lookupFallback("as pessoas")),
+    ]);
+    return { ba: ba || [], cc: cc || [], rc: rc || [], ca: ca || [], ct: ct || [], pp: pp || [] };
+  }, { key: "lancamentos-novo", isEmpty: () => false });
   useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    Promise.all([listBankAccounts(), listCostCenters(), listResultCenters()])
-      .then(([ba, cc, rc]) => {
-        if (cancelled) return;
-        setBankAccounts(ba || []);
-        setCostCenters(cc || []);
-        setResultCenters(rc || []);
-        setForm((prev) => ({ ...prev, bankAccountId: ba?.[0]?.id || "" }));
-      })
-      .then(() => Promise.all([
-        listChartAccounts().catch(lookupFallback("o plano de contas")),
-        listContracts().catch(lookupFallback("os contratos")),
-        listPeople().catch(lookupFallback("as pessoas")),
-      ]))
-      .then(([ca, ct, pp]) => {
-        if (cancelled) return;
-        setChartAccounts(ca || []);
-        setContracts(ct || []);
-        setPeople(pp || []);
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar os dados do formulário.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    const data = formDataQuery.data;
+    if (!data) return;
+    setBankAccounts(data.ba);
+    setCostCenters(data.cc);
+    setResultCenters(data.rc);
+    setForm((prev) => ({ ...prev, bankAccountId: data.ba[0]?.id || "" }));
+    setChartAccounts(data.ca);
+    setContracts(data.ct);
+    setPeople(data.pp);
+  }, [formDataQuery.data]);
 
   // BUG REAL CORRIGIDO (auditoria externa Nayara, 2026-10-07; contrato, Centro Financeiro
   // BLINDADO v1, §4): "Centro de custo obrigatório para despesa. Centro de resultado
@@ -222,12 +210,9 @@ export default function NovoLancamentoPage() {
           Após criado, um lançamento nunca é editado em valor — correções sempre geram um lançamento de estorno.
         </Alert>
 
-        {loadError ? <Alert tone="danger" title="Não foi possível carregar os dados do formulário">{loadError}</Alert> : null}
         {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
 
-        {loading ? (
-          <SkeletonDetail sections={1} />
-        ) : (
+        <AsyncState result={formDataQuery} loadingLabel="Carregando dados do formulário...">
           <Card title="Dados do lançamento">
             <div className={styles.formGrid}>
               <FormField label="Descrição" htmlFor="f-desc" required>
@@ -346,14 +331,14 @@ export default function NovoLancamentoPage() {
 
             </div>
           </Card>
-        )}
+        </AsyncState>
 
         {/* FIN-TS-005 / M4-16 (auditoria externa Abacus AI, 11/10/2026): "Caução separada de
             receita — nenhuma categoria ou tela específica encontrada". O backend já suportava
             isThirdPartyFunds/thirdPartyReference (dinheiro que só transita, nunca é receita
             própria), mas o formulário de lançamento nunca expôs esse campo — gap achado na
             verificação cética final do Marco 4, 11/10/2026. */}
-        {!loading && (
+        {formDataQuery.status === "CONTENT" && (
           <Card title="Dinheiro de terceiro (caução, repasse)">
             <div className={styles.formGrid}>
               <Checkbox
@@ -426,7 +411,7 @@ export default function NovoLancamentoPage() {
 
         <div className={styles.actionBar}>
           <Button variant="secondary" onClick={() => router.push("/painel/financeiro/lancamentos")}>Cancelar</Button>
-          <Button requires="finance:create" onClick={handleSubmit} loading={submitting} disabled={!isValid || loading}>Criar lançamento</Button>
+          <Button requires="finance:create" onClick={handleSubmit} loading={submitting} disabled={!isValid || formDataQuery.status !== "CONTENT"}>Criar lançamento</Button>
         </div>
       </div>
     </AppShell>

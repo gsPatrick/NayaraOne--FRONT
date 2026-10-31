@@ -8,7 +8,8 @@ import Icon from "@/components/atoms/Icon/Icon";
 import Button from "@/components/atoms/Button/Button";
 import ConfirmAction from "@/components/molecules/ConfirmAction/ConfirmAction";
 import Alert from "@/components/molecules/Alert/Alert";
-import { SkeletonList } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import StatTile from "@/components/molecules/StatTile/StatTile";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu";
@@ -92,8 +93,6 @@ export default function IntencoesPagamentoPage() {
   const [entries, setEntries] = useState([]);
   const [bankAccounts, setBankAccounts] = useState([]);
   const [people, setPeople] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [notice, setNotice] = useState(null);
   const [cancelTarget, setCancelTarget] = useState(null);
@@ -106,31 +105,21 @@ export default function IntencoesPagamentoPage() {
   const [resolveError, setResolveError] = useState("");
   const { confirm, ConfirmDialog } = useConfirm();
 
-  function load() {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    // Contas e pessoas só enriquecem o favorecido: se falharem, a lista continua aparecendo.
-    Promise.all([listPaymentIntents(), listFinancialEntries(), listBankAccounts().catch(lookupFallback("as contas bancárias")), listPeople().catch(lookupFallback("as pessoas"))])
-      .then(([pi, fe, ba, pp]) => {
-        if (cancelled) return;
-        setIntents(pi || []);
-        setEntries(fe || []);
-        setBankAccounts(ba || []);
-        setPeople(pp || []);
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(msg(err, "Não foi possível carregar as intenções de pagamento."));
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }
-
-  useEffect(() => load(), []);
+  // M9-D940: carregando, erro, sem acesso e sem conexão vêm do padrão único; as ações atualizam a lista local.
+  // Contas e pessoas só enriquecem o favorecido: se falharem, a falha é registrada (lookupFallback) e a lista continua aparecendo.
+  const intentsQuery = useAsyncState(async () => {
+    const [pi, fe, ba, pp] = await Promise.all([listPaymentIntents(), listFinancialEntries(), listBankAccounts().catch(lookupFallback("as contas bancárias")), listPeople().catch(lookupFallback("as pessoas"))]);
+    return { intents: pi || [], entries: fe || [], bankAccounts: ba || [], people: pp || [] };
+  }, { key: "intencoes-pagamento", isEmpty: () => false });
+  const load = intentsQuery.reload;
+  useEffect(() => {
+    const data = intentsQuery.data;
+    if (!data) return;
+    setIntents(data.intents);
+    setEntries(data.entries);
+    setBankAccounts(data.bankAccounts);
+    setPeople(data.people);
+  }, [intentsQuery.data]);
 
   function showNotice(tone, text) {
     setNotice({ tone, text });
@@ -284,7 +273,6 @@ export default function IntencoesPagamentoPage() {
 
   return (
     <AppShell title="Intenções de pagamento" backHref="/painel/financeiro">
-      {loadError ? <Alert tone="danger" title="Não foi possível carregar">{loadError}</Alert> : null}
       {notice ? <Alert tone={notice.tone} className={styles.notice}>{notice.text}</Alert> : null}
 
       <p className={styles.intro}>
@@ -293,9 +281,7 @@ export default function IntencoesPagamentoPage() {
         lançamento mudar depois, a intenção é invalidada e é preciso criar outra.
       </p>
 
-      {loading ? (
-        <SkeletonList rows={5} />
-      ) : (
+      <AsyncState result={intentsQuery} loadingLabel="Carregando intenções de pagamento...">
         <>
           <div className={styles.grid}>
             <StatTile label="Pendentes" value={pendingCount} tone={pendingCount > 0 ? "warning" : "success"} icon="shield" />
@@ -408,13 +394,12 @@ export default function IntencoesPagamentoPage() {
             )}
           </Card>
         </>
-      )}
+      </AsyncState>
 
       <StickyActionBar>
         <FinanceNavMenu />
       </StickyActionBar>
 
-      <ConfirmDialog />
       {cancelTarget ? (
         <ConfirmAction
           open
@@ -425,6 +410,7 @@ export default function IntencoesPagamentoPage() {
           onConfirm={handleCancelConfirmed}
         />
       ) : null}
+      <ConfirmDialog />
     </AppShell>
   );
 }

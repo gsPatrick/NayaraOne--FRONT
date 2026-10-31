@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import StatTile from "@/components/molecules/StatTile/StatTile";
 import Card from "@/components/molecules/Card/Card";
 import Badge from "@/components/atoms/Badge/Badge";
 import Icon from "@/components/atoms/Icon/Icon";
-import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
-import Alert from "@/components/molecules/Alert/Alert";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import SwitchableChart from "@/components/molecules/SwitchableChart/SwitchableChart";
 import Button from "@/components/atoms/Button/Button";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
@@ -28,14 +28,25 @@ import { bankAccountLabel, approvalRequestLabel } from "@/lib/finance/labels";
 import styles from "./page.module.css";
 
 export default function FinanceiroPage() {
-  const [entries, setEntries] = useState([]);
-  const [bankAccounts, setBankAccounts] = useState([]);
-  const [approvalRequests, setApprovalRequests] = useState([]);
-  const [commissions, setCommissions] = useState([]);
-  const [repasses, setRepasses] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
+  // M9-D940: carregando, erro, sem acesso e sem conexão vêm do padrão único de estados.
+  const overviewQuery = useAsyncState(async () => {
+    const [e, ba, ar, com, rep, us] = await Promise.all([
+      listFinancialEntries(),
+      listBankAccounts(),
+      listApprovalRequests(),
+      listCommissions(),
+      listOwnerRepasses(),
+      apiFetch("/users"),
+    ]);
+    return { entries: e || [], bankAccounts: ba || [], approvalRequests: ar || [], commissions: com || [], repasses: rep || [], users: us || [] };
+  }, { key: "financeiro", isEmpty: () => false });
+  const overview = overviewQuery.data;
+  const entries = useMemo(() => overview?.entries || [], [overview]);
+  const bankAccounts = useMemo(() => overview?.bankAccounts || [], [overview]);
+  const approvalRequests = useMemo(() => overview?.approvalRequests || [], [overview]);
+  const commissions = useMemo(() => overview?.commissions || [], [overview]);
+  const repasses = useMemo(() => overview?.repasses || [], [overview]);
+  const users = useMemo(() => overview?.users || [], [overview]);
 
   function userName(id) {
     return users.find((u) => u.id === id)?.name || "Usuário não identificado";
@@ -44,38 +55,6 @@ export default function FinanceiroPage() {
   function bankAccountOf(id) {
     return bankAccounts.find((a) => a.id === id) || null;
   }
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    Promise.all([
-      listFinancialEntries(),
-      listBankAccounts(),
-      listApprovalRequests(),
-      listCommissions(),
-      listOwnerRepasses(),
-      apiFetch("/users"),
-    ])
-      .then(([e, ba, ar, com, rep, us]) => {
-        if (cancelled) return;
-        setEntries(e || []);
-        setBankAccounts(ba || []);
-        setApprovalRequests(ar || []);
-        setCommissions(com || []);
-        setRepasses(rep || []);
-        setUsers(us || []);
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar o painel financeiro.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const pendingPayables = useMemo(() => entries.filter((e) => e.nature === "PAYABLE" && e.status === "PENDING"), [entries]);
   const pendingReceivables = useMemo(() => entries.filter((e) => e.nature === "RECEIVABLE" && e.status === "PENDING"), [entries]);
@@ -118,11 +97,7 @@ export default function FinanceiroPage() {
 
   return (
     <AppShell title="Financeiro">
-      {loadError ? <Alert tone="danger" title="Não foi possível carregar o painel financeiro">{loadError}</Alert> : null}
-
-      {loading ? (
-        <SkeletonDetail sections={4} />
-      ) : (
+      <AsyncState result={overviewQuery} loadingLabel="Carregando painel financeiro...">
         <>
           <div className={styles.grid}>
             <StatTile label="A pagar (pendente)" value={formatBRL(totalPayable)} tone="warning" icon="document" />
@@ -196,7 +171,7 @@ export default function FinanceiroPage() {
             </Card>
           </div>
         </>
-      )}
+      </AsyncState>
 
       <StickyActionBar>
         <FinanceNavMenu />

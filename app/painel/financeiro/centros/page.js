@@ -8,7 +8,7 @@
 // getOrCreateDefaultCostCenter/getOrCreateDefaultResultCenter. Um usuário não conseguia nomear
 // um centro de custo próprio (ex: "Manutenção — Prédio A") nem editar/remover um existente.
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Button from "@/components/atoms/Button/Button";
@@ -18,7 +18,8 @@ import Input from "@/components/atoms/Input/Input";
 import Alert from "@/components/molecules/Alert/Alert";
 import Modal from "@/components/organisms/Modal/Modal";
 import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
-import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu";
 import {
   listCostCenters,
@@ -130,35 +131,19 @@ function CenterPanel({ title, kind, items, onCreate, onUpdate, onDelete }) {
 }
 
 export default function CentrosPage() {
-  const [costCenters, setCostCenters] = useState([]);
-  const [resultCenters, setResultCenters] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
-
-  function load() {
-    setLoading(true);
-    setLoadError("");
-    Promise.all([listCostCenters(), listResultCenters()])
-      .then(([cc, rc]) => {
-        setCostCenters(cc || []);
-        setResultCenters(rc || []);
-      })
-      .catch((err) => setLoadError(err?.message || "Não foi possível carregar os centros."))
-      .finally(() => setLoading(false));
-  }
-
-  useEffect(() => {
-    load();
-  }, []);
+  // M9-D940: os dois painéis precisam existir mesmo vazios (têm o botão "Novo"), então o vazio é tratado em cada painel.
+  const centersQuery = useAsyncState(async () => {
+    const [cc, rc] = await Promise.all([listCostCenters(), listResultCenters()]);
+    return { costCenters: cc || [], resultCenters: rc || [] };
+  }, { key: "centros", isEmpty: () => false });
+  const load = centersQuery.reload;
+  const costCenters = centersQuery.data?.costCenters || [];
+  const resultCenters = centersQuery.data?.resultCenters || [];
 
   return (
     <AppShell title="Centros de custo e resultado" subtitle="Financeiro">
       <FinanceNavMenu />
-      {loading ? (
-        <SkeletonDetail sections={2} />
-      ) : loadError ? (
-        <Alert tone="danger">{loadError}</Alert>
-      ) : (
+      <AsyncState result={centersQuery} loadingLabel="Carregando centros...">
         <div className={styles.grid}>
           <CenterPanel
             title="Centros de custo"
@@ -177,7 +162,7 @@ export default function CentrosPage() {
             onDelete={async (id) => { await deleteResultCenter(id); load(); }}
           />
         </div>
-      )}
+      </AsyncState>
     </AppShell>
   );
 }

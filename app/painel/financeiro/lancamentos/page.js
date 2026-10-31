@@ -42,16 +42,22 @@ import { friendlyFinanceError } from "@/lib/finance/extras";
 import { listPeople } from "@/lib/api/people";
 import { bankAccountLabel } from "@/lib/finance/labels";
 import { formatBRL, formatBRLCompact, formatDate, humanizeText } from "@/lib/format";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import { lookupFallback } from "@/lib/asyncState/lookup";
 import styles from "./page.module.css";
 
 export default function LancamentosPage() {
   const router = useRouter();
-  const [entries, setEntries] = useState([]);
-  const [bankAccounts, setBankAccounts] = useState([]);
-  const [costCenters, setCostCenters] = useState([]);
-  const [people, setPeople] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
+  // M9-D940: carregando, erro, sem acesso e sem conexão vêm do padrão único de estados.
+  const entriesQuery = useAsyncState(async () => {
+    const [e, ba, cc, pp] = await Promise.all([listFinancialEntries(), listBankAccounts(), listCostCenters(), listPeople()]);
+    return { entries: e || [], bankAccounts: ba || [], costCenters: cc || [], people: pp || [] };
+  }, { key: "lancamentos", isEmpty: () => false });
+  const entries = useMemo(() => entriesQuery.data?.entries || [], [entriesQuery.data]);
+  const bankAccounts = useMemo(() => entriesQuery.data?.bankAccounts || [], [entriesQuery.data]);
+  const costCenters = useMemo(() => entriesQuery.data?.costCenters || [], [entriesQuery.data]);
+  const people = useMemo(() => entriesQuery.data?.people || [], [entriesQuery.data]);
   const [actionError, setActionError] = useState("");
   const [query, setQuery] = useState("");
   const [natureFilter, setNatureFilter] = useState("");
@@ -70,7 +76,9 @@ export default function LancamentosPage() {
   // GAP REAL CORRIGIDO (ciclo de verificação adicional, Marco 4, 12/10/2026): fila de
   // pendências de classificação (M4-contrato §10) existia inteira no backend, sem tela —
   // nenhum humano via nem resolvia um excedente aguardando classificação final.
-  const [pendings, setPendings] = useState([]);
+  // A fila de pendências é apoio: se falhar, a falha é registrada (lookupFallback) e avisada, nunca vira "sem pendências" em silêncio.
+  const pendingsQuery = useAsyncState(() => listClassificationPendings({ status: "PENDING" }).catch(lookupFallback("as pendências de classificação")), { key: "lancamentos:pendencias", isEmpty: () => false });
+  const pendings = useMemo(() => pendingsQuery.data || [], [pendingsQuery.data]);
   const [resolveTarget, setResolveTarget] = useState(null);
   const [resolveNature, setResolveNature] = useState("");
   // A3 (revisão 18/10/2026): classificar como despesa cria uma obrigação a pagar e exige centro de custo.
@@ -78,11 +86,7 @@ export default function LancamentosPage() {
   const [resolveBusy, setResolveBusy] = useState(false);
   const [resolveError, setResolveError] = useState("");
 
-  function reloadPendings() {
-    listClassificationPendings({ status: "PENDING" })
-      .then((items) => setPendings(items || []))
-      .catch(() => {});
-  }
+  const reloadPendings = pendingsQuery.reload;
 
   async function handleResolvePending() {
     if (!resolveTarget || !resolveNature) return;
@@ -106,30 +110,6 @@ export default function LancamentosPage() {
       setResolveBusy(false);
     }
   }
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    Promise.all([listFinancialEntries(), listBankAccounts(), listCostCenters(), listPeople()])
-      .then(([e, ba, cc, pp]) => {
-        if (cancelled) return;
-        setEntries(e || []);
-        setBankAccounts(ba || []);
-        setCostCenters(cc || []);
-        setPeople(pp || []);
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar os lançamentos.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    reloadPendings();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   function bankAccountOf(id) {
     return bankAccounts.find((a) => a.id === id) || null;
@@ -239,7 +219,6 @@ export default function LancamentosPage() {
 
   return (
     <AppShell title="Lançamentos" backHref="/painel/financeiro">
-      {loadError ? <Alert tone="danger" title="Não foi possível carregar os lançamentos">{loadError}</Alert> : null}
       {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
       {exportNotice ? <Alert tone={exportNotice.tone}>{exportNotice.text}</Alert> : null}
 
@@ -278,7 +257,8 @@ export default function LancamentosPage() {
         </Card>
       ) : null}
 
-      <>
+      <AsyncState result={entriesQuery} loadingLabel="Carregando lançamentos...">
+        <>
           <div className={styles.grid}>
             <StatTile label="A pagar (pendente)" value={formatBRL(totalPayable)} tone="warning" icon="document" />
             <StatTile label="A receber (pendente)" value={formatBRL(totalReceivable)} tone="info" icon="money" />
@@ -311,7 +291,7 @@ export default function LancamentosPage() {
                   ))}
                 </Select>
               </div>
-              <Table columns={columns} rows={loading ? [] : pageItems} loading={loading} emptyMessage="Nenhum lançamento encontrado." />
+              <Table columns={columns} rows={pageItems} emptyMessage="Nenhum lançamento encontrado." />
               <div className={styles.paginationRow}>
                 <Pagination
                   page={page}
@@ -349,6 +329,7 @@ export default function LancamentosPage() {
             </div>
           </div>
         </>
+      </AsyncState>
 
       <StickyActionBar>
         <FinanceNavMenu />

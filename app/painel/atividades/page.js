@@ -18,6 +18,8 @@ import Pagination from "@/components/molecules/Pagination/Pagination";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import { listAuditLog } from "@/lib/api/audit";
 import { apiFetch } from "@/lib/api/client";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import ConfirmAction from "@/components/molecules/ConfirmAction/ConfirmAction";
 import { entityTypeLabel, actionVerb, ACTION_TONE, ACTION_ICON, ENTITY_TYPE_LABELS } from "@/lib/audit/labels";
 import { summarizeChanges } from "@/lib/audit/humanize";
@@ -46,10 +48,13 @@ const REVERSIBLE_ENTITY_TYPES = {
 };
 
 export default function AtividadesPage() {
-  const [entries, setEntries] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
+  // M9-D940: carregando, erro, sem acesso e sem conexão vêm do padrão único de estados.
+  const activitiesQuery = useAsyncState(async () => {
+    const [logEntries, apiUsers] = await Promise.all([listAuditLog(), apiFetch("/users")]);
+    return { entries: logEntries || [], users: apiUsers || [] };
+  }, { key: "atividades", isEmpty: () => false });
+  const entries = useMemo(() => activitiesQuery.data?.entries || [], [activitiesQuery.data]);
+  const users = useMemo(() => activitiesQuery.data?.users || [], [activitiesQuery.data]);
   const [query, setQuery] = useState("");
   const [entityFilter, setEntityFilter] = useState("");
   const [page, setPage] = useState(1);
@@ -60,19 +65,7 @@ export default function AtividadesPage() {
     setPage(1);
   }, [pageSize]);
 
-  function load() {
-    setLoading(true);
-    setLoadError("");
-    Promise.all([listAuditLog(), apiFetch("/users")])
-      .then(([logEntries, apiUsers]) => {
-        setEntries(logEntries || []);
-        setUsers(apiUsers || []);
-      })
-      .catch((err) => setLoadError(err?.message || "Não foi possível carregar as atividades."))
-      .finally(() => setLoading(false));
-  }
-
-  useEffect(load, []);
+  const load = activitiesQuery.reload;
 
   function userOf(id) {
     return users.find((u) => u.id === id);
@@ -147,8 +140,6 @@ export default function AtividadesPage() {
 
   return (
     <AppShell title="Atividades">
-      {loadError ? <Alert tone="danger" title="Não foi possível carregar as atividades">{loadError}</Alert> : null}
-
       <Card title="Trilha de atividades" subtitle="Quem fez o quê e quando, em todo o sistema">
         <div className={styles.toolbar}>
           <SearchInput placeholder="Buscar por pessoa, ação ou entidade..." value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} />
@@ -160,9 +151,8 @@ export default function AtividadesPage() {
           </Select>
         </div>
 
-        {loading ? (
-          <SkeletonDetail />
-        ) : filtered.length === 0 ? (
+        <AsyncState result={activitiesQuery} loadingLabel="Carregando atividades...">
+        {filtered.length === 0 ? (
           <EmptyState icon="clock" title="Nenhuma atividade encontrada" description="Ajuste os filtros ou tente outra busca." />
         ) : (
           <>
@@ -179,6 +169,7 @@ export default function AtividadesPage() {
             </div>
           </>
         )}
+        </AsyncState>
       </Card>
 
       {selected ? (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -9,7 +9,8 @@ import Input from "@/components/atoms/Input/Input";
 import Select from "@/components/atoms/Select/Select";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
-import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import BankSelect from "@/components/molecules/BankSelect/BankSelect";
 import { listPeople } from "@/lib/api/people";
 import { createBankAccount } from "@/lib/api/finance";
@@ -18,10 +19,7 @@ import styles from "./page.module.css";
 export default function NovaContaBancariaPage() {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
-  const [people, setPeople] = useState([]);
   const [form, setForm] = useState({
     ownerPersonId: "",
     bankCode: "",
@@ -30,24 +28,10 @@ export default function NovaContaBancariaPage() {
     pixKey: "",
   });
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    listPeople()
-      .then((pp) => {
-        if (!cancelled) setPeople(pp || []);
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar os proprietários.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // M9-D940: a lista de proprietários vem do padrão único de estados (carregando, erro com "tentar de novo", sem acesso, sem conexão).
+  // Lista vazia é válida: a conta pode ser operacional, sem proprietário.
+  const peopleQuery = useAsyncState(() => listPeople().then((pp) => pp || []), { key: "contas-bancarias-novo:pessoas", isEmpty: () => false });
+  const people = peopleQuery.data || [];
 
   const isValid = (form.bankCode && form.agency && form.accountNumber) || form.pixKey;
 
@@ -82,12 +66,9 @@ export default function NovaContaBancariaPage() {
           Toda conta nova nasce com status “Em resfriamento” e só fica elegível para pagamentos após 48h — essa regra é aplicada automaticamente, sem exceção.
         </Alert>
 
-        {loadError ? <Alert tone="danger" title="Não foi possível carregar os proprietários">{loadError}</Alert> : null}
         {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
 
-        {loading ? (
-          <SkeletonDetail sections={1} />
-        ) : (
+        <AsyncState result={peopleQuery} loadingLabel="Carregando proprietários...">
           <Card title="Dados da conta">
             <div className={styles.formGrid}>
               <FormField label="Proprietário vinculado" htmlFor="f-owner" helper="Deixe em branco para conta operacional da empresa">
@@ -116,11 +97,11 @@ export default function NovaContaBancariaPage() {
               </FormField>
             </div>
           </Card>
-        )}
+        </AsyncState>
 
         <div className={styles.actionBar}>
           <Button variant="secondary" onClick={() => router.push("/painel/financeiro/contas-bancarias")}>Cancelar</Button>
-          <Button requires="finance:bankAccounts" onClick={handleSubmit} loading={submitting} disabled={!isValid || loading}>Criar conta</Button>
+          <Button requires="finance:bankAccounts" onClick={handleSubmit} loading={submitting} disabled={!isValid || peopleQuery.status !== "CONTENT"}>Criar conta</Button>
         </div>
       </div>
     </AppShell>

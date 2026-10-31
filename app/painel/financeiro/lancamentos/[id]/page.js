@@ -10,7 +10,9 @@ import Button from "@/components/atoms/Button/Button";
 import ConfirmAction from "@/components/molecules/ConfirmAction/ConfirmAction";
 import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
-import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import { loadEntryDetail } from "./loadEntryDetail";
 import NatureBadge from "@/components/molecules/NatureBadge/NatureBadge";
 import BankLogo from "@/components/atoms/BankLogo/BankLogo";
 import MfaVerifyModal from "@/components/organisms/MfaVerifyModal/MfaVerifyModal";
@@ -30,30 +32,21 @@ import {
   isEntryOverdue,
 } from "@/lib/mock/finance";
 import {
-  getFinancialEntry,
-  listFinancialEntries,
-  listBankAccounts,
-  listCostCenters,
-  listResultCenters,
-  listReconciliations,
-  listBankTransactions,
   settleFinancialEntry,
   settleFinancialEntryPartial,
   attachSettlementEvidence,
   reverseFinancialEntry,
   updateFinancialEntry,
   createApprovalRequest,
-  listApprovalRequests,
   createPaymentIntent,
-  listPaymentIntents,
 } from "@/lib/api/finance";
-import { uploadFile, getContract } from "@/lib/api/legal";
-import { getPerson } from "@/lib/api/people";
+import { uploadFile } from "@/lib/api/legal";
 import { friendlyFinanceError } from "@/lib/finance/extras";
 import ThirdPartyReleaseModal, { thirdPartyBalance } from "./ThirdPartyReleaseModal";
 import { formatBRL, formatDate, formatDateTime, formatCompetence, formatContractLabel, dateOnlyInputToIso, humanizeText, toNumber } from "@/lib/format";
 import styles from "./page.module.css";
 import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
+import ProtectedValue from "@/components/molecules/ProtectedValue/ProtectedValue";
 
 import { activatable } from "@/lib/a11y/keyboard";
 export default function LancamentoDetailPage({ params }) {
@@ -77,12 +70,9 @@ export default function LancamentoDetailPage({ params }) {
   const [releaseOpen, setReleaseOpen] = useState(false);
   const [reconciliation, setReconciliation] = useState(null);
   const [reconciledTransaction, setReconciledTransaction] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
-  const [notFoundFlag, setNotFoundFlag] = useState(false);
   const [notice, setNotice] = useState(null);
-  const [busy, setBusy] = useState(false);
   const [reverseOpen, setReverseOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
   const [mfaOpen, setMfaOpen] = useState(false);
   const [mfaAction, setMfaAction] = useState("settle");
   const [partialOpen, setPartialOpen] = useState(false);
@@ -96,81 +86,31 @@ export default function LancamentoDetailPage({ params }) {
   const [paymentIntent, setPaymentIntent] = useState(null);
   const { confirm, ConfirmDialog } = useConfirm();
 
-  function load(silent = false) {
-    let cancelled = false;
-    if (!silent) setLoading(true);
-    setLoadError("");
-    Promise.all([
-      getFinancialEntry(params.id).catch((err) => {
-        if (err?.status === 404) {
-          setNotFoundFlag(true);
-          return null;
-        }
-        throw err;
-      }),
-      listBankAccounts(),
-      listCostCenters(),
-      listResultCenters(),
-      listFinancialEntries(),
-      listReconciliations(),
-      listBankTransactions(),
-      listApprovalRequests(),
-      listPaymentIntents(),
-    ])
-      .then(([e, bankAccounts, costCenters, resultCenters, allEntries, reconciliations, bankTransactions, approvalRequests, paymentIntents]) => {
-        if (cancelled || !e) return;
-        setEntry(e);
-        setAccount(bankAccounts.find((a) => a.id === e.bankAccountId) || null);
-        setCostCenter(costCenters.find((c) => c.id === e.costCenterId) || null);
-        setResultCenter(resultCenters.find((r) => r.id === e.resultCenterId) || null);
-        setAllBankAccounts(bankAccounts);
-        setAllCostCenters(costCenters);
-        setAllResultCenters(resultCenters);
-        setAllEntries(allEntries || []);
-        if (e.contractId) getContract(e.contractId).then((c) => { if (!cancelled) setContractInfo(c); }).catch(() => {});
-        if (e.thirdPartyHolderPersonId) getPerson(e.thirdPartyHolderPersonId).then((p) => { if (!cancelled) setHolderInfo(p); }).catch(() => {});
-        setReversalTarget(e.reversalOfEntryId ? allEntries.find((x) => x.id === e.reversalOfEntryId) || null : null);
-        setReversedBy(allEntries.find((x) => x.reversalOfEntryId === e.id) || null);
-        const rec = reconciliations.find((r) => r.financialEntryId === e.id) || null;
-        setReconciliation(rec);
-        setReconciledTransaction(rec ? bankTransactions.find((t) => t.id === rec.bankTransactionId) || null : null);
-        // GAP REAL CORRIGIDO (ciclo de verificação adicional 5, Marco 4, 12/10/2026):
-        // createApprovalRequest existia no backend e no client (lib/api/finance.js), com rota
-        // HTTP própria (POST /finance/approval-requests), mas nenhuma tela chamava — um
-        // lançamento PAYABLE com conta bancária (FIN-004, settleFinancialEntry) exige uma
-        // ApprovalRequest aprovada antes de liquidar, e não havia como um usuário comum
-        // solicitar essa aprovação pela interface (só via chamada direta à API).
-        const related = (approvalRequests || [])
-          .filter((r) => r.relatedEntityType === "FinancialEntry" && r.relatedEntityId === e.id)
-          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        setApprovalRequest(related[0] || null);
-        // GAP REAL CORRIGIDO (ciclo de verificação final, Marco 4, 12/10/2026): createPaymentIntent
-        // existia pronto no backend (snapshot/hash do lançamento, Caderno §8 ponto 4 — caminho
-        // alternativo e mais rigoroso a "Solicitar aprovação" + "Liquidar"), mas nenhuma tela
-        // chamava nenhuma das 6 rotas de /finance/payment-intents.
-        const relatedIntents = (paymentIntents || [])
-          .filter((p) => p.financialEntryId === e.id)
-          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        setPaymentIntent(relatedIntents[0] || null);
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar o lançamento.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }
-
+  // M9-D940: carregando, erro, sem acesso e sem conexão vêm do padrão único; recarregar depois de uma ação mantém a ficha na tela.
+  const detailQuery = useAsyncState(() => loadEntryDetail(params.id), { key: `lancamento:${params.id}`, deps: [params.id], isEmpty: () => false });
+  const load = () => detailQuery.reload();
   useEffect(() => {
-    const cancel = load();
-    return cancel;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.id]);
+    const d = detailQuery.data;
+    if (!d) return;
+    setEntry(d.entry);
+    setAccount(d.account);
+    setCostCenter(d.costCenter);
+    setResultCenter(d.resultCenter);
+    setAllBankAccounts(d.allBankAccounts);
+    setAllCostCenters(d.allCostCenters);
+    setAllResultCenters(d.allResultCenters);
+    setAllEntries(d.allEntries);
+    setContractInfo(d.contractInfo);
+    setHolderInfo(d.holderInfo);
+    setReversalTarget(d.reversalTarget);
+    setReversedBy(d.reversedBy);
+    setReconciliation(d.reconciliation);
+    setReconciledTransaction(d.reconciledTransaction);
+    setApprovalRequest(d.approvalRequest);
+    setPaymentIntent(d.paymentIntent);
+  }, [detailQuery.data]);
 
-  if (notFoundFlag) return notFound();
+  if (detailQuery.error?.status === 404) return notFound();
 
   // Revisão independente 18/10/2026 (A1): TODO pagamento (PAYABLE) exige aprovação prévia —
   // com ou sem conta bancária (antes, sem conta, liquidava direto). Satisfaz se a
@@ -225,7 +165,7 @@ export default function LancamentoDetailPage({ params }) {
       const uploaded = await uploadFile(manualFile);
       await attachSettlementEvidence(entry.id, { evidenceFileId: uploaded.id, reason: manualReason.trim() });
       resetManualEvidence();
-      load(true);
+      load();
       setNotice({ tone: "success", text: "Comprovante anexado. Agora solicite a aprovação — ela precisa ser feita por outra pessoa." });
     } catch (err) {
       setManualError(friendlyFinanceError(err, "Não foi possível anexar o comprovante."));
@@ -277,7 +217,7 @@ export default function LancamentoDetailPage({ params }) {
         relatedEntityId: entry.id,
       });
       setApprovalRequest(created);
-      load(true);
+      load();
       setNotice({ tone: "success", text: "Aprovação solicitada. Acompanhe em Financeiro → Aprovações." });
     } catch (err) {
       setNotice({ tone: "danger", text: friendlyFinanceError(err, "Não foi possível solicitar a aprovação.") });
@@ -298,7 +238,7 @@ export default function LancamentoDetailPage({ params }) {
     try {
       const created = await createPaymentIntent({ financialEntryId: entry.id, approvalRequestId: approvalRequest?.id });
       setPaymentIntent(created);
-      load(true);
+      load();
       setNotice({ tone: "success", text: "Intenção de pagamento criada. Acompanhe em Financeiro → Intenções de pagamento." });
     } catch (err) {
       setNotice({ tone: "danger", text: friendlyFinanceError(err, "Não foi possível criar a intenção de pagamento.") });
@@ -313,7 +253,7 @@ export default function LancamentoDetailPage({ params }) {
     try {
       const updated = await settleFinancialEntry(entry.id);
       setEntry(updated);
-      load(true);
+      load();
       setNotice({ tone: "success", text: needsManualEvidence ? "Baixa manual registrada com o comprovante anexado." : "Lançamento liquidado com sucesso." });
     } catch (err) {
       setNotice({ tone: "danger", text: friendlyFinanceError(err, "Não foi possível liquidar o lançamento.") });
@@ -346,7 +286,7 @@ export default function LancamentoDetailPage({ params }) {
     try {
       const updated = await settleFinancialEntryPartial(entry.id, toNumber(partialAmount));
       setEntry(updated.original || updated);
-      load(true);
+      load();
       setPartialOpen(false);
       setPartialAmount("");
       setNotice({ tone: "success", text: "Baixa parcial registrada com sucesso." });
@@ -390,7 +330,7 @@ export default function LancamentoDetailPage({ params }) {
       setCostCenter(allCostCenters.find((c) => c.id === updated.costCenterId) || null);
       setResultCenter(allResultCenters.find((r) => r.id === updated.resultCenterId) || null);
       setEditOpen(false);
-      load(true);
+      load();
       setNotice({ tone: "success", text: "Lançamento atualizado com sucesso." });
     } catch (err) {
       setEditError(friendlyFinanceError(err, "Não foi possível salvar as alterações."));
@@ -410,8 +350,8 @@ export default function LancamentoDetailPage({ params }) {
     try {
       const result = await reverseFinancialEntry(entry.id, confirmation.justification, confirmation);
       setEntry(result.original || result);
-      setNotice({ tone: "info", text: "Lançamento estornado — um lançamento compensatório foi criado (o original nunca é editado, ledger imutável)." });
       setReverseOpen(false);
+      setNotice({ tone: "info", text: "Lançamento estornado — um lançamento compensatório foi criado (o original nunca é editado, ledger imutável)." });
     } finally {
       setBusy(false);
     }
@@ -419,11 +359,8 @@ export default function LancamentoDetailPage({ params }) {
 
   return (
     <AppShell title={humanizeText(entry?.description) || "Lançamento"} backHref="/painel/financeiro/lancamentos">
-      {loadError ? <Alert tone="danger" title="Não foi possível carregar o lançamento">{loadError}</Alert> : null}
-
-      {loading ? (
-        <SkeletonDetail sections={3} />
-      ) : !entry ? null : (
+      <AsyncState result={detailQuery} loadingLabel="Carregando lançamento...">
+      {!entry ? null : (
         <div className={styles.wrap}>
           {approvalRequest?.status === "STALE" && entry.status === "PENDING" ? (
             <Alert tone="warning">Invalidada: o lançamento foi alterado depois do pedido. Peça a aprovação de novo.</Alert>
@@ -679,7 +616,14 @@ export default function LancamentoDetailPage({ params }) {
                       <div>
                         <span className={styles.listRowTitle}>{account.bankCode ? getBankName(account.bankCode) : "Chave PIX"}</span>
                         <span className={styles.listRowSubtitle}>
-                          {account.bankCode ? `${getBankName(account.bankCode)}${account.agency ? ` · Ag. ${account.agency}` : ""} · Conta ${maskAccountNumber(account.accountNumber)}` : "Chave PIX"}
+                          {account.bankCode ? (
+                            <>
+                              {getBankName(account.bankCode)}{account.agency ? ` · Ag. ${account.agency}` : ""} · Conta{" "}
+                              <ProtectedValue classification="RESTRICTED" resourceType="finance.bank_account" resourceId={account.id} field="accountNumber" value={account.accountNumber}>
+                                {maskAccountNumber(account.accountNumber)}
+                              </ProtectedValue>
+                            </>
+                          ) : "Chave PIX"}
                         </span>
                       </div>
                     </div>
@@ -696,6 +640,7 @@ export default function LancamentoDetailPage({ params }) {
           </div>
         </div>
       )}
+      </AsyncState>
 
       <MfaVerifyModal
         open={mfaOpen}
@@ -726,10 +671,6 @@ export default function LancamentoDetailPage({ params }) {
         }}
       />
 
-      <ConfirmDialog />
-    </AppShell>
-  );
-}
       <ConfirmAction
         open={reverseOpen}
         onClose={() => setReverseOpen(false)}
@@ -738,3 +679,7 @@ export default function LancamentoDetailPage({ params }) {
         target={{ method: "GET", path: `/finance/entries/${entry?.id}/impact` }}
         onConfirm={handleReverseConfirmed}
       />
+      <ConfirmDialog />
+    </AppShell>
+  );
+}

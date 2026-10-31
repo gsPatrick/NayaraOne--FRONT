@@ -3,13 +3,15 @@
 // Consolidado do grupo (Caderno §3/§15): só visão — soma por empresa e elimina, na
 // apresentação, os dois lados das transferências intercompany entre empresas do relatório.
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Table from "@/components/organisms/Table/Table";
 import FormField from "@/components/molecules/FormField/FormField";
 import Input from "@/components/atoms/Input/Input";
 import Alert from "@/components/molecules/Alert/Alert";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu";
 import { getGroupConsolidatedReport } from "@/lib/api/finance";
@@ -18,28 +20,11 @@ import styles from "./page.module.css";
 
 export default function GroupConsolidatedPage() {
   const [referenceMonth, setReferenceMonth] = useState("");
-  const [report, setReport] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    let active = true;
-    setLoading(true);
-    setError("");
-    getGroupConsolidatedReport(referenceMonth || undefined)
-      .then((data) => {
-        if (active) setReport(data);
-      })
-      .catch((err) => {
-        if (active) setError(err?.message || "Não foi possível carregar o consolidado.");
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, [referenceMonth]);
+  // M9-D940: carregando, erro, sem acesso e sem conexão vêm do padrão único; as tabelas já mostram o vazio de cada bloco.
+  const reportQuery = useAsyncState(() => getGroupConsolidatedReport(referenceMonth || undefined), { key: `consolidado-grupo:${referenceMonth}`, deps: [referenceMonth], isEmpty: () => false });
+  const report = reportQuery.data;
+  const loading = reportQuery.status === "LOADING";
+  const failed = !loading && !report;
 
   const companyName = (id) => report?.companies?.find((c) => c.companyId === id)?.name || id;
 
@@ -66,7 +51,7 @@ export default function GroupConsolidatedPage() {
           <FormField label="Competência (deixe vazio para todas)" htmlFor="referenceMonth">
             <Input id="referenceMonth" type="month" value={referenceMonth} onChange={(e) => setReferenceMonth(e.target.value)} />
           </FormField>
-          {error ? <Alert tone="danger">{error}</Alert> : null}
+          {failed ? <AsyncState result={reportQuery} /> : null}
           {report ? (
             <p className={styles.helper} data-testid="consolidated-totals">
               Consolidado: entradas {formatBRL(report.consolidated?.totalCredits)} · saídas {formatBRL(report.consolidated?.totalDebits)} · resultado{" "}

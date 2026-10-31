@@ -12,12 +12,15 @@ import SearchInput from "@/components/molecules/SearchInput/SearchInput";
 import StatTile from "@/components/molecules/StatTile/StatTile";
 import PieChart from "@/components/molecules/PieChart/PieChart";
 import Alert from "@/components/molecules/Alert/Alert";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu";
 import RowActions from "@/components/molecules/RowActions/RowActions";
 import Modal from "@/components/organisms/Modal/Modal";
 import BankLogo from "@/components/atoms/BankLogo/BankLogo";
 import Pagination from "@/components/molecules/Pagination/Pagination";
+import ProtectedValue from "@/components/molecules/ProtectedValue/ProtectedValue";
 import {
   BANK_ACCOUNT_STATUS_LABELS,
   BANK_ACCOUNT_STATUS_TONE,
@@ -34,8 +37,6 @@ export default function ContasBancariasPage() {
   const router = useRouter();
   const [accounts, setAccounts] = useState([]);
   const [people, setPeople] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [query, setQuery] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -46,26 +47,16 @@ export default function ContasBancariasPage() {
     setPage(1);
   }, [pageSize]);
 
+  // M9-D940: carregando, erro, sem acesso e sem conexão vêm do padrão único; a tela mostra o vazio de cada bloco.
+  const accountsQuery = useAsyncState(async () => {
+    const [ba, pp] = await Promise.all([listBankAccounts(), listPeople()]);
+    return { accounts: ba || [], people: pp || [] };
+  }, { key: "contas-bancarias", isEmpty: () => false });
   useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    Promise.all([listBankAccounts(), listPeople()])
-      .then(([ba, pp]) => {
-        if (cancelled) return;
-        setAccounts(ba || []);
-        setPeople(pp || []);
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar as contas bancárias.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    if (!accountsQuery.data) return;
+    setAccounts(accountsQuery.data.accounts);
+    setPeople(accountsQuery.data.people);
+  }, [accountsQuery.data]);
 
   function personName(id) {
     if (!id) return "Conta operacional";
@@ -114,7 +105,14 @@ export default function ContasBancariasPage() {
           <div className={styles.nameCell}>
             <span className={styles.nameMain}>{bankAccountLabel(row, personName(row.ownerPersonId))}</span>
             <span className={styles.nameSub}>
-              {row.bankCode ? `${getBankName(row.bankCode)}${row.agency ? ` · Ag. ${row.agency}` : ""} · Conta ${maskAccountNumber(row.accountNumber)}` : "Chave PIX"} · {personName(row.ownerPersonId)}
+              {row.bankCode ? (
+                <>
+                  {getBankName(row.bankCode)}{row.agency ? ` · Ag. ${row.agency}` : ""} · Conta{" "}
+                  <ProtectedValue classification="RESTRICTED" resourceType="finance.bank_account" resourceId={row.id} field="accountNumber" value={row.accountNumber}>
+                    {maskAccountNumber(row.accountNumber)}
+                  </ProtectedValue>
+                </>
+              ) : "Chave PIX"} · {personName(row.ownerPersonId)}
             </span>
           </div>
         </div>
@@ -150,10 +148,10 @@ export default function ContasBancariasPage() {
 
   return (
     <AppShell title="Contas bancárias" backHref="/painel/financeiro">
-      {loadError ? <Alert tone="danger" title="Não foi possível carregar as contas bancárias">{loadError}</Alert> : null}
       {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
 
-      <>
+      <AsyncState result={accountsQuery} loadingLabel="Carregando contas bancárias...">
+        <>
           <div className={styles.grid}>
             <StatTile label="Ativas" value={activeCount} tone="success" icon="check" />
             <StatTile label="Em resfriamento" value={cooldownCount} tone="warning" icon="calendar" />
@@ -170,7 +168,7 @@ export default function ContasBancariasPage() {
               <div className={styles.filters}>
                 <SearchInput placeholder="Buscar por nome da conta..." value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} />
               </div>
-              <Table columns={columns} rows={loading ? [] : pageItems} loading={loading} emptyMessage="Nenhuma conta encontrada." />
+              <Table columns={columns} rows={pageItems} emptyMessage="Nenhuma conta encontrada." />
               <div className={styles.paginationRow}>
                 <Pagination
                   page={page}
@@ -205,6 +203,7 @@ export default function ContasBancariasPage() {
             </div>
           </div>
         </>
+      </AsyncState>
 
       <StickyActionBar>
         <FinanceNavMenu />

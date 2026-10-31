@@ -11,50 +11,31 @@
 // setor, necessidade para respirar, + os 2 originais), mas esta tela só renderizava 4 deles —
 // o resto ficava calculado e pronto na API sem nenhum humano conseguir ver.
 
-import { useEffect, useState } from "react";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import StatTile from "@/components/molecules/StatTile/StatTile";
 import Alert from "@/components/molecules/Alert/Alert";
-import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import { lookupFallback } from "@/lib/asyncState/lookup";
 import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu";
 import { getWeeklyHealthReport, listResultCenters } from "@/lib/api/finance";
 import { formatBRL, formatDate } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function RelatorioFinanceiroPage() {
-  const [report, setReport] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
-  const [resultCenters, setResultCenters] = useState([]);
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    listResultCenters().then((rc) => { if (!cancelled) setResultCenters(Array.isArray(rc) ? rc : rc?.items || []); }).catch(() => {});
-    getWeeklyHealthReport()
-      .then((r) => {
-        if (!cancelled) setReport(r);
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar o relatório financeiro.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // M9-D940: carregando, erro com "tentar de novo", sem acesso e sem conexão vêm do padrão único de estados.
+  const reportQuery = useAsyncState(() => getWeeklyHealthReport(), { key: "relatorio-financeiro" });
+  const report = reportQuery.data;
+  // Centros de resultado são apoio: se falharem, a falha é registrada (lookupFallback) e avisada, nunca vira "sem centros" em silêncio.
+  const centersQuery = useAsyncState(() => listResultCenters().catch(lookupFallback("os centros de resultado")).then((rc) => (Array.isArray(rc) ? rc : rc?.items || [])), { key: "relatorio-financeiro:centros", isEmpty: () => false });
+  const resultCenters = centersQuery.data || [];
 
   return (
     <AppShell title="Relatório financeiro" subtitle="Financeiro">
       <FinanceNavMenu />
-      {loading ? (
-        <SkeletonDetail />
-      ) : loadError ? (
-        <Alert tone="danger">{loadError}</Alert>
-      ) : !report ? null : (
+      <AsyncState result={reportQuery} loadingLabel="Carregando relatório financeiro..." emptyTitle="Sem relatório para este período">
+        {!report ? null : (
         <>
           <p className={styles.meta}>
             Gerado em {formatDate(report.generatedAt)} — janela dos próximos 7 dias até {formatDate(report.windowEndsAt)}.
@@ -188,7 +169,8 @@ export default function RelatorioFinanceiroPage() {
             )}
           </div>
         </>
-      )}
+        )}
+      </AsyncState>
     </AppShell>
   );
 }

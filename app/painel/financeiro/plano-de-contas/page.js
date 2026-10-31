@@ -15,6 +15,8 @@ import Input from "@/components/atoms/Input/Input";
 import Select from "@/components/atoms/Select/Select";
 import Alert from "@/components/molecules/Alert/Alert";
 import Modal from "@/components/organisms/Modal/Modal";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu";
 import { listChartAccounts, createChartAccount, updateChartAccount, deactivateChartAccount, listChartAccountVersions } from "@/lib/api/finance";
@@ -36,9 +38,10 @@ function typeLabel(value) {
 }
 
 export default function PlanoDeContasPage() {
-  const [accounts, setAccounts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
+  // M9-D940: carregando, erro com "tentar de novo", sem acesso e sem conexão vêm do padrão único de estados.
+  // Plano vazio é válido (a tela mostra o botão "Nova conta"), por isso o vazio é tratado dentro do cartão.
+  const accountsQuery = useAsyncState(() => listChartAccounts().then((items) => items || []), { key: "plano-de-contas", isEmpty: () => false });
+  const accounts = useMemo(() => accountsQuery.data || [], [accountsQuery.data]);
   const [actionError, setActionError] = useState("");
   const [showCreate, setShowCreate] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -61,18 +64,7 @@ export default function PlanoDeContasPage() {
       .finally(() => setVersionsLoading(false));
   }
 
-  function load() {
-    setLoading(true);
-    setLoadError("");
-    listChartAccounts()
-      .then((items) => setAccounts(items || []))
-      .catch((err) => setLoadError(err?.message || "Não foi possível carregar o plano de contas."))
-      .finally(() => setLoading(false));
-  }
-
-  useEffect(() => {
-    load();
-  }, []);
+  const load = accountsQuery.reload;
 
   const tree = useMemo(() => {
     const byParent = new Map();
@@ -181,11 +173,7 @@ export default function PlanoDeContasPage() {
   return (
     <AppShell title="Plano de contas" subtitle="Financeiro">
       <FinanceNavMenu />
-      {loading ? (
-        <SkeletonDetail />
-      ) : loadError ? (
-        <Alert tone="danger">{loadError}</Alert>
-      ) : (
+      <AsyncState result={accountsQuery} loadingLabel="Carregando plano de contas...">
         <Card
           title="Hierarquia de contas contábeis"
           actions={
@@ -212,7 +200,7 @@ export default function PlanoDeContasPage() {
             </div>
           )}
         </Card>
-      )}
+      </AsyncState>
 
       <Modal
         open={Boolean(historyAccount)}
