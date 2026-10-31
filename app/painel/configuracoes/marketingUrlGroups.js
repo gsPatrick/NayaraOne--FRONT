@@ -48,10 +48,10 @@ export const MARKETING_URL_GROUPS = [
       },
       {
         key: "marketing.url.tlds_reconhecidos",
-        label: "Terminações que fazem um endereço solto valer como URL",
+        label: "Terminações que fazem um endereço solto, sem caminho, valer como URL",
         type: "text",
-        defaultValue: "com, net, org, br, io, co, info, biz, app, dev, xyz, online, site, top, club, shop, store, link, click, me, tv, cc, us, uk, de, pt, ar, ru, cn, tk, ml, ga, cf, gq, ly, to, gl, ws, pw, live, work, page, cloud, tech, pro, vip, icu, buzz, fun, one, ink, wang",
-        helper: "Terminações separadas por vírgula, só letras. Um texto com evil.com/login (sem https://) passa pela mesma conferência da URL completa. Endereços com www., // ou esquema estranho são sempre conferidos.",
+        defaultValue: "com, net, org, br, io, co, info, biz, app, dev, xyz, online, site, top, club, shop, store, link, click, me, tv, cc, us, uk, de, pt, ar, ru, cn, tk, ml, ga, cf, gq, ly, to, gl, ws, pw, live, work, page, cloud, tech, pro, vip, icu, buzz, fun, one, ink, wang, in, fr, es, it, ng, nl, ch, se, jp, kr, au, ca, mx, cl, pe, uy, eu, za, tr, ir, id, vn, sg, hk, tw, su, gov, edu, mil, zip, mov, ninja, sbs, cfd, rest, bond, museum, men, loan, win, bid, review, stream, download, cam, monster, quest, party, trade, date, science, accountant, racing, рф",
+        helper: "Terminações separadas por vírgula, só letras (aceita internacionais, como rf em cirílico). Vale para o endereço pelado, como evil.com. Com caminho (evil.qualquercoisa/login), www., // ou esquema estranho, qualquer terminação é conferida sem depender desta lista. Ampliar protege mais; reduzir poupa texto com ponto colado.",
       },
     ],
   },
