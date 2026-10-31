@@ -18,4 +18,14 @@ export const GOVERNANCA_MIGRACAO_GROUPS = [
       { key: "migracao.eta.janela_lotes", label: "Lotes usados na estimativa de término", type: "integer", defaultValue: 5, min: 1, max: 100, helper: "A velocidade (linhas por minuto) é a média dos últimos lotes concluídos; aqui você diz quantos entram na média. Poucos lotes reagem rápido a mudanças; muitos dão uma estimativa mais estável." },
     ],
   },
+  {
+    title: "Migração do sistema antigo: comparação paralela",
+    subtitle:
+      "Enquanto os dois sistemas rodam lado a lado, um robô compara o que o antigo e o novo dizem sobre os mesmos registros. Cada janela de comparação é definida pela API (período, entidades e a regra de cada campo); aqui ficam os padrões.",
+    fields: [
+      { key: "migracao.paralelo.intervalo_min", label: "Intervalo entre comparações (minutos)", type: "integer", defaultValue: 60, min: 1, max: 1440, helper: "De quanto em quanto tempo o robô compara de novo durante a janela. É o padrão de uma janela criada sem intervalo próprio." },
+      { key: "migracao.paralelo.fuso", label: "Fuso das datas da janela e do dia civil", type: "text", defaultValue: "America/Sao_Paulo", helper: "Datas da janela sem fuso e a regra de data (mesmo dia civil) são lidas neste fuso. Use o nome do fuso, por exemplo America/Sao_Paulo." },
+      { key: "migracao.paralelo.timeout_min", label: "Minutos até considerar falha uma comparação que não terminou", type: "integer", defaultValue: 30, min: 1, max: 1440, helper: "Se o processo cair no meio de uma comparação, a janela fica travada por este tempo; depois a comparação é dada como falha (nunca como sem diferenças) e a janela é liberada." },
+    ],
+  },
 ];
