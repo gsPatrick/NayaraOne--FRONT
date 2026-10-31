@@ -133,19 +133,6 @@ const MARKETING_GROUPS = [
     ],
   },
   {
-    title: "Templates de Marketing",
-    subtitle: "Template é o molde (texto, cores, logo) do conteúdo. Alguns canais só aceitam template aprovado pelo provedor: nesses, o template só pode ser publicado com a referência oficial informada.",
-    fields: [
-      {
-        key: "marketing.templates.canais_com_template_oficial",
-        label: "Canais que exigem template oficial aprovado",
-        type: "text",
-        defaultValue: "WHATSAPP",
-        helper: "Canais separados por vírgula (WHATSAPP, EMAIL, SITE, INSTAGRAM, FACEBOOK, LINKEDIN, YOUTUBE, TIKTOK, PORTAL). Pelo menos um canal.",
-      },
-    ],
-  },
-  {
     title: "Campanhas de Marketing",
     subtitle: "O sistema inicia e encerra as campanhas sozinho, no horário agendado, e dispara os steps na data prevista. Quando o público é grande, cada rodada (a cada minuto) processa só uma parte dos destinatários de cada step; o restante sai nas rodadas seguintes.",
     fields: [
@@ -156,6 +143,8 @@ const MARKETING_GROUPS = [
         defaultValue: 200,
         helper: "Número inteiro de 1 a 10000.",
       },
+    ],
+  },
 ];
 
 const ALL_FIELDS = MARKETING_GROUPS.flatMap((group) => group.fields);
