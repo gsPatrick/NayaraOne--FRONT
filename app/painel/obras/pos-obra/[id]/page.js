@@ -15,7 +15,6 @@ import FormField from "@/components/molecules/FormField/FormField";
 import Modal from "@/components/organisms/Modal/Modal";
 import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
-import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import FileDropInput from "@/components/molecules/FileDropInput/FileDropInput";
 import { uploadFile } from "@/lib/api/legal";
 import {
@@ -30,24 +29,17 @@ import {
   RESOLUTION_STATUS_LABELS,
   RESOLUTION_STATUS_TONE,
 } from "@/lib/mock/construction";
-import {
-  getMaintenanceCase,
-  updateMaintenanceCase,
-  removeMaintenanceCase,
-  listMaintenanceCases,
-  getProject,
-  listWarrantyActions,
-  createWarrantyAction,
-  proposeWarrantyResolution,
-  approveWarrantyResolution,
-} from "@/lib/api/construction";
-import { getProperty } from "@/lib/api/properties";
-import { getPerson } from "@/lib/api/people";
-import { apiFetch } from "@/lib/api/client";
+import { updateMaintenanceCase, removeMaintenanceCase, createWarrantyAction, proposeWarrantyResolution, approveWarrantyResolution } from "@/lib/api/construction";
+
+
+
 import { formatBRL, formatDate, formatDateTime, dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE, toNumber } from "@/lib/format";
 import styles from "./page.module.css";
+import { loadChamado } from "./loadChamado";
 
-import { lookupFallback } from "@/lib/asyncState/lookup";
+
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 const STATUS_STEPS = ["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"];
 
 const NEXT_STATUS_OPTIONS = {
@@ -83,9 +75,6 @@ export default function PosObraDetalhePage({ params }) {
   const [openedByPerson, setOpenedByPerson] = useState(null);
   const [users, setUsers] = useState([]);
   const [relatedCases, setRelatedCases] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
-  const [notFoundFlag, setNotFoundFlag] = useState(false);
   const [actionError, setActionError] = useState("");
   const [busy, setBusy] = useState(false);
   const { confirm, ConfirmDialog } = useConfirm();
@@ -127,77 +116,28 @@ export default function PosObraDetalhePage({ params }) {
   const [savingResolution, setSavingResolution] = useState(false);
   const [approvingResolution, setApprovingResolution] = useState(false);
 
-  function load() {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    getMaintenanceCase(params.id)
-      .catch((err) => {
-        if (err?.status === 404) {
-          setNotFoundFlag(true);
-          return null;
-        }
-        throw err;
-      })
-      .then((c) => {
-        if (cancelled || !c) return;
-        setMaintenanceCase(c);
-        return Promise.all([
-          apiFetch("/users?status=ACTIVE"),
-          c.propertyId ? getProperty(c.propertyId).catch(lookupFallback("o imóvel", null)) : Promise.resolve(null),
-          c.projectId ? getProject(c.projectId).catch(lookupFallback("a obra", null)) : Promise.resolve(null),
-          c.openedByPersonId ? getPerson(c.openedByPersonId).catch(lookupFallback("a pessoa", null)) : Promise.resolve(null),
-          c.propertyId ? listMaintenanceCases({ propertyId: c.propertyId }).catch(lookupFallback("os casos de manutenção")) : Promise.resolve([]),
-          listWarrantyActions(c.id).catch(lookupFallback("as ações de garantia")),
-        ]).then(([u, prop, proj, person, related, actions]) => {
-          if (cancelled) return;
-          setUsers(u || []);
-          setProperty(prop);
-          setProject(proj);
-          setOpenedByPerson(person);
-          setRelatedCases((related || []).filter((r) => r.id !== c.id));
-          setWarrantyActions(actions || []);
-        });
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar o chamado.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }
-
+  // M9-D850: a leitura do chamado passa pelo padrão único de estados (carregando, erro com "tentar de novo", 403, offline).
+  // Os dados vão para o estado local, que as ações da tela (status, resolução, evidências, garantia) continuam atualizando.
+  const chamadoQuery = useAsyncState(() => loadChamado(params.id), { key: `pos-obra-${params.id}`, deps: [params.id], isEmpty: () => false });
   useEffect(() => {
-    const cancel = load();
-    return cancel;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.id]);
+    const d = chamadoQuery.data;
+    if (!d || d.notFound) return;
+    setMaintenanceCase(d.maintenanceCase);
+    setUsers(d.users);
+    setProperty(d.property);
+    setProject(d.project);
+    setOpenedByPerson(d.openedByPerson);
+    setRelatedCases(d.relatedCases);
+    setWarrantyActions(d.warrantyActions);
+  }, [chamadoQuery.data]);
 
-  if (notFoundFlag) return notFound();
+  if (chamadoQuery.data && chamadoQuery.data.notFound) return notFound();
 
-  if (loading) {
-    return (
-      <AppShell title="Chamado" backHref="/painel/obras/pos-obra">
-        <SkeletonDetail sections={3} />
-      </AppShell>
-    );
-  }
-
-  if (loadError && !maintenanceCase) {
-    return (
-      <AppShell title="Chamado" backHref="/painel/obras/pos-obra">
-        <Alert tone="danger" title="Não foi possível carregar o chamado">{loadError}</Alert>
-      </AppShell>
-    );
-  }
-
+  // Enquanto não há chamado carregado (carregando, erro, sem permissão, sem conexão), o AsyncState mostra o estado correspondente.
   if (!maintenanceCase) {
     return (
       <AppShell title="Chamado" backHref="/painel/obras/pos-obra">
-        <Alert tone="danger" title="Chamado não encontrado">Não existe nenhum chamado com este identificador.</Alert>
+        <AsyncState result={chamadoQuery} loadingLabel="Carregando o chamado...">{null}</AsyncState>
       </AppShell>
     );
   }

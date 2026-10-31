@@ -15,16 +15,7 @@ import Input from "@/components/atoms/Input/Input";
 import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import Select from "@/components/atoms/Select/Select";
 import FileDropInput from "@/components/molecules/FileDropInput/FileDropInput";
-import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
-import {
-  getProject,
-  listDailyReports,
-  createDailyReport,
-  updateDailyReport,
-  listDailyWorkers,
-  listDailyMaterials,
-  getDailyReportHistory,
-} from "@/lib/api/construction";
+import { listDailyReports, createDailyReport, updateDailyReport, listDailyWorkers, listDailyMaterials, getDailyReportHistory } from "@/lib/api/construction";
 import { listPeople } from "@/lib/api/people";
 import { uploadFile } from "@/lib/api/legal";
 import { formatDate, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE, toNumber } from "@/lib/format";
@@ -33,15 +24,17 @@ import OfflineSyncBadge from "@/components/molecules/OfflineSyncBadge/OfflineSyn
 import { enqueueOfflineRecord, generateIdempotencyKey } from "@/lib/offline/offlineQueue";
 import { useOfflineSync } from "@/lib/offline/useOfflineSync";
 import styles from "./page.module.css";
+import { getProjectOrNull } from "../_components/getProjectOrNull";
 
 import { lookupFallback } from "@/lib/asyncState/lookup";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 // Fila offline (Marco 6, contrato §13) — mesmo nome usado como chave de armazenamento local e
 // como rótulo do registro pendente.
 const OFFLINE_QUEUE_NAME = "construction.daily-reports";
 
 export default function DiarioObraPage({ params }) {
   const [project, setProject] = useState(null);
-  const [notFoundFlag, setNotFoundFlag] = useState(false);
   const [people, setPeople] = useState([]);
   // FIX (auditoria pós-merge Marco 6, 30/09/2026): histórico de RDO ficava truncado a 5 itens
   // sem nenhuma forma de ver o restante. Mantém a lista completa em `allReports` e um toggle
@@ -49,8 +42,6 @@ export default function DiarioObraPage({ params }) {
   const [allReports, setAllReports] = useState([]);
   const [reportsShowAll, setReportsShowAll] = useState(false);
   const reports = reportsShowAll ? allReports : allReports.slice(0, 5);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [viewerFileId, setViewerFileId] = useState(null);
 
@@ -88,60 +79,33 @@ export default function DiarioObraPage({ params }) {
   );
   const { pendingCount, syncing, syncError, syncNow } = useOfflineSync(OFFLINE_QUEUE_NAME, sendQueuedRdo, () => load());
 
-  function load() {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    Promise.all([
-      getProject(params.id).catch((err) => {
-        if (err?.status === 404) {
-          setNotFoundFlag(true);
-          return null;
-        }
-        throw err;
-      }),
-      listPeople().catch(lookupFallback("as pessoas")),
-    ])
-      .then(([p, ppl]) => {
-        if (cancelled || !p) return;
-        setProject(p);
-        setPeople(ppl || []);
-        return listDailyReports(p.id).then((rd) => {
-          if (cancelled) return;
-          setAllReports(rd || []);
-        });
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar o diário de obra.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }
-
+  // M9-D850: a leitura passa pelo padrão único de estados (carregando, erro com "tentar de novo", 403, offline).
+  // Os dados vão para o estado local, que as ações da tela continuam atualizando.
+  const pageQuery = useAsyncState(
+    async () => {
+      const [project, people] = await Promise.all([getProjectOrNull(params.id), listPeople().catch(lookupFallback("as pessoas"))]);
+      if (!project) return { notFound: true };
+      const reports = await listDailyReports(project.id);
+      return { project, people: people || [], reports: reports || [] };
+    },
+    { key: `obra-diario-${params.id}`, deps: [params.id], isEmpty: () => false }
+  );
+  const load = pageQuery.reload;
   useEffect(() => {
-    const cancel = load();
-    return cancel;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.id]);
+    const d = pageQuery.data;
+    if (!d || d.notFound) return;
+    setProject(d.project);
+    setPeople(d.people);
+    setAllReports(d.reports);
+  }, [pageQuery.data]);
 
-  if (notFoundFlag) return notFound();
+  if (pageQuery.data && pageQuery.data.notFound) return notFound();
 
-  if (loading) {
+  // Enquanto não há obra carregada (carregando, erro, sem permissão, sem conexão), o AsyncState mostra o estado correspondente.
+  if (!project) {
     return (
       <AppShell title="Diário de obra" backHref={`/painel/obras/lista/${params.id}`}>
-        <SkeletonDetail sections={1} />
-      </AppShell>
-    );
-  }
-
-  if (loadError && !project) {
-    return (
-      <AppShell title="Diário de obra" backHref={`/painel/obras/lista/${params.id}`}>
-        <Alert tone="danger" title="Não foi possível carregar o diário de obra">{loadError}</Alert>
+        <AsyncState result={pageQuery} loadingLabel="Carregando o diário de obra...">{null}</AsyncState>
       </AppShell>
     );
   }

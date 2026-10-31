@@ -13,7 +13,6 @@ import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import FormField from "@/components/molecules/FormField/FormField";
 import Input from "@/components/atoms/Input/Input";
 import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
-import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import {
   STAGE_STATUS_LABELS,
   STAGE_STATUS_TONE,
@@ -39,6 +38,8 @@ import OfflineSyncBadge from "@/components/molecules/OfflineSyncBadge/OfflineSyn
 import { enqueueOfflineRecord, generateIdempotencyKey } from "@/lib/offline/offlineQueue";
 import { useOfflineSync } from "@/lib/offline/useOfflineSync";
 import styles from "./page.module.css";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 
 // Fila offline (Marco 6, contrato §13) — medição.
 const OFFLINE_QUEUE_NAME = "construction.stage-measurements";
@@ -48,8 +49,6 @@ export default function EtapaDetalhePage({ params }) {
   const [stage, setStage] = useState(null);
   const [measurements, setMeasurements] = useState([]);
   const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [busyId, setBusyId] = useState(null);
   const { confirm, ConfirmDialog } = useConfirm();
@@ -100,43 +99,26 @@ export default function EtapaDetalhePage({ params }) {
   const [depTargetStageId, setDepTargetStageId] = useState("");
   const [savingDep, setSavingDep] = useState(false);
 
-  function load() {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    Promise.all([getProject(params.id), getProjectStage(params.stageId), apiFetch("/users?status=ACTIVE")])
-      .then(([p, s, u]) => {
-        if (cancelled) return;
-        setProject(p);
-        setStage(s);
-        setUsers(u || []);
-        return Promise.all([
-          listStageMeasurements(s.id),
-          listProjectStages(p.id),
-          listStageDependencies(s.id),
-        ]).then(([m, stages, deps]) => {
-          if (cancelled) return;
-          setMeasurements(m || []);
-          setAllStages(stages || []);
-          setDependencies(deps || []);
-        });
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar a etapa.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }
-
+  // M9-D850: a leitura passa pelo padrão único de estados (carregando, erro com "tentar de novo", 403, offline).
+  // Os dados vão para o estado local, que as ações da tela continuam atualizando.
+  const pageQuery = useAsyncState(
+    async () => {
+      const [project, stage, users] = await Promise.all([getProject(params.id), getProjectStage(params.stageId), apiFetch("/users?status=ACTIVE")]);
+      const [measurements, allStages, dependencies] = await Promise.all([listStageMeasurements(stage.id), listProjectStages(project.id), listStageDependencies(stage.id)]);
+      return { project, stage, users: users || [], measurements: measurements || [], allStages: allStages || [], dependencies: dependencies || [] };
+    },
+    { key: `obra-etapa-${params.id}-${params.stageId}`, deps: [params.id, params.stageId], isEmpty: () => false }
+  );
   useEffect(() => {
-    const cancel = load();
-    return cancel;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.id, params.stageId]);
+    const d = pageQuery.data;
+    if (!d) return;
+    setProject(d.project);
+    setStage(d.stage);
+    setUsers(d.users);
+    setMeasurements(d.measurements);
+    setAllStages(d.allStages);
+    setDependencies(d.dependencies);
+  }, [pageQuery.data]);
 
   function reloadStageAndMeasurements() {
     Promise.all([getProjectStage(params.stageId), listStageMeasurements(params.stageId)]).then(([s, m]) => {
@@ -145,26 +127,11 @@ export default function EtapaDetalhePage({ params }) {
     });
   }
 
-  if (loading) {
-    return (
-      <AppShell title="Etapa" backHref={`/painel/obras/lista/${params.id}`}>
-        <SkeletonDetail sections={2} />
-      </AppShell>
-    );
-  }
-
-  if (loadError && (!project || !stage)) {
-    return (
-      <AppShell title="Etapa" backHref={`/painel/obras/lista/${params.id}`}>
-        <Alert tone="danger" title="Não foi possível carregar a etapa">{loadError}</Alert>
-      </AppShell>
-    );
-  }
-
+  // Enquanto não há etapa carregada (carregando, erro, sem permissão, sem conexão), o AsyncState mostra o estado correspondente.
   if (!project || !stage) {
     return (
-      <AppShell title="Etapa" backHref="/painel/obras/lista">
-        <Alert tone="danger" title="Etapa não encontrada">Não existe nenhuma etapa com este identificador.</Alert>
+      <AppShell title="Etapa" backHref={`/painel/obras/lista/${params.id}`}>
+        <AsyncState result={pageQuery} loadingLabel="Carregando a etapa...">{null}</AsyncState>
       </AppShell>
     );
   }

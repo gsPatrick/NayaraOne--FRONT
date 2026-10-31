@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import StatTile from "@/components/molecules/StatTile/StatTile";
@@ -8,7 +8,6 @@ import Card from "@/components/molecules/Card/Card";
 import Badge from "@/components/atoms/Badge/Badge";
 import Icon from "@/components/atoms/Icon/Icon";
 import Button from "@/components/atoms/Button/Button";
-import Alert from "@/components/molecules/Alert/Alert";
 import BarList from "@/components/molecules/BarList/BarList";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import { SkeletonCardGrid } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
@@ -20,39 +19,21 @@ import { formatDate, formatBRL, isOverdue } from "@/lib/format";
 import styles from "./page.module.css";
 
 import { lookupFallback } from "@/lib/asyncState/lookup";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 export default function ObrasHubPage() {
-  const [projects, setProjects] = useState([]);
-  const [maintenanceCases, setMaintenanceCases] = useState([]);
-  const [properties, setProperties] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    // A lista de imóveis só serve para mostrar o nome do imóvel de cada obra: sem properties:read
-    // (ex.: aprovador de Compras, que vê Obras por ter construction:read) ela não pode derrubar a
-    // tela inteira — os nomes ficam em branco e o resto carrega (auditoria Marco 7 "final2").
-    Promise.all([listProjects(), listMaintenanceCases(), listProperties().catch(lookupFallback("os imóveis")), apiFetch("/users")])
-      .then(([p, m, props, u]) => {
-        if (cancelled) return;
-        setProjects(p || []);
-        setMaintenanceCases(m || []);
-        setProperties(props || []);
-        setUsers(u || []);
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar as obras.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // M9-D850: carregamento, erro, 403 e offline vêm do padrão único de estados.
+  // Imóveis só dão o nome do imóvel: sem properties:read a falha é registrada (lookupFallback) e o resto carrega.
+  // O hub nunca é "vazio": sem obras ele ainda mostra os chamados e os atalhos (os vazios de cada cartão são tratados nele).
+  const hubQuery = useAsyncState(
+    async () => {
+      const [projects, maintenanceCases, properties, users] = await Promise.all([listProjects(), listMaintenanceCases(), listProperties().catch(lookupFallback("os imóveis")), apiFetch("/users")]);
+      return { projects: projects || [], maintenanceCases: maintenanceCases || [], properties: properties || [], users: users || [] };
+    },
+    { key: "obras-hub", isEmpty: () => false }
+  );
+  const { projects = [], maintenanceCases = [], properties = [], users = [] } = hubQuery.data || {};
+  const loading = hubQuery.status === "LOADING";
 
   function propertyOf(id) {
     return properties.find((p) => p.id === id);
@@ -95,129 +76,133 @@ export default function ObrasHubPage() {
 
   return (
     <AppShell title="Obras">
-      {loadError ? <Alert tone="danger" title="Não foi possível carregar as obras">{loadError}</Alert> : null}
+      <AsyncState result={hubQuery}>
+        {() => (
+          <>
+          {loading ? (
+            <SkeletonCardGrid count={5} />
+          ) : (
+            <div className={styles.grid}>
+              <StatTile label="Total de obras" value={projects.length} tone="neutral" icon="building" />
+              <StatTile label="Em andamento" value={inProgress.length} tone="info" icon="chart" />
+              <StatTile
+                label="Obras atrasadas"
+                value={overdueProjects.length}
+                tone={overdueProjects.length > 0 ? "danger" : "success"}
+                icon="calendar"
+              />
+              <StatTile label="Orçamento total" value={formatBRL(totalBudget)} tone="neutral" icon="money" />
+              <StatTile
+                label="Chamados de pós-obra abertos"
+                value={openMaintenance.length}
+                tone={openMaintenance.length > 0 ? "danger" : "success"}
+                icon="key"
+              />
+            </div>
+          )}
 
-      {loading ? (
-        <SkeletonCardGrid count={5} />
-      ) : (
-        <div className={styles.grid}>
-          <StatTile label="Total de obras" value={projects.length} tone="neutral" icon="building" />
-          <StatTile label="Em andamento" value={inProgress.length} tone="info" icon="chart" />
-          <StatTile
-            label="Obras atrasadas"
-            value={overdueProjects.length}
-            tone={overdueProjects.length > 0 ? "danger" : "success"}
-            icon="calendar"
-          />
-          <StatTile label="Orçamento total" value={formatBRL(totalBudget)} tone="neutral" icon="money" />
-          <StatTile
-            label="Chamados de pós-obra abertos"
-            value={openMaintenance.length}
-            tone={openMaintenance.length > 0 ? "danger" : "success"}
-            icon="key"
-          />
-        </div>
-      )}
+          <div className={styles.layout}>
+            <div className={styles.mainCol}>
+              <Card
+                title="Obras recentes"
+                subtitle="Últimas obras cadastradas"
+                actions={<Link href="/painel/obras/lista" className={styles.cardLink}>Ver todas</Link>}
+              >
+                {loading ? (
+                  <SkeletonCardGrid count={3} />
+                ) : recentProjects.length === 0 ? (
+                  <p className={styles.emptyText}>Nenhuma obra cadastrada.</p>
+                ) : (
+                  <ul className={styles.list}>
+                    {recentProjects.map((p) => (
+                      <li key={p.id}>
+                        <Link href={`/painel/obras/lista/${p.id}`} className={styles.listRow}>
+                          <span className={styles.listRowIcon}><Icon name="building" size={16} /></span>
+                          <div className={styles.listRowInfo}>
+                            <span className={styles.listRowTitle}>{p.name}</span>
+                            <span className={styles.listRowSubtitle}>
+                              {propertyOf(p.propertyId)?.name || "Sem imóvel vinculado"} · {userOf(p.responsibleUserId)?.name || "Sem responsável"}
+                            </span>
+                            <span className={styles.listRowSubtitle}>
+                              Início {formatDate(p.startsAt)} · Previsão {p.endsAtPlanned ? formatDate(p.endsAtPlanned) : "Sem previsão de término"} · {formatBRL(p.budgetAmount)}
+                            </span>
+                          </div>
+                          <Badge tone={PROJECT_STATUS_TONE[p.status] || "neutral"}>{PROJECT_STATUS_LABELS[p.status] || p.status}</Badge>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </Card>
 
-      <div className={styles.layout}>
-        <div className={styles.mainCol}>
-          <Card
-            title="Obras recentes"
-            subtitle="Últimas obras cadastradas"
-            actions={<Link href="/painel/obras/lista" className={styles.cardLink}>Ver todas</Link>}
-          >
-            {loading ? (
-              <SkeletonCardGrid count={3} />
-            ) : recentProjects.length === 0 ? (
-              <p className={styles.emptyText}>Nenhuma obra cadastrada.</p>
-            ) : (
-              <ul className={styles.list}>
-                {recentProjects.map((p) => (
-                  <li key={p.id}>
-                    <Link href={`/painel/obras/lista/${p.id}`} className={styles.listRow}>
-                      <span className={styles.listRowIcon}><Icon name="building" size={16} /></span>
-                      <div className={styles.listRowInfo}>
-                        <span className={styles.listRowTitle}>{p.name}</span>
-                        <span className={styles.listRowSubtitle}>
-                          {propertyOf(p.propertyId)?.name || "Sem imóvel vinculado"} · {userOf(p.responsibleUserId)?.name || "Sem responsável"}
-                        </span>
-                        <span className={styles.listRowSubtitle}>
-                          Início {formatDate(p.startsAt)} · Previsão {p.endsAtPlanned ? formatDate(p.endsAtPlanned) : "Sem previsão de término"} · {formatBRL(p.budgetAmount)}
-                        </span>
-                      </div>
-                      <Badge tone={PROJECT_STATUS_TONE[p.status] || "neutral"}>{PROJECT_STATUS_LABELS[p.status] || p.status}</Badge>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </Card>
+              <Card
+                title="Chamados de pós-obra abertos"
+                subtitle="Aguardando atendimento"
+                actions={<Link href="/painel/obras/pos-obra" className={styles.cardLink}>Ver todos</Link>}
+              >
+                {loading ? (
+                  <SkeletonCardGrid count={3} />
+                ) : openMaintenance.length === 0 ? (
+                  <p className={styles.emptyText}>Nenhum chamado aberto.</p>
+                ) : (
+                  <ul className={styles.list}>
+                    {openMaintenance.map((c) => (
+                      <li key={c.id}>
+                        <Link href={`/painel/obras/pos-obra/${c.id}`} className={styles.listRow}>
+                          <span className={styles.listRowIcon}><Icon name="key" size={16} /></span>
+                          <div className={styles.listRowInfo}>
+                            <span className={styles.listRowTitle}>{c.description}</span>
+                            <span className={styles.listRowSubtitle}>
+                              {propertyOf(c.propertyId)?.name || "Sem imóvel vinculado"} · Aberto em {formatDate(c.createdAt || c.created_at)}
+                            </span>
+                          </div>
+                          <Badge tone={MAINTENANCE_STATUS_TONE[c.status] || "neutral"}>{MAINTENANCE_STATUS_LABELS[c.status] || c.status}</Badge>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </Card>
+            </div>
 
-          <Card
-            title="Chamados de pós-obra abertos"
-            subtitle="Aguardando atendimento"
-            actions={<Link href="/painel/obras/pos-obra" className={styles.cardLink}>Ver todos</Link>}
-          >
-            {loading ? (
-              <SkeletonCardGrid count={3} />
-            ) : openMaintenance.length === 0 ? (
-              <p className={styles.emptyText}>Nenhum chamado aberto.</p>
-            ) : (
-              <ul className={styles.list}>
-                {openMaintenance.map((c) => (
-                  <li key={c.id}>
-                    <Link href={`/painel/obras/pos-obra/${c.id}`} className={styles.listRow}>
-                      <span className={styles.listRowIcon}><Icon name="key" size={16} /></span>
-                      <div className={styles.listRowInfo}>
-                        <span className={styles.listRowTitle}>{c.description}</span>
-                        <span className={styles.listRowSubtitle}>
-                          {propertyOf(c.propertyId)?.name || "Sem imóvel vinculado"} · Aberto em {formatDate(c.createdAt || c.created_at)}
-                        </span>
-                      </div>
-                      <Badge tone={MAINTENANCE_STATUS_TONE[c.status] || "neutral"}>{MAINTENANCE_STATUS_LABELS[c.status] || c.status}</Badge>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </Card>
-        </div>
+            <div className={styles.sideCol}>
+              <Card title="Obras por status" subtitle="Distribuição do portfólio">
+                {loading ? (
+                  <SkeletonCardGrid count={1} />
+                ) : projectsByStatus.length === 0 ? (
+                  <p className={styles.emptyText}>Nenhuma obra cadastrada.</p>
+                ) : (
+                  <BarList items={projectsByStatus} />
+                )}
+              </Card>
 
-        <div className={styles.sideCol}>
-          <Card title="Obras por status" subtitle="Distribuição do portfólio">
-            {loading ? (
-              <SkeletonCardGrid count={1} />
-            ) : projectsByStatus.length === 0 ? (
-              <p className={styles.emptyText}>Nenhuma obra cadastrada.</p>
-            ) : (
-              <BarList items={projectsByStatus} />
-            )}
-          </Card>
-
-          <Card title="Próximos prazos" subtitle="Obras em andamento com previsão de término mais próxima">
-            {loading ? (
-              <SkeletonCardGrid count={2} />
-            ) : upcomingDeadlines.length === 0 ? (
-              <p className={styles.emptyText}>Nenhuma obra com previsão de término cadastrada.</p>
-            ) : (
-              <ul className={styles.list}>
-                {upcomingDeadlines.map((p) => (
-                  <li key={p.id}>
-                    <Link href={`/painel/obras/lista/${p.id}`} className={styles.listRow}>
-                      <span className={styles.listRowIcon}><Icon name="calendar" size={16} /></span>
-                      <div className={styles.listRowInfo}>
-                        <span className={styles.listRowTitle}>{p.name}</span>
-                        <span className={styles.listRowSubtitle}>{formatDate(p.endsAtPlanned)}</span>
-                      </div>
-                      {isOverdue(p.endsAtPlanned) ? <Badge tone="danger">Atrasada</Badge> : null}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </Card>
-        </div>
-      </div>
+              <Card title="Próximos prazos" subtitle="Obras em andamento com previsão de término mais próxima">
+                {loading ? (
+                  <SkeletonCardGrid count={2} />
+                ) : upcomingDeadlines.length === 0 ? (
+                  <p className={styles.emptyText}>Nenhuma obra com previsão de término cadastrada.</p>
+                ) : (
+                  <ul className={styles.list}>
+                    {upcomingDeadlines.map((p) => (
+                      <li key={p.id}>
+                        <Link href={`/painel/obras/lista/${p.id}`} className={styles.listRow}>
+                          <span className={styles.listRowIcon}><Icon name="calendar" size={16} /></span>
+                          <div className={styles.listRowInfo}>
+                            <span className={styles.listRowTitle}>{p.name}</span>
+                            <span className={styles.listRowSubtitle}>{formatDate(p.endsAtPlanned)}</span>
+                          </div>
+                          {isOverdue(p.endsAtPlanned) ? <Badge tone="danger">Atrasada</Badge> : null}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </Card>
+            </div>
+          </div>
+          </>
+        )}
+      </AsyncState>
 
       <StickyActionBar>
         <Button variant="secondary" href="/painel/obras/lista">

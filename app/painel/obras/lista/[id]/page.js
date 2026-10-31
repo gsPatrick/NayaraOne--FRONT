@@ -17,7 +17,6 @@ import Checkbox from "@/components/atoms/Checkbox/Checkbox";
 import Input from "@/components/atoms/Input/Input";
 import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import Select from "@/components/atoms/Select/Select";
-import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
 import {
   PROJECT_STATUS_LABELS,
@@ -27,31 +26,14 @@ import {
   STAGE_STATUS_TONE,
   MAINTENANCE_ESCALATION_LABELS,
 } from "@/lib/mock/construction";
-import {
-  getProject,
-  updateProject,
-  transitionProject,
-  removeProject,
-  deliverProject,
-  closeProjectWarranty,
-  listProjectStages,
-  createProjectStage,
-  updateProjectStage,
-  listDailyReports,
-  listBudgetLines,
-  listBudgets,
-  listChangeOrders,
-  getProjectHealth,
-  getNayObrasSummary,
-  getNayObrasPostObraSummary,
-} from "@/lib/api/construction";
-import { listProperties } from "@/lib/api/properties";
-import { listCostCenters } from "@/lib/api/finance";
-import { apiFetch } from "@/lib/api/client";
+import { updateProject, transitionProject, removeProject, deliverProject, closeProjectWarranty, createProjectStage, updateProjectStage, getProjectHealth, getNayObrasSummary, getNayObrasPostObraSummary } from "@/lib/api/construction";
 import { formatBRL, formatPercent, formatDate, formatDateTime, dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE, toNumber } from "@/lib/format";
 import styles from "./page.module.css";
+import { loadObraDetail } from "./_components/loadObraDetail";
 
-import { lookupFallback, reportLookupProblem } from "@/lib/asyncState/lookup";
+import { reportLookupProblem } from "@/lib/asyncState/lookup";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 // Visão geral da obra — depois da divisão do antigo monólito (orçamento, change orders, RDO/
 // diário, medições, materiais e qualidade/NC agora moram em subrotas dedicadas, veja
 // app/painel/obras/lista/[id]/{orcamento,change-orders,diario,medicoes,materiais,qualidade}/
@@ -68,9 +50,6 @@ export default function ObraDetalhePage({ params }) {
   const [reportsCount, setReportsCount] = useState(0);
   const [budgetLinesCount, setBudgetLinesCount] = useState(0);
   const [changeOrdersCount, setChangeOrdersCount] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
-  const [notFoundFlag, setNotFoundFlag] = useState(false);
   const [actionError, setActionError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -113,55 +92,22 @@ export default function ObraDetalhePage({ params }) {
   const [closingWarranty, setClosingWarranty] = useState(false);
   const [warrantyCloseBlocked, setWarrantyCloseBlocked] = useState(false);
 
-  function load() {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    Promise.all([
-      getProject(params.id).catch((err) => {
-        if (err?.status === 404) {
-          setNotFoundFlag(true);
-          return null;
-        }
-        throw err;
-      }),
-      listProperties(),
-      apiFetch("/users?status=ACTIVE"),
-      // Centro de custo é opcional — não pode derrubar a página inteira se o usuário não tiver
-      // permissão finance:read (o formulário de edição só perde essa opção específica).
-      listCostCenters().catch(lookupFallback("os centros de custo")),
-    ])
-      .then(([p, props, u, cc]) => {
-        if (cancelled || !p) return;
-        setProject(p);
-        setProperties(props || []);
-        setUsers(u || []);
-        setCostCenters(cc || []);
-        return Promise.all([
-          listProjectStages(p.id),
-          listDailyReports(p.id),
-          listBudgetLines(p.id),
-          listChangeOrders(p.id),
-          listBudgets(p.id),
-        ]).then(([st, rd, bl, cos, budgets]) => {
-          if (cancelled) return;
-          setStages(st || []);
-          setReportsCount((rd || []).length);
-          setBudgetLinesCount((bl || []).length);
-          setChangeOrdersCount((cos || []).length);
-          setBudgetApproved(((budgets || [])[0]?.status) === "APPROVED");
-        });
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar a obra.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }
+  // M9-D850: a leitura da obra passa pelo padrão único de estados (carregando, erro com "tentar de novo", 403, offline).
+  // Os dados vão para o estado local, que as ações da tela (editar, avançar status, etapas) continuam atualizando.
+  const obraQuery = useAsyncState(() => loadObraDetail(params.id), { key: `obra-${params.id}`, deps: [params.id], isEmpty: () => false });
+  useEffect(() => {
+    const d = obraQuery.data;
+    if (!d || d.notFound) return;
+    setProject(d.project);
+    setProperties(d.properties);
+    setUsers(d.users);
+    setCostCenters(d.costCenters);
+    setStages(d.stages);
+    setReportsCount(d.reportsCount);
+    setBudgetLinesCount(d.budgetLinesCount);
+    setChangeOrdersCount(d.changeOrdersCount);
+    setBudgetApproved(d.budgetApproved);
+  }, [obraQuery.data]);
 
   function loadHealth() {
     setHealthError("");
@@ -186,34 +132,13 @@ export default function ObraDetalhePage({ params }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
 
-  useEffect(() => {
-    const cancel = load();
-    return cancel;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.id]);
+  if (obraQuery.data && obraQuery.data.notFound) return notFound();
 
-  if (notFoundFlag) return notFound();
-
-  if (loading) {
-    return (
-      <AppShell title="Obra" backHref="/painel/obras/lista">
-        <SkeletonDetail sections={4} />
-      </AppShell>
-    );
-  }
-
-  if (loadError && !project) {
-    return (
-      <AppShell title="Obra" backHref="/painel/obras/lista">
-        <Alert tone="danger" title="Não foi possível carregar a obra">{loadError}</Alert>
-      </AppShell>
-    );
-  }
-
+  // Enquanto não há obra carregada (carregando, erro, sem permissão, sem conexão), o AsyncState mostra o estado correspondente.
   if (!project) {
     return (
       <AppShell title="Obra" backHref="/painel/obras/lista">
-        <Alert tone="danger" title="Obra não encontrada">Não existe nenhuma obra com este identificador.</Alert>
+        <AsyncState result={obraQuery} loadingLabel="Carregando a obra...">{null}</AsyncState>
       </AppShell>
     );
   }

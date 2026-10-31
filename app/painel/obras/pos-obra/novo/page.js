@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -9,7 +9,6 @@ import Input from "@/components/atoms/Input/Input";
 import Select from "@/components/atoms/Select/Select";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
-import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import { createMaintenanceCase, listProjects } from "@/lib/api/construction";
 import { listProperties } from "@/lib/api/properties";
 import { listPeople } from "@/lib/api/people";
@@ -17,17 +16,13 @@ import { apiFetch } from "@/lib/api/client";
 import { dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
 import { MAINTENANCE_CATEGORY_LABELS, MAINTENANCE_SEVERITY_LABELS } from "@/lib/mock/construction";
 import styles from "./page.module.css";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 
 export default function NovoChamadoPosObraPage() {
   const router = useRouter();
   const [actionError, setActionError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
-  const [properties, setProperties] = useState([]);
-  const [projects, setProjects] = useState([]);
-  const [people, setPeople] = useState([]);
-  const [users, setUsers] = useState([]);
   const [form, setForm] = useState({
     propertyId: "",
     projectId: "",
@@ -39,30 +34,16 @@ export default function NovoChamadoPosObraPage() {
     severity: "MEDIUM",
   });
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    // FIX (padrão do seletor de responsável): filtra apenas usuários ACTIVE, evitando
-    // usuários suspensos/de QA na lista.
-    Promise.all([listProperties(), listProjects(), listPeople(), apiFetch("/users?status=ACTIVE")])
-      .then(([props, proj, pp, u]) => {
-        if (cancelled) return;
-        setProperties(props || []);
-        setProjects(proj || []);
-        setPeople(pp || []);
-        setUsers(u || []);
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar os dados do formulário.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // M9-D850: carregamento, erro, 403 e offline dos dados do formulário vêm do padrão único de estados.
+  // Filtra apenas usuários ACTIVE no seletor de responsável.
+  const formQuery = useAsyncState(
+    async () => {
+      const [properties, projects, people, users] = await Promise.all([listProperties(), listProjects(), listPeople(), apiFetch("/users?status=ACTIVE")]);
+      return { properties: properties || [], projects: projects || [], people: people || [], users: users || [] };
+    },
+    { key: "obras-pos-obra-novo", isEmpty: () => false }
+  );
+  const { properties = [], projects = [], people = [], users = [] } = formQuery.data || {};
 
   function update(field) {
     return (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
@@ -101,12 +82,10 @@ export default function NovoChamadoPosObraPage() {
   return (
     <AppShell title="Novo chamado de pós-obra" backHref="/painel/obras/pos-obra">
       <div className={styles.wrap}>
-        {loadError ? <Alert tone="danger" title="Não foi possível carregar os dados do formulário">{loadError}</Alert> : null}
         {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
 
-        {loading ? (
-          <SkeletonDetail sections={1} />
-        ) : (
+        <AsyncState result={formQuery}>
+          {() => (
         <Card title="Dados do chamado">
           <div className={styles.formGrid}>
             <FormField label="Imóvel" htmlFor="f-property" required>
@@ -197,11 +176,12 @@ export default function NovoChamadoPosObraPage() {
             </div>
           </div>
         </Card>
-        )}
+          )}
+        </AsyncState>
 
         <div className={styles.actionBar}>
           <Button variant="secondary" onClick={() => router.push("/painel/obras/pos-obra")}>Cancelar</Button>
-          <Button onClick={handleSubmit} loading={submitting} disabled={!isValid || loading}>Criar chamado</Button>
+          <Button onClick={handleSubmit} loading={submitting} disabled={!isValid || !formQuery.data}>Criar chamado</Button>
         </div>
       </div>
     </AppShell>

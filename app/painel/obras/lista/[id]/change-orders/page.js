@@ -17,21 +17,20 @@ import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import Select from "@/components/atoms/Select/Select";
 import FileDropInput from "@/components/molecules/FileDropInput/FileDropInput";
 import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
-import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import { CHANGE_ORDER_STATUS_LABELS, CHANGE_ORDER_STATUS_TONE, CHANGE_ORDER_REASON_LABELS } from "@/lib/mock/construction";
-import { getProject, listBudgets, listChangeOrders, createChangeOrder, decideChangeOrder } from "@/lib/api/construction";
+import { listBudgets, listChangeOrders, createChangeOrder, decideChangeOrder } from "@/lib/api/construction";
 import { uploadFile } from "@/lib/api/legal";
 import { generateIdempotencyKey } from "@/lib/offline/offlineQueue";
 import { formatBRL, toNumber } from "@/lib/format";
 import styles from "./page.module.css";
+import { getProjectOrNull } from "../_components/getProjectOrNull";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 
 export default function ChangeOrdersObraPage({ params }) {
   const [project, setProject] = useState(null);
-  const [notFoundFlag, setNotFoundFlag] = useState(false);
   const [budget, setBudget] = useState(null);
   const [changeOrders, setChangeOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [viewerFileId, setViewerFileId] = useState(null);
   const { confirm, ConfirmDialog } = useConfirm();
@@ -41,58 +40,32 @@ export default function ChangeOrdersObraPage({ params }) {
   const [savingCo, setSavingCo] = useState(false);
   const [decidingCoId, setDecidingCoId] = useState(null);
 
-  function load() {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    getProject(params.id)
-      .catch((err) => {
-        if (err?.status === 404) {
-          setNotFoundFlag(true);
-          return null;
-        }
-        throw err;
-      })
-      .then((p) => {
-        if (cancelled || !p) return;
-        setProject(p);
-        return Promise.all([listBudgets(p.id), listChangeOrders(p.id)]).then(([budgets, cos]) => {
-          if (cancelled) return;
-          setBudget((budgets || [])[0] || null);
-          setChangeOrders(cos || []);
-        });
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar os Change Orders.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }
-
+  // M9-D850: a leitura passa pelo padrão único de estados (carregando, erro com "tentar de novo", 403, offline).
+  // Os dados vão para o estado local, que as ações da tela continuam atualizando.
+  const pageQuery = useAsyncState(
+    async () => {
+      const project = await getProjectOrNull(params.id);
+      if (!project) return { notFound: true };
+      const [budgets, changeOrders] = await Promise.all([listBudgets(project.id), listChangeOrders(project.id)]);
+      return { project, budget: (budgets || [])[0] || null, changeOrders: changeOrders || [] };
+    },
+    { key: `obra-change-orders-${params.id}`, deps: [params.id], isEmpty: () => false }
+  );
   useEffect(() => {
-    const cancel = load();
-    return cancel;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.id]);
+    const d = pageQuery.data;
+    if (!d || d.notFound) return;
+    setProject(d.project);
+    setBudget(d.budget);
+    setChangeOrders(d.changeOrders);
+  }, [pageQuery.data]);
 
-  if (notFoundFlag) return notFound();
+  if (pageQuery.data && pageQuery.data.notFound) return notFound();
 
-  if (loading) {
+  // Enquanto não há obra carregada (carregando, erro, sem permissão, sem conexão), o AsyncState mostra o estado correspondente.
+  if (!project) {
     return (
       <AppShell title="Change Orders" backHref={`/painel/obras/lista/${params.id}`}>
-        <SkeletonDetail sections={1} />
-      </AppShell>
-    );
-  }
-
-  if (loadError && !project) {
-    return (
-      <AppShell title="Change Orders" backHref={`/painel/obras/lista/${params.id}`}>
-        <Alert tone="danger" title="Não foi possível carregar os Change Orders">{loadError}</Alert>
+        <AsyncState result={pageQuery} loadingLabel="Carregando os Change Orders...">{null}</AsyncState>
       </AppShell>
     );
   }

@@ -7,19 +7,21 @@ import Card from "@/components/molecules/Card/Card";
 import Badge from "@/components/atoms/Badge/Badge";
 import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
-import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import {
   STAGE_STATUS_LABELS,
   STAGE_STATUS_TONE,
   MEASUREMENT_STATUS_LABELS,
   MEASUREMENT_STATUS_TONE,
 } from "@/lib/mock/construction";
-import { getProject, listProjectStages, listStageMeasurements } from "@/lib/api/construction";
+import { listProjectStages, listStageMeasurements } from "@/lib/api/construction";
 import { apiFetch } from "@/lib/api/client";
 import { formatDate, formatPercent, formatBRL } from "@/lib/format";
 import styles from "./page.module.css";
+import { getProjectOrNull } from "../_components/getProjectOrNull";
 
 import { lookupFallback } from "@/lib/asyncState/lookup";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 // Visão consolidada de medições de todas as etapas da obra — extraída na divisão do antigo
 // monólito app/painel/obras/lista/[id]/page.js em subrotas. As ações de medição (registrar,
 // enviar para revisão, revisar, aprovar/rejeitar) continuam na tela de detalhe da etapa
@@ -27,75 +29,42 @@ import { lookupFallback } from "@/lib/asyncState/lookup";
 // link direto para a etapa correspondente para quem precisar agir.
 export default function MedicoesObraPage({ params }) {
   const [project, setProject] = useState(null);
-  const [notFoundFlag, setNotFoundFlag] = useState(false);
   const [stages, setStages] = useState([]);
   const [users, setUsers] = useState([]);
   const [measurementsByStage, setMeasurementsByStage] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
 
-  function load() {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    Promise.all([
-      getProject(params.id).catch((err) => {
-        if (err?.status === 404) {
-          setNotFoundFlag(true);
-          return null;
-        }
-        throw err;
-      }),
-      apiFetch("/users?status=ACTIVE").catch(lookupFallback("os usuários")),
-    ])
-      .then(([p, u]) => {
-        if (cancelled || !p) return;
-        setProject(p);
-        setUsers(u || []);
-        return listProjectStages(p.id).then((st) => {
-          if (cancelled) return;
-          setStages(st || []);
-          return Promise.all((st || []).map((s) => listStageMeasurements(s.id).catch(lookupFallback("as medições da etapa")))).then((results) => {
-            if (cancelled) return;
-            const byStage = {};
-            (st || []).forEach((s, idx) => {
-              byStage[s.id] = results[idx] || [];
-            });
-            setMeasurementsByStage(byStage);
-          });
-        });
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar as medições.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
+  // M9-D850: a leitura passa pelo padrão único de estados (carregando, erro com "tentar de novo", 403, offline).
+  // Os dados vão para o estado local, que as ações da tela continuam atualizando.
+  const pageQuery = useAsyncState(
+    async () => {
+      const [project, users] = await Promise.all([getProjectOrNull(params.id), apiFetch("/users?status=ACTIVE").catch(lookupFallback("os usuários"))]);
+      if (!project) return { notFound: true };
+      const stages = (await listProjectStages(project.id)) || [];
+      const results = await Promise.all(stages.map((s) => listStageMeasurements(s.id).catch(lookupFallback("as medições da etapa"))));
+      const measurementsByStage = {};
+      stages.forEach((s, idx) => {
+        measurementsByStage[s.id] = results[idx] || [];
       });
-    return () => {
-      cancelled = true;
-    };
-  }
-
+      return { project, users: users || [], stages, measurementsByStage };
+    },
+    { key: `obra-medicoes-${params.id}`, deps: [params.id], isEmpty: () => false }
+  );
   useEffect(() => {
-    const cancel = load();
-    return cancel;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.id]);
+    const d = pageQuery.data;
+    if (!d || d.notFound) return;
+    setProject(d.project);
+    setUsers(d.users);
+    setStages(d.stages);
+    setMeasurementsByStage(d.measurementsByStage);
+  }, [pageQuery.data]);
 
-  if (notFoundFlag) return notFound();
+  if (pageQuery.data && pageQuery.data.notFound) return notFound();
 
-  if (loading) {
+  // Enquanto não há obra carregada (carregando, erro, sem permissão, sem conexão), o AsyncState mostra o estado correspondente.
+  if (!project) {
     return (
       <AppShell title="Medições" backHref={`/painel/obras/lista/${params.id}`}>
-        <SkeletonDetail sections={1} />
-      </AppShell>
-    );
-  }
-
-  if (loadError && !project) {
-    return (
-      <AppShell title="Medições" backHref={`/painel/obras/lista/${params.id}`}>
-        <Alert tone="danger" title="Não foi possível carregar as medições">{loadError}</Alert>
+        <AsyncState result={pageQuery} loadingLabel="Carregando as medições...">{null}</AsyncState>
       </AppShell>
     );
   }

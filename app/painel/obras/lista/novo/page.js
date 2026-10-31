@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -10,7 +10,6 @@ import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import Select from "@/components/atoms/Select/Select";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
-import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import { createProject } from "@/lib/api/construction";
 import { listProperties } from "@/lib/api/properties";
 import { listCostCenters } from "@/lib/api/finance";
@@ -19,15 +18,12 @@ import { dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE, toNum
 import styles from "./page.module.css";
 
 import { lookupFallback } from "@/lib/asyncState/lookup";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 export default function NovaObraPage() {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
-  const [properties, setProperties] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [costCenters, setCostCenters] = useState([]);
   const [form, setForm] = useState({
     name: "",
     propertyId: "",
@@ -38,31 +34,16 @@ export default function NovaObraPage() {
     endsAtPlanned: "",
   });
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    // FIX (padrão do seletor de responsável): filtra apenas usuários ACTIVE, evitando
-    // usuários suspensos/de QA na lista.
-    // listCostCenters() tem `.catch(() => [])` próprio: centro de custo é opcional e não pode
-    // derrubar o formulário inteiro se o usuário não tiver permissão finance:read.
-    Promise.all([listProperties(), apiFetch("/users?status=ACTIVE"), listCostCenters().catch(lookupFallback("os centros de custo"))])
-      .then(([props, u, cc]) => {
-        if (cancelled) return;
-        setProperties(props || []);
-        setUsers(u || []);
-        setCostCenters(cc || []);
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar os dados do formulário.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // M9-D850: carregamento, erro, 403 e offline dos dados do formulário vêm do padrão único de estados.
+  // Filtra apenas usuários ACTIVE no seletor de responsável. Centro de custo é opcional: sem finance:read a falha é registrada (lookupFallback) e o formulário abre.
+  const formQuery = useAsyncState(
+    async () => {
+      const [properties, users, costCenters] = await Promise.all([listProperties(), apiFetch("/users?status=ACTIVE"), listCostCenters().catch(lookupFallback("os centros de custo"))]);
+      return { properties: properties || [], users: users || [], costCenters: costCenters || [] };
+    },
+    { key: "obras-lista-novo", isEmpty: () => false }
+  );
+  const { properties = [], users = [], costCenters = [] } = formQuery.data || {};
 
   function update(field) {
     return (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
@@ -117,12 +98,10 @@ export default function NovaObraPage() {
   return (
     <AppShell title="Nova obra" backHref="/painel/obras/lista">
       <div className={styles.wrap}>
-        {loadError ? <Alert tone="danger" title="Não foi possível carregar os dados do formulário">{loadError}</Alert> : null}
         {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
 
-        {loading ? (
-          <SkeletonDetail sections={1} />
-        ) : (
+        <AsyncState result={formQuery}>
+          {() => (
         <Card title="Dados da obra">
           <div className={styles.formGrid}>
             <div className={styles.span2}>
@@ -199,11 +178,12 @@ export default function NovaObraPage() {
             </FormField>
           </div>
         </Card>
-        )}
+          )}
+        </AsyncState>
 
         <div className={styles.actionBar}>
           <Button variant="secondary" onClick={() => router.push("/painel/obras/lista")}>Cancelar</Button>
-          <Button onClick={handleSubmit} loading={submitting} disabled={!isValid || loading}>Criar obra</Button>
+          <Button onClick={handleSubmit} loading={submitting} disabled={!isValid || !formQuery.data}>Criar obra</Button>
         </div>
       </div>
     </AppShell>

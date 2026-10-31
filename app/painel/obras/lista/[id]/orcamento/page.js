@@ -15,33 +15,21 @@ import Input from "@/components/atoms/Input/Input";
 import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import Radio from "@/components/atoms/Radio/Radio";
 import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
-import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import { BUDGET_STATUS_LABELS, BUDGET_STATUS_TONE } from "@/lib/mock/construction";
-import {
-  getProject,
-  listBudgetLines,
-  createBudgetLine,
-  updateBudgetLine,
-  removeBudgetLine,
-  listBudgets,
-  createBudget,
-  approveBudget,
-  getActiveMarginRule,
-  createMarginRule,
-} from "@/lib/api/construction";
+import { listBudgetLines, createBudgetLine, updateBudgetLine, removeBudgetLine, listBudgets, createBudget, approveBudget, getActiveMarginRule, createMarginRule } from "@/lib/api/construction";
 import { formatBRL, toNumber } from "@/lib/format";
 import { isInvalidNumber } from "../_components/obraShared";
 import styles from "./page.module.css";
+import { getProjectOrNull } from "../_components/getProjectOrNull";
 
 import { lookupFallback } from "@/lib/asyncState/lookup";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 export default function OrcamentoObraPage({ params }) {
   const [project, setProject] = useState(null);
-  const [notFoundFlag, setNotFoundFlag] = useState(false);
   const [budgetLines, setBudgetLines] = useState([]);
   const [budget, setBudget] = useState(null);
   const [activeMarginRule, setActiveMarginRule] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const { confirm, ConfirmDialog } = useConfirm();
 
@@ -63,61 +51,33 @@ export default function OrcamentoObraPage({ params }) {
   const [marginEnforcementMode, setMarginEnforcementMode] = useState("ALERT");
   const [savingMarginRule, setSavingMarginRule] = useState(false);
 
-  function load() {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    Promise.all([
-      getProject(params.id).catch((err) => {
-        if (err?.status === 404) {
-          setNotFoundFlag(true);
-          return null;
-        }
-        throw err;
-      }),
-      getActiveMarginRule().catch(lookupFallback("a regra de margem ativa", null)),
-    ])
-      .then(([p, marginRule]) => {
-        if (cancelled || !p) return;
-        setProject(p);
-        setActiveMarginRule(marginRule);
-        return Promise.all([listBudgetLines(p.id), listBudgets(p.id)]).then(([bl, budgets]) => {
-          if (cancelled) return;
-          setBudgetLines(bl || []);
-          setBudget((budgets || [])[0] || null);
-        });
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar o orçamento.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }
-
+  // M9-D850: a leitura passa pelo padrão único de estados (carregando, erro com "tentar de novo", 403, offline).
+  // Os dados vão para o estado local, que as ações da tela continuam atualizando.
+  const pageQuery = useAsyncState(
+    async () => {
+      const [project, marginRule] = await Promise.all([getProjectOrNull(params.id), getActiveMarginRule().catch(lookupFallback("a regra de margem ativa", null))]);
+      if (!project) return { notFound: true };
+      const [budgetLines, budgets] = await Promise.all([listBudgetLines(project.id), listBudgets(project.id)]);
+      return { project, marginRule, budgetLines: budgetLines || [], budget: (budgets || [])[0] || null };
+    },
+    { key: `obra-orcamento-${params.id}`, deps: [params.id], isEmpty: () => false }
+  );
   useEffect(() => {
-    const cancel = load();
-    return cancel;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.id]);
+    const d = pageQuery.data;
+    if (!d || d.notFound) return;
+    setProject(d.project);
+    setActiveMarginRule(d.marginRule);
+    setBudgetLines(d.budgetLines);
+    setBudget(d.budget);
+  }, [pageQuery.data]);
 
-  if (notFoundFlag) return notFound();
+  if (pageQuery.data && pageQuery.data.notFound) return notFound();
 
-  if (loading) {
+  // Enquanto não há obra carregada (carregando, erro, sem permissão, sem conexão), o AsyncState mostra o estado correspondente.
+  if (!project) {
     return (
       <AppShell title="Orçamento" backHref={`/painel/obras/lista/${params.id}`}>
-        <SkeletonDetail sections={2} />
-      </AppShell>
-    );
-  }
-
-  if (loadError && !project) {
-    return (
-      <AppShell title="Orçamento" backHref={`/painel/obras/lista/${params.id}`}>
-        <Alert tone="danger" title="Não foi possível carregar o orçamento">{loadError}</Alert>
+        <AsyncState result={pageQuery} loadingLabel="Carregando o orçamento...">{null}</AsyncState>
       </AppShell>
     );
   }

@@ -24,13 +24,10 @@ import { formatBRL, formatDate, isOverdue } from "@/lib/format";
 import styles from "./page.module.css";
 
 import { lookupFallback } from "@/lib/asyncState/lookup";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 export default function ObrasListaPage() {
   const router = useRouter();
-  const [projects, setProjects] = useState([]);
-  const [properties, setProperties] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
@@ -43,38 +40,25 @@ export default function ObrasListaPage() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    // A lista de imóveis só serve para mostrar o nome do imóvel de cada obra: sem properties:read
-    // (ex.: aprovador de Compras, que vê Obras por ter construction:read) ela não pode derrubar a
-    // tela inteira — os nomes ficam em branco e o resto carrega (auditoria Marco 7 "final2").
-    Promise.all([listProjects(), listProperties().catch(lookupFallback("os imóveis")), apiFetch("/users")])
-      .then(([p, props, u]) => {
-        if (cancelled) return;
-        setProjects(p || []);
-        setProperties(props || []);
-        setUsers(u || []);
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar as obras.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // M9-D850: carregamento, vazio, erro, 403 e offline vêm do padrão único de estados.
+  // Imóveis só dão o nome do imóvel: sem properties:read a falha é registrada (lookupFallback) e o resto carrega.
+  const listQuery = useAsyncState(
+    async () => {
+      const [projects, properties, users] = await Promise.all([listProjects(), listProperties().catch(lookupFallback("os imóveis")), apiFetch("/users")]);
+      return { projects: projects || [], properties: properties || [], users: users || [] };
+    },
+    { key: "obras-lista", isEmpty: (d) => !d || d.projects.length === 0 }
+  );
+  const { projects = [], properties = [], users = [] } = listQuery.data || {};
+  const loading = listQuery.status === "LOADING";
 
   async function handleDelete() {
     setDeleting(true);
     setActionError("");
     try {
       await removeProject(deleteTarget.id);
-      setProjects((prev) => prev.filter((p) => p.id !== deleteTarget.id));
       setDeleteTarget(null);
+      await listQuery.reload();
     } catch (err) {
       setActionError(err?.message || "Não foi possível excluir a obra.");
     } finally {
@@ -173,7 +157,6 @@ export default function ObrasListaPage() {
 
   return (
     <AppShell title="Obras" backHref="/painel/obras">
-      {loadError ? <Alert tone="danger" title="Não foi possível carregar as obras">{loadError}</Alert> : null}
       {actionError ? (
         /* BUG REAL CORRIGIDO (auditoria E2E ao vivo, Marco 6, Ciclo 7, 2026-10-06): mesma
            classe sistêmica já catalogada (Alert no corpo normal da página fica atrás do
@@ -184,44 +167,50 @@ export default function ObrasListaPage() {
         </div>
       ) : null}
 
-      <div className={styles.grid}>
-        <StatTile label="Total de obras" value={projects.length} tone="neutral" icon="building" />
-        <StatTile label="Em andamento" value={inProgressCount} tone="info" icon="chart" />
-        <StatTile label="Concluídas" value={completedCount} tone="success" icon="check" />
-        <StatTile label="Orçamento total" value={formatBRL(totalBudget)} tone="neutral" icon="money" />
-      </div>
+      <AsyncState result={listQuery} emptyTitle="Nenhuma obra cadastrada" emptyDescription="Cadastre a primeira obra para acompanhá-la aqui." emptyAction={{ label: "Nova obra", href: "/painel/obras/lista/novo" }}>
+        {() => (
+          <>
+        <div className={styles.grid}>
+          <StatTile label="Total de obras" value={projects.length} tone="neutral" icon="building" />
+          <StatTile label="Em andamento" value={inProgressCount} tone="info" icon="chart" />
+          <StatTile label="Concluídas" value={completedCount} tone="success" icon="check" />
+          <StatTile label="Orçamento total" value={formatBRL(totalBudget)} tone="neutral" icon="money" />
+        </div>
 
-      <Card title="Obras" subtitle="Lista de obras cadastradas">
-        <div className={styles.toolbar}>
-          <SearchInput
-            placeholder="Buscar por nome ou imóvel..."
-            value={query}
-            onChange={(e) => { setQuery(e.target.value); resetPage(); }}
+        <Card title="Obras" subtitle="Lista de obras cadastradas">
+          <div className={styles.toolbar}>
+            <SearchInput
+              placeholder="Buscar por nome ou imóvel..."
+              value={query}
+              onChange={(e) => { setQuery(e.target.value); resetPage(); }}
+            />
+            <Select className={styles.filter} value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); resetPage(); }}>
+              <option value="">Todos os status</option>
+              {Object.entries(PROJECT_STATUS_LABELS).map(([k, v]) => (
+                <option key={k} value={k}>{v}</option>
+              ))}
+            </Select>
+          </div>
+          <Table
+            columns={columns}
+            rows={loading ? [] : pageItems}
+            loading={loading}
+            emptyMessage="Nenhuma obra encontrada."
           />
-          <Select className={styles.filter} value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); resetPage(); }}>
-            <option value="">Todos os status</option>
-            {Object.entries(PROJECT_STATUS_LABELS).map(([k, v]) => (
-              <option key={k} value={k}>{v}</option>
-            ))}
-          </Select>
-        </div>
-        <Table
-          columns={columns}
-          rows={loading ? [] : pageItems}
-          loading={loading}
-          emptyMessage="Nenhuma obra encontrada."
-        />
-        <div className={styles.paginationRow}>
-          <Pagination
-            page={page}
-            totalPages={totalPages}
-            onChange={setPage}
-            pageSize={pageSize}
-            pageSizeOptions={[5, 10, 15, 20, 25]}
-            onPageSizeChange={setPageSize}
-          />
-        </div>
-      </Card>
+          <div className={styles.paginationRow}>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onChange={setPage}
+              pageSize={pageSize}
+              pageSizeOptions={[5, 10, 15, 20, 25]}
+              onPageSizeChange={setPageSize}
+            />
+          </div>
+        </Card>
+          </>
+        )}
+      </AsyncState>
 
       <StickyActionBar>
         <Button href="/painel/obras/lista/novo">

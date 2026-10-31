@@ -15,7 +15,6 @@ import FormField from "@/components/molecules/FormField/FormField";
 import Input from "@/components/atoms/Input/Input";
 import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
-import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import {
   MATERIAL_REQUEST_STATUS_LABELS,
   MATERIAL_REQUEST_STATUS_TONE,
@@ -23,18 +22,7 @@ import {
   LOSS_RECORD_STATUS_TONE,
   LOSS_RECORD_MOVEMENT_LABELS,
 } from "@/lib/mock/construction";
-import {
-  getProject,
-  listMaterialRequests,
-  createMaterialRequest,
-  receiveMaterialRequest,
-  returnMaterialRequest,
-  listLossRecords,
-  createLossRecord,
-  approveLossRecord,
-  returnLossRecord,
-  upsertApprovalThreshold,
-} from "@/lib/api/construction";
+import { listMaterialRequests, createMaterialRequest, receiveMaterialRequest, returnMaterialRequest, listLossRecords, createLossRecord, approveLossRecord, returnLossRecord, upsertApprovalThreshold } from "@/lib/api/construction";
 import { listInventoryItems, listInventoryLocations } from "@/lib/api/inventory";
 import { formatBRL, formatQuantity, formatDate, toNumber } from "@/lib/format";
 import { isInvalidNumber, isLossFullyReturned, lossRemainingToReturn } from "../_components/obraShared";
@@ -42,18 +30,18 @@ import OfflineSyncBadge from "@/components/molecules/OfflineSyncBadge/OfflineSyn
 import { enqueueOfflineRecord, generateIdempotencyKey } from "@/lib/offline/offlineQueue";
 import { useOfflineSync } from "@/lib/offline/useOfflineSync";
 import styles from "./page.module.css";
+import { getProjectOrNull } from "../_components/getProjectOrNull";
 
 import { lookupFallback } from "@/lib/asyncState/lookup";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 // Fila offline (Marco 6, contrato §13) — requisição de material.
 const OFFLINE_QUEUE_NAME = "construction.material-requests";
 
 export default function MateriaisObraPage({ params }) {
   const [project, setProject] = useState(null);
-  const [notFoundFlag, setNotFoundFlag] = useState(false);
   const [materialRequests, setMaterialRequests] = useState([]);
   const [lossRecords, setLossRecords] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const { confirm, ConfirmDialog } = useConfirm();
 
@@ -99,63 +87,38 @@ export default function MateriaisObraPage({ params }) {
   const [thresholdAmount, setThresholdAmount] = useState("");
   const [savingThreshold, setSavingThreshold] = useState(false);
 
-  function load() {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    getProject(params.id)
-      .catch((err) => {
-        if (err?.status === 404) {
-          setNotFoundFlag(true);
-          return null;
-        }
-        throw err;
-      })
-      .then((p) => {
-        if (cancelled || !p) return;
-        setProject(p);
-        return Promise.all([listMaterialRequests(p.id), listLossRecords(p.id)]).then(([mr, lr]) => {
-          if (cancelled) return;
-          setMaterialRequests(mr || []);
-          setLossRecords(lr || []);
-        });
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar os materiais.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }
-
+  // M9-D850: a leitura passa pelo padrão único de estados (carregando, erro com "tentar de novo", 403, offline).
+  // Os dados vão para o estado local, que as ações da tela continuam atualizando.
+  const pageQuery = useAsyncState(
+    async () => {
+      const project = await getProjectOrNull(params.id);
+      if (!project) return { notFound: true };
+      const [materialRequests, lossRecords] = await Promise.all([listMaterialRequests(project.id), listLossRecords(project.id)]);
+      return { project, materialRequests: materialRequests || [], lossRecords: lossRecords || [] };
+    },
+    { key: `obra-materiais-${params.id}`, deps: [params.id], isEmpty: () => false }
+  );
+  const load = pageQuery.reload;
   useEffect(() => {
-    const cancel = load();
-    return cancel;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.id]);
+    const d = pageQuery.data;
+    if (!d || d.notFound) return;
+    setProject(d.project);
+    setMaterialRequests(d.materialRequests);
+    setLossRecords(d.lossRecords);
+  }, [pageQuery.data]);
 
   useEffect(() => {
     listInventoryItems().then(setInventoryItems).catch(lookupFallback("os itens de estoque"));
     listInventoryLocations().then(setInventoryLocations).catch(lookupFallback("os locais de estoque"));
   }, []);
 
-  if (notFoundFlag) return notFound();
+  if (pageQuery.data && pageQuery.data.notFound) return notFound();
 
-  if (loading) {
+  // Enquanto não há obra carregada (carregando, erro, sem permissão, sem conexão), o AsyncState mostra o estado correspondente.
+  if (!project) {
     return (
       <AppShell title="Materiais" backHref={`/painel/obras/lista/${params.id}`}>
-        <SkeletonDetail sections={2} />
-      </AppShell>
-    );
-  }
-
-  if (loadError && !project) {
-    return (
-      <AppShell title="Materiais" backHref={`/painel/obras/lista/${params.id}`}>
-        <Alert tone="danger" title="Não foi possível carregar os materiais">{loadError}</Alert>
+        <AsyncState result={pageQuery} loadingLabel="Carregando os materiais...">{null}</AsyncState>
       </AppShell>
     );
   }

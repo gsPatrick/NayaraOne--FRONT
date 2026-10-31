@@ -16,7 +16,6 @@ import Input from "@/components/atoms/Input/Input";
 import Select from "@/components/atoms/Select/Select";
 import FileDropInput from "@/components/molecules/FileDropInput/FileDropInput";
 import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
-import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import {
   QUALITY_STATUS_LABELS,
   QUALITY_STATUS_TONE,
@@ -25,33 +24,23 @@ import {
   NONCONFORMITY_STATUS_LABELS,
   NONCONFORMITY_STATUS_TONE,
 } from "@/lib/mock/construction";
-import {
-  getProject,
-  listProjectStages,
-  listQualityItems,
-  createQualityItem,
-  checkQualityItem,
-  removeQualityItem,
-  listNonconformities,
-  createNonconformity,
-  closeNonconformity,
-} from "@/lib/api/construction";
+import { listProjectStages, listQualityItems, createQualityItem, checkQualityItem, removeQualityItem, listNonconformities, createNonconformity, closeNonconformity } from "@/lib/api/construction";
 import { apiFetch } from "@/lib/api/client";
 import { uploadFile } from "@/lib/api/legal";
 import { formatDate, dateOnlyInputToIso } from "@/lib/format";
 import { QUALITY_CATEGORIES } from "../_components/obraShared";
 import styles from "./page.module.css";
+import { getProjectOrNull } from "../_components/getProjectOrNull";
 
 import { lookupFallback } from "@/lib/asyncState/lookup";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 export default function QualidadeObraPage({ params }) {
   const [project, setProject] = useState(null);
-  const [notFoundFlag, setNotFoundFlag] = useState(false);
   const [users, setUsers] = useState([]);
   const [stages, setStages] = useState([]);
   const [qualityItems, setQualityItems] = useState([]);
   const [nonconformities, setNonconformities] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [viewerFileId, setViewerFileId] = useState(null);
   const { confirm, ConfirmDialog } = useConfirm();
@@ -95,66 +84,35 @@ export default function QualidadeObraPage({ params }) {
   const [ncAcceptedByUserId, setNcAcceptedByUserId] = useState("");
   const [savingNcClose, setSavingNcClose] = useState(false);
 
-  function load() {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    Promise.all([
-      getProject(params.id).catch((err) => {
-        if (err?.status === 404) {
-          setNotFoundFlag(true);
-          return null;
-        }
-        throw err;
-      }),
-      apiFetch("/users?status=ACTIVE").catch(lookupFallback("os usuários")),
-    ])
-      .then(([p, u]) => {
-        if (cancelled || !p) return;
-        setProject(p);
-        setUsers(u || []);
-        return Promise.all([
-          listProjectStages(p.id),
-          listQualityItems(p.id),
-          listNonconformities(p.id),
-        ]).then(([st, qi, ncs]) => {
-          if (cancelled) return;
-          setStages(st || []);
-          setQualityItems(qi || []);
-          setNonconformities(ncs || []);
-        });
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar a qualidade da obra.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }
-
+  // M9-D850: a leitura passa pelo padrão único de estados (carregando, erro com "tentar de novo", 403, offline).
+  // Os dados vão para o estado local, que as ações da tela continuam atualizando.
+  const pageQuery = useAsyncState(
+    async () => {
+      const [project, users] = await Promise.all([getProjectOrNull(params.id), apiFetch("/users?status=ACTIVE").catch(lookupFallback("os usuários"))]);
+      if (!project) return { notFound: true };
+      const [stages, qualityItems, nonconformities] = await Promise.all([listProjectStages(project.id), listQualityItems(project.id), listNonconformities(project.id)]);
+      return { project, users: users || [], stages: stages || [], qualityItems: qualityItems || [], nonconformities: nonconformities || [] };
+    },
+    { key: `obra-qualidade-${params.id}`, deps: [params.id], isEmpty: () => false }
+  );
+  const load = pageQuery.reload;
   useEffect(() => {
-    const cancel = load();
-    return cancel;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.id]);
+    const d = pageQuery.data;
+    if (!d || d.notFound) return;
+    setProject(d.project);
+    setUsers(d.users);
+    setStages(d.stages);
+    setQualityItems(d.qualityItems);
+    setNonconformities(d.nonconformities);
+  }, [pageQuery.data]);
 
-  if (notFoundFlag) return notFound();
+  if (pageQuery.data && pageQuery.data.notFound) return notFound();
 
-  if (loading) {
+  // Enquanto não há obra carregada (carregando, erro, sem permissão, sem conexão), o AsyncState mostra o estado correspondente.
+  if (!project) {
     return (
       <AppShell title="Qualidade" backHref={`/painel/obras/lista/${params.id}`}>
-        <SkeletonDetail sections={2} />
-      </AppShell>
-    );
-  }
-
-  if (loadError && !project) {
-    return (
-      <AppShell title="Qualidade" backHref={`/painel/obras/lista/${params.id}`}>
-        <Alert tone="danger" title="Não foi possível carregar a qualidade da obra">{loadError}</Alert>
+        <AsyncState result={pageQuery} loadingLabel="Carregando a qualidade da obra...">{null}</AsyncState>
       </AppShell>
     );
   }

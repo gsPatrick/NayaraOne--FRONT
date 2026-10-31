@@ -15,7 +15,6 @@ import Icon from "@/components/atoms/Icon/Icon";
 import FormField from "@/components/molecules/FormField/FormField";
 import Input from "@/components/atoms/Input/Input";
 import Alert from "@/components/molecules/Alert/Alert";
-import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import Radio from "@/components/atoms/Radio/Radio";
 import Table from "@/components/organisms/Table/Table";
@@ -26,6 +25,8 @@ import { toNumber, formatDateTime } from "@/lib/format";
 import styles from "./page.module.css";
 
 import { reportLookupProblem } from "@/lib/asyncState/lookup";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 const SEVERITIES = [
   { key: "CRITICAL", label: "Crítica" },
   { key: "HIGH", label: "Alta" },
@@ -34,23 +35,17 @@ const SEVERITIES = [
 ];
 
 export default function ObrasConfiguracoesPage() {
-  const [current, setCurrent] = useState(null);
   const [form, setForm] = useState({ CRITICAL: "", HIGH: "", MEDIUM: "", LOW: "" });
   const [description, setDescription] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [saveError, setSaveError] = useState("");
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState("");
 
   const { confirm, ConfirmDialog } = useConfirm();
-  const [margin, setMargin] = useState(null);
-  const [marginVersions, setMarginVersions] = useState([]);
   const [marginLabel, setMarginLabel] = useState("");
   const [marginShowAll, setMarginShowAll] = useState(false);
   const [marginDeactivating, setMarginDeactivating] = useState(false);
   const [marginForm, setMarginForm] = useState({ minMarginPct: "", economyPct: "", commissionPct: "", enforcementMode: "ALERT" });
-  const [marginLoading, setMarginLoading] = useState(true);
   const [marginSaving, setMarginSaving] = useState(false);
   const [marginError, setMarginError] = useState("");
   const [marginNotice, setMarginNotice] = useState("");
@@ -59,41 +54,41 @@ export default function ObrasConfiguracoesPage() {
     return value === null || value === undefined ? "" : String(Number(value)).replace(".", ",");
   }
 
-  function loadMargin() {
-    listMarginRuleVersions().then((v) => setMarginVersions(v || [])).catch((error) => { reportLookupProblem("as versões da regra de margem", error); setMarginVersions([]); });
-    return getActiveMarginRule()
-      .then((rule) => {
-        setMargin(rule);
-        setMarginForm({
-          minMarginPct: pctToField(rule?.minMarginPct),
-          economyPct: pctToField(rule?.economyPct),
-          commissionPct: pctToField(rule?.commissionPct),
-          enforcementMode: rule?.enforcementMode === "BLOCK" ? "BLOCK" : "ALERT",
-        });
-      })
-      .catch((err) => setLoadError(err?.message || "Não foi possível carregar a regra de margem ativa."))
-      .finally(() => setMarginLoading(false));
-  }
+  // M9-D850: cada regra carrega pelo padrão único de estados (carregando, erro com "tentar de novo", 403, offline), sem derrubar a outra.
+  const slaQuery = useAsyncState(() => getActiveSlaRule(), { key: "obras-config-sla", isEmpty: () => false });
+  const marginQuery = useAsyncState(
+    async () => {
+      const versionsPromise = listMarginRuleVersions().catch((error) => { reportLookupProblem("as versões da regra de margem", error); return []; });
+      const rule = await getActiveMarginRule();
+      return { rule: rule || null, versions: (await versionsPromise) || [] };
+    },
+    { key: "obras-config-margem", isEmpty: () => false }
+  );
+  const current = slaQuery.data;
+  const margin = marginQuery.data ? marginQuery.data.rule : null;
+  const marginVersions = marginQuery.data ? marginQuery.data.versions : [];
 
-  function load() {
-    setLoading(true);
-    setLoadError("");
-    loadMargin();
-    getActiveSlaRule()
-      .then((data) => {
-        setCurrent(data);
-        setForm({
-          CRITICAL: String(data.slaDays?.CRITICAL ?? ""),
-          HIGH: String(data.slaDays?.HIGH ?? ""),
-          MEDIUM: String(data.slaDays?.MEDIUM ?? ""),
-          LOW: String(data.slaDays?.LOW ?? ""),
-        });
-      })
-      .catch((err) => setLoadError(err?.message || "Não foi possível carregar a regra de SLA ativa."))
-      .finally(() => setLoading(false));
-  }
+  useEffect(() => {
+    const data = slaQuery.data;
+    if (!data) return;
+    setForm({
+      CRITICAL: String(data.slaDays?.CRITICAL ?? ""),
+      HIGH: String(data.slaDays?.HIGH ?? ""),
+      MEDIUM: String(data.slaDays?.MEDIUM ?? ""),
+      LOW: String(data.slaDays?.LOW ?? ""),
+    });
+  }, [slaQuery.data]);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    if (!marginQuery.data) return;
+    const rule = marginQuery.data.rule;
+    setMarginForm({
+      minMarginPct: pctToField(rule?.minMarginPct),
+      economyPct: pctToField(rule?.economyPct),
+      commissionPct: pctToField(rule?.commissionPct),
+      enforcementMode: rule?.enforcementMode === "BLOCK" ? "BLOCK" : "ALERT",
+    });
+  }, [marginQuery.data]);
 
   const isValid = SEVERITIES.every((s) => form[s.key] !== "" && Number(form[s.key]) > 0 && Number.isInteger(Number(form[s.key])));
 
@@ -118,7 +113,7 @@ export default function ObrasConfiguracoesPage() {
       });
       setMarginLabel("");
       setMarginNotice("Nova versão da margem mínima publicada. Orçamentos já aprovados mantêm a versão com que foram aprovados.");
-      await loadMargin();
+      await marginQuery.reload();
     } catch (err) {
       setMarginError(err?.message || "Não foi possível publicar a margem mínima.");
     } finally {
@@ -140,7 +135,7 @@ export default function ObrasConfiguracoesPage() {
     try {
       await deactivateMarginRule("Desativada pela tela de configurações de obras");
       setMarginNotice("Margem mínima desativada. A versão anterior continua no histórico.");
-      await loadMargin();
+      await marginQuery.reload();
     } catch (err) {
       setMarginError(err?.message || "Não foi possível desativar a margem mínima.");
     } finally {
@@ -165,7 +160,7 @@ export default function ObrasConfiguracoesPage() {
       });
       setNotice("Nova versão da regra de SLA publicada. Chamados já abertos mantêm o SLA calculado na abertura; só novos chamados usam o valor atualizado.");
       setDescription("");
-      load();
+      await slaQuery.reload();
     } catch (err) {
       setSaveError(err?.message || "Não foi possível publicar a nova regra de SLA.");
     } finally {
@@ -175,12 +170,8 @@ export default function ObrasConfiguracoesPage() {
 
   return (
     <AppShell title="Configurações de Obras" backHref="/painel/obras">
-      {loadError ? <Alert tone="danger" title="Não foi possível carregar">{loadError}</Alert> : null}
-
-      {loading ? (
-        <SkeletonDetail sections={2} />
-      ) : (
-        <>
+      <AsyncState result={slaQuery}>
+        {() => (
         <Card
           title="SLA de garantia por severidade"
           subtitle="Prazo padrão de atendimento de pós-obra por severidade"
@@ -221,7 +212,11 @@ export default function ObrasConfiguracoesPage() {
             <Icon name="check" size={16} /> Publicar nova versão
           </Button>
         </Card>
+        )}
+      </AsyncState>
 
+      <AsyncState result={marginQuery}>
+        {() => (
         <Card
           title="Margem mínima da obra"
           subtitle="Regra da empresa usada na aprovação de orçamento e na Saúde da obra"
@@ -231,7 +226,7 @@ export default function ObrasConfiguracoesPage() {
             publicada, a aprovação de orçamento fica bloqueada. Publicar cria uma nova versão; a anterior fica no histórico
             e não altera orçamentos já aprovados.
           </p>
-          {marginLoading ? null : margin ? (
+          {margin ? (
             <p className={styles.current}>Regra vigente: margem mínima de {pctToField(margin.minMarginPct)}%.</p>
           ) : (
             <Alert tone="warning" className={styles.notice} title="Margem mínima não configurada">
@@ -331,8 +326,8 @@ export default function ObrasConfiguracoesPage() {
             </div>
           ) : null}
         </Card>
-        </>
-      )}
+        )}
+      </AsyncState>
     <ConfirmDialog />
     </AppShell>
   );
