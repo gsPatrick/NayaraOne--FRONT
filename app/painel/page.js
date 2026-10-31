@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import StatTile from "@/components/molecules/StatTile/StatTile";
@@ -11,20 +11,18 @@ import Avatar from "@/components/atoms/Avatar/Avatar";
 import Tabs from "@/components/molecules/Tabs/Tabs";
 import BarList from "@/components/molecules/BarList/BarList";
 import Alert from "@/components/molecules/Alert/Alert";
-import { SkeletonCardGrid } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import { loadPainelOverview } from "./loadPainelOverview";
 import { AVAILABILITY_STATUS_LABELS } from "@/lib/mock/properties";
 import { STAGES } from "@/lib/mock/opportunities";
 import { AUDIT_LOG, ACTION_LABELS, ENTITY_TYPE_LABELS } from "@/lib/mock/auditLog";
 import { COMPANY_STATUS_LABELS } from "@/lib/mock/companies";
 import { ROLE_LABELS, STATUS_TONE, STATUS_LABELS } from "@/lib/mock/people";
-import { listProperties } from "@/lib/api/properties";
-import { listOpportunities } from "@/lib/api/crm";
-import { listRadars } from "@/lib/api/radar";
-import { listPeople, listDuplicatePairs } from "@/lib/api/people";
-import { apiFetch } from "@/lib/api/client";
 import { matchRadarToProperties, PROPERTY_TYPE_LABELS } from "@/lib/radarMatching";
 import { formatDateTime, formatBRL, isOverdue } from "@/lib/format";
 import { hasPermission } from "@/lib/rbac/permissions";
+import CommandCenter from "@/components/organisms/CommandCenter/CommandCenter"; // M9-D685
 import styles from "./page.module.css";
 
 const CLOSED_STAGES = ["ganho", "perdido"];
@@ -52,21 +50,6 @@ const QUICK_ACTIONS = [
   { label: "Nova empresa", href: "/painel/empresas/novo", icon: "layers", permission: "companies:create" },
 ];
 
-// FIX (auditoria Marco 7 "final2", 18/10/2026): o Painel carregava TODAS as fontes num único
-// Promise.all e mostrava todas as abas para qualquer usuário. Com isso, cada leitura que faltava
-// derrubava a tela inteira, e o papel do aprovador de Compras foi recebendo leituras só para o
-// Painel abrir — o que expôs a ele a lista de usuários com e-mail e a aba de empresas com o botão
-// "Nova empresa". Agora cada seção só carrega e só aparece com a permissão correspondente; as
-// abas administrativas seguem o mesmo gate do menu de Administração (permissão de alteração).
-const SECTION_PERMISSIONS = {
-  properties: "properties:read",
-  people: "people:read",
-  opportunities: "crm:opportunities:read",
-  radars: "radar:read",
-  companies: "companies:update",
-  users: "users:update",
-};
-
 const GRADIENTS = [
   "linear-gradient(135deg, #3a2f1c 0%, #b8873a 100%)",
   "linear-gradient(135deg, #1c2a3a 0%, #3a6ab8 100%)",
@@ -78,10 +61,6 @@ function hashCode(str = "") {
   let hash = 0;
   for (let i = 0; i < str.length; i += 1) hash = (hash << 5) - hash + str.charCodeAt(i);
   return hash;
-}
-
-function toDisplayUserStatus(apiStatus) {
-  return apiStatus === "ACTIVE" ? "Ativo" : "Suspenso";
 }
 
 function ListRow({ href, icon, avatarName, title, subtitle, right }) {
@@ -104,79 +83,18 @@ function ListRow({ href, icon, avatarName, title, subtitle, right }) {
 }
 
 export default function PainelPage() {
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
-  const [properties, setProperties] = useState([]);
-  const [people, setPeople] = useState([]);
-  const [duplicatePairs, setDuplicatePairs] = useState([]);
-  const [opportunities, setOpportunities] = useState([]);
-  const [radars, setRadars] = useState([]);
-  const [companies, setCompanies] = useState([]);
-  const [users, setUsers] = useState([]);
-
-  const [can, setCan] = useState({});
-  const [failedSections, setFailedSections] = useState([]);
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    const allowed = Object.fromEntries(Object.entries(SECTION_PERMISSIONS).map(([key, code]) => [key, hasPermission(code)]));
-    setCan(allowed);
-    const skip = Promise.resolve(null);
-    const sources = {
-      properties: allowed.properties ? listProperties() : skip,
-      people: allowed.people ? listPeople() : skip,
-      duplicates: allowed.people ? listDuplicatePairs() : skip,
-      opportunities: allowed.opportunities ? listOpportunities() : skip,
-      radars: allowed.radars ? listRadars() : skip,
-      companies: allowed.companies ? apiFetch("/companies") : skip,
-      units: allowed.companies ? apiFetch("/units") : skip,
-      users: allowed.users ? apiFetch("/users") : skip,
-      memberships: allowed.users ? apiFetch("/memberships") : skip,
-    };
-    const keys = Object.keys(sources);
-    Promise.allSettled(keys.map((k) => sources[k]))
-      .then((results) => {
-        if (cancelled) return;
-        const data = {};
-        const failed = [];
-        results.forEach((r, i) => {
-          if (r.status === "fulfilled") data[keys[i]] = r.value || [];
-          else {
-            data[keys[i]] = [];
-            failed.push(keys[i]);
-          }
-        });
-        setProperties(data.properties);
-        setPeople(data.people);
-        setDuplicatePairs(data.duplicates);
-        setOpportunities(data.opportunities);
-        setRadars(data.radars);
-        setCompanies(data.companies.map((c) => ({ ...c, units: data.units.filter((u) => u.companyId === c.id) })));
-        setUsers(
-          data.users.map((u) => ({
-            id: u.id,
-            name: u.name,
-            email: u.email,
-            status: toDisplayUserStatus(u.status),
-            memberships: data.memberships
-              .filter((m) => m.userId === u.id)
-              .map((m) => ({ company: m.company?.name || "Sem empresa vinculada", role: m.role?.name || "Sem papel", unit: m.unit?.name || null })),
-          }))
-        );
-        setFailedSections(failed);
-        if (failed.length > 0 && failed.length === results.filter((_, i) => sources[keys[i]] !== skip).length) {
-          setLoadError("Não foi possível carregar o painel.");
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // M9-D940: carregando, erro, sem acesso e sem conexão vêm do padrão único de estados; falha de uma seção só avisa ("Parte do painel não carregou").
+  const painelQuery = useAsyncState(() => loadPainelOverview(), { key: "painel", isEmpty: () => false });
+  const overview = painelQuery.data;
+  const can = useMemo(() => overview?.can || {}, [overview]);
+  const failedSections = useMemo(() => overview?.failed || [], [overview]);
+  const properties = useMemo(() => overview?.properties || [], [overview]);
+  const people = useMemo(() => overview?.people || [], [overview]);
+  const duplicatePairs = useMemo(() => overview?.duplicatePairs || [], [overview]);
+  const opportunities = useMemo(() => overview?.opportunities || [], [overview]);
+  const radars = useMemo(() => overview?.radars || [], [overview]);
+  const companies = useMemo(() => overview?.companies || [], [overview]);
+  const users = useMemo(() => overview?.users || [], [overview]);
 
   const personName = (id) => people.find((p) => p.id === id)?.legalName || "Sem pessoa vinculada";
 
@@ -255,18 +173,10 @@ export default function PainelPage() {
     return Object.entries(counts).map(([label, value]) => ({ label, value }));
   }, [users]);
 
-  if (loading) {
+  if (!overview) {
     return (
       <AppShell title="Painel">
-        <SkeletonCardGrid count={4} />
-      </AppShell>
-    );
-  }
-
-  if (loadError) {
-    return (
-      <AppShell title="Painel">
-        <Alert tone="danger" title="Não foi possível carregar o painel">{loadError}</Alert>
+        <AsyncState result={painelQuery} loadingLabel="Carregando painel..." />
       </AppShell>
     );
   }
@@ -275,6 +185,8 @@ export default function PainelPage() {
 
   const overviewTab = (
     <>
+      {hasPermission("analytics:read") ? <CommandCenter /> : null}
+
       {failedSections.length > 0 ? (
         <Alert tone="warning" title="Parte do painel não carregou">
           Algumas seções não puderam ser carregadas agora. As demais informações abaixo estão atualizadas.

@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
-import Spinner from "@/components/atoms/Spinner/Spinner";
-import Alert from "@/components/molecules/Alert/Alert";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import RoleForm from "@/components/organisms/RoleForm/RoleForm";
 import MfaVerifyModal from "@/components/organisms/MfaVerifyModal/MfaVerifyModal";
 import MfaSetupRequiredNotice from "@/components/molecules/MfaSetupRequiredNotice/MfaSetupRequiredNotice";
@@ -13,32 +13,15 @@ import styles from "../page.module.css";
 
 export default function NovoPapelPage() {
   const router = useRouter();
-  const [catalog, setCatalog] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
+  // M9-D940: o catálogo de permissões vem do padrão único de estados (carregando, erro com "tentar de novo", sem acesso, sem conexão).
+  const catalogQuery = useAsyncState(() => listPermissionsCatalog().then((data) => data || []), { key: "papeis-novo:catalogo", isEmpty: () => false });
+  const catalog = catalogQuery.data || [];
   const [submitError, setSubmitError] = useState("");
   const [mfaSetupNeeded, setMfaSetupNeeded] = useState(false);
   // Criar papel exige MFA recente (concessão de permissão é ação HIGH) — se a API recusar por
   // isso, guardamos o payload e abrimos o modal de verificação em vez de só mostrar o erro cru
   // (que citaria um endpoint de API, inútil para quem não é técnico).
   const [pendingPayload, setPendingPayload] = useState(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    listPermissionsCatalog()
-      .then((data) => {
-        if (!cancelled) setCatalog(data);
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar o catálogo de permissões.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   async function handleSubmit(payload) {
     setSubmitError("");
@@ -62,11 +45,8 @@ export default function NovoPapelPage() {
   return (
     <AppShell title="Novo papel" backHref="/painel/papeis">
       <div className={styles.formWrap}>
-        {loadError ? <Alert tone="danger" title="Não foi possível carregar o catálogo de permissões">{loadError}</Alert> : null}
         {mfaSetupNeeded ? <MfaSetupRequiredNotice /> : null}
-        {loading ? (
-          <Spinner size="lg" />
-        ) : (
+        <AsyncState result={catalogQuery} loadingLabel="Carregando catálogo de permissões...">
           <RoleForm
             mode="create"
             catalog={catalog}
@@ -74,7 +54,7 @@ export default function NovoPapelPage() {
             onCancel={() => router.push("/painel/papeis")}
             submitError={submitError}
           />
-        )}
+        </AsyncState>
       </div>
 
       <MfaVerifyModal

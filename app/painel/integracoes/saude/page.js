@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Badge from "@/components/atoms/Badge/Badge";
 import Select from "@/components/atoms/Select/Select";
 import Button from "@/components/atoms/Button/Button";
-import Alert from "@/components/molecules/Alert/Alert";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import Table from "@/components/organisms/Table/Table";
 import { listIntegrationsHealth } from "@/lib/api/integrations";
 import ContingenciaBanner from "./ContingenciaBanner";
@@ -18,23 +19,12 @@ import styles from "./page.module.css";
 // Integrações > Saúde (Marco 9, M9-D224): uma linha por integração e ambiente, com a saúde, o disjuntor, as 8 métricas do livro
 // (9 valores, porque a latência tem p95 e p99), a última sincronização, os dias para a credencial vencer e os alertas abertos.
 export default function IntegracoesSaudePage() {
-  const [items, setItems] = useState([]);
   const [environment, setEnvironment] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
-
-  function load(env) {
-    setLoading(true);
-    setLoadError("");
-    return listIntegrationsHealth({ environment: env })
-      .then((data) => setItems(data?.items || []))
-      .catch((err) => setLoadError(err?.message || "Não foi possível carregar a saúde das integrações."))
-      .finally(() => setLoading(false));
-  }
-
-  useEffect(() => {
-    load(environment);
-  }, [environment]);
+  // M9-D940: carregando, erro com "tentar de novo", sem acesso e sem conexão vêm do padrão único de estados.
+  // Lista vazia é um estado real (nenhuma integração no ambiente), mostrado pela própria tabela.
+  const healthQuery = useAsyncState(() => listIntegrationsHealth({ environment }), { key: `integracoes-saude:${environment}`, deps: [environment], isEmpty: () => false });
+  const items = useMemo(() => healthQuery.data?.items || [], [healthQuery.data]);
+  const loading = healthQuery.status === "LOADING";
 
   const columns = [
     {
@@ -86,15 +76,15 @@ export default function IntegracoesSaudePage() {
               <option key={value} value={value}>{label}</option>
             ))}
           </Select>
-          <Button variant="secondary" onClick={() => load(environment)}>Atualizar</Button>
+          <Button variant="secondary" onClick={() => healthQuery.reload()}>Atualizar</Button>
         </div>
       </div>
 
       <ContingenciaBanner />
 
-      {loadError ? <Alert tone="danger" title="Não foi possível carregar a saúde das integrações">{loadError}</Alert> : null}
-
-      <Table columns={columns} rows={items} loading={loading} minWidth={1500} emptyMessage="Nenhuma integração cadastrada para este ambiente." />
+      <AsyncState result={healthQuery} loadingLabel="Carregando saúde das integrações...">
+        <Table columns={columns} rows={items} loading={loading} minWidth={1500} emptyMessage="Nenhuma integração cadastrada para este ambiente." />
+      </AsyncState>
     </AppShell>
   );
 }

@@ -14,6 +14,8 @@ import Icon from "@/components/atoms/Icon/Icon";
 import Modal from "@/components/organisms/Modal/Modal";
 import { getCurrentUser, getSession, saveSession, isMfaSetupRequired, clearMfaSetupRequired } from "@/lib/auth/session";
 import { setupMfa, confirmMfa, disableMfa } from "@/lib/api/mfa";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncAction } from "@/lib/asyncState/useAsyncState";
 import styles from "./page.module.css";
 
 const THEME_STORAGE_KEY = "nayara-one:theme";
@@ -122,6 +124,14 @@ export default function PerfilPage() {
   const [disableBusy, setDisableBusy] = useState(false);
   const [disableLocked, setDisableLocked] = useState(false);
 
+  // M9-D940: as três gravações de MFA passam pelo padrão único de estados (useAsyncAction): carregando, falha classificada
+  // (403 com permissão, sem conexão e erro de servidor aparecem com "tentar de novo"; validação e código inválido mostram a mensagem da API).
+  const setupAction = useAsyncAction(() => setupMfa());
+  const confirmAction = useAsyncAction((ctx, code) => confirmMfa(code));
+  const disableAction = useAsyncAction((ctx, code) => disableMfa(code));
+  const BLOCKING = ["PERMISSION_DENIED", "OFFLINE", "RETRY"];
+  const blockedAction = [setupAction, confirmAction].find((action) => BLOCKING.includes(action.status));
+
   useEffect(() => {
     if (!otpauthUri) {
       setQrDataUrl("");
@@ -137,15 +147,14 @@ export default function PerfilPage() {
   async function handleStartSetup() {
     setError("");
     setBusy(true);
-    try {
-      const { otpauthUri: uri } = await setupMfa();
-      setOtpauthUri(uri);
+    const outcome = await setupAction.run();
+    if (outcome.status === "SUCCESS") {
+      setOtpauthUri(outcome.result.otpauthUri);
       setStep("confirm");
-    } catch (err) {
-      setError(err?.message || "Não foi possível iniciar a configuração do MFA.");
-    } finally {
-      setBusy(false);
+    } else if (!BLOCKING.includes(outcome.status)) {
+      setError(outcome.error?.message || "Não foi possível iniciar a configuração do MFA.");
     }
+    setBusy(false);
   }
 
   async function handleConfirm() {
@@ -155,8 +164,9 @@ export default function PerfilPage() {
     }
     setError("");
     setBusy(true);
-    try {
-      const { recoveryCodes: codes } = await confirmMfa(confirmCode.trim());
+    const outcome = await confirmAction.run(confirmCode.trim());
+    if (outcome.status === "SUCCESS") {
+      const { recoveryCodes: codes } = outcome.result;
       setRecoveryCodes(codes);
       setStep("recovery");
       setMfaEnabled(true);
@@ -167,11 +177,10 @@ export default function PerfilPage() {
         setMfaRequired(false);
         setCompletedRequiredSetup(true);
       }
-    } catch (err) {
-      setError(err?.message || "Código inválido. Tente novamente.");
-    } finally {
-      setBusy(false);
+    } else if (!BLOCKING.includes(outcome.status)) {
+      setError(outcome.error?.message || "Código inválido. Tente novamente.");
     }
+    setBusy(false);
   }
 
   function handleFinish() {
@@ -192,23 +201,22 @@ export default function PerfilPage() {
     }
     setDisableBusy(true);
     setDisableError("");
-    try {
-      await disableMfa(disableCode.trim());
+    const outcome = await disableAction.run(disableCode.trim());
+    if (outcome.status === "SUCCESS") {
       setMfaEnabled(false);
       syncMfaEnabledInSession(false);
       setDisableOpen(false);
       setDisableCode("");
       handleFinish();
-    } catch (err) {
-      if (err?.code === "MFA_LOCKED") {
+    } else {
+      if (outcome.error?.code === "MFA_LOCKED") {
         // Bloqueio por tentativas falhas (política de segurança) — trava o botão até o
         // usuário fechar e tentar de novo depois do tempo indicado.
         setDisableLocked(true);
       }
-      setDisableError(err?.message || "Código inválido — não foi possível desabilitar o MFA.");
-    } finally {
-      setDisableBusy(false);
+      setDisableError(outcome.error?.message || "Código inválido — não foi possível desabilitar o MFA.");
     }
+    setDisableBusy(false);
   }
 
   return (
@@ -233,6 +241,7 @@ export default function PerfilPage() {
           </Alert>
         ) : null}
 
+        {blockedAction ? <AsyncState result={blockedAction} /> : null}
         {error ? <Alert tone="danger" title="Erro">{error}</Alert> : null}
 
         {step === "idle" && (
