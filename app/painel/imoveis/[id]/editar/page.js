@@ -40,6 +40,8 @@ import {
 } from "@/lib/api/properties";
 import Alert from "@/components/molecules/Alert/Alert";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import styles from "./page.module.css";
 
 const STEPS = [
@@ -109,9 +111,6 @@ function toEditableProperty(property) {
 export default function EditPropertyPage({ params }) {
   const router = useRouter();
   const [property, setProperty] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
-  const [notFoundFlag, setNotFoundFlag] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
@@ -125,33 +124,25 @@ export default function EditPropertyPage({ params }) {
   const [owners, setOwners] = useState([]);
   const [evidence, setEvidence] = useState(EMPTY_EVIDENCE); // M9-D807: origem da alteração de matrícula/proprietário
 
-  useEffect(() => {
-    let cancelled = false;
-    getProperty(params.id)
-      .then((data) => {
-        if (cancelled) return;
-        setProperty(data);
-        const editable = toEditableProperty(data);
-        setBasic(editable.basic);
-        setAddress(editable.address);
-        setFeatures(editable.features);
-        setDocs(editable.docs);
-        setMedia(editable.media);
-        setOffer(editable.offer);
-        setOwners(editable.owners);
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        if (err?.status === 404) setNotFoundFlag(true);
-        else setLoadError(err?.message || "Não foi possível carregar o imóvel.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [params.id]);
+  // M9-D850: o imóvel carrega pelo padrão de estados (carregando, 403, sem conexão, tentar de novo); 404 continua virando notFound().
+  const propertyQuery = useAsyncState(
+    async () => {
+      const data = await getProperty(params.id);
+      setProperty(data);
+      const editable = toEditableProperty(data);
+      setBasic(editable.basic);
+      setAddress(editable.address);
+      setFeatures(editable.features);
+      setDocs(editable.docs);
+      setMedia(editable.media);
+      setOffer(editable.offer);
+      setOwners(editable.owners);
+      return data;
+    },
+    { deps: [params.id], isEmpty: () => false }
+  );
+  const loading = propertyQuery.status === "LOADING" && !property;
+  const notFoundFlag = propertyQuery.error?.status === 404;
 
   // Autocomplete de endereço via CEP (BrasilAPI) — debounce a 8 dígitos + trigger no blur.
   const [cepLoading, setCepLoading] = useState(false);
@@ -238,10 +229,10 @@ export default function EditPropertyPage({ params }) {
     );
   }
 
-  if (loadError || !property || !basic || !address || !features || !docs) {
+  if (!property || !basic || !address || !features || !docs) {
     return (
       <AppShell title="Editar imóvel" backHref="/painel/imoveis">
-        <Alert tone="danger" title="Não foi possível carregar o imóvel">{loadError}</Alert>
+        <AsyncState result={propertyQuery} />
       </AppShell>
     );
   }

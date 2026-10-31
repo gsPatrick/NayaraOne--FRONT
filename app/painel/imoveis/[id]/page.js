@@ -42,6 +42,8 @@ import {
 import { getPerson } from "@/lib/api/people";
 import { formatBRL } from "@/lib/format";
 import { buildGoogleMapsUrl, buildGoogleMapsEmbedUrl, buildGoogleMapsDirectionsUrl, buildAddressLine } from "@/lib/maps";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import styles from "./page.module.css";
 
 import { lookupFallback } from "@/lib/asyncState/lookup";
@@ -71,8 +73,6 @@ export default function PropertyDetailPage({ params }) {
   const [editOpen, setEditOpen] = useState(false);
 
   const [property, setProperty] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [ownedByCount, setOwnedByCount] = useState({});
   const [publishBlockedMessage, setPublishBlockedMessage] = useState("");
@@ -93,18 +93,16 @@ export default function PropertyDetailPage({ params }) {
   const [addressCopied, setAddressCopied] = useState(false);
   const [galleryPage, setGalleryPage] = useState(0);
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    Promise.all([
+  // M9-D850: a ficha carrega pelo padrão de estados (carregando, 403, sem conexão, tentar de novo); 404 mostra "Imóvel não encontrado".
+  const propertyQuery = useAsyncState(
+    async () => {
+    const [apiProperty, occurrences, priceHistory, allProperties] = await Promise.all([
       getProperty(params.id),
       listOccurrences(params.id).catch(lookupFallback("as ocorrências do imóvel")),
       listPriceHistory(params.id).catch(lookupFallback("o histórico de preços")),
       listProperties().catch(lookupFallback("os imóveis")),
-    ])
-      .then(async ([apiProperty, occurrences, priceHistory, allProperties]) => {
-        if (cancelled || !apiProperty) return;
+    ]);
+        if (!apiProperty) return null;
 
         // BUG REAL CORRIGIDO (auditoria Claude Browser, rodada final, 13/10/2026): o cartão
         // "Proprietários" aparecia com nome e avatar vazios — `getPerson` (mapPerson) devolve
@@ -119,8 +117,6 @@ export default function PropertyDetailPage({ params }) {
               : Promise.resolve("")
           )
         );
-
-        if (cancelled) return;
 
         const counts = {};
         for (const p of allProperties) {
@@ -142,17 +138,10 @@ export default function PropertyDetailPage({ params }) {
           })),
           priceHistory,
         });
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar o imóvel.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [params.id]);
+        return apiProperty;
+    },
+    { deps: [params.id], isEmpty: () => false }
+  );
 
   function handleCopyAddress() {
     const line = buildAddressLine(property.address);
@@ -185,7 +174,7 @@ export default function PropertyDetailPage({ params }) {
     return () => document.removeEventListener("keydown", onKey);
   }); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (loading) {
+  if (propertyQuery.status === "LOADING" && !property) {
     return (
       <AppShell title="Carregando imóvel..." backHref="/painel/imoveis">
         <div className={styles.wrap}>
@@ -195,13 +184,15 @@ export default function PropertyDetailPage({ params }) {
     );
   }
 
-  if (loadError || !property) {
+  if (!property) {
     return (
       <AppShell title="Imóvel" backHref="/painel/imoveis">
         <div className={styles.wrap}>
-          <Alert tone="danger" title="Não foi possível carregar o imóvel">
-            {loadError || "Imóvel não encontrado."}
-          </Alert>
+          {propertyQuery.error && propertyQuery.error.status !== 404 ? (
+            <AsyncState result={propertyQuery} />
+          ) : (
+            <Alert tone="danger" title="Não foi possível carregar o imóvel">Imóvel não encontrado.</Alert>
+          )}
         </div>
       </AppShell>
     );

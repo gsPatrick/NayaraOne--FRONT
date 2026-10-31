@@ -22,6 +22,9 @@ import { formatBRL, dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MES
 import { buildGoogleMapsUrl } from "@/lib/maps";
 import { createProperty, addPropertyOwner, createOffer, savePropertyDocumentation, toApiPropertyType } from "@/lib/api/properties";
 import Alert from "@/components/molecules/Alert/Alert";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncAction } from "@/lib/asyncState/useAsyncState";
+import { UI_STATE } from "@/lib/asyncState/states";
 import styles from "./page.module.css";
 
 const STEPS = [
@@ -55,7 +58,6 @@ const EMPTY_DOCS = {
 export default function NovoImovelPage() {
   const router = useRouter();
   const [stepIndex, setStepIndex] = useState(0);
-  const [submitting, setSubmitting] = useState(false);
 
   const [basic, setBasic] = useState({
     internalCode: "", name: "", type: "Residencial", areaM2: "", bedrooms: "", parkingSpots: "",
@@ -231,6 +233,73 @@ export default function NovoImovelPage() {
     setOwners((prev) => prev.filter((_, i) => i !== index));
   }
 
+  // M9-D850: a criação do imóvel (imóvel, documentação, oferta e proprietários) roda como ação do padrão de estados:
+  // carregando, 403, sem conexão e "tentar de novo" com a mesma Idempotency-Key; ao concluir, abre a ficha.
+  const saveAction = useAsyncAction(async () => {
+    const created = await createProperty({
+      title: basic.name,
+      internalCode: basic.internalCode,
+      propertyType: toApiPropertyType(basic.type),
+      publicationStatus: "DRAFT",
+      availabilityStatus: "AVAILABLE",
+      areaTotalM2: basic.areaM2 || null,
+      bedrooms: basic.bedrooms || null,
+      parkingSpots: basic.parkingSpots || null,
+      description: basic.description || null,
+      registryNumber: docs.registryNumber || null,
+      registryOffice: docs.registryOffice || null,
+      latitude: address.latitude || null,
+      longitude: address.longitude || null,
+      address: {
+        zipCode: address.zipCode,
+        street: address.street,
+        number: address.number || null,
+        complement: address.complement || null,
+        neighborhood: address.neighborhood,
+        city: address.city,
+        state: address.state,
+      },
+      attributesJson: features,
+    });
+
+    await savePropertyDocumentation(created.id, docs);
+
+    if (offer.askingPrice) {
+      await createOffer(created.id, {
+        offerType: offer.offerType,
+        askingPrice: offer.askingPrice,
+        confidentialMinPrice: offer.confidentialMinPrice || null,
+        acceptsFinancing: offer.acceptsFinancing,
+        acceptsTrade: offer.acceptsTrade,
+        status: offer.status,
+        startsAt: dateOnlyInputToIso(offer.validFrom) || null,
+        endsAt: dateOnlyInputToIso(offer.validUntil) || null,
+      });
+    }
+
+    for (const o of owners) {
+      if (!o.personId) continue;
+      // BUG REAL CORRIGIDO (auditoria Claude Browser, rodada final, 13/10/2026): "100" no
+      // campo Percentual era só placeholder visual (cinza), não um valor preenchido — ao
+      // deixar vazio, `o.percentage || undefined` mandava `undefined` pro backend, que
+      // persistia 0%. O cartão de detalhe então mostrava "0% de participação". Agora, se
+      // o usuário não digitar nada, assume-se 100% de verdade (dono único é o caso comum;
+      // para sociedade, o usuário já digita o percentual real de cada proprietário).
+      await addPropertyOwner(created.id, {
+        personId: o.personId,
+        roleCode: o.roleCode,
+        ownershipPercent: o.percentage.trim() !== "" ? o.percentage : "100",
+      });
+    }
+
+    return created;
+  }, { successMessage: "Imóvel criado." });
+  const submitting = saveAction.status === UI_STATE.LOADING || saveAction.status === UI_STATE.SUCCESS;
+  const showSaveProblem = Boolean(saveAction.status) && !submitting;
+  useEffect(() => {
+    if (saveAction.status === UI_STATE.SUCCESS && saveAction.result?.id) router.push(`/painel/imoveis/${saveAction.result.id}`);
+  }, [saveAction.status, saveAction.result, router]);
+
   async function goNext() {
     if (!isLast && !validateCurrentStep()) {
       setSubmitError(`Preencha os campos obrigatórios desta etapa (${step.label}) antes de continuar.`);
@@ -247,70 +316,7 @@ export default function NovoImovelPage() {
         setStepIndex(0);
         return;
       }
-      setSubmitting(true);
-      setSubmitError("");
-      try {
-        const created = await createProperty({
-          title: basic.name,
-          internalCode: basic.internalCode,
-          propertyType: toApiPropertyType(basic.type),
-          publicationStatus: "DRAFT",
-          availabilityStatus: "AVAILABLE",
-          areaTotalM2: basic.areaM2 || null,
-          bedrooms: basic.bedrooms || null,
-          parkingSpots: basic.parkingSpots || null,
-          description: basic.description || null,
-          registryNumber: docs.registryNumber || null,
-          registryOffice: docs.registryOffice || null,
-          latitude: address.latitude || null,
-          longitude: address.longitude || null,
-          address: {
-            zipCode: address.zipCode,
-            street: address.street,
-            number: address.number || null,
-            complement: address.complement || null,
-            neighborhood: address.neighborhood,
-            city: address.city,
-            state: address.state,
-          },
-          attributesJson: features,
-        });
-
-        await savePropertyDocumentation(created.id, docs);
-
-        if (offer.askingPrice) {
-          await createOffer(created.id, {
-            offerType: offer.offerType,
-            askingPrice: offer.askingPrice,
-            confidentialMinPrice: offer.confidentialMinPrice || null,
-            acceptsFinancing: offer.acceptsFinancing,
-            acceptsTrade: offer.acceptsTrade,
-            status: offer.status,
-            startsAt: dateOnlyInputToIso(offer.validFrom) || null,
-            endsAt: dateOnlyInputToIso(offer.validUntil) || null,
-          });
-        }
-
-        for (const o of owners) {
-          if (!o.personId) continue;
-          // BUG REAL CORRIGIDO (auditoria Claude Browser, rodada final, 13/10/2026): "100" no
-          // campo Percentual era só placeholder visual (cinza), não um valor preenchido — ao
-          // deixar vazio, `o.percentage || undefined` mandava `undefined` pro backend, que
-          // persistia 0%. O cartão de detalhe então mostrava "0% de participação". Agora, se
-          // o usuário não digitar nada, assume-se 100% de verdade (dono único é o caso comum;
-          // para sociedade, o usuário já digita o percentual real de cada proprietário).
-          await addPropertyOwner(created.id, {
-            personId: o.personId,
-            roleCode: o.roleCode,
-            ownershipPercent: o.percentage.trim() !== "" ? o.percentage : "100",
-          });
-        }
-
-        router.push(`/painel/imoveis/${created.id}`);
-      } catch (err) {
-        setSubmitting(false);
-        setSubmitError(err?.message || "Não foi possível criar o imóvel.");
-      }
+      await saveAction.run();
       return;
     }
     setStepIndex((i) => Math.min(i + 1, STEPS.length - 1));
@@ -803,6 +809,7 @@ export default function NovoImovelPage() {
       <div className={styles.actionBar}>
         <div className={styles.actionBarInner}>
           {submitError ? <Alert tone="danger" title="Não foi possível salvar">{submitError}</Alert> : null}
+          {showSaveProblem ? <AsyncState result={saveAction} /> : null}
           <Button variant="secondary" size="sm" onClick={goBack}>
             {isFirst ? "Cancelar" : "Voltar"}
           </Button>
