@@ -10,7 +10,9 @@ import Select from "@/components/atoms/Select/Select";
 import Spinner from "@/components/atoms/Spinner/Spinner";
 import FormField from "@/components/molecules/FormField/FormField";
 import PersonPicker from "@/components/molecules/PersonPicker/PersonPicker";
-import Alert from "@/components/molecules/Alert/Alert";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { UI_STATE } from "@/lib/asyncState/states";
+import { useAsyncAction } from "@/lib/asyncState/useAsyncState";
 import { fetchAddressByCep } from "@/lib/cep";
 import { PROPERTY_TYPE_LABELS, OFFER_TYPE_LABELS } from "@/lib/radarMatching";
 import { createRadar } from "@/lib/api/radar";
@@ -23,7 +25,6 @@ function formatCep(value) {
 
 export default function NovoRadarPage() {
   const router = useRouter();
-  const [submitting, setSubmitting] = useState(false);
   const [personName, setPersonName] = useState("");
   const [personId, setPersonId] = useState(null);
   const [errors, setErrors] = useState({});
@@ -40,7 +41,10 @@ export default function NovoRadarPage() {
     maxAreaM2: "",
   });
 
-  const [submitError, setSubmitError] = useState("");
+  // M9-D940: a gravação passa pelo padrão de estados (403, sem conexão e "tentar de novo").
+  const saveAction = useAsyncAction((_context, payload) => createRadar(payload), { successMessage: "Radar salvo." });
+  const submitting = saveAction.status === UI_STATE.LOADING || saveAction.status === UI_STATE.SUCCESS;
+  const showSaveProblem = Boolean(saveAction.status) && !submitting;
   const [cepLoading, setCepLoading] = useState(false);
   const [cepMessage, setCepMessage] = useState("");
   const cepRequestIdRef = useRef(0);
@@ -104,34 +108,28 @@ export default function NovoRadarPage() {
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
-    setSubmitting(true);
-    setSubmitError("");
-    try {
-      await createRadar({
-        personId,
-        status: "ACTIVE",
-        criteriaJson: {
-          propertyType: criteria.propertyType,
-          offerType: criteria.offerType,
-          minPrice: criteria.minPrice ? Number(criteria.minPrice) : null,
-          maxPrice: criteria.maxPrice ? Number(criteria.maxPrice) : null,
-          city: criteria.city || null,
-          state: criteria.state || null,
-          minAreaM2: criteria.minAreaM2 ? Number(criteria.minAreaM2) : null,
-          maxAreaM2: criteria.maxAreaM2 ? Number(criteria.maxAreaM2) : null,
-        },
-      });
-      router.push("/painel/radar");
-    } catch (err) {
-      setSubmitError(err?.message || "Não foi possível salvar o radar.");
-      setSubmitting(false);
-    }
+    saveAction.reset();
+    const outcome = await saveAction.run({
+      personId,
+      status: "ACTIVE",
+      criteriaJson: {
+        propertyType: criteria.propertyType,
+        offerType: criteria.offerType,
+        minPrice: criteria.minPrice ? Number(criteria.minPrice) : null,
+        maxPrice: criteria.maxPrice ? Number(criteria.maxPrice) : null,
+        city: criteria.city || null,
+        state: criteria.state || null,
+        minAreaM2: criteria.minAreaM2 ? Number(criteria.minAreaM2) : null,
+        maxAreaM2: criteria.maxAreaM2 ? Number(criteria.maxAreaM2) : null,
+      },
+    });
+    if (outcome.status === UI_STATE.SUCCESS) router.push("/painel/radar");
   }
 
   return (
     <AppShell title="Novo radar" backHref="/painel/radar">
       <div className={styles.wrap}>
-        {submitError ? <Alert tone="danger" title="Não foi possível salvar o radar">{submitError}</Alert> : null}
+        {showSaveProblem ? <AsyncState result={saveAction} /> : null}
         <form onSubmit={handleSubmit}>
           <Card title="Cliente" className={styles.section}>
             <FormField label="Contato (comprador/locatário)" htmlFor="rd-person" required error={errors.person}>

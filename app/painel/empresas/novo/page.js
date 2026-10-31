@@ -9,7 +9,9 @@ import Input from "@/components/atoms/Input/Input";
 import Select from "@/components/atoms/Select/Select";
 import Spinner from "@/components/atoms/Spinner/Spinner";
 import FormField from "@/components/molecules/FormField/FormField";
-import Alert from "@/components/molecules/Alert/Alert";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { UI_STATE } from "@/lib/asyncState/states";
+import { useAsyncAction } from "@/lib/asyncState/useAsyncState";
 import { fetchCompanyByCnpj } from "@/lib/cnpj";
 import { apiFetch } from "@/lib/api/client";
 import { getSession } from "@/lib/auth/session";
@@ -26,7 +28,6 @@ function formatCnpj(value) {
 
 export default function NovaEmpresaPage() {
   const router = useRouter();
-  const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ name: "", legalName: "", taxId: "", status: "ACTIVE" });
   const [errors, setErrors] = useState({});
 
@@ -83,7 +84,10 @@ export default function NovaEmpresaPage() {
     runCnpjLookup(value);
   }
 
-  const [submitError, setSubmitError] = useState("");
+  // M9-D940: a gravação passa pelo padrão de estados (403, sem conexão, "tentar de novo", mesma Idempotency-Key no reenvio).
+  const saveAction = useAsyncAction(({ idempotencyKey }, payload) => apiFetch("/companies", { method: "POST", body: payload, idempotencyKey }), { successMessage: "Empresa salva." });
+  const submitting = saveAction.status === UI_STATE.LOADING || saveAction.status === UI_STATE.SUCCESS;
+  const showSaveProblem = Boolean(saveAction.status) && !submitting;
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -91,10 +95,9 @@ export default function NovaEmpresaPage() {
     if (!form.taxId.trim()) nextErrors.taxId = "Informe o CNPJ.";
     if (!form.legalName.trim()) nextErrors.legalName = "Informe a razão social.";
     setErrors(nextErrors);
-    setSubmitError("");
+    saveAction.reset();
     if (Object.keys(nextErrors).length > 0) return;
 
-    setSubmitting(true);
     // FIX (achado real em auditoria de homologação — este formulário era 100% mockado: só
     // logava no console e navegava de volta pra lista, sem NUNCA chamar a API. Nenhuma empresa
     // era criada de verdade). Payload alinhado a companies.service.js#createCompany
@@ -107,13 +110,8 @@ export default function NovaEmpresaPage() {
       taxId: form.taxId.trim(),
       status: form.status,
     };
-    try {
-      await apiFetch("/companies", { method: "POST", body: payload });
-      router.push("/painel/empresas");
-    } catch (err) {
-      setSubmitError(err.message || "Erro ao salvar empresa.");
-      setSubmitting(false);
-    }
+    const outcome = await saveAction.run(payload);
+    if (outcome.status === UI_STATE.SUCCESS) router.push("/painel/empresas");
   }
 
   return (
@@ -169,7 +167,7 @@ export default function NovaEmpresaPage() {
             </div>
           </Card>
 
-          {submitError ? <Alert tone="danger">{submitError}</Alert> : null}
+          {showSaveProblem ? <AsyncState result={saveAction} /> : null}
           <div className={styles.formActions}>
             <Button type="button" variant="secondary" href="/painel/empresas">Cancelar</Button>
             <Button type="submit" loading={submitting}>Salvar empresa</Button>

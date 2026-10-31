@@ -12,6 +12,10 @@ import Modal from "@/components/organisms/Modal/Modal";
 import RowActions from "@/components/molecules/RowActions/RowActions";
 import Pagination from "@/components/molecules/Pagination/Pagination";
 import Alert from "@/components/molecules/Alert/Alert";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import { reportLookupProblem } from "@/lib/asyncState/lookup";
+import ProtectedValue from "@/components/molecules/ProtectedValue/ProtectedValue";
 import { listRadars, deleteRadar, getRadarMatches } from "@/lib/api/radar";
 import { listPeople } from "@/lib/api/people";
 import { matchRadarToProperties, PROPERTY_TYPE_LABELS, OFFER_TYPE_LABELS } from "@/lib/radarMatching";
@@ -31,43 +35,35 @@ export default function RadarPage() {
   useEffect(() => {
     setPage(1);
   }, [pageSize]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
 
+  // M9-D940: carregando, erro com "tentar de novo", 403 e offline vêm do padrão único de estados.
+  // A lista é editada no lugar (excluir), então o vazio fica na tabela e a leitura só alimenta `radars`.
+  const listQuery = useAsyncState(async () => {
+    const [apiRadars, apiPeople] = await Promise.all([listRadars(), listPeople()]);
+    const counts = {};
+    await Promise.all(
+      apiRadars.map((r) =>
+        getRadarMatches(r.id)
+          .then((matches) => {
+            counts[r.id] = (matches || []).length;
+          })
+          .catch((error) => {
+            // O cruzamento é auxiliar: a falha é avisada (LookupProblems) em vez de virar "0 imóveis" sem explicação.
+            reportLookupProblem("os cruzamentos do radar", error);
+            counts[r.id] = 0;
+          })
+      )
+    );
+    return { radars: apiRadars, people: apiPeople, counts };
+  }, { key: "radar", isEmpty: () => false });
+  const loaded = listQuery.data;
   useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    Promise.all([listRadars(), listPeople()])
-      .then(async ([apiRadars, apiPeople]) => {
-        if (cancelled) return;
-        setRadars(apiRadars);
-        setPeople(apiPeople);
-        const counts = {};
-        await Promise.all(
-          apiRadars.map((r) =>
-            getRadarMatches(r.id)
-              .then((matches) => {
-                counts[r.id] = (matches || []).length;
-              })
-              .catch(() => {
-                counts[r.id] = 0;
-              })
-          )
-        );
-        if (!cancelled) setMatchCounts(counts);
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar os radares.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    if (!loaded) return;
+    setRadars(loaded.radars);
+    setPeople(loaded.people);
+    setMatchCounts(loaded.counts);
+  }, [loaded]);
 
   const rows = useMemo(
     () =>
@@ -117,7 +113,7 @@ export default function RadarPage() {
           <Avatar name={row.person?.legalName || "Sem pessoa vinculada"} size="sm" />
           <div>
             <p className={styles.personName}>{row.person?.legalName || "Contato removido"}</p>
-            <p className={styles.personDoc}>{row.person?.taxIdNormalized || "Sem CPF/CNPJ"}</p>
+            <p className={styles.personDoc}>{row.person?.taxIdNormalized ? <ProtectedValue classification="RESTRICTED" resourceType="people.person" resourceId={row.person.id} field="taxIdNormalized" value={row.person.taxIdNormalized} /> : "Sem CPF/CNPJ"}</p>
           </div>
         </div>
       ),
@@ -183,15 +179,15 @@ export default function RadarPage() {
   return (
     <AppShell title="Radar">
       <div className={styles.toolbar}>
-        <span className={styles.toolbarInfo}>{radars.length} perfis de busca ativos</span>
+        <span className={styles.toolbarInfo}>{loaded ? `${radars.length} perfis de busca ativos` : ""}</span>
         <Button href="/painel/radar/novo">
           <Icon name="plus" size={16} /> Novo radar
         </Button>
       </div>
 
-      {loadError ? <Alert tone="danger" title="Não foi possível carregar os radares">{loadError}</Alert> : null}
-
-      <Table columns={columns} rows={loading ? [] : pageItems} loading={loading} emptyMessage="Nenhum radar cadastrado." />
+      <AsyncState result={listQuery} loadingLabel="Carregando radares...">
+        <Table columns={columns} rows={pageItems} emptyMessage="Nenhum radar cadastrado." />
+      </AsyncState>
       <div className={styles.paginationRow}>
         <Pagination
           page={page}

@@ -6,12 +6,13 @@ import AppShell from "@/components/organisms/AppShell/AppShell";
 import Button from "@/components/atoms/Button/Button";
 import Badge from "@/components/atoms/Badge/Badge";
 import Icon from "@/components/atoms/Icon/Icon";
-import Alert from "@/components/molecules/Alert/Alert";
 import Table from "@/components/organisms/Table/Table";
 import Modal from "@/components/organisms/Modal/Modal";
 import RowActions from "@/components/molecules/RowActions/RowActions";
 import Pagination from "@/components/molecules/Pagination/Pagination";
 import { COMPANY_STATUS_LABELS } from "@/lib/mock/companies";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { apiFetch } from "@/lib/api/client";
 import { formatDate } from "@/lib/format";
 import styles from "./page.module.css";
@@ -33,8 +34,6 @@ function attachUnits(companies, units) {
 export default function EmpresasPage() {
   const router = useRouter();
   const [companies, setCompanies] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
@@ -43,25 +42,14 @@ export default function EmpresasPage() {
     setPage(1);
   }, [pageSize]);
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    Promise.all([apiFetch("/companies"), apiFetch("/units")])
-      .then(([apiCompanies, apiUnits]) => {
-        if (cancelled) return;
-        setCompanies(attachUnits(apiCompanies || [], apiUnits || []));
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar as empresas.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // M9-D940: carregando, erro com "tentar de novo", 403 e offline vêm do padrão único de estados.
+  // A lista é editada no lugar (excluir), então o vazio fica na tabela e a leitura só alimenta `companies`.
+  const listQuery = useAsyncState(async () => {
+    const [apiCompanies, apiUnits] = await Promise.all([apiFetch("/companies"), apiFetch("/units")]);
+    return attachUnits(apiCompanies || [], apiUnits || []);
+  }, { key: "empresas", isEmpty: () => false });
+  const loaded = listQuery.data;
+  useEffect(() => { if (loaded) setCompanies(loaded); }, [loaded]);
 
   function handleDelete() {
     setCompanies((prev) => prev.filter((c) => c.id !== deleteTarget.id));
@@ -138,11 +126,9 @@ export default function EmpresasPage() {
         </Button>
       </div>
 
-      {loadError ? (
-        <Alert tone="danger" title="Não foi possível carregar as empresas">{loadError}</Alert>
-      ) : null}
-
-      <Table columns={columns} rows={loading ? [] : pageItems} loading={loading} emptyMessage="Nenhuma empresa cadastrada." />
+      <AsyncState result={listQuery} loadingLabel="Carregando empresas...">
+        <Table columns={columns} rows={pageItems} emptyMessage="Nenhuma empresa cadastrada." />
+      </AsyncState>
       <div className={styles.paginationRow}>
         <Pagination
           page={page}

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Button from "@/components/atoms/Button/Button";
 import Icon from "@/components/atoms/Icon/Icon";
@@ -13,7 +13,9 @@ import Modal from "@/components/organisms/Modal/Modal";
 import PropertyCard from "@/components/molecules/PropertyCard/PropertyCard";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import Alert from "@/components/molecules/Alert/Alert";
-import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { UI_STATE } from "@/lib/asyncState/states";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { CONTACT_TYPE_LABELS, CONTACT_TYPE_ICON } from "@/lib/mock/people";
 import { getRadar, deleteRadar } from "@/lib/api/radar";
 import { getPerson } from "@/lib/api/people";
@@ -38,66 +40,52 @@ export default function RadarDetailPage({ params }) {
   const [person, setPerson] = useState(null);
   const [opportunity, setOpportunity] = useState(null);
   const [matches, setMatches] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [actionError, setActionError] = useState("");
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    getRadar(params.id)
+  // M9-D940: carregando, erro com "tentar de novo", 403 e offline vêm do padrão único de estados.
+  const loadQuery = useAsyncState(() => {
+    return getRadar(params.id)
       .then(async (apiRadar) => {
-        if (cancelled || !apiRadar) return;
+        if (!apiRadar) return;
         setRadar(apiRadar);
         setMatches((apiRadar.matches || []).map(mapProperty));
         const [apiPerson, apiOpportunity] = await Promise.all([
           apiRadar.personId ? getPerson(apiRadar.personId).catch(lookupFallback("a pessoa", null)) : Promise.resolve(null),
           apiRadar.opportunityId ? getOpportunity(apiRadar.opportunityId).catch(lookupFallback("a oportunidade", null)) : Promise.resolve(null),
         ]);
-        if (cancelled) return;
         setPerson(apiPerson);
         if (apiOpportunity) {
           const [property, users] = await Promise.all([
             apiOpportunity.propertyId ? getProperty(apiOpportunity.propertyId).catch(lookupFallback("o imóvel", null)) : Promise.resolve(null),
             apiFetch("/users").catch(lookupFallback("os usuários")),
           ]);
-          if (cancelled) return;
-          setOpportunity({
+            setOpportunity({
             ...apiOpportunity,
             propertyName: property?.name || "Sem imóvel vinculado",
             repName: (users || []).find((u) => u.id === apiOpportunity.ownerUserId)?.name || "Sem responsável definido",
           });
         }
       })
-      .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar o radar.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [params.id]);
+      .then(() => true);
+  }, { deps: [params.id], isEmpty: () => false });
 
-  if (loading) {
+  if (loadQuery.status !== UI_STATE.CONTENT) {
     return (
-      <AppShell title="Carregando radar..." backHref="/painel/radar">
+      <AppShell title={loadQuery.status === UI_STATE.LOADING ? "Carregando radar..." : "Radar"} backHref="/painel/radar">
         <div className={styles.wrap}>
-          <SkeletonDetail sections={4} />
+          <AsyncState result={loadQuery} loadingLabel="Carregando radar..." />
         </div>
       </AppShell>
     );
   }
 
-  if (loadError || !radar) {
+  if (!radar) {
     return (
       <AppShell title="Radar" backHref="/painel/radar">
         <div className={styles.wrap}>
-          <Alert tone="danger" title="Não foi possível carregar o radar">{loadError || "Radar não encontrado."}</Alert>
+          <Alert tone="danger" title="Radar não encontrado">Este radar não existe ou foi removido.</Alert>
         </div>
       </AppShell>
     );

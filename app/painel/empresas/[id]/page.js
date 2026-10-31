@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter, notFound } from "next/navigation";
 import Link from "next/link";
 import AppShell from "@/components/organisms/AppShell/AppShell";
@@ -16,7 +16,9 @@ import Table from "@/components/organisms/Table/Table";
 import Tabs from "@/components/molecules/Tabs/Tabs";
 import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
-import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { UI_STATE } from "@/lib/asyncState/states";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { COMPANY_STATUS_LABELS, UNIT_STATUS_LABELS } from "@/lib/mock/companies";
 import { ROLE_TONE } from "@/lib/mock/users";
 import { AVAILABILITY_STATUS_LABELS } from "@/lib/mock/properties";
@@ -50,8 +52,7 @@ export default function CompanyDetailPage({ params }) {
   const [units, setUnits] = useState([]);
   const [companyUsers, setCompanyUsers] = useState([]);
   const [companyProperties, setCompanyProperties] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
+  const [loadError, setLoadError] = useState(""); // erros das ações (excluir, adicionar unidade); a leitura usa o AsyncState
   const [notFoundFlag, setNotFoundFlag] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -61,80 +62,63 @@ export default function CompanyDetailPage({ params }) {
   const [expandedUnitId, setExpandedUnitId] = useState(null);
   const carouselRef = useRef(null);
 
-  function loadAll() {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    Promise.all([
-      apiFetch(`/companies/${params.id}`),
-      apiFetch("/units"),
-      apiFetch("/users"),
-      apiFetch("/memberships"),
-      listProperties(),
-    ])
-      .then(([apiCompany, apiUnits, apiUsers, apiMemberships, properties]) => {
-        if (cancelled) return;
-        setCompany({
-          ...apiCompany,
-          createdAt: apiCompany.createdAt || apiCompany.created_at,
-        });
-        setUnits((apiUnits || []).filter((u) => u.companyId === params.id));
+  // M9-D940: carregando, erro com "tentar de novo", 403 e offline vêm do padrão único de estados. 404 continua virando notFound().
+  const loadQuery = useAsyncState(async () => {
+    try {
+      return await Promise.all([
+        apiFetch(`/companies/${params.id}`),
+        apiFetch("/units"),
+        apiFetch("/users"),
+        apiFetch("/memberships"),
+        listProperties(),
+      ])
+        .then(([apiCompany, apiUnits, apiUsers, apiMemberships, properties]) => {
+          setCompany({
+            ...apiCompany,
+            createdAt: apiCompany.createdAt || apiCompany.created_at,
+          });
+          setUnits((apiUnits || []).filter((u) => u.companyId === params.id));
 
-        const usersForThisCompany = (apiUsers || [])
-          .map((u) => ({
-            id: u.id,
-            name: u.name,
-            email: u.email,
-            status: toDisplayStatus(u.status),
-            memberships: (apiMemberships || [])
-              .filter((m) => m.userId === u.id)
-              .map((m) => ({
-                companyId: m.companyId,
-                unitId: m.unitId,
-                unit: m.unit?.name || null,
-                role: m.role?.name || "Sem papel",
-              })),
-          }))
-          .filter((u) => u.memberships.some((m) => m.companyId === params.id));
-        setCompanyUsers(usersForThisCompany);
+          const usersForThisCompany = (apiUsers || [])
+            .map((u) => ({
+              id: u.id,
+              name: u.name,
+              email: u.email,
+              status: toDisplayStatus(u.status),
+              memberships: (apiMemberships || [])
+                .filter((m) => m.userId === u.id)
+                .map((m) => ({
+                  companyId: m.companyId,
+                  unitId: m.unitId,
+                  unit: m.unit?.name || null,
+                  role: m.role?.name || "Sem papel",
+                })),
+            }))
+            .filter((u) => u.memberships.some((m) => m.companyId === params.id));
+          setCompanyUsers(usersForThisCompany);
 
-        setCompanyProperties((properties || []).filter((p) => p.companyId === params.id));
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        if (err?.status === 404) {
-          setNotFoundFlag(true);
-        } else {
-          setLoadError(err?.message || "Não foi possível carregar a empresa.");
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }
+          setCompanyProperties((properties || []).filter((p) => p.companyId === params.id));
+        })
+        .then(() => true);
+    } catch (err) {
+      if (err?.status === 404) { setNotFoundFlag(true); return true; }
+      throw err;
+    }
+  }, { deps: [params.id], isEmpty: () => false });
 
-  useEffect(loadAll, [params.id]);
+  function loadAll() { loadQuery.reload(); }
 
   if (notFoundFlag) return notFound();
 
-  if (loading) {
+  if (loadQuery.status !== UI_STATE.CONTENT && !(loadQuery.status === UI_STATE.LOADING && company)) {
     return (
       <AppShell title="Empresa" backHref="/painel/empresas">
-        <SkeletonDetail />
+        <AsyncState result={loadQuery} loadingLabel="Carregando empresa..." />
       </AppShell>
     );
   }
 
-  if (loadError || !company) {
-    return (
-      <AppShell title="Empresa" backHref="/painel/empresas">
-        <Alert tone="danger" title="Não foi possível carregar a empresa">{loadError}</Alert>
-      </AppShell>
-    );
-  }
+  if (!company) return notFound();
 
   function usersForUnit(unitId) {
     return companyUsers.filter((u) => u.memberships.some((m) => m.unitId === unitId));
