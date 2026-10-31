@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Table from "@/components/organisms/Table/Table";
@@ -42,6 +42,10 @@ import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import { formatDateTime, formatDate, formatBRL, toNumber, humanizeText, formatCompetence } from "@/lib/format";
 import { hasPermission } from "@/lib/rbac/permissions";
 import { SOURCE_TYPE_LABEL as BASE_SOURCE_TYPE_LABEL } from "../_labels";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import { classifyFailure } from "@/lib/asyncState/states";
+import { lookupFallback } from "@/lib/asyncState/lookup";
 import styles from "./page.module.css";
 
 const INVOICE_STATUS_LABEL = {
@@ -176,9 +180,9 @@ export default function FiscalPage() {
   const [reconciliations, setReconciliations] = useState([]);
   const [obligations, setObligations] = useState([]);
   const [exportBatches, setExportBatches] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [loadErrors, setLoadErrors] = useState({});
   const [canFiscal, setCanFiscal] = useState(true);
+  const [fiscalChecked, setFiscalChecked] = useState(false);
   const [dimobIncludesCommissions, setDimobIncludesCommissions] = useState(false);
   const [actionError, setActionError] = useState("");
   const [actionMessage, setActionMessage] = useState("");
@@ -214,15 +218,12 @@ export default function FiscalPage() {
   const [returnHash, setReturnHash] = useState("");
   const [returnFile, setReturnFile] = useState(null);
   const [returnPreview, setReturnPreview] = useState(null);
-  const loadSeq = useRef(0);
 
   const busy = (key) => busyKey === key;
 
-  // Cada aba carrega por conta própria: se uma lista falhar, as outras continuam visíveis.
-  function load() {
-    loadSeq.current += 1;
-    const mine = loadSeq.current;
-    setLoading(true);
+  // M9-D850: cada aba carrega por conta própria (se uma lista falhar, as outras continuam visíveis), mas a falha de cada uma
+  // é classificada pelo padrão de estados (403 = sem acesso, sem conexão, tentar de novo) e nunca vira "lista vazia".
+  const loadQuery = useAsyncState(async () => {
     const tasks = [
       ["invoices", listInvoiceRequests, setInvoices, "as notas fiscais (NFS-e)"],
       ["dimob", listDimobBatches, setDimobBatches, "os batches DIMOB"],
@@ -230,30 +231,29 @@ export default function FiscalPage() {
       ["obligations", listFiscalObligations, setObligations, "o calendário de obrigações"],
       ["exports", listExportBatches, setExportBatches, "as exportações contábeis"],
     ];
-    Promise.allSettled(tasks.map(([, fn]) => fn())).then((results) => {
-      if (mine !== loadSeq.current) return;
-      const errors = {};
-      results.forEach((result, index) => {
-        const [key, , setter, text] = tasks[index];
-        if (result.status === "fulfilled") setter(result.value || []);
-        else errors[key] = `Não foi possível carregar ${text}: ${result.reason?.message || "erro desconhecido"}.`;
-      });
-      setLoadErrors(errors);
-    }).finally(() => { if (mine === loadSeq.current) setLoading(false); });
-  }
+    const results = await Promise.allSettled(tasks.map(([, fn]) => fn()));
+    const errors = {};
+    results.forEach((result, index) => {
+      const [key, , setter, text] = tasks[index];
+      if (result.status === "fulfilled") setter(result.value || []);
+      else errors[key] = { text, error: result.reason };
+    });
+    setLoadErrors(errors);
+    return { errors };
+  }, { enabled: fiscalChecked && canFiscal, isEmpty: () => false });
+  const loading = canFiscal && loadQuery.status === "LOADING";
+  function load() { return loadQuery.reload(); }
 
   useEffect(() => {
     const allowed = hasPermission("correspondent:fiscal");
     setCanFiscal(allowed);
+    setFiscalChecked(true);
     if (allowed) {
-      load();
       getCorrespondentParameters()
         .then((p) => setDimobIncludesCommissions(p?.commission?.action?.dimobIncludeCommissions === true))
-        .catch(() => {});
-    } else {
-      setLoading(false);
+        .catch(lookupFallback("os parâmetros do correspondente", null));
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   function clearMessages() {
     setActionError("");
@@ -263,10 +263,11 @@ export default function FiscalPage() {
   }
 
   function errorBox(key) {
-    return loadErrors[key] ? (
+    const failure = loadErrors[key];
+    return failure ? (
       <div style={{ marginBottom: 12 }}>
-        <Alert tone="danger">{loadErrors[key]}</Alert>
-        <div style={{ marginTop: 8 }}><Button variant="secondary" size="sm" onClick={load}>Tentar de novo</Button></div>
+        <p style={{ marginBottom: 8 }}>Não foi possível carregar {failure.text}.</p>
+        <AsyncState result={{ status: classifyFailure(failure.error), error: failure.error, traceId: failure.error?.traceId, retry: load }} />
       </div>
     ) : null;
   }

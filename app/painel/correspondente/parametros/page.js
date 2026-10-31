@@ -20,6 +20,8 @@ import {
 import { formatDateTime, toNumber } from "@/lib/format";
 import { hasPermission } from "@/lib/rbac/permissions";
 import { PROVIDER_LABELS, PURPOSE_LABELS, STATUS_LABELS, BLOCKABLE_CASE_STATUSES, TRIGGER_EVENT_LABELS } from "../_labels";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import styles from "./page.module.css";
 
 const DOCUMENT_LABELS = { RG_CPF: "RG/CPF", COMPROVANTE_RENDA: "Comprovante de renda", COMPROVANTE_RESIDENCIA: "Comprovante de residência", MATRICULA_IMOVEL: "Matrícula do imóvel", CERTIDAO_ESTADO_CIVIL: "Certidão de estado civil", IPTU: "IPTU", EXTRATO_BANCARIO: "Extrato bancário", OUTRO: "Outro" };
@@ -177,7 +179,7 @@ function IntegerInput({ id, value, onChange, error, ...rest }) {
 
 export default function ParametrosCorrespondentePage() {
   const [params, setParams] = useState(null);
-  const [loadError, setLoadError] = useState("");
+  const [reloadError, setReloadError] = useState("");
   const [eligibility, setEligibility] = useState(null);
   const [commission, setCommission] = useState(null);
   const [eligibilityReason, setEligibilityReason] = useState("");
@@ -236,9 +238,21 @@ export default function ParametrosCorrespondentePage() {
     });
   }
 
-  // Carrega tudo na primeira vez; depois de salvar, só a aba salva é reidratada (a outra mantém as edições).
+  // M9-D850: a primeira carga vem do padrão de estados (carregando, 403, sem conexão, tentar de novo).
+  const paramsQuery = useAsyncState(
+    async () => {
+      const data = await getCorrespondentParameters();
+      setParams(data);
+      hydrateEligibility(data);
+      hydrateCommission(data);
+      return data;
+    },
+    { isEmpty: () => false }
+  );
+
+  // Depois de salvar, só a aba salva é reidratada (a outra mantém as edições).
   async function load(only) {
-    setLoadError("");
+    setReloadError("");
     try {
       const data = await getCorrespondentParameters();
       setParams(data);
@@ -246,12 +260,10 @@ export default function ParametrosCorrespondentePage() {
       if (!only || only === "commission") hydrateCommission(data);
       return true;
     } catch (err) {
-      setLoadError(err?.message || "Não foi possível carregar os parâmetros.");
+      setReloadError(err?.message || "Não foi possível recarregar os parâmetros.");
       return false;
     }
   }
-
-  useEffect(() => { load(); }, []);
 
   async function save(kind) {
     const providers = params.options.providers;
@@ -353,12 +365,7 @@ export default function ParametrosCorrespondentePage() {
     return (
       <AppShell title="Parâmetros do correspondente" backHref="/painel/correspondente">
         <div className={styles.wrap}>
-          {loadError ? (
-            <>
-              <Alert tone="danger">{loadError}</Alert>
-              <div><Button variant="secondary" onClick={() => load()}>Tentar de novo</Button></div>
-            </>
-          ) : <p>Carregando parâmetros…</p>}
+          <AsyncState result={paramsQuery} loadingLabel="Carregando parâmetros..." />
         </div>
       </AppShell>
     );
@@ -386,7 +393,7 @@ export default function ParametrosCorrespondentePage() {
   return (
     <AppShell title="Parâmetros do correspondente" backHref="/painel/correspondente">
       <div className={styles.wrap}>
-        {loadError ? <Alert tone="warning">{loadError}</Alert> : null}
+        {reloadError ? <Alert tone="warning">{reloadError}</Alert> : null}
         {!canEdit ? (
           <Alert tone="warning" title="Somente leitura">
             Seu perfil não tem a permissão para alterar estes parâmetros. Você pode consultar os valores e o histórico.
