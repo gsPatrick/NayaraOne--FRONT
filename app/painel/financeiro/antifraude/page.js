@@ -20,7 +20,7 @@ import Input from "@/components/atoms/Input/Input";
 import FormField from "@/components/molecules/FormField/FormField";
 import Select from "@/components/atoms/Select/Select";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
-import { useAsyncState, invalidateAsyncCache } from "@/lib/asyncState/useAsyncState";
+import { useAsyncState, invalidateAsyncCachePrefix } from "@/lib/asyncState/useAsyncState";
 import StatTile from "@/components/molecules/StatTile/StatTile";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu";
@@ -66,7 +66,7 @@ export default function AntifraudePage() {
     try {
       const updated = await resolveAnomalyCase(anomalyCase.id, resolutionNote);
       setResolvedById((prev) => ({ ...prev, [anomalyCase.id]: { ...anomalyCase, ...(updated && typeof updated === "object" ? updated : {}), status: "RESOLVED", resolutionNote: (updated && updated.resolutionNote) || resolutionNote } }));
-      invalidateAsyncCache(`antifraude:${statusFilter}:${riskFilter}`);
+      invalidateAsyncCachePrefix("antifraude:"); // todos os filtros, não só o corrente
       setResolveModal(null);
       showNotice("success", "Caso resolvido", "Caso de anomalia marcado como resolvido.");
     } catch (err) {

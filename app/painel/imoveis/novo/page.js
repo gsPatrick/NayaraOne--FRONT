@@ -20,7 +20,8 @@ import { FEATURE_LABELS, REGULARIZATION_OPTIONS, OFFER_TYPE_LABELS, OWNER_ROLE_L
 import { fetchAddressByCep } from "@/lib/cep";
 import { formatBRL, dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
 import { buildGoogleMapsUrl } from "@/lib/maps";
-import { createProperty, addPropertyOwner, createOffer, savePropertyDocumentation, toApiPropertyType } from "@/lib/api/properties";
+import { createProperty, updateProperty, addPropertyOwner, updatePropertyOwner, removePropertyOwner, createOffer, updateOffer, savePropertyDocumentation, toApiPropertyType } from "@/lib/api/properties";
+import { runSave } from "./saveProgress";
 import Alert from "@/components/molecules/Alert/Alert";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import { useAsyncAction } from "@/lib/asyncState/useAsyncState";
@@ -237,13 +238,9 @@ export default function NovoImovelPage() {
   // carregando, 403, sem conexão e "tentar de novo" com a mesma Idempotency-Key; ao concluir, abre a ficha.
   // O progresso fica guardado por Idempotency-Key: no "Tentar novamente" (mesma chave) as etapas já concluídas são puladas,
   // então o imóvel não é criado duas vezes nem fica meio criado; uma nova tentativa do zero (chave nova) começa limpa.
-  const saveProgressRef = useRef({ key: null, created: null, docsDone: false, offerDone: false, ownersDone: new Set() });
-  const saveAction = useAsyncAction(async ({ idempotencyKey }) => {
-    if (saveProgressRef.current.key !== idempotencyKey) {
-      saveProgressRef.current = { key: idempotencyKey, created: null, docsDone: false, offerDone: false, ownersDone: new Set() };
-    }
-    const progress = saveProgressRef.current;
-    const created = progress.created || await createProperty({
+  const saveProgressRef = useRef({ state: null });
+  const saveAction = useAsyncAction(({ idempotencyKey }) => runSave(saveProgressRef.current, idempotencyKey, {
+    property: {
       title: basic.name,
       internalCode: basic.internalCode,
       propertyType: toApiPropertyType(basic.type),
@@ -267,46 +264,21 @@ export default function NovoImovelPage() {
         state: address.state,
       },
       attributesJson: features,
-    }, { idempotencyKey: `${idempotencyKey}:imovel` });
-    progress.created = created;
-
-    if (!progress.docsDone) {
-      await savePropertyDocumentation(created.id, docs);
-      progress.docsDone = true;
-    }
-
-    if (offer.askingPrice && !progress.offerDone) {
-      await createOffer(created.id, {
-        offerType: offer.offerType,
-        askingPrice: offer.askingPrice,
-        confidentialMinPrice: offer.confidentialMinPrice || null,
-        acceptsFinancing: offer.acceptsFinancing,
-        acceptsTrade: offer.acceptsTrade,
-        status: offer.status,
-        startsAt: dateOnlyInputToIso(offer.validFrom) || null,
-        endsAt: dateOnlyInputToIso(offer.validUntil) || null,
-      }, { idempotencyKey: `${idempotencyKey}:oferta` });
-      progress.offerDone = true;
-    }
-
-    for (const [ownerIndex, o] of owners.entries()) {
-      if (!o.personId || progress.ownersDone.has(ownerIndex)) continue;
-      // BUG REAL CORRIGIDO (auditoria Claude Browser, rodada final, 13/10/2026): "100" no
-      // campo Percentual era só placeholder visual (cinza), não um valor preenchido — ao
-      // deixar vazio, `o.percentage || undefined` mandava `undefined` pro backend, que
-      // persistia 0%. O cartão de detalhe então mostrava "0% de participação". Agora, se
-      // o usuário não digitar nada, assume-se 100% de verdade (dono único é o caso comum;
-      // para sociedade, o usuário já digita o percentual real de cada proprietário).
-      await addPropertyOwner(created.id, {
-        personId: o.personId,
-        roleCode: o.roleCode,
-        ownershipPercent: o.percentage.trim() !== "" ? o.percentage : "100",
-      }, { idempotencyKey: `${idempotencyKey}:proprietario-${ownerIndex}` });
-      progress.ownersDone.add(ownerIndex);
-    }
-
-    return created;
-  }, { successMessage: "Imóvel criado." });
+    },
+    docs,
+    offer: offer.askingPrice ? {
+      offerType: offer.offerType,
+      askingPrice: offer.askingPrice,
+      confidentialMinPrice: offer.confidentialMinPrice || null,
+      acceptsFinancing: offer.acceptsFinancing,
+      acceptsTrade: offer.acceptsTrade,
+      status: offer.status,
+      startsAt: dateOnlyInputToIso(offer.validFrom) || null,
+      endsAt: dateOnlyInputToIso(offer.validUntil) || null,
+    } : null,
+    // Percentual vazio = 100% (dono único é o caso comum; sociedade digita o percentual real). Dono sem contato vinculado não é gravado.
+    owners: owners.filter((o) => o.personId).map((o) => ({ personId: o.personId, roleCode: o.roleCode, ownershipPercent: o.percentage.trim() !== "" ? o.percentage : "100" })),
+  }, { createProperty, updateProperty, saveDocumentation: savePropertyDocumentation, createOffer, updateOffer, addOwner: addPropertyOwner, updateOwner: updatePropertyOwner, removeOwner: removePropertyOwner }), { successMessage: "Imóvel criado." });
   const submitting = saveAction.status === UI_STATE.LOADING || saveAction.status === UI_STATE.SUCCESS;
   const showSaveProblem = Boolean(saveAction.status) && !submitting;
   useEffect(() => {

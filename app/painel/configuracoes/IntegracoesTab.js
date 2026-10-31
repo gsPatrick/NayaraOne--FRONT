@@ -169,7 +169,8 @@ export default function IntegracoesTab() {
     // só mostra Clicksign, então o provider efetivo usado pelo fluxo de assinatura real
     // precisa acompanhar, sem depender de o usuário clicar em "Salvar".
     const storedProvider = byKey[INTEGRACOES_KEYS.signatureProvider];
-    if (storedProvider && storedProvider !== "clicksign" && !providerMigratedRef.current) {
+    // Só com dado FRESCO: o valor do cache de revisita pode já ter sido migrado e dispararia um PUT redundante.
+    if (settingsQuery.fresh === true && storedProvider && storedProvider !== "clicksign" && !providerMigratedRef.current) {
       providerMigratedRef.current = true;
       updateSetting(INTEGRACOES_KEYS.signatureProvider, "clicksign").catch((error) => reportLookupProblem("o provedor de assinatura", error));
     }
@@ -192,7 +193,7 @@ export default function IntegracoesTab() {
     if (!canResetForm(formRef.current.values, formRef.current.original)) return;
     setValues(next);
     setOriginal(next);
-  }, [settingsQuery.data]);
+  }, [settingsQuery.data, settingsQuery.fresh]);
 
   formRef.current = { values, original };
 

@@ -30,7 +30,8 @@ import styles from "./page.module.css";
 import { reportLookupProblem } from "@/lib/asyncState/lookup";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import { useFormSync } from "@/lib/asyncState/useFormSync";
-import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import { useAsyncState, invalidateAsyncCache } from "@/lib/asyncState/useAsyncState";
+import ReloadAlert from "@/components/molecules/ReloadAlert/ReloadAlert";
 const ACTION_LABELS = {
   NOTIFY: "Notificação interna",
   TASK: "Tarefa de cobrança",
@@ -173,6 +174,7 @@ export default function ReguaCobrancaPage() {
         action: s.action,
       }));
       const version = await publishCollectionCadence(payload);
+      invalidateAsyncCache("regua-cobranca"); // a revisita não sobe a régua pré-publicação, mesmo se a recarga falhar
       setConfirmOpen(false);
       setSuccess(`Versão ${version?.versionNumber ?? ""} da régua publicada.`);
       await loadRule();
@@ -303,6 +305,7 @@ export default function ReguaCobrancaPage() {
 
           {draftError ? <Alert tone="danger">{draftError}</Alert> : null}
           {success ? <Alert tone="success">{success}</Alert> : null}
+          {rule ? <ReloadAlert result={ruleQuery} /> : null}
 
           {canManage ? (
             <div className={styles.actionsRow}>
@@ -312,7 +315,7 @@ export default function ReguaCobrancaPage() {
               <Button type="button" variant="ghost" onClick={() => setDraft(toEditable(current?.steps || rule?.defaultSteps))}>
                 Descartar alterações
               </Button>
-              <Button type="button" onClick={handlePublishClick} disabled={publishing || loading}>
+              <Button type="button" onClick={handlePublishClick} disabled={publishing || !ruleQuery.fresh}>
                 Publicar nova versão
               </Button>
             </div>

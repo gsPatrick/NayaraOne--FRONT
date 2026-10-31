@@ -7,7 +7,7 @@
 
 import { useEffect, useState } from "react";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
-import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import { useAsyncState, invalidateAsyncCache } from "@/lib/asyncState/useAsyncState";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Table from "@/components/organisms/Table/Table";
@@ -91,7 +91,9 @@ export default function IntercompanyPage() {
     return { companyList: companyList || [], transferList: transferList || [], accountList: accountList || [], destList: destList || [] };
   }, { key: "intercompany", isEmpty: () => false });
   const loading = transfersQuery.status === "LOADING";
-  const reload = transfersQuery.reload;
+  // Depois de gravar, o cache sai (a revisita não sobe a lista antiga) e as ações da linha só valem com a lista fresca.
+  const reload = () => { invalidateAsyncCache("intercompany"); return transfersQuery.reload(); };
+  const notFresh = !transfersQuery.fresh;
   useEffect(() => {
     const data = transfersQuery.data;
     if (!data) return;
@@ -271,10 +273,10 @@ export default function IntercompanyPage() {
         if (row.status === "PENDING_APPROVAL") {
           return (
             <span style={{ display: "inline-flex", gap: "var(--space-2)" }}>
-              <Button requires="finance:approve" type="button" size="sm" variant="ghost" onClick={() => setApproveId(row.id)}>
+              <Button requires="finance:approve" type="button" size="sm" variant="ghost" onClick={() => setApproveId(row.id)} disabled={notFresh}>
                 Aprovar
               </Button>
-              <Button requires="finance:approve" type="button" size="sm" variant="ghost" onClick={() => openReject(row.id)}>
+              <Button requires="finance:approve" type="button" size="sm" variant="ghost" onClick={() => openReject(row.id)} disabled={notFresh}>
                 Recusar
               </Button>
             </span>
@@ -282,7 +284,7 @@ export default function IntercompanyPage() {
         }
         if (row.status === "PENDING") {
           return (
-            <Button requires="finance:reconcile" type="button" size="sm" variant="ghost" onClick={() => handleReconcile(row.id)}>
+            <Button requires="finance:reconcile" type="button" size="sm" variant="ghost" onClick={() => handleReconcile(row.id)} disabled={notFresh}>
               Conciliar
             </Button>
           );

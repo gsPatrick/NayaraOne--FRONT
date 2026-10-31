@@ -42,6 +42,7 @@ export default function NovoRadarPage() {
   });
 
   // M9-D940: a gravação passa pelo padrão de estados (403, sem conexão e "tentar de novo").
+  const lastSignatureRef = useRef(null);
   const saveAction = useAsyncAction(({ idempotencyKey }, payload) => createRadar(payload, { idempotencyKey }), { successMessage: "Radar salvo." });
   const submitting = saveAction.status === UI_STATE.LOADING || saveAction.status === UI_STATE.SUCCESS;
   const showSaveProblem = Boolean(saveAction.status) && !submitting;
@@ -108,8 +109,7 @@ export default function NovoRadarPage() {
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
-    saveAction.reset();
-    const outcome = await saveAction.run({
+    const payload = {
       personId,
       status: "ACTIVE",
       criteriaJson: {
@@ -122,7 +122,11 @@ export default function NovoRadarPage() {
         minAreaM2: criteria.minAreaM2 ? Number(criteria.minAreaM2) : null,
         maxAreaM2: criteria.maxAreaM2 ? Number(criteria.maxAreaM2) : null,
       },
-    });
+    };
+    // Mesmo formulário reenviado à mão (ex.: depois de timeout) = mesma Idempotency-Key; só um formulário alterado troca a chave.
+    const signature = JSON.stringify(payload);
+    if (lastSignatureRef.current !== signature) { saveAction.reset(); lastSignatureRef.current = signature; }
+    const outcome = await saveAction.run(payload);
     if (outcome.status === UI_STATE.SUCCESS) router.push("/painel/radar");
   }
 

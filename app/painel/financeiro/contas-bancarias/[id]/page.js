@@ -11,7 +11,7 @@ import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import { useFormSync } from "@/lib/asyncState/useFormSync";
-import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import { useAsyncState, invalidateAsyncCache } from "@/lib/asyncState/useAsyncState";
 import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
 import Input from "@/components/atoms/Input/Input";
@@ -94,6 +94,7 @@ export default function ContaBancariaDetailPage({ params }) {
     setNotice(null);
     try {
       const updated = await blockBankAccount(account.id);
+      invalidateAsyncCache(`conta-bancaria:${params.id}`); // a revisita não mostra a conta pré-bloqueio
       setAccount(updated);
       setNotice({ tone: "danger", text: "Conta bloqueada para pagamentos (antifraude)." });
     } catch (err) {
@@ -120,6 +121,7 @@ export default function ContaBancariaDetailPage({ params }) {
       const changeEvidence = await buildChangeEvidence(evidence);
       // M9-D825: o valor que o servidor devolveu mascarado nunca volta na edição (campo em branco = manter).
       const updated = await updateBankAccount(account.id, { ...dropMaskedFields(editForm, account, ["accountNumber", "pixKey"]), ...(changeEvidence ? { changeEvidence } : {}) });
+      invalidateAsyncCache(`conta-bancaria:${params.id}`); // a revisita não mostra a conta pré-edição
       setAccount(updated);
       setEvidence(EMPTY_EVIDENCE);
       setNotice({ tone: "warning", text: "Dados sensíveis alterados — a conta voltou para resfriamento de 48h antes de poder receber pagamentos novamente." });
@@ -132,7 +134,7 @@ export default function ContaBancariaDetailPage({ params }) {
 
   return (
     <AppShell title={account?.bankCode ? getBankName(account.bankCode) : "Conta bancária"} backHref="/painel/financeiro/contas-bancarias">
-      <AsyncState result={accountQuery} loadingLabel="Carregando conta bancária...">
+      <AsyncState result={accountQuery} lockStale loadingLabel="Carregando conta bancária...">
       {!account ? null : (
         <div className={styles.wrap}>
           <div className={styles.headerRow}>

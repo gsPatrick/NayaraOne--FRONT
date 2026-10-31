@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -24,6 +24,7 @@ import { formatDateTime, formatBRL } from "@/lib/format";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import ReloadAlert from "@/components/molecules/ReloadAlert/ReloadAlert";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import { createLatestGuard } from "@/lib/asyncState/latest";
 import styles from "./page.module.css";
 
 import { lookupFallback } from "@/lib/asyncState/lookup";
@@ -68,19 +69,23 @@ export default function UserDetailPage({ params }) {
   const [passwordSetMessage, setPasswordSetMessage] = useState("");
 
   // M9-D850: o usuário carrega pelo padrão de estados (carregando, 403, sem conexão, tentar de novo); 404 mostra "Usuário não encontrado".
+  const latest = useRef(createLatestGuard()).current;
   const userQuery = useAsyncState(
     async () => {
+      const isLatest = latest.begin(); // troca rápida de id: só a resposta mais recente grava o estado
       const [apiUser, apiMemberships, apiRoles, apiProperties] = await Promise.all([
         apiFetch(`/users/${params.id}`),
         apiFetch(`/memberships?userId=${params.id}`),
         listRoles(),
         listProperties().catch(lookupFallback("os imóveis")),
       ]);
-      setUser(apiUser);
-      setMemberships(apiMemberships);
-      setRoles(apiRoles);
-      setProperties(apiProperties.filter((p) => p.createdBy === params.id));
-      setSelectedRoleId(apiRoles[0]?.id || "");
+      if (isLatest()) {
+        setUser(apiUser);
+        setMemberships(apiMemberships);
+        setRoles(apiRoles);
+        setProperties(apiProperties.filter((p) => p.createdBy === params.id));
+        setSelectedRoleId(apiRoles[0]?.id || "");
+      }
       return apiUser;
     },
     { deps: [params.id], isEmpty: () => false }
@@ -216,7 +221,8 @@ export default function UserDetailPage({ params }) {
     );
   }
 
-  if (!user) {
+  // 403 na recarga: o cadastro antigo some (nunca fica visível dado que o usuário não pode mais ver).
+  if (!user || userQuery.status === "PERMISSION_DENIED") {
     return (
       <AppShell title="Usuário" backHref="/painel/usuarios">
         <div className={styles.wrap}>

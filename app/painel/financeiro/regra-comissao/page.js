@@ -13,7 +13,8 @@ import Input from "@/components/atoms/Input/Input";
 import Alert from "@/components/molecules/Alert/Alert";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import { useFormSync } from "@/lib/asyncState/useFormSync";
-import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import { useAsyncState, invalidateAsyncCache } from "@/lib/asyncState/useAsyncState";
+import ReloadAlert from "@/components/molecules/ReloadAlert/ReloadAlert";
 import MfaVerifyModal from "@/components/organisms/MfaVerifyModal/MfaVerifyModal";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu";
@@ -116,6 +117,9 @@ export default function CommissionRulePage() {
     setSaving(true);
     try {
       await publishCommissionRule(buildPayload());
+      // A revisita não pode subir a regra pré-publicação do cache, mesmo se a recarga abaixo falhar.
+      invalidateAsyncCache("regra-comissao");
+      invalidateAsyncCache("regra-comissao:versoes");
       setSuccess("Nova versão da regra publicada. Comissões já calculadas continuam com a versão que usaram.");
       await load();
     } catch (err) {
@@ -173,6 +177,7 @@ export default function CommissionRulePage() {
 
         <Card className={styles.formCard}>
           <h2 className={styles.sectionTitle}>Publicar nova versão</h2>
+          <ReloadAlert result={ruleQuery} />
           <p className={styles.helper}>
             Publicar encerra a vigência da versão atual. Exige permissão de aprovação no Financeiro e confirmação com MFA.
           </p>
@@ -189,7 +194,7 @@ export default function CommissionRulePage() {
             ))}
             {formError ? <Alert tone="danger">{formError}</Alert> : null}
             {success ? <Alert tone="success">{success}</Alert> : null}
-            <Button requires="finance:approve" type="submit" disabled={saving}>
+            <Button requires="finance:approve" type="submit" disabled={saving || !ruleQuery.fresh}>
               {saving ? "Publicando..." : "Publicar regra"}
             </Button>
           </form>

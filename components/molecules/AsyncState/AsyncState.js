@@ -8,7 +8,7 @@ import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import SupportCode from "@/components/molecules/SupportCode/SupportCode";
 import { UI_STATE, fieldErrorsOf, missingPermissionOf } from "@/lib/asyncState/states";
-import { MESSAGES, genericErrorText, businessMessageOf } from "@/lib/asyncState/messages";
+import { MESSAGES, genericErrorText, businessMessageOf, safeText } from "@/lib/asyncState/messages";
 import { buildLoginUrl } from "@/lib/auth/returnTo";
 import { fieldErrorId } from "@/lib/asyncState/fields";
 import styles from "./AsyncState.module.css";
@@ -27,11 +27,11 @@ function ValidationSummary({ error }) {
   return (
     <div ref={ref} tabIndex={-1} role="alert" className={styles.summary} data-ui-state={UI_STATE.VALIDATION_ERROR}>
       <p className={styles.title}>{MESSAGES.validationTitle}</p>
-      {error && error.message ? <p className={styles.text}>{error.message}</p> : null}
+      {businessMessageOf(error) ? <p className={styles.text}>{businessMessageOf(error)}</p> : null}
       {problems.length ? (
         <ul className={styles.list}>
           {problems.map((problem) => (
-            <li key={`${problem.field}-${problem.message}`}><a href={`#${fieldErrorId(problem.field)}`}>{problem.message || problem.field}</a></li>
+            <li key={`${problem.field}-${problem.message}`}><a href={`#${fieldErrorId(problem.field)}`}>{safeText(problem.message) || problem.field}</a></li>
           ))}
         </ul>
       ) : null}
@@ -51,8 +51,9 @@ function SessionExpired() {
  * <fieldset disabled> desabilita todo botão e campo dentro, sem mexer em cada tela.
  */
 export function StaleLock({ locked, children }) {
-  if (!locked) return <>{children}</>;
-  return <fieldset disabled data-stale-lock="true" aria-busy="true" style={{ border: 0, margin: 0, padding: 0, minWidth: 0 }}>{children}</fieldset>;
+  // Wrapper SEMPRE montado (locked só liga/desliga `disabled`): o React mantém o tipo na raiz e não remonta os filhos a cada recarga.
+  const on = Boolean(locked);
+  return <fieldset disabled={on} data-stale-lock={on ? "true" : undefined} aria-busy={on ? "true" : undefined} style={{ border: 0, margin: 0, padding: 0, minWidth: 0 }}>{children}</fieldset>;
 }
 
 /**
@@ -76,7 +77,7 @@ export default function AsyncState({ result, onRetry, children, emptyTitle, empt
         </div>
       );
     case UI_STATE.CONTENT:
-      return body;
+      return <StaleLock locked={false}>{body}</StaleLock>;
     case UI_STATE.EMPTY:
       return (
         <div data-ui-state={UI_STATE.EMPTY}>
@@ -100,7 +101,7 @@ export default function AsyncState({ result, onRetry, children, emptyTitle, empt
       return (
         <div data-ui-state={UI_STATE.OFFLINE}>
           <Alert tone="warning" title={MESSAGES.offlineTitle}>{MESSAGES.offlineText}</Alert>
-          {data !== null && data !== undefined ? (
+          {!freshOnly && data !== null && data !== undefined ? (
             <div className={styles.cached}>
               {stale ? <p className={styles.stale} data-stale="true">Dados {MESSAGES.staleBadge}: o último carregamento foi há mais de um minuto.</p> : null}
               <StaleLock locked={lockStale}>{body}</StaleLock>
@@ -112,7 +113,7 @@ export default function AsyncState({ result, onRetry, children, emptyTitle, empt
     case UI_STATE.RETRY:
       return (
         <div data-ui-state={UI_STATE.RETRY}>
-          <Alert tone="danger" title={MESSAGES.retryTitle}>{(error && error.message) || genericErrorText(traceId)}</Alert>
+          <Alert tone="danger" title={MESSAGES.retryTitle}>{businessMessageOf(error) || genericErrorText(traceId)}</Alert>
           <SupportCode traceId={traceId} />
           <div className={styles.actions}>{retry ? <Button size="sm" onClick={retry}>{MESSAGES.retryButton}</Button> : null}</div>
         </div>

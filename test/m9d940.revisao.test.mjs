@@ -39,7 +39,7 @@ test("m9d940 lockStale desabilita as ações enquanto o dado não é fresco", ()
   const locked = html(AsyncState, { result, lockStale: true, children: () => "<button>Aprovar</button>" });
   assert.match(locked, /<fieldset disabled/);
   const content = html(AsyncState, { result: { status: UI_STATE.CONTENT, data: { a: 1 }, fresh: true }, lockStale: true, children: () => "X" });
-  assert.doesNotMatch(content, /fieldset/);
+  assert.doesNotMatch(content, /<fieldset disabled|data-stale-lock/, "em CONTENT o wrapper existe (estável) mas não trava");
   const offline = html(AsyncState, { result: { status: UI_STATE.OFFLINE, data: { a: 1 }, stale: true }, lockStale: true, children: () => "X" });
   assert.match(offline, /<fieldset disabled/);
 });

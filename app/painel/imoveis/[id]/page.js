@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
@@ -45,6 +45,7 @@ import { buildGoogleMapsUrl, buildGoogleMapsEmbedUrl, buildGoogleMapsDirectionsU
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import ReloadAlert from "@/components/molecules/ReloadAlert/ReloadAlert";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import { createLatestGuard } from "@/lib/asyncState/latest";
 import styles from "./page.module.css";
 
 import { lookupFallback } from "@/lib/asyncState/lookup";
@@ -97,8 +98,10 @@ export default function PropertyDetailPage({ params }) {
   const [galleryPage, setGalleryPage] = useState(0);
 
   // M9-D850: a ficha carrega pelo padrão de estados (carregando, 403, sem conexão, tentar de novo); 404 mostra "Imóvel não encontrado".
+  const latest = useRef(createLatestGuard()).current;
   const propertyQuery = useAsyncState(
     async () => {
+    const isLatest = latest.begin(); // troca rápida de id: só a resposta mais recente grava o estado
     const [apiProperty, occurrences, priceHistory, allProperties] = await Promise.all([
       getProperty(params.id),
       listOccurrences(params.id).catch(lookupFallback("as ocorrências do imóvel")),
@@ -128,6 +131,7 @@ export default function PropertyDetailPage({ params }) {
             counts[o.personId] = (counts[o.personId] || 0) + 1;
           }
         }
+        if (!isLatest()) return apiProperty;
         setOwnedByCount(counts);
 
         setProperty({
@@ -187,7 +191,8 @@ export default function PropertyDetailPage({ params }) {
     );
   }
 
-  if (!property) {
+  // 403 na recarga: a ficha antiga some (nunca fica visível dado que o usuário não pode mais ver).
+  if (!property || propertyQuery.status === "PERMISSION_DENIED") {
     return (
       <AppShell title="Imóvel" backHref="/painel/imoveis">
         <div className={styles.wrap}>

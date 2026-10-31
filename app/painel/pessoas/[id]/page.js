@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
@@ -39,6 +39,7 @@ import { buildGoogleMapsUrl, buildGoogleMapsEmbedUrl } from "@/lib/maps";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import ReloadAlert from "@/components/molecules/ReloadAlert/ReloadAlert";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import { createLatestGuard } from "@/lib/asyncState/latest";
 import styles from "./page.module.css";
 
 const GRADIENTS = [
@@ -156,13 +157,17 @@ export default function PersonDetailPage({ params }) {
   // M9-D850: a ficha carrega pelo padrão de estados (carregando, 403, sem conexão, tentar de novo).
   // Precisa da pessoa, dos pares de duplicata, das demais pessoas (para exibir o nome do par/canônico)
   // e dos imóveis (para o card "Imóveis vinculados", que casa por property_owners.person_id).
+  const latest = useRef(createLatestGuard()).current;
   const personQuery = useAsyncState(
     async () => {
+      const isLatest = latest.begin(); // troca rápida de id: só a resposta mais recente grava o estado
       const [apiPerson, apiPeople, pairs, apiProperties] = await Promise.all([getPerson(params.id), listPeople(), listDuplicatePairs(), listProperties()]);
-      setPerson(apiPerson);
-      setPeople(apiPeople);
-      setDuplicatePairs(pairs);
-      setProperties(apiProperties);
+      if (isLatest()) {
+        setPerson(apiPerson);
+        setPeople(apiPeople);
+        setDuplicatePairs(pairs);
+        setProperties(apiProperties);
+      }
       return apiPerson;
     },
     { deps: [params.id], isEmpty: () => false }
@@ -176,7 +181,8 @@ export default function PersonDetailPage({ params }) {
     );
   }
 
-  if (!person) {
+  // 403 na recarga: a ficha antiga some (nunca fica visível dado que o usuário não pode mais ver).
+  if (!person || personQuery.status === "PERMISSION_DENIED") {
     return (
       <AppShell title="Contato" backHref="/painel/pessoas">
         {personQuery.error && personQuery.error.status !== 404 ? (

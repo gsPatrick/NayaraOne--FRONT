@@ -85,6 +85,7 @@ export default function NovaEmpresaPage() {
   }
 
   // M9-D940: a gravação passa pelo padrão de estados (403, sem conexão, "tentar de novo", mesma Idempotency-Key no reenvio).
+  const lastSignatureRef = useRef(null);
   const saveAction = useAsyncAction(({ idempotencyKey }, payload) => apiFetch("/companies", { method: "POST", body: payload, idempotencyKey }), { successMessage: "Empresa salva." });
   const submitting = saveAction.status === UI_STATE.LOADING || saveAction.status === UI_STATE.SUCCESS;
   const showSaveProblem = Boolean(saveAction.status) && !submitting;
@@ -95,7 +96,6 @@ export default function NovaEmpresaPage() {
     if (!form.taxId.trim()) nextErrors.taxId = "Informe o CNPJ.";
     if (!form.legalName.trim()) nextErrors.legalName = "Informe a razão social.";
     setErrors(nextErrors);
-    saveAction.reset();
     if (Object.keys(nextErrors).length > 0) return;
 
     // FIX (achado real em auditoria de homologação — este formulário era 100% mockado: só
@@ -110,6 +110,9 @@ export default function NovaEmpresaPage() {
       taxId: form.taxId.trim(),
       status: form.status,
     };
+    // Mesmo formulário reenviado à mão (ex.: depois de timeout) = mesma Idempotency-Key; só um formulário alterado troca a chave.
+    const signature = JSON.stringify(payload);
+    if (lastSignatureRef.current !== signature) { saveAction.reset(); lastSignatureRef.current = signature; }
     const outcome = await saveAction.run(payload);
     if (outcome.status === UI_STATE.SUCCESS) router.push("/painel/empresas");
   }
