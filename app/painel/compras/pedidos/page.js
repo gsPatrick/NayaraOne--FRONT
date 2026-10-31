@@ -24,6 +24,8 @@ import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
 import { getSession } from "@/lib/auth/session";
 
 import { lookupFallback } from "@/lib/asyncState/lookup";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 const STATUS_LABELS = { OPEN: "Aberto", RECEIVED: "Recebido", CANCELED: "Cancelado" };
 const STATUS_TONE = { OPEN: "info", RECEIVED: "success", CANCELED: "neutral" };
 // Mesmo conjunto de CANCELABLE_STATUSES de procurement.service.js (cancelPurchaseOrder).
@@ -57,8 +59,6 @@ export default function PedidosDeCompraPage() {
   const [orders, setOrders] = useState([]);
   const [discrepancies, setDiscrepancies] = useState([]);
   const [locations, setLocations] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
 
   const [receiveModal, setReceiveModal] = useState(null); // order detail
@@ -126,20 +126,19 @@ export default function PedidosDeCompraPage() {
     }
   }
 
-  function load() {
-    setLoading(true);
-    setLoadError("");
-    Promise.all([listPurchaseOrders(), listDiscrepancies(), listInventoryLocations()])
-      .then(([o, d, l]) => {
-        setOrders(o || []);
-        setDiscrepancies(d || []);
-        setLocations(l || []);
-        loadSupplierScores(o);
-      })
-      .catch((err) => setLoadError(err?.message || "Não foi possível carregar os pedidos de compra."))
-      .finally(() => setLoading(false));
-  }
-  useEffect(() => { load(); }, []);
+  // M9-D850: carregando, 403, sem conexão e "tentar de novo" vêm do padrão único de estados (falha nunca vira "nenhum pedido").
+  const loadQuery = useAsyncState(
+    async () => {
+      const [o, d, l] = await Promise.all([listPurchaseOrders(), listDiscrepancies(), listInventoryLocations()]);
+      setOrders(o || []);
+      setDiscrepancies(d || []);
+      setLocations(l || []);
+      loadSupplierScores(o);
+      return { orders: o || [] };
+    },
+    { isEmpty: () => false }
+  );
+  function load() { return loadQuery.reload(); }
 
   async function openReceive(row) {
     try {
@@ -372,7 +371,6 @@ export default function PedidosDeCompraPage() {
 
   return (
     <AppShell title="Pedidos de compra" backHref="/painel/compras">
-      {loadError ? <Alert tone="danger" title="Não foi possível carregar os pedidos de compra">{loadError}</Alert> : null}
       {actionError ? (
         /* BUG REAL CORRIGIDO (auditoria E2E Marco 7, ciclo 4) — mesma classe sistêmica já
            catalogada no Marco 6: Alert de erro renderizado só no topo da página ficava atrás do
@@ -384,11 +382,15 @@ export default function PedidosDeCompraPage() {
       ) : null}
 
       <Card title="Pedidos de compra" subtitle="Custo comprometido — recebimento delega ao Estoque (saldo + custo médio)">
-        <Table columns={columns} rows={loading ? [] : orders} loading={loading} emptyMessage="Nenhum pedido de compra registrado." />
+        <AsyncState result={loadQuery} loadingLabel="Carregando pedidos de compra...">
+          {() => <Table columns={columns} rows={orders} emptyMessage="Nenhum pedido de compra registrado." />}
+        </AsyncState>
       </Card>
 
       <Card title="Divergências de recebimento" subtitle="Conferência entre pedido de compra e o que foi recebido">
-        <Table columns={discColumns} rows={loading ? [] : discrepancies} loading={loading} emptyMessage="Nenhuma divergência registrada." />
+        <AsyncState result={loadQuery} loadingLabel="Carregando divergências...">
+          {() => <Table columns={discColumns} rows={discrepancies} emptyMessage="Nenhuma divergência registrada." />}
+        </AsyncState>
       </Card>
 
       <Modal

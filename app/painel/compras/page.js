@@ -26,6 +26,8 @@ import { formatDateTime, formatBRL, formatQuantity, toNumber } from "@/lib/forma
 import { getCurrentUser } from "@/lib/auth/session";
 
 import { lookupFallback } from "@/lib/asyncState/lookup";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 const STATUS_LABELS = { REQUESTED: "Solicitada", APPROVED: "Aprovada", REJECTED: "Rejeitada", AWARDED: "Adjudicada", DELIVERED: "Entregue", CLOSED: "Fechada" };
 const STATUS_TONE = { REQUESTED: "neutral", APPROVED: "info", REJECTED: "danger", AWARDED: "success", DELIVERED: "success", CLOSED: "success" };
 
@@ -34,8 +36,6 @@ export default function ComprasPage() {
   const [requests, setRequests] = useState([]);
   const [items, setItems] = useState([]);
   const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   // N4 (revalidação Marco 7 v2, Nayara): o aviso de saldo já existente em estoque não é um erro —
   // a requisição é criada normalmente mesmo assim. Usar o mesmo state/tone "danger" do erro real
@@ -61,19 +61,18 @@ export default function ComprasPage() {
   const [detailLoading, setDetailLoading] = useState(false);
   const currentUser = getCurrentUser();
 
-  function load() {
-    setLoading(true);
-    setLoadError("");
-    Promise.all([listPurchaseRequests(), listInventoryItems(), listProjects()])
-      .then(([r, i, p]) => {
-        setRequests(r || []);
-        setItems(i || []);
-        setProjects(p || []);
-      })
-      .catch((err) => setLoadError(err?.message || "Não foi possível carregar as requisições de compra."))
-      .finally(() => setLoading(false));
-  }
-  useEffect(() => { load(); }, []);
+  // M9-D850: carregando, 403, sem conexão e "tentar de novo" vêm do padrão único de estados (falha nunca vira "nenhuma requisição").
+  const loadQuery = useAsyncState(
+    async () => {
+      const [r, i, p] = await Promise.all([listPurchaseRequests(), listInventoryItems(), listProjects()]);
+      setRequests(r || []);
+      setItems(i || []);
+      setProjects(p || []);
+      return { requests: r || [] };
+    },
+    { isEmpty: () => false }
+  );
+  function load() { return loadQuery.reload(); }
 
   // BUG REAL CORRIGIDO (auditoria final Marco 7, Claude Browser, 14/10/2026): o aviso de "já há
   // saldo em estoque" ficava preso na tela indefinidamente, cobrindo o título da página, até o
@@ -265,7 +264,6 @@ export default function ComprasPage() {
 
   return (
     <AppShell title="Requisições de compra" backHref="/painel">
-      {loadError ? <Alert tone="danger" title="Não foi possível carregar as requisições de compra">{loadError}</Alert> : null}
       {actionError ? (
         /* BUG REAL CORRIGIDO (auditoria E2E Marco 7, ciclo 4) — mesma classe sistêmica já
            catalogada no Marco 6: Alert de erro renderizado só no topo da página ficava atrás do
@@ -292,12 +290,15 @@ export default function ComprasPage() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <Table
-          columns={columns}
-          rows={loading ? [] : filteredRequests}
-          loading={loading}
-          emptyMessage={search.trim() ? "Nenhuma requisição encontrada para esta busca." : "Nenhuma requisição de compra registrada."}
-        />
+        <AsyncState result={loadQuery} loadingLabel="Carregando requisições de compra...">
+          {() => (
+            <Table
+              columns={columns}
+              rows={filteredRequests}
+              emptyMessage={search.trim() ? "Nenhuma requisição encontrada para esta busca." : "Nenhuma requisição de compra registrada."}
+            />
+          )}
+        </AsyncState>
       </Card>
 
       <StickyActionBar>

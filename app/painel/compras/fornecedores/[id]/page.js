@@ -15,6 +15,9 @@ import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import FileViewerModal from "@/components/organisms/FileViewerModal/FileViewerModal";
 import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import ProtectedValue from "@/components/molecules/ProtectedValue/ProtectedValue";
 import { getPerson } from "@/lib/api/people";
 import { listSupplierQualifications, upsertSupplierQualification, decideSupplierDueDiligence, listSupplierEvaluations } from "@/lib/api/procurement";
 import { listBankAccounts } from "@/lib/api/finance";
@@ -41,9 +44,6 @@ export default function FornecedorDetailPage({ params }) {
   const [evaluations, setEvaluations] = useState(null);
   const [bankAccounts, setBankAccounts] = useState([]);
   const [bankAccountsError, setBankAccountsError] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
-  const [notFoundFlag, setNotFoundFlag] = useState(false);
   const [actionError, setActionError] = useState("");
   const [notice, setNotice] = useState(null);
 
@@ -79,26 +79,9 @@ export default function FornecedorDetailPage({ params }) {
     loadDocuments(q?.documentFileIds || []);
   }
 
-  async function loadAll() {
-    setLoading(true);
-    setLoadError("");
-    try {
-      const [p, qs, ev] = await Promise.all([
-        getPerson(supplierId),
-        listSupplierQualifications(supplierId),
-        listSupplierEvaluations(supplierId).catch(() => null),
-      ]);
-      setPerson(p);
-      applyQualification((qs || [])[0] || null);
-      setEvaluations(ev);
-    } catch (err) {
-      if (err?.status === 404) setNotFoundFlag(true);
-      else setLoadError(err?.message || "Não foi possível carregar o fornecedor.");
-    } finally {
-      setLoading(false);
-    }
-    // Contas bancárias vêm do Financeiro (finance:read) — quem só tem Compras não vê, mas o resto
-    // da ficha continua funcionando.
+  // Contas bancárias vêm do Financeiro (finance:read) — quem só tem Compras não vê, mas o resto
+  // da ficha continua funcionando (a falha é dita na própria seção, nunca vira "sem contas").
+  async function loadBankAccounts() {
     try {
       setBankAccounts((await listBankAccounts({ ownerPersonId: supplierId })) || []);
       setBankAccountsError("");
@@ -108,7 +91,25 @@ export default function FornecedorDetailPage({ params }) {
     }
   }
 
-  useEffect(() => { loadAll(); }, [supplierId]); // eslint-disable-line react-hooks/exhaustive-deps
+  // M9-D850: a ficha carrega pelo padrão de estados (carregando, 403, sem conexão, tentar de novo); 404 continua virando notFound().
+  const loadQuery = useAsyncState(
+    async () => {
+      const [p, qs, ev] = await Promise.all([
+        getPerson(supplierId),
+        listSupplierQualifications(supplierId),
+        listSupplierEvaluations(supplierId).catch((err) => { setNotice({ tone: "warning", text: err?.message || "Não foi possível carregar as avaliações do fornecedor." }); return null; }),
+      ]);
+      setPerson(p);
+      applyQualification((qs || [])[0] || null);
+      setEvaluations(ev);
+      loadBankAccounts();
+      return p;
+    },
+    { deps: [supplierId], isEmpty: () => false }
+  );
+  const loading = loadQuery.status === "LOADING" && !person;
+  const notFoundFlag = loadQuery.error?.status === 404;
+
 
   if (notFoundFlag) return notFound();
 
@@ -225,7 +226,6 @@ export default function FornecedorDetailPage({ params }) {
 
   return (
     <AppShell title={person?.legalName || "Fornecedor"} backHref="/painel/compras/fornecedores">
-      {loadError ? <Alert tone="danger" title="Não foi possível carregar o fornecedor">{loadError}</Alert> : null}
       {actionError ? (
         <div style={{ position: "fixed", top: "var(--space-4)", left: "50%", transform: "translateX(-50%)", zIndex: 200, width: "min(560px, calc(100vw - 2 * var(--space-4)))" }}>
           <Alert tone="danger">{actionError}</Alert>
@@ -234,13 +234,13 @@ export default function FornecedorDetailPage({ params }) {
 
       {loading ? (
         <SkeletonDetail sections={3} />
-      ) : !person ? null : (
+      ) : !person ? <AsyncState result={loadQuery} /> : (
         <div style={SECTION_GAP}>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
             {!qualification ? <Badge tone="neutral">Não qualificado</Badge> : qualification.highRisk ? <Badge tone="danger">Alto risco</Badge> : <Badge tone="success">Risco padrão</Badge>}
             {qualification ? <Badge tone={DUE_DILIGENCE_TONE[qualification.dueDiligenceStatus]}>Due diligence: {DUE_DILIGENCE_LABELS[qualification.dueDiligenceStatus] || qualification.dueDiligenceStatus}</Badge> : null}
             {isQualificationExpired(qualification) ? <Badge tone="danger">Vigência vencida</Badge> : null}
-            {person.taxIdNormalized ? <span style={{ color: "var(--color-ink-muted)" }}>{person.taxIdNormalized}</span> : null}
+            {person.taxIdNormalized ? <span style={{ color: "var(--color-ink-muted)" }}><ProtectedValue classification="RESTRICTED" resourceType="people.person" resourceId={person.id} field="taxIdNormalized" value={person.taxIdNormalized} /></span> : null}
           </div>
 
           {blockReason ? <Alert tone="danger" title="Bloqueado para adjudicação">{blockReason}</Alert> : null}
@@ -354,7 +354,21 @@ export default function FornecedorDetailPage({ params }) {
                     return (
                       <li key={a.id} style={ROW_STYLE}>
                         <Link href={`/painel/financeiro/contas-bancarias/${a.id}`}>
-                          {a.bankCode ? `${getBankName(a.bankCode)} — conta ${maskAccountNumber(a.accountNumber || "")}` : `PIX ${maskPixKey(a.pixKey || "")}`}
+                          {a.bankCode ? (
+                            <>
+                              {getBankName(a.bankCode)} — conta{" "}
+                              <ProtectedValue classification="RESTRICTED" resourceType="finance.bank_account" resourceId={a.id} field="accountNumber" value={a.accountNumber}>
+                                {maskAccountNumber(a.accountNumber || "")}
+                              </ProtectedValue>
+                            </>
+                          ) : (
+                            <>
+                              PIX{" "}
+                              <ProtectedValue classification="RESTRICTED" resourceType="finance.bank_account" resourceId={a.id} field="pixKey" value={a.pixKey}>
+                                {maskPixKey(a.pixKey || "")}
+                              </ProtectedValue>
+                            </>
+                          )}
                         </Link>
                         <span style={{ display: "flex", gap: 6 }}>
                           <Badge tone={BANK_ACCOUNT_STATUS_TONE[a.status]}>{BANK_ACCOUNT_STATUS_LABELS[a.status] || a.status}</Badge>

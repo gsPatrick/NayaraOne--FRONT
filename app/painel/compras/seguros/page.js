@@ -29,6 +29,8 @@ import { listPeople } from "@/lib/api/people";
 import { formatDate, formatDateTime, formatBRL, toNumber, formatContractLabel } from "@/lib/format";
 
 import { lookupFallback } from "@/lib/asyncState/lookup";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 const POLICY_STATUS_LABELS = { DRAFT: "Rascunho", QUOTED: "Cotada", ISSUED: "Emitida", ACTIVE: "Ativa", EXPIRED: "Expirada", CANCELED: "Cancelada" };
 const POLICY_STATUS_TONE = { DRAFT: "neutral", QUOTED: "info", ISSUED: "info", ACTIVE: "success", EXPIRED: "warning", CANCELED: "danger" };
 const CLAIM_ELIGIBLE_STATUSES = ["ACTIVE", "ISSUED"];
@@ -77,8 +79,6 @@ const SECTION_STYLE = { marginTop: "var(--space-6)", paddingTop: "var(--space-5)
 export default function SegurosPage() {
   const { confirm, ConfirmDialog } = useConfirm();
   const [policies, setPolicies] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [busyId, setBusyId] = useState(null);
 
@@ -205,16 +205,16 @@ export default function SegurosPage() {
   // "Permissão ausente: legal:read" seguido de "Nenhuma apólice encontrada". Agora as apólices
   // carregam sozinhas (a API já devolve os nomes de imóvel, contrato e segurado) e as listas do
   // formulário carregam à parte; se uma delas falhar, só aquele seletor fica indisponível.
-  function load() {
-    setLoading(true);
-    setLoadError("");
-    listInsurancePolicies()
-      .then((data) => setPolicies(data || []))
-      .catch((err) => {
-        setPolicies([]);
-        setLoadError(err?.message || "Não foi possível carregar as apólices.");
-      })
-      .finally(() => setLoading(false));
+  // M9-D850: as apólices carregam pelo padrão de estados (carregando, 403, sem conexão, tentar de novo); falha nunca vira "nenhuma apólice".
+  const policiesQuery = useAsyncState(
+    async () => {
+      const data = await listInsurancePolicies();
+      setPolicies(data || []);
+      return { policies: data || [] };
+    },
+    { isEmpty: () => false }
+  );
+  function loadFormOptions() {
     Promise.allSettled([listProperties(), listContracts(), listPeople()]).then(([props, contrs, ppl]) => {
       setProperties(props.status === "fulfilled" ? props.value || [] : []);
       setContracts(contrs.status === "fulfilled" ? contrs.value || [] : []);
@@ -226,7 +226,8 @@ export default function SegurosPage() {
       });
     });
   }
-  useEffect(() => { load(); }, []);
+  function load() { policiesQuery.reload(); loadFormOptions(); }
+  useEffect(() => { loadFormOptions(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleCreate() {
     if (!form.coverageSummary.trim()) {
@@ -484,7 +485,6 @@ export default function SegurosPage() {
 
   return (
     <AppShell title="Seguros" backHref="/painel/compras">
-      {loadError ? <Alert tone="danger" title="Não foi possível carregar as apólices">{loadError}</Alert> : null}
       {actionError ? (
         <div style={{ position: "fixed", top: "var(--space-4)", left: "50%", transform: "translateX(-50%)", zIndex: 200, width: "min(560px, calc(100vw - 2 * var(--space-4)))" }}>
           <Alert tone="danger">{actionError}</Alert>
@@ -495,12 +495,9 @@ export default function SegurosPage() {
         <div style={{ marginBottom: "var(--space-4)", maxWidth: 360 }}>
           <Input placeholder="Buscar por cobertura, nº da apólice ou segurado..." value={listSearch} onChange={(e) => setListSearch(e.target.value)} />
         </div>
-        <Table
-          columns={columns}
-          rows={loading ? [] : filteredPolicies}
-          loading={loading}
-          emptyMessage={loadError ? "As apólices não foram carregadas — veja o aviso acima." : "Nenhuma apólice encontrada."}
-        />
+        <AsyncState result={policiesQuery} loadingLabel="Carregando apólices...">
+          {() => <Table columns={columns} rows={filteredPolicies} emptyMessage="Nenhuma apólice encontrada." />}
+        </AsyncState>
       </Card>
 
       <StickyActionBar>
