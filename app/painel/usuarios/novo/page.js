@@ -15,6 +15,8 @@ import Alert from "@/components/molecules/Alert/Alert";
 import { apiFetch } from "@/lib/api/client";
 import { listRoles } from "@/lib/api/roles";
 import { generateStrongPassword } from "@/lib/passwordGenerator";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import styles from "./page.module.css";
 
 export default function NovoUsuarioPage() {
@@ -23,8 +25,6 @@ export default function NovoUsuarioPage() {
   const [companies, setCompanies] = useState([]);
   const [units, setUnits] = useState([]);
   const [roles, setRoles] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -49,27 +49,22 @@ export default function NovoUsuarioPage() {
     setGeneratedPassword(generateStrongPassword());
   }, []);
 
-  useEffect(() => {
-    let cancelled = false;
-    Promise.all([apiFetch("/companies"), apiFetch("/units"), listRoles()])
-      .then(([apiCompanies, apiUnits, apiRoles]) => {
-        if (cancelled) return;
-        setCompanies(apiCompanies || []);
-        setUnits(apiUnits || []);
-        setRoles(apiRoles || []);
-        setCompanyId(apiCompanies?.[0]?.id || "");
-        setRoleId(apiRoles?.[0]?.id || "");
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar empresas e papéis.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // M9-D850: empresas, unidades e papéis carregam pelo padrão de estados (carregando, 403, sem conexão, tentar de novo);
+  // sem eles o formulário não abre (falha nunca vira "nenhuma empresa/papel").
+  const supportQuery = useAsyncState(
+    async () => {
+      const [apiCompanies, apiUnits, apiRoles] = await Promise.all([apiFetch("/companies"), apiFetch("/units"), listRoles()]);
+      setCompanies(apiCompanies || []);
+      setUnits(apiUnits || []);
+      setRoles(apiRoles || []);
+      setCompanyId(apiCompanies?.[0]?.id || "");
+      setRoleId(apiRoles?.[0]?.id || "");
+      return { companies: apiCompanies || [] };
+    },
+    { isEmpty: () => false }
+  );
+  const loading = supportQuery.status === "LOADING";
+  const supportFailed = !["LOADING", "CONTENT", "EMPTY"].includes(supportQuery.status);
 
   const unitsOfCompany = units.filter((u) => u.companyId === companyId);
   const activePassword = passwordMode === "generate" ? generatedPassword : manualPassword;
@@ -200,11 +195,12 @@ export default function NovoUsuarioPage() {
   return (
     <AppShell title="Convidar usuário" backHref="/painel/usuarios">
       <div className={styles.wrap}>
-        {loadError ? <Alert tone="danger" title="Não foi possível carregar dados de apoio">{loadError}</Alert> : null}
         {submitError ? <Alert tone="danger" title="Não foi possível criar o usuário">{submitError}</Alert> : null}
 
         {loading ? (
           <Spinner size="lg" />
+        ) : supportFailed ? (
+          <AsyncState result={supportQuery} />
         ) : (
           <form onSubmit={handleSubmit}>
             <Card title="Dados do usuário" className={styles.card}>

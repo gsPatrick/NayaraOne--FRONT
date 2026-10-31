@@ -7,7 +7,6 @@ import Button from "@/components/atoms/Button/Button";
 import Badge from "@/components/atoms/Badge/Badge";
 import Avatar from "@/components/atoms/Avatar/Avatar";
 import Icon from "@/components/atoms/Icon/Icon";
-import Alert from "@/components/molecules/Alert/Alert";
 import Table from "@/components/organisms/Table/Table";
 import Modal from "@/components/organisms/Modal/Modal";
 import RowActions from "@/components/molecules/RowActions/RowActions";
@@ -15,6 +14,8 @@ import Pagination from "@/components/molecules/Pagination/Pagination";
 import { ROLE_TONE } from "@/lib/mock/users";
 import { apiFetch } from "@/lib/api/client";
 import { formatDateTime } from "@/lib/format";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import styles from "./page.module.css";
 
 const STATUS_TONE = { Ativo: "success", Suspenso: "danger" };
@@ -41,8 +42,6 @@ function buildMemberships(userId, memberships) {
 export default function UsuariosPage() {
   const router = useRouter();
   const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
@@ -51,33 +50,23 @@ export default function UsuariosPage() {
     setPage(1);
   }, [pageSize]);
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    Promise.all([apiFetch("/users"), apiFetch("/memberships")])
-      .then(([apiUsers, apiMemberships]) => {
-        if (cancelled) return;
-        const mapped = (apiUsers || []).map((u) => ({
-          id: u.id,
-          name: u.name,
-          email: u.email,
-          status: toDisplayStatus(u.status),
-          lastAccessAt: u.lastLoginAt,
-          memberships: buildMemberships(u.id, apiMemberships || []),
-        }));
-        setUsers(mapped);
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar os usuários.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // M9-D850: usuários e vínculos carregam pelo padrão de estados (carregando, 403, sem conexão, tentar de novo); falha nunca vira "nenhum usuário".
+  const usersQuery = useAsyncState(
+    async () => {
+      const [apiUsers, apiMemberships] = await Promise.all([apiFetch("/users"), apiFetch("/memberships")]);
+      const mapped = (apiUsers || []).map((u) => ({
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        status: toDisplayStatus(u.status),
+        lastAccessAt: u.lastLoginAt,
+        memberships: buildMemberships(u.id, apiMemberships || []),
+      }));
+      setUsers(mapped);
+      return { users: mapped };
+    },
+    { isEmpty: () => false }
+  );
 
   const totalPages = Math.max(1, Math.ceil(users.length / pageSize));
   const pageItems = users.slice((page - 1) * pageSize, page * pageSize);
@@ -184,11 +173,9 @@ export default function UsuariosPage() {
         </Button>
       </div>
 
-      {loadError ? (
-        <Alert tone="danger" title="Não foi possível carregar os usuários">{loadError}</Alert>
-      ) : null}
-
-      <Table columns={columns} rows={loading ? [] : pageItems} loading={loading} emptyMessage="Nenhum usuário cadastrado." />
+      <AsyncState result={usersQuery} loadingLabel="Carregando usuários...">
+        {() => <Table columns={columns} rows={pageItems} emptyMessage="Nenhum usuário cadastrado." />}
+      </AsyncState>
       <div className={styles.paginationRow}>
         <Pagination
           page={page}

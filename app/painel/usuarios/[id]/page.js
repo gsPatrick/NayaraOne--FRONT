@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -21,6 +21,8 @@ import { apiFetch } from "@/lib/api/client";
 import { listProperties } from "@/lib/api/properties";
 import { listRoles } from "@/lib/api/roles";
 import { formatDateTime, formatBRL } from "@/lib/format";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import styles from "./page.module.css";
 
 import { lookupFallback } from "@/lib/asyncState/lookup";
@@ -32,8 +34,6 @@ export default function UserDetailPage({ params }) {
   const [memberships, setMemberships] = useState([]);
   const [roles, setRoles] = useState([]);
   const [properties, setProperties] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [togglingStatus, setTogglingStatus] = useState(false);
 
@@ -64,30 +64,25 @@ export default function UserDetailPage({ params }) {
   const [settingPassword, setSettingPassword] = useState(false);
   const [passwordSetMessage, setPasswordSetMessage] = useState("");
 
-  function loadAll() {
-    setLoading(true);
-    setLoadError("");
-    return Promise.all([
-      apiFetch(`/users/${params.id}`),
-      apiFetch(`/memberships?userId=${params.id}`),
-      listRoles(),
-      listProperties().catch(lookupFallback("os imóveis")),
-    ])
-      .then(([apiUser, apiMemberships, apiRoles, apiProperties]) => {
-        setUser(apiUser);
-        setMemberships(apiMemberships);
-        setRoles(apiRoles);
-        setProperties(apiProperties.filter((p) => p.createdBy === params.id));
-        setSelectedRoleId(apiRoles[0]?.id || "");
-      })
-      .catch((err) => setLoadError(err?.message || "Não foi possível carregar o usuário."))
-      .finally(() => setLoading(false));
-  }
-
-  useEffect(() => {
-    loadAll();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.id]);
+  // M9-D850: o usuário carrega pelo padrão de estados (carregando, 403, sem conexão, tentar de novo); 404 mostra "Usuário não encontrado".
+  const userQuery = useAsyncState(
+    async () => {
+      const [apiUser, apiMemberships, apiRoles, apiProperties] = await Promise.all([
+        apiFetch(`/users/${params.id}`),
+        apiFetch(`/memberships?userId=${params.id}`),
+        listRoles(),
+        listProperties().catch(lookupFallback("os imóveis")),
+      ]);
+      setUser(apiUser);
+      setMemberships(apiMemberships);
+      setRoles(apiRoles);
+      setProperties(apiProperties.filter((p) => p.createdBy === params.id));
+      setSelectedRoleId(apiRoles[0]?.id || "");
+      return apiUser;
+    },
+    { deps: [params.id], isEmpty: () => false }
+  );
+  const loadAll = () => userQuery.reload();
 
   const activeMemberships = useMemo(
     () => memberships.filter((m) => m.status !== "REVOKED"),
@@ -208,7 +203,7 @@ export default function UserDetailPage({ params }) {
     }
   }
 
-  if (loading) {
+  if (userQuery.status === "LOADING" && !user) {
     return (
       <AppShell title="Carregando usuário..." backHref="/painel/usuarios">
         <div className={styles.wrap}>
@@ -218,11 +213,15 @@ export default function UserDetailPage({ params }) {
     );
   }
 
-  if (loadError || !user) {
+  if (!user) {
     return (
       <AppShell title="Usuário" backHref="/painel/usuarios">
         <div className={styles.wrap}>
-          <Alert tone="danger" title="Não foi possível carregar o usuário">{loadError || "Usuário não encontrado."}</Alert>
+          {userQuery.error && userQuery.error.status !== 404 ? (
+            <AsyncState result={userQuery} />
+          ) : (
+            <Alert tone="danger" title="Não foi possível carregar o usuário">Usuário não encontrado.</Alert>
+          )}
         </div>
       </AppShell>
     );
