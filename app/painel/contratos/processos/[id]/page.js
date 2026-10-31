@@ -26,6 +26,8 @@ import {
   listEvidencePackageAccessLog,
   updateLegalCase,
 } from "@/lib/api/legal";
+import FileDownloadRequestModal from "@/components/organisms/FileDownloadRequestModal/FileDownloadRequestModal";
+import { needsDlpPrompt } from "@/lib/api/dlpFiles";
 import {
   CASE_TYPE_LABELS,
   CASE_TYPE_TONE,
@@ -56,6 +58,8 @@ export default function ProcessoDetailPage({ params }) {
   const [busy, setBusy] = useState(false);
   const [newEvidence, setNewEvidence] = useState({ type: "DOCUMENT", description: "", referenceId: "" });
   const [custodyByPackage, setCustodyByPackage] = useState({});
+  // M9-D920: a exportação do dossiê passa pela DLP; quando a API pede finalidade e justificativa, o pacote fica aqui até a pessoa preencher.
+  const [exportAsk, setExportAsk] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -176,15 +180,23 @@ export default function ProcessoDetailPage({ params }) {
     }
   }
 
+  async function runEvidenceExport(pkg, input) {
+    const exported = await exportEvidencePackage(pkg.id, input);
+    setCustodyByPackage((prev) => ({
+      ...prev,
+      [pkg.id]: { ...(prev[pkg.id] || {}), exported },
+    }));
+  }
+
   async function handleExportEvidence(pkg) {
     setActionError("");
     try {
-      const exported = await exportEvidencePackage(pkg.id);
-      setCustodyByPackage((prev) => ({
-        ...prev,
-        [pkg.id]: { ...(prev[pkg.id] || {}), exported },
-      }));
+      await runEvidenceExport(pkg, {});
     } catch (err) {
+      if (needsDlpPrompt(err)) {
+        setExportAsk(pkg);
+        return;
+      }
       setActionError(err.message || "Erro ao exportar pacote de evidência.");
     }
   }
@@ -359,6 +371,15 @@ export default function ProcessoDetailPage({ params }) {
           </div>
         </div>
       </div>
+      <FileDownloadRequestModal
+        open={Boolean(exportAsk)}
+        mode="export"
+        onClose={() => setExportAsk(null)}
+        onSubmit={async (input) => {
+          await runEvidenceExport(exportAsk, input);
+          setExportAsk(null);
+        }}
+      />
     </AppShell>
   );
 }

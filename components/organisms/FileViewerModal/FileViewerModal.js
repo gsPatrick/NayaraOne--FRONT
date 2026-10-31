@@ -10,7 +10,9 @@ import Modal from "@/components/organisms/Modal/Modal";
 import Button from "@/components/atoms/Button/Button";
 import Icon from "@/components/atoms/Icon/Icon";
 import Alert from "@/components/molecules/Alert/Alert";
+import FileDownloadRequestModal from "@/components/organisms/FileDownloadRequestModal/FileDownloadRequestModal";
 import { getFileMeta, fetchFileContent } from "@/lib/api/files";
+import { downloadFileGuarded, needsDlpPrompt, dlpErrorMessage } from "@/lib/api/dlpFiles";
 import styles from "./FileViewerModal.module.css";
 
 function formatBytes(bytes) {
@@ -42,6 +44,11 @@ export default function FileViewerModal({ file, fileId, blobLoader, open, onClos
   const [blobUrl, setBlobUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  // M9-D920: anexo HIGH/RESTRICTED pede finalidade, justificativa e verificação em duas etapas (abrir RESTRICTED e baixar HIGH/RESTRICTED); a API decide, a tela só pergunta.
+  const [askAccess, setAskAccess] = useState(false);
+  const [dlpMode, setDlpMode] = useState(null);
+  const [dlpInput, setDlpInput] = useState(null);
+  const [dlpNotice, setDlpNotice] = useState("");
 
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
@@ -67,7 +74,7 @@ export default function FileViewerModal({ file, fileId, blobLoader, open, onClos
           setMeta(file);
           setBlobUrl(localUrl);
         } else if (file?.fileName && file?.mimeType) {
-          const { blob } = await fetchFileContent(resolvedId);
+          const { blob } = await fetchFileContent(resolvedId, dlpInput || {});
           if (cancelled) return;
           localUrl = URL.createObjectURL(blob);
           setMeta(file);
@@ -77,7 +84,7 @@ export default function FileViewerModal({ file, fileId, blobLoader, open, onClos
           // usamos como metadado de reserva se GET /files/:id (dedicado) não estiver disponível
           // no ambiente, pra não deixar o visualizador quebrado por causa só do endpoint de
           // metadado.
-          const { blob, meta: fallbackMeta } = await fetchFileContent(resolvedId);
+          const { blob, meta: fallbackMeta } = await fetchFileContent(resolvedId, dlpInput || {});
           if (cancelled) return;
           localUrl = URL.createObjectURL(blob);
           setBlobUrl(localUrl);
@@ -90,7 +97,8 @@ export default function FileViewerModal({ file, fileId, blobLoader, open, onClos
         }
       } catch (err) {
         if (!cancelled) {
-          setError(err?.message || "Não foi possível carregar o arquivo.");
+          setAskAccess(needsDlpPrompt(err));
+          setError(dlpErrorMessage(err, "Não foi possível carregar o arquivo."));
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -104,7 +112,7 @@ export default function FileViewerModal({ file, fileId, blobLoader, open, onClos
       if (localUrl) URL.revokeObjectURL(localUrl);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, resolvedId]);
+  }, [open, resolvedId, dlpInput]);
 
   useEffect(() => {
     if (!open) {
@@ -114,6 +122,10 @@ export default function FileViewerModal({ file, fileId, blobLoader, open, onClos
         return null;
       });
       setError("");
+      setAskAccess(false);
+      setDlpMode(null);
+      setDlpInput(null);
+      setDlpNotice("");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -122,7 +134,19 @@ export default function FileViewerModal({ file, fileId, blobLoader, open, onClos
     onClose?.();
   }
 
-  function handleDownload() {
+  // Anexo do sistema: baixa pelo GET /files/:id/download (LOW e MEDIUM direto; HIGH e RESTRICTED pedem finalidade e justificativa e saem por endereço de uso único, com marca d'água
+  // se pedida). Sem id (relatório gerado sob demanda), baixa os bytes já carregados.
+  async function handleDownload() {
+    if (resolvedId && !blobLoader) {
+      setDlpNotice("");
+      try {
+        await downloadFileGuarded(resolvedId);
+      } catch (err) {
+        if (needsDlpPrompt(err)) setDlpMode("download");
+        else setDlpNotice(dlpErrorMessage(err, "Não foi possível baixar o arquivo."));
+      }
+      return;
+    }
     if (!blobUrl || !meta) return;
     const a = document.createElement("a");
     a.href = blobUrl;
@@ -171,6 +195,7 @@ export default function FileViewerModal({ file, fileId, blobLoader, open, onClos
   const kind = kindFromMime(meta?.mimeType);
 
   return (
+    <>
     <Modal
       open={open}
       onClose={handleClose}
@@ -179,13 +204,14 @@ export default function FileViewerModal({ file, fileId, blobLoader, open, onClos
       footer={
         <>
           <Button variant="secondary" onClick={handleClose}>Fechar</Button>
-          <Button onClick={handleDownload} disabled={!blobUrl}>
+          <Button onClick={handleDownload} disabled={!blobUrl && !askAccess}>
             <Icon name="arrowDownCircle" size={16} /> Baixar
           </Button>
         </>
       }
     >
       <div className={styles.wrap}>
+        {dlpNotice ? <Alert tone="danger" title="Não foi possível baixar o arquivo">{dlpNotice}</Alert> : null}
         {meta ? (
           <div className={styles.metaRow}>
             <span className={styles.metaName}>{meta.fileName}</span>
@@ -199,7 +225,10 @@ export default function FileViewerModal({ file, fileId, blobLoader, open, onClos
             <span>Carregando arquivo…</span>
           </div>
         ) : error ? (
-          <Alert tone="danger" title="Não foi possível abrir o arquivo">{error}</Alert>
+          <>
+            <Alert tone="danger" title="Não foi possível abrir o arquivo">{error}</Alert>
+            {askAccess ? <Button onClick={() => setDlpMode("view")}>Informar finalidade e abrir</Button> : null}
+          </>
         ) : kind === "image" ? (
           <>
             <div className={styles.zoomToolbar}>
@@ -259,5 +288,21 @@ export default function FileViewerModal({ file, fileId, blobLoader, open, onClos
         )}
       </div>
     </Modal>
+      <FileDownloadRequestModal
+        open={Boolean(dlpMode)}
+        mode={dlpMode || "download"}
+        fileName={meta?.fileName}
+        onClose={() => setDlpMode(null)}
+        onSubmit={async ({ purpose, justification, watermark }) => {
+          if (dlpMode === "view") {
+            setDlpInput({ purpose, justification });
+            setDlpMode(null);
+            return;
+          }
+          await downloadFileGuarded(resolvedId, { purpose, justification, watermark });
+          setDlpMode(null);
+        }}
+      />
+    </>
   );
 }

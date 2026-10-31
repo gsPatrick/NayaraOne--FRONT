@@ -14,6 +14,7 @@ import { listSettings, updateSetting } from "@/lib/api/settings";
 import styles from "./page.module.css";
 import { GOVERNANCA_DLP_GROUPS } from "./governancaDlpGroups";
 import { GOVERNANCA_DLP_EXPORT_GROUPS } from "./governancaDlpExportGroups";
+import { GOVERNANCA_DLP_ANEXOS_GROUPS } from "./governancaDlpAnexosGroups";
 import { GOVERNANCA_BCP_GROUPS } from "./governancaBcpGroups";
 import { GOVERNANCA_API_GROUPS } from "./governancaApiGroups";
 import { GOVERNANCA_FINOPS_GROUPS } from "./governancaFinopsGroups";
@@ -207,6 +208,7 @@ const GOVERNANCA_GROUPS = [
   },
   ...GOVERNANCA_DLP_GROUPS,
   ...GOVERNANCA_DLP_EXPORT_GROUPS,
+  ...GOVERNANCA_DLP_ANEXOS_GROUPS,
   ...GOVERNANCA_BCP_GROUPS,
   ...GOVERNANCA_API_GROUPS,
   ...GOVERNANCA_FINOPS_GROUPS,
