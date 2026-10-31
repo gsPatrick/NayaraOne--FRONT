@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
@@ -18,6 +18,7 @@ import FileDropInput from "@/components/molecules/FileDropInput/FileDropInput";
 import Input from "@/components/atoms/Input/Input";
 import Select from "@/components/atoms/Select/Select";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
+import ProtectedValue from "@/components/molecules/ProtectedValue/ProtectedValue";
 import {
   ROLE_TONE,
   ROLE_LABELS,
@@ -35,6 +36,8 @@ import { listPeople, getPerson, listDuplicatePairs, deletePerson, mergePeople, i
 import { listProperties } from "@/lib/api/properties";
 import { formatDate, toNumber } from "@/lib/format";
 import { buildGoogleMapsUrl, buildGoogleMapsEmbedUrl } from "@/lib/maps";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import styles from "./page.module.css";
 
 const GRADIENTS = [
@@ -136,8 +139,6 @@ export default function PersonDetailPage({ params }) {
   const [people, setPeople] = useState([]);
   const [duplicatePairs, setDuplicatePairs] = useState([]);
   const [properties, setProperties] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [canonicalId, setCanonicalId] = useState(null);
   const [viewerFileId, setViewerFileId] = useState(null);
@@ -149,33 +150,22 @@ export default function PersonDetailPage({ params }) {
   const [docError, setDocError] = useState("");
   const [docResult, setDocResult] = useState(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    // A ficha precisa da pessoa, dos pares de duplicata, das demais pessoas (para exibir o
-    // nome do par/canônico) e dos imóveis (para o card "Imóveis vinculados", que casa por
-    // property_owners.person_id).
-    Promise.all([getPerson(params.id), listPeople(), listDuplicatePairs(), listProperties()])
-      .then(([apiPerson, apiPeople, pairs, apiProperties]) => {
-        if (cancelled) return;
-        setPerson(apiPerson);
-        setPeople(apiPeople);
-        setDuplicatePairs(pairs);
-        setProperties(apiProperties);
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar o contato.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [params.id]);
+  // M9-D850: a ficha carrega pelo padrão de estados (carregando, 403, sem conexão, tentar de novo).
+  // Precisa da pessoa, dos pares de duplicata, das demais pessoas (para exibir o nome do par/canônico)
+  // e dos imóveis (para o card "Imóveis vinculados", que casa por property_owners.person_id).
+  const personQuery = useAsyncState(
+    async () => {
+      const [apiPerson, apiPeople, pairs, apiProperties] = await Promise.all([getPerson(params.id), listPeople(), listDuplicatePairs(), listProperties()]);
+      setPerson(apiPerson);
+      setPeople(apiPeople);
+      setDuplicatePairs(pairs);
+      setProperties(apiProperties);
+      return apiPerson;
+    },
+    { deps: [params.id], isEmpty: () => false }
+  );
 
-  if (loading) {
+  if (personQuery.status === "LOADING" && !person) {
     return (
       <AppShell title="Contato" backHref="/painel/pessoas">
         <SkeletonDetail sections={6} />
@@ -183,12 +173,14 @@ export default function PersonDetailPage({ params }) {
     );
   }
 
-  if (loadError || !person) {
+  if (!person) {
     return (
       <AppShell title="Contato" backHref="/painel/pessoas">
-        <Alert tone="danger" title="Não foi possível carregar o contato">
-          {loadError || "Contato não encontrado."}
-        </Alert>
+        {personQuery.error && personQuery.error.status !== 404 ? (
+          <AsyncState result={personQuery} />
+        ) : (
+          <Alert tone="danger" title="Não foi possível carregar o contato">Contato não encontrado.</Alert>
+        )}
       </AppShell>
     );
   }
@@ -450,11 +442,11 @@ export default function PersonDetailPage({ params }) {
                 ) : null}
                 <div>
                   <p className={styles.fieldLabel}>{person.personType === "PJ" ? "CNPJ" : "CPF"}</p>
-                  <p className={styles.fieldValue}>{person.taxIdNormalized}</p>
+                  <p className={styles.fieldValue}><ProtectedValue classification="RESTRICTED" resourceType="people.person" resourceId={person.id} field="taxIdNormalized" value={person.taxIdNormalized} /></p>
                 </div>
                 <div>
                   <p className={styles.fieldLabel}>{person.personType === "PF" ? "Nascimento" : "Fundação"}</p>
-                  <p className={styles.fieldValue}>{person.birthOrFoundationDate ? formatDate(person.birthOrFoundationDate) : "Sem data cadastrada"}</p>
+                  <p className={styles.fieldValue}>{person.birthOrFoundationDate ? <ProtectedValue classification="HIGH" resourceType="people.person" resourceId={person.id} field="birthOrFoundationDate" value={person.birthOrFoundationDate} copyButton={false}>{formatDate(person.birthOrFoundationDate)}</ProtectedValue> : "Sem data cadastrada"}</p>
                 </div>
                 <div>
                   <p className={styles.fieldLabel}>Cadastrado em</p>
@@ -474,7 +466,7 @@ export default function PersonDetailPage({ params }) {
                     <>
                       <span className={styles.listRowLeft}>
                         <Icon name={CONTACT_TYPE_ICON[c.type] || "phone"} size={14} />
-                        <span>{CONTACT_TYPE_LABELS[c.type] || c.type}: {c.value}</span>
+                        <span>{CONTACT_TYPE_LABELS[c.type] || c.type}: <ProtectedValue classification="HIGH" resourceType="people.person" resourceId={c.id || person.id} field="valueNormalized" value={c.value} copyButton={false} /></span>
                       </span>
                       <span className={styles.listRowRight}>
                         {c.primary ? <span className={styles.primaryTag}>Principal</span> : null}
@@ -701,7 +693,7 @@ export default function PersonDetailPage({ params }) {
                 onClick={() => openManualMerge(candidate)}
               >
                 <span className={styles.compareName}>{candidate.legalName}</span>
-                <span className={styles.compareMeta}>{candidate.taxIdNormalized || "Sem CPF/CNPJ cadastrado"}</span>
+                <span className={styles.compareMeta}>{candidate.taxIdNormalized ? <ProtectedValue classification="RESTRICTED" resourceType="people.person" resourceId={candidate.id} field="taxIdNormalized" value={candidate.taxIdNormalized} /> : "Sem CPF/CNPJ cadastrado"}</span>
               </button>
             ))
           )}
@@ -755,7 +747,7 @@ export default function PersonDetailPage({ params }) {
                       )}
                     </span>
                     <p className={styles.compareName}>{p.legalName}</p>
-                    <p className={styles.compareMeta}>{p.taxIdNormalized}</p>
+                    <p className={styles.compareMeta}><ProtectedValue classification="RESTRICTED" resourceType="people.person" resourceId={p.id} field="taxIdNormalized" value={p.taxIdNormalized} /></p>
                     <p className={styles.compareMeta}>Cadastrado em {formatDate(p.createdAt)}</p>
                   </button>
                 );

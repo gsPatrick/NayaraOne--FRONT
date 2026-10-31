@@ -14,6 +14,7 @@ import Modal from "@/components/organisms/Modal/Modal";
 import Pagination from "@/components/molecules/Pagination/Pagination";
 import FabLink from "@/components/molecules/FabLink/FabLink";
 import RowActions from "@/components/molecules/RowActions/RowActions";
+import ProtectedValue from "@/components/molecules/ProtectedValue/ProtectedValue";
 import {
   ROLE_TONE,
   ROLE_LABELS,
@@ -23,6 +24,8 @@ import {
 } from "@/lib/mock/people";
 import { listPeople, listDuplicatePairs, deletePerson, mergePeople } from "@/lib/api/people";
 import { formatDate } from "@/lib/format";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import styles from "./page.module.css";
 
 
@@ -54,33 +57,21 @@ export default function PessoasPage() {
   }, [pageSize]);
   const [people, setPeople] = useState([]);
   const [duplicatePairs, setDuplicatePairs] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [reviewPair, setReviewPair] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setLoadError("");
-    Promise.all([listPeople(), listDuplicatePairs()])
-      .then(([apiPeople, pairs]) => {
-        if (cancelled) return;
-        setPeople(apiPeople);
-        setDuplicatePairs(pairs);
-      })
-      .catch((err) => {
-        if (!cancelled) setLoadError(err?.message || "Não foi possível carregar os contatos.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // M9-D850: contatos e pares duplicados carregam pelo padrão de estados (carregando, 403, sem conexão, tentar de novo); falha nunca vira "nenhum contato".
+  const peopleQuery = useAsyncState(
+    async () => {
+      const [apiPeople, pairs] = await Promise.all([listPeople(), listDuplicatePairs()]);
+      setPeople(apiPeople);
+      setDuplicatePairs(pairs);
+      return { people: apiPeople };
+    },
+    { isEmpty: () => false }
+  );
 
   async function handleDelete() {
     setDeleting(true);
@@ -180,7 +171,7 @@ export default function PessoasPage() {
         </div>
       ),
     },
-    { key: "taxIdNormalized", label: "Documento", render: (row) => row.taxIdNormalized || "Sem CPF/CNPJ" },
+    { key: "taxIdNormalized", label: "Documento", render: (row) => (row.taxIdNormalized ? <ProtectedValue classification="RESTRICTED" resourceType="people.person" resourceId={row.id} field="taxIdNormalized" value={row.taxIdNormalized} /> : "Sem CPF/CNPJ") },
     {
       key: "status",
       label: "Status",
@@ -307,15 +298,13 @@ export default function PessoasPage() {
         </Button>
       </div>
 
-      {loadError ? (
-        <Alert tone="danger" title="Não foi possível carregar os contatos">{loadError}</Alert>
-      ) : null}
-
       {actionError ? (
         <Alert tone="danger" title="Ação não concluída">{actionError}</Alert>
       ) : null}
 
-      <Table columns={columns} rows={loading ? [] : pageItems} loading={loading} emptyMessage="Nenhum contato encontrado." />
+      <AsyncState result={peopleQuery} loadingLabel="Carregando contatos...">
+        {() => <Table columns={columns} rows={pageItems} emptyMessage="Nenhum contato encontrado." />}
+      </AsyncState>
 
       <div className={styles.paginationRow}>
         <Pagination
@@ -404,7 +393,7 @@ function DuplicateReviewModal({ pair, onClose, onMerge }) {
                 )}
               </span>
               <p className={styles.compareName}>{p.legalName}</p>
-              <p className={styles.compareMeta}>{p.taxIdNormalized}</p>
+              <p className={styles.compareMeta}><ProtectedValue classification="RESTRICTED" resourceType="people.person" resourceId={p.id} field="taxIdNormalized" value={p.taxIdNormalized} /></p>
               <p className={styles.compareMeta}>Cadastrado em {formatDate(p.createdAt)}</p>
               <p className={styles.compareMeta}>{p.contacts.find((c) => c.primary)?.value || "Sem contato principal"}</p>
             </button>

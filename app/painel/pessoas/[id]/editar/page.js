@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter, notFound } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -29,6 +29,8 @@ import { formatTaxId, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib
 import { uploadFile } from "@/lib/api/legal";
 import ChangeEvidenceFields from "@/components/molecules/ChangeEvidenceFields/ChangeEvidenceFields";
 import { EMPTY_EVIDENCE, buildChangeEvidence } from "@/lib/changeEvidence";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import styles from "./page.module.css";
 
 const EMPTY_CONTACT = { id: null, type: "PHONE", value: "", primary: false };
@@ -42,9 +44,6 @@ const EMPTY_DOCUMENT = { id: null, type: "RG", fileId: "", fileName: "", uploadi
 
 export default function EditarPessoaPage({ params }) {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
-  const [notFoundFlag, setNotFoundFlag] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
@@ -58,40 +57,32 @@ export default function EditarPessoaPage({ params }) {
   const [initialDocuments, setInitialDocuments] = useState([]);
   const [documents, setDocuments] = useState([]);
 
-  useEffect(() => {
-    let cancelled = false;
-    Promise.all([getPerson(params.id), listPersonRoles(params.id)])
-      .then(([person, personRoles]) => {
-        if (cancelled) return;
-        setBasic({
-          personType: person.personType,
-          legalName: person.legalName,
-          preferredName: person.preferredName || "",
-          taxIdNormalized: person.taxIdNormalized || "",
-          birthOrFoundationDate: person.birthOrFoundationDate ? person.birthOrFoundationDate.slice(0, 10) : "",
-          status: person.status,
-        });
-        setInitialRoles(personRoles);
-        setRoles(personRoles.map((r) => r.roleCode));
-        const mappedContacts = person.contacts.map((c) => ({ id: c.id, type: c.type, value: c.value, primary: c.primary }));
-        setInitialContacts(mappedContacts);
-        setContacts(mappedContacts.length ? mappedContacts : [{ ...EMPTY_CONTACT, primary: true }]);
-        const mappedDocuments = person.documents.map((d) => ({ id: d.id, type: d.type, fileId: d.fileId || "", fileName: "", uploading: false, uploadError: "" }));
-        setInitialDocuments(mappedDocuments);
-        setDocuments(mappedDocuments);
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        if (err?.status === 404) setNotFoundFlag(true);
-        else setLoadError(err?.message || "Não foi possível carregar o contato.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
+  // M9-D850: o contato carrega pelo padrão de estados (carregando, 403, sem conexão, tentar de novo); 404 continua virando notFound().
+  const personQuery = useAsyncState(
+    async () => {
+      const [person, personRoles] = await Promise.all([getPerson(params.id), listPersonRoles(params.id)]);
+      setBasic({
+        personType: person.personType,
+        legalName: person.legalName,
+        preferredName: person.preferredName || "",
+        taxIdNormalized: person.taxIdNormalized || "",
+        birthOrFoundationDate: person.birthOrFoundationDate ? person.birthOrFoundationDate.slice(0, 10) : "",
+        status: person.status,
       });
-    return () => {
-      cancelled = true;
-    };
-  }, [params.id]);
+      setInitialRoles(personRoles);
+      setRoles(personRoles.map((r) => r.roleCode));
+      const mappedContacts = person.contacts.map((c) => ({ id: c.id, type: c.type, value: c.value, primary: c.primary }));
+      setInitialContacts(mappedContacts);
+      setContacts(mappedContacts.length ? mappedContacts : [{ ...EMPTY_CONTACT, primary: true }]);
+      const mappedDocuments = person.documents.map((d) => ({ id: d.id, type: d.type, fileId: d.fileId || "", fileName: "", uploading: false, uploadError: "" }));
+      setInitialDocuments(mappedDocuments);
+      setDocuments(mappedDocuments);
+      return person;
+    },
+    { deps: [params.id], isEmpty: () => false }
+  );
+  const loading = personQuery.status === "LOADING" && !basic;
+  const notFoundFlag = personQuery.error?.status === 404;
 
   if (notFoundFlag) return notFound();
 
@@ -103,10 +94,10 @@ export default function EditarPessoaPage({ params }) {
     );
   }
 
-  if (loadError || !basic) {
+  if (!basic) {
     return (
       <AppShell title="Editar contato" backHref="/painel/pessoas">
-        <Alert tone="danger" title="Não foi possível carregar o contato">{loadError}</Alert>
+        <AsyncState result={personQuery} />
       </AppShell>
     );
   }

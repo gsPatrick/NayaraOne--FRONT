@@ -29,6 +29,8 @@ import { listProperties, addPropertyOwner } from "@/lib/api/properties";
 import { fetchAddressByCep } from "@/lib/cep";
 import { formatTaxId, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
 import { buildGoogleMapsUrl } from "@/lib/maps";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import styles from "./page.module.css";
 
 const STEPS = [
@@ -86,19 +88,17 @@ export default function NovaPessoaPage() {
   // Pessoas já cadastradas (para a checagem de documento duplicado no passo 1) e imóveis
   // disponíveis (para o vínculo de proprietário). Falha aqui não bloqueia o formulário: a
   // API ainda valida a duplicidade no POST /people e devolve 409.
-  useEffect(() => {
-    let cancelled = false;
-    Promise.all([listPeople(), listProperties()])
-      .then(([apiPeople, apiProperties]) => {
-        if (cancelled) return;
-        setExistingPeople(apiPeople);
-        setAvailableProperties(apiProperties);
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // M9-D850: se a lista de apoio falhar (403, sem conexão, erro), a tela diz o que houve e oferece "tentar de novo" — nunca finge que não há pessoas/imóveis.
+  const lookupQuery = useAsyncState(
+    async () => {
+      const [apiPeople, apiProperties] = await Promise.all([listPeople(), listProperties()]);
+      setExistingPeople(apiPeople);
+      setAvailableProperties(apiProperties);
+      return { people: apiPeople };
+    },
+    { isEmpty: () => false }
+  );
+  const lookupFailed = !["LOADING", "CONTENT", "EMPTY"].includes(lookupQuery.status);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -326,6 +326,7 @@ export default function NovaPessoaPage() {
     <AppShell title="Novo contato" backHref="/painel/pessoas">
       <div className={styles.page}>
         <div className={styles.wrap}>
+          {lookupFailed ? <AsyncState result={lookupQuery} /> : null}
           <div className={styles.stepHeaderWrap}>
             <StepHeader steps={STEPS} activeIndex={stepIndex} completion={stepCompletion} />
           </div>
