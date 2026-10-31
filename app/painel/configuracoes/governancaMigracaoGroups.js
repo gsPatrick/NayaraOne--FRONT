@@ -20,6 +20,7 @@ export const GOVERNANCA_MIGRACAO_GROUPS = [
       { key: "migracao.execucao.max_por_empresa", label: "Teto de execuções ativas da empresa", type: "integer", defaultValue: 3, min: 1, max: 50, helper: "Somando todas as fontes, quantas execuções a empresa pode ter ativas. Acima disso o pedido é recusado até alguma terminar." },
       { key: "migracao.execucao.max_no_processo", label: "Teto de execuções rodando ao mesmo tempo no servidor", type: "integer", defaultValue: 5, min: 1, max: 100, helper: "Quantas cargas o servidor roda juntas. As que passarem disso esperam na fila e são retomadas sozinhas em até um minuto." },
       { key: "migracao.execucao.expira_min", label: "Minutos até uma execução sem fim deixar de contar", type: "integer", defaultValue: 720, min: 1, max: 10080, helper: "Se o servidor cair no meio de uma carga, ela ficaria contando como ativa para sempre; passado este tempo deixa de contar e a fonte é liberada." },
+      { key: "migracao.execucao.expira_replay_min", label: "Minutos até um replay de lote sem fim deixar de contar", type: "integer", defaultValue: 30, min: 1, max: 1440, helper: "O replay relê um lote só. Se o servidor cair no meio dele, o registro libera a vaga da fonte depois deste tempo (e é encerrado como falho), sem esperar o prazo longo da execução." },
     ],
   },
   {
