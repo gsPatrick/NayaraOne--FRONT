@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Input from "@/components/atoms/Input/Input";
 import Icon from "@/components/atoms/Icon/Icon";
+import ProtectedValue from "@/components/molecules/ProtectedValue/ProtectedValue";
 import { listPeople } from "@/lib/api/people";
 import styles from "./PersonPicker.module.css";
 
@@ -76,7 +77,7 @@ export default function PersonPicker({ id, value, personId, onSelect, placeholde
             <li key={p.id}>
               <button type="button" className={styles.option} onClick={() => pick(p)}>
                 <span className={styles.optionName}>{p.legalName}</span>
-                <span className={styles.optionDoc}>{p.taxIdNormalized}</span>
+                <span className={styles.optionDoc}><ProtectedValue classification="RESTRICTED" resourceType="people.person" resourceId={p.id} field="taxIdNormalized" value={p.taxIdNormalized} /></span>
               </button>
             </li>
           ))}
