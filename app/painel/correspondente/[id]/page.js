@@ -43,6 +43,9 @@ import {
   listCommissionAdjustments,
 } from "@/lib/api/correspondent";
 import { uploadFile } from "@/lib/api/legal";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import { lookupFallback } from "@/lib/asyncState/lookup";
 import NaySummary from "@/components/organisms/NaySummary/NaySummary";
 import FinancingCaseWorkflow from "@/components/organisms/FinancingCaseWorkflow/FinancingCaseWorkflow";
 import { formatDateTime, formatDate, formatBRL, formatPercent, toNumber } from "@/lib/format";
@@ -114,8 +117,6 @@ const CRITICAL_FIELD_LABELS = { taxId: "CPF/CNPJ", name: "Nome", income: "Renda"
 export default function FinancingCaseDetailPage() {
   const { id } = useParams();
   const [financingCase, setFinancingCase] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [perms, setPerms] = useState({ create: false, settle: false, fiscal: false });
   const [params, setParams] = useState(null);
   const [paramsError, setParamsError] = useState("");
@@ -300,14 +301,16 @@ export default function FinancingCaseDetailPage() {
       .catch((err) => setParamsError(err?.message || "Não foi possível carregar os parâmetros do correspondente."));
   }
 
-  function loadCase() {
-    setLoading(true);
-    setLoadError("");
-    getFinancingCase(id)
-      .then(setFinancingCase)
-      .catch((err) => setLoadError(err?.message || "Não foi possível carregar o caso de financiamento."))
-      .finally(() => setLoading(false));
-  }
+  // M9-D850: o caso carrega pelo padrão de estados (carregando, 403, sem conexão, tentar de novo); 404 mostra "Caso não encontrado".
+  const caseQuery = useAsyncState(
+    async () => {
+      const data = await getFinancingCase(id);
+      setFinancingCase(data);
+      return data;
+    },
+    { deps: [id], isEmpty: () => false }
+  );
+  const loading = caseQuery.status === "LOADING" && !financingCase;
 
   useEffect(() => {
     setPerms({
@@ -315,7 +318,6 @@ export default function FinancingCaseDetailPage() {
       settle: hasPermission("finance:settle"),
       fiscal: hasPermission("correspondent:fiscal"),
     });
-    loadCase();
     loadRequirements();
     loadSimulations();
     loadSubmissions();
@@ -327,7 +329,7 @@ export default function FinancingCaseDetailPage() {
   }, [id]);
 
   function refreshCase() {
-    getFinancingCase(id).then((data) => { if (alive.current) setFinancingCase(data); }).catch(() => {});
+    getFinancingCase(id).then((data) => { if (alive.current) setFinancingCase(data); }).catch(lookupFallback("o caso de financiamento", null));
   }
 
   if (loading) {
@@ -338,10 +340,10 @@ export default function FinancingCaseDetailPage() {
     );
   }
 
-  if (loadError || !financingCase) {
+  if (!financingCase) {
     return (
       <AppShell title="Caso de financiamento" backHref="/painel/correspondente">
-        <LoadError message={loadError || "Caso não encontrado."} onRetry={loadCase} />
+        {caseQuery.error && caseQuery.error.status !== 404 ? <AsyncState result={caseQuery} /> : <LoadError message="Caso não encontrado." onRetry={caseQuery.reload} />}
       </AppShell>
     );
   }
