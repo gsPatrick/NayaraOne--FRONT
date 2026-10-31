@@ -46,6 +46,13 @@ export const MARKETING_URL_GROUPS = [
         defaultValue: 5,
         helper: "Número inteiro de 1 a 60. Destino que não responde nesse tempo é recusado.",
       },
+      {
+        key: "marketing.url.tlds_reconhecidos",
+        label: "Terminações que fazem um endereço solto valer como URL",
+        type: "text",
+        defaultValue: "com, net, org, br, io, co, info, biz, app, dev, xyz, online, site, top, club, shop, store, link, click, me, tv, cc, us, uk, de, pt, ar, ru, cn, tk, ml, ga, cf, gq, ly, to, gl, ws, pw, live, work, page, cloud, tech, pro, vip, icu, buzz, fun, one, ink, wang",
+        helper: "Terminações separadas por vírgula, só letras. Um texto com evil.com/login (sem https://) passa pela mesma conferência da URL completa. Endereços com www., // ou esquema estranho são sempre conferidos.",
+      },
     ],
   },
 ];
