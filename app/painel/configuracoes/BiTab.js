@@ -18,6 +18,8 @@ import { BI_OBRAS_KPI_GROUPS } from "./biObrasKpiGroups";
 import { BI_OBRAS_OPERACAO_GROUPS } from "./biObrasOperacaoGroups";
 import { BI_COMERCIAL_GROUPS } from "./biComercialGroups";
 import { BI_FUNIL_COMERCIAL_GROUPS } from "./biFunilComercialGroups";
+import { BI_IMOVEIS_KPI_GROUPS } from "./biImoveisKpiGroups";
+import { BI_CORRETORES_KPI_GROUPS } from "./biCorretoresKpiGroups";
 import { BI_LOCACAO_GROUPS } from "./biLocacaoGroups";
 import { BI_JURIDICO_GROUPS } from "./biJuridicoGroups";
 import { BI_JURIDICO_CORRESPONDENTE_KPI_GROUPS } from "./biJuridicoCorrespondenteKpiGroups";
@@ -26,10 +28,12 @@ import { BI_ATENDIMENTO_KPI_GROUPS } from "./biAtendimentoKpiGroups";
 import { BI_LOCACAO_PRAZOS_KPI_GROUPS } from "./biLocacaoPrazosKpiGroups";
 import { BI_LOCACAO_CARTEIRA_KPI_GROUPS } from "./biLocacaoCarteiraKpiGroups";
 import { BI_LOCACAO_ATENDIMENTO_KPI_GROUPS } from "./biLocacaoAtendimentoKpiGroups";
-import { BI_CENTRO_COMANDO_FATOS_GROUPS } from "./biCentroComandoFatosGroups";
 import { BI_DECISAO_FILA_GROUPS } from "./biDecisaoFilaGroups";
 import { BI_TECNOLOGIA_KPI_GROUPS } from "./biTecnologiaKpiGroups";
 import { BI_IA_KPI_GROUPS } from "./biIaKpiGroups";
+import { BI_CENTRO_COMANDO_FATOS_GROUPS } from "./biCentroComandoFatosGroups";
+import { BI_CENTRO_COMANDO_GROUPS } from "./biCentroComandoGroups"; // M9-D685
+import { BI_SAUDE_GERAL_GROUPS } from "./biSaudeGeralGroups"; // M9-D686
 import { BI_DRILLDOWN_GROUPS } from "./biDrilldownGroups";
 import { BI_FINANCEIRO_GROUPS } from "./biFinanceiroGroups";
 import { BI_CAIXA_GROUPS } from "./biCaixaGroups";
@@ -42,10 +46,6 @@ import { BI_ALERTAS_GROUPS } from "./biAlertasGroups";
 import { BI_BRIEFING_GROUPS } from "./biBriefingGroups";
 import { BI_EXPORTACAO_GROUPS } from "./biExportacaoGroups";
 import { BI_ACEITE_GROUPS } from "./biAceiteGroups";
-import { BI_CENTRO_COMANDO_GROUPS } from "./biCentroComandoGroups"; // M9-D685
-import { BI_SAUDE_GERAL_GROUPS } from "./biSaudeGeralGroups"; // M9-D686
-import { BI_IMOVEIS_KPI_GROUPS } from "./biImoveisKpiGroups";
-import { BI_CORRETORES_KPI_GROUPS } from "./biCorretoresKpiGroups";
 
 // Parâmetros do BI e Centro de Comando (Marco 9, bloco D) que o administrador controla. A API valida (SETTINGS_SCHEMA); o padrão
 // mostrado é o de Maturacao/demandas/parametros.csv e só vale enquanto a empresa não configurou nada. Cada demanda do bloco
@@ -233,7 +233,7 @@ const BI_GROUPS = [
   },
 ];
 
-const ALL_GROUPS = [...BI_GROUPS, ...BI_QUALIDADE_GROUPS, ...BI_OBRAS_GROUPS, ...BI_OBRAS_KPI_GROUPS, ...BI_OBRAS_OPERACAO_GROUPS, ...BI_COMERCIAL_GROUPS, ...BI_LOCACAO_GROUPS, ...BI_JURIDICO_GROUPS, ...BI_JURIDICO_CORRESPONDENTE_KPI_GROUPS, ...BI_MARKETING_KPI_GROUPS, ...BI_ATENDIMENTO_KPI_GROUPS, ...BI_LOCACAO_PRAZOS_KPI_GROUPS, ...BI_LOCACAO_CARTEIRA_KPI_GROUPS, ...BI_LOCACAO_ATENDIMENTO_KPI_GROUPS, ...BI_CENTRO_COMANDO_FATOS_GROUPS, ...BI_DECISAO_FILA_GROUPS, ...BI_TECNOLOGIA_KPI_GROUPS, ...BI_IA_KPI_GROUPS, ...BI_DESEMPENHO_GROUPS, ...BI_DRILLDOWN_GROUPS, ...BI_FINANCEIRO_GROUPS, ...BI_CAIXA_GROUPS, ...BI_FINANCEIRO_JANELAS_GROUPS, ...BI_FINANCEIRO_RESULTADOS_GROUPS, ...BI_FINANCEIRO_INADIMPLENCIA_GROUPS, ...BI_CARGA_GROUPS, ...BI_SNAPSHOT_GROUPS, ...BI_ALERTAS_GROUPS, ...BI_BRIEFING_GROUPS, ...BI_EXPORTACAO_GROUPS, ...BI_ACEITE_GROUPS, ...BI_FUNIL_COMERCIAL_GROUPS, ...BI_IMOVEIS_KPI_GROUPS, ...BI_CORRETORES_KPI_GROUPS, ...BI_CENTRO_COMANDO_GROUPS, ...BI_SAUDE_GERAL_GROUPS];
+const ALL_GROUPS = [...BI_GROUPS, ...BI_QUALIDADE_GROUPS, ...BI_OBRAS_GROUPS, ...BI_OBRAS_KPI_GROUPS, ...BI_OBRAS_OPERACAO_GROUPS, ...BI_COMERCIAL_GROUPS, ...BI_LOCACAO_GROUPS, ...BI_JURIDICO_GROUPS, ...BI_JURIDICO_CORRESPONDENTE_KPI_GROUPS, ...BI_MARKETING_KPI_GROUPS, ...BI_ATENDIMENTO_KPI_GROUPS, ...BI_LOCACAO_PRAZOS_KPI_GROUPS, ...BI_LOCACAO_CARTEIRA_KPI_GROUPS, ...BI_LOCACAO_ATENDIMENTO_KPI_GROUPS, ...BI_TECNOLOGIA_KPI_GROUPS, ...BI_IA_KPI_GROUPS, ...BI_CENTRO_COMANDO_FATOS_GROUPS, ...BI_CENTRO_COMANDO_GROUPS, ...BI_SAUDE_GERAL_GROUPS, ...BI_DECISAO_FILA_GROUPS, ...BI_FINANCEIRO_GROUPS, ...BI_CAIXA_GROUPS, ...BI_FINANCEIRO_JANELAS_GROUPS, ...BI_FINANCEIRO_RESULTADOS_GROUPS, ...BI_FINANCEIRO_INADIMPLENCIA_GROUPS, ...BI_DESEMPENHO_GROUPS, ...BI_DRILLDOWN_GROUPS, ...BI_SNAPSHOT_GROUPS, ...BI_ALERTAS_GROUPS, ...BI_BRIEFING_GROUPS, ...BI_EXPORTACAO_GROUPS, ...BI_ACEITE_GROUPS, ...BI_FUNIL_COMERCIAL_GROUPS, ...BI_IMOVEIS_KPI_GROUPS, ...BI_CORRETORES_KPI_GROUPS];
 const ALL_FIELDS = ALL_GROUPS.flatMap((group) => group.fields);
 
 function initialValues() {

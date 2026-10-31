@@ -12,8 +12,8 @@ import { listSettings, updateSetting } from "@/lib/api/settings";
 import { toNumber } from "@/lib/format";
 import styles from "./page.module.css";
 import { IA_SEGURANCA_GROUPS } from "./iaSegurancaGroups";
-import { IA_APROVACAO_GROUPS } from "./iaAprovacaoGroups";
 import { IA_ORCAMENTO_GROUPS } from "./iaOrcamentoGroups";
+import { IA_APROVACAO_GROUPS } from "./iaAprovacaoGroups";
 import { IA_AVALIACAO_GROUPS } from "./iaAvaliacaoGroups";
 import { IA_PROVEDORES_GROUPS } from "./iaProvedoresGroups";
 import { IA_MEMORIA_GROUPS } from "./iaMemoriaGroups";
@@ -22,24 +22,23 @@ import { IA_ROTEAMENTO_GROUPS } from "./iaRoteamentoGroups";
 import { IA_FALLBACK_GROUPS } from "./iaFallbackGroups";
 import { IA_CACHE_GROUPS } from "./iaCacheGroups";
 import { IA_EXECUCAO_GROUPS } from "./iaExecucaoGroups";
-import { IA_JURIDICA_GROUPS } from "./iaJuridicaGroups";
-import { IA_OBRAS_GROUPS } from "./iaObrasGroups";
 import { IA_ATENDIMENTO_GROUPS } from "./iaAtendimentoGroups";
+import { IA_OBRAS_GROUPS } from "./iaObrasGroups";
+import { IA_JURIDICA_GROUPS } from "./iaJuridicaGroups";
+import { IA_DIRETORIA_GROUPS } from "./iaDiretoriaGroups";
 import { IA_CORRESPONDENTE_GROUPS } from "./iaCorrespondenteGroups";
 import { IA_DOCUMENTAL_GROUPS } from "./iaDocumentalGroups";
 import { IA_CONVERSA_GROUPS } from "./iaConversaGroups";
 import { IA_COMERCIAL_GROUPS } from "./iaComercialGroups";
 import { IA_OBSERVABILIDADE_GROUPS } from "./iaObservabilidadeGroups";
-import { IA_DIRETORIA_GROUPS } from "./iaDiretoriaGroups";
-import { IA_FINANCEIRA_GROUPS } from "./iaFinanceiraGroups";
 
 // Parâmetros da NAY (Marco 9, bloco A) que o administrador controla. A API valida (SETTINGS_SCHEMA); o padrão mostrado é
 // o de Maturacao/demandas/parametros.csv e só vale enquanto a empresa não configurou nada. Cada demanda do bloco acrescenta
 // as suas entradas em IA_GROUPS.
 const IA_GROUPS = [
   ...IA_SEGURANCA_GROUPS,
-  ...IA_APROVACAO_GROUPS,
   ...IA_ORCAMENTO_GROUPS,
+  ...IA_APROVACAO_GROUPS,
   ...IA_AVALIACAO_GROUPS,
   ...IA_PROVEDORES_GROUPS,
   ...IA_MEMORIA_GROUPS,
@@ -48,16 +47,15 @@ const IA_GROUPS = [
   ...IA_FALLBACK_GROUPS,
   ...IA_CACHE_GROUPS,
   ...IA_EXECUCAO_GROUPS,
-  ...IA_JURIDICA_GROUPS,
-  ...IA_OBRAS_GROUPS,
   ...IA_ATENDIMENTO_GROUPS,
+  ...IA_OBRAS_GROUPS,
+  ...IA_JURIDICA_GROUPS,
+  ...IA_DIRETORIA_GROUPS,
   ...IA_CORRESPONDENTE_GROUPS,
   ...IA_DOCUMENTAL_GROUPS,
   ...IA_CONVERSA_GROUPS,
   ...IA_COMERCIAL_GROUPS,
   ...IA_OBSERVABILIDADE_GROUPS,
-  ...IA_DIRETORIA_GROUPS,
-  ...IA_FINANCEIRA_GROUPS,
   {
     title: "Chave geral da NAY",
     subtitle: "Liga ou desliga a NAY inteira nesta empresa. Desligada, toda função da NAY responde que está desativada. Só quem administra a NAY altera.",
@@ -176,6 +174,51 @@ const IA_GROUPS = [
         max: 1000,
         defaultValue: 50,
         helper: "Número inteiro de 1 a 1000. Lista maior que isso faz o pedido ser recusado.",
+      },
+    ],
+  },
+  {
+    title: "Fundamentação das respostas",
+    subtitle: "Toda resposta da NAY sobre dado da empresa cita fontes. Sem fonte suficiente, ela diz que não sabe em vez de inventar.",
+    fields: [
+      {
+        key: "ia.grounding.relevancia_minima",
+        label: "Relevância mínima para uma fonte valer como base",
+        type: "decimal",
+        min: 0,
+        max: 1,
+        defaultValue: 0.5,
+        helper: "Número de 0 a 1 (use vírgula). Fonte menos relevante que isso não sustenta a resposta.",
+      },
+      {
+        key: "ia.grounding.bloquear_sem_fonte",
+        label: "Bloquear resposta factual sem fonte (em vez de responder que não há informação)",
+        type: "boolean",
+        defaultValue: false,
+        helper: "Desligado por padrão: a NAY responde que não tem informações suficientes. Ligado, a resposta é bloqueada com aviso.",
+      },
+      {
+        key: "ia.grounding.peso_relevancia",
+        label: "Peso da relevância na confiança estimada",
+        type: "decimal",
+        min: 0,
+        max: 1,
+        defaultValue: 0.6,
+        helper: "Número de 0 a 1. A confiança é só um sinal auxiliar: nunca libera ação nem dispensa a fonte.",
+      },
+      {
+        key: "ia.grounding.tarefas_nao_factuais",
+        label: "Tipos de tarefa que não afirmam dado da empresa",
+        type: "text",
+        defaultValue: "conversa,saudacao,formatacao,traducao",
+        helper: "Códigos separados por vírgula. Respostas dessas tarefas, sem números, datas ou códigos, não exigem fonte.",
+      },
+      {
+        key: "ia.grounding.termos_criticos",
+        label: "Termos que marcam prazo ou contrato crítico",
+        type: "text",
+        defaultValue: "prazo legal,prazo contratual,vencimento do contrato,vencimento de contrato,contrato vence,vence o contrato,multa,rescisão,obrigação",
+        helper: "Termos separados por vírgula. Resposta com algum deles exige fonte exata (contrato, versão, cláusula) e confirmação humana.",
       },
     ],
   },
@@ -302,51 +345,6 @@ const IA_GROUPS = [
         type: "boolean",
         defaultValue: true,
         helper: "Ligado por padrão e vale para provedores externos. O nome volta a aparecer só na resposta mostrada à própria pessoa que perguntou.",
-      },
-    ],
-  },
-  {
-    title: "Fundamentação das respostas",
-    subtitle: "Toda resposta da NAY sobre dado da empresa cita fontes. Sem fonte suficiente, ela diz que não sabe em vez de inventar.",
-    fields: [
-      {
-        key: "ia.grounding.relevancia_minima",
-        label: "Relevância mínima para uma fonte valer como base",
-        type: "decimal",
-        min: 0,
-        max: 1,
-        defaultValue: 0.5,
-        helper: "Número de 0 a 1 (use vírgula). Fonte menos relevante que isso não sustenta a resposta.",
-      },
-      {
-        key: "ia.grounding.bloquear_sem_fonte",
-        label: "Bloquear resposta factual sem fonte (em vez de responder que não há informação)",
-        type: "boolean",
-        defaultValue: false,
-        helper: "Desligado por padrão: a NAY responde que não tem informações suficientes. Ligado, a resposta é bloqueada com aviso.",
-      },
-      {
-        key: "ia.grounding.peso_relevancia",
-        label: "Peso da relevância na confiança estimada",
-        type: "decimal",
-        min: 0,
-        max: 1,
-        defaultValue: 0.6,
-        helper: "Número de 0 a 1. A confiança é só um sinal auxiliar: nunca libera ação nem dispensa a fonte.",
-      },
-      {
-        key: "ia.grounding.tarefas_nao_factuais",
-        label: "Tipos de tarefa que não afirmam dado da empresa",
-        type: "text",
-        defaultValue: "conversa,saudacao,formatacao,traducao",
-        helper: "Códigos separados por vírgula. Respostas dessas tarefas, sem números, datas ou códigos, não exigem fonte.",
-      },
-      {
-        key: "ia.grounding.termos_criticos",
-        label: "Termos que marcam prazo ou contrato crítico",
-        type: "text",
-        defaultValue: "prazo legal,prazo contratual,vencimento do contrato,vencimento de contrato,contrato vence,vence o contrato,multa,rescisão,obrigação",
-        helper: "Termos separados por vírgula. Resposta com algum deles exige fonte exata (contrato, versão, cláusula) e confirmação humana.",
       },
     ],
   },
