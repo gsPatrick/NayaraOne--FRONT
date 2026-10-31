@@ -28,4 +28,19 @@ export const GOVERNANCA_MIGRACAO_GROUPS = [
       { key: "migracao.paralelo.timeout_min", label: "Minutos até considerar falha uma comparação que não terminou", type: "integer", defaultValue: 30, min: 1, max: 1440, helper: "Se o processo cair no meio de uma comparação, a janela fica travada por este tempo; depois a comparação é dada como falha (nunca como sem diferenças) e a janela é liberada." },
     ],
   },
+  {
+    title: "Migração do sistema antigo: ativação por setor",
+    subtitle:
+      "O sistema novo é ligado aos poucos, setor por setor: primeiro uma parte dos usuários, depois mais, até todos. Cada setor avança e volta sozinho, sem afetar os outros. O avanço só acontece com a Torre de controle sem pendências bloqueantes do setor.",
+    fields: [
+      { key: "migracao.canary.etapas", label: "Etapas da ativação (percentual de usuários do setor)", type: "text", defaultValue: "5,25,50,100", helper: "Percentuais crescentes de usuários de cada setor que passam a operar no sistema novo, separados por vírgula e terminando em 100. A escolha dos usuários é estável: subir a etapa só acrescenta pessoas." },
+      { key: "migracao.canary.exigir_comparacao", label: "Exigir comparação paralela limpa para avançar", type: "boolean", defaultValue: true, helper: "Ligado: para avançar de etapa, cada entidade do setor que a migração carrega precisa ter uma comparação paralela concluída e sem diferenças bloqueantes. Uma comparação que falhou nunca conta como limpa." },
+      { key: "migracao.setor.atendimento.entidades", label: "Entidades do setor Atendimento", type: "text", defaultValue: "LEAD,VISIT", helper: "Pendências bloqueantes da Torre de controle sobre estas entidades (leads e visitas) impedem o avanço do setor Atendimento. Nomes separados por vírgula." },
+      { key: "migracao.setor.locacao.entidades", label: "Entidades do setor Locação", type: "text", defaultValue: "PROPOSAL,CONTRACT", helper: "Pendências bloqueantes da Torre de controle sobre estas entidades (propostas e contratos de locação) impedem o avanço do setor Locação. Nomes separados por vírgula." },
+      { key: "migracao.setor.financeiro.entidades", label: "Entidades do setor Financeiro", type: "text", defaultValue: "FINANCIAL_ENTRY", helper: "Pendências bloqueantes da Torre de controle sobre estas entidades (lançamentos e parcelas) impedem o avanço do setor Financeiro. Nomes separados por vírgula." },
+      { key: "migracao.setor.obras.entidades", label: "Entidades do setor Obras", type: "text", defaultValue: "PROJECT,PROJECT_STAGE", helper: "Pendências bloqueantes da Torre de controle sobre estas entidades (obras e etapas) impedem o avanço do setor Obras. Nomes separados por vírgula." },
+      { key: "migracao.setor.correspondente.entidades", label: "Entidades do setor Correspondente", type: "text", defaultValue: "FINANCING_PROCESS", helper: "Pendências bloqueantes da Torre de controle sobre estas entidades (processos de financiamento) impedem o avanço do setor Correspondente. Nomes separados por vírgula." },
+      { key: "migracao.setor.juridico.entidades", label: "Entidades do setor Jurídico", type: "text", defaultValue: "LEGAL_DEADLINE,LEGAL_CASE", helper: "Pendências bloqueantes da Torre de controle sobre estas entidades (prazos e processos) impedem o avanço do setor Jurídico. Nomes separados por vírgula." },
+    ],
+  },
 ];
