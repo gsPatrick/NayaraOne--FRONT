@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Table from "@/components/organisms/Table/Table";
@@ -21,16 +21,14 @@ import { listProjects } from "@/lib/api/construction";
 import { formatQuantity, formatBRL, toNumber } from "@/lib/format";
 import styles from "../obras/lista/page.module.css";
 
-import { reportLookupProblem } from "@/lib/asyncState/lookup";
+import { lookupFallback } from "@/lib/asyncState/lookup";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 const ITEM_TYPE_LABELS = { CONSUMABLE: "Consumível", TOOL: "Ferramenta", ASSET: "Patrimônio", SERVICE_ITEM: "Serviço" };
 const ITEM_TYPE_TONE = { CONSUMABLE: "neutral", TOOL: "info", ASSET: "success", SERVICE_ITEM: "neutral" };
 const LOCATION_TYPE_LABELS = { WAREHOUSE: "Almoxarifado", PROJECT_SITE: "Canteiro de obra" };
 
 export default function EstoqueItensPage() {
-  const [items, setItems] = useState([]);
-  const [locations, setLocations] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
@@ -52,7 +50,6 @@ export default function EstoqueItensPage() {
   // vincular um canteiro (PROJECT_SITE) a uma obra no cadastro — e sem essa obra, a API passou a
   // rejeitar (corretamente) qualquer movimento tocando esse local, tornando a transferência pra
   // canteiro de obra impossível na prática.
-  const [projects, setProjects] = useState([]);
 
   // GAP CORRIGIDO (auditoria de conformidade Marco 7, EST-012: "Estoque mínimo e reposição vêm
   // do Motor de Regras"): a política de mínimo/reposição de cada item é a regra REG-EST-001 do
@@ -64,20 +61,18 @@ export default function EstoqueItensPage() {
   const [policyLoading, setPolicyLoading] = useState(false);
   const [savingPolicy, setSavingPolicy] = useState(false);
 
-  function load() {
-    setLoading(true);
-    setLoadError("");
-    Promise.all([listInventoryItems(), listInventoryLocations()])
-      .then(([i, l]) => {
-        setItems(i || []);
-        setLocations(l || []);
-      })
-      .catch((err) => setLoadError(err?.message || "Não foi possível carregar o estoque."))
-      .finally(() => setLoading(false));
-    listProjects().then(setProjects).catch((error) => { reportLookupProblem("as obras", error); setProjects([]); });
-  }
-
-  useEffect(() => { load(); }, []);
+  // M9-D850: carregando, vazio, erro, 403 e offline vêm do padrão único de estados.
+  // Obras são de apoio (vincular canteiro): a falha é registrada (lookupFallback) e a tela abre.
+  const stockQuery = useAsyncState(
+    async () => {
+      const [items, locations, projects] = await Promise.all([listInventoryItems(), listInventoryLocations(), listProjects().catch(lookupFallback("as obras"))]);
+      return { items: items || [], locations: locations || [], projects: projects || [] };
+    },
+    { key: "estoque-itens", isEmpty: (d) => !d || (d.items.length === 0 && d.locations.length === 0) }
+  );
+  const { items = [], locations = [], projects = [] } = stockQuery.data || {};
+  const loading = stockQuery.status === "LOADING";
+  const load = stockQuery.reload;
 
   const filtered = useMemo(() => {
     return items.filter((it) => {
@@ -286,7 +281,6 @@ export default function EstoqueItensPage() {
 
   return (
     <AppShell title="Estoque — Itens & Locais" backHref="/painel">
-      {loadError ? <Alert tone="danger" title="Não foi possível carregar o estoque">{loadError}</Alert> : null}
       {actionError ? (
         /* BUG REAL CORRIGIDO (auditoria E2E Marco 7, ciclo 4) — mesma classe sistêmica já
            catalogada no Marco 6: Alert de erro renderizado só no topo da página ficava atrás do
@@ -297,34 +291,40 @@ export default function EstoqueItensPage() {
         </div>
       ) : null}
 
-      <div className={styles.grid}>
-        {/* BUG REAL CORRIGIDO (auditoria final Marco 7, Claude Browser, 14/10/2026): os cards
-            mostravam "0" por alguns segundos enquanto a lista ainda carregava, antes da resposta
-            real chegar — mesmo padrão de flash de vazio já corrigido no histórico do Patrimônio
-            nesta sessão. Agora mostram "Carregando" durante o loading, nunca um "0" que pode ser confundido
-            com o valor real. */}
-        <StatTile label="Itens cadastrados" value={loading ? "Carregando" : items.length} tone="neutral" icon="building" />
-        <StatTile label="Ferramentas" value={loading ? "Carregando" : items.filter((i) => i.itemType === "TOOL").length} tone="info" icon="chart" />
-        <StatTile label="Locais cadastrados" value={loading ? "Carregando" : locations.length} tone="success" icon="check" />
-        <StatTile label="Valor em custo médio" value={loading ? "Carregando" : formatBRL(totalAvgValue)} tone="neutral" icon="money" />
-      </div>
+      <AsyncState result={stockQuery} emptyTitle="Estoque ainda sem itens e locais" emptyDescription="Cadastre o primeiro local e o primeiro item pelos botões Novo local e Novo item.">
+        {() => (
+          <>
+          <div className={styles.grid}>
+            {/* BUG REAL CORRIGIDO (auditoria final Marco 7, Claude Browser, 14/10/2026): os cards
+                mostravam "0" por alguns segundos enquanto a lista ainda carregava, antes da resposta
+                real chegar — mesmo padrão de flash de vazio já corrigido no histórico do Patrimônio
+                nesta sessão. Agora mostram "Carregando" durante o loading, nunca um "0" que pode ser confundido
+                com o valor real. */}
+            <StatTile label="Itens cadastrados" value={loading ? "Carregando" : items.length} tone="neutral" icon="building" />
+            <StatTile label="Ferramentas" value={loading ? "Carregando" : items.filter((i) => i.itemType === "TOOL").length} tone="info" icon="chart" />
+            <StatTile label="Locais cadastrados" value={loading ? "Carregando" : locations.length} tone="success" icon="check" />
+            <StatTile label="Valor em custo médio" value={loading ? "Carregando" : formatBRL(totalAvgValue)} tone="neutral" icon="money" />
+          </div>
 
-      <Card title="Itens de estoque" subtitle="Catálogo mestre — materiais, ferramentas, patrimônio e serviços">
-        <div className={styles.toolbar}>
-          <SearchInput placeholder="Buscar por nome ou SKU..." value={query} onChange={(e) => setQuery(e.target.value)} />
-          <Select className={styles.filter} value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
-            <option value="">Todos os tipos</option>
-            {Object.entries(ITEM_TYPE_LABELS).map(([k, v]) => (
-              <option key={k} value={k}>{v}</option>
-            ))}
-          </Select>
-        </div>
-        <Table columns={columns} rows={loading ? [] : filtered} loading={loading} emptyMessage="Nenhum item cadastrado." />
-      </Card>
+          <Card title="Itens de estoque" subtitle="Catálogo mestre — materiais, ferramentas, patrimônio e serviços">
+            <div className={styles.toolbar}>
+              <SearchInput placeholder="Buscar por nome ou SKU..." value={query} onChange={(e) => setQuery(e.target.value)} />
+              <Select className={styles.filter} value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
+                <option value="">Todos os tipos</option>
+                {Object.entries(ITEM_TYPE_LABELS).map(([k, v]) => (
+                  <option key={k} value={k}>{v}</option>
+                ))}
+              </Select>
+            </div>
+            <Table columns={columns} rows={loading ? [] : filtered} loading={loading} emptyMessage="Nenhum item cadastrado." />
+          </Card>
 
-      <Card title="Locais" subtitle="Almoxarifados e canteiros de obra">
-        <Table columns={locationColumns} rows={loading ? [] : locations} loading={loading} emptyMessage="Nenhum local cadastrado." />
-      </Card>
+          <Card title="Locais" subtitle="Almoxarifados e canteiros de obra">
+            <Table columns={locationColumns} rows={loading ? [] : locations} loading={loading} emptyMessage="Nenhum local cadastrado." />
+          </Card>
+          </>
+        )}
+      </AsyncState>
 
       <StickyActionBar>
         <Button variant="secondary" onClick={() => setLocationModalOpen(true)}>

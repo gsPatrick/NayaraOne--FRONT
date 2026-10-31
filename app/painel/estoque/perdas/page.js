@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
@@ -28,6 +28,8 @@ import { formatBRL, formatDateTime, formatQuantity, toNumber } from "@/lib/forma
 import { getCurrentUser } from "@/lib/auth/session";
 
 import { lookupFallback } from "@/lib/asyncState/lookup";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 const STATUS_LABELS = { OPEN: "Em análise", PENDING_APPROVAL: "Acima da alçada — aguarda decisão", APPROVED: "Aprovada (baixa gerada)", REJECTED: "Rejeitada" };
 const STATUS_TONE = { OPEN: "warning", PENDING_APPROVAL: "warning", APPROVED: "danger", REJECTED: "neutral" };
 const EMPTY_DECISION_FORM = { chargeResponsible: false, responsiblePersonId: "", responsibleName: "", chargeAmount: "" };
@@ -35,19 +37,11 @@ const EMPTY_DECISION_FORM = { chargeResponsible: false, responsiblePersonId: "",
 export default function PerdasPage() {
   const currentUser = getCurrentUser();
   const router = useRouter();
-  const [cases, setCases] = useState([]);
-  const [items, setItems] = useState([]);
-  const [assets, setAssets] = useState([]);
-  const [locations, setLocations] = useState([]);
-  const [people, setPeople] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [busyId, setBusyId] = useState(null);
   // EST-013/EST-TS-14: indícios da NAY (recorrência/valor fora do padrão) — contexto de LEITURA
   // para quem decide; não altera o fluxo de decisão nem gera cobrança. Falha aqui nunca impede a
   // tela de funcionar.
-  const [nayFlags, setNayFlags] = useState({});
   const { confirm, ConfirmDialog } = useConfirm();
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -69,36 +63,32 @@ export default function PerdasPage() {
   const [decisionTarget, setDecisionTarget] = useState(null);
   const [decisionForm, setDecisionForm] = useState(EMPTY_DECISION_FORM);
 
-  function load() {
-    setLoading(true);
-    setLoadError("");
-    Promise.all([
-      listLossCases(),
-      listInventoryItems(),
-      listInventoryLocations(),
-      listAssets(),
-      // Nome do responsável é só exibição — sem permissão de leitura de Contatos a tela continua
-      // funcionando (mostra "Responsável definido").
-      listPeople().catch(lookupFallback("as pessoas")),
-    ])
-      .then(([c, i, l, a, ppl]) => {
-        setCases(c || []);
-        setItems(i || []);
-        setLocations(l || []);
-        setAssets(a || []);
-        setPeople(ppl || []);
-      })
-      .catch((err) => setLoadError(err?.message || "Não foi possível carregar os casos de perda."))
-      .finally(() => setLoading(false));
-    listLossCaseAnomalies()
-      .then((analysis) => {
-        const map = {};
-        for (const c of analysis?.cases || []) if (c.flags?.length) map[c.lossCaseId] = c.flags;
-        setNayFlags(map);
-      })
-      .catch(() => setNayFlags({}));
-  }
-  useEffect(() => { load(); }, []);
+  // M9-D850: carregando, vazio, erro, 403 e offline vêm do padrão único de estados.
+  const casesQuery = useAsyncState(
+    async () => {
+      const [cases, items, locations, assets, people, nayFlags] = await Promise.all([
+        listLossCases(),
+        listInventoryItems(),
+        listInventoryLocations(),
+        listAssets(),
+        // Nome do responsável é só exibição — sem permissão de leitura de Contatos a tela continua
+        // funcionando (mostra "Responsável definido"); a falha fica registrada no aviso do topo.
+        listPeople().catch(lookupFallback("as pessoas")),
+        // Indícios da NAY são só contexto de leitura: a falha é registrada e a tela segue sem os indícios.
+        listLossCaseAnomalies()
+          .then((analysis) => {
+            const map = {};
+            for (const c of analysis?.cases || []) if (c.flags?.length) map[c.lossCaseId] = c.flags;
+            return map;
+          })
+          .catch(lookupFallback("os indícios da NAY", {})),
+      ]);
+      return { cases: cases || [], items: items || [], locations: locations || [], assets: assets || [], people: people || [], nayFlags: nayFlags || {} };
+    },
+    { key: "estoque-perdas", isEmpty: (d) => !d || d.cases.length === 0 }
+  );
+  const { cases = [], items = [], locations = [], assets = [], people = [], nayFlags = {} } = casesQuery.data || {};
+  const load = casesQuery.reload;
 
   const evidenceIds = form.evidenceFileIds;
   // Prévia só informativa do custo que o servidor vai calcular (A2) — o valor gravado é sempre o do servidor.
@@ -283,7 +273,6 @@ export default function PerdasPage() {
 
   return (
     <AppShell title="Perdas, quebras e extravios" backHref="/painel/estoque">
-      {loadError ? <Alert tone="danger" title="Não foi possível carregar os casos de perda">{loadError}</Alert> : null}
       {actionError ? (
         /* BUG REAL CORRIGIDO (auditoria E2E Marco 7, ciclo 4) — mesma classe sistêmica já
            catalogada no Marco 6: Alert de erro renderizado só no topo da página ficava atrás do
@@ -295,11 +284,13 @@ export default function PerdasPage() {
       ) : null}
 
       <Card title="Casos de perda" subtitle="Perda não é baixa comum — exige evidência e decisão separada">
-        <Table columns={columns} rows={loading ? [] : cases} loading={loading} emptyMessage="Nenhum caso de perda registrado." />
+        <AsyncState result={casesQuery} emptyTitle="Nenhum caso de perda registrado" emptyDescription="Perdas, quebras e extravios declarados aparecem aqui.">
+          {() => <Table columns={columns} rows={cases} />}
+        </AsyncState>
       </Card>
 
       <StickyActionBar>
-        <Button onClick={() => setModalOpen(true)}>
+        <Button onClick={() => setModalOpen(true)} disabled={!casesQuery.data}>
           <Icon name="plus" size={18} /> Registrar perda
         </Button>
       </StickyActionBar>

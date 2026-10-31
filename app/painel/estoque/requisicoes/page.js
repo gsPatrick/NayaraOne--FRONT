@@ -24,18 +24,14 @@ import { formatDateTime, formatQuantity, toNumber } from "@/lib/format";
 import { getCurrentUser } from "@/lib/auth/session";
 
 import { lookupFallback } from "@/lib/asyncState/lookup";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 const STATUS_LABELS = { REQUESTED: "Solicitada", APPROVED: "Aprovada", REJECTED: "Rejeitada", ISSUED: "Entregue" };
 const STATUS_TONE = { REQUESTED: "neutral", APPROVED: "info", REJECTED: "danger", ISSUED: "success" };
 
 export default function RequisicoesPage() {
   const router = useRouter();
   const currentUser = getCurrentUser();
-  const [requisitions, setRequisitions] = useState([]);
-  const [items, setItems] = useState([]);
-  const [locations, setLocations] = useState([]);
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [busyId, setBusyId] = useState(null);
   const { confirm, ConfirmDialog } = useConfirm();
@@ -72,20 +68,17 @@ export default function RequisicoesPage() {
     return () => { cancelled = true; };
   }, [form.projectId]);
 
-  function load() {
-    setLoading(true);
-    setLoadError("");
-    Promise.all([listRequisitions(), listInventoryItems(), listInventoryLocations(), listProjects().catch(lookupFallback("as obras"))])
-      .then(([r, i, l, p]) => {
-        setRequisitions(r || []);
-        setItems(i || []);
-        setLocations(l || []);
-        setProjects(p || []);
-      })
-      .catch((err) => setLoadError(err?.message || "Não foi possível carregar as requisições."))
-      .finally(() => setLoading(false));
-  }
-  useEffect(() => { load(); }, []);
+  // M9-D850: carregando, vazio, erro, 403 e offline vêm do padrão único de estados.
+  // Obras são de apoio: sem permissão de leitura a falha é registrada (lookupFallback) e a tela abre.
+  const requisitionsQuery = useAsyncState(
+    async () => {
+      const [requisitions, items, locations, projects] = await Promise.all([listRequisitions(), listInventoryItems(), listInventoryLocations(), listProjects().catch(lookupFallback("as obras"))]);
+      return { requisitions: requisitions || [], items: items || [], locations: locations || [], projects: projects || [] };
+    },
+    { key: "estoque-requisicoes", isEmpty: (d) => !d || d.requisitions.length === 0 }
+  );
+  const { requisitions = [], items = [], locations = [], projects = [] } = requisitionsQuery.data || {};
+  const load = requisitionsQuery.reload;
 
   function updateLine(idx, field, value) {
     setForm((p) => {
@@ -237,7 +230,6 @@ export default function RequisicoesPage() {
 
   return (
     <AppShell title="Requisições de material" backHref="/painel/estoque">
-      {loadError ? <Alert tone="danger" title="Não foi possível carregar as requisições">{loadError}</Alert> : null}
       {actionError ? (
         /* BUG REAL CORRIGIDO (auditoria E2E Marco 7, ciclo 4) — mesma classe sistêmica já
            catalogada no Marco 6: Alert de erro renderizado só no topo da página ficava atrás do
@@ -249,11 +241,13 @@ export default function RequisicoesPage() {
       ) : null}
 
       <Card title="Requisições" subtitle="Solicitação → aprovação → saída do estoque por obra">
-        <Table columns={columns} rows={loading ? [] : requisitions} loading={loading} emptyMessage="Nenhuma requisição registrada." />
+        <AsyncState result={requisitionsQuery} emptyTitle="Nenhuma requisição registrada" emptyDescription="Crie uma requisição para solicitar saída de material por obra.">
+          {() => <Table columns={columns} rows={requisitions} />}
+        </AsyncState>
       </Card>
 
       <StickyActionBar>
-        <Button onClick={() => setModalOpen(true)}>
+        <Button onClick={() => setModalOpen(true)} disabled={!requisitionsQuery.data}>
           <Icon name="plus" size={18} /> Nova requisição
         </Button>
       </StickyActionBar>

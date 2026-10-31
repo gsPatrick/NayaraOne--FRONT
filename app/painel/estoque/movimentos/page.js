@@ -25,6 +25,8 @@ import { formatQuantity, formatDateTime, formatBRL, toNumber, humanizeText } fro
 import styles from "../../obras/lista/page.module.css";
 
 import { reportLookupProblem } from "@/lib/asyncState/lookup";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 const MOVEMENT_TYPE_LABELS = { IN: "Entrada", OUT: "Saída", RETURN: "Devolução", TRANSFER: "Transferência", ADJUSTMENT: "Ajuste", LOSS: "Perda", DISPOSAL: "Descarte" };
 const MOVEMENT_TYPE_TONE = { IN: "success", OUT: "info", RETURN: "neutral", TRANSFER: "info", ADJUSTMENT: "warning", LOSS: "danger", DISPOSAL: "danger" };
 const SOURCE_REQUIRED = { OUT: "source", LOSS: "source", DISPOSAL: "source", IN: "destination", RETURN: "destination", TRANSFER: "both", ADJUSTMENT: "either" };
@@ -40,11 +42,7 @@ const PROPOSAL_TYPES = ["ADJUSTMENT", "DISPOSAL"];
 
 export default function MovimentosPage() {
   const router = useRouter();
-  const [items, setItems] = useState([]);
-  const [locations, setLocations] = useState([]);
   const [balances, setBalances] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -58,9 +56,6 @@ export default function MovimentosPage() {
   const movementIdempotencyKeyRef = useRef(null);
   // BUG REAL CORRIGIDO (auditoria Nayara, Marco 7, F3): não existia histórico/ledger de
   // movimentações em lugar nenhum — só saldo atual agregado. Seção própria, com filtros.
-  const [history, setHistory] = useState([]);
-  const [historyLoading, setHistoryLoading] = useState(true);
-  const [historyError, setHistoryError] = useState("");
   const [historyFilters, setHistoryFilters] = useState({ inventoryItemId: "", locationId: "", movementType: "" });
   const [form, setForm] = useState({
     inventoryItemId: "", movementType: "IN", quantity: "", sourceLocationId: "", destinationLocationId: "",
@@ -68,22 +63,14 @@ export default function MovimentosPage() {
   });
   const currentUser = getCurrentUser();
   const [notice, setNotice] = useState("");
-  const [proposals, setProposals] = useState([]);
-  const [proposalsLoading, setProposalsLoading] = useState(true);
-  const [proposalsError, setProposalsError] = useState("");
   const [decidingId, setDecidingId] = useState(null);
   const [stages, setStages] = useState([]);
   const [stagesLoading, setStagesLoading] = useState(false);
 
-  function loadProposals() {
-    setProposalsLoading(true);
-    setProposalsError("");
-    listAdjustmentProposals({ status: "PENDING" })
-      .then((rows) => setProposals(rows || []))
-      .catch((err) => setProposalsError(err?.message || "Não foi possível carregar os ajustes pendentes."))
-      .finally(() => setProposalsLoading(false));
-  }
-  useEffect(() => { loadProposals(); }, []);
+  // M9-D850: ajustes pendentes, itens/locais e histórico carregam cada um pelo padrão único de estados (carregando, vazio, erro, 403, offline).
+  const proposalsQuery = useAsyncState(() => listAdjustmentProposals({ status: "PENDING" }).then((rows) => rows || []), { key: "estoque-movimentos-ajustes" });
+  const proposals = proposalsQuery.data || [];
+  const loadProposals = proposalsQuery.reload;
 
   async function handleDecideProposal(id, decision) {
     setDecidingId(id);
@@ -101,28 +88,21 @@ export default function MovimentosPage() {
     }
   }
 
-  function load() {
-    setLoading(true);
-    setLoadError("");
-    Promise.all([listInventoryItems(), listInventoryLocations()])
-      .then(([i, l]) => {
-        setItems(i || []);
-        setLocations(l || []);
-      })
-      .catch((err) => setLoadError(err?.message || "Não foi possível carregar os dados."))
-      .finally(() => setLoading(false));
-  }
-  useEffect(() => { load(); }, []);
+  const lookupQuery = useAsyncState(
+    async () => {
+      const [items, locations] = await Promise.all([listInventoryItems(), listInventoryLocations()]);
+      return { items: items || [], locations: locations || [] };
+    },
+    { key: "estoque-movimentos-apoio", isEmpty: () => false }
+  );
+  const { items = [], locations = [] } = lookupQuery.data || {};
+  const load = lookupQuery.reload;
 
-  function loadHistory() {
-    setHistoryLoading(true);
-    setHistoryError("");
-    listInventoryMovements(historyFilters)
-      .then((rows) => setHistory(rows || []))
-      .catch((err) => setHistoryError(err?.message || "Não foi possível carregar o histórico."))
-      .finally(() => setHistoryLoading(false));
-  }
-  useEffect(() => { loadHistory(); }, [historyFilters.inventoryItemId, historyFilters.locationId, historyFilters.movementType]);
+  const historyQuery = useAsyncState(() => listInventoryMovements(historyFilters).then((rows) => rows || []), {
+    deps: [historyFilters.inventoryItemId, historyFilters.locationId, historyFilters.movementType],
+  });
+  const history = historyQuery.data || [];
+  const loadHistory = historyQuery.reload;
 
   useEffect(() => {
     if (!form.inventoryItemId) {
@@ -270,7 +250,6 @@ export default function MovimentosPage() {
 
   return (
     <AppShell title="Movimentos de estoque" backHref="/painel/estoque">
-      {loadError ? <Alert tone="danger" title="Não foi possível carregar os dados">{loadError}</Alert> : null}
       {actionError ? (
         /* BUG REAL CORRIGIDO (auditoria E2E Marco 7, ciclo 4) — mesma classe sistêmica já
            catalogada no Marco 6: Alert de erro renderizado só no topo da página ficava atrás do
@@ -284,56 +263,60 @@ export default function MovimentosPage() {
       {notice ? <Alert tone="success">{notice}</Alert> : null}
 
       <Card title="Ajustes aguardando aprovação" subtitle="Ajuste e descarte manuais só mexem no saldo depois da aprovação de outra pessoa">
-        {proposalsError ? <Alert tone="danger" title="Não foi possível carregar os ajustes pendentes">{proposalsError}</Alert> : null}
-        <Table columns={proposalColumns} rows={proposals} loading={proposalsLoading} emptyMessage="Nenhum ajuste aguardando aprovação." />
+        <AsyncState result={proposalsQuery} emptyTitle="Nenhum ajuste aguardando aprovação" emptyDescription="Ajustes e descartes manuais aparecem aqui até alguém decidir.">
+          {() => <Table columns={proposalColumns} rows={proposals} />}
+        </AsyncState>
       </Card>
 
-      <Card title="Consultar saldo por item" subtitle="Selecione um item para ver o saldo por local">
-        <div className={styles.toolbar}>
-          <Select value={form.inventoryItemId} onChange={(e) => setForm((p) => ({ ...p, inventoryItemId: e.target.value }))}>
-            <option value="">Selecione um item...</option>
-            {items.map((i) => (
-              <option key={i.id} value={i.id}>{i.name}</option>
-            ))}
-          </Select>
-        </div>
-        {form.inventoryItemId ? (
-          <Table columns={balanceColumns} rows={balances} loading={loading} emptyMessage="Sem saldo registrado para este item." />
-        ) : null}
-      </Card>
+      <AsyncState result={lookupQuery} loadingLabel="Carregando itens e locais...">
+        {() => (
+          <>
+          <Card title="Consultar saldo por item" subtitle="Selecione um item para ver o saldo por local">
+            <div className={styles.toolbar}>
+              <Select value={form.inventoryItemId} onChange={(e) => setForm((p) => ({ ...p, inventoryItemId: e.target.value }))}>
+                <option value="">Selecione um item...</option>
+                {items.map((i) => (
+                  <option key={i.id} value={i.id}>{i.name}</option>
+                ))}
+              </Select>
+            </div>
+            {form.inventoryItemId ? (
+              <Table columns={balanceColumns} rows={balances} emptyMessage="Sem saldo registrado para este item." />
+            ) : null}
+          </Card>
 
-      <Card title="Histórico de movimentações" subtitle="Quem moveu o quê, quando, de onde pra onde e por quê">
-        <div className={styles.toolbar}>
-          <Select value={historyFilters.inventoryItemId} onChange={(e) => setHistoryFilters((p) => ({ ...p, inventoryItemId: e.target.value }))}>
-            <option value="">Todos os itens</option>
-            {items.map((i) => (
-              <option key={i.id} value={i.id}>{i.name}</option>
-            ))}
-          </Select>
-          <Select value={historyFilters.locationId} onChange={(e) => setHistoryFilters((p) => ({ ...p, locationId: e.target.value }))}>
-            <option value="">Todos os locais</option>
-            {locations.map((l) => (
-              <option key={l.id} value={l.id}>{l.name}</option>
-            ))}
-          </Select>
-          <Select value={historyFilters.movementType} onChange={(e) => setHistoryFilters((p) => ({ ...p, movementType: e.target.value }))}>
-            <option value="">Todos os tipos</option>
-            {Object.entries(MOVEMENT_TYPE_LABELS).map(([k, v]) => (
-              <option key={k} value={k}>{v}</option>
-            ))}
-          </Select>
-        </div>
-        {historyError ? <Alert tone="danger" title="Não foi possível carregar o histórico">{historyError}</Alert> : null}
-        <Table
-          columns={historyColumns}
-          rows={history}
-          loading={historyLoading}
-          emptyMessage="Nenhuma movimentação registrada ainda."
-        />
-      </Card>
+          <Card title="Histórico de movimentações" subtitle="Quem moveu o quê, quando, de onde pra onde e por quê">
+            <div className={styles.toolbar}>
+              <Select value={historyFilters.inventoryItemId} onChange={(e) => setHistoryFilters((p) => ({ ...p, inventoryItemId: e.target.value }))}>
+                <option value="">Todos os itens</option>
+                {items.map((i) => (
+                  <option key={i.id} value={i.id}>{i.name}</option>
+                ))}
+              </Select>
+              <Select value={historyFilters.locationId} onChange={(e) => setHistoryFilters((p) => ({ ...p, locationId: e.target.value }))}>
+                <option value="">Todos os locais</option>
+                {locations.map((l) => (
+                  <option key={l.id} value={l.id}>{l.name}</option>
+                ))}
+              </Select>
+              <Select value={historyFilters.movementType} onChange={(e) => setHistoryFilters((p) => ({ ...p, movementType: e.target.value }))}>
+                <option value="">Todos os tipos</option>
+                {Object.entries(MOVEMENT_TYPE_LABELS).map(([k, v]) => (
+                  <option key={k} value={k}>{v}</option>
+                ))}
+              </Select>
+            </div>
+            <AsyncState result={historyQuery} emptyTitle="Nenhuma movimentação encontrada" emptyDescription="Nada registrado ainda para este filtro.">
+              {() => <Table columns={historyColumns} rows={history} />}
+            </AsyncState>
+          </Card>
+          </>
+        )}
+      </AsyncState>
 
       <StickyActionBar>
         <Button
+          disabled={!lookupQuery.data}
           onClick={() => {
             movementIdempotencyKeyRef.current = null;
             setModalOpen(true);
@@ -362,10 +345,8 @@ export default function MovimentosPage() {
         {/* BUG REAL CORRIGIDO: sem nenhum item/local cadastrado, o modal abria com os dois
             selects vazios ("Selecione...") sem nenhuma explicação do porquê, nem como resolver —
             o usuário não tinha como saber que precisava cadastrar Item/Local primeiro. */}
-        {loading ? (
-          <div style={{ display: "flex", justifyContent: "center", padding: "var(--space-4) 0", color: "var(--color-ink-muted)" }}>
-            Carregando itens e locais...
-          </div>
+        {!lookupQuery.data ? (
+          <AsyncState result={lookupQuery} loadingLabel="Carregando itens e locais...">{null}</AsyncState>
         ) : items.length === 0 ? (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "var(--space-4)", padding: "var(--space-4) 0" }}>
             <EmptyState icon="layers" title="Nenhum item de estoque cadastrado" description="Você precisa cadastrar pelo menos um item antes de registrar um movimento." />

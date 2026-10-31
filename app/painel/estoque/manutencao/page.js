@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -18,17 +18,14 @@ import Input from "@/components/atoms/Input/Input";
 import { listMaintenanceOrders, closeMaintenanceOrder, openMaintenanceOrder, listAssets } from "@/lib/api/inventory";
 import { apiFetch } from "@/lib/api/client";
 import { formatDateTime, humanizeText } from "@/lib/format";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 
 const STATUS_LABELS = { OPEN: "Aberta", CLOSED: "Fechada" };
 const STATUS_TONE = { OPEN: "warning", CLOSED: "success" };
 
 export default function ManutencaoPage() {
   const router = useRouter();
-  const [orders, setOrders] = useState([]);
-  const [assets, setAssets] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [busyId, setBusyId] = useState(null);
   const [openModal, setOpenModal] = useState(false);
@@ -38,19 +35,16 @@ export default function ManutencaoPage() {
   // BUG REAL CORRIGIDO (auditoria "loop até secar", rodada 53, 2026-10-05): a OS fechada só
   // mostrava a mesma data de abertura — closedAt (quando fechou) e quem abriu/fechou
   // (createdBy/updatedBy, já retornados pelo backend) nunca eram exibidos.
-  function load() {
-    setLoading(true);
-    setLoadError("");
-    Promise.all([listMaintenanceOrders(), listAssets(), apiFetch("/users")])
-      .then(([o, a, u]) => {
-        setOrders(o || []);
-        setAssets(a || []);
-        setUsers(u || []);
-      })
-      .catch((err) => setLoadError(err?.message || "Não foi possível carregar as ordens de manutenção."))
-      .finally(() => setLoading(false));
-  }
-  useEffect(() => { load(); }, []);
+  // M9-D850: carregando, vazio, erro, 403 e offline vêm do padrão único de estados.
+  const ordersQuery = useAsyncState(
+    async () => {
+      const [orders, assets, users] = await Promise.all([listMaintenanceOrders(), listAssets(), apiFetch("/users")]);
+      return { orders: orders || [], assets: assets || [], users: users || [] };
+    },
+    { key: "estoque-manutencao", isEmpty: (d) => !d || d.orders.length === 0 }
+  );
+  const { orders = [], assets = [], users = [] } = ordersQuery.data || {};
+  const load = ordersQuery.reload;
 
   async function handleClose(id) {
     setBusyId(id);
@@ -115,7 +109,6 @@ export default function ManutencaoPage() {
 
   return (
     <AppShell title="Manutenção de patrimônio" backHref="/painel/estoque">
-      {loadError ? <Alert tone="danger" title="Não foi possível carregar as ordens de manutenção">{loadError}</Alert> : null}
       {actionError ? (
         /* BUG REAL CORRIGIDO (auditoria E2E Marco 7, ciclo 4) — mesma classe sistêmica já
            catalogada no Marco 6: Alert de erro renderizado só no topo da página ficava atrás do
@@ -127,11 +120,13 @@ export default function ManutencaoPage() {
       ) : null}
 
       <Card title="Ordens de manutenção" subtitle="Abertas automaticamente na devolução de ferramenta danificada, ou manualmente abaixo">
-        <Table columns={columns} rows={loading ? [] : orders} loading={loading} emptyMessage="Nenhuma ordem de manutenção registrada." />
+        <AsyncState result={ordersQuery} emptyTitle="Nenhuma ordem de manutenção registrada" emptyDescription="As ordens são abertas na devolução de ferramenta danificada ou manualmente em Abrir OS.">
+          {() => <Table columns={columns} rows={orders} />}
+        </AsyncState>
       </Card>
 
       <StickyActionBar>
-        <Button onClick={() => setOpenModal(true)}>
+        <Button onClick={() => setOpenModal(true)} disabled={!ordersQuery.data}>
           <Icon name="plus" size={18} /> Abrir OS
         </Button>
       </StickyActionBar>

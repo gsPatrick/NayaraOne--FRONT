@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -17,34 +17,30 @@ import FormField from "@/components/molecules/FormField/FormField";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import { listCounts, openCount, listInventoryLocations } from "@/lib/api/inventory";
 import { formatDateTime } from "@/lib/format";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 
 const STATUS_LABELS = { OPEN: "Em contagem", COMPLETED: "Fechado" };
 const STATUS_TONE = { OPEN: "warning", COMPLETED: "success" };
 
 export default function ContagemPage() {
   const router = useRouter();
-  const [counts, setCounts] = useState([]);
-  const [locations, setLocations] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
 
   const [openModalOpen, setOpenModalOpen] = useState(false);
   const [newLocationId, setNewLocationId] = useState("");
   const [saving, setSaving] = useState(false);
 
-  function load() {
-    setLoading(true);
-    setLoadError("");
-    Promise.all([listCounts(), listInventoryLocations()])
-      .then(([c, l]) => {
-        setCounts(c || []);
-        setLocations(l || []);
-      })
-      .catch((err) => setLoadError(err?.message || "Não foi possível carregar os inventários."))
-      .finally(() => setLoading(false));
-  }
-  useEffect(() => { load(); }, []);
+  // M9-D850: carregando, vazio, erro, 403 e offline vêm do padrão único de estados.
+  const countsQuery = useAsyncState(
+    async () => {
+      const [counts, locations] = await Promise.all([listCounts(), listInventoryLocations()]);
+      return { counts: counts || [], locations: locations || [] };
+    },
+    { key: "estoque-contagem", isEmpty: (d) => !d || d.counts.length === 0 }
+  );
+  const { counts = [], locations = [] } = countsQuery.data || {};
+  const load = countsQuery.reload;
 
   const newLocation = locations.find((l) => l.id === newLocationId);
   const newLocationNeedsProject = newLocation?.locationType === "PROJECT_SITE";
@@ -77,7 +73,6 @@ export default function ContagemPage() {
 
   return (
     <AppShell title="Inventário físico" backHref="/painel/estoque">
-      {loadError ? <Alert tone="danger" title="Não foi possível carregar os inventários">{loadError}</Alert> : null}
       {actionError ? (
         /* BUG REAL CORRIGIDO (auditoria E2E Marco 7, ciclo 4) — mesma classe sistêmica já
            catalogada no Marco 6: Alert de erro renderizado só no topo da página ficava atrás do
@@ -89,11 +84,13 @@ export default function ContagemPage() {
       ) : null}
 
       <Card title="Contagens" subtitle="Local em contagem aberta fica congelado para movimentações. Fechamento nunca altera saldo direto — ajuste é um ato separado e aprovado">
-        <Table columns={columns} rows={loading ? [] : counts} loading={loading} emptyMessage="Nenhum inventário aberto." />
+        <AsyncState result={countsQuery} emptyTitle="Nenhum inventário aberto" emptyDescription="Abra um inventário físico para contar o estoque de um local.">
+          {() => <Table columns={columns} rows={counts} />}
+        </AsyncState>
       </Card>
 
       <StickyActionBar>
-        <Button onClick={() => setOpenModalOpen(true)}>
+        <Button onClick={() => setOpenModalOpen(true)} disabled={!countsQuery.data}>
           <Icon name="plus" size={18} /> Abrir inventário
         </Button>
       </StickyActionBar>

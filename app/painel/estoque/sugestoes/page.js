@@ -29,6 +29,8 @@ import { formatBRL, formatDateTime, formatQuantity, toNumber } from "@/lib/forma
 import styles from "../../obras/lista/page.module.css";
 
 import { reportLookupProblem } from "@/lib/asyncState/lookup";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 // NAY Estoque (EST-013 / Guia §12 / EST-TS-14). A NAY só SUGERE: esta tela lista as sugestões
 // de compra calculadas a partir de consumo, obras ativas, lead time e estoque mínimo, e a
 // ÚNICA ação com efeito é humana ("Aprovar e criar pedido"), que abre uma requisição de compra
@@ -52,11 +54,7 @@ function toBrDecimalString(value) {
 }
 
 export default function SugestoesNayPage() {
-  const [suggestions, setSuggestions] = useState([]);
-  const [anomalies, setAnomalies] = useState(null);
   const [statusFilter, setStatusFilter] = useState("PENDING");
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [notice, setNotice] = useState(null);
   const [generating, setGenerating] = useState(false);
@@ -80,19 +78,16 @@ export default function SugestoesNayPage() {
     });
   }, []);
 
-  function load(status = statusFilter) {
-    setLoading(true);
-    setLoadError("");
-    listPurchaseSuggestions({ status })
-      .then((s) => setSuggestions(s || []))
-      .catch((err) => setLoadError(err?.message || "Não foi possível carregar as sugestões da NAY."))
-      .finally(() => setLoading(false));
-    // Isolado: falha nos indícios de perda nunca derruba a lista de sugestões de compra.
-    listLossCaseAnomalies()
-      .then((a) => setAnomalies(a || null))
-      .catch((error) => { reportLookupProblem("as sugestões de anomalia", error); setAnomalies(null); });
+  // M9-D850: sugestões e indícios de perda carregam cada um pelo padrão único de estados (carregando, vazio, erro, 403, offline).
+  // Isolados: falha nos indícios de perda nunca derruba a lista de sugestões de compra, e cada um mostra o seu próprio erro.
+  const suggestionsQuery = useAsyncState(() => listPurchaseSuggestions({ status: statusFilter }).then((rows) => rows || []), { deps: [statusFilter] });
+  const anomaliesQuery = useAsyncState(() => listLossCaseAnomalies().then((analysis) => analysis || { cases: [] }), { key: "estoque-sugestoes-indicios", isEmpty: () => false });
+  const suggestions = suggestionsQuery.data || [];
+  const anomalies = anomaliesQuery.data || null;
+  function load() {
+    suggestionsQuery.reload();
+    anomaliesQuery.reload();
   }
-  useEffect(() => { load(statusFilter); }, [statusFilter]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!perms.canReadSettings) return;
@@ -101,8 +96,11 @@ export default function SugestoesNayPage() {
         const v = row?.value;
         setLeadTime((p) => ({ ...p, loaded: true, value: v != null ? String(v) : "", saved: v != null ? Number(v) : null }));
       })
-      // 404 = ainda não configurado para a empresa (a NAY usa o padrão do sistema).
-      .catch(() => setLeadTime((p) => ({ ...p, loaded: true, value: "", saved: null })));
+      .catch((error) => {
+        // 404 = ainda não configurado para a empresa (a NAY usa o padrão do sistema); qualquer outra falha é registrada no aviso do topo.
+        if (error?.status !== 404) reportLookupProblem("o lead time padrão", error);
+        setLeadTime((p) => ({ ...p, loaded: true, value: "", saved: null }));
+      });
   }, [perms.canReadSettings]);
 
   async function handleGenerate() {
@@ -116,7 +114,7 @@ export default function SugestoesNayPage() {
       if (result?.suppressedByRecentRejection) parts.push(`${result.suppressedByRecentRejection} omitida(s) por rejeição recente`);
       setNotice({ tone: "info", text: `Recalculado: ${parts.join(", ")}. Nenhuma compra foi criada automaticamente.` });
       if (statusFilter !== "PENDING") setStatusFilter("PENDING");
-      else load("PENDING");
+      else load();
     } catch (err) {
       setActionError(err?.message || "Não foi possível recalcular as sugestões.");
     } finally {
@@ -289,7 +287,6 @@ export default function SugestoesNayPage() {
 
   return (
     <AppShell title="Sugestões da NAY — Estoque" backHref="/painel/estoque">
-      {loadError ? <Alert tone="danger" title="Não foi possível carregar">{loadError}</Alert> : null}
       {actionError ? (
         <div style={{ position: "fixed", top: "var(--space-4)", left: "50%", transform: "translateX(-50%)", zIndex: 200, width: "min(560px, calc(100vw - 2 * var(--space-4)))" }}>
           <Alert tone="danger">{actionError}</Alert>
@@ -322,12 +319,13 @@ export default function SugestoesNayPage() {
             <option value="ALL">Todas</option>
           </Select>
         </div>
-        <Table
-          columns={columns}
-          rows={loading ? [] : suggestions}
-          loading={loading}
-          emptyMessage={statusFilter === "PENDING" ? "Nenhuma sugestão pendente. Use \"Recalcular\" para a NAY analisar o estoque agora." : "Nenhuma sugestão neste filtro."}
-        />
+        <AsyncState
+          result={suggestionsQuery}
+          emptyTitle={statusFilter === "PENDING" ? "Nenhuma sugestão pendente" : "Nenhuma sugestão neste filtro"}
+          emptyDescription={statusFilter === "PENDING" ? 'Use "Recalcular" para a NAY analisar o estoque agora.' : undefined}
+        >
+          {() => <Table columns={columns} rows={suggestions} />}
+        </AsyncState>
       </Card>
 
       <Card title="Indícios em casos de perda" subtitle={`Recorrência e valor fora do padrão nos últimos ${anomalies?.parameters?.windowDays || 90} dias`}>
@@ -335,7 +333,9 @@ export default function SugestoesNayPage() {
           {anomalies?.disclaimer || "Sugestão da NAY: indícios para apoiar a decisão humana. Não atribui culpa, não decide o caso e não gera cobrança."}{" "}
           A decisão continua em <Link href="/painel/estoque/perdas">Perdas &amp; Extravios</Link>.
         </Alert>
-        <Table columns={anomalyColumns} rows={loading ? [] : flaggedCases} loading={loading} emptyMessage="Nenhum indício de anomalia nos casos de perda da janela." />
+        <AsyncState result={anomaliesQuery}>
+          {() => <Table columns={anomalyColumns} rows={flaggedCases} emptyMessage="Nenhum indício de anomalia nos casos de perda da janela." />}
+        </AsyncState>
       </Card>
 
       {perms.canReadSettings ? (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -23,6 +23,8 @@ import { listReceipts, createReceipt, reviewReceipt, confirmReceipt, suggestRece
 import { listInventoryItems, listInventoryLocations } from "@/lib/api/inventory";
 import { formatDateTime, formatBRL, formatQuantity, toNumber } from "@/lib/format";
 import styles from "../../obras/lista/page.module.css";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 
 const STATUS_LABELS = { DRAFT: "Rascunho", REVIEWED: "Revisado", COMPLETED: "Confirmado" };
 const STATUS_TONE = { DRAFT: "neutral", REVIEWED: "info", COMPLETED: "success" };
@@ -42,11 +44,6 @@ function toBrDecimalString(value) {
 
 export default function RecebimentosPage() {
   const router = useRouter();
-  const [receipts, setReceipts] = useState([]);
-  const [items, setItems] = useState([]);
-  const [locations, setLocations] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [busyId, setBusyId] = useState(null);
 
@@ -67,19 +64,16 @@ export default function RecebimentosPage() {
   const [reviewError, setReviewError] = useState("");
   const [confirmTarget, setConfirmTarget] = useState(null);
 
-  function load() {
-    setLoading(true);
-    setLoadError("");
-    Promise.all([listReceipts(), listInventoryItems(), listInventoryLocations()])
-      .then(([r, i, l]) => {
-        setReceipts(r || []);
-        setItems(i || []);
-        setLocations(l || []);
-      })
-      .catch((err) => setLoadError(err?.message || "Não foi possível carregar os recebimentos."))
-      .finally(() => setLoading(false));
-  }
-  useEffect(() => { load(); }, []);
+  // M9-D850: carregando, vazio, erro, 403 e offline vêm do padrão único de estados.
+  const receiptsQuery = useAsyncState(
+    async () => {
+      const [receipts, items, locations] = await Promise.all([listReceipts(), listInventoryItems(), listInventoryLocations()]);
+      return { receipts: receipts || [], items: items || [], locations: locations || [] };
+    },
+    { key: "estoque-recebimentos", isEmpty: (d) => !d || d.receipts.length === 0 }
+  );
+  const { receipts = [], items = [], locations = [] } = receiptsQuery.data || {};
+  const load = receiptsQuery.reload;
 
   function updateLine(idx, field, value) {
     setForm((p) => {
@@ -262,7 +256,6 @@ export default function RecebimentosPage() {
 
   return (
     <AppShell title="Recebimentos (NF)" backHref="/painel/estoque">
-      {loadError ? <Alert tone="danger" title="Não foi possível carregar os recebimentos">{loadError}</Alert> : null}
       {actionError ? (
         /* BUG REAL CORRIGIDO (auditoria E2E Marco 7, ciclo 4) — mesma classe sistêmica já
            catalogada no Marco 6: Alert de erro renderizado só no topo da página ficava atrás do
@@ -274,11 +267,13 @@ export default function RecebimentosPage() {
       ) : null}
 
       <Card title="Recebimentos" subtitle="Entrada por NF — Rascunho → Revisado → Confirmado (gera saldo+custo médio)">
-        <Table columns={columns} rows={loading ? [] : receipts} loading={loading} emptyMessage="Nenhum recebimento registrado." />
+        <AsyncState result={receiptsQuery} emptyTitle="Nenhum recebimento registrado" emptyDescription="Registre a entrada por nota fiscal em Novo recebimento.">
+          {() => <Table columns={columns} rows={receipts} />}
+        </AsyncState>
       </Card>
 
       <StickyActionBar>
-        <Button onClick={openNewReceipt}>
+        <Button onClick={openNewReceipt} disabled={!receiptsQuery.data}>
           <Icon name="plus" size={18} /> Novo recebimento
         </Button>
       </StickyActionBar>

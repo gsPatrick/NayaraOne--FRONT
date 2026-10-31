@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -21,6 +21,8 @@ import { listAssets, createAsset, updateAsset, transferAsset, listAssetMovements
 import { uploadFile } from "@/lib/api/legal";
 import { apiFetch } from "@/lib/api/client";
 import { formatBRL, formatDate, toNumber, dateOnlyInputToIso } from "@/lib/format";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 
 const STATUS_LABELS = { AVAILABLE: "Disponível", IN_USE: "Em uso", LOANED: "Emprestado", MAINTENANCE: "Em manutenção", LOST: "Perdido/extraviado", DISPOSED: "Baixado" };
 const ASSET_MOVEMENT_LABELS = { TRANSFER: "Transferência", DISPOSAL: "Baixa", LOAN: "Empréstimo", RETURN: "Devolução" };
@@ -44,9 +46,6 @@ function todayDateOnly(plusDays = 0) {
 
 export default function PatrimonioPage() {
   const router = useRouter();
-  const [assets, setAssets] = useState([]);
-  const [locations, setLocations] = useState([]);
-  const [users, setUsers] = useState([]);
   // Seleção de responsável/custodiante só oferece usuários ATIVOS — um usuário suspenso/
   // inativado (ex.: desativado pela gestão) não pode receber custódia nova. A lista completa
   // (`users`) continua sendo usada para RESOLVER nomes em registros antigos, que podem
@@ -59,8 +58,6 @@ export default function PatrimonioPage() {
   const [tagSearchError, setTagSearchError] = useState("");
   const [tagSearchResult, setTagSearchResult] = useState(null);
   const [searchingTag, setSearchingTag] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [busyId, setBusyId] = useState(null);
 
@@ -129,22 +126,17 @@ export default function PatrimonioPage() {
   // GAP REAL CORRIGIDO (auditoria real Nayara, Marco 7, 2026-10-14, achado F11): não existia
   // nenhuma tela/seção que listasse empréstimos em aberto ou atrasados — só dava pra saber "quem
   // está com o quê" abrindo o histórico item por item.
-  const [openLoans, setOpenLoans] = useState([]);
 
-  function load() {
-    setLoading(true);
-    setLoadError("");
-    Promise.all([listAssets(), listInventoryLocations(), apiFetch("/users"), listToolLoans({ status: "OPEN" }), listToolLoans({ status: "OVERDUE" })])
-      .then(([a, l, u, openList, overdueList]) => {
-        setAssets(a || []);
-        setLocations(l || []);
-        setUsers(u || []);
-        setOpenLoans([...(openList || []), ...(overdueList || [])]);
-      })
-      .catch((err) => setLoadError(err?.message || "Não foi possível carregar o patrimônio."))
-      .finally(() => setLoading(false));
-  }
-  useEffect(() => { load(); }, []);
+  // M9-D850: carregando, vazio, erro, 403 e offline vêm do padrão único de estados.
+  const assetsQuery = useAsyncState(
+    async () => {
+      const [assets, locations, users, openList, overdueList] = await Promise.all([listAssets(), listInventoryLocations(), apiFetch("/users"), listToolLoans({ status: "OPEN" }), listToolLoans({ status: "OVERDUE" })]);
+      return { assets: assets || [], locations: locations || [], users: users || [], openLoans: [...(openList || []), ...(overdueList || [])] };
+    },
+    { key: "estoque-patrimonio", isEmpty: (d) => !d || d.assets.length === 0 }
+  );
+  const { assets = [], locations = [], users = [], openLoans = [] } = assetsQuery.data || {};
+  const load = assetsQuery.reload;
 
   // BUG REAL CORRIGIDO (auditoria "loop até secar", Marco 7, ciclo 1, 2026-10-07): a API exige
   // assetTag (QR/etiqueta — TAB-0760) mas o form só validava "name", deixando o usuário clicar
@@ -415,7 +407,6 @@ export default function PatrimonioPage() {
 
   return (
     <AppShell title="Patrimônio, Ferramentas & QR" backHref="/painel/estoque">
-      {loadError ? <Alert tone="danger" title="Não foi possível carregar o patrimônio">{loadError}</Alert> : null}
       {actionError ? (
         /* BUG REAL CORRIGIDO (auditoria E2E Marco 7, ciclo 4) — mesma classe sistêmica já
            catalogada no Marco 6: Alert de erro renderizado só no topo da página ficava atrás do
@@ -489,16 +480,13 @@ export default function PatrimonioPage() {
       ) : null}
 
       <Card title="Patrimônio" subtitle="Ferramentas e ativos individualizáveis por QR Code">
-        <Table
-          columns={columns}
-          rows={loading ? [] : assets}
-          loading={loading}
-          emptyMessage={loadError ? "Não foi possível carregar — veja o erro acima e tente novamente." : "Nenhum patrimônio cadastrado."}
-        />
+        <AsyncState result={assetsQuery} emptyTitle="Nenhum patrimônio cadastrado" emptyDescription="Cadastre ferramentas e ativos em Novo patrimônio para controlá-los por QR Code.">
+          {() => <Table columns={columns} rows={assets} />}
+        </AsyncState>
       </Card>
 
       <StickyActionBar>
-        <Button onClick={() => setCreateOpen(true)}>
+        <Button onClick={() => setCreateOpen(true)} disabled={!assetsQuery.data}>
           <Icon name="plus" size={18} /> Novo patrimônio
         </Button>
       </StickyActionBar>

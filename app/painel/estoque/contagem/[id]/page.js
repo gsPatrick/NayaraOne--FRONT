@@ -15,7 +15,6 @@ import FormField from "@/components/molecules/FormField/FormField";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import SwitchableChart from "@/components/molecules/SwitchableChart/SwitchableChart";
-import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import Modal from "@/components/organisms/Modal/Modal";
 import FileDropInput from "@/components/molecules/FileDropInput/FileDropInput";
 import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
@@ -31,6 +30,8 @@ import { getCurrentUser } from "@/lib/auth/session";
 import styles from "./page.module.css";
 
 import { lookupFallback } from "@/lib/asyncState/lookup";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 const STATUS_LABELS = { OPEN: "Em contagem", COMPLETED: "Fechado" };
 const STATUS_TONE = { OPEN: "warning", COMPLETED: "success" };
 
@@ -48,9 +49,6 @@ export default function ContagemDetailPage() {
   const [locations, setLocations] = useState([]);
   const [projects, setProjects] = useState([]);
   const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
-  const [notFoundFlag, setNotFoundFlag] = useState(false);
   const [actionError, setActionError] = useState("");
   const [busy, setBusy] = useState(false);
   const [busyLineId, setBusyLineId] = useState(null);
@@ -68,32 +66,36 @@ export default function ContagemDetailPage() {
   const [adjustEvidenceUploading, setAdjustEvidenceUploading] = useState(false);
   const [adjustEvidenceError, setAdjustEvidenceError] = useState("");
 
-  function load() {
-    setLoading(true);
-    setLoadError("");
-    Promise.all([
-      getCount(id),
-      listInventoryItems(),
-      listInventoryLocations(),
-      listProjects().catch(lookupFallback("as obras")),
-      apiFetch("/users").catch(lookupFallback("os usuários")),
-    ])
-      .then(([c, i, l, p, u]) => {
-        setCount(c);
-        setItems(i || []);
-        setLocations(l || []);
-        setProjects(p || []);
-        setUsers(u || []);
-      })
-      .catch((err) => {
-        if (err?.status === 404) { setNotFoundFlag(true); return; }
-        setLoadError(err?.message || "Não foi possível carregar o inventário.");
-      })
-      .finally(() => setLoading(false));
-  }
-  useEffect(() => { load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [id]);
+  // M9-D850: a leitura do inventário passa pelo padrão único de estados (carregando, erro com "tentar de novo", 403, offline).
+  // Os dados vão para o estado local, que as ações da tela (adicionar contagem, fechar, ajustar) continuam atualizando.
+  const countQuery = useAsyncState(
+    async () => {
+      const [count, items, locations, projects, users] = await Promise.all([
+        getCount(id).catch((err) => {
+          if (err?.status === 404) return null;
+          throw err;
+        }),
+        listInventoryItems(),
+        listInventoryLocations(),
+        listProjects().catch(lookupFallback("as obras")),
+        apiFetch("/users").catch(lookupFallback("os usuários")),
+      ]);
+      if (!count) return { notFound: true };
+      return { count, items: items || [], locations: locations || [], projects: projects || [], users: users || [] };
+    },
+    { key: `estoque-contagem-${id}`, deps: [id], isEmpty: () => false }
+  );
+  useEffect(() => {
+    const d = countQuery.data;
+    if (!d || d.notFound) return;
+    setCount(d.count);
+    setItems(d.items);
+    setLocations(d.locations);
+    setProjects(d.projects);
+    setUsers(d.users);
+  }, [countQuery.data]);
 
-  if (notFoundFlag) return notFound();
+  if (countQuery.data && countQuery.data.notFound) return notFound();
 
   function locationName(locId) {
     return locations.find((l) => l.id === locId)?.name || "Sem local definido";
@@ -213,16 +215,14 @@ export default function ContagemDetailPage() {
 
   return (
     <AppShell title={count ? `Inventário — ${locationName(count.locationId)}` : "Inventário"} backHref="/painel/estoque/contagem">
-      {loadError ? <Alert tone="danger" title="Não foi possível carregar o inventário">{loadError}</Alert> : null}
       {actionError ? (
         <div style={{ position: "fixed", top: "var(--space-4)", left: "50%", transform: "translateX(-50%)", zIndex: 200, width: "min(560px, calc(100vw - 2 * var(--space-4)))" }}>
           <Alert tone="danger">{actionError}</Alert>
         </div>
       ) : null}
 
-      {loading ? (
-        <SkeletonDetail sections={3} />
-      ) : !count ? null : (
+      <AsyncState result={countQuery} loadingLabel="Carregando o inventário...">
+        {() => !count ? null : (
         <div className={styles.wrap}>
           <div className={styles.grid}>
             <StatTile label="Status" value={STATUS_LABELS[count.status]} tone={count.status === "OPEN" ? "warning" : "success"} icon="layers" />
@@ -355,7 +355,8 @@ export default function ContagemDetailPage() {
             )}
           </Card>
         </div>
-      )}
+        )}
+      </AsyncState>
 
       {count?.status === "OPEN" ? (
         <StickyActionBar>
