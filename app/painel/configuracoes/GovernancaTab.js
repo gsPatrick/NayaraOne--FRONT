@@ -20,6 +20,7 @@ import { GOVERNANCA_FINOPS_GROUPS } from "./governancaFinopsGroups";
 import { GOVERNANCA_FLAGS_GROUPS } from "./governancaFlagsGroups";
 import { GOVERNANCA_RETENCAO_GROUPS } from "./governancaRetencaoGroups";
 import { GOVERNANCA_CLASSIFICACAO_GROUPS } from "./governancaClassificacaoGroups";
+import { GOVERNANCA_ACESSO_CAMPO_GROUPS } from "./governancaAcessoCampoGroups";
 import { GOVERNANCA_LEGAL_HOLD_GROUPS } from "./governancaLegalHoldGroups";
 import { GOVERNANCA_MIGRACAO_GROUPS } from "./governancaMigracaoGroups";
 
@@ -212,6 +213,7 @@ const GOVERNANCA_GROUPS = [
   ...GOVERNANCA_FLAGS_GROUPS,
   ...GOVERNANCA_RETENCAO_GROUPS,
   ...GOVERNANCA_CLASSIFICACAO_GROUPS,
+  ...GOVERNANCA_ACESSO_CAMPO_GROUPS,
   ...GOVERNANCA_LEGAL_HOLD_GROUPS,
   ...GOVERNANCA_MIGRACAO_GROUPS,
   {
