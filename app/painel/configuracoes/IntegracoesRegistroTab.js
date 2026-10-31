@@ -215,6 +215,7 @@ REGISTRO_GROUPS.push({
   fields: [
     { key: "integration.dispatch.timeout_ms.read", label: "Tempo máximo de uma consulta ao fornecedor (milissegundos)", type: "integer", defaultValue: 10000, helper: "De 1000 a 300000. Vale para chamadas que só leem informação." },
     { key: "integration.dispatch.timeout_ms.write", label: "Tempo máximo de um envio ao fornecedor (milissegundos)", type: "integer", defaultValue: 20000, helper: "De 1000 a 300000. Vale para chamadas que criam ou alteram algo no fornecedor; ao esgotar, o envio fica como desconhecido até conferir." },
+    { key: "integration.dispatch.call_attempts.idempotent", label: "Tentativas numa mesma chamada de leitura ou cotação", type: "integer", defaultValue: 3, helper: "De 1 a 5. Vale para consultas e operações que podem ser repetidas sem efeito duplo (cotação, pedido de credencial). Emissão e envio que alteram algo no fornecedor fazem sempre uma só tentativa. Use 1 para deixar toda repetição com o serviço de envios." },
     { key: "integration.health.check_timeout_ms", label: "Tempo máximo do teste de saúde de um fornecedor (milissegundos)", type: "integer", defaultValue: 5000, helper: "De 500 a 120000. Teste que demora mais conta como falha." },
   ],
 });
