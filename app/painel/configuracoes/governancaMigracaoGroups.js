@@ -11,4 +11,11 @@ export const GOVERNANCA_MIGRACAO_GROUPS = [
       { key: "migracao.lote.timeout_min", label: "Minutos até considerar falho um lote que não terminou", type: "integer", defaultValue: 30, min: 1, max: 1440, helper: "Se o processo cair no meio de um lote, a fonte fica travada por este tempo; depois o lote é dado como falho e a fonte é liberada." },
     ],
   },
+  {
+    title: "Migração do sistema antigo: Torre de controle",
+    subtitle: "O painel da migração mostra quanto já foi, quanto falta e uma estimativa de término calculada pela velocidade dos últimos lotes concluídos.",
+    fields: [
+      { key: "migracao.eta.janela_lotes", label: "Lotes usados na estimativa de término", type: "integer", defaultValue: 5, min: 1, max: 100, helper: "A velocidade (linhas por minuto) é a média dos últimos lotes concluídos; aqui você diz quantos entram na média. Poucos lotes reagem rápido a mudanças; muitos dão uma estimativa mais estável." },
+    ],
+  },
 ];
