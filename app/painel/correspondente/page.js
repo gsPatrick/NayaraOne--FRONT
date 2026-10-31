@@ -21,6 +21,8 @@ import { listOpportunities, stageLabelPt } from "@/lib/api/crm";
 import { formatDateTime } from "@/lib/format";
 import { hasPermission } from "@/lib/rbac/permissions";
 import { STATUS_LABELS, STATUS_TONE, PROVIDER_LABELS, PURPOSE_LABELS, PRODUCT_LABELS, financingStatusLabel, providerLabel, productLabel, statusLabel, brl } from "./_labels";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 
 const EMPTY_FORM = {
   product: "FINANCIAMENTO_IMOBILIARIO",
@@ -40,8 +42,6 @@ export default function CorrespondentePage() {
   const [cases, setCases] = useState([]);
   const [properties, setProperties] = useState([]);
   const [opportunities, setOpportunities] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");
   const [stalled, setStalled] = useState(null);
   const [duplicates, setDuplicates] = useState([]);
@@ -58,23 +58,20 @@ export default function CorrespondentePage() {
 
   // Só a lista de casos é essencial; imóveis, oportunidades, alertas e parâmetros são complementos:
   // se um deles falhar, a tela continua e avisa o que ficou de fora.
-  function load() {
-    setLoading(true);
-    setLoadError("");
+  // M9-D850: a falha dos casos (403, sem conexão, erro) vem do padrão de estados, com "tentar de novo"; nunca vira "nenhum caso".
+  const casesQuery = useAsyncState(async () => {
     const warnings = [];
-    Promise.allSettled([
+    const [c, p, o, par, st, du] = await Promise.allSettled([
       listFinancingCases(),
       listProperties(),
       listOpportunities(),
       getCorrespondentParameters(),
       getNayStalledCases(),
       listPendingDuplicates(),
-    ]).then(([c, p, o, par, st, du]) => {
-      if (c.status === "rejected") {
-        setLoadError(c.reason?.message || "Não foi possível carregar os casos de financiamento.");
-      } else {
-        setCases(c.value || []);
-      }
+    ]);
+    {
+      if (c.status === "rejected") throw c.reason;
+      setCases(c.value || []);
       if (p.status === "fulfilled") setProperties(p.value || []);
       else { setProperties([]); warnings.push("a lista de imóveis"); }
       if (o.status === "fulfilled") {
@@ -90,9 +87,12 @@ export default function CorrespondentePage() {
       if (du.status === "fulfilled") setDuplicates(du.value || []);
       else { setDuplicates([]); warnings.push("o alerta de possíveis duplicatas"); }
       setAuxWarnings(warnings);
-    }).finally(() => setLoading(false));
-  }
-  useEffect(() => { load(); setCanCreate(hasPermission("correspondent:create")); }, []);
+    }
+    return { cases: c.value || [] };
+  }, { isEmpty: () => false });
+  const loading = casesQuery.status === "LOADING";
+  function load() { return casesQuery.reload(); }
+  useEffect(() => { setCanCreate(hasPermission("correspondent:create")); }, []);
 
   // Opções do formulário respeitam Parâmetros (providers, produtos e finalidades habilitados).
   const allowedProducts = Object.keys(PRODUCT_LABELS).filter((v) => !eligibility?.allowedProducts || eligibility.allowedProducts.includes(v));
@@ -227,12 +227,6 @@ export default function CorrespondentePage() {
 
   return (
     <AppShell title="Financiamentos" backHref="/painel">
-      {loadError ? (
-        <>
-          <Alert tone="danger" title="Não foi possível carregar os casos de financiamento">{loadError}</Alert>
-          <div style={{ margin: "8px 0" }}><Button variant="secondary" onClick={load}>Tentar de novo</Button></div>
-        </>
-      ) : null}
       {auxWarnings.length > 0 ? (
         <Alert tone="warning" title="Parte das informações não carregou">
           Não foi possível carregar {auxWarnings.join("; ")}. A lista de casos continua disponível.
@@ -285,7 +279,9 @@ export default function CorrespondentePage() {
             </FormField>
           </div>
         </div>
-        <Table columns={columns} minWidth="1636px" rows={loading ? [] : filtered.slice(0, visibleCount)} loading={loading} emptyMessage={cases.length ? "Nenhum caso encontrado com este filtro." : "Nenhum caso de financiamento registrado."} />
+        <AsyncState result={casesQuery} loadingLabel="Carregando casos de financiamento...">
+          {() => <Table columns={columns} minWidth="1636px" rows={filtered.slice(0, visibleCount)} emptyMessage={cases.length ? "Nenhum caso encontrado com este filtro." : "Nenhum caso de financiamento registrado."} />}
+        </AsyncState>
         {!loading && filtered.length > visibleCount ? (
           <div style={{ marginTop: 12 }}>
             <Button variant="secondary" onClick={() => setVisibleCount((n) => n + 25)}>

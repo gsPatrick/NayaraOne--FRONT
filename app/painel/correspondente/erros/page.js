@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Table from "@/components/organisms/Table/Table";
@@ -15,35 +15,26 @@ import { listIntegrationErrors, resolveIntegrationError } from "@/lib/api/corres
 import { formatDateTime } from "@/lib/format";
 import { hasPermission } from "@/lib/rbac/permissions";
 import { providerLabel } from "../_labels";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import styles from "./page.module.css";
 
 export default function ErrosIntegracaoPage() {
   const [filter, setFilter] = useState("OPEN");
-  const [rows, setRows] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [message, setMessage] = useState("");
   const [target, setTarget] = useState(null);
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [canResolve, setCanResolve] = useState(false);
-  const pedido = useRef(0);
   useEffect(() => { setCanResolve(hasPermission("correspondent:create")); }, []);
 
-  // Troca rápida de filtro: só a resposta do pedido mais recente vale (a antiga não sobrescreve a tela).
-  function load(status = filter) {
-    pedido.current += 1;
-    const meu = pedido.current;
-    setLoading(true);
-    setLoadError("");
-    listIntegrationErrors(status || undefined)
-      .then((data) => { if (meu === pedido.current) setRows(data || []); })
-      .catch((err) => { if (meu === pedido.current) setLoadError(err?.message || "Não foi possível carregar os erros de integração."); })
-      .finally(() => { if (meu === pedido.current) setLoading(false); });
-  }
-
-  useEffect(() => { load(filter); }, [filter]); // eslint-disable-line react-hooks/exhaustive-deps
+  // M9-D850: carregando, 403, sem conexão e "tentar de novo" vêm do padrão de estados. Troca rápida de filtro: cada filtro tem a sua chamada
+  // (deps), então só a resposta do filtro atual vale e a antiga não sobrescreve a tela.
+  const errorsQuery = useAsyncState(async () => (await listIntegrationErrors(filter || undefined)) || [], { deps: [filter], isEmpty: () => false });
+  const rows = errorsQuery.data || [];
+  const loading = errorsQuery.status === "LOADING";
+  function load() { return errorsQuery.reload(); }
 
   async function handleResolve() {
     if (saving || note.trim().length < 3) return;
@@ -76,12 +67,6 @@ export default function ErrosIntegracaoPage() {
   return (
     <AppShell title="Erros de integração" backHref="/painel/correspondente">
       <div className={styles.wrap}>
-        {loadError ? (
-          <>
-            <Alert tone="danger">{loadError}</Alert>
-            <div><Button variant="secondary" onClick={() => load(filter)}>Tentar de novo</Button></div>
-          </>
-        ) : null}
         {message ? <Alert tone="success">{message}</Alert> : null}
         <Card title="Falhas na conversa com bancos e financeiras" subtitle="Cada falha mostra só a mensagem de negócio. O corpo da resposta do provider e os segredos nunca são guardados.">
           <div style={{ maxWidth: 260, marginBottom: 12 }}>
@@ -94,7 +79,9 @@ export default function ErrosIntegracaoPage() {
             </FormField>
           </div>
           {!loading && filter !== "RESOLVED" && rows.some((r) => r.status === "OPEN") ? <p className={styles.helper} style={{ marginBottom: 8 }}>{rows.filter((r) => r.status === "OPEN").length} erro(s) em aberto.</p> : null}
-          <Table columns={columns} rows={rows} loading={loading} minWidth="1100px" emptyMessage={filter === "OPEN" ? "Nenhum erro de integração em aberto." : "Nenhum erro de integração registrado."} />
+          <AsyncState result={errorsQuery} loadingLabel="Carregando erros de integração...">
+            {() => <Table columns={columns} rows={rows} minWidth="1100px" emptyMessage={filter === "OPEN" ? "Nenhum erro de integração em aberto." : "Nenhum erro de integração registrado."} />}
+          </AsyncState>
         </Card>
       </div>
 
