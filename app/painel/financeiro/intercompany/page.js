@@ -77,6 +77,8 @@ export default function IntercompanyPage() {
   const [rejectReason, setRejectReason] = useState("");
   const [rejectError, setRejectError] = useState("");
   const [rejecting, setRejecting] = useState(false);
+  // Falha de aprovar/conciliar: aparece num Alert (antes era um setLoadError que não existe mais).
+  const [actionError, setActionError] = useState("");
 
   // M9-D940: carregando, erro com "tentar de novo", sem acesso e sem conexão vêm do padrão único de estados.
   const transfersQuery = useAsyncState(async () => {
@@ -173,11 +175,13 @@ export default function IntercompanyPage() {
   }
 
   async function runApprove(id) {
+    setActionError("");
     try {
       await approveIntercompanyTransfer(id);
-      await reload();
     } catch (err) {
-      setLoadError(friendly(err, "Falha ao aprovar a transferência."));
+      setActionError(friendly(err, "Falha ao aprovar a transferência."));
+    } finally {
+      await reload();
     }
   }
 
@@ -205,11 +209,13 @@ export default function IntercompanyPage() {
   }
 
   async function handleReconcile(id) {
+    setActionError("");
     try {
       await reconcileIntercompanyTransfer(id);
-      await reload();
     } catch (err) {
-      setLoadError(friendly(err, "Falha ao conciliar a transferência."));
+      setActionError(friendly(err, "Falha ao conciliar a transferência."));
+    } finally {
+      await reload();
     }
   }
 
@@ -289,7 +295,8 @@ export default function IntercompanyPage() {
   return (
     <AppShell title="Transferências intercompany" backHref="/painel/financeiro">
       <div className={styles.wrap}>
-        {!loading && !transfersQuery.data ? <AsyncState result={transfersQuery} /> : null}
+        {(!loading && !transfersQuery.data) || transfersQuery.status === "OFFLINE" ? <AsyncState result={transfersQuery} /> : null}
+        {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
 
         <Card className={styles.formCard}>
           <h2 className={styles.sectionTitle}>Nova transferência</h2>

@@ -34,12 +34,12 @@ import {
   uploadFile,
 } from "@/lib/api/legal";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import { useLocalCopy } from "@/lib/asyncState/localCopy";
 import { NOTICE_CHANNEL_LABELS, NOTICE_STATUS_LABELS, NOTICE_STATUS_TONE } from "@/lib/mock/legal";
 import { formatDateTime, formatContractLabel } from "@/lib/format";
 import styles from "./page.module.css";
 
 export default function NotificacoesPage() {
-  const [notices, setNotices] = useState([]);
   const [actionError, setActionError] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
 
@@ -66,7 +66,7 @@ export default function NotificacoesPage() {
   }, { key: "contratos-notificacoes", isEmpty: () => false });
   const loaded = listQuery.data;
   const contracts = useMemo(() => loaded?.contracts || [], [loaded]);
-  useEffect(() => { if (loaded) setNotices(loaded.notices); }, [loaded]);
+  const [notices, setNotices] = useLocalCopy(loaded?.notices, []); // derivada do dado lido: sem flash de lista vazia no 1º render
 
   function contractOf(id) {
     return contracts.find((c) => c.id === id) || null;

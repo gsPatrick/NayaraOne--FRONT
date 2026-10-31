@@ -37,6 +37,7 @@ import { listProperties } from "@/lib/api/properties";
 import { formatDate, toNumber } from "@/lib/format";
 import { buildGoogleMapsUrl, buildGoogleMapsEmbedUrl } from "@/lib/maps";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import ReloadAlert from "@/components/molecules/ReloadAlert/ReloadAlert";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import styles from "./page.module.css";
 
@@ -135,7 +136,9 @@ export default function PersonDetailPage({ params }) {
   const [manualQuery, setManualQuery] = useState("");
   const [manualPartner, setManualPartner] = useState(null);
 
-  const [person, setPerson] = useState(null);
+  // A ficha só vale para o id da rota: se params.id mudar sem remontar, o registro antigo não aparece.
+  const [loadedPerson, setPerson] = useState(null);
+  const person = loadedPerson && String(loadedPerson.id) === String(params.id) ? loadedPerson : null;
   const [people, setPeople] = useState([]);
   const [duplicatePairs, setDuplicatePairs] = useState([]);
   const [properties, setProperties] = useState([]);
@@ -365,6 +368,7 @@ export default function PersonDetailPage({ params }) {
   return (
     <AppShell title={person.legalName} backHref="/painel/pessoas">
       <div className={styles.wrap}>
+        <ReloadAlert result={personQuery} />
         <div className={styles.topRow}>
           <div className={styles.badges}>
             <Avatar name={person.legalName} src={person.photoUrl} size="lg" className={styles.headerAvatar} />

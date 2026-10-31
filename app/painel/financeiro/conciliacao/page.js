@@ -204,7 +204,7 @@ export default function ConciliacaoPage() {
     <AppShell title="Conciliação bancária" backHref="/painel/financeiro">
       {notice ? <Alert tone={notice.tone} title={notice.title} className={styles.notice}>{notice.message}</Alert> : null}
 
-      <AsyncState result={reconQuery} loadingLabel="Carregando conciliação bancária...">
+      <AsyncState result={reconQuery} lockStale loadingLabel="Carregando conciliação bancária...">
         <>
           <div className={styles.grid}>
             <StatTile label="Não conciliadas" value={unreconciledTransactions.length} tone={unreconciledTransactions.length > 0 ? "warning" : "success"} icon="document" />

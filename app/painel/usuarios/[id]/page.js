@@ -22,6 +22,7 @@ import { listProperties } from "@/lib/api/properties";
 import { listRoles } from "@/lib/api/roles";
 import { formatDateTime, formatBRL } from "@/lib/format";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import ReloadAlert from "@/components/molecules/ReloadAlert/ReloadAlert";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import styles from "./page.module.css";
 
@@ -30,7 +31,9 @@ const STATUS_TONE = { ACTIVE: "success", SUSPENDED: "danger" };
 const STATUS_LABEL = { ACTIVE: "Ativo", SUSPENDED: "Suspenso" };
 
 export default function UserDetailPage({ params }) {
-  const [user, setUser] = useState(null);
+  // A ficha só vale para o id da rota: se params.id mudar sem remontar, o registro antigo não aparece.
+  const [loadedUser, setUser] = useState(null);
+  const user = loadedUser && String(loadedUser.id) === String(params.id) ? loadedUser : null;
   const [memberships, setMemberships] = useState([]);
   const [roles, setRoles] = useState([]);
   const [properties, setProperties] = useState([]);
@@ -230,6 +233,7 @@ export default function UserDetailPage({ params }) {
   return (
     <AppShell title={user.name} backHref="/painel/usuarios">
       <div className={styles.wrap}>
+        <ReloadAlert result={userQuery} />
         <div className={styles.topRow}>
           <div className={styles.headerBlock}>
             <Avatar name={user.name} size="lg" />

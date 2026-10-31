@@ -112,6 +112,12 @@ export default function LancamentoDetailPage({ params }) {
 
   if (detailQuery.error?.status === 404) return notFound();
 
+  // Ação (liquidar, estornar, aprovar...) só com o dado fresco: na revisita o cache mostra a ficha, mas não vale agir sobre ela.
+  const notFresh = !detailQuery.fresh;
+  // Se a recarga depois de uma ação falhar, a ficha local continua na tela e a falha vira um aviso com "tentar de novo".
+  const reloadFailed = Boolean(entry) && ["RETRY", "OFFLINE", "ERROR", "VALIDATION_ERROR"].includes(detailQuery.status);
+  const detailView = reloadFailed ? { ...detailQuery, status: "CONTENT" } : detailQuery;
+
   // Revisão independente 18/10/2026 (A1): TODO pagamento (PAYABLE) exige aprovação prévia —
   // com ou sem conta bancária (antes, sem conta, liquidava direto). Satisfaz se a
   // ApprovalRequest estiver APPROVED ou se a intenção de pagamento estiver APPROVED. O backend
@@ -359,9 +365,15 @@ export default function LancamentoDetailPage({ params }) {
 
   return (
     <AppShell title={humanizeText(entry?.description) || "Lançamento"} backHref="/painel/financeiro/lancamentos">
-      <AsyncState result={detailQuery} loadingLabel="Carregando lançamento...">
+      <AsyncState result={detailView} loadingLabel="Carregando lançamento...">
       {!entry ? null : (
         <div className={styles.wrap}>
+          {reloadFailed ? (
+            <Alert tone="warning">
+              Não foi possível atualizar a ficha agora; os dados abaixo podem estar desatualizados e as ações ficam bloqueadas até recarregar.{" "}
+              <Button size="sm" variant="secondary" onClick={() => detailQuery.reload()}>Tentar de novo</Button>
+            </Alert>
+          ) : null}
           {approvalRequest?.status === "STALE" && entry.status === "PENDING" ? (
             <Alert tone="warning">Invalidada: o lançamento foi alterado depois do pedido. Peça a aprovação de novo.</Alert>
           ) : null}
@@ -373,21 +385,21 @@ export default function LancamentoDetailPage({ params }) {
             </div>
             <div className={styles.actions}>
               {entry.status === "PENDING" ? (
-                <Button requires="finance:update" variant="secondary" onClick={openEdit} disabled={busy}><Icon name="document" size={16} /> Editar</Button>
+                <Button requires="finance:update" variant="secondary" onClick={openEdit} disabled={busy || notFresh}><Icon name="document" size={16} /> Editar</Button>
               ) : null}
               {entry.status === "PENDING" && isPayable && approvalRequest?.status !== "APPROVED" ? (
                 <Button requires="finance:create"
                   variant="secondary"
                   onClick={handleRequestApproval}
                   loading={busy}
-                  disabled={approvalRequest?.status === "PENDING"}
+                  disabled={approvalRequest?.status === "PENDING" || notFresh}
                 >
                   <Icon name="shield" size={16} />
                   {approvalRequest?.status === "PENDING" ? "Aprovação pendente" : "Solicitar aprovação"}
                 </Button>
               ) : null}
               {entry.status === "PENDING" && isPayable && entry.bankAccountId && !["PENDING", "APPROVED", "SUBMITTING", "SUBMITTED"].includes(paymentIntent?.status) ? (
-                <Button requires="finance:create" variant="secondary" onClick={handleCreatePaymentIntent} loading={busy}>
+                <Button requires="finance:create" variant="secondary" onClick={handleCreatePaymentIntent} loading={busy} disabled={notFresh}>
                   <Icon name="shield" size={16} /> Criar intenção de pagamento
                 </Button>
               ) : null}
@@ -397,7 +409,7 @@ export default function LancamentoDetailPage({ params }) {
                   (settleFinancialEntry). O botão aqui só reflete isso visualmente; o backend
                   continua sendo a fonte de verdade que bloqueia de qualquer jeito. */}
               {needsManualEvidence && (entry.status === "PENDING" || entry.status === "PARTIALLY_SETTLED") && !intentInTransit ? (
-                <Button requires="finance:settle" variant="secondary" onClick={() => { setPartialOpen(false); setManualOpen((v) => !v); }} disabled={busy}>
+                <Button requires="finance:settle" variant="secondary" onClick={() => { setPartialOpen(false); setManualOpen((v) => !v); }} disabled={busy || notFresh}>
                   <Icon name="document" size={16} /> {evidenceAttached ? "Trocar comprovante" : "Anexar comprovante"}
                 </Button>
               ) : null}
@@ -407,7 +419,7 @@ export default function LancamentoDetailPage({ params }) {
                 </Button>
               ) : entry.status === "PENDING" || entry.status === "PARTIALLY_SETTLED" ? (
                 approvalGateSatisfied ? (
-                  <Button requires="finance:settle" onClick={handleSettle} loading={busy}><Icon name="check" size={16} /> Liquidar</Button>
+                  <Button requires="finance:settle" onClick={handleSettle} loading={busy} disabled={notFresh}><Icon name="check" size={16} /> Liquidar</Button>
                 ) : approvalRequest?.status === "PENDING" || paymentIntent?.status === "PENDING" ? (
                   <Button disabled title="Aguardando a decisão de outra pessoa antes de liquidar">
                     <Icon name="check" size={16} /> Aguardando aprovação
@@ -416,18 +428,18 @@ export default function LancamentoDetailPage({ params }) {
               ) : null}
               {(entry.status === "PENDING" || entry.status === "PARTIALLY_SETTLED") && !intentInTransit && !isCompensation ? (
                 approvalGateSatisfied ? (
-                  <Button requires="finance:settle" variant="secondary" onClick={() => { setManualOpen(false); setPartialOpen((v) => !v); }} disabled={busy}>
+                  <Button requires="finance:settle" variant="secondary" onClick={() => { setManualOpen(false); setPartialOpen((v) => !v); }} disabled={busy || notFresh}>
                     <Icon name="money" size={16} /> Liquidar parcial
                   </Button>
                 ) : null
               ) : null}
               {isDepositReceived && depositBalance.available > 0 ? (
-                <Button requires="finance:settle" variant="secondary" onClick={() => setReleaseOpen(true)} disabled={busy}>
+                <Button requires="finance:settle" variant="secondary" onClick={() => setReleaseOpen(true)} disabled={busy || notFresh}>
                   <Icon name="money" size={16} /> Devolver ou compensar caução
                 </Button>
               ) : null}
               {entry.status === "SETTLED" ? (
-                <Button requires="finance:settle" variant="secondary" onClick={handleReverse} loading={busy}><Icon name="settings" size={16} /> Estornar</Button>
+                <Button requires="finance:settle" variant="secondary" onClick={handleReverse} loading={busy} disabled={notFresh}><Icon name="settings" size={16} /> Estornar</Button>
               ) : null}
             </div>
           </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Button from "@/components/atoms/Button/Button";
 import Input from "@/components/atoms/Input/Input";
@@ -37,6 +37,7 @@ import { listPeople } from "@/lib/api/people";
 import { apiFetch } from "@/lib/api/client";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import { createLatestGuard } from "@/lib/asyncState/latest";
 import { formatDateTime, isOverdue, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE, dateTimeLocalInputToIso, isoToDateTimeLocalInput } from "@/lib/format";
 import styles from "./page.module.css";
 
@@ -90,9 +91,12 @@ export default function CrmPage() {
   // M9-D850: o funil carrega pelo padrão de estados (carregando, 403, sem conexão, tentar de novo); falha nunca vira "funil vazio".
   // FIX (reportado pela cliente 18/09/2026): usuário suspenso podia ser pré-selecionado
   // como vendedor padrão — agora só busca usuários ACTIVE.
+  const latestLoad = useRef(createLatestGuard()).current;
   const funnelQuery = useAsyncState(
     async () => {
+      const isLatest = latestLoad.begin();
       const [opps, apiPeople, apiProperties, apiUsers] = await Promise.all([listOpportunities(), listPeople(), listProperties(), apiFetch("/users?status=ACTIVE")]);
+      if (!isLatest()) return { opportunities: opps }; // recarga mais nova já em andamento: não aplica dado velho
       setOpportunities(opps);
       setPeople(apiPeople || []);
       setProperties(apiProperties);

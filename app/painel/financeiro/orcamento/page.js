@@ -122,7 +122,7 @@ export default function OrcamentoPage() {
   return (
     <AppShell title="Orçamento x realizado" backHref="/painel/financeiro">
       <div className={styles.wrap}>
-        {centersQuery.status !== "LOADING" && !centersQuery.data ? <AsyncState result={centersQuery} /> : null}
+        {(centersQuery.status !== "LOADING" && !centersQuery.data) || centersQuery.status === "OFFLINE" ? <AsyncState result={centersQuery} /> : null}
 
         <Card>
           <h2 className={styles.sectionTitle}>Mês de competência</h2>

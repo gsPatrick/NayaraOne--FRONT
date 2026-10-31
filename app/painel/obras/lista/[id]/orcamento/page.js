@@ -25,6 +25,8 @@ import { getProjectOrNull } from "../_components/getProjectOrNull";
 import { lookupFallback } from "@/lib/asyncState/lookup";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import ReloadAlert from "@/components/molecules/ReloadAlert/ReloadAlert";
+import Spinner from "@/components/atoms/Spinner/Spinner";
 export default function OrcamentoObraPage({ params }) {
   const [project, setProject] = useState(null);
   const [budgetLines, setBudgetLines] = useState([]);
@@ -77,7 +79,7 @@ export default function OrcamentoObraPage({ params }) {
   if (!project) {
     return (
       <AppShell title="Orçamento" backHref={`/painel/obras/lista/${params.id}`}>
-        <AsyncState result={pageQuery} loadingLabel="Carregando o orçamento...">{null}</AsyncState>
+        <AsyncState result={pageQuery} loadingLabel="Carregando o orçamento..."><Spinner /></AsyncState>
       </AppShell>
     );
   }
@@ -247,6 +249,7 @@ export default function OrcamentoObraPage({ params }) {
   return (
     <AppShell title={`Orçamento — ${project.name}`} backHref={`/painel/obras/lista/${project.id}`}>
       <div className={styles.wrap}>
+        <ReloadAlert result={pageQuery} />
         {actionError ? (
           <div style={{ position: "fixed", top: "var(--space-4)", left: "50%", transform: "translateX(-50%)", zIndex: 200, width: "min(560px, calc(100vw - 2 * var(--space-4)))" }}>
             <Alert tone="danger">{actionError}</Alert>

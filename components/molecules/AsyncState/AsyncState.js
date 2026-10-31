@@ -8,7 +8,7 @@ import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import SupportCode from "@/components/molecules/SupportCode/SupportCode";
 import { UI_STATE, fieldErrorsOf, missingPermissionOf } from "@/lib/asyncState/states";
-import { MESSAGES, genericErrorText } from "@/lib/asyncState/messages";
+import { MESSAGES, genericErrorText, businessMessageOf } from "@/lib/asyncState/messages";
 import { buildLoginUrl } from "@/lib/auth/returnTo";
 import { fieldErrorId } from "@/lib/asyncState/fields";
 import styles from "./AsyncState.module.css";
@@ -47,18 +47,28 @@ function SessionExpired() {
 }
 
 /**
+ * Trava as ações do conteúdo enquanto o dado não é fresco (revisita com cache, recarga em andamento, sem conexão):
+ * <fieldset disabled> desabilita todo botão e campo dentro, sem mexer em cada tela.
+ */
+export function StaleLock({ locked, children }) {
+  if (!locked) return <>{children}</>;
+  return <fieldset disabled data-stale-lock="true" aria-busy="true" style={{ border: 0, margin: 0, padding: 0, minWidth: 0 }}>{children}</fieldset>;
+}
+
+/**
  * Componente único dos estados de UI (M9-D850). Recebe o resultado de useAsyncState/useAsyncAction e escolhe o estado pelo mapa de status HTTP:
  * conteúdo, vazio, erro de validação, acesso negado (nunca vira vazio), sem conexão (com o último dado, marcado "desatualizado"), tentar de novo, sucesso e sessão expirada.
  * `children` pode ser função (recebe o dado) ou nós. Em CONTENT mostra os filhos; nos demais mostra o estado.
  */
-export default function AsyncState({ result, onRetry, children, emptyTitle, emptyDescription, emptyAction, successTitle, loadingLabel }) {
+export default function AsyncState({ result, onRetry, children, emptyTitle, emptyDescription, emptyAction, successTitle, loadingLabel, freshOnly, lockStale }) {
   const { status, data, error, traceId, stale } = result || {};
   const retry = onRetry || (result && result.retry);
   const body = typeof children === "function" ? children(data) : children;
 
   switch (status) {
     case UI_STATE.LOADING:
-      if (data !== null && data !== undefined && !Array.isArray(data)) return body;
+      // `freshOnly`: telas que editam/gravam não montam o corpo com dado de revisita (cache); esperam o dado fresco.
+      if (!freshOnly && data !== null && data !== undefined && !Array.isArray(data)) return <StaleLock locked={lockStale}>{body}</StaleLock>;
       return (
         <div role="status" aria-busy="true" className={styles.box} data-ui-state={UI_STATE.LOADING}>
           <Spinner />
@@ -93,7 +103,7 @@ export default function AsyncState({ result, onRetry, children, emptyTitle, empt
           {data !== null && data !== undefined ? (
             <div className={styles.cached}>
               {stale ? <p className={styles.stale} data-stale="true">Dados {MESSAGES.staleBadge}: o último carregamento foi há mais de um minuto.</p> : null}
-              {body}
+              <StaleLock locked={lockStale}>{body}</StaleLock>
             </div>
           ) : null}
           <div className={styles.actions}>{retry ? <Button size="sm" onClick={retry}>{MESSAGES.offlineRetryButton}</Button> : null}</div>
@@ -119,7 +129,7 @@ export default function AsyncState({ result, onRetry, children, emptyTitle, empt
     case UI_STATE.ERROR:
       return (
         <div data-ui-state={UI_STATE.ERROR}>
-          <Alert tone="danger">{genericErrorText(traceId)}</Alert>
+          {businessMessageOf(error) ? <Alert tone="danger" title={businessMessageOf(error)}>{genericErrorText(traceId)}</Alert> : <Alert tone="danger">{genericErrorText(traceId)}</Alert>}
           <SupportCode traceId={traceId} />
         </div>
       );

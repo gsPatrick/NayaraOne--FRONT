@@ -40,6 +40,8 @@ import { loadChamado } from "./loadChamado";
 
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import ReloadAlert from "@/components/molecules/ReloadAlert/ReloadAlert";
+import Spinner from "@/components/atoms/Spinner/Spinner";
 const STATUS_STEPS = ["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"];
 
 const NEXT_STATUS_OPTIONS = {
@@ -137,7 +139,7 @@ export default function PosObraDetalhePage({ params }) {
   if (!maintenanceCase) {
     return (
       <AppShell title="Chamado" backHref="/painel/obras/pos-obra">
-        <AsyncState result={chamadoQuery} loadingLabel="Carregando o chamado...">{null}</AsyncState>
+        <AsyncState result={chamadoQuery} loadingLabel="Carregando o chamado..."><Spinner /></AsyncState>
       </AppShell>
     );
   }
@@ -342,6 +344,7 @@ export default function PosObraDetalhePage({ params }) {
   return (
     <AppShell title="Chamado de pós-obra" backHref="/painel/obras/pos-obra">
       <div className={styles.wrap}>
+        <ReloadAlert result={chamadoQuery} />
         {/* FIX (auditoria E2E de browser, ciclo 4, 02/10/2026, mesmo achado de obras/lista/[id]):
             actionError é compartilhado pelos modais de edição/resolução/ação de atendimento,
             mas só renderizava aqui, atrás do overlay de qualquer modal aberto. Posição fixa

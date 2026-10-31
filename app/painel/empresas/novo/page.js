@@ -167,7 +167,8 @@ export default function NovaEmpresaPage() {
             </div>
           </Card>
 
-          {showSaveProblem ? <AsyncState result={saveAction} /> : null}
+          {/* O "tentar de novo" precisa seguir o mesmo caminho do envio: se der certo, volta para a lista. */}
+          {showSaveProblem ? <AsyncState result={saveAction} onRetry={async () => { const outcome = await saveAction.retry(); if (outcome.status === UI_STATE.SUCCESS) router.push("/painel/empresas"); }} /> : null}
           <div className={styles.formActions}>
             <Button type="button" variant="secondary" href="/painel/empresas">Cancelar</Button>
             <Button type="submit" loading={submitting}>Salvar empresa</Button>

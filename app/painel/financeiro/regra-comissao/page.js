@@ -12,6 +12,7 @@ import FormField from "@/components/molecules/FormField/FormField";
 import Input from "@/components/atoms/Input/Input";
 import Alert from "@/components/molecules/Alert/Alert";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useFormSync } from "@/lib/asyncState/useFormSync";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import MfaVerifyModal from "@/components/organisms/MfaVerifyModal/MfaVerifyModal";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
@@ -64,16 +65,22 @@ export default function CommissionRulePage() {
   const [mfaOpen, setMfaOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    const current = ruleQuery.data?.current;
-    const next = { BROKER: "", MANAGER: "", CORRESPONDENT: "" };
-    Object.entries(current?.components || {}).forEach(([k, v]) => {
-      next[k] = String(v);
-    });
-    if (ruleQuery.data) setValues(next);
-  }, [ruleQuery.data]);
+  // Dado fresco que chega depois de o usuário digitar não apaga o que foi digitado (depois de publicar, a carga vale de novo).
+  const formSync = useFormSync({
+    data: ruleQuery.data,
+    form: values,
+    apply: setValues,
+    build: (data) => {
+      const next = { BROKER: "", MANAGER: "", CORRESPONDENT: "" };
+      Object.entries(data?.current?.components || {}).forEach(([k, v]) => {
+        next[k] = String(v);
+      });
+      return next;
+    },
+  });
 
   async function load() {
+    formSync.forceNext();
     await Promise.all([ruleQuery.reload(), versionsQuery.reload()]);
   }
 

@@ -281,7 +281,7 @@ export default function IntencoesPagamentoPage() {
         lançamento mudar depois, a intenção é invalidada e é preciso criar outra.
       </p>
 
-      <AsyncState result={intentsQuery} loadingLabel="Carregando intenções de pagamento...">
+      <AsyncState result={intentsQuery} lockStale loadingLabel="Carregando intenções de pagamento...">
         <>
           <div className={styles.grid}>
             <StatTile label="Pendentes" value={pendingCount} tone={pendingCount > 0 ? "warning" : "success"} icon="shield" />

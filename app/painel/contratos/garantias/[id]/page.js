@@ -11,6 +11,7 @@ import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import { UI_STATE } from "@/lib/asyncState/states";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import { nullOn404 } from "@/lib/asyncState/notFound";
 import RowActions from "@/components/molecules/RowActions/RowActions";
 import Modal from "@/components/organisms/Modal/Modal";
 import Button from "@/components/atoms/Button/Button";
@@ -45,7 +46,13 @@ export default function GarantiaDetailPage({ params }) {
   // M9-D940: carregando, erro com "tentar de novo", 403 e offline vêm do padrão único de estados.
   const loadQuery = useAsyncState(() => {
     return Promise.all([getGuarantee(params.id), listPeople()])
-      .then(async ([guaranteeRes, peopleRes]) => {
+      .catch(nullOn404) // 404 da API: o registro não existe, a tela chama notFound()
+      .then(async (loaded) => {
+        if (!loaded) {
+          setGuarantee(null);
+          return;
+        }
+        const [guaranteeRes, peopleRes] = loaded;
         setGuarantee(guaranteeRes);
         setPeople(peopleRes || []);
         if (guaranteeRes?.contractId) {

@@ -17,6 +17,7 @@ import Tabs from "@/components/molecules/Tabs/Tabs";
 import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import ReloadAlert from "@/components/molecules/ReloadAlert/ReloadAlert";
 import { UI_STATE } from "@/lib/asyncState/states";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { COMPANY_STATUS_LABELS, UNIT_STATUS_LABELS } from "@/lib/mock/companies";
@@ -225,6 +226,7 @@ export default function CompanyDetailPage({ params }) {
   return (
     <AppShell title={company.name} backHref="/painel/empresas">
       <div className={styles.wrap}>
+        <ReloadAlert result={loadQuery} />
         {loadError ? <Alert tone="danger" title="Ocorreu um erro">{loadError}</Alert> : null}
         <div className={styles.topRow}>
           <div className={styles.headerBlock}>

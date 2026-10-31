@@ -35,6 +35,8 @@ import { getProjectOrNull } from "../_components/getProjectOrNull";
 import { lookupFallback } from "@/lib/asyncState/lookup";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import ReloadAlert from "@/components/molecules/ReloadAlert/ReloadAlert";
+import Spinner from "@/components/atoms/Spinner/Spinner";
 export default function QualidadeObraPage({ params }) {
   const [project, setProject] = useState(null);
   const [users, setUsers] = useState([]);
@@ -112,7 +114,7 @@ export default function QualidadeObraPage({ params }) {
   if (!project) {
     return (
       <AppShell title="Qualidade" backHref={`/painel/obras/lista/${params.id}`}>
-        <AsyncState result={pageQuery} loadingLabel="Carregando a qualidade da obra...">{null}</AsyncState>
+        <AsyncState result={pageQuery} loadingLabel="Carregando a qualidade da obra..."><Spinner /></AsyncState>
       </AppShell>
     );
   }
@@ -334,6 +336,7 @@ export default function QualidadeObraPage({ params }) {
   return (
     <AppShell title={`Qualidade — ${project.name}`} backHref={`/painel/obras/lista/${project.id}`}>
       <div className={styles.wrap}>
+        <ReloadAlert result={pageQuery} />
         {actionError ? (
           <div style={{ position: "fixed", top: "var(--space-4)", left: "50%", transform: "translateX(-50%)", zIndex: 200, width: "min(560px, calc(100vw - 2 * var(--space-4)))" }}>
             <Alert tone="danger">{actionError}</Alert>

@@ -29,6 +29,7 @@ import styles from "./page.module.css";
 
 import { reportLookupProblem } from "@/lib/asyncState/lookup";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useFormSync } from "@/lib/asyncState/useFormSync";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 const ACTION_LABELS = {
   NOTIFY: "Notificação interna",
@@ -134,10 +135,14 @@ export default function ReguaCobrancaPage() {
     setCanManage(hasPermission("billing:cadence:manage"));
   }, []);
 
-  const loadRule = ruleQuery.reload;
-  useEffect(() => {
-    if (ruleQuery.data) setDraft(toEditable(ruleQuery.data?.current?.steps || ruleQuery.data?.defaultSteps));
-  }, [ruleQuery.data]);
+  // Dado fresco que chega depois de o usuário editar as etapas não apaga o rascunho (depois de publicar, a carga vale de novo).
+  const draftSync = useFormSync({
+    data: ruleQuery.data,
+    form: draft,
+    apply: setDraft,
+    build: (data) => toEditable(data?.current?.steps || data?.defaultSteps),
+  });
+  const loadRule = () => { draftSync.forceNext(); return ruleQuery.reload(); };
 
   function updateStep(index, field, value) {
     setDraft((prev) => prev.map((s, i) => (i === index ? { ...s, [field]: value } : s)));

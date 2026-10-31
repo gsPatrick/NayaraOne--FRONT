@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -88,6 +88,13 @@ export default function SugestoesNayPage() {
     suggestionsQuery.reload();
     anomaliesQuery.reload();
   }
+  // Ao trocar o filtro de status a lista de sugestões recarrega sozinha (deps); os indícios de perda são relidos junto, como antes da migração.
+  const filterSeenRef = useRef(false);
+  useEffect(() => {
+    if (!filterSeenRef.current) { filterSeenRef.current = true; return; } // a 1ª leitura já vem do próprio hook
+    anomaliesQuery.reload();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statusFilter]);
 
   useEffect(() => {
     if (!perms.canReadSettings) return;

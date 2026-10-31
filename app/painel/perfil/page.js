@@ -241,7 +241,8 @@ export default function PerfilPage() {
           </Alert>
         ) : null}
 
-        {blockedAction ? <AsyncState result={blockedAction} /> : null}
+        {/* O "tentar de novo" refaz o passo inteiro (handleConfirm/handleStartSetup), não só a chamada: assim o resultado (códigos de recuperação, QR) é tratado. */}
+        {blockedAction ? <AsyncState result={blockedAction} onRetry={blockedAction === setupAction ? handleStartSetup : handleConfirm} /> : null}
         {error ? <Alert tone="danger" title="Erro">{error}</Alert> : null}
 
         {step === "idle" && (

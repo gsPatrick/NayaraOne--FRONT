@@ -40,6 +40,8 @@ import { useOfflineSync } from "@/lib/offline/useOfflineSync";
 import styles from "./page.module.css";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import ReloadAlert from "@/components/molecules/ReloadAlert/ReloadAlert";
+import Spinner from "@/components/atoms/Spinner/Spinner";
 
 // Fila offline (Marco 6, contrato §13) — medição.
 const OFFLINE_QUEUE_NAME = "construction.stage-measurements";
@@ -131,7 +133,7 @@ export default function EtapaDetalhePage({ params }) {
   if (!project || !stage) {
     return (
       <AppShell title="Etapa" backHref={`/painel/obras/lista/${params.id}`}>
-        <AsyncState result={pageQuery} loadingLabel="Carregando a etapa...">{null}</AsyncState>
+        <AsyncState result={pageQuery} loadingLabel="Carregando a etapa..."><Spinner /></AsyncState>
       </AppShell>
     );
   }
@@ -307,6 +309,7 @@ export default function EtapaDetalhePage({ params }) {
   return (
     <AppShell title={stage.name} backHref={`/painel/obras/lista/${project.id}`}>
       <div className={styles.wrap}>
+        <ReloadAlert result={pageQuery} />
         {actionError ? (
           /* BUG REAL CORRIGIDO (auditoria E2E ao vivo, Marco 6, Ciclo 7, 2026-10-06): mesma
              classe sistêmica já catalogada (Alert de erro renderizado no corpo normal da página

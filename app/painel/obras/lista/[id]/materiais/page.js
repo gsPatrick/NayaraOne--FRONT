@@ -35,6 +35,8 @@ import { getProjectOrNull } from "../_components/getProjectOrNull";
 import { lookupFallback } from "@/lib/asyncState/lookup";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import ReloadAlert from "@/components/molecules/ReloadAlert/ReloadAlert";
+import Spinner from "@/components/atoms/Spinner/Spinner";
 // Fila offline (Marco 6, contrato §13) — requisição de material.
 const OFFLINE_QUEUE_NAME = "construction.material-requests";
 
@@ -118,7 +120,7 @@ export default function MateriaisObraPage({ params }) {
   if (!project) {
     return (
       <AppShell title="Materiais" backHref={`/painel/obras/lista/${params.id}`}>
-        <AsyncState result={pageQuery} loadingLabel="Carregando os materiais...">{null}</AsyncState>
+        <AsyncState result={pageQuery} loadingLabel="Carregando os materiais..."><Spinner /></AsyncState>
       </AppShell>
     );
   }
@@ -313,6 +315,7 @@ export default function MateriaisObraPage({ params }) {
   return (
     <AppShell title={`Materiais — ${project.name}`} backHref={`/painel/obras/lista/${project.id}`}>
       <div className={styles.wrap}>
+        <ReloadAlert result={pageQuery} />
         {actionError ? (
           <div style={{ position: "fixed", top: "var(--space-4)", left: "50%", transform: "translateX(-50%)", zIndex: 200, width: "min(560px, calc(100vw - 2 * var(--space-4)))" }}>
             <Alert tone="danger">{actionError}</Alert>

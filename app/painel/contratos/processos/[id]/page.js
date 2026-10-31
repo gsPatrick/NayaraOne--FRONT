@@ -14,6 +14,7 @@ import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import { UI_STATE } from "@/lib/asyncState/states";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import { nullOn404 } from "@/lib/asyncState/notFound";
 import { listProperties, getProperty } from "@/lib/api/properties";
 import { apiFetch } from "@/lib/api/client";
 import {
@@ -69,7 +70,13 @@ export default function ProcessoDetailPage({ params }) {
       listEvidencePackages(params.id),
       apiFetch("/users?status=ACTIVE"),
     ])
-      .then(async ([caseRes, deadlinesRes, evidenceRes, usersRes]) => {
+      .catch(nullOn404) // 404 da API: o registro não existe, a tela chama notFound()
+      .then(async (loaded) => {
+        if (!loaded) {
+          setLegalCase(null);
+          return;
+        }
+        const [caseRes, deadlinesRes, evidenceRes, usersRes] = loaded;
         setLegalCase(caseRes);
         setDeadlines(deadlinesRes || []);
         setEvidencePackages(evidenceRes || []);

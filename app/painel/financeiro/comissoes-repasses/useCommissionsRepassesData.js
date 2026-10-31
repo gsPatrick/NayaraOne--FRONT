@@ -43,7 +43,9 @@ export function useCommissionsRepassesData() {
   // Blocos que terminaram sem dado (falha): a tela mostra o estado de cada um com "tentar de novo".
   const failed = queries.filter((query) => query.status !== "LOADING" && !query.data);
   const loading = queries.some((query) => query.status === "LOADING" && !query.data);
+  // Ações só com dado fresco: na revisita o cache aparece, mas pagar/aprovar espera a carga nova.
+  const stale = queries.some((query) => query.status === "LOADING" || query.fromCache);
   const reload = () => queries.forEach((query) => query.reload());
 
-  return { commissions, setCommissions, installments, setInstallments, repasses, setRepasses, bankAccounts, pendingEntries, people, users, failed, loading, reload };
+  return { commissions, setCommissions, installments, setInstallments, repasses, setRepasses, bankAccounts, pendingEntries, people, users, failed, loading, stale, reload };
 }

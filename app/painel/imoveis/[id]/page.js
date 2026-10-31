@@ -43,6 +43,7 @@ import { getPerson } from "@/lib/api/people";
 import { formatBRL } from "@/lib/format";
 import { buildGoogleMapsUrl, buildGoogleMapsEmbedUrl, buildGoogleMapsDirectionsUrl, buildAddressLine } from "@/lib/maps";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import ReloadAlert from "@/components/molecules/ReloadAlert/ReloadAlert";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import styles from "./page.module.css";
 
@@ -72,7 +73,9 @@ export default function PropertyDetailPage({ params }) {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
 
-  const [property, setProperty] = useState(null);
+  // A ficha só vale para o id da rota: se params.id mudar sem remontar, o registro antigo não aparece.
+  const [loadedProperty, setProperty] = useState(null);
+  const property = loadedProperty && String(loadedProperty.id) === String(params.id) ? loadedProperty : null;
   const [actionError, setActionError] = useState("");
   const [ownedByCount, setOwnedByCount] = useState({});
   const [publishBlockedMessage, setPublishBlockedMessage] = useState("");
@@ -280,6 +283,7 @@ export default function PropertyDetailPage({ params }) {
   return (
     <AppShell title={property.name} backHref="/painel/imoveis">
       <div className={styles.wrap}>
+        <ReloadAlert result={propertyQuery} />
         <div className={styles.topRow}>
           <div className={styles.badges}>
             <span className={styles.internalCode}>Cód. {property.internalCode}</span>

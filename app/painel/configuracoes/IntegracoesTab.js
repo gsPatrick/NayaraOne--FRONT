@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Card from "@/components/molecules/Card/Card";
 import Input from "@/components/atoms/Input/Input";
 import Select from "@/components/atoms/Select/Select";
@@ -14,6 +14,7 @@ import PortoSeguroLogo from "@/components/atoms/PortoSeguroLogo/PortoSeguroLogo"
 import JuntoSegurosLogo from "@/components/atoms/JuntoSegurosLogo/JuntoSegurosLogo";
 import YelumLogo from "@/components/atoms/YelumLogo/YelumLogo";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { canResetForm } from "@/lib/asyncState/formSync";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { listSettings, updateSetting, getIntegrationsStatus } from "@/lib/api/settings";
 import { reportLookupProblem } from "@/lib/asyncState/lookup";
@@ -110,6 +111,9 @@ export default function IntegracoesTab() {
   const [configuredFlags, setConfiguredFlags] = useState({});
   const [original, setOriginal] = useState(null);
   const [saving, setSaving] = useState(false);
+  // Dado fresco que chega depois de o usuário digitar não apaga o que foi digitado; a migração do provedor roda uma vez só.
+  const formRef = useRef({ values: null, original: null });
+  const providerMigratedRef = useRef(false);
   const [error, setError] = useState("");
   const [forbidden, setForbidden] = useState(false);
   const [success, setSuccess] = useState("");
@@ -165,7 +169,8 @@ export default function IntegracoesTab() {
     // só mostra Clicksign, então o provider efetivo usado pelo fluxo de assinatura real
     // precisa acompanhar, sem depender de o usuário clicar em "Salvar".
     const storedProvider = byKey[INTEGRACOES_KEYS.signatureProvider];
-    if (storedProvider && storedProvider !== "clicksign") {
+    if (storedProvider && storedProvider !== "clicksign" && !providerMigratedRef.current) {
+      providerMigratedRef.current = true;
       updateSetting(INTEGRACOES_KEYS.signatureProvider, "clicksign").catch((error) => reportLookupProblem("o provedor de assinatura", error));
     }
     const flags = {
@@ -183,10 +188,13 @@ export default function IntegracoesTab() {
       yelumApiKey: Boolean(byKey[INTEGRACOES_KEYS.yelumApiKey]),
       financingSandboxWebhookSecret: Boolean(byKey[INTEGRACOES_KEYS.financingSandboxWebhookSecret]),
     };
+    setConfiguredFlags(flags);
+    if (!canResetForm(formRef.current.values, formRef.current.original)) return;
     setValues(next);
     setOriginal(next);
-    setConfiguredFlags(flags);
   }, [settingsQuery.data]);
+
+  formRef.current = { values, original };
 
   useEffect(() => {
     refreshIntegrationsStatus();

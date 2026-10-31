@@ -18,6 +18,7 @@ import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import { reportLookupProblem } from "@/lib/asyncState/lookup";
 import { UI_STATE } from "@/lib/asyncState/states";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import { nullOn404 } from "@/lib/asyncState/notFound";
 import { getProperty } from "@/lib/api/properties";
 import { apiFetch } from "@/lib/api/client";
 import {
@@ -81,7 +82,13 @@ export default function VistoriaDetailPage({ params }) {
   // M9-D940: carregando, erro com "tentar de novo", 403 e offline vêm do padrão único de estados.
   const loadQuery = useAsyncState(() => {
     return Promise.all([getInspection(params.id), listInspectionItems(params.id), apiFetch("/users"), listInspections()])
-      .then(async ([inspectionRes, itemsRes, usersRes, allInspections]) => {
+      .catch(nullOn404) // 404 da API: o registro não existe, a tela chama notFound()
+      .then(async (loaded) => {
+        if (!loaded) {
+          setInspection(null);
+          return;
+        }
+        const [inspectionRes, itemsRes, usersRes, allInspections] = loaded;
         setInspection(inspectionRes);
         setItems(itemsRes || []);
         setUsers(usersRes || []);

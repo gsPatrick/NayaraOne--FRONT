@@ -245,7 +245,7 @@ export default function FechamentoPage() {
   return (
     <AppShell title="Fechamento de período" backHref="/painel/financeiro">
       <div className={styles.wrap}>
-        {!loading && !closuresLoaded ? <AsyncState result={closuresQuery} /> : null}
+        {(!loading && !closuresLoaded) || closuresQuery.status === "OFFLINE" ? <AsyncState result={closuresQuery} /> : null}
 
         <Card className={styles.formCard}>
           <h2 className={styles.sectionTitle}>Fechar um mês</h2>

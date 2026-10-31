@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
-import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import { useAsyncState, invalidateAsyncCache } from "@/lib/asyncState/useAsyncState";
 import RoleForm from "@/components/organisms/RoleForm/RoleForm";
 import MfaVerifyModal from "@/components/organisms/MfaVerifyModal/MfaVerifyModal";
 import MfaSetupRequiredNotice from "@/components/molecules/MfaSetupRequiredNotice/MfaSetupRequiredNotice";
@@ -29,6 +29,8 @@ export default function EditarPapelPage({ params }) {
     setMfaSetupNeeded(false);
     try {
       await updateRole(params.id, payload);
+      // A revisita não pode devolver o papel de antes da edição.
+      invalidateAsyncCache(`papel:${params.id}`);
       router.push("/painel/papeis");
     } catch (err) {
       if (err?.code === "MFA_STEP_UP_REQUIRED") {
@@ -46,10 +48,11 @@ export default function EditarPapelPage({ params }) {
   return (
     <AppShell title={role ? `Editar papel — ${role.name}` : "Editar papel"} backHref="/painel/papeis">
       <div className={styles.formWrap}>
-        <AsyncState result={roleQuery} loadingLabel="Carregando papel...">
+        <AsyncState result={roleQuery} loadingLabel="Carregando papel..." freshOnly>
           <>
             {mfaSetupNeeded ? <MfaSetupRequiredNotice /> : null}
             <RoleForm
+              key={`${params.id}-${roleQuery.fetchedAt}`}
               mode="edit"
               role={role}
               catalog={catalog}

@@ -89,7 +89,7 @@ export default function NovoLancamentoPage() {
     setBankAccounts(data.ba);
     setCostCenters(data.cc);
     setResultCenters(data.rc);
-    setForm((prev) => ({ ...prev, bankAccountId: data.ba[0]?.id || "" }));
+    setForm((prev) => (prev.bankAccountId ? prev : { ...prev, bankAccountId: data.ba[0]?.id || "" }));
     setChartAccounts(data.ca);
     setContracts(data.ct);
     setPeople(data.pp);

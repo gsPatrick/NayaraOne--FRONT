@@ -13,6 +13,7 @@ import Pagination from "@/components/molecules/Pagination/Pagination";
 import { COMPANY_STATUS_LABELS } from "@/lib/mock/companies";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import { useLocalCopy } from "@/lib/asyncState/localCopy";
 import { apiFetch } from "@/lib/api/client";
 import { formatDate } from "@/lib/format";
 import styles from "./page.module.css";
@@ -33,7 +34,6 @@ function attachUnits(companies, units) {
 
 export default function EmpresasPage() {
   const router = useRouter();
-  const [companies, setCompanies] = useState([]);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
@@ -49,7 +49,7 @@ export default function EmpresasPage() {
     return attachUnits(apiCompanies || [], apiUnits || []);
   }, { key: "empresas", isEmpty: () => false });
   const loaded = listQuery.data;
-  useEffect(() => { if (loaded) setCompanies(loaded); }, [loaded]);
+  const [companies, setCompanies] = useLocalCopy(loaded, []); // derivada do dado lido: sem flash de "nenhuma empresa" no 1º render
 
   function handleDelete() {
     setCompanies((prev) => prev.filter((c) => c.id !== deleteTarget.id));

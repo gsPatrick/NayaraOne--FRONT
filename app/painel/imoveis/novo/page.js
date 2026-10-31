@@ -235,8 +235,15 @@ export default function NovoImovelPage() {
 
   // M9-D850: a criação do imóvel (imóvel, documentação, oferta e proprietários) roda como ação do padrão de estados:
   // carregando, 403, sem conexão e "tentar de novo" com a mesma Idempotency-Key; ao concluir, abre a ficha.
-  const saveAction = useAsyncAction(async () => {
-    const created = await createProperty({
+  // O progresso fica guardado por Idempotency-Key: no "Tentar novamente" (mesma chave) as etapas já concluídas são puladas,
+  // então o imóvel não é criado duas vezes nem fica meio criado; uma nova tentativa do zero (chave nova) começa limpa.
+  const saveProgressRef = useRef({ key: null, created: null, docsDone: false, offerDone: false, ownersDone: new Set() });
+  const saveAction = useAsyncAction(async ({ idempotencyKey }) => {
+    if (saveProgressRef.current.key !== idempotencyKey) {
+      saveProgressRef.current = { key: idempotencyKey, created: null, docsDone: false, offerDone: false, ownersDone: new Set() };
+    }
+    const progress = saveProgressRef.current;
+    const created = progress.created || await createProperty({
       title: basic.name,
       internalCode: basic.internalCode,
       propertyType: toApiPropertyType(basic.type),
@@ -260,11 +267,15 @@ export default function NovoImovelPage() {
         state: address.state,
       },
       attributesJson: features,
-    });
+    }, { idempotencyKey: `${idempotencyKey}:imovel` });
+    progress.created = created;
 
-    await savePropertyDocumentation(created.id, docs);
+    if (!progress.docsDone) {
+      await savePropertyDocumentation(created.id, docs);
+      progress.docsDone = true;
+    }
 
-    if (offer.askingPrice) {
+    if (offer.askingPrice && !progress.offerDone) {
       await createOffer(created.id, {
         offerType: offer.offerType,
         askingPrice: offer.askingPrice,
@@ -274,11 +285,12 @@ export default function NovoImovelPage() {
         status: offer.status,
         startsAt: dateOnlyInputToIso(offer.validFrom) || null,
         endsAt: dateOnlyInputToIso(offer.validUntil) || null,
-      });
+      }, { idempotencyKey: `${idempotencyKey}:oferta` });
+      progress.offerDone = true;
     }
 
-    for (const o of owners) {
-      if (!o.personId) continue;
+    for (const [ownerIndex, o] of owners.entries()) {
+      if (!o.personId || progress.ownersDone.has(ownerIndex)) continue;
       // BUG REAL CORRIGIDO (auditoria Claude Browser, rodada final, 13/10/2026): "100" no
       // campo Percentual era só placeholder visual (cinza), não um valor preenchido — ao
       // deixar vazio, `o.percentage || undefined` mandava `undefined` pro backend, que
@@ -289,7 +301,8 @@ export default function NovoImovelPage() {
         personId: o.personId,
         roleCode: o.roleCode,
         ownershipPercent: o.percentage.trim() !== "" ? o.percentage : "100",
-      });
+      }, { idempotencyKey: `${idempotencyKey}:proprietario-${ownerIndex}` });
+      progress.ownersDone.add(ownerIndex);
     }
 
     return created;

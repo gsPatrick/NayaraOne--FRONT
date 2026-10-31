@@ -34,6 +34,8 @@ import { loadObraDetail } from "./_components/loadObraDetail";
 import { reportLookupProblem } from "@/lib/asyncState/lookup";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import ReloadAlert from "@/components/molecules/ReloadAlert/ReloadAlert";
+import Spinner from "@/components/atoms/Spinner/Spinner";
 // Visão geral da obra — depois da divisão do antigo monólito (orçamento, change orders, RDO/
 // diário, medições, materiais e qualidade/NC agora moram em subrotas dedicadas, veja
 // app/painel/obras/lista/[id]/{orcamento,change-orders,diario,medicoes,materiais,qualidade}/
@@ -138,7 +140,7 @@ export default function ObraDetalhePage({ params }) {
   if (!project) {
     return (
       <AppShell title="Obra" backHref="/painel/obras/lista">
-        <AsyncState result={obraQuery} loadingLabel="Carregando a obra...">{null}</AsyncState>
+        <AsyncState result={obraQuery} loadingLabel="Carregando a obra..."><Spinner /></AsyncState>
       </AppShell>
     );
   }
@@ -328,6 +330,7 @@ export default function ObraDetalhePage({ params }) {
   return (
     <AppShell title={project.name} backHref="/painel/obras/lista">
       <div className={styles.wrap}>
+        <ReloadAlert result={obraQuery} />
         {actionError ? (
           <div style={{ position: "fixed", top: "var(--space-4)", left: "50%", transform: "translateX(-50%)", zIndex: 200, width: "min(560px, calc(100vw - 2 * var(--space-4)))" }}>
             <Alert tone="danger">{actionError}</Alert>

@@ -24,6 +24,7 @@ import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import { SkeletonList } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import { useLocalCopy } from "@/lib/asyncState/localCopy";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import ContractsNavMenu from "@/components/molecules/ContractsNavMenu/ContractsNavMenu";
 import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
@@ -62,7 +63,6 @@ function canApproveCondition(clause) {
 }
 
 export default function ClausulasPage() {
-  const [clauses, setClauses] = useState([]);
   const [loadError, setLoadError] = useState(""); // erros das ações (desativar, aprovar etc.); a leitura usa o AsyncState
   const [query, setQuery] = useState("");
 
@@ -88,7 +88,7 @@ export default function ClausulasPage() {
   // A lista é editada no lugar (criar/desativar/aprovar), então o vazio fica dentro da tela e a leitura só alimenta `clauses`.
   const listQuery = useAsyncState(async () => (await listClauses()) || [], { key: "contratos-clausulas", isEmpty: () => false });
   const loaded = listQuery.data;
-  useEffect(() => { if (loaded) setClauses(loaded); }, [loaded]);
+  const [clauses, setClauses] = useLocalCopy(loaded, []); // derivada do dado lido: sem flash de "nenhuma cláusula" no 1º render
 
   const filtered = useMemo(() => {
     if (!query) return clauses;

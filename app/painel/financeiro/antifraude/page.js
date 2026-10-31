@@ -20,7 +20,7 @@ import Input from "@/components/atoms/Input/Input";
 import FormField from "@/components/molecules/FormField/FormField";
 import Select from "@/components/atoms/Select/Select";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
-import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import { useAsyncState, invalidateAsyncCache } from "@/lib/asyncState/useAsyncState";
 import StatTile from "@/components/molecules/StatTile/StatTile";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu";
@@ -50,7 +50,10 @@ export default function AntifraudePage() {
     if (riskFilter) params.riskLevel = riskFilter;
     return listAnomalyCases(params).then((items) => items || []);
   }, { key: `antifraude:${statusFilter}:${riskFilter}`, deps: [statusFilter, riskFilter] });
-  const cases = useMemo(() => casesQuery.data || [], [casesQuery.data]);
+  // Caso resolvido é atualizado na própria linha (sem recarregar a lista nem trocar por spinner); a linha continua na tela mesmo no filtro "Aberto".
+  const [resolvedById, setResolvedById] = useState({});
+  useEffect(() => { setResolvedById({}); }, [casesQuery.data]);
+  const cases = useMemo(() => (casesQuery.data || []).map((c) => resolvedById[c.id] || c), [casesQuery.data, resolvedById]);
 
   function showNotice(tone, title, message) {
     setNotice({ tone, title, message });
@@ -61,8 +64,9 @@ export default function AntifraudePage() {
   async function handleResolve(anomalyCase, resolutionNote) {
     setBusyId(anomalyCase.id);
     try {
-      await resolveAnomalyCase(anomalyCase.id, resolutionNote);
-      casesQuery.reload();
+      const updated = await resolveAnomalyCase(anomalyCase.id, resolutionNote);
+      setResolvedById((prev) => ({ ...prev, [anomalyCase.id]: { ...anomalyCase, ...(updated && typeof updated === "object" ? updated : {}), status: "RESOLVED", resolutionNote: (updated && updated.resolutionNote) || resolutionNote } }));
+      invalidateAsyncCache(`antifraude:${statusFilter}:${riskFilter}`);
       setResolveModal(null);
       showNotice("success", "Caso resolvido", "Caso de anomalia marcado como resolvido.");
     } catch (err) {

@@ -175,7 +175,7 @@ export default function AprovacoesPage() {
     <AppShell title="Aprovações" backHref="/painel/financeiro">
       {notice ? <Alert tone={notice.tone} title={notice.title} className={styles.notice}>{notice.message}</Alert> : null}
 
-      <AsyncState result={approvalsQuery} loadingLabel="Carregando aprovações...">
+      <AsyncState result={approvalsQuery} lockStale loadingLabel="Carregando aprovações...">
         <>
           <div className={styles.grid}>
             <StatTile label="Pendentes" value={pendingApprovals.length} tone={pendingApprovals.length > 0 ? "warning" : "success"} icon="shield" />

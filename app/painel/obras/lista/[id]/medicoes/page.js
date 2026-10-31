@@ -22,6 +22,8 @@ import { getProjectOrNull } from "../_components/getProjectOrNull";
 import { lookupFallback } from "@/lib/asyncState/lookup";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import ReloadAlert from "@/components/molecules/ReloadAlert/ReloadAlert";
+import Spinner from "@/components/atoms/Spinner/Spinner";
 // Visão consolidada de medições de todas as etapas da obra — extraída na divisão do antigo
 // monólito app/painel/obras/lista/[id]/page.js em subrotas. As ações de medição (registrar,
 // enviar para revisão, revisar, aprovar/rejeitar) continuam na tela de detalhe da etapa
@@ -64,7 +66,7 @@ export default function MedicoesObraPage({ params }) {
   if (!project) {
     return (
       <AppShell title="Medições" backHref={`/painel/obras/lista/${params.id}`}>
-        <AsyncState result={pageQuery} loadingLabel="Carregando as medições...">{null}</AsyncState>
+        <AsyncState result={pageQuery} loadingLabel="Carregando as medições..."><Spinner /></AsyncState>
       </AppShell>
     );
   }
@@ -82,6 +84,7 @@ export default function MedicoesObraPage({ params }) {
   return (
     <AppShell title={`Medições — ${project.name}`} backHref={`/painel/obras/lista/${project.id}`}>
       <div className={styles.wrap}>
+        <ReloadAlert result={pageQuery} />
         {stages.length === 0 ? (
           <Card title="Medições por etapa">
             <EmptyState icon="layers" title="Sem etapas" description="Cadastre etapas para esta obra para poder registrar medições." />

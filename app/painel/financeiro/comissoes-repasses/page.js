@@ -9,7 +9,7 @@ import Avatar from "@/components/atoms/Avatar/Avatar";
 import Icon from "@/components/atoms/Icon/Icon";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
-import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import AsyncState, { StaleLock } from "@/components/molecules/AsyncState/AsyncState";
 import { useCommissionsRepassesData } from "./useCommissionsRepassesData";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import SearchInput from "@/components/molecules/SearchInput/SearchInput";
@@ -83,7 +83,7 @@ function personOf(people, id) {
 
 export default function ComissoesRepassesPage() {
   // M9-D940: cada bloco carrega pelo padrão único de estados (ver useCommissionsRepassesData).
-  const { commissions, setCommissions, installments, setInstallments, repasses, setRepasses, bankAccounts, pendingEntries, people, users, failed, loading, reload } = useCommissionsRepassesData();
+  const { commissions, setCommissions, installments, setInstallments, repasses, setRepasses, bankAccounts, pendingEntries, people, users, failed, loading, stale, reload } = useCommissionsRepassesData();
   const [newRepasseModal, setNewRepasseModal] = useState(false);
   const [modalError, setModalError] = useState("");
   const [query, setQuery] = useState("");
@@ -307,7 +307,7 @@ export default function ComissoesRepassesPage() {
       {notice ? <Alert tone={notice.tone} title={notice.title} className={styles.notice}>{notice.message}</Alert> : null}
 
       {loading ? <AsyncState result={{ status: "LOADING", data: null }} loadingLabel="Carregando comissões e repasses..." /> : (
-        <>
+        <StaleLock locked={stale}>
           <div className={styles.grid}>
             <StatTile label="Comissões (total)" value={formatBRL(totalCommissions)} tone="info" icon="chart" />
             <StatTile label="Repasses (total)" value={formatBRL(totalRepasses)} tone="info" icon="layers" />
@@ -466,7 +466,7 @@ export default function ComissoesRepassesPage() {
               </Card>
             </div>
           </div>
-        </>
+        </StaleLock>
       )}
 
       <StickyActionBar>

@@ -29,6 +29,8 @@ import { getProjectOrNull } from "../_components/getProjectOrNull";
 import { lookupFallback } from "@/lib/asyncState/lookup";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import ReloadAlert from "@/components/molecules/ReloadAlert/ReloadAlert";
+import Spinner from "@/components/atoms/Spinner/Spinner";
 // Fila offline (Marco 6, contrato §13) — mesmo nome usado como chave de armazenamento local e
 // como rótulo do registro pendente.
 const OFFLINE_QUEUE_NAME = "construction.daily-reports";
@@ -105,7 +107,7 @@ export default function DiarioObraPage({ params }) {
   if (!project) {
     return (
       <AppShell title="Diário de obra" backHref={`/painel/obras/lista/${params.id}`}>
-        <AsyncState result={pageQuery} loadingLabel="Carregando o diário de obra...">{null}</AsyncState>
+        <AsyncState result={pageQuery} loadingLabel="Carregando o diário de obra..."><Spinner /></AsyncState>
       </AppShell>
     );
   }
@@ -300,6 +302,7 @@ export default function DiarioObraPage({ params }) {
   return (
     <AppShell title={`Diário de obra — ${project.name}`} backHref={`/painel/obras/lista/${project.id}`}>
       <div className={styles.wrap}>
+        <ReloadAlert result={pageQuery} />
         {actionError ? (
           <div style={{ position: "fixed", top: "var(--space-4)", left: "50%", transform: "translateX(-50%)", zIndex: 200, width: "min(560px, calc(100vw - 2 * var(--space-4)))" }}>
             <Alert tone="danger">{actionError}</Alert>

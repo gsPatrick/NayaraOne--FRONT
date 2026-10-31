@@ -10,6 +10,7 @@ import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useFormSync } from "@/lib/asyncState/useFormSync";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
@@ -67,12 +68,18 @@ export default function ContaBancariaDetailPage({ params }) {
     ]);
     return { acc, ownerData, entries: entries || [], repasses: (repasses || []).filter((r) => r.bankAccountId === params.id) };
   }, { key: `conta-bancaria:${params.id}`, deps: [params.id], isEmpty: () => false });
+  // Dado fresco que chega depois de o usuário editar os campos não apaga o que foi digitado.
+  useFormSync({
+    data: accountQuery.data?.acc,
+    form: editForm,
+    apply: setEditForm,
+    build: (acc) => ({ bankCode: acc.bankCode || "", agency: acc.agency || "", accountNumber: isServerMasked(acc.accountNumber) ? "" : acc.accountNumber || "", pixKey: isServerMasked(acc.pixKey) ? "" : acc.pixKey || "" }),
+  });
   useEffect(() => {
     const data = accountQuery.data;
     if (!data) return;
     const acc = data.acc;
     setAccount(acc);
-    setEditForm({ bankCode: acc.bankCode || "", agency: acc.agency || "", accountNumber: isServerMasked(acc.accountNumber) ? "" : acc.accountNumber || "", pixKey: isServerMasked(acc.pixKey) ? "" : acc.pixKey || "" });
     setOwner(data.ownerData);
     setRelatedEntries(data.entries);
     setRelatedRepasses(data.repasses);

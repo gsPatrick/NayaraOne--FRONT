@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Table from "@/components/organisms/Table/Table";
@@ -44,6 +44,7 @@ import { hasPermission } from "@/lib/rbac/permissions";
 import { SOURCE_TYPE_LABEL as BASE_SOURCE_TYPE_LABEL } from "../_labels";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import { createLatestGuard } from "@/lib/asyncState/latest";
 import { classifyFailure } from "@/lib/asyncState/states";
 import { lookupFallback } from "@/lib/asyncState/lookup";
 import styles from "./page.module.css";
@@ -223,7 +224,9 @@ export default function FiscalPage() {
 
   // M9-D850: cada aba carrega por conta própria (se uma lista falhar, as outras continuam visíveis), mas a falha de cada uma
   // é classificada pelo padrão de estados (403 = sem acesso, sem conexão, tentar de novo) e nunca vira "lista vazia".
+  const latestLoad = useRef(createLatestGuard()).current;
   const loadQuery = useAsyncState(async () => {
+    const isLatest = latestLoad.begin();
     const tasks = [
       ["invoices", listInvoiceRequests, setInvoices, "as notas fiscais (NFS-e)"],
       ["dimob", listDimobBatches, setDimobBatches, "os batches DIMOB"],
@@ -233,6 +236,7 @@ export default function FiscalPage() {
     ];
     const results = await Promise.allSettled(tasks.map(([, fn]) => fn()));
     const errors = {};
+    if (!isLatest()) return { errors }; // recarga mais nova já em andamento: não aplica dado velho
     results.forEach((result, index) => {
       const [key, , setter, text] = tasks[index];
       if (result.status === "fulfilled") setter(result.value || []);

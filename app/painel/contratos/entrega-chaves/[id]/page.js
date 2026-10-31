@@ -11,6 +11,7 @@ import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import { UI_STATE } from "@/lib/asyncState/states";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import { nullOn404 } from "@/lib/asyncState/notFound";
 import RowActions from "@/components/molecules/RowActions/RowActions";
 import Modal from "@/components/organisms/Modal/Modal";
 import Button from "@/components/atoms/Button/Button";
@@ -68,7 +69,13 @@ export default function EntregaChavesDetailPage({ params }) {
   // M9-D940: carregando, erro com "tentar de novo", 403 e offline vêm do padrão único de estados.
   const loadQuery = useAsyncState(() => {
     return Promise.all([getKeyDelivery(params.id), listPeople()])
-      .then(async ([deliveryRes, peopleRes]) => {
+      .catch(nullOn404) // 404 da API: o registro não existe, a tela chama notFound()
+      .then(async (loaded) => {
+        if (!loaded) {
+          setDelivery(null);
+          return;
+        }
+        const [deliveryRes, peopleRes] = loaded;
         setDelivery(deliveryRes);
         setPeople(peopleRes || []);
         if (deliveryRes?.contractId) {

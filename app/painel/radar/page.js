@@ -14,6 +14,7 @@ import Pagination from "@/components/molecules/Pagination/Pagination";
 import Alert from "@/components/molecules/Alert/Alert";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import { useLocalCopy } from "@/lib/asyncState/localCopy";
 import { reportLookupProblem } from "@/lib/asyncState/lookup";
 import ProtectedValue from "@/components/molecules/ProtectedValue/ProtectedValue";
 import { listRadars, deleteRadar, getRadarMatches } from "@/lib/api/radar";
@@ -24,9 +25,6 @@ import styles from "./page.module.css";
 
 export default function RadarPage() {
   const router = useRouter();
-  const [radars, setRadars] = useState([]);
-  const [people, setPeople] = useState([]);
-  const [matchCounts, setMatchCounts] = useState({});
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [page, setPage] = useState(1);
@@ -58,12 +56,10 @@ export default function RadarPage() {
     return { radars: apiRadars, people: apiPeople, counts };
   }, { key: "radar", isEmpty: () => false });
   const loaded = listQuery.data;
-  useEffect(() => {
-    if (!loaded) return;
-    setRadars(loaded.radars);
-    setPeople(loaded.people);
-    setMatchCounts(loaded.counts);
-  }, [loaded]);
+  // Derivados do dado lido: sem flash de lista vazia no 1º render em CONTENT.
+  const [radars, setRadars] = useLocalCopy(loaded?.radars, []);
+  const [people] = useLocalCopy(loaded?.people, []);
+  const [matchCounts] = useLocalCopy(loaded?.counts, {});
 
   const rows = useMemo(
     () =>

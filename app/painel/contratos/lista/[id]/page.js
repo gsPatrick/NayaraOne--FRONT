@@ -13,6 +13,7 @@ import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import { UI_STATE } from "@/lib/asyncState/states";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import { nullOn404 } from "@/lib/asyncState/notFound";
 import Avatar from "@/components/atoms/Avatar/Avatar";
 import Modal from "@/components/organisms/Modal/Modal";
 import ConfirmAction from "@/components/molecules/ConfirmAction/ConfirmAction";
@@ -140,7 +141,13 @@ export default function ContratoDetailPage({ params }) {
       getContractTimeline(params.id).catch(lookupFallback("a linha do tempo do contrato", { items: [] })),
       listContractRequirements(params.id).catch(lookupFallback("as exigências do contrato")),
     ])
-      .then(async ([contractRes, partiesRes, versionsRes, guaranteesRes, amendmentsRes, peopleRes, timelineRes, requirementsRes]) => {
+      .catch(nullOn404) // 404 da API: o registro não existe, a tela chama notFound()
+      .then(async (loaded) => {
+        if (!loaded) {
+          setContract(null);
+          return;
+        }
+        const [contractRes, partiesRes, versionsRes, guaranteesRes, amendmentsRes, peopleRes, timelineRes, requirementsRes] = loaded;
         setContract(contractRes);
         setParties(partiesRes || []);
         setVersions(versionsRes || []);

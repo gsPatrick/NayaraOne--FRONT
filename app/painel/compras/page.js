@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Table from "@/components/organisms/Table/Table";
@@ -28,6 +28,7 @@ import { getCurrentUser } from "@/lib/auth/session";
 import { lookupFallback } from "@/lib/asyncState/lookup";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import { createLatestGuard } from "@/lib/asyncState/latest";
 const STATUS_LABELS = { REQUESTED: "Solicitada", APPROVED: "Aprovada", REJECTED: "Rejeitada", AWARDED: "Adjudicada", DELIVERED: "Entregue", CLOSED: "Fechada" };
 const STATUS_TONE = { REQUESTED: "neutral", APPROVED: "info", REJECTED: "danger", AWARDED: "success", DELIVERED: "success", CLOSED: "success" };
 
@@ -62,9 +63,12 @@ export default function ComprasPage() {
   const currentUser = getCurrentUser();
 
   // M9-D850: carregando, 403, sem conexão e "tentar de novo" vêm do padrão único de estados (falha nunca vira "nenhuma requisição").
+  const latestLoad = useRef(createLatestGuard()).current;
   const loadQuery = useAsyncState(
     async () => {
+      const isLatest = latestLoad.begin();
       const [r, i, p] = await Promise.all([listPurchaseRequests(), listInventoryItems(), listProjects()]);
+      if (!isLatest()) return { requests: r || [] }; // recarga mais nova já em andamento: não aplica dado velho
       setRequests(r || []);
       setItems(i || []);
       setProjects(p || []);

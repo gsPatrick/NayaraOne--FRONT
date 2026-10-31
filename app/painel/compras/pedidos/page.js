@@ -26,6 +26,7 @@ import { getSession } from "@/lib/auth/session";
 import { lookupFallback } from "@/lib/asyncState/lookup";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import { createLatestGuard } from "@/lib/asyncState/latest";
 const STATUS_LABELS = { OPEN: "Aberto", RECEIVED: "Recebido", CANCELED: "Cancelado" };
 const STATUS_TONE = { OPEN: "info", RECEIVED: "success", CANCELED: "neutral" };
 // Mesmo conjunto de CANCELABLE_STATUSES de procurement.service.js (cancelPurchaseOrder).
@@ -127,9 +128,12 @@ export default function PedidosDeCompraPage() {
   }
 
   // M9-D850: carregando, 403, sem conexão e "tentar de novo" vêm do padrão único de estados (falha nunca vira "nenhum pedido").
+  const latestLoad = useRef(createLatestGuard()).current;
   const loadQuery = useAsyncState(
     async () => {
+      const isLatest = latestLoad.begin();
       const [o, d, l] = await Promise.all([listPurchaseOrders(), listDiscrepancies(), listInventoryLocations()]);
+      if (!isLatest()) return { orders: o || [] }; // recarga mais nova já em andamento: não aplica dado velho
       setOrders(o || []);
       setDiscrepancies(d || []);
       setLocations(l || []);
@@ -381,17 +385,20 @@ export default function PedidosDeCompraPage() {
         </div>
       ) : null}
 
-      <Card title="Pedidos de compra" subtitle="Custo comprometido — recebimento delega ao Estoque (saldo + custo médio)">
-        <AsyncState result={loadQuery} loadingLabel="Carregando pedidos de compra...">
-          {() => <Table columns={columns} rows={orders} emptyMessage="Nenhum pedido de compra registrado." />}
-        </AsyncState>
-      </Card>
+      {/* Um único AsyncState envolve os dois Cards: uma falha mostra um só bloco de erro com um só "Tentar novamente". */}
+      <AsyncState result={loadQuery} loadingLabel="Carregando pedidos de compra...">
+        {() => (
+          <>
+            <Card title="Pedidos de compra" subtitle="Custo comprometido — recebimento delega ao Estoque (saldo + custo médio)">
+              <Table columns={columns} rows={orders} emptyMessage="Nenhum pedido de compra registrado." />
+            </Card>
 
-      <Card title="Divergências de recebimento" subtitle="Conferência entre pedido de compra e o que foi recebido">
-        <AsyncState result={loadQuery} loadingLabel="Carregando divergências...">
-          {() => <Table columns={discColumns} rows={discrepancies} emptyMessage="Nenhuma divergência registrada." />}
-        </AsyncState>
-      </Card>
+            <Card title="Divergências de recebimento" subtitle="Conferência entre pedido de compra e o que foi recebido">
+              <Table columns={discColumns} rows={discrepancies} emptyMessage="Nenhuma divergência registrada." />
+            </Card>
+          </>
+        )}
+      </AsyncState>
 
       <Modal
         size="lg"

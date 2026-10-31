@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, notFound } from "next/navigation";
 import { useState } from "react";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Button from "@/components/atoms/Button/Button";
@@ -16,6 +16,7 @@ import Alert from "@/components/molecules/Alert/Alert";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import { UI_STATE } from "@/lib/asyncState/states";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import { nullOn404 } from "@/lib/asyncState/notFound";
 import { CONTACT_TYPE_LABELS, CONTACT_TYPE_ICON } from "@/lib/mock/people";
 import { getRadar, deleteRadar } from "@/lib/api/radar";
 import { getPerson } from "@/lib/api/people";
@@ -47,8 +48,12 @@ export default function RadarDetailPage({ params }) {
   // M9-D940: carregando, erro com "tentar de novo", 403 e offline vêm do padrão único de estados.
   const loadQuery = useAsyncState(() => {
     return getRadar(params.id)
+      .catch(nullOn404) // 404 da API: o radar não existe, a tela chama notFound()
       .then(async (apiRadar) => {
-        if (!apiRadar) return;
+        if (!apiRadar) {
+          setRadar(null);
+          return;
+        }
         setRadar(apiRadar);
         setMatches((apiRadar.matches || []).map(mapProperty));
         const [apiPerson, apiOpportunity] = await Promise.all([
@@ -81,15 +86,7 @@ export default function RadarDetailPage({ params }) {
     );
   }
 
-  if (!radar) {
-    return (
-      <AppShell title="Radar" backHref="/painel/radar">
-        <div className={styles.wrap}>
-          <Alert tone="danger" title="Radar não encontrado">Este radar não existe ou foi removido.</Alert>
-        </div>
-      </AppShell>
-    );
-  }
+  if (!radar) return notFound();
 
   const c = radar.criteriaJson;
 

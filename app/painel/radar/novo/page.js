@@ -42,7 +42,7 @@ export default function NovoRadarPage() {
   });
 
   // M9-D940: a gravação passa pelo padrão de estados (403, sem conexão e "tentar de novo").
-  const saveAction = useAsyncAction((_context, payload) => createRadar(payload), { successMessage: "Radar salvo." });
+  const saveAction = useAsyncAction(({ idempotencyKey }, payload) => createRadar(payload, { idempotencyKey }), { successMessage: "Radar salvo." });
   const submitting = saveAction.status === UI_STATE.LOADING || saveAction.status === UI_STATE.SUCCESS;
   const showSaveProblem = Boolean(saveAction.status) && !submitting;
   const [cepLoading, setCepLoading] = useState(false);
@@ -129,7 +129,8 @@ export default function NovoRadarPage() {
   return (
     <AppShell title="Novo radar" backHref="/painel/radar">
       <div className={styles.wrap}>
-        {showSaveProblem ? <AsyncState result={saveAction} /> : null}
+        {/* O "tentar de novo" precisa seguir o mesmo caminho do envio: se der certo, volta para a lista. */}
+        {showSaveProblem ? <AsyncState result={saveAction} onRetry={async () => { const outcome = await saveAction.retry(); if (outcome.status === UI_STATE.SUCCESS) router.push("/painel/radar"); }} /> : null}
         <form onSubmit={handleSubmit}>
           <Card title="Cliente" className={styles.section}>
             <FormField label="Contato (comprador/locatário)" htmlFor="rd-person" required error={errors.person}>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Card from "@/components/molecules/Card/Card";
 import Input from "@/components/atoms/Input/Input";
 import Select from "@/components/atoms/Select/Select";
@@ -9,6 +9,7 @@ import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
 import FormField from "@/components/molecules/FormField/FormField";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { canResetForm } from "@/lib/asyncState/formSync";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { listSettings, updateSetting } from "@/lib/api/settings";
 import { toSettingValue, settingsByKey } from "./settingsFormat";
@@ -28,6 +29,8 @@ export default function SegurancaTab() {
   });
   const [original, setOriginal] = useState(null);
   const [saving, setSaving] = useState(false);
+  // Dado fresco que chega depois de o usuário digitar não apaga o que foi digitado.
+  const formRef = useRef({ values: null, original: null });
   const [error, setError] = useState("");
   const [forbidden, setForbidden] = useState(false);
   const [success, setSuccess] = useState("");
@@ -37,6 +40,7 @@ export default function SegurancaTab() {
   useEffect(() => {
     const byKey = settingsQuery.data;
     if (!byKey) return;
+    if (!canResetForm(formRef.current.values, formRef.current.original)) return;
     const next = {
       stepUpTtlMinutes: byKey[MFA_KEYS.stepUpTtlMinutes] ?? "",
       requiredForSensitiveRoles: Boolean(byKey[MFA_KEYS.requiredForSensitiveRoles]),
@@ -44,6 +48,8 @@ export default function SegurancaTab() {
     setValues(next);
     setOriginal(next);
   }, [settingsQuery.data]);
+
+  formRef.current = { values, original };
 
   function handleChange(field, value) {
     setValues((prev) => ({ ...prev, [field]: value }));

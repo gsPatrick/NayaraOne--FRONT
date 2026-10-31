@@ -44,6 +44,7 @@ import {
 } from "@/lib/api/correspondent";
 import { uploadFile } from "@/lib/api/legal";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import ReloadAlert from "@/components/molecules/ReloadAlert/ReloadAlert";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { lookupFallback } from "@/lib/asyncState/lookup";
 import NaySummary from "@/components/organisms/NaySummary/NaySummary";
@@ -116,7 +117,9 @@ const CRITICAL_FIELD_LABELS = { taxId: "CPF/CNPJ", name: "Nome", income: "Renda"
 
 export default function FinancingCaseDetailPage() {
   const { id } = useParams();
-  const [financingCase, setFinancingCase] = useState(null);
+  // A ficha só vale para o id da rota: se o id mudar sem remontar, o caso antigo não aparece.
+  const [loadedCase, setFinancingCase] = useState(null);
+  const financingCase = loadedCase && String(loadedCase.id) === String(id) ? loadedCase : null;
   const [perms, setPerms] = useState({ create: false, settle: false, fiscal: false });
   const [params, setParams] = useState(null);
   const [paramsError, setParamsError] = useState("");
@@ -831,6 +834,7 @@ export default function FinancingCaseDetailPage() {
 
   return (
     <AppShell title="Caso de financiamento" backHref="/painel/correspondente">
+      <ReloadAlert result={caseQuery} />
       <Card
         title={
           <span style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
