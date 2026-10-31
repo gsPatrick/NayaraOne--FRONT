@@ -25,6 +25,7 @@ export const INTEGRACOES_SEGURANCA_GROUPS = [
         ],
         helper: "Sem escolha aqui, o sistema bloqueia em produção e homologação e só registra em sandbox. Os endereços permitidos são os que o adaptador do fornecedor declara e os informados na política da conexão.",
       },
+      { key: "integration.egress.provider_hosts", label: "Endereços a mais por fornecedor para o endereço base da conexão", type: "text", defaultValue: "", helper: "Formato fornecedor:endereço1,endereço2;outro:endereço3. O endereço base de uma conexão (por exemplo, da assinatura digital) só vale se for do próprio fornecedor ou constar aqui; IP, rede interna, porta e caminho são recusados. Vazio mantém só os endereços que o adaptador do fornecedor declara." },
       { key: "integration.retention.job_hour", label: "Hora do expurgo diário dos registros vencidos (horário de São Paulo)", type: "integer", defaultValue: 2, helper: "De 0 a 23. Os prazos de cada tabela ficam nos grupos de erros, caixa de entrada, envios e saúde." },
     ],
   },

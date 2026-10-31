@@ -12,6 +12,36 @@ export const GOVERNANCA_MIGRACAO_GROUPS = [
     ],
   },
   {
+    title: "Migração do sistema antigo: limite de execuções",
+    subtitle:
+      "Cada pedido de carga abre conexão com o sistema antigo e usa o banco do Nayara. Estes limites impedem que pedidos repetidos ou simultâneos sobrecarreguem os dois. Passado o limite, o pedido é recusado com uma mensagem clara.",
+    fields: [
+      { key: "migracao.execucao.max_por_fonte", label: "Execuções ao mesmo tempo para a mesma fonte", type: "integer", defaultValue: 1, min: 1, max: 10, helper: "Quantas execuções (na fila, rodando ou pausadas) a mesma fonte do sistema antigo pode ter ao mesmo tempo. Um pedido sem fonte definida vale para todas. Com 1, o segundo pedido só entra depois que o primeiro terminar." },
+      { key: "migracao.execucao.max_por_empresa", label: "Teto de execuções ativas da empresa", type: "integer", defaultValue: 3, min: 1, max: 50, helper: "Somando todas as fontes, quantas execuções a empresa pode ter ativas. Acima disso o pedido é recusado até alguma terminar." },
+      { key: "migracao.execucao.max_no_processo", label: "Teto de execuções rodando ao mesmo tempo no servidor", type: "integer", defaultValue: 5, min: 1, max: 100, helper: "Quantas cargas o servidor roda juntas. As que passarem disso esperam na fila e são retomadas sozinhas em até um minuto." },
+      { key: "migracao.execucao.expira_min", label: "Minutos até uma execução sem fim deixar de contar", type: "integer", defaultValue: 720, min: 1, max: 10080, helper: "Se o servidor cair no meio de uma carga, ela ficaria contando como ativa para sempre; passado este tempo deixa de contar e a fonte é liberada." },
+    ],
+  },
+  {
+    title: "Migração do sistema antigo: empresa no sistema antigo",
+    subtitle:
+      "O sistema antigo é um só para todo o grupo. Com várias empresas no grupo, cada empresa deve ler apenas as linhas dela, identificadas por uma coluna do sistema antigo. Sem isso a carga é recusada, para nenhuma empresa receber os dados da outra.",
+    fields: [
+      { key: "migracao.legado.filtrar_por_empresa", label: "Ler só as linhas desta empresa", type: "boolean", defaultValue: false, helper: "Ligado: toda leitura do sistema antigo traz somente as linhas cuja coluna abaixo vale o código desta empresa. Cada empresa do grupo tem o seu código." },
+      { key: "migracao.legado.coluna_empresa", label: "Coluna que identifica a empresa no sistema antigo", type: "text", defaultValue: "empresa_id", helper: "Nome da coluna, igual nas tabelas de clientes, fornecedores e imóveis do sistema antigo. Só letras, números e sublinhado." },
+      { key: "migracao.legado.codigo_empresa", label: "Código desta empresa no sistema antigo", type: "text", defaultValue: "A_DEFINIR", helper: "O valor que a coluna acima tem nas linhas desta empresa. Enquanto estiver A_DEFINIR e o filtro ligado, a carga é recusada." },
+      { key: "migracao.legado.exigir_filtro_multiempresa", label: "Recusar a carga em grupo com várias empresas sem o filtro", type: "boolean", defaultValue: true, helper: "Ligado: se o grupo tem mais de uma empresa e o filtro está desligado, a carga não começa. Desligue só se o sistema antigo já entrega a esta empresa apenas as linhas dela." },
+    ],
+  },
+  {
+    title: "Migração do sistema antigo: descarte do conteúdo de origem",
+    subtitle:
+      "Para conferir e repetir a carga, o Nayara guarda a linha original do sistema antigo (com CPF e data de nascimento) até o registro ser reconciliado. Depois disso o conteúdo é descartado; o resumo de conferência e o vínculo com o cadastro novo ficam.",
+    fields: [
+      { key: "migracao.payload.retencao_dias", label: "Dias até descartar o conteúdo depois de reconciliado", type: "integer", defaultValue: 30, min: 0, max: 3650, helper: "Com 0, o conteúdo é descartado na primeira passagem após a reconciliação. Repetir uma carga relê o sistema antigo e devolve o conteúdo, que é descartado de novo no prazo." },
+    ],
+  },
+  {
     title: "Migração do sistema antigo: Torre de controle",
     subtitle: "O painel da migração mostra quanto já foi, quanto falta e uma estimativa de término calculada pela velocidade dos últimos lotes concluídos.",
     fields: [
