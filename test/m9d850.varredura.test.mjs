@@ -20,9 +20,8 @@ test("m9d850 nenhuma tela trata catch com lista vazia e a linha de base só desc
   console.log(`# cobertura M9-D850: ${screens.length - outside.length} de ${screens.length} telas no padrão; fora do padrão: ${outside.length}`);
 });
 
-// Critério 3 da demanda: ZERO telas fora do padrão. A linha de base esconde o resto no teste acima, por isso este teste não a consulta. Fica como `todo` (o runner o
-// lista como pendente sem derrubar o CI) até a migração das telas da linha de base terminar; quando ela esvaziar, trocar `todo` por teste normal.
-test("m9d850 todas as telas de app/painel que carregam dados usam AsyncState (sem linha de base)", { todo: "migrar as telas listadas em scripts/asyncstate-baseline.json" }, () => {
+// Critério 3 da demanda: ZERO telas fora do padrão. A linha de base está vazia e este teste roda como etapa obrigatória do CI (npm run test:unit).
+test("m9d850 todas as telas de app/painel que carregam dados usam AsyncState (sem linha de base)", () => {
   const outside = scan().screens.filter((screen) => !screen.adopted).map((screen) => screen.file).sort();
   assert.deepEqual(outside, [], "telas de app/painel fora do padrão de estados");
 });
