@@ -43,4 +43,12 @@ export const GOVERNANCA_MIGRACAO_GROUPS = [
       { key: "migracao.setor.juridico.entidades", label: "Entidades do setor Jurídico", type: "text", defaultValue: "LEGAL_DEADLINE,LEGAL_CASE", helper: "Pendências bloqueantes da Torre de controle sobre estas entidades (prazos e processos) impedem o avanço do setor Jurídico. Nomes separados por vírgula." },
     ],
   },
+  {
+    title: "Migração do sistema antigo: plano de rollback",
+    subtitle:
+      "Se o corte der errado e for preciso voltar ao sistema antigo, o que já saiu para o mundo (pagamento, mensagem, assinatura, publicação) não se desfaz sozinho. O relatório de rollback lista essas operações desde o GO, com o procedimento de compensação e o responsável de cada tipo.",
+    fields: [
+      { key: "migracao.rollback.itens_por_pagina", label: "Operações listadas por página no relatório de rollback", type: "integer", defaultValue: 100, min: 1, max: 1000, helper: "Quando você abre um tipo de operação no relatório, é este o número de operações mostradas de cada vez. Os tipos, as compensações e os responsáveis são cadastrados pela API do plano de rollback." },
+    ],
+  },
 ];
