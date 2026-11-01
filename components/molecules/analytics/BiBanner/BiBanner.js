@@ -1,5 +1,6 @@
 import Alert from "@/components/molecules/Alert/Alert";
 import { metricTitle } from "@/lib/analytics/ptLabels";
+import BiBannerDetail from "./BiBannerDetail";
 import styles from "./BiBanner.module.css";
 
 // M9-D634/M9-D697 — faixa de qualidade: o primeiro bloco de todo painel de BI. Lista, antes dos números, os indicadores que não estão confiáveis
@@ -18,6 +19,7 @@ export default function BiBanner({ widget }) {
           <li key={m.metricCode} className={styles.item}>
             <strong title={m.metricCode}>{metricTitle(m.metricCode, m.title)}</strong>
             <span className={styles.reason}>{m.reason}</span>
+            <BiBannerDetail metric={m} />
           </li>
         ))}
       </ul>
