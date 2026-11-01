@@ -30,6 +30,7 @@ export const GOVERNANCA_FLAGS_GROUPS = [
       { key: "governanca.flags.kill_teste_hora", label: "Hora do job de teste (Brasília)", type: "integer", defaultValue: 5, min: 0, max: 23 },
       { key: "governanca.flags.kill_teste_minuto", label: "Minuto do job de teste", type: "integer", defaultValue: 0, min: 0, max: 59 },
       { key: "governanca.flags.kill_teste_tolerancia_min", label: "Minutos de um teste em andamento antes de ser dado como interrompido", type: "integer", defaultValue: 10, min: 1, max: 1440, helper: "Passado esse tempo, a execução seguinte devolve o switch ao estado anterior." },
+      { key: "governanca.flags.negadas_janela_s", label: "Janela de agregação das tentativas negadas em parâmetro protegido (segundos)", type: "integer", defaultValue: 60, min: 1, max: 3600, helper: "Tentativas negadas do mesmo usuário na mesma chave dentro da janela viram uma linha de auditoria com a contagem." },
     ],
   },
 ];
