@@ -26,6 +26,13 @@ export const MARKETING_FACTUAL_GROUPS = [
         helper: "Termos separados por vírgula. Texto que cita qualquer um deles não segue: ocorrência e reclamação interna nunca vão a canal público.",
       },
       {
+        key: "marketing.factual.referencias_legais",
+        label: "Palavras que identificam documento legal ou registro",
+        type: "text",
+        defaultValue: "cnpj, decreto, lei, portaria, resolução, instrução normativa, medida provisória, processo, creci, matrícula, inscrição, alvará, artigo, art",
+        helper: "Palavras separadas por vírgula. O número logo depois delas (Decreto 10.123/19, CRECI 12345) é identificação de documento e não bloqueia o texto. O CNPJ no formato 00.000.000/0000-00 também não bloqueia.",
+      },
+      {
         key: "marketing.factual.telefones_empresa",
         label: "Telefones da empresa que o texto pode citar",
         type: "text",
