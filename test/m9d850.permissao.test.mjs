@@ -57,3 +57,9 @@ test("m9d850 menu e tela exigem a mesma permissão: cada filho do menu herda a d
   assert.match(ler("lancamentos/page.js"), /listBankAccounts\(\)\.catch\(lookupFallback/);
   assert.match(ler("lancamentos/page.js"), /listCostCenters\(\)\.catch\(lookupFallback/);
 });
+
+test("m9d850 Saúde Geral usa o estado comum de falta de permissão como os demais painéis (sem alerta próprio)", () => {
+  const fonte = readFileSync(new URL("../components/organisms/HealthDashboard/HealthDashboard.js", import.meta.url), "utf8");
+  assert.match(fonte, /<AsyncState result=\{\{ status: classifyFailure\(error\)/);
+  assert.doesNotMatch(fonte, /<Alert tone="danger">\{error\}/);
+});

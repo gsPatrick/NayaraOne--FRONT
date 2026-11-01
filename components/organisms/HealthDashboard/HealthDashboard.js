@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import AppShell from "@/components/organisms/AppShell/AppShell";
-import Alert from "@/components/molecules/Alert/Alert";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { classifyFailure } from "@/lib/asyncState/states";
 import Spinner from "@/components/atoms/Spinner/Spinner";
 import BiBanner from "@/components/molecules/analytics/BiBanner/BiBanner";
 import BiMetricCard from "@/components/molecules/analytics/BiMetricCard/BiMetricCard";
@@ -50,14 +51,14 @@ function AreaRow({ area, onDetail }) {
 export default function HealthDashboard({ title = "Saúde Geral" }) {
   const [panel, setPanel] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(null);
   const [detail, setDetail] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
     getDashboard("health")
       .then((data) => { if (!cancelled) setPanel(data); })
-      .catch((err) => { if (!cancelled) setError(err?.message || "Não foi possível carregar a Saúde Geral."); })
+      .catch((err) => { if (!cancelled) setError(err || new Error("Não foi possível carregar a Saúde Geral.")); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, []);
@@ -65,7 +66,8 @@ export default function HealthDashboard({ title = "Saúde Geral" }) {
   const banner = panel?.widgets.find((w) => w.type === "QUALITY_BANNER");
   return (
     <AppShell title={title}>
-      {error ? <Alert tone="danger">{error}</Alert> : null}
+      {/* M9-D850 (F08): a falta de permissão e as demais falhas usam o estado comum, como os outros painéis. */}
+      {error ? <AsyncState result={{ status: classifyFailure(error), error, traceId: error.traceId }} /> : null}
       {loading ? <Spinner size="lg" /> : null}
       {panel ? (
         <div className={styles.page} data-bi-panel="health">
