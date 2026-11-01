@@ -26,6 +26,16 @@ export function formatMs(v) {
   return v === null || v === undefined ? "Sem chamadas" : `${numero.format(v)} ms`;
 }
 
+// p95 e p99 numa célula só: sem chamadas nas duas, o aviso aparece uma vez (antes saía "Sem chamadas / Sem chamadas").
+export function formatLatency(p95, p99) {
+  const vazio = (v) => v === null || v === undefined;
+  if (vazio(p95) && vazio(p99)) return "Sem chamadas";
+  return `${formatMs(p95)} / ${formatMs(p99)}`;
+}
+
+export const COTA_NAO_INFORMADA = "Não informada pelo fornecedor; nada a fazer";
+export const SEM_SINCRONIZACAO = "Ainda sem sincronização; rode o fluxo da integração";
+
 export function formatCount(v) {
   return v === null || v === undefined ? "Não informado" : numero.format(v);
 }

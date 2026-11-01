@@ -37,7 +37,7 @@ export default function Table({ columns = [], rows = [], loading = false, emptyM
           ) : rows.length === 0 ? (
             <tr>
               <td colSpan={columns.length} className={styles.empty}>
-                {emptyMessage}
+                <span className={styles.emptyText}>{emptyMessage}</span>
               </td>
             </tr>
           ) : (

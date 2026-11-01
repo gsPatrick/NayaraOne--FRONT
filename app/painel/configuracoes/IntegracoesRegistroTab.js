@@ -16,6 +16,7 @@ import { INTEGRACOES_SEGURANCA_GROUPS } from "./integracoesSegurancaGroups";
 import { MINIMIZACAO_GROUP } from "./integracoesMinimizacaoGroups";
 import { PUBLICACAO_GROUP } from "./integracoesPublicacaoGroups";
 import { ENVIO_GROUPS } from "./integracoesEnvioGroups";
+import { ESCOLHA_GROUPS } from "./integracoesEscolhaGroups";
 import { SAUDE_GROUPS } from "./integracoesSaudeGroups";
 import { CONTINGENCIA_GROUPS } from "./integracoesContingenciaGroups";
 import { ACOES_GROUPS } from "./integracoesAcoesGroups";
@@ -55,23 +56,7 @@ const REGISTRO_GROUPS = [
       },
     ],
   },
-  {
-    title: "Escolha da conexão",
-    subtitle: "O que fazer quando mais de uma conexão ativa atende o mesmo domínio (por exemplo, dois fornecedores de WhatsApp).",
-    fields: [
-      {
-        key: "integration.registry.domain_resolution",
-        label: "Regra de escolha",
-        type: "enum",
-        defaultValue: "error_if_multiple",
-        options: [
-          { value: "error_if_multiple", label: "Recusar e pedir que o fornecedor seja informado" },
-          { value: "oldest_active", label: "Usar a conexão ativa mais antiga" },
-          { value: "newest_active", label: "Usar a conexão ativa mais recente" },
-        ],
-      },
-    ],
-  },
+  ...ESCOLHA_GROUPS,
   {
     title: "Fila de eventos (publicação interna)",
     subtitle: "Esperas entre as tentativas quando um evento do sistema não consegue ser entregue. A falha do fornecedor externo não entra aqui: ela segue a política própria do envio.",
@@ -381,13 +366,15 @@ export default function IntegracoesRegistroTab() {
                   }
                   if (field.type === "enum") {
                     return (
-                      <FormField key={field.key} label={field.label} htmlFor={id} helper={field.helper}>
-                        <Select id={id} value={values[field.key]} onChange={(e) => handleChange(field.key, e.target.value)}>
-                          {field.options.map((option) => (
-                            <option key={option.value} value={option.value}>{option.label}</option>
-                          ))}
-                        </Select>
-                      </FormField>
+                      <div key={field.key} className="formGridFull">
+                        <FormField label={field.label} htmlFor={id} helper={field.helper}>
+                          <Select id={id} value={values[field.key]} onChange={(e) => handleChange(field.key, e.target.value)}>
+                            {field.options.map((option) => (
+                              <option key={option.value} value={option.value}>{option.label}</option>
+                            ))}
+                          </Select>
+                        </FormField>
+                      </div>
                     );
                   }
                   return (

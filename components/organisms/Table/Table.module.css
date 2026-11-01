@@ -90,6 +90,18 @@
   color: var(--color-ink-muted);
 }
 
+/* Tabela larga (minWidth): a mensagem fica presa à borda visível e quebra linha, em vez de centrar fora da tela. */
+.emptyText {
+  position: sticky;
+  left: var(--space-4);
+  display: block;
+  box-sizing: border-box;
+  width: min(36rem, calc(100vw - var(--space-12)));
+  margin: 0 auto;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
 .skeleton {
   display: block;
   height: 14px;

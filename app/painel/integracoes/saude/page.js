@@ -12,7 +12,7 @@ import { listIntegrationsHealth } from "@/lib/api/integrations";
 import ContingenciaBanner from "./ContingenciaBanner";
 import {
   SAUDE_LABEL, SAUDE_TONE, CIRCUITO_LABEL, CIRCUITO_TONE, AMBIENTE_LABEL, CRITICIDADE_LABEL, ALERTA_LABEL, ALERTA_TONE,
-  formatPercent, formatMs, formatCount, formatDateTime, formatDays,
+  formatPercent, formatLatency, formatCount, formatDateTime, formatDays, COTA_NAO_INFORMADA, SEM_SINCRONIZACAO,
 } from "./saudeFormat";
 import styles from "./page.module.css";
 
@@ -42,12 +42,12 @@ export default function IntegracoesSaudePage() {
     { key: "health", label: "Saúde", render: (row) => <Badge tone={SAUDE_TONE[row.healthStatus] || "neutral"}>{SAUDE_LABEL[row.healthStatus] || row.healthStatus}</Badge> },
     { key: "circuit", label: "Disjuntor", render: (row) => <Badge tone={CIRCUITO_TONE[row.circuitState] || "neutral"}>{CIRCUITO_LABEL[row.circuitState] || row.circuitState}</Badge> },
     { key: "successRate", label: "Sucesso (1 h)", render: (row) => formatPercent(row.metrics?.successRate) },
-    { key: "latency", label: "Latência p95 / p99", render: (row) => `${formatMs(row.metrics?.latencyP95Ms)} / ${formatMs(row.metrics?.latencyP99Ms)}` },
+    { key: "latency", label: "Latência p95 / p99", render: (row) => formatLatency(row.metrics?.latencyP95Ms, row.metrics?.latencyP99Ms) },
     { key: "limits", label: "Limite do fornecedor / credencial recusada", render: (row) => `${formatCount(row.metrics?.rateLimitCount)} / ${formatCount(row.metrics?.authFailures)}` },
     { key: "retries", label: "Novas tentativas", render: (row) => formatCount(row.metrics?.retries) },
     { key: "queues", label: "Fila morta / fila", render: (row) => `${formatCount(row.metrics?.dlq)} / ${formatCount(row.metrics?.backlog)}` },
-    { key: "quota", label: "Cota restante", render: (row) => (row.metrics?.quotaRemaining === null ? "Fornecedor não informa" : formatCount(row.metrics?.quotaRemaining)) },
-    { key: "sync", label: "Última sincronização", render: (row) => formatDateTime(row.lastSyncAt, "Nunca sincronizou") },
+    { key: "quota", label: "Cota restante", render: (row) => (row.metrics?.quotaRemaining === null ? COTA_NAO_INFORMADA : formatCount(row.metrics?.quotaRemaining)) },
+    { key: "sync", label: "Última sincronização", render: (row) => formatDateTime(row.lastSyncAt, SEM_SINCRONIZACAO) },
     { key: "secret", label: "Credencial vence em", render: (row) => formatDays(row.secretExpiresInDays) },
     {
       key: "alerts",
