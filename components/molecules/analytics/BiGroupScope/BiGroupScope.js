@@ -6,6 +6,7 @@ import Spinner from "@/components/atoms/Spinner/Spinner";
 import { getMetric } from "@/lib/api/analytics";
 import { getSession } from "@/lib/auth/session";
 import { hasAnyPermission } from "@/lib/rbac/permissions";
+import { metricTitle } from "@/lib/analytics/ptLabels";
 import styles from "./BiGroupScope.module.css";
 
 // M9-D626/M9-D625 — seletor Empresa/Grupo do painel. "Empresa" é o painel como a API devolveu. "Grupo" chama GET /analytics/metrics/:code?groupId= de cada indicador que soma
@@ -20,7 +21,7 @@ function Consolidated({ item }) {
   const unmatched = data.consolidatedStatus === "DEGRADED" && data.code === UNMATCHED_CODE;
   return (
     <article className={styles.card} data-bi-consolidated={item.metricCode}>
-      <h3 className={styles.title}>{item.title}</h3>
+      <h3 className={styles.title} title={item.metricCode}>{metricTitle(item.metricCode, item.title)}</h3>
       {data.value === null || data.value === undefined ? <p className={styles.muted} data-bi-value>Dado incompleto</p> : <p className={styles.value} data-bi-value>{data.formatted}</p>}
       {data.eliminationsFormatted ? <p className={styles.meta} data-bi-eliminations>Eliminação entre empresas: {data.eliminationsFormatted}</p> : null}
       {unmatched ? <Alert tone="warning" title="Consolidado incompleto">{UNMATCHED_TEXT}</Alert> : null}

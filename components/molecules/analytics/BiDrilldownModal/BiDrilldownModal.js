@@ -5,6 +5,7 @@ import Modal from "@/components/organisms/Modal/Modal";
 import Alert from "@/components/molecules/Alert/Alert";
 import Spinner from "@/components/atoms/Spinner/Spinner";
 import { getMetricDrilldown } from "@/lib/api/analytics";
+import { metricTitle } from "@/lib/analytics/ptLabels";
 import styles from "./BiDrilldownModal.module.css";
 
 // M9-D690/M9-D634 — "Ver detalhe": chama GET /analytics/metrics/:code/drilldown com o item de `sourceRefs` do número. Sem permissão de detalhe a API
@@ -46,7 +47,7 @@ export default function BiDrilldownModal({ widget, onClose }) {
   const rows = state.data?.rows || [];
   const columns = columnsOf(rows);
   return (
-    <Modal open onClose={onClose} title={`Detalhe: ${widget.title}`} size="lg">
+    <Modal open onClose={onClose} title={`Detalhe: ${metricTitle(widget.metricCode, widget.title)}`} size="lg">
       {state.loading ? <Spinner size="lg" /> : null}
       {state.error ? <Alert tone="danger">{state.error}</Alert> : null}
       {state.forbidden ? (
