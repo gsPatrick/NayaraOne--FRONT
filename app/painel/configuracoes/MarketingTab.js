@@ -10,6 +10,7 @@ import FormField from "@/components/molecules/FormField/FormField";
 import Spinner from "@/components/atoms/Spinner/Spinner";
 import { listSettings, updateSetting } from "@/lib/api/settings";
 import { toNumber } from "@/lib/format";
+import { buildLabelMap, labelSettingError } from "@/lib/settings/errorLabel";
 import styles from "./page.module.css";
 import { MARKETING_CADENCE_GROUPS } from "./marketingCadenceGroups";
 import { MARKETING_RUNNER_GROUPS } from "./marketingRunnerGroups";
@@ -258,7 +259,7 @@ export default function MarketingTab() {
       if (err?.code === "MKT_MASS_LIMITS_INCONSISTENT") {
         setFieldErrors({ [err?.details?.key || MASS_ABSOLUTE_KEY]: err.message });
       } else if (err?.status === 403 && err?.code !== "MKT_FORBIDDEN") setForbidden(true);
-      else setError(err?.message || "Não foi possível salvar as configurações de Marketing.");
+      else setError(labelSettingError(err, buildLabelMap(ALL_FIELDS), "Não foi possível salvar as configurações de Marketing."));
     } finally {
       setSaving(false);
     }
