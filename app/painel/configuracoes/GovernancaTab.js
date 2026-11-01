@@ -11,6 +11,7 @@ import Spinner from "@/components/atoms/Spinner/Spinner";
 import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import { toNumber } from "@/lib/format";
 import { listSettings, updateSetting } from "@/lib/api/settings";
+import { integerInRange, integerRangeError, integerRangeText } from "./settingsFormat";
 import styles from "./page.module.css";
 import { GOVERNANCA_DLP_GROUPS } from "./governancaDlpGroups";
 import { GOVERNANCA_DLP_EXPORT_GROUPS } from "./governancaDlpExportGroups";
@@ -304,9 +305,7 @@ export default function GovernancaTab() {
         if (field.type === "text" && (typeof value !== "string" || value.trim() === "")) continue; // vazio não é aceito pela API
         if (field.type === "integer") {
           value = toNumber(value);
-          if (Number.isNaN(value) || !Number.isInteger(value) || value < field.min || value > field.max) {
-            throw new Error(`"${field.label}" deve ser um número inteiro entre ${field.min} e ${field.max}.`);
-          }
+          if (!integerInRange(value, field)) throw new Error(integerRangeError(field));
         }
         await updateSetting(field.key, value);
       }
@@ -366,7 +365,7 @@ export default function GovernancaTab() {
                       onChange={(e) => handleChange(field.key, e.target.checked)}
                     />
                   ) : field.type === "integer" ? (
-                    <FormField key={field.key} label={field.label} htmlFor={`gov-${field.key}`} helper={`Entre ${field.min} e ${field.max}.`}>
+                    <FormField key={field.key} label={field.label} htmlFor={`gov-${field.key}`} helper={integerRangeText(field)}>
                       <DecimalInput
                         id={`gov-${field.key}`}
                         maxDecimals={0}
