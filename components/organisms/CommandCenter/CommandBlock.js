@@ -1,5 +1,6 @@
 import Link from "next/link";
 import CommandItem from "./CommandItem";
+import { formatDateTime } from "@/lib/format";
 import styles from "./CommandCenter.module.css";
 
 // M9-D685 — um dos seis blocos (as seis perguntas do livro). Bloco que depende de indicador ruim mostra "Conclusão adiada" e a razão, nunca itens (M9-D697).
@@ -14,7 +15,12 @@ export default function CommandBlock({ block, projects = {} }) {
         <div className={styles.deferred} role="status">
           <strong>{block.deferredText}</strong>
           <ul className={styles.deferredList}>
-            {(block.reasons || []).map((r) => <li key={r.metricCode}>{r.metricCode}: {r.reason}</li>)}
+            {(block.reasons || []).map((r) => (
+              <li key={r.metricCode} data-command-reason>
+                <strong>{r.name || "Indicador sem nome"}</strong>: {r.reason}.{" "}
+                {r.lastUpdateAt ? `Última atualização em ${formatDateTime(r.lastUpdateAt)}.` : "Este indicador ainda não foi atualizado."}
+              </li>
+            ))}
           </ul>
         </div>
       ) : block.items.length ? (
