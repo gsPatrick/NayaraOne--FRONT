@@ -39,7 +39,7 @@ export const GOVERNANCA_MIGRACAO_GROUPS = [
     subtitle:
       "Para conferir e repetir a carga, o Nayara guarda a linha original do sistema antigo (com CPF e data de nascimento) até o registro ser reconciliado. Depois disso o conteúdo é descartado; o resumo de conferência e o vínculo com o cadastro novo ficam.",
     fields: [
-      { key: "migracao.payload.retencao_dias", label: "Dias até descartar o conteúdo depois de reconciliado", type: "integer", defaultValue: 30, min: 0, max: 3650, helper: "Com 0, o conteúdo é descartado na primeira passagem após a reconciliação. Repetir uma carga relê o sistema antigo e devolve o conteúdo, que é descartado de novo no prazo." },
+      { key: "migracao.payload.retencao_dias", label: "Dias até descartar o conteúdo depois de reconciliado", type: "integer", defaultValue: 30, min: 1, max: 3650, helper: "Com 1, o conteúdo é descartado um dia após a reconciliação. Repetir uma carga relê o sistema antigo e devolve o conteúdo, que é descartado de novo no prazo." },
     ],
   },
   {

@@ -45,7 +45,7 @@ export const GOVERNANCA_DLP_GROUPS = [
         label: "Tamanho mínimo da justificativa (caracteres)",
         type: "integer",
         defaultValue: 20,
-        min: 1,
+        min: 20,
         max: 2000,
       },
     ],
