@@ -255,7 +255,9 @@ export default function MarketingTab() {
       setSuccess("Configurações de Marketing salvas.");
     } catch (err) {
       // MKT_FORBIDDEN (incluir campo publicável sem a permissão de templates) é aviso da ação, não falta de acesso à aba.
-      if (err?.status === 403 && err?.code !== "MKT_FORBIDDEN") setForbidden(true);
+      if (err?.code === "MKT_MASS_LIMITS_INCONSISTENT") {
+        setFieldErrors({ [err?.details?.key || MASS_ABSOLUTE_KEY]: err.message });
+      } else if (err?.status === 403 && err?.code !== "MKT_FORBIDDEN") setForbidden(true);
       else setError(err?.message || "Não foi possível salvar as configurações de Marketing.");
     } finally {
       setSaving(false);
