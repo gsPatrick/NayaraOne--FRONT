@@ -11,6 +11,7 @@ import FormField from "@/components/molecules/FormField/FormField";
 import Spinner from "@/components/atoms/Spinner/Spinner";
 import { listSettings, updateSetting } from "@/lib/api/settings";
 import { toNumber } from "@/lib/format";
+import { buildLabelMap, labelSettingError } from "@/lib/settings/errorLabel";
 import styles from "./page.module.css";
 import { INTEGRACOES_SEGURANCA_GROUPS } from "./integracoesSegurancaGroups";
 import { MINIMIZACAO_GROUP } from "./integracoesMinimizacaoGroups";
@@ -309,7 +310,7 @@ export default function IntegracoesRegistroTab() {
       setSuccess("Configurações do registro de integrações salvas.");
     } catch (err) {
       if (err?.status === 403) setForbidden(true);
-      else setError(err?.message || "Não foi possível salvar as configurações do registro de integrações.");
+      else setError(labelSettingError(err, buildLabelMap(ALL_FIELDS), "Não foi possível salvar as configurações do registro de integrações."));
     } finally {
       setSaving(false);
     }
