@@ -1,3 +1,5 @@
+import { toNumber } from "@/lib/format";
+
 // Ajuda comum das abas de configuração: converte o valor do formulário para o tipo que a API exige e indexa a lista por chave.
 export function toSettingValue(field, rawValue, numericFields) {
   if (!numericFields.has(field)) return rawValue;
@@ -46,4 +48,37 @@ export function integerInRange(value, field) {
   if (hasLimit(field?.min) && value < field.min) return false;
   if (hasLimit(field?.max) && value > field.max) return false;
   return true;
+}
+
+/**
+ * Erro inline de um campo inteiro (M9-D850, F16): aparece ao sair do campo, com a faixa. Campo vazio ou intocado não acusa nada; texto digitado fora da faixa
+ * ou não inteiro acusa "Entre 1 e 3600." (a mesma frase da ajuda, sem repetir o rótulo).
+ */
+export function integerFieldError(field, raw) {
+  if (raw === "" || raw === null || raw === undefined) return null;
+  return integerInRange(toNumber(raw), field) ? null : `Valor inválido. ${integerRangeText(field)}`;
+}
+
+/** Campos cujo valor mudou em relação ao que veio da API (o Salvar só envia estes; sem mudança, nenhum PUT). */
+export function changedFields(fields, values, original) {
+  if (!original) return [];
+  return fields.filter((field) => String(values[field.key]) !== String(original[field.key]));
+}
+
+/** Campos inteiros alterados cujo valor está fora da faixa: enquanto houver algum, o Salvar fica desabilitado. */
+export function invalidChangedFields(fields, values, original) {
+  return changedFields(fields, values, original).filter((field) => field.type === "integer" && integerFieldError(field, values[field.key]));
+}
+
+/**
+ * Valor que a tela mostra para um campo vindo da API: valor ausente ou nulo mantém o padrão do campo (nunca vira desmarcado/vazio por engano) e o booleano
+ * aceita as grafias "true"/"false" (M9-D870, F15).
+ */
+export function loadedValue(field, raw) {
+  if (raw === null || raw === undefined) return field.defaultValue;
+  if (field.type === "boolean") {
+    if (typeof raw === "string") return raw.trim().toLowerCase() === "true" ? true : raw.trim().toLowerCase() === "false" ? false : field.defaultValue;
+    return Boolean(raw);
+  }
+  return raw;
 }

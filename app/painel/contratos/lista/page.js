@@ -27,6 +27,7 @@ import {
   CONTRACT_STATUS_TONE,
 } from "@/lib/mock/legal";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import { UI_STATE } from "@/lib/asyncState/states";
 import { formatBRL, formatContractLabel } from "@/lib/format";
 import styles from "./page.module.css";
 
@@ -50,6 +51,7 @@ export default function ContratosListaPage() {
     return { contracts: contractsRes || [], properties: propertiesRes || [] };
   }, { key: "contratos-lista", isEmpty: (d) => !d || d.contracts.length === 0 });
   const loaded = listQuery.data;
+  const showKpis = Boolean(loaded) && (listQuery.status === UI_STATE.CONTENT || listQuery.status === UI_STATE.EMPTY);
   const contracts = useMemo(() => loaded?.contracts || [], [loaded]);
   const properties = useMemo(() => loaded?.properties || [], [loaded]);
 
@@ -134,12 +136,15 @@ export default function ContratosListaPage() {
     <AppShell title="Contratos" backHref="/painel/contratos">
       {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
 
-      <div className={styles.grid}>
-        <StatTile label="Total de contratos" value={contracts.length} tone="neutral" icon="signature" />
-        <StatTile label="Ativos" value={activeCount} tone="success" icon="check" />
-        <StatTile label="Em assinatura" value={signingCount} tone="info" icon="pencil" />
-        <StatTile label="Valor total" value={formatBRL(totalValue)} tone="neutral" icon="money" />
-      </div>
+      {/* M9-D850 (F07): os indicadores só existem com o dado carregado; em 403, erro, carga ou sem conexão sem dado não aparece 0 nem R$ 0,00 como se fosse resultado. */}
+      {showKpis ? (
+        <div className={styles.grid}>
+          <StatTile label="Total de contratos" value={contracts.length} tone="neutral" icon="signature" />
+          <StatTile label="Ativos" value={activeCount} tone="success" icon="check" />
+          <StatTile label="Em assinatura" value={signingCount} tone="info" icon="pencil" />
+          <StatTile label="Valor total" value={formatBRL(totalValue)} tone="neutral" icon="money" />
+        </div>
+      ) : null}
 
       <Card title="Contratos" subtitle="Lista de contratos de venda, locação e prestação de serviço">
         <div className={styles.toolbar}>

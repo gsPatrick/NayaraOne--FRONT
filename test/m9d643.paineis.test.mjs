@@ -37,7 +37,7 @@ test("m9d643 m9d654 m9d662 403 de qualquer painel mostra a mesma tela comum de f
     assert.match(out, /data-ui-state="permission-denied"|data-ui-state="PERMISSION_DENIED"/i);
     assert.doesNotMatch(out, /Permissão ausente:/, "sem o alerta próprio do painel");
   }
-  assert.equal(new Set(telas.map((t) => t.replace(/<code>[^<]*<\/code>/, ""))).size, 1, "todos os painéis desenham a mesma tela");
+  assert.equal(new Set(telas.map((t) => t.replace(/<p[^>]*>Falta a permissão[^<]*<\/p>/, ""))).size, 1, "todos os painéis desenham a mesma tela");
 });
 
 test("m9d643 m9d654 m9d662 o painel genérico usa o estado comum e não um alerta próprio no 403", () => {

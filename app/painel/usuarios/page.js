@@ -16,6 +16,7 @@ import { apiFetch } from "@/lib/api/client";
 import { formatDateTime } from "@/lib/format";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import { buildMemberships, NO_MEMBERSHIP_TEXT } from "@/lib/users/memberships";
 import styles from "./page.module.css";
 
 const STATUS_TONE = { Ativo: "success", Suspenso: "danger" };
@@ -24,19 +25,6 @@ const STATUS_TONE = { Ativo: "success", Suspenso: "danger" };
 // NayaraOne--API/src/models/User.js). Mapeamos aqui pra manter os badges já existentes na tela.
 function toDisplayStatus(apiStatus) {
   return apiStatus === "ACTIVE" ? "Ativo" : "Suspenso";
-}
-
-// GET /users não devolve os vínculos (empresa/unidade/papel) do usuário — isso vem de
-// GET /memberships (ver NayaraOne--API/src/features/memberships/membership.service.js,
-// que inclui role/unit/company). Junta os dois pra manter a coluna existente na tabela.
-function buildMemberships(userId, memberships) {
-  return memberships
-    .filter((m) => m.userId === userId)
-    .map((m) => ({
-      company: m.company?.name || "Sem empresa vinculada",
-      role: m.role?.name || "Sem papel",
-      unit: m.unit?.name || null,
-    }));
 }
 
 export default function UsuariosPage() {
@@ -114,7 +102,7 @@ export default function UsuariosPage() {
       label: "Empresa, unidade & papel",
       render: (row) => (
         <div className={styles.membershipCell}>
-          {row.memberships.length === 0 ? "Sem vínculo com empresa" : null}
+          {row.memberships.length === 0 ? NO_MEMBERSHIP_TEXT : null}
           {row.memberships.map((m) => (
             <div key={m.company} className={styles.membershipRow}>
               <span className={styles.membershipText}>

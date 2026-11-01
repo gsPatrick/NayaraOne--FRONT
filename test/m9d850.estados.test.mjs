@@ -26,10 +26,12 @@ test("m9d850 UI endpoint 403 não vira tela vazia enganosa", async () => {
   assert.equal(controller.getState().data, null);
 });
 
-test("m9d850 PERMISSION_DENIED mostra o código da permissão e o texto de a quem pedir", async () => {
+test("m9d850 PERMISSION_DENIED mostra o nome legível da permissão (código só na dica) e o texto de a quem pedir", async () => {
   const controller = await run(async () => { throw failure(403, { code: "PERMISSION_DENIED", details: { required: "legal:read" } }); });
   const out = view(controller);
-  assert.match(out, /<code>legal:read<\/code>/);
+  assert.match(out, /Falta a permissão Jurídico &amp; Contratos: leitura\./);
+  assert.doesNotMatch(out.replace(/ (title|data-[a-z-]+)="[^"]*"/g, ""), /legal:read/, "o código técnico só aparece na dica (title)");
+  assert.match(out, /title="legal:read"/);
   assert.match(out, /Peça ao administrador da sua empresa/);
   const noCode = await run(async () => { throw failure(403, { code: "PERMISSION_DENIED", details: { required: "x y; <script>" } }); });
   assert.doesNotMatch(view(noCode), /<script>|<code>/, "só código de permissão válido; nunca texto livre");

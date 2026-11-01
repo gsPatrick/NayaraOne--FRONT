@@ -11,6 +11,7 @@ import { UI_STATE, fieldErrorsOf, missingPermissionOf } from "@/lib/asyncState/s
 import { MESSAGES, genericErrorText, businessMessageOf, safeText } from "@/lib/asyncState/messages";
 import { buildLoginUrl } from "@/lib/auth/returnTo";
 import { fieldErrorId } from "@/lib/asyncState/fields";
+import { missingPermissionText } from "@/lib/rbac/permissionName";
 import styles from "./AsyncState.module.css";
 
 function ActionButton({ action }) {
@@ -92,7 +93,7 @@ export default function AsyncState({ result, onRetry, children, emptyTitle, empt
       return (
         <div role="alert" className={styles.box} data-ui-state={UI_STATE.PERMISSION_DENIED}>
           <p className={styles.title}>{MESSAGES.permissionTitle}</p>
-          {permission ? <p className={styles.text}>Permissão necessária: <code>{permission}</code></p> : null}
+          {permission ? <p className={styles.text} title={permission}>{missingPermissionText(permission)}</p> : null}
           <p className={styles.text}>{MESSAGES.permissionHelp}</p>
         </div>
       );

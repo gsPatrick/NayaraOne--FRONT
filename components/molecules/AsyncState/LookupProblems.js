@@ -5,13 +5,14 @@ import { usePathname } from "next/navigation";
 import Alert from "@/components/molecules/Alert/Alert";
 import { UI_STATE } from "@/lib/asyncState/states";
 import { MESSAGES, genericErrorText } from "@/lib/asyncState/messages";
+import { missingPermissionText } from "@/lib/rbac/permissionName";
 import { clearLookupProblems, getLookupProblems, subscribeLookupProblems } from "@/lib/asyncState/lookup";
 
 /** Texto do aviso de uma lista auxiliar que não carregou (M9-D850): nunca "vazio", sempre o motivo. */
 export function lookupProblemText(problem) {
   switch (problem.state) {
     case UI_STATE.PERMISSION_DENIED:
-      return `Não foi possível carregar ${problem.label}. ${MESSAGES.permissionTitle}${problem.permission ? ` Permissão necessária: ${problem.permission}.` : ""} ${MESSAGES.permissionHelp}.`;
+      return `Não foi possível carregar ${problem.label}. ${MESSAGES.permissionTitle}${problem.permission ? ` ${missingPermissionText(problem.permission)}` : ""} ${MESSAGES.permissionHelp}.`;
     case UI_STATE.OFFLINE:
       return `Não foi possível carregar ${problem.label}. ${MESSAGES.offlineText}`;
     case UI_STATE.RETRY:

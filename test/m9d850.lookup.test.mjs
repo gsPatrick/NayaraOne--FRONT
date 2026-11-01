@@ -14,7 +14,7 @@ test("m9d850 lista auxiliar com 403 registra o motivo e a tela mostra aviso com 
   const [problem] = getLookupProblems();
   assert.deepEqual([problem.label, problem.state, problem.permission], ["os imóveis", "PERMISSION_DENIED", "properties:read"]);
   const out = html(LookupProblemsList, { problems: getLookupProblems() });
-  assert.match(out, /Não foi possível carregar os imóveis\. Você não tem acesso a esta área\. Permissão necessária: properties:read\. Peça ao administrador da sua empresa\./);
+  assert.match(out, /Não foi possível carregar os imóveis\. Você não tem acesso a esta área\. Falta a permissão Imóveis: leitura\. Peça ao administrador da sua empresa\./);
   assert.match(out, /data-lookup-problems/);
 });
 

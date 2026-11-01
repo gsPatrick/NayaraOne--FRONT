@@ -14,6 +14,7 @@ import PieChart from "@/components/molecules/PieChart/PieChart";
 import Alert from "@/components/molecules/Alert/Alert";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import { lookupFallback } from "@/lib/asyncState/lookup";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu";
 import RowActions from "@/components/molecules/RowActions/RowActions";
@@ -49,7 +50,7 @@ export default function ContasBancariasPage() {
 
   // M9-D940: carregando, erro, sem acesso e sem conexão vêm do padrão único; a tela mostra o vazio de cada bloco.
   const accountsQuery = useAsyncState(async () => {
-    const [ba, pp] = await Promise.all([listBankAccounts(), listPeople()]);
+    const [ba, pp] = await Promise.all([listBankAccounts(), listPeople().catch(lookupFallback("as pessoas"))]); // pessoas é apoio (M9-D850, F13)
     return { accounts: ba || [], people: pp || [] };
   }, { key: "contas-bancarias", isEmpty: () => false });
   useEffect(() => {
