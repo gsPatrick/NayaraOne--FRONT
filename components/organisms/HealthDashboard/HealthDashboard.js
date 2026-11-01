@@ -36,7 +36,6 @@ function AreaRow({ area, onDetail }) {
       {unreadable ? null : (
         <>
           <div className={styles.info}>
-            <span>{area.summary}</span>
             <span data-health-alerts>{area.openAlerts} {area.openAlerts === 1 ? "alerta aberto" : "alertas abertos"}</span>
             {area.freshness ? <FreshnessBadge metric={{ value: 1, status: "OK", freshness: area.freshness }} /> : null}
           </div>
@@ -74,7 +73,7 @@ export default function HealthDashboard({ title = "Saúde Geral" }) {
           <p className={styles.meta}>Posição em {panel.asOfDate.split("-").reverse().join("/")} · gerado em {formatDateTime(panel.generatedAt)}</p>
           {banner ? <BiBanner widget={banner} /> : null}
           <ul className={styles.summary} aria-label="Resumo das áreas">
-            <li>Verde: {panel.summary.verde}</li><li>Amarelo: {panel.summary.amarelo}</li><li>Vermelho: {panel.summary.vermelho}</li><li>Cinza: {panel.summary.cinza}</li>
+            <li>Áreas: {panel.summary.areas}</li><li>Verde: {panel.summary.verde}</li><li>Amarelo: {panel.summary.amarelo}</li><li>Vermelho: {panel.summary.vermelho}</li><li>Cinza: {panel.summary.cinza}</li>
           </ul>
           <div className={styles.areas}>{panel.areas.map((a) => <AreaRow key={a.key} area={a} onDetail={setDetail} />)}</div>
         </div>

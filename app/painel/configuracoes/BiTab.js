@@ -290,11 +290,20 @@ export default function BiTab() {
     setSuccess("");
     try {
       const changed = ALL_FIELDS.filter((field) => values[field.key] !== original[field.key]);
+      const saved = { ...original };
+      const failures = [];
       for (const field of changed) {
-        await updateSetting(field.key, field.type === "number" ? Number(values[field.key]) : values[field.key]);
+        try {
+          await updateSetting(field.key, field.type === "number" ? Number(values[field.key]) : values[field.key]);
+          saved[field.key] = values[field.key];
+        } catch (err) {
+          if (err?.status === 403) throw err;
+          failures.push(`${field.label}: ${err?.message || "não foi possível salvar."}`);
+        }
       }
-      setOriginal(values);
-      setSuccess("Configurações do BI salvas.");
+      setOriginal(saved);
+      if (failures.length) setError(`Não salvamos ${failures.length === 1 ? "este campo" : "estes campos"} (os demais foram salvos). ${failures.join(" | ")}`);
+      else setSuccess("Configurações do BI salvas.");
     } catch (err) {
       if (err?.status === 403) setForbidden(true);
       else setError(err?.message || "Não foi possível salvar as configurações do BI.");
