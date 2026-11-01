@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Table from "@/components/organisms/Table/Table";
@@ -21,10 +21,11 @@ import { apiFetch } from "@/lib/api/client";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import ConfirmAction from "@/components/molecules/ConfirmAction/ConfirmAction";
-import { entityTypeLabel, actionVerb, ACTION_TONE, ACTION_ICON, ENTITY_TYPE_LABELS } from "@/lib/audit/labels";
+import { entityTypeLabel, actionVerb, ACTION_TONE, ACTION_ICON } from "@/lib/audit/labels";
+import { activityTitle, activitySearchText, collapseRepeated } from "@/lib/audit/activityPresent";
 import { summarizeChanges } from "@/lib/audit/humanize";
 import { hasPermission } from "@/lib/rbac/permissions";
-import { formatDateTime, humanizeText } from "@/lib/format";
+import { formatDateTime } from "@/lib/format";
 import styles from "./page.module.css";
 
 // Entidades cuja reversão já existe como rota própria e segura no domínio dono do registro —
@@ -49,14 +50,18 @@ const REVERSIBLE_ENTITY_TYPES = {
 
 export default function AtividadesPage() {
   // M9-D940: carregando, erro, sem acesso e sem conexão vêm do padrão único de estados.
+  // O filtro por entidade vai ao servidor: a lista geral tem teto de 1000 linhas e linhas repetidas do sistema
+  // empurravam uma alteração de parâmetro para fora dela (M9-D852, reabertura F05).
+  const [entityFilter, setEntityFilter] = useState("");
+  const knownTypes = useRef(new Set());
   const activitiesQuery = useAsyncState(async () => {
-    const [logEntries, apiUsers] = await Promise.all([listAuditLog(), apiFetch("/users")]);
+    const [logEntries, apiUsers] = await Promise.all([listAuditLog(entityFilter ? { entityType: entityFilter } : {}), apiFetch("/users")]);
+    (logEntries || []).forEach((e) => knownTypes.current.add(e.entityType));
     return { entries: logEntries || [], users: apiUsers || [] };
-  }, { key: "atividades", isEmpty: () => false });
+  }, { key: `atividades:${entityFilter}`, deps: [entityFilter], isEmpty: () => false });
   const entries = useMemo(() => activitiesQuery.data?.entries || [], [activitiesQuery.data]);
   const users = useMemo(() => activitiesQuery.data?.users || [], [activitiesQuery.data]);
   const [query, setQuery] = useState("");
-  const [entityFilter, setEntityFilter] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [selected, setSelected] = useState(null);
@@ -71,20 +76,24 @@ export default function AtividadesPage() {
     return users.find((u) => u.id === id);
   }
 
-  const entityTypes = useMemo(() => [...new Set(entries.map((e) => e.entityType))].sort(), [entries]);
+  const entityTypes = useMemo(() => {
+    const all = new Set([...knownTypes.current, ...entries.map((e) => e.entityType)]);
+    return [...all].sort((a, b) => entityTypeLabel(a).localeCompare(entityTypeLabel(b), "pt-BR"));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entries]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return entries.filter((e) => {
+    const matching = entries.filter((e) => {
       if (entityFilter && e.entityType !== entityFilter) return false;
       if (!q) return true;
       const actorName = userOf(e.userId)?.name || "";
       // FIX (reportado pela cliente 18/09/2026, item 12): não dava pra localizar uma auditoria
       // colando o ID do contrato/imóvel/entidade na busca — entityId não entrava na busca.
-      const haystack = `${actorName} ${e.reason || ""} ${e.action} ${entityTypeLabel(e.entityType)} ${e.entityId || ""}`.toLowerCase();
-      return haystack.includes(q);
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+      return activitySearchText(e, actorName).includes(q);
     });
+    return collapseRepeated(matching);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [entries, query, entityFilter, users]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
@@ -117,7 +126,7 @@ export default function AtividadesPage() {
               <Icon name={ACTION_ICON[verb] || "pencil"} size={14} />
             </span>
             <div className={styles.whatInfo}>
-              <span className={styles.whatReason}>{humanizeText(row.reason) || row.action}</span>
+              <span className={styles.whatReason}>{activityTitle(row)}{row.repeticoes > 1 ? ` (${row.repeticoes} vezes seguidas)` : ""}</span>
               <span className={styles.whatEntity}>{entityTypeLabel(row.entityType)}</span>
             </div>
           </div>
@@ -146,7 +155,7 @@ export default function AtividadesPage() {
           <Select className={styles.filter} value={entityFilter} onChange={(e) => { setEntityFilter(e.target.value); setPage(1); }}>
             <option value="">Todas as entidades</option>
             {entityTypes.map((type) => (
-              <option key={type} value={type}>{ENTITY_TYPE_LABELS[type] || type}</option>
+              <option key={type} value={type}>{entityTypeLabel(type)}</option>
             ))}
           </Select>
         </div>
@@ -215,7 +224,7 @@ function ActivityDetailModal({ entry, actor, onClose, onBlocked, onReverted }) {
     <Modal open onClose={onClose} title="Detalhes da atividade">
       <div className={styles.detailWrap}>
         <div className={styles.detailRow}><dt>Quem</dt><dd>{actor?.name || "Sistema (automático)"} {actor?.email ? `— ${actor.email}` : ""}</dd></div>
-        <div className={styles.detailRow}><dt>O que</dt><dd>{entry.reason || entry.action}</dd></div>
+        <div className={styles.detailRow}><dt>O que</dt><dd>{activityTitle(entry)}</dd></div>
         <div className={styles.detailRow}><dt>Onde</dt><dd>{entityTypeLabel(entry.entityType)}</dd></div>
         <div className={styles.detailRow}><dt>Quando</dt><dd>{formatDateTime(entry.occurredAt)}</dd></div>
 
