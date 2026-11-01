@@ -11,7 +11,8 @@ import Spinner from "@/components/atoms/Spinner/Spinner";
 import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import { toNumber } from "@/lib/format";
 import { listSettings, updateSetting } from "@/lib/api/settings";
-import { integerInRange, integerRangeError, integerRangeText } from "./settingsFormat";
+import { buildLabelMap, labelSettingError } from "@/lib/settings/errorLabel";
+import { changedFields, integerFieldError, integerInRange, integerRangeError, integerRangeText, invalidChangedFields, loadedValue } from "./settingsFormat";
 import styles from "./page.module.css";
 import { GOVERNANCA_DLP_GROUPS } from "./governancaDlpGroups";
 import { GOVERNANCA_DLP_EXPORT_GROUPS } from "./governancaDlpExportGroups";
@@ -259,6 +260,8 @@ export default function GovernancaTab() {
   const [error, setError] = useState("");
   const [forbidden, setForbidden] = useState(false);
   const [success, setSuccess] = useState("");
+  const [touched, setTouched] = useState({}); // campos inteiros já visitados: o erro de faixa aparece ao sair do campo (F16)
+  const blocked = invalidChangedFields(ALL_FIELDS, values, original).length > 0;
 
   useEffect(() => {
     let cancelled = false;
@@ -270,8 +273,10 @@ export default function GovernancaTab() {
         if (cancelled) return;
         const list = Array.isArray(data) ? data : Object.values(data || {});
         const next = initialValues();
+        const byKey = Object.fromEntries(ALL_FIELDS.map((field) => [field.key, field]));
         list.forEach((item) => {
-          if (item && item.key && Object.prototype.hasOwnProperty.call(next, item.key)) next[item.key] = item.value;
+          // Chave ausente da API ou com valor nulo fica no padrão do campo: salvar a aba nunca liga ou desliga um módulo por engano (F15).
+          if (item && item.key && byKey[item.key]) next[item.key] = loadedValue(byKey[item.key], item.value);
         });
         setValues(next);
         setOriginal(next);
@@ -291,6 +296,7 @@ export default function GovernancaTab() {
 
   function handleChange(key, value) {
     setValues((prev) => ({ ...prev, [key]: value }));
+    setError(""); // F06: o aviso de um salvamento anterior some assim que o valor muda
   }
 
   async function handleSave() {
@@ -299,7 +305,7 @@ export default function GovernancaTab() {
     setError("");
     setSuccess("");
     try {
-      const changed = ALL_FIELDS.filter((field) => String(values[field.key]) !== String(original[field.key]));
+      const changed = changedFields(ALL_FIELDS, values, original); // sem alteração, nenhuma chamada de gravação (F15)
       for (const field of changed) {
         let value = values[field.key];
         if (field.type === "text" && (typeof value !== "string" || value.trim() === "")) continue; // vazio não é aceito pela API
@@ -310,10 +316,12 @@ export default function GovernancaTab() {
         await updateSetting(field.key, value);
       }
       setOriginal(values);
+      setError("");
       setSuccess("Configurações de governança salvas.");
     } catch (err) {
       if (err?.status === 403) setForbidden(true);
-      else setError(err?.message || "Não foi possível salvar as configurações de governança.");
+      else setError(labelSettingError(err, buildLabelMap(ALL_FIELDS), "Não foi possível salvar as configurações de governança.")); // F03: rótulo do campo, nunca a chave técnica
+      setSuccess("");
     } finally {
       setSaving(false);
     }
@@ -334,7 +342,7 @@ export default function GovernancaTab() {
       title="Governança"
       subtitle="Regras de governança operacional desta empresa: módulos, permissões padrão e padrão de erros."
       actions={
-        <Button onClick={handleSave} loading={saving} disabled={loading}>
+        <Button onClick={handleSave} loading={saving} disabled={loading || blocked}>
           Salvar
         </Button>
       }
@@ -365,12 +373,14 @@ export default function GovernancaTab() {
                       onChange={(e) => handleChange(field.key, e.target.checked)}
                     />
                   ) : field.type === "integer" ? (
-                    <FormField key={field.key} label={field.label} htmlFor={`gov-${field.key}`} helper={integerRangeText(field)}>
+                    <FormField key={field.key} label={field.label} htmlFor={`gov-${field.key}`} helper={integerRangeText(field)} error={touched[field.key] ? integerFieldError(field, values[field.key]) : null}>
                       <DecimalInput
                         id={`gov-${field.key}`}
                         maxDecimals={0}
                         value={String(values[field.key] ?? "")}
                         onChange={(e) => handleChange(field.key, e.target.value)}
+                        onBlur={() => setTouched((prev) => ({ ...prev, [field.key]: true }))}
+                        error={Boolean(touched[field.key] && integerFieldError(field, values[field.key]))}
                       />
                     </FormField>
                   ) : (

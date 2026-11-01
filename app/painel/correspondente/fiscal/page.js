@@ -38,6 +38,7 @@ import {
 } from "@/lib/api/correspondent";
 import Select from "@/components/atoms/Select/Select";
 import ExportRequestModal from "@/components/organisms/ExportRequestModal/ExportRequestModal";
+import { exportDoneNotice } from "@/lib/api/dlpExports";
 import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import { formatDateTime, formatDate, formatBRL, toNumber, humanizeText, formatCompetence } from "@/lib/format";
 import { hasPermission } from "@/lib/rbac/permissions";
@@ -882,7 +883,7 @@ export default function FiscalPage() {
         resourceType="correspondent.dimob"
         filter={{ batchId: dimobExportTarget?.id }}
         onDone={(result) => {
-          setActionMessage(`Arquivo ${result.fileName} gerado (${result.rowCount} registro(s)). A exportação fica registrada na auditoria e o arquivo expira sozinho.`);
+          setActionMessage(exportDoneNotice(result, "registro(s)").text);
           setDimobExportTarget(null);
         }}
       />

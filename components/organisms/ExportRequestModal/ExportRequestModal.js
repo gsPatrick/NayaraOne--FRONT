@@ -10,7 +10,7 @@ import Select from "@/components/atoms/Select/Select";
 import Checkbox from "@/components/atoms/Checkbox/Checkbox";
 import Alert from "@/components/molecules/Alert/Alert";
 import FormField from "@/components/molecules/FormField/FormField";
-import { getExportCatalog, runExport, exportErrorMessage } from "@/lib/api/dlpExports";
+import { getExportCatalog, runExport, exportErrorMessage, needsMfaPrompt } from "@/lib/api/dlpExports";
 import styles from "./ExportRequestModal.module.css";
 
 const PURPOSE_LABELS = {
@@ -50,7 +50,8 @@ export default function ExportRequestModal({ open, onClose, title, resourceType,
   const min = catalog?.justificationMin || 20;
   const missing = Math.max(0, min - justification.trim().length);
 
-  async function handleExport() {
+  // Tenta exportar direto; só abre a janela do código quando a API pede (MFA_STEP_UP_REQUIRED) e repete o pedido depois de confirmado (F14).
+  async function handleExport(afterMfa = false) {
     setBusy(true);
     setError("");
     try {
@@ -58,9 +59,13 @@ export default function ExportRequestModal({ open, onClose, title, resourceType,
       setJustification("");
       onDone?.(result);
     } catch (err) {
-      const text = exportErrorMessage(err);
-      setError(text);
-      onError?.(err, text);
+      if (needsMfaPrompt(err, afterMfa)) {
+        setMfaOpen(true);
+      } else {
+        const text = exportErrorMessage(err);
+        setError(text);
+        onError?.(err, text);
+      }
     } finally {
       setBusy(false);
     }
@@ -75,7 +80,7 @@ export default function ExportRequestModal({ open, onClose, title, resourceType,
         footer={
           <>
             <Button variant="secondary" onClick={onClose}>Cancelar</Button>
-            <Button onClick={() => setMfaOpen(true)} loading={busy} disabled={!resource || !format || !purpose || missing > 0}>Exportar</Button>
+            <Button onClick={() => handleExport(false)} loading={busy} disabled={!resource || !format || !purpose || missing > 0}>Exportar</Button>
           </>
         }
       >
@@ -108,7 +113,7 @@ export default function ExportRequestModal({ open, onClose, title, resourceType,
         actionLabel="exportar os dados"
         onVerified={async () => {
           setMfaOpen(false);
-          await handleExport();
+          await handleExport(true);
         }}
       />
     </>

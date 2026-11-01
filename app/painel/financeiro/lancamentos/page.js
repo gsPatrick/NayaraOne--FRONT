@@ -38,6 +38,7 @@ import {
 import FormField from "@/components/molecules/FormField/FormField";
 import Input from "@/components/atoms/Input/Input";
 import ExportRequestModal from "@/components/organisms/ExportRequestModal/ExportRequestModal";
+import { exportDoneNotice } from "@/lib/api/dlpExports";
 import { friendlyFinanceError } from "@/lib/finance/extras";
 import { listPeople } from "@/lib/api/people";
 import { bankAccountLabel } from "@/lib/finance/labels";
@@ -51,7 +52,10 @@ export default function LancamentosPage() {
   const router = useRouter();
   // M9-D940: carregando, erro, sem acesso e sem conexão vêm do padrão único de estados.
   const entriesQuery = useAsyncState(async () => {
-    const [e, ba, cc, pp] = await Promise.all([listFinancialEntries(), listBankAccounts(), listCostCenters(), listPeople()]);
+    const [e, ba, cc, pp] = await Promise.all([ // só os lançamentos são carga principal (F13); conta, centro e pessoa são apoio e avisam o motivo se negados
+      listFinancialEntries(), listBankAccounts().catch(lookupFallback("as contas bancárias")),
+      listCostCenters().catch(lookupFallback("os centros de custo")), listPeople().catch(lookupFallback("as pessoas")),
+    ]);
     return { entries: e || [], bankAccounts: ba || [], costCenters: cc || [], people: pp || [] };
   }, { key: "lancamentos", isEmpty: () => false });
   const entries = useMemo(() => entriesQuery.data?.entries || [], [entriesQuery.data]);
@@ -348,7 +352,7 @@ export default function LancamentosPage() {
         resourceType="finance.entries"
         filter={exportMonth ? { competenceMonth: exportMonth } : {}}
         onDone={(result) => {
-          setExportNotice({ tone: "success", text: `Arquivo ${result.fileName} gerado (${result.rowCount} linha(s)). A exportação fica registrada na auditoria e o arquivo expira sozinho.` });
+          setExportNotice(exportDoneNotice(result));
           setExportOpen(false);
         }}
       >
