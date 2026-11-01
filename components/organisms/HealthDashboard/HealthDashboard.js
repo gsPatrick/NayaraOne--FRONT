@@ -25,7 +25,7 @@ function KpiCell({ kpi, onDetail }) {
   );
 }
 
-function AreaRow({ area, onDetail }) {
+export function AreaRow({ area, onDetail }) {
   const unreadable = area.noAccess === true;
   return (
     <section className={[styles.area, styles[area.light.color]].join(" ")} data-health-area={area.key} data-health-color={area.light.color} aria-label={`${area.label}: ${area.light.text}`}>
