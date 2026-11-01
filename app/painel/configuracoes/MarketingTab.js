@@ -149,6 +149,25 @@ const MARKETING_GROUPS = [
 
 const ALL_FIELDS = MARKETING_GROUPS.flatMap((group) => group.fields);
 
+const MASS_WITHOUT_APPROVAL_KEY = "marketing.mass.max_recipients_sem_aprovacao";
+const MASS_ABSOLUTE_KEY = "marketing.mass.max_recipients_absoluto";
+
+// O teto absoluto nunca fica abaixo do limite sem aprovação (a API também recusa: MKT_MASS_LIMITS_INCONSISTENT).
+function checkMassLimits(values) {
+  const sem = toNumber(values[MASS_WITHOUT_APPROVAL_KEY]);
+  const abs = toNumber(values[MASS_ABSOLUTE_KEY]);
+  if (Number.isNaN(sem) || Number.isNaN(abs) || sem < 1 || abs < 1) return null; // o erro de número inválido sai no salvamento
+  if (abs < sem) return { key: MASS_ABSOLUTE_KEY, message: `O teto absoluto de destinatários não pode ser menor que o limite sem aprovação (${sem}).` };
+  return null;
+}
+
+// Salva primeiro o campo que afrouxa a regra: se o teto sobe, ele vai antes do limite; se o limite desce, ele vai antes do teto.
+function orderMassFirst(changed, values, original) {
+  const raisesCeiling = toNumber(values[MASS_ABSOLUTE_KEY]) >= toNumber(original[MASS_ABSOLUTE_KEY]);
+  const first = raisesCeiling ? MASS_ABSOLUTE_KEY : MASS_WITHOUT_APPROVAL_KEY;
+  return [...changed].sort((a, b) => Number(b.key === first) - Number(a.key === first));
+}
+
 function initialValues() {
   const values = {};
   ALL_FIELDS.forEach((field) => {
@@ -165,6 +184,7 @@ export default function MarketingTab() {
   const [error, setError] = useState("");
   const [forbidden, setForbidden] = useState(false);
   const [success, setSuccess] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
     let cancelled = false;
@@ -207,8 +227,14 @@ export default function MarketingTab() {
     setSaving(true);
     setError("");
     setSuccess("");
+    setFieldErrors({});
     try {
-      const changed = ALL_FIELDS.filter((field) => values[field.key] !== original[field.key]);
+      const massError = checkMassLimits(values);
+      if (massError) {
+        setFieldErrors({ [massError.key]: massError.message });
+        return;
+      }
+      const changed = orderMassFirst(ALL_FIELDS.filter((field) => values[field.key] !== original[field.key]), values, original);
       for (const field of changed) {
         const value = values[field.key];
         if (field.type === "integer") {
@@ -281,7 +307,7 @@ export default function MarketingTab() {
                     onChange={(e) => handleChange(field.key, e.target.checked)}
                   />
                 ) : (
-                  <FormField key={field.key} label={field.label} htmlFor={`mkt-${field.key}`} helper={field.helper}>
+                  <FormField key={field.key} label={field.label} htmlFor={`mkt-${field.key}`} helper={field.helper} error={fieldErrors[field.key]}>
                     <Input
                       id={`mkt-${field.key}`}
                       inputMode={field.type === "integer" ? "numeric" : undefined}
