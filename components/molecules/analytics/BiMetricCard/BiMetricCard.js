@@ -3,6 +3,8 @@ import FreshnessBadge from "@/components/molecules/analytics/FreshnessBadge/Fres
 import Button from "@/components/atoms/Button/Button";
 import { freshnessDisplay } from "@/lib/analytics/freshness";
 import { itemLabel } from "@/lib/analytics/panelLabels";
+import { incompleteReason, metricTooltip } from "@/lib/analytics/panelText";
+import { metricTitle, ptText } from "@/lib/analytics/ptLabels";
 import styles from "./BiMetricCard.module.css";
 
 // M9-D634 — cartão de um indicador do painel de BI. Mostra o valor PRONTO da API (nunca calcula): "Dado incompleto" no lugar do número quando o
@@ -33,14 +35,14 @@ export default function BiMetricCard({ widget, projects, centers, onDetail }) {
   const display = freshnessDisplay(metric);
   const headline = headlineOf(metric, view, display);
   const hidden = metric.incomplete || !display.showValue;
-  const tooltip = metric.version ? `${metric.name || widget.title} (${metric.metricCode}), versão ${metric.version}` : metric.metricCode;
   return (
-    <article className={[styles.card, view.alert ? styles.alert : ""].filter(Boolean).join(" ")} data-bi-widget={widget.metricCode} data-bi-incomplete={metric.incomplete ? "true" : "false"} title={tooltip}>
+    <article className={[styles.card, view.alert ? styles.alert : ""].filter(Boolean).join(" ")} data-bi-widget={widget.metricCode} data-bi-incomplete={metric.incomplete ? "true" : "false"} title={metricTooltip(widget, metric)}>
       <header className={styles.top}>
-        <h3 className={styles.title}>{widget.title}</h3>
+        <h3 className={styles.title}>{metricTitle(widget.metricCode, widget.title)}</h3>
         {metric.valueNatureLabel ? <span className={styles.nature}>{metric.valueNatureLabel}</span> : null}
       </header>
       {headline ? <p className={[styles.value, headline.muted ? styles.muted : ""].filter(Boolean).join(" ")} data-bi-value>{headline.text}</p> : null}
+      {metric.incomplete ? <p className={styles.muted} data-bi-reason>{incompleteReason(metric)}</p> : null}
       {!hidden && view.zeroText ? <p className={styles.muted} role="status" data-bi-zero>{view.zeroText}</p> : null}
       {view.horizonText ? <p className={styles.muted} data-bi-horizon>{view.horizonText}</p> : null}
       {!metric.incomplete && metric.staleText ? <p className={styles.muted} role="status" data-bi-stale>{metric.staleText}</p> : null}
@@ -50,7 +52,7 @@ export default function BiMetricCard({ widget, projects, centers, onDetail }) {
       {!hidden && (view.facts || []).length ? (
         <dl className={styles.facts}>
           {view.facts.map((f) => (
-            <div key={f.key} className={styles.fact}><dt>{f.label}</dt><dd>{f.formatted}</dd></div>
+            <div key={f.key} className={styles.fact}><dt>{ptText(f.label)}</dt><dd>{f.formatted}</dd></div>
           ))}
         </dl>
       ) : null}

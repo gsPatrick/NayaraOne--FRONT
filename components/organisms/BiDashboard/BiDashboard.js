@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import AppShell from "@/components/organisms/AppShell/AppShell";
-import Alert from "@/components/molecules/Alert/Alert";
+import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import Spinner from "@/components/atoms/Spinner/Spinner";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import BiBanner from "@/components/molecules/analytics/BiBanner/BiBanner";
@@ -13,6 +13,7 @@ import BiMatrixWidget from "@/components/molecules/analytics/BiMatrixWidget/BiMa
 import BiGroupScope from "@/components/molecules/analytics/BiGroupScope/BiGroupScope";
 import BiDrilldownModal from "@/components/molecules/analytics/BiDrilldownModal/BiDrilldownModal";
 import { getDashboard } from "@/lib/api/analytics";
+import { classifyFailure } from "@/lib/asyncState/states";
 import { apiFetch } from "@/lib/api/client";
 import { listProjects } from "@/lib/api/construction";
 import { listResultCenters } from "@/lib/api/finance";
@@ -56,7 +57,7 @@ function userNames(list) {
 export default function BiDashboard({ code, title }) {
   const [panel, setPanel] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(null);
   const [users, setUsers] = useState({});
   const [projects, setProjects] = useState({});
   const [centers, setCenters] = useState({});
@@ -65,7 +66,7 @@ export default function BiDashboard({ code, title }) {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    setError("");
+    setError(null);
     getDashboard(code)
       .then((data) => {
         if (cancelled) return;
@@ -73,7 +74,7 @@ export default function BiDashboard({ code, title }) {
         if (listsCenters(data)) listResultCenters().then((list) => { if (!cancelled) setCenters(centerNames(list)); }).catch(() => {});
         if (listsProjects(data)) listProjects().then((list) => { if (!cancelled) setProjects(projectNames(list)); }).catch(() => {});
       })
-      .catch((err) => { if (!cancelled) setError(err?.message || "Não foi possível carregar o painel."); })
+      .catch((err) => { if (!cancelled) setError(err || new Error("Não foi possível carregar o painel.")); })
       .finally(() => { if (!cancelled) setLoading(false); });
     apiFetch("/users").then((list) => { if (!cancelled) setUsers(userNames(list)); }).catch(() => {});
     return () => { cancelled = true; };
@@ -84,7 +85,8 @@ export default function BiDashboard({ code, title }) {
   const body = (panel?.widgets || []).filter((w) => w.type !== "QUALITY_BANNER");
   return (
     <AppShell title={title}>
-      {error ? <Alert tone="danger">{error}</Alert> : null}
+      {/* M9-D850: o 403 e as demais falhas usam o estado comum (a mesma tela de falta de permissão de todos os painéis), nunca um alerta próprio. */}
+      {error ? <AsyncState result={{ status: classifyFailure(error), error, traceId: error.traceId }} /> : null}
       {loading ? <Spinner size="lg" /> : null}
       {!loading && !error && !panel ? <EmptyState icon="chart" title="Sem dados" description="Nenhum indicador disponível." /> : null}
       {panel ? (

@@ -2,6 +2,8 @@ import FreshnessBadge from "@/components/molecules/analytics/FreshnessBadge/Fres
 import Button from "@/components/atoms/Button/Button";
 import { freshnessDisplay } from "@/lib/analytics/freshness";
 import { itemLabel } from "@/lib/analytics/panelLabels";
+import { incompleteReason, metricTooltip } from "@/lib/analytics/panelText";
+import { metricTitle, ptText } from "@/lib/analytics/ptLabels";
 import styles from "./BiBarsWidget.module.css";
 
 // M9-D634 — barras e funil de um indicador do painel. Cada linha vem pronta da API (código, valor, texto formatado, participação e extras como o
@@ -20,12 +22,13 @@ export default function BiBarsWidget({ widget, users, projects, centers, onDetai
   const max = Math.max(...items.map((i) => Number(i.value) || 0), 0);
   const funnel = view.chart === "FUNNEL";
   return (
-    <article className={styles.card} data-bi-widget={widget.metricCode} data-bi-incomplete={metric.incomplete ? "true" : "false"} title={`${metric.name || widget.title} (${metric.metricCode}), versão ${metric.version ?? "-"}`}>
+    <article className={styles.card} data-bi-widget={widget.metricCode} data-bi-incomplete={metric.incomplete ? "true" : "false"} title={metricTooltip(widget, metric)}>
       <header className={styles.top}>
-        <h3 className={styles.title}>{widget.title}</h3>
+        <h3 className={styles.title}>{metricTitle(widget.metricCode, widget.title)}</h3>
         {metric.valueNatureLabel ? <span className={styles.nature}>{metric.valueNatureLabel}</span> : null}
       </header>
       {metric.incomplete ? <p className={styles.incomplete} data-bi-value>{metric.incompleteText}</p> : null}
+      {metric.incomplete ? <p className={styles.incomplete} data-bi-reason>{incompleteReason(metric)}</p> : null}
       {!metric.incomplete && !display.showValue ? <p className={styles.incomplete}>{display.text}</p> : null}
       {!hidden ? <p className={styles.total} data-bi-value>{metric.formatted}</p> : null}
       {view.highlight && !hidden ? <p className={styles.highlight}>{view.highlight.label}: <strong>{view.highlight.formatted}</strong></p> : null}
@@ -41,14 +44,14 @@ export default function BiBarsWidget({ widget, users, projects, centers, onDetai
                 </span>
               </div>
               <div className={styles.track}><div className={styles.fill} style={{ width: `${widthOf(item, max)}%` }} /></div>
-              {(item.extra || []).map((x) => <span key={x.key} className={styles.extra}>{x.label}: {x.formatted}</span>)}
+              {(item.extra || []).map((x) => <span key={x.key} className={styles.extra}>{ptText(x.label)}: {x.formatted}</span>)}
             </li>
           ))}
         </ul>
       ) : null}
       {!hidden && !items.length ? <p className={styles.empty}>Sem registros no período.</p> : null}
       {!hidden && (view.facts || []).length ? (
-        <p className={styles.facts}>{view.facts.map((f) => `${f.label}: ${f.formatted}`).join(" · ")}</p>
+        <p className={styles.facts}>{view.facts.map((f) => `${ptText(f.label)}: ${f.formatted}`).join(" · ")}</p>
       ) : null}
       <footer className={styles.footer}>
         <FreshnessBadge metric={metric} />
