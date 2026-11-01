@@ -260,7 +260,7 @@ export default function GovernancaTab() {
   const [error, setError] = useState("");
   const [forbidden, setForbidden] = useState(false);
   const [success, setSuccess] = useState("");
-  const [touched, setTouched] = useState({}); // campos inteiros já visitados: o erro de faixa aparece ao sair do campo (F16)
+  const [touched, setTouched] = useState({}); // campos inteiros visitados: erro de faixa ao sair do campo (F16)
   const blocked = invalidChangedFields(ALL_FIELDS, values, original).length > 0;
 
   useEffect(() => {
@@ -274,10 +274,7 @@ export default function GovernancaTab() {
         const list = Array.isArray(data) ? data : Object.values(data || {});
         const next = initialValues();
         const byKey = Object.fromEntries(ALL_FIELDS.map((field) => [field.key, field]));
-        list.forEach((item) => {
-          // Chave ausente da API ou com valor nulo fica no padrão do campo: salvar a aba nunca liga ou desliga um módulo por engano (F15).
-          if (item && item.key && byKey[item.key]) next[item.key] = loadedValue(byKey[item.key], item.value);
-        });
+        list.forEach((item) => { if (item && item.key && byKey[item.key]) next[item.key] = loadedValue(byKey[item.key], item.value); }); // nulo/ausente = padrão (F15)
         setValues(next);
         setOriginal(next);
       })
