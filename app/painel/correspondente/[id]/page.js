@@ -777,6 +777,14 @@ export default function FinancingCaseDetailPage() {
     }
   }
 
+  // A validação vale para a versão vigente; a substituída não afirma validação.
+  function versionValidationText(doc) {
+    const v = doc.validation;
+    if (v?.status === "VALIDADA") return ` · Validada${v.at ? ` em ${formatDateTime(v.at)}` : ""}${v.byName ? ` por ${v.byName}` : ""}`;
+    if (v?.status === "SUBSTITUIDA" || doc.supersededAt || doc.superseded_at) return " · Versão substituída (a validação vale para a versão vigente)";
+    return " · Aguardando validação";
+  }
+
   async function toggleVersions(requirementId) {
     if (versionsOf[requirementId]) {
       setVersionsOf((prev) => { const next = { ...prev }; delete next[requirementId]; return next; });
@@ -784,8 +792,10 @@ export default function FinancingCaseDetailPage() {
     }
     setVersionsOf((prev) => ({ ...prev, [requirementId]: { loading: true } }));
     try {
-      const rows = await listRequirementDocuments(id, requirementId);
-      setVersionsOf((prev) => ({ ...prev, [requirementId]: { rows: rows || [] } }));
+      const result = await listRequirementDocuments(id, requirementId);
+      // A API devolve { requirement, versions: [...] }; aceita também uma lista direta.
+      const rows = Array.isArray(result) ? result : (Array.isArray(result?.versions) ? result.versions : []);
+      setVersionsOf((prev) => ({ ...prev, [requirementId]: { rows } }));
     } catch (err) {
       setVersionsOf((prev) => ({ ...prev, [requirementId]: { error: err?.message || "Não foi possível carregar as versões deste documento." } }));
     }
@@ -1055,7 +1065,7 @@ export default function FinancingCaseDetailPage() {
                                   Versão {doc.version} · enviada em {formatDateTime(doc.createdAt || doc.created_at)}
                                   {doc.supersededAt || doc.superseded_at ? ` · substituída em ${formatDateTime(doc.supersededAt || doc.superseded_at)}` : " · vigente"}
                                   {doc.file?.fileName ? ` · ${doc.file.fileName}` : ""}
-                                  {doc.validatedAt || doc.validated_at ? ` · validada em ${formatDateTime(doc.validatedAt || doc.validated_at)}` : " · sem validação"}
+                                  {versionValidationText(doc)}
                                 </li>
                               ))}
                             </ul>
