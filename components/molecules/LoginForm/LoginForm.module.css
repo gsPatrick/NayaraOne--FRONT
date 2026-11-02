@@ -49,7 +49,7 @@
 .link {
   font-size: var(--text-caption);
   font-weight: 600;
-  color: var(--color-brand);
+  color: var(--color-brand-text);
 }
 
 .link:hover { text-decoration: underline; }
@@ -64,7 +64,7 @@
 
 .switchLink {
   font-weight: 700;
-  color: var(--color-brand);
+  color: var(--color-brand-text);
 }
 
 .switchLink:hover { text-decoration: underline; }

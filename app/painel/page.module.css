@@ -106,7 +106,7 @@
 
 .activityLabel strong { color: var(--color-ink); }
 
-.activityLink { color: var(--color-brand); font-weight: 600; }
+.activityLink { color: var(--color-brand-text); font-weight: 600; }
 .activityLink:hover { text-decoration: underline; }
 
 .activityTime {

@@ -165,7 +165,7 @@
 
 .sectionAdmin { /* seção Administração não ganha mais um contorno próprio — o divisor acima já basta */ }
 
-.sectionLabelAdmin { color: var(--color-brand-active); }
+.sectionLabelAdmin { color: var(--color-sidebar-label-admin); }
 .sectionLabelIcon { flex-shrink: 0; }
 
 .list { display: flex; flex-direction: column; gap: 2px; }

@@ -15,6 +15,7 @@ const TEXT_PAIRS = [
   ["ink-soft", "canvas"], ["ink-soft", "canvas-sunken"],
   ["ink-muted", "canvas"], ["ink-muted", "canvas-sunken"],
   ["brand-active", "canvas"], ["brand-active", "brand-soft"],
+  ["brand-text", "canvas"], ["brand-text", "canvas-sunken"], ["ink-muted", "warning-soft"], ["sidebar-label-admin", "sidebar-bg"],
   ["success", "canvas"], ["success", "success-soft"],
   ["warning", "canvas"], ["warning", "warning-soft"],
   ["danger", "canvas"], ["danger", "danger-soft"],

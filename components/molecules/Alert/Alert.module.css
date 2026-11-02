@@ -15,8 +15,7 @@
 }
 
 .body {
-  font-size: var(--text-body-sm);
-  opacity: 0.9;
+  font-size: var(--text-body-sm); /* M9-D851: sem opacity, que derrubava o contraste do texto do aviso para 3,79:1 */
 }
 
 .info { background: var(--color-info-soft); color: var(--color-info); border-color: rgba(37,99,166,0.2); }

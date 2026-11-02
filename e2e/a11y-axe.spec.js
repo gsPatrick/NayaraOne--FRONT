@@ -6,7 +6,8 @@
  * docs/evidencias/a11y-axe-<data>.json. NÃO FOI EXECUTADO NO MARCO 9 (regra de operação: sem Playwright nesta rodada); o equivalente sem
  * navegador roda no CI em test/m9d851.axe.test.mjs, e a evidência de tela é o roteiro do Claude Browser em docs/a11y-checklist.md.
  *
- * Uso: E2E_EMAIL=... E2E_PASSWORD=... node e2e/a11y-axe.spec.js   (usuário de teste QA-M9; nunca credencial real)
+ * Uso: E2E_BASE_URL=http://localhost:3000 E2E_EMAIL=... E2E_PASSWORD=... node e2e/a11y-axe.spec.js   (usuário de teste QA-M9; nunca credencial real;
+ * E2E_BASE_URL aponta para a pilha local, com a API local e banco descartável; o padrão é http://localhost:3000)
  */
 const fs = require('fs');
 const path = require('path');
@@ -21,7 +22,8 @@ async function main() {
   const password = process.env.E2E_PASSWORD;
   if (!email || !password) throw new Error('Informe E2E_EMAIL e E2E_PASSWORD (usuário de teste QA-M9).');
   const browser = await chromium.launch();
-  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  const context = await browser.newContext({ viewport: { width: 1280, height: 900 } }); // @axe-core/playwright 4.x recusa browser.newPage()
+  const page = await context.newPage();
   page.setDefaultTimeout(30000);
   const report = [];
   let failed = 0;
@@ -31,6 +33,9 @@ async function main() {
       report.push(await audit(page, target));
     }
     await page.goto(`${BASE_URL}/entrar`, { waitUntil: 'domcontentloaded' });
+    await page.getByRole('button', { name: /Sou da equipe/i }).click(); // a tela abre primeiro na escolha de perfil
+    await page.waitForSelector('input[type=email]');
+    report.push(await audit(page, { nome: 'Login (formulário da equipe)', path: '/entrar' }));
     await page.fill('input[type=email]', email);
     await page.fill('input[type=password]', password);
     await page.click('button[type=submit]');
