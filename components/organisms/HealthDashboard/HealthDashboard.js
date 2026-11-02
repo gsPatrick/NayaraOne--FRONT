@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import AppShell from "@/components/organisms/AppShell/AppShell";
+import AccessGate from "@/components/molecules/AccessGate/AccessGate";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import { classifyFailure } from "@/lib/asyncState/states";
 import Spinner from "@/components/atoms/Spinner/Spinner";
@@ -47,7 +48,7 @@ export function AreaRow({ area, onDetail }) {
   );
 }
 
-export default function HealthDashboard({ title = "Saúde Geral" }) {
+function HealthBody() {
   const [panel, setPanel] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -64,7 +65,7 @@ export default function HealthDashboard({ title = "Saúde Geral" }) {
 
   const banner = panel?.widgets.find((w) => w.type === "QUALITY_BANNER");
   return (
-    <AppShell title={title}>
+    <>
       {/* M9-D850 (F08): a falta de permissão e as demais falhas usam o estado comum, como os outros painéis. */}
       {error ? <AsyncState result={{ status: classifyFailure(error), error, traceId: error.traceId }} /> : null}
       {loading ? <Spinner size="lg" /> : null}
@@ -79,6 +80,19 @@ export default function HealthDashboard({ title = "Saúde Geral" }) {
         </div>
       ) : null}
       {detail ? <BiDrilldownModal widget={detail} onClose={() => setDetail(null)} /> : null}
+    </>
+  );
+}
+
+// A permissão é decidida antes da carga: perfil sem `analytics:read` vê o aviso na hora, sem spinner e sem chamar a API (M9-D686, C6).
+export function HealthContent({ permissions = null }) {
+  return <AccessGate permission="analytics:read" permissions={permissions}><HealthBody /></AccessGate>;
+}
+
+export default function HealthDashboard({ title = "Saúde Geral" }) {
+  return (
+    <AppShell title={title}>
+      <HealthContent />
     </AppShell>
   );
 }

@@ -7,6 +7,7 @@ import BiBanner from "@/components/molecules/analytics/BiBanner/BiBanner";
 import { getCommandCenter } from "@/lib/api/analytics";
 import { listProjects } from "@/lib/api/construction";
 import { formatDateTime } from "@/lib/format";
+import AccessGate from "@/components/molecules/AccessGate/AccessGate";
 import CommandBlock from "./CommandBlock";
 import styles from "./CommandCenter.module.css";
 
@@ -39,7 +40,7 @@ function Brief({ brief }) {
 const hasProjects = (view) => view.blocks.some((b) => b.items.some((i) => i.projectId));
 const projectNames = (list) => Object.fromEntries((Array.isArray(list) ? list : list?.rows || list?.items || []).map((p) => [p.id, p.name || p.title]).filter(([, name]) => name));
 
-export default function CommandCenter({ block = null }) {
+function CommandCenterData({ block }) {
   const [data, setData] = useState(null);
   const [projects, setProjects] = useState({});
   const [loading, setLoading] = useState(true);
@@ -74,4 +75,9 @@ export default function CommandCenter({ block = null }) {
       </div>
     </div>
   );
+}
+
+// A permissão é decidida antes da carga: perfil sem `analytics:read` vê o aviso na hora, sem spinner e sem chamar a API (M9-D685, C6).
+export default function CommandCenter({ block = null, permissions = null }) {
+  return <AccessGate permission="analytics:read" permissions={permissions}><CommandCenterData block={block} /></AccessGate>;
 }
