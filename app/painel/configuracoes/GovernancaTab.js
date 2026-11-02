@@ -236,7 +236,7 @@ const GOVERNANCA_GROUPS = [
         key: "governanca.erros.excecoes_prefixo_gov",
         label: "Códigos sem o prefixo GOV_",
         type: "text",
-        defaultValue: "PERMISSION_DENIED, MISSING_ACCESS_TOKEN, MFA_STEP_UP_REQUIRED, MFA_REQUIRED_NOT_ENABLED, INTERNAL_ERROR, VALIDATION_ERROR",
+        defaultValue: "PERMISSION_DENIED, MISSING_ACCESS_TOKEN, MFA_STEP_UP_REQUIRED, MFA_REQUIRED_NOT_ENABLED, INTERNAL_ERROR, VALIDATION_ERROR, ROUTE_NOT_FOUND",
       },
     ],
   },
