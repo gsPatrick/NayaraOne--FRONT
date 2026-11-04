@@ -32,7 +32,7 @@ async function main() {
       await page.goto(`${BASE_URL}${target.path}`, { waitUntil: 'networkidle' });
       report.push(await audit(page, target));
     }
-    await page.goto(`${BASE_URL}/entrar`, { waitUntil: 'domcontentloaded' });
+    await page.goto(`${BASE_URL}/entrar`, { waitUntil: 'networkidle' }); // espera a hidratação: sem isso o clique em "Sou da equipe" cai antes do React e a tela não avança
     await page.getByRole('button', { name: /Sou da equipe/i }).click(); // a tela abre primeiro na escolha de perfil
     await page.waitForSelector('input[type=email]');
     report.push(await audit(page, { nome: 'Login (formulário da equipe)', path: '/entrar' }));
