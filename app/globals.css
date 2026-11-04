@@ -195,6 +195,16 @@
 html {
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
+  /* WCAG 2.4.7/2.4.11: o rodapé fixo de ações (StickyActionBar e as barras próprias dos formulários, ~57px) cobre o fim da viewport e o
+     navegador não conta com ele ao rolar até o elemento focado por Tab. Reserva a altura da barra (mais folga para o contorno de foco)
+     na rolagem; no celular soma a barra de abas fixa (60px). A regra é estática e coberta por test/m9d851.scroll-padding.test.mjs. */
+  scroll-padding-bottom: 88px;
+}
+
+@media (max-width: 900px) {
+  html {
+    scroll-padding-bottom: calc(88px + 60px + env(safe-area-inset-bottom));
+  }
 }
 
 body {
