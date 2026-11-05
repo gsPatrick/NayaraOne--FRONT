@@ -255,3 +255,8 @@
 @media (max-width: 480px) {
   .featuresExtraGrid { grid-template-columns: 1fr; }
 }
+
+/* M9-D851 (WCAG 1.4.10 e 2.4.11): em janela baixa (zoom de 200% a 400%) barra fixa cobre boa parte da tela e do foco; aqui ela passa a acompanhar o fluxo da página. */
+@media (max-height: 520px) {
+  .actionBar { position: static; }
+}

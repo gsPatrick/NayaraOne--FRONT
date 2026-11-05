@@ -7,7 +7,7 @@
  * Ctrl+K e Meta+K abrem a paleta com foco no campo e Esc devolve o foco, role=status/aria-busy durante "Carregando", e para onde vai o foco ao
  * disparar o formulário inválido de /painel/pessoas/novo (sem salvar). Reprova com GOV_A11Y_MODAL. Uso: E2E_EMAIL=... E2E_PASSWORD=... node e2e/a11y-teclado-modal.spec.js
  */
-const { chromium } = require('playwright');
+const { navegador } = require('./_a11y-comum'); // E2E_BROWSER=chromium|firefox|webkit
 const { api } = require('./_a11y-comum');
 const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
 const NOME = 'QA-M9 Papel Teste';
@@ -18,7 +18,7 @@ const ativo = (page) => page.evaluate(() => { const a = document.activeElement; 
 async function main() {
   const email = process.env.E2E_EMAIL; const password = process.env.E2E_PASSWORD;
   if (!email || !password) throw new Error('Informe E2E_EMAIL e E2E_PASSWORD (usuário de teste QA-M9).');
-  const browser = await chromium.launch();
+  const browser = await navegador().launch();
   const page = await (await browser.newContext({ viewport: { width: 1280, height: 800 } })).newPage();
   page.setDefaultTimeout(30000);
   await page.goto(`${BASE_URL}/entrar`, { waitUntil: 'networkidle' });

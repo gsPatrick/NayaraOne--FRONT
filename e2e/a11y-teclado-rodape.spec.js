@@ -12,7 +12,7 @@
  */
 const fs = require('fs');
 const path = require('path');
-const { chromium } = require('playwright');
+const { navegador } = require('./_a11y-comum'); // E2E_BROWSER=chromium|firefox|webkit
 
 const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
 const VIEWPORTS = [
@@ -46,7 +46,7 @@ async function main() {
   const email = process.env.E2E_EMAIL;
   const password = process.env.E2E_PASSWORD;
   if (!email || !password) throw new Error('Informe E2E_EMAIL e E2E_PASSWORD (usuário de teste QA-M9).');
-  const browser = await chromium.launch();
+  const browser = await navegador().launch();
   const relatorio = [];
   let falhas = 0;
   try {

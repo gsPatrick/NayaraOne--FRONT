@@ -40,6 +40,9 @@
   white-space: nowrap;
 }
 
+.title:focus { outline: none; } /* foco programático ao chegar na tela (não é controle) */
+.title:focus-visible { outline: var(--focus-ring-width) solid var(--focus-ring); outline-offset: -2px; }
+
 .actions {
   display: flex;
   align-items: center;
@@ -68,4 +71,17 @@
 
 @media (prefers-reduced-motion: reduce) {
   .header { transition: none; }
+}
+
+/* M9-D851 (WCAG 1.4.10): em 320 px de largura (zoom de 400%) o título da tela era cortado em "C..."; o cabeçalho quebra em duas linhas e o título ocupa a linha inteira. */
+@media (max-width: 480px) {
+  .header { height: auto; min-height: 64px; flex-wrap: wrap; padding-top: var(--space-2); padding-bottom: var(--space-2); }
+  .title { order: 3; flex: 1 1 100%; overflow: visible; white-space: normal; text-overflow: clip; overflow-wrap: anywhere; }
+  .actions { margin-left: auto; }
+}
+
+/* Janela baixa (zoom de 200% a 400%): o cabeçalho fixo não pode cobrir o foco nem ocupar a tela. */
+@media (max-height: 520px) {
+  .header { position: static; }
+  .header.hidden { transform: none; }
 }

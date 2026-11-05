@@ -166,3 +166,8 @@
 @media (prefers-reduced-motion: reduce) {
   .navBtn, .bullet, .connector, .dot, .tooltip { transition: none; }
 }
+
+/* M9-D851: a dica aparece só ao passar o mouse; em janela estreita ela passava da borda e criava rolagem horizontal. */
+@media (max-width: 900px) {
+  .tooltip { display: none; }
+}

@@ -199,11 +199,20 @@ html {
      navegador não conta com ele ao rolar até o elemento focado por Tab. Reserva a altura da barra (mais folga para o contorno de foco)
      na rolagem; no celular soma a barra de abas fixa (60px). A regra é estática e coberta por test/m9d851.scroll-padding.test.mjs. */
   scroll-padding-bottom: 88px;
+  scroll-padding-top: 72px; /* M9-D851: cabeçalho fixo de 64 px não encobre o item focado */
 }
 
 @media (max-width: 900px) {
   html {
     scroll-padding-bottom: calc(88px + 60px + env(safe-area-inset-bottom));
+  }
+}
+
+/* M9-D851: em janela baixa (zoom 200% a 400%) as barras fixas viram parte da página (ver cada módulo), então a reserva some. */
+@media (max-height: 520px) {
+  html {
+    scroll-padding-top: 0;
+    scroll-padding-bottom: 16px;
   }
 }
 
