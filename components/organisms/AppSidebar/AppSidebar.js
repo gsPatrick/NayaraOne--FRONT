@@ -86,7 +86,7 @@ export default function AppSidebar({ collapsed, onToggle }) {
           )
         : null}
 
-      <nav className={styles.nav}>
+      <nav className={styles.nav} aria-label="Menu lateral">
         {sections.map((section) => (
           <div
             key={section.label}
@@ -140,7 +140,7 @@ export default function AppSidebar({ collapsed, onToggle }) {
                         <ul className={styles.subList}>
                           {item.children.map((child) => (
                             <li key={child.label}>
-                              <Link href={child.href} className={[styles.subItem, pathname === child.href.split("?")[0] ? styles.active : ""].filter(Boolean).join(" ")} title={child.label}>
+                              <Link href={child.href} className={[styles.subItem, pathname === child.href.split("?")[0] ? styles.active : ""].filter(Boolean).join(" ")} title={child.label} aria-current={pathname === child.href.split("?")[0] ? "page" : undefined}>
                                 <span className={styles.itemLabel}>{child.label}</span>
                               </Link>
                             </li>
@@ -155,6 +155,8 @@ export default function AppSidebar({ collapsed, onToggle }) {
                   <li key={item.label}>
                     <Link
                       href={item.href}
+                      aria-current={parentSelfActive ? "page" : undefined}
+                      aria-label={collapsed ? item.label : undefined}
                       className={[styles.item, active ? styles.active : "", item.soon ? styles.soon : ""]
                         .filter(Boolean)
                         .join(" ")}

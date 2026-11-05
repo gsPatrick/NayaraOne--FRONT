@@ -74,6 +74,7 @@ export default function MobileTabBar() {
             <Link
               key={tab.label}
               href={tab.href}
+              aria-current={active ? "page" : undefined}
               className={[styles.tab, active ? styles.active : ""].filter(Boolean).join(" ")}
             >
               <Icon name={tab.icon} size={22} className={styles.tabIcon} />

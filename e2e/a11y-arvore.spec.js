@@ -72,6 +72,14 @@ async function main() {
     reg(conta(pessoas, 'columnheader') >= 2, `/painel/pessoas: ${conta(pessoas, 'columnheader')} cabeçalhos de coluna na tabela`);
     for (const nome of ['Ver detalhes', 'Editar']) reg(new RegExp(`button "${nome}"`).test(pessoas), `/painel/pessoas: botão de ícone "${nome}" tem nome acessível`);
 
+    // Página atual na navegação (aria-current) e barra lateral recolhida (só ícones) com nome
+    reg(/link "Contatos"[^\n]*\[current=page\]/.test(pessoas) || (await page.locator('nav a[aria-current=page]').count()) >= 1, '/painel/pessoas: o item da navegação da página atual tem aria-current="page"');
+    const chave = 'nayara-one:sidebar-collapsed';
+    await page.evaluate((k) => localStorage.setItem(k, '1'), chave); await page.reload({ waitUntil: 'networkidle' }); await page.waitForTimeout(800);
+    const recolhida = dump['/painel/pessoas (barra recolhida)'] = await page.locator('nav').first().ariaSnapshot();
+    reg(semNome(recolhida).length === 0, `barra lateral recolhida: links só de ícone sem nome: ${JSON.stringify(semNome(recolhida))}`);
+    await page.evaluate((k) => localStorage.removeItem(k), chave); await page.reload({ waitUntil: 'networkidle' });
+
     // Papéis: tabela, Editar/Excluir e modal
     await page.goto(`${BASE_URL}/painel/papeis`, { waitUntil: 'networkidle' }); await page.waitForTimeout(800);
     const papeis = dump['/painel/papeis'] = await page.locator('body').ariaSnapshot();
