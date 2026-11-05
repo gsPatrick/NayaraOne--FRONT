@@ -1,0 +1,46 @@
+{
+  "navegador": "firefox",
+  "achados": [
+    "[OK ] /painel/pessoas: título no primeiro HTML \"Contatos — Nayara One\"",
+    "[OK ] /painel/pessoas/novo: título no primeiro HTML \"Novo contato — Nayara One\"",
+    "[OK ] /painel/papeis: título no primeiro HTML \"Papéis &amp; Permissões — Nayara One\"",
+    "[OK ] /painel/papeis/novo: título no primeiro HTML \"Novo papel — Nayara One\"",
+    "[OK ] /painel/pessoas: títulos da aba durante a carga: [\"\",\"Contatos — Nayara One\"]",
+    "[OK ] a região viva aparece VAZIA (montada antes do texto): \"\"",
+    "[OK ] anúncio de carregamento observado: [\"Carregando contatos…\",\"1 contato encontrado\"]",
+    "[OK ] anúncio do resultado (\"N contatos encontrados\") observado",
+    "[OK ] região: role=status aria-live=polite aria-atomic=true; ariaSnapshot: - status: 1 contato encontrado",
+    "[OK ] busca sem resultado anuncia: \"Nenhum contato encontrado\"",
+    "[OK ] limpar a busca anuncia: \"1 contato encontrado\"",
+    "[OK ] criar papel: o foco vai ao aviso (role=alert) e não ao body: \"Configuração de segurança necessária Esta ação exige verificação em duas etapas \"",
+    "[OK ] criar papel: aviso sem código técnico",
+    "[OK ] criar papel: Tab a partir do aviso chega ao link \"Ir para Meu perfil\" (/painel/perfil)",
+    "[OK ] criar papel: Tab seguinte chega a \"Fechar aviso\"",
+    "[OK ] criar papel: \"Fechar aviso\" tira o aviso e devolve o foco a \"Criar papel\"",
+    "[OK ] excluir papel: a confirmação fecha quando a API exige MFA configurado",
+    "[OK ] excluir papel: o foco vai ao aviso (role=alert) e não ao body: \"Configuração de segurança necessária Esta ação exige verificação em duas etapas \"",
+    "[OK ] excluir papel: aviso sem código técnico",
+    "[OK ] excluir papel: Tab a partir do aviso chega ao link \"Ir para Meu perfil\" (/painel/perfil)",
+    "[OK ] excluir papel: Tab seguinte chega a \"Fechar aviso\"",
+    "[OK ] excluir papel: \"Fechar aviso\" tira o aviso e devolve o foco a \"Excluir\"",
+    "[OK ] editar papel: o foco vai ao aviso (role=alert) e não ao body: \"Configuração de segurança necessária Esta ação exige verificação em duas etapas \"",
+    "[OK ] editar papel: aviso sem código técnico",
+    "[OK ] editar papel: Tab a partir do aviso chega ao link \"Ir para Meu perfil\" (/painel/perfil)",
+    "[OK ] editar papel: Tab seguinte chega a \"Fechar aviso\"",
+    "[OK ] editar papel: \"Fechar aviso\" tira o aviso e devolve o foco a \"Salvar alterações\"",
+    "[OK ] nenhum papel QA-M9 ficou gravado"
+  ],
+  "pessoas": {
+    "titulos": [
+      "",
+      "Contatos — Nayara One"
+    ],
+    "anuncios": [
+      "Carregando contatos…",
+      "1 contato encontrado",
+      "Nenhum contato encontrado",
+      "1 contato encontrado"
+    ],
+    "ariaSnapshot": "- status: 1 contato encontrado"
+  }
+}

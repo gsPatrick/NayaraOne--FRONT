@@ -1,0 +1,245 @@
+[
+  {
+    "navegador": "webkit",
+    "viewport": "200% (640x400)",
+    "rota": "/painel/pessoas",
+    "janela": {
+      "inner": 640,
+      "client": 640,
+      "scroll": 640
+    },
+    "menuUsuario": {
+      "left": 566,
+      "right": 624,
+      "w": 58,
+      "dentro": true,
+      "cortado": false
+    },
+    "continuar": null,
+    "fab": {
+      "presente": true,
+      "sobrepoe": []
+    },
+    "paradasTab": 90,
+    "controlesDistintos": 25,
+    "focoCoberto": []
+  },
+  {
+    "navegador": "webkit",
+    "viewport": "200% (640x400)",
+    "rota": "/painel/pessoas/novo",
+    "janela": {
+      "inner": 640,
+      "client": 640,
+      "scroll": 640
+    },
+    "menuUsuario": {
+      "left": 566,
+      "right": 624,
+      "w": 58,
+      "dentro": true,
+      "cortado": false
+    },
+    "continuar": {
+      "left": 536,
+      "right": 624,
+      "w": 88,
+      "dentro": true,
+      "cortado": false
+    },
+    "fab": {
+      "presente": false,
+      "sobrepoe": []
+    },
+    "paradasTab": 90,
+    "controlesDistintos": 27,
+    "focoCoberto": []
+  },
+  {
+    "navegador": "webkit",
+    "viewport": "200% (640x400)",
+    "rota": "/painel/papeis",
+    "janela": {
+      "inner": 640,
+      "client": 640,
+      "scroll": 640
+    },
+    "menuUsuario": {
+      "left": 566,
+      "right": 624,
+      "w": 58,
+      "dentro": true,
+      "cortado": false
+    },
+    "continuar": null,
+    "fab": {
+      "presente": false,
+      "sobrepoe": []
+    },
+    "paradasTab": 90,
+    "controlesDistintos": 10,
+    "focoCoberto": []
+  },
+  {
+    "navegador": "webkit",
+    "viewport": "400% (320x256)",
+    "rota": "/painel/pessoas",
+    "janela": {
+      "inner": 320,
+      "client": 320,
+      "scroll": 320
+    },
+    "menuUsuario": {
+      "left": 246,
+      "right": 304,
+      "w": 58,
+      "dentro": true,
+      "cortado": false
+    },
+    "continuar": null,
+    "fab": {
+      "presente": true,
+      "sobrepoe": []
+    },
+    "paradasTab": 90,
+    "controlesDistintos": 25,
+    "focoCoberto": []
+  },
+  {
+    "navegador": "webkit",
+    "viewport": "400% (320x256)",
+    "rota": "/painel/pessoas/novo",
+    "janela": {
+      "inner": 320,
+      "client": 320,
+      "scroll": 320
+    },
+    "menuUsuario": {
+      "left": 246,
+      "right": 304,
+      "w": 58,
+      "dentro": true,
+      "cortado": false
+    },
+    "continuar": {
+      "left": 216,
+      "right": 304,
+      "w": 88,
+      "dentro": true,
+      "cortado": false
+    },
+    "fab": {
+      "presente": false,
+      "sobrepoe": []
+    },
+    "paradasTab": 90,
+    "controlesDistintos": 27,
+    "focoCoberto": []
+  },
+  {
+    "navegador": "webkit",
+    "viewport": "400% (320x256)",
+    "rota": "/painel/papeis",
+    "janela": {
+      "inner": 320,
+      "client": 320,
+      "scroll": 320
+    },
+    "menuUsuario": {
+      "left": 246,
+      "right": 304,
+      "w": 58,
+      "dentro": true,
+      "cortado": false
+    },
+    "continuar": null,
+    "fab": {
+      "presente": false,
+      "sobrepoe": []
+    },
+    "paradasTab": 90,
+    "controlesDistintos": 10,
+    "focoCoberto": []
+  },
+  {
+    "navegador": "webkit",
+    "viewport": "320x568",
+    "rota": "/painel/pessoas",
+    "janela": {
+      "inner": 320,
+      "client": 320,
+      "scroll": 320
+    },
+    "menuUsuario": {
+      "left": 246,
+      "right": 304,
+      "w": 58,
+      "dentro": true,
+      "cortado": false
+    },
+    "continuar": null,
+    "fab": {
+      "presente": true,
+      "sobrepoe": []
+    },
+    "paradasTab": 90,
+    "controlesDistintos": 25,
+    "focoCoberto": []
+  },
+  {
+    "navegador": "webkit",
+    "viewport": "320x568",
+    "rota": "/painel/pessoas/novo",
+    "janela": {
+      "inner": 320,
+      "client": 320,
+      "scroll": 320
+    },
+    "menuUsuario": {
+      "left": 246,
+      "right": 304,
+      "w": 58,
+      "dentro": true,
+      "cortado": false
+    },
+    "continuar": {
+      "left": 216,
+      "right": 304,
+      "w": 88,
+      "dentro": true,
+      "cortado": false
+    },
+    "fab": {
+      "presente": false,
+      "sobrepoe": []
+    },
+    "paradasTab": 90,
+    "controlesDistintos": 27,
+    "focoCoberto": []
+  },
+  {
+    "navegador": "webkit",
+    "viewport": "320x568",
+    "rota": "/painel/papeis",
+    "janela": {
+      "inner": 320,
+      "client": 320,
+      "scroll": 320
+    },
+    "menuUsuario": {
+      "left": 246,
+      "right": 304,
+      "w": 58,
+      "dentro": true,
+      "cortado": false
+    },
+    "continuar": null,
+    "fab": {
+      "presente": false,
+      "sobrepoe": []
+    },
+    "paradasTab": 90,
+    "controlesDistintos": 10,
+    "focoCoberto": []
+  }
+]
