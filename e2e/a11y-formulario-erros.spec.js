@@ -9,7 +9,7 @@
  *    campo certo e mostra rótulo humano. Nada é salvo (a única chamada ao POST /people é interceptada).
  * Reprova com GOV_A11Y_FORM. Uso: E2E_EMAIL=... E2E_PASSWORD=... [E2E_BROWSER=firefox] node e2e/a11y-formulario-erros.spec.js
  */
-const { BASE_URL, abrir, entrar, registro, TAB, STAB, interceptarApi } = require('./_a11y-comum');
+const { BASE_URL, abrir, entrar, registro, interceptarApi, interceptacaoFunciona } = require('./_a11y-comum');
 const { reg, estado } = registro('form');
 const TECNICO = /groupId|companyId|legalName|taxIdNormalized|zipCode|[a-z]{2,}[A-Z][A-Za-z]+|"|[A-Z]{3,}_[A-Z_]{3,}/;
 
@@ -27,6 +27,7 @@ async function main() {
   const { browser, page } = await abrir();
   try {
     await entrar(page);
+    const interceptaOk = await interceptacaoFunciona(page); // sem isso (WebKit) a simulação da API não roda, para nunca gravar cadastro real
     await page.goto(`${BASE_URL}/painel/pessoas/novo`, { waitUntil: 'networkidle' });
     await page.waitForSelector('#p-name');
     const clicar = async () => { const b = page.getByRole('button', { name: /Continuar|Criar contato/ }); await b.focus(); await page.keyboard.press('Enter'); await page.waitForTimeout(500); };
@@ -73,24 +74,27 @@ async function main() {
     await page.fill('#p-zip', '01001000'); await page.fill('#p-street', 'Rua Teste'); await page.fill('#p-neighborhood', 'Centro'); await page.fill('#p-city', 'São Paulo'); await page.fill('#p-state', 'SP');
     await page.waitForTimeout(800);
 
-    // API recusa com a mensagem crua: simulada, nada é salvo
-    let chamadas = 0; let reais = 0;
-    await interceptarApi(page, /\/people(\?.*)?$/, async (r, cors) => {
-      if (r.request().method() !== 'POST') return r.continue();
-      chamadas += 1;
-      await r.fulfill({ status: 400, headers: cors, contentType: 'application/json', body: JSON.stringify({ success: false, error: { code: 'PERSON_VALIDATION', message: 'Os campos "groupId", "companyId" e "legalName" são obrigatórios.', traceId: 'e2e-sim' } }) });
-    });
-    page.on('response', (r) => { if (r.request().method() === 'POST' && /\/people$/.test(r.url()) && r.status() < 300) reais += 1; });
-    await clicar(); // etapa 4 (revisão)
-    await clicar(); // Criar contato
-    await page.waitForTimeout(800);
-    f = await foco(page);
-    const nome = await lerCampo(page, 'p-name');
-    reg(chamadas === 1 && reais === 0, `a API (simulada) foi chamada ${chamadas} vez e nenhum cadastro real foi criado (${reais})`);
-    reg(f.alerta && nome && nome.invalido === 'true' && !TECNICO.test(f.texto + nome.msg), `erro da API levado ao campo certo: foco no resumo "${f.texto}", campo Nome com aria-invalid e "${nome && nome.msg}"`);
-    const corpo = await page.evaluate(() => document.body.innerText);
-    reg(!/groupId|companyId|legalName/.test(corpo), 'a tela inteira não mostra groupId, companyId nem legalName');
-    await page.unrouteAll({ behavior: "wait" });
+    // API recusa com a mensagem crua: simulada, nada é salvo. Sem prova de que a interceptação funciona (WebKit), este passo NÃO roda: um envio real gravaria um cadastro.
+    if (!interceptaOk) console.log('(pulado) simulação da resposta da API: este navegador não intercepta a rede do Front; coberto pelo teste unitário m9d851.erros-campo e pelo Chromium e Firefox');
+    else {
+      let chamadas = 0; let reais = 0;
+      await interceptarApi(page, /\/people(\?.*)?$/, async (r, cors) => {
+        if (r.request().method() !== 'POST') return r.continue();
+        chamadas += 1;
+        await r.fulfill({ status: 400, headers: cors, contentType: 'application/json', body: JSON.stringify({ success: false, error: { code: 'PERSON_VALIDATION', message: 'Os campos "groupId", "companyId" e "legalName" são obrigatórios.', traceId: 'e2e-sim' } }) });
+      });
+      page.on('response', (r) => { if (r.request().method() === 'POST' && /\/people$/.test(r.url()) && r.status() < 300) reais += 1; });
+      await clicar(); // etapa 4 (revisão)
+      await clicar(); // Criar contato
+      await page.waitForTimeout(800);
+      f = await foco(page);
+      const nome = await lerCampo(page, 'p-name');
+      reg(chamadas === 1 && reais === 0, `a API (simulada) foi chamada ${chamadas} vez e nenhum cadastro real foi criado (${reais})`);
+      reg(f.alerta && nome && nome.invalido === 'true' && !TECNICO.test(f.texto + nome.msg), `erro da API levado ao campo certo: foco no resumo "${f.texto}", campo Nome com aria-invalid e "${nome && nome.msg}"`);
+      const corpo = await page.evaluate(() => document.body.innerText);
+      reg(!/groupId|companyId|legalName/.test(corpo), 'a tela inteira não mostra groupId, companyId nem legalName');
+      await page.unrouteAll({ behavior: "wait" });
+    }
   } finally { await browser.close(); }
   if (estado.falhas) console.error('GOV_A11Y_FORM falha nos erros de formulário.');
   process.exit(estado.falhas ? 1 : 0);

@@ -58,4 +58,17 @@ async function interceptarApi(page, regex, fn) {
   await page.route(regex, async (r) => (r.request().method() === 'OPTIONS' ? r.fulfill({ status: 204, headers: cors }) : fn(r, cors)));
 }
 
-module.exports = { interceptarApi, TAB, STAB, API_URL, api, BASE_URL, abrir, entrar, registro, navegador };
+/**
+ * O WebKit do Playwright não intercepta (page.route/context.route) as chamadas cross-origin deste Front à API em localhost:4001: o handler nunca roda e o pedido
+ * segue de verdade. Antes de qualquer passo que simula resposta (e poderia gravar dado real), prova que a interceptação funciona, com uma leitura inofensiva.
+ */
+async function interceptacaoFunciona(page) {
+  let vistas = 0;
+  const sonda = async (r) => { vistas += 1; await r.continue(); };
+  await page.route(/\/people\/duplicates(\?.*)?$/, sonda);
+  await page.goto(`${BASE_URL}/painel/pessoas`, { waitUntil: 'networkidle' });
+  await page.unroute(/\/people\/duplicates(\?.*)?$/, sonda);
+  return vistas > 0;
+}
+
+module.exports = { interceptacaoFunciona, interceptarApi, TAB, STAB, API_URL, api, BASE_URL, abrir, entrar, registro, navegador };

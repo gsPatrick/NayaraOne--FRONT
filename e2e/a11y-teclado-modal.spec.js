@@ -8,7 +8,7 @@
  * disparar o formulário inválido de /painel/pessoas/novo (sem salvar). Reprova com GOV_A11Y_MODAL. Uso: E2E_EMAIL=... E2E_PASSWORD=... node e2e/a11y-teclado-modal.spec.js
  */
 const { navegador, TAB, STAB } = require('./_a11y-comum'); // E2E_BROWSER=chromium|firefox|webkit
-const { api, interceptarApi } = require('./_a11y-comum');
+const { api, interceptarApi, interceptacaoFunciona } = require('./_a11y-comum');
 const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
 const NOME = 'QA-M9 Papel Teste';
 const achados = []; let falhas = 0;
@@ -27,6 +27,7 @@ async function main() {
   await page.fill('input[type=email]', email); await page.fill('input[type=password]', password);
   await page.click('button[type=submit]');
   await page.waitForURL((u) => !u.pathname.includes('/entrar'));
+  const intercepta = await interceptacaoFunciona(page); // WebKit não intercepta a rede do Front (ver _a11y-comum.js)
   let papelId = null; let cliente = null;
   try {
     // Criar papel exige MFA: com E2E_TOTP_SECRET o papel é criado pela API (MFA recente pelo TOTP calculado na hora) e removido ao final.
@@ -65,11 +66,14 @@ async function main() {
       reg(!(await ativo(page)).dialogo && (await page.evaluate(() => document.activeElement === window.__gatilho)), `${combo}: Esc fecha a paleta e o foco volta ao elemento que estava focado antes ("${antes}")`);
     }
 
-    await interceptarApi(page, /\/people(\?.*)?$/, async (r) => { await new Promise((x) => setTimeout(x, 6000)); r.continue().catch(() => {}); });
-    await page.goto(`${BASE_URL}/painel/pessoas`, { waitUntil: 'commit' }); await page.waitForSelector('[role=status][aria-busy=true]', { timeout: 5500 }).catch(() => {});
-    const carregando = await page.evaluate(() => [...document.querySelectorAll('[role=status][aria-busy=true],[aria-live]')].map((e) => e.textContent.trim().slice(0, 40)));
-    reg(carregando.length > 0, `durante o carregamento há região role=status/aria-busy com texto: ${JSON.stringify(carregando)}`);
-    await page.waitForTimeout(6500); await page.unrouteAll({ behavior: 'wait' });
+    if (!intercepta) console.log('(pulado) carregamento e erro simulados: este navegador não intercepta a rede do Front (cobertos em Chromium e Firefox)');
+    else {
+      await interceptarApi(page, /\/people(\?.*)?$/, async (r) => { await new Promise((x) => setTimeout(x, 6000)); r.continue().catch(() => {}); });
+      await page.goto(`${BASE_URL}/painel/pessoas`, { waitUntil: 'commit' }); await page.waitForSelector('[role=status][aria-busy=true]', { timeout: 5500 }).catch(() => {});
+      const carregando = await page.evaluate(() => [...document.querySelectorAll('[role=status][aria-busy=true],[aria-live]')].map((e) => e.textContent.trim().slice(0, 40)));
+      reg(carregando.length > 0, `durante o carregamento há região role=status/aria-busy com texto: ${JSON.stringify(carregando)}`);
+      await page.waitForTimeout(6500); await page.unrouteAll({ behavior: 'wait' });
+    }
 
     // Formulário inválido: o assistente valida no cliente (nada vai à API) e o foco vai ao resumo de erros (role=alert). Detalhe em a11y-formulario-erros.spec.js.
     await page.goto(`${BASE_URL}/painel/pessoas/novo`, { waitUntil: 'networkidle' });
