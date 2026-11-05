@@ -3,7 +3,7 @@
 /**
  * Zoom 200% e 400% e reflow em 320 px (WCAG 1.4.4 e 1.4.10). Um navegador a 1280x800 com zoom de 200% tem 640x400 px CSS de área útil; a 400%, 320x256.
  * Também 320x568 (celular estreito). Para cada tela-chave e /painel/papeis: (a) a página não rola na horizontal (scrollWidth <= largura),
- * (b) nenhum elemento visível passa da borda direita fora de um contêiner com rolagem própria (tabela larga), (c) texto não é cortado em caixa
+ * (b) nenhum elemento visível passa da borda direita fora de um contêiner com rolagem própria (tabela larga), (b2) o conteúdo (main) ocupa pelo menos 85% da largura (pegou barra de abas virando coluna e espremendo a tela), (c) texto não é cortado em caixa
  * com overflow oculto, (d) Tab percorre os controles e, a cada parada, o foco está dentro da janela na horizontal e NÃO está coberto por outro
  * elemento (barra fixa de ações, cabeçalho): elementFromPoint no centro do controle é ele mesmo ou um filho.
  * Grava docs/evidencias/a11y-zoom-<data>.json. Reprova com GOV_A11Y_ZOOM. Uso: E2E_EMAIL=... E2E_PASSWORD=... [E2E_BROWSER=firefox] node e2e/a11y-zoom.spec.js
@@ -32,7 +32,8 @@ function medir() {
     if (r.right > vw + 1 && cs.position !== 'fixed' && !comRolagemPropria(el)) passam.push(`${el.tagName.toLowerCase()}${el.className && typeof el.className === 'string' ? '.' + el.className.split(' ')[0] : ''} (${Math.round(r.right)}>${vw})`);
     if ((cs.overflowX === 'hidden' || cs.overflow === 'hidden') && el.scrollWidth > el.clientWidth + 2 && el.textContent.trim() && cs.textOverflow !== 'ellipsis' && !['INPUT', 'SELECT', 'TEXTAREA', 'BODY', 'HTML'].includes(el.tagName) && !el.classList.contains('sr-only') && !el.querySelector('canvas,svg')) cortados.push(`${el.tagName.toLowerCase()}${el.className && typeof el.className === 'string' ? '.' + el.className.split(' ')[0] : ''} (${el.scrollWidth}>${el.clientWidth}) "${el.textContent.trim().slice(0, 30)}"`);
   }
-  return { vw, rolagem, passam: [...new Set(passam)].slice(0, 8), cortados: [...new Set(cortados)].slice(0, 8) };
+  const principal = document.querySelector('main'); const larguraMain = principal ? Math.round(principal.getBoundingClientRect().width) : null;
+  return { vw, rolagem, larguraMain, passam: [...new Set(passam)].slice(0, 8), cortados: [...new Set(cortados)].slice(0, 8) };
 }
 
 function parada() {
@@ -66,6 +67,7 @@ async function main() {
         if (rota === '/entrar' && !/\/entrar/.test(page.url())) continue; // sessão ativa redireciona
         const m = await page.evaluate(medir);
         const horizontal = m.rolagem <= m.vw + 1;
+        reg(m.larguraMain !== null && m.larguraMain >= m.vw * 0.85, `${vp.nome} ${rota}: o conteúdo (main) usa ${m.larguraMain} de ${m.vw} px de largura (não é espremido por outra coluna ou barra)`);
         reg(horizontal && m.passam.length === 0, `${vp.nome} ${rota}: rolagem horizontal ${m.rolagem}/${m.vw}${m.passam.length ? '; passam da borda: ' + m.passam.join(', ') : ''}`);
         if (m.cortados.length) reg(false, `${vp.nome} ${rota}: texto cortado em caixa com overflow oculto: ${m.cortados.join(' | ')}`);
         // Tab até voltar ao começo (no máximo 80 paradas)

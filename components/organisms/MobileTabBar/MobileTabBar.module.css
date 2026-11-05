@@ -89,5 +89,6 @@ button.tab {
 
 /* M9-D851 (WCAG 1.4.10 e 2.4.11): em janela baixa (zoom de 200% a 400%) barra fixa cobre boa parte da tela e do foco; aqui ela passa a acompanhar o fluxo da página. */
 @media (max-height: 520px) {
-  .bar { position: static; }
+  /* O AppShell é uma linha flex (menu + conteúdo): a barra, ao sair de fixed, ocupa a linha de baixo inteira em vez de tirar largura do conteúdo. */
+  .bar { position: static; flex: 0 0 100%; width: 100%; }
 }

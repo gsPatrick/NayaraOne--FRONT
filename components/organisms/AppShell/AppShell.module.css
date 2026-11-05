@@ -25,3 +25,9 @@
 @media (max-width: 900px) {
   .content { padding: var(--space-4); padding-bottom: calc(76px + 76px + env(safe-area-inset-bottom)); /* M9-D851: além da barra de abas (60px), o botão flutuante (52px + 16px) fica sobre o fim da página e cobria o último controle */ }
 }
+
+/* M9-D851 (WCAG 1.4.10): em janela baixa a barra de abas deixa de ser fixa (MobileTabBar) e vai para uma linha própria sob o conteúdo. */
+@media (max-height: 520px) {
+  .shell { flex-wrap: wrap; }
+  .main { flex: 1 1 100%; }
+}
