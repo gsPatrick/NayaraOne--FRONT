@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import Icon from "@/components/atoms/Icon/Icon";
+import { activateModalFocus } from "@/lib/a11y/modalFocus";
 import { SEARCH_INDEX } from "@/app/painel/_search";
 import styles from "./CommandPalette.module.css";
 
@@ -15,6 +16,9 @@ export default function CommandPalette({ open, onClose }) {
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
   const inputRef = useRef(null);
+  const panelRef = useRef(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   useEffect(() => setMounted(true), []);
 
@@ -36,14 +40,16 @@ export default function CommandPalette({ open, onClose }) {
 
   useEffect(() => setActiveIndex(0), [query]);
 
+  // M9-D851: a paleta é um diálogo modal: Tab fica preso nela, Esc fecha e o foco volta a quem estava focado antes de Ctrl/Cmd+K.
+  useEffect(() => {
+    if (!open || !mounted || !panelRef.current) return undefined;
+    return activateModalFocus({ container: panelRef.current, onClose: () => onCloseRef.current?.() });
+  }, [open, mounted]);
+
   useEffect(() => {
     if (!open) return undefined;
 
     function onKeyDown(event) {
-      if (event.key === "Escape") {
-        onClose();
-        return;
-      }
       if (event.key === "ArrowDown") {
         event.preventDefault();
         setActiveIndex((i) => Math.min(i + 1, results.length - 1));
@@ -70,7 +76,7 @@ export default function CommandPalette({ open, onClose }) {
 
   return createPortal(
     <div className={styles.backdrop} onMouseDown={onClose}>
-      <div className={styles.panel} onMouseDown={(event) => event.stopPropagation()}>
+      <div className={styles.panel} ref={panelRef} role="dialog" aria-modal="true" aria-label="Busca global" tabIndex={-1} onMouseDown={(event) => event.stopPropagation()}>
         <div className={styles.searchRow}>
           <Icon name="search" size={18} className={styles.searchIcon} />
           <input
