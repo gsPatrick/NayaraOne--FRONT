@@ -7,6 +7,8 @@ import Spinner from "@/components/atoms/Spinner/Spinner";
 import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import SupportCode from "@/components/molecules/SupportCode/SupportCode";
+import LiveAnnouncer from "./LiveAnnouncer";
+import { announcementOf } from "@/lib/asyncState/announce";
 import { UI_STATE, fieldErrorsOf, missingPermissionOf } from "@/lib/asyncState/states";
 import { MESSAGES, genericErrorText, businessMessageOf, safeText } from "@/lib/asyncState/messages";
 import { buildLoginUrl } from "@/lib/auth/returnTo";
@@ -62,7 +64,18 @@ export function StaleLock({ locked, children }) {
  * conteúdo, vazio, erro de validação, acesso negado (nunca vira vazio), sem conexão (com o último dado, marcado "desatualizado"), tentar de novo, sucesso e sessão expirada.
  * `children` pode ser função (recebe o dado) ou nós. Em CONTENT mostra os filhos; nos demais mostra o estado.
  */
-export default function AsyncState({ result, onRetry, children, emptyTitle, emptyDescription, emptyAction, successTitle, loadingLabel, freshOnly, lockStale }) {
+export default function AsyncState(props) {
+  // M9-D851: a região viva fica sempre montada no mesmo lugar (antes do conteúdo) e só o texto muda; o estado visível vem depois.
+  const { result, loadingLabel, emptyTitle, contentAnnouncement } = props;
+  return (
+    <>
+      <LiveAnnouncer text={announcementOf(result, { loadingLabel, emptyTitle, contentAnnouncement })} />
+      <StateView {...props} />
+    </>
+  );
+}
+
+function StateView({ result, onRetry, children, emptyTitle, emptyDescription, emptyAction, successTitle, loadingLabel, freshOnly, lockStale }) {
   const { status, data, error, traceId, stale } = result || {};
   const retry = onRetry || (result && result.retry);
   const body = typeof children === "function" ? children(data) : children;
@@ -72,8 +85,8 @@ export default function AsyncState({ result, onRetry, children, emptyTitle, empt
       // `freshOnly`: telas que editam/gravam não montam o corpo com dado de revisita (cache); esperam o dado fresco.
       if (!freshOnly && data !== null && data !== undefined && !Array.isArray(data)) return <StaleLock locked={lockStale}>{body}</StaleLock>;
       return (
-        <div role="status" aria-busy="true" className={styles.box} data-ui-state={UI_STATE.LOADING}>
-          <Spinner />
+        <div aria-busy="true" className={styles.box} data-ui-state={UI_STATE.LOADING}>
+          <Spinner decorative />
           <p className={styles.text}>{loadingLabel || MESSAGES.loading}</p>
         </div>
       );

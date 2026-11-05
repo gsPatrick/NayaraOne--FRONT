@@ -26,6 +26,7 @@ import { listPeople, listDuplicatePairs, deletePerson, mergePeople } from "@/lib
 import { formatDate } from "@/lib/format";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import { countAnnouncement } from "@/lib/asyncState/announce";
 import styles from "./page.module.css";
 
 
@@ -302,7 +303,7 @@ export default function PessoasPage() {
         <Alert tone="danger" title="Ação não concluída">{actionError}</Alert>
       ) : null}
 
-      <AsyncState result={peopleQuery} loadingLabel="Carregando contatos...">
+      <AsyncState result={peopleQuery} loadingLabel="Carregando contatos…" contentAnnouncement={countAnnouncement(filtered.length, "contato", "contatos")}>
         {() => <Table columns={columns} rows={pageItems} emptyMessage="Nenhum contato encontrado." />}
       </AsyncState>
 
