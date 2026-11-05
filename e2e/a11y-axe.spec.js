@@ -3,8 +3,8 @@
 /**
  * Acessibilidade com navegador (M9-D851 §3.6): @axe-core/playwright nas telas-chave de e2e/a11y-pages.json, COM a regra de contraste
  * (que o axe sem navegador não calcula). Qualquer violação serious ou critical reprova com GOV_A11Y_VIOLATION. Grava o relatório em
- * docs/evidencias/a11y-axe-<data>.json. NÃO FOI EXECUTADO NO MARCO 9 (regra de operação: sem Playwright nesta rodada); o equivalente sem
- * navegador roda no CI em test/m9d851.axe.test.mjs, e a evidência de tela é o roteiro do Claude Browser em docs/a11y-checklist.md.
+ * docs/evidencias/a11y-axe-<data>.json. Executado em 05/11/2026 em Chromium, Firefox e WebKit, nos dois temas (Onyx e Clássico) e com a barra lateral;
+ * o equivalente sem navegador roda no CI em test/m9d851.axe.test.mjs. Medidas extras no relatório: contraste do contorno de foco e do item ativo da barra lateral.
  *
  * Uso: E2E_BASE_URL=http://localhost:3000 E2E_EMAIL=... E2E_PASSWORD=... node e2e/a11y-axe.spec.js   (usuário de teste QA-M9; nunca credencial real;
  * E2E_BASE_URL aponta para a pilha local, com a API local e banco descartável; o padrão é http://localhost:3000)
@@ -64,7 +64,7 @@ async function main() {
   }
   const dir = path.join(__dirname, '..', 'docs', 'evidencias');
   fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(path.join(dir, `a11y-axe-${new Date().toISOString().slice(0, 10)}.json`), JSON.stringify(report, null, 2));
+  fs.writeFileSync(path.join(dir, `a11y-axe-${process.env.E2E_BROWSER && process.env.E2E_BROWSER !== 'chromium' ? process.env.E2E_BROWSER + '-' : ''}${new Date().toISOString().slice(0, 10)}.json`), JSON.stringify(report, null, 2));
   process.exit(failed ? 1 : 0);
 }
 

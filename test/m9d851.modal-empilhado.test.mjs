@@ -25,3 +25,21 @@ test("m9d851 Esc com dois diálogos abertos fecha só o de cima e devolve o foco
   assert.deepEqual(fechados, ["cima", "baixo"]);
   offBaixo();
 });
+
+test("m9d851 Tab dentro do diálogo é conduzido item a item (no Safari o Tab nativo pula botões), com exceção do campo de data", () => {
+  const { window } = dom('<div id="d" role="dialog" tabindex="-1"><button id="a">A</button><button id="b">B</button><input id="dt" type="date"><button id="c">C</button></div>');
+  const { document } = window;
+  const off = activateModalFocus({ container: document.getElementById("d"), onClose: () => {}, doc: document });
+  document.getElementById("a").focus();
+  assert.equal(key(window, document.activeElement, { key: "Tab" }).defaultPrevented, true);
+  assert.equal(document.activeElement.id, "b", "Tab vai ao próximo item mesmo sem ajuda do navegador");
+  key(window, document.activeElement, { key: "Tab" });
+  assert.equal(document.activeElement.id, "dt");
+  assert.equal(key(window, document.activeElement, { key: "Tab" }).defaultPrevented, false, "no campo de data o navegador anda entre dia, mês e ano");
+  document.getElementById("c").focus();
+  key(window, document.activeElement, { key: "Tab" });
+  assert.equal(document.activeElement.id, "a", "no último volta ao primeiro");
+  key(window, document.activeElement, { key: "Tab", shiftKey: true });
+  assert.equal(document.activeElement.id, "c", "Shift+Tab no primeiro vai ao último");
+  off();
+});

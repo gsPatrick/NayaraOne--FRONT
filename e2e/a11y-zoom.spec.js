@@ -10,7 +10,7 @@
  */
 const fs = require('fs');
 const path = require('path');
-const { BASE_URL, abrir, entrar, registro } = require('./_a11y-comum');
+const { BASE_URL, abrir, entrar, registro, TAB, STAB } = require('./_a11y-comum');
 const { reg, estado } = registro('zoom');
 const VIEWPORTS = [
   { nome: 'zoom 200% (640x400)', w: 640, h: 400, fator: 2 },
@@ -72,7 +72,7 @@ async function main() {
         await page.evaluate(() => { document.activeElement && document.activeElement.blur && document.activeElement.blur(); window.scrollTo(0, 0); });
         const vistos = new Set(); const falhas = []; let n = 0;
         for (; n < 80; n += 1) {
-          await page.keyboard.press('Tab'); await assentar(page);
+          await page.keyboard.press(TAB); await assentar(page);
           const p = await page.evaluate(parada);
           if (!p) continue;
           const id = p.nome + '#' + n;

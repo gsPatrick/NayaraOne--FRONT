@@ -7,7 +7,7 @@
  * Reprova (GOV_A11Y_ENTER) se qualquer repetição não navegar em 8 s. O 1º acesso a uma rota no `next dev` compila a rota (segundos): isso aparece como
  * a repetição lenta, não como falha. Uso: E2E_EMAIL=... E2E_PASSWORD=... [N=20] node e2e/a11y-teclado-enter.spec.js (pilha descartável QA-M9).
  */
-const { navegador } = require('./_a11y-comum'); // E2E_BROWSER=chromium|firefox|webkit
+const { navegador, TAB, STAB } = require('./_a11y-comum'); // E2E_BROWSER=chromium|firefox|webkit
 const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
 const N = Number(process.env.N) || 20;
 const ALVOS = [
@@ -39,7 +39,7 @@ async function main() {
         await botao.waitFor({ state: 'visible' });
         if (modo === 'Tab + Enter') {
           await botao.evaluate((el) => { const todos = [...document.querySelectorAll('a[href],button,input,select,textarea,[tabindex]')].filter((e) => !e.disabled && e.tabIndex >= 0); todos[todos.indexOf(el) - 1].focus(); });
-          await page.keyboard.press('Tab');
+          await page.keyboard.press(TAB);
         } else await botao.focus();
         await botao.evaluate((el) => { window.__no = el; });
         await page.waitForTimeout(1200);

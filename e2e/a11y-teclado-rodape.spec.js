@@ -12,7 +12,7 @@
  */
 const fs = require('fs');
 const path = require('path');
-const { navegador } = require('./_a11y-comum'); // E2E_BROWSER=chromium|firefox|webkit
+const { navegador, TAB, STAB } = require('./_a11y-comum'); // E2E_BROWSER=chromium|firefox|webkit
 
 const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
 const VIEWPORTS = [
@@ -70,7 +70,7 @@ async function main() {
       const paradas = [];
       let noChip = 0;
       for (let i = 0; i < 80 && noChip < total; i += 1) {
-        await page.keyboard.press('Tab');
+        await page.keyboard.press(TAB);
         await page.waitForTimeout(150); // rolagem suave (scroll-behavior: smooth) precisa terminar antes de medir
         const ehChip = await page.evaluate(() => document.activeElement.hasAttribute('aria-pressed'));
         if (!ehChip) continue;

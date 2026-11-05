@@ -8,7 +8,7 @@
  * Reprova com GOV_A11Y_MFA. Uso: E2E_EMAIL=... E2E_PASSWORD=... E2E_TOTP_SECRET=... E2E_ZERAR_STEPUP="node ..." node e2e/a11y-mfa-excluir-papel.spec.js
  */
 const { execSync } = require('child_process');
-const { BASE_URL, abrir, entrar, registro } = require('./_a11y-comum');
+const { BASE_URL, abrir, entrar, registro, TAB, STAB } = require('./_a11y-comum');
 const { codigoAgora } = require('./_totp');
 const { reg, estado } = registro('mfa');
 const NOME = 'QA-M9 Papel Teste';
@@ -58,7 +58,7 @@ async function main() {
     reg(/Não foi possível verificar/.test(c.descrito) && !TECNICO.test(c.descrito) && c.descrito.length > 30, `mensagem lida junto do campo: "${c.descrito}"`);
     // Tab preso, Esc fecha e devolve o foco
     let fora = 0;
-    for (let i = 0; i < 8; i += 1) { await page.keyboard.press(i < 4 ? 'Tab' : 'Shift+Tab'); if (!(await estadoCampo(page)).dentro) fora += 1; }
+    for (let i = 0; i < 8; i += 1) { await page.keyboard.press(i < 4 ? TAB : STAB); if (!(await estadoCampo(page)).dentro) fora += 1; }
     reg(fora === 0, `8 Tab/Shift+Tab no modal de MFA: ${fora} vezes com o foco fora do diálogo`);
     await page.keyboard.press('Escape'); await page.waitForTimeout(300);
     const aviso = await page.evaluate(() => { const a = document.activeElement; return { texto: a.innerText.trim().replace(/\s+/g, ' ').slice(0, 120), alerta: !!a.querySelector('[role=alert]') }; });
@@ -83,7 +83,7 @@ async function main() {
     c = await estadoCampo(page);
     reg(c.foco, 'exclusão: o foco entra no campo do código do MFA');
     fora = 0;
-    for (let i = 0; i < 8; i += 1) { await page.keyboard.press(i < 4 ? 'Tab' : 'Shift+Tab'); if (!(await estadoCampo(page)).dentro) fora += 1; }
+    for (let i = 0; i < 8; i += 1) { await page.keyboard.press(i < 4 ? TAB : STAB); if (!(await estadoCampo(page)).dentro) fora += 1; }
     reg(fora === 0, `exclusão: 8 Tab/Shift+Tab no modal de MFA: ${fora} vezes fora`);
     await pedirCodigo(page, '123456');
     await page.waitForSelector('#mfa-modal-erro'); await page.waitForTimeout(400);

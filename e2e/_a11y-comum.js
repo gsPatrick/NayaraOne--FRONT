@@ -47,4 +47,15 @@ async function api() {
   return { post: (c, b, m) => post(c, b, token, m), token };
 }
 
-module.exports = { API_URL, api, BASE_URL, abrir, entrar, registro, navegador };
+// No Safari/WebKit o Tab só passa por campos de texto (preferência "Pressionar Tab para destacar cada item" desligada, que é o padrão); botões e links se alcançam com Option+Tab.
+const webkit = (process.env.E2E_BROWSER || 'chromium') === 'webkit';
+const TAB = webkit ? 'Alt+Tab' : 'Tab';
+const STAB = webkit ? 'Alt+Shift+Tab' : 'Shift+Tab';
+
+/** Intercepta chamadas à API (outra origem): responde a consulta OPTIONS (CORS) na hora e entrega o resto a fn(rota, cabecalhosCors). Necessário no WebKit. */
+async function interceptarApi(page, regex, fn) {
+  const cors = { 'access-control-allow-origin': BASE_URL, 'access-control-allow-headers': '*', 'access-control-allow-methods': '*', 'access-control-allow-credentials': 'true' };
+  await page.route(regex, async (r) => (r.request().method() === 'OPTIONS' ? r.fulfill({ status: 204, headers: cors }) : fn(r, cors)));
+}
+
+module.exports = { interceptarApi, TAB, STAB, API_URL, api, BASE_URL, abrir, entrar, registro, navegador };

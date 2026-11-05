@@ -15,7 +15,7 @@
  */
 const fs = require('fs');
 const path = require('path');
-const { BASE_URL, abrir, entrar, registro, api } = require('./_a11y-comum');
+const { BASE_URL, abrir, entrar, registro, api, interceptarApi } = require('./_a11y-comum');
 const { reg, estado } = registro('arvore');
 const NOME_PAPEL = 'QA-M9 Papel Arvore';
 
@@ -101,13 +101,13 @@ async function main() {
     await page.keyboard.press('Escape'); await page.waitForTimeout(300); await page.keyboard.press('Escape'); await page.waitForTimeout(300);
 
     // Estados aria-live: carregando
-    await page.route(/\/api\/.*people|\/people/, async (r) => { await new Promise((x) => setTimeout(x, 2500)); r.continue().catch(() => {}); });
-    await page.goto(`${BASE_URL}/painel/pessoas`, { waitUntil: 'commit' }); await page.waitForTimeout(1500);
+    await interceptarApi(page, /\/people(\?.*)?$/, async (r) => { await new Promise((x) => setTimeout(x, 6000)); r.continue().catch(() => {}); });
+    await page.goto(`${BASE_URL}/painel/pessoas`, { waitUntil: 'commit' }); await page.waitForSelector('[role=status][aria-busy=true]', { timeout: 5500 }).catch(() => {});
     const vivo = await page.evaluate(() => [...document.querySelectorAll('[role=status],[role=alert],[aria-live]')].map((e) => `${e.getAttribute('role') || 'aria-live=' + e.getAttribute('aria-live')}${e.getAttribute('aria-busy') ? ' busy' : ''}: ${e.textContent.trim().slice(0, 40)}`));
     reg(vivo.some((v) => /Carregando/.test(v)), `carregamento anunciado por região viva: ${JSON.stringify(vivo)}`);
-    await page.waitForTimeout(3000); await page.unrouteAll({ behavior: 'wait' });
+    await page.waitForTimeout(6500); await page.unrouteAll({ behavior: 'wait' });
     // erro de API (503 simulado) vira role=alert com texto em português
-    await page.route(/\/people(\?|$)/, (r) => r.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ success: false, error: { code: 'SERVICE_UNAVAILABLE', message: 'Indisponível', traceId: 'arvore-1' } }) }));
+    await interceptarApi(page, /\/people(\?.*)?$/, (r, cors) => r.fulfill({ status: 503, headers: cors, contentType: 'application/json', body: JSON.stringify({ success: false, error: { code: 'SERVICE_UNAVAILABLE', message: 'Indisponível', traceId: 'arvore-1' } }) }));
     await page.goto(`${BASE_URL}/painel/pessoas`, { waitUntil: 'networkidle' }); await page.waitForTimeout(6000);
     const erro = await page.evaluate(() => [...document.querySelectorAll('[role=alert]')].map((e) => e.textContent.trim().replace(/\s+/g, ' ').slice(0, 120)));
     reg(erro.length >= 1 && erro.every((t) => !/SERVICE_UNAVAILABLE|undefined|null/.test(t)), `erro de carregamento em role=alert: ${JSON.stringify(erro)}`);
