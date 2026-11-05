@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Button from "@/components/atoms/Button/Button";
@@ -24,6 +24,10 @@ export default function PapeisPage() {
   const roles = rolesQuery.data || [];
   const [actionError, setActionError] = useState("");
 
+  // M9-D851: depois de excluir, o botão da linha some e o foco cairia no <body>; o aviso de sucesso (role=status) recebe o foco e é lido.
+  const [deletedName, setDeletedName] = useState("");
+  const deletedRef = useRef(null);
+  useEffect(() => { if (deletedName && deletedRef.current) deletedRef.current.focus(); }, [deletedName]);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [mfaRetryOpen, setMfaRetryOpen] = useState(false);
@@ -32,11 +36,14 @@ export default function PapeisPage() {
   async function handleDelete() {
     setDeleting(true);
     setActionError("");
+    setDeletedName("");
     setMfaSetupNeeded(false);
     try {
+      const removedName = deleteTarget.name;
       await deleteRole(deleteTarget.id);
       setDeleteTarget(null);
       await rolesQuery.reload();
+      setDeletedName(removedName);
     } catch (err) {
       if (err?.code === "MFA_STEP_UP_REQUIRED") {
         setMfaRetryOpen(true);
@@ -97,6 +104,7 @@ export default function PapeisPage() {
       </div>
 
       {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
+      {deletedName ? <div role="status" tabIndex={-1} ref={deletedRef}><Alert tone="success">{`O papel ${deletedName} foi excluído.`}</Alert></div> : null}
       {mfaSetupNeeded ? <MfaSetupRequiredNotice /> : null}
 
       <AsyncState

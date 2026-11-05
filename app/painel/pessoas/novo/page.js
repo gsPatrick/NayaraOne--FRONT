@@ -630,6 +630,8 @@ export default function NovaPessoaPage() {
                   <div className={styles.cepField}>
                     <Input
                       id="p-zip"
+                      aria-describedby="p-zip-msg"
+                      aria-required="true"
                       placeholder="00000-000"
                       error={Boolean(fieldErrors["p-zip"])}
                       value={address.zipCode}

@@ -8,6 +8,7 @@
  * disparar o formulário inválido de /painel/pessoas/novo (sem salvar). Reprova com GOV_A11Y_MODAL. Uso: E2E_EMAIL=... E2E_PASSWORD=... node e2e/a11y-teclado-modal.spec.js
  */
 const { chromium } = require('playwright');
+const { api } = require('./_a11y-comum');
 const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
 const NOME = 'QA-M9 Papel Teste';
 const achados = []; let falhas = 0;
@@ -26,9 +27,11 @@ async function main() {
   await page.fill('input[type=email]', email); await page.fill('input[type=password]', password);
   await page.click('button[type=submit]');
   await page.waitForURL((u) => !u.pathname.includes('/entrar'));
+  let papelId = null; let cliente = null;
   try {
-    // Criar papel exige MFA habilitado (403 "Configuração de segurança necessária") e o admin de teste não tem MFA: o papel é semeado no banco
-    // descartável (insert em core.roles, nome "QA-M9 Papel Teste") antes de rodar o spec.
+    // Criar papel exige MFA: com E2E_TOTP_SECRET o papel é criado pela API (MFA recente pelo TOTP calculado na hora) e removido ao final.
+    // Sem o segredo, o papel "QA-M9 Papel Teste" precisa estar semeado no banco descartável.
+    if (process.env.E2E_TOTP_SECRET) { cliente = await api(); const c = await cliente.post('/roles', { name: NOME, description: 'Teste de teclado', permissionIds: [] }); papelId = c.json.data && c.json.data.id; }
     await page.goto(`${BASE_URL}/painel/papeis`, { waitUntil: 'networkidle' });
     const linha = page.locator('tr', { hasText: NOME });
     reg((await linha.count()) === 1, 'papel de teste semeado aparece na lista');
@@ -68,29 +71,15 @@ async function main() {
     reg(carregando.length > 0, `durante o carregamento há região role=status/aria-busy com texto: ${JSON.stringify(carregando)}`);
     await page.waitForTimeout(3500); await page.unrouteAll({ behavior: 'wait' });
 
-    // Formulário inválido: o wizard só valida no envio; com tudo vazio a API recusa (400) e NADA é salvo.
+    // Formulário inválido: o assistente valida no cliente (nada vai à API) e o foco vai ao resumo de erros (role=alert). Detalhe em a11y-formulario-erros.spec.js.
     await page.goto(`${BASE_URL}/painel/pessoas/novo`, { waitUntil: 'networkidle' });
-    let status = null; page.on('response', (r) => { if (r.request().method() === 'POST' && /\/people$/.test(r.url())) status = r.status(); });
-    for (let i = 0; i < 4; i += 1) {
-      const botao = page.getByRole('button', { name: /Continuar|Criar contato/ });
-      const ultimo = /Criar/.test(await botao.textContent());
-      await botao.focus(); await page.keyboard.press('Enter'); await page.waitForTimeout(1500);
-      if (ultimo) break;
-    }
-    const val = await page.evaluate(() => { const a = document.activeElement; return { foco: (a.className || a.tagName).toString().slice(0, 30), noAviso: !!a.querySelector('[role=alert]') || !!a.closest('[role=alert]'), alertas: [...document.querySelectorAll('[role=alert]')].map((e) => e.textContent.trim().slice(0, 70)) }; });
-    reg(status === 400 && val.noAviso, `envio inválido (POST /people ${status}, nada salvo): o foco vai ao aviso de erro (foco "${val.foco}"), alertas ${JSON.stringify(val.alertas)}`);
+    let posts = 0; page.on('request', (r) => { if (r.method() === 'POST' && /\/people$/.test(r.url())) posts += 1; });
+    const botao = page.getByRole('button', { name: /Continuar/ });
+    await botao.focus(); await page.keyboard.press('Enter'); await page.waitForTimeout(800);
+    const val = await page.evaluate(() => { const a = document.activeElement; return { alerta: a.getAttribute('role') === 'alert', texto: a.innerText.trim().replace(/\s+/g, ' ').slice(0, 90), invalidos: document.querySelectorAll('[aria-invalid=true]').length }; });
+    reg(posts === 0 && val.alerta && val.invalidos === 2, `envio inválido: nada vai à API (${posts} POST), o foco vai ao resumo "${val.texto}" e ${val.invalidos} campos têm aria-invalid`);
   } finally {
-    try {
-      await page.goto(`${BASE_URL}/painel/papeis`, { waitUntil: 'networkidle' });
-      const l = page.locator('tr', { hasText: NOME });
-      if (await l.count()) {
-        await l.getByRole('button', { name: 'Excluir', exact: true }).focus(); await page.keyboard.press('Enter'); await page.waitForSelector('[role=dialog]');
-        await page.getByRole('button', { name: 'Excluir papel' }).focus(); await page.keyboard.press('Enter'); await page.waitForTimeout(2500);
-        const titulo = await page.locator('[role=dialog]').first().getAttribute('aria-label').catch(() => null);
-        console.log(`(info) após confirmar, diálogo aberto: "${titulo}" (excluir papel exige MFA; sem MFA no admin de teste o papel é removido do banco descartável por SQL)`);
-        if (titulo) { await page.keyboard.press('Escape'); await page.waitForTimeout(300); reg((await page.locator('[role=dialog]').count()) === 0, `Esc fecha o diálogo seguinte ("${titulo}")`); }
-      }
-    } catch (e) { reg(false, `limpeza falhou: ${e.message.slice(0, 120)}`); }
+    try { if (cliente && papelId) { const d = await cliente.post(`/roles/${papelId}`, null, 'DELETE'); console.log(`(info) limpeza: papel de teste excluído pela API (${d.status})`); } } catch (e) { reg(false, `limpeza falhou: ${e.message.slice(0, 120)}`); }
     await browser.close();
   }
   if (falhas) console.error('GOV_A11Y_MODAL falha de teclado no modal/atalho/anúncio/erros.');

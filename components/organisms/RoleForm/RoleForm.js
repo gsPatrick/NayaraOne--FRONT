@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Card from "@/components/molecules/Card/Card";
 import Button from "@/components/atoms/Button/Button";
 import Input from "@/components/atoms/Input/Input";
@@ -22,6 +22,9 @@ export default function RoleForm({ mode, role, catalog, onSubmit, onCancel, subm
   );
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
+  // M9-D851: com erro de campo o foco vai ao campo; com erro de envio (API) vai ao aviso (o botão fica desabilitado ao salvar e o foco cairia no <body>).
+  const submitErrorRef = useRef(null);
+  useEffect(() => { if (submitError && submitErrorRef.current) submitErrorRef.current.focus(); }, [submitError]);
 
   const groupedCatalog = groupPermissions(catalog);
 
@@ -57,7 +60,7 @@ export default function RoleForm({ mode, role, catalog, onSubmit, onCancel, subm
     const nextErrors = {};
     if (!name.trim()) nextErrors.name = "Dê um nome para o papel.";
     setErrors(nextErrors);
-    if (Object.keys(nextErrors).length > 0) return;
+    if (Object.keys(nextErrors).length > 0) { document.getElementById("role-name")?.focus(); return; }
 
     // Higiene final: nenhuma permissão de criar/editar/apagar/etc. sobrevive sem o "Ver" do
     // mesmo grupo marcado, mesmo que o papel carregado (edição) já viesse assim de antes.
@@ -90,7 +93,7 @@ export default function RoleForm({ mode, role, catalog, onSubmit, onCancel, subm
         </div>
       ) : null}
 
-      {submitError ? <Alert tone="danger" title="Não foi possível salvar o papel">{submitError}</Alert> : null}
+      {submitError ? <div ref={submitErrorRef} tabIndex={-1}><Alert tone="danger" title="Não foi possível salvar o papel">{submitError}</Alert></div> : null}
 
       <Card title="Dados do papel" className={styles.card}>
         <div className={styles.formGrid}>
@@ -100,7 +103,7 @@ export default function RoleForm({ mode, role, catalog, onSubmit, onCancel, subm
                 id="role-name"
                 value={name}
                 disabled={isSystem}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => { setName(e.target.value); if (errors.name) setErrors({}); }}
                 placeholder="Ex.: Corretor, Gerente Financeiro, Jurídico..."
               />
             </FormField>

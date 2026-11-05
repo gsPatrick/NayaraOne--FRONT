@@ -70,6 +70,12 @@ async function main() {
       await btn.waitFor({ state: 'visible', timeout: 10000 }).catch(() => {});
       const isDisabled = await btn.isDisabled().catch(() => true);
       if (isDisabled) { await page.waitForTimeout(500); i--; continue; }
+      // M9-D851: o assistente valida os campos obrigatórios no cliente (contato e endereço também); preenche o que a etapa atual pedir.
+      const dados = { '#p-contact-value-0': '(11) 90000-0000', '#p-zip': '01001000', '#p-street': 'Rua Teste', '#p-neighborhood': 'Centro', '#p-city': 'Sao Paulo', '#p-state': 'SP' };
+      for (const [seletor, valor] of Object.entries(dados)) {
+        const campo = page.locator(seletor);
+        if ((await campo.count()) && !(await campo.inputValue().catch(() => 'x'))) await campo.fill(valor).catch(() => {});
+      }
       const isLastStep = /criar contato/i.test((await btn.textContent().catch(() => '')) || '');
       await btn.click().catch(() => {});
       // POST /people pode levar bem mais de 1s no ambiente de dev compartilhado sob carga.

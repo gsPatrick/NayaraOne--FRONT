@@ -4,7 +4,7 @@
 // aprovação de risco alto, liquidar lançamento, editar conta bancária). Chama
 // POST /users/me/mfa/verify e só invoca onVerified() se a API confirmar o código — a ação
 // real (chamada de negócio) continua sendo feita pela tela que abriu o modal, nunca aqui.
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Modal from "@/components/organisms/Modal/Modal";
 import Button from "@/components/atoms/Button/Button";
 import Input from "@/components/atoms/Input/Input";
@@ -17,6 +17,12 @@ export default function MfaVerifyModal({ open, onClose, onVerified, actionLabel 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [locked, setLocked] = useState(false);
+
+  // M9-D851: depois de um erro de código o foco volta ao campo (o botão fica desabilitado enquanto verifica e o foco ia ao <body>).
+  const inputRef = useRef(null);
+  // O foco inicial vai ao campo por efeito (não por autoFocus): o efeito do Modal, que guarda o botão que abriu para devolver o foco ao fechar, roda antes deste.
+  useEffect(() => { if (open && inputRef.current) inputRef.current.focus(); }, [open]);
+  useEffect(() => { if (error && !busy && inputRef.current && !locked) inputRef.current.focus(); }, [error, busy, locked]);
 
   function handleClose() {
     setCode("");
@@ -65,19 +71,26 @@ export default function MfaVerifyModal({ open, onClose, onVerified, actionLabel 
         </>
       }
     >
-      <p className={styles.description}>
+      <p className={styles.description} id="mfa-modal-descricao">
         Para {actionLabel}, confirme o código do seu aplicativo autenticador (ou um código de
         recuperação).
       </p>
       {error ? (
-        <Alert tone={locked ? "warning" : "danger"} title={locked ? "Bloqueado temporariamente" : "Não foi possível verificar"}>
-          {error}
-        </Alert>
+        <div id="mfa-modal-erro">
+          <Alert tone={locked ? "warning" : "danger"} title={locked ? "Bloqueado temporariamente" : "Não foi possível verificar"}>
+            {error}
+          </Alert>
+        </div>
       ) : null}
       <Input
+        ref={inputRef}
+        id="mfa-modal-codigo"
+        aria-label="Código do aplicativo autenticador"
+        aria-describedby={error ? "mfa-modal-descricao mfa-modal-erro" : "mfa-modal-descricao"}
+        error={Boolean(error) && !locked}
+        autoComplete="one-time-code"
         className={styles.codeInput}
         inputMode="numeric"
-        autoFocus
         placeholder="000000"
         maxLength={11}
         value={code}
