@@ -59,6 +59,9 @@ export default function NovaPessoaPage() {
   const [submitting, setSubmitting] = useState(false);
   const [duplicateError, setDuplicateError] = useState("");
   const [submitError, setSubmitError] = useState("");
+  // M9-D851: o botão de envio fica desabilitado enquanto salva e o foco cai no <body>; ao aparecer o erro (duplicado ou da API), o foco vai ao aviso.
+  const errorRef = useRef(null);
+  useEffect(() => { if ((submitError || duplicateError) && errorRef.current) errorRef.current.focus(); }, [submitError, duplicateError]);
   const [existingPeople, setExistingPeople] = useState([]);
   const [availableProperties, setAvailableProperties] = useState([]);
 
@@ -335,7 +338,7 @@ export default function NovaPessoaPage() {
             {step.id === "basico" ? (
               <div className={styles.formGrid}>
                 {duplicateError ? (
-                  <div className={styles.span2}>
+                  <div className={styles.span2} ref={errorRef} tabIndex={-1}>
                     <Alert tone="danger" title="Cadastro duplicado (409)">{duplicateError}</Alert>
                   </div>
                 ) : null}
@@ -634,7 +637,7 @@ export default function NovaPessoaPage() {
             {step.id === "revisao" ? (
               <div className={styles.reviewWrap}>
                 {submitError ? (
-                  <div className={styles.reviewSection}>
+                  <div className={styles.reviewSection} ref={errorRef} tabIndex={-1}>
                     <Alert tone="danger" title="Não foi possível cadastrar o contato">{submitError}</Alert>
                   </div>
                 ) : null}
