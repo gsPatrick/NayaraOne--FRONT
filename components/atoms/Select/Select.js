@@ -11,7 +11,7 @@ export default function Select({ error = false, className = "", style, children,
   // colapsavam a poucos pixels). `style` agora vai pro `.wrap`, igual já acontecia com `className`.
   return (
     <div className={[styles.wrap, error ? styles.error : "", className].filter(Boolean).join(" ")} style={style}>
-      <select className={styles.select} {...rest}>
+      <select className={styles.select} {...(error ? { "aria-invalid": true } : {})} {...rest}>
         {children}
       </select>
       <svg className={styles.chevron} viewBox="0 0 12 8" aria-hidden="true">

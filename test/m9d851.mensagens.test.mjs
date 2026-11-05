@@ -7,6 +7,8 @@ import { plainMessageProblems } from "@/lib/a11y/plainMessage.js";
 import { MESSAGES, genericErrorText } from "@/lib/asyncState/messages.js";
 import { lookupProblemText } from "@/components/molecules/AsyncState/LookupProblems.js";
 import { SESSION_EXPIRED_TEXT } from "@/lib/auth/returnTo.js";
+import { humanizeApiError, humanizeMessage } from "@/lib/errors/apiErrors.js";
+import { validatePersonStep, PERSON_FIELD_IDS } from "@/lib/errors/personWizard.js";
 
 const require = createRequire(import.meta.url);
 const { walk, errorLiterals } = require("../scripts/a11yStatic.js");
@@ -20,6 +22,12 @@ test("m9d851 mensagens de erro de campo em linguagem simples", () => {
   assert.ok(plainMessageProblems("Failed to fetch").length >= 1);
   assert.ok(plainMessageProblems("TypeError: undefined is not a function").length >= 1);
   assert.ok(plainMessageProblems("x").includes("curta demais para dizer o que houve"));
+  // Ampliado (05/11/2026): erro de campo do assistente de pessoa e mensagem da API traduzida nunca trazem nome interno de campo nem aspas.
+  const vazio = { basic: { personType: "PF", legalName: "", taxIdNormalized: "" }, contacts: [{ value: "" }], address: { zipCode: "", street: "", neighborhood: "", city: "", state: "" } };
+  const campos = ["basico", "contatos", "endereco"].flatMap((id) => Object.values(validatePersonStep(id, vazio)));
+  const api = [humanizeMessage('Os campos "groupId", "companyId" e "legalName" são obrigatórios.'), ...Object.values(humanizeApiError({ code: "PERSON_DOCUMENT_INVALID_FORMAT", message: "x" }, PERSON_FIELD_IDS).fields)];
+  assert.ok(campos.length >= 8);
+  for (const text of [...campos, ...api]) { assert.deepEqual(plainMessageProblems(text), [], text); assert.doesNotMatch(text, /"|groupId|companyId|legalName|taxIdNormalized/, text); assert.match(text, /^(Informe|Preencha|Confira)/, text); }
 });
 
 test("m9d851 as mensagens do padrão de estados e do login seguem o formato o que houve e o que fazer", () => {

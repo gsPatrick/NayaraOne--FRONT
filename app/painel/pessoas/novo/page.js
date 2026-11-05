@@ -13,6 +13,10 @@ import Badge from "@/components/atoms/Badge/Badge";
 import Spinner from "@/components/atoms/Spinner/Spinner";
 import FormField from "@/components/molecules/FormField/FormField";
 import Alert from "@/components/molecules/Alert/Alert";
+import ErrorSummary from "@/components/molecules/ErrorSummary/ErrorSummary";
+import { humanizeApiError } from "@/lib/errors/apiErrors";
+import { FIELD_LABELS } from "@/lib/errors/fieldLabels";
+import { validatePersonStep, PERSON_FIELD_IDS, PERSON_FIELD_STEP } from "@/lib/errors/personWizard";
 import LocationPicker from "@/components/molecules/LocationPicker/LocationPicker";
 import PhotoUpload from "@/components/molecules/PhotoUpload/PhotoUpload";
 import Avatar from "@/components/atoms/Avatar/Avatar";
@@ -52,6 +56,12 @@ const EMPTY_CONTACT = { type: "PHONE", value: "", primary: false, consentStatus:
 // (fileId precisa ser um UUID real de um File já existente). Agora usa upload real.
 const EMPTY_DOCUMENT = { type: "RG", fileId: "", fileName: "", uploading: false, uploadError: "", verificationStatus: "PENDING" };
 
+const ERROR_LABELS = {
+  "p-name": FIELD_LABELS.legalName, "p-doc": FIELD_LABELS.taxIdNormalized, "p-birth": FIELD_LABELS.birthOrFoundationDate,
+  "p-contact-value-0": "Contato", "p-zip": FIELD_LABELS.zipCode, "p-street": FIELD_LABELS.street,
+  "p-neighborhood": FIELD_LABELS.neighborhood, "p-city": FIELD_LABELS.city, "p-state": FIELD_LABELS.state,
+};
+
 export default function NovaPessoaPage() {
   const router = useRouter();
   const { confirm, ConfirmDialog } = useConfirm();
@@ -62,6 +72,13 @@ export default function NovaPessoaPage() {
   // M9-D851: o botão de envio fica desabilitado enquanto salva e o foco cai no <body>; ao aparecer o erro (duplicado ou da API), o foco vai ao aviso.
   const errorRef = useRef(null);
   useEffect(() => { if ((submitError || duplicateError) && errorRef.current) errorRef.current.focus(); }, [submitError, duplicateError]);
+  // M9-D851: erros por campo (id do campo -> mensagem). O resumo no topo recebe o foco a cada tentativa de avançar/enviar com erro.
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [attempt, setAttempt] = useState(0);
+  const summaryRef = useRef(null);
+  useEffect(() => { if (attempt > 0 && summaryRef.current) summaryRef.current.focus(); }, [attempt]);
+  function showErrors(errors) { setFieldErrors(errors); setAttempt((n) => n + 1); }
+  function clearError(id) { setFieldErrors((prev) => { if (!prev[id]) return prev; const next = { ...prev }; delete next[id]; return next; }); }
   const [existingPeople, setExistingPeople] = useState([]);
   const [availableProperties, setAvailableProperties] = useState([]);
 
@@ -229,6 +246,18 @@ export default function NovaPessoaPage() {
   }
 
   async function goNext() {
+    const formData = { basic, contacts, address };
+    if (!isLast) {
+      const errors = validatePersonStep(step.id, formData);
+      if (Object.keys(errors).length) { showErrors(errors); return; }
+    } else {
+      // Envio: confere de novo todas as etapas e leva a pessoa à primeira que tem erro.
+      for (const s of STEPS) {
+        const errors = validatePersonStep(s.id, formData);
+        if (Object.keys(errors).length) { setStepIndex(STEPS.findIndex((x) => x.id === s.id)); showErrors(errors); return; }
+      }
+    }
+    setFieldErrors({});
     if (step.id === "basico") {
       const digits = basic.taxIdNormalized.replace(/\D/g, "");
       const conflict = existingPeople.find((p) => (p.taxIdRaw || "").replace(/\D/g, "") === digits && digits.length > 0);
@@ -309,7 +338,15 @@ export default function NovaPessoaPage() {
         }
         router.push("/painel/pessoas");
       } catch (err) {
-        setSubmitError(err?.message || "Não foi possível cadastrar o contato.");
+        // Mensagem da API em linguagem simples e, quando ela aponta campos, o erro vai ao campo certo (nunca nome interno de campo).
+        const human = humanizeApiError(err, PERSON_FIELD_IDS);
+        const ids = Object.keys(human.fields);
+        if (ids.length) {
+          setStepIndex(Math.max(0, STEPS.findIndex((x) => x.id === PERSON_FIELD_STEP[ids[0]])));
+          showErrors(human.fields);
+        } else {
+          setSubmitError(human.message || "Não foi possível cadastrar o contato. Confira os dados e tente de novo.");
+        }
         setSubmitting(false);
       }
       return;
@@ -318,12 +355,15 @@ export default function NovaPessoaPage() {
   }
 
   function goBack() {
+    setFieldErrors({});
     if (isFirst) {
       router.push("/painel/pessoas");
       return;
     }
     setStepIndex((i) => Math.max(i - 1, 0));
   }
+
+  const summaryItems = Object.entries(fieldErrors).map(([id, message]) => ({ id, message, label: ERROR_LABELS[id] || "Campo" }));
 
   return (
     <AppShell title="Novo contato" backHref="/painel/pessoas">
@@ -334,12 +374,13 @@ export default function NovaPessoaPage() {
             <StepHeader steps={STEPS} activeIndex={stepIndex} completion={stepCompletion} />
           </div>
 
+          <ErrorSummary ref={summaryRef} items={summaryItems} />
           <Card className={styles.card}>
             {step.id === "basico" ? (
               <div className={styles.formGrid}>
                 {duplicateError ? (
                   <div className={styles.span2} ref={errorRef} tabIndex={-1}>
-                    <Alert tone="danger" title="Cadastro duplicado (409)">{duplicateError}</Alert>
+                    <Alert tone="danger" title="Cadastro duplicado">{duplicateError}</Alert>
                   </div>
                 ) : null}
                 <div className={styles.span2}>
@@ -377,12 +418,13 @@ export default function NovaPessoaPage() {
                   />
                 </FormField>
                 <div className={styles.span2}>
-                  <FormField label="Nome / Razão social" htmlFor="p-name" required>
+                  <FormField label="Nome / Razão social" htmlFor="p-name" required error={fieldErrors["p-name"]}>
                     <Input
                       id="p-name"
                       placeholder="Nome completo ou razão social"
+                      error={Boolean(fieldErrors["p-name"])}
                       value={basic.legalName}
-                      onChange={(e) => setBasic({ ...basic, legalName: e.target.value })}
+                      onChange={(e) => { clearError("p-name"); setBasic({ ...basic, legalName: e.target.value }); }}
                     />
                   </FormField>
                 </div>
@@ -398,12 +440,13 @@ export default function NovaPessoaPage() {
                     onChange={(e) => setBasic({ ...basic, preferredName: e.target.value })}
                   />
                 </FormField>
-                <FormField label={basic.personType === "PJ" ? "CNPJ" : "CPF"} htmlFor="p-doc" required>
+                <FormField label={basic.personType === "PJ" ? "CNPJ" : "CPF"} htmlFor="p-doc" required error={fieldErrors["p-doc"]}>
                   <Input
                     id="p-doc"
                     placeholder={basic.personType === "PJ" ? "00.000.000/0000-00" : "000.000.000-00"}
+                    error={Boolean(fieldErrors["p-doc"])}
                     value={basic.taxIdNormalized}
-                    onChange={(e) => setBasic({ ...basic, taxIdNormalized: formatTaxId(e.target.value, basic.personType) })}
+                    onChange={(e) => { clearError("p-doc"); setBasic({ ...basic, taxIdNormalized: formatTaxId(e.target.value, basic.personType) }); }}
                   />
                 </FormField>
                 <div className={styles.span2}>
@@ -502,12 +545,13 @@ export default function NovaPessoaPage() {
                             ))}
                           </Select>
                         </FormField>
-                        <FormField label="Valor" htmlFor={`p-contact-value-${index}`} required>
+                        <FormField label="Valor" htmlFor={`p-contact-value-${index}`} required error={fieldErrors[`p-contact-value-${index}`]}>
                           <Input
                             id={`p-contact-value-${index}`}
                             placeholder={contact.type === "EMAIL" ? "nome@email.com" : "(11) 90000-0000"}
+                            error={Boolean(fieldErrors[`p-contact-value-${index}`])}
                             value={contact.value}
-                            onChange={(e) => updateContact(index, "value", e.target.value)}
+                            onChange={(e) => { clearError("p-contact-value-0"); updateContact(index, "value", e.target.value); }}
                           />
                         </FormField>
                         <label className={styles.primaryToggle}>
@@ -582,24 +626,25 @@ export default function NovaPessoaPage() {
 
             {step.id === "endereco" ? (
               <div className={styles.formGrid}>
-                <FormField label="CEP" htmlFor="p-zip" required helper={cepMessage || "Digite o CEP para preencher o endereço automaticamente."}>
+                <FormField label="CEP" htmlFor="p-zip" required error={fieldErrors["p-zip"]} helper={cepMessage || "Digite o CEP para preencher o endereço automaticamente."}>
                   <div className={styles.cepField}>
                     <Input
                       id="p-zip"
                       placeholder="00000-000"
+                      error={Boolean(fieldErrors["p-zip"])}
                       value={address.zipCode}
-                      onChange={(e) => handleCepChange(e.target.value)}
+                      onChange={(e) => { clearError("p-zip"); handleCepChange(e.target.value); }}
                       onBlur={(e) => handleCepBlur(e.target.value)}
                     />
                     {cepLoading ? <Spinner size="sm" className={styles.cepSpinner} /> : null}
                   </div>
                 </FormField>
-                <FormField label="Cidade" htmlFor="p-city" required>
-                  <Input id="p-city" placeholder="Preenchida pelo CEP" value={address.city} onChange={(e) => setAddress({ ...address, city: e.target.value })} />
+                <FormField label="Cidade" htmlFor="p-city" required error={fieldErrors["p-city"]}>
+                  <Input id="p-city" error={Boolean(fieldErrors["p-city"])} placeholder="Preenchida pelo CEP" value={address.city} onChange={(e) => { clearError("p-city"); setAddress({ ...address, city: e.target.value }); }} />
                 </FormField>
                 <div className={styles.span2}>
-                  <FormField label="Logradouro" htmlFor="p-street" required>
-                    <Input id="p-street" value={address.street} onChange={(e) => setAddress({ ...address, street: e.target.value })} />
+                  <FormField label="Logradouro" htmlFor="p-street" required error={fieldErrors["p-street"]}>
+                    <Input id="p-street" error={Boolean(fieldErrors["p-street"])} value={address.street} onChange={(e) => { clearError("p-street"); setAddress({ ...address, street: e.target.value }); }} />
                   </FormField>
                 </div>
                 <FormField label="Número" htmlFor="p-number">
@@ -608,11 +653,11 @@ export default function NovaPessoaPage() {
                 <FormField label="Complemento" htmlFor="p-complement">
                   <Input id="p-complement" value={address.complement} onChange={(e) => setAddress({ ...address, complement: e.target.value })} />
                 </FormField>
-                <FormField label="Bairro" htmlFor="p-neighborhood" required>
-                  <Input id="p-neighborhood" value={address.neighborhood} onChange={(e) => setAddress({ ...address, neighborhood: e.target.value })} />
+                <FormField label="Bairro" htmlFor="p-neighborhood" required error={fieldErrors["p-neighborhood"]}>
+                  <Input id="p-neighborhood" error={Boolean(fieldErrors["p-neighborhood"])} value={address.neighborhood} onChange={(e) => { clearError("p-neighborhood"); setAddress({ ...address, neighborhood: e.target.value }); }} />
                 </FormField>
-                <FormField label="UF" htmlFor="p-state" required>
-                  <Input id="p-state" maxLength={2} placeholder="SP" value={address.state} onChange={(e) => setAddress({ ...address, state: e.target.value.toUpperCase() })} />
+                <FormField label="UF" htmlFor="p-state" required error={fieldErrors["p-state"]}>
+                  <Input id="p-state" error={Boolean(fieldErrors["p-state"])} maxLength={2} placeholder="SP" value={address.state} onChange={(e) => { clearError("p-state"); setAddress({ ...address, state: e.target.value.toUpperCase() }); }} />
                 </FormField>
                 <div className={styles.span2}>
                   <FormField label="Geolocalização" helper="O mapa segue o endereço digitado — clique nele para marcar o ponto exato, se precisar ajustar.">
