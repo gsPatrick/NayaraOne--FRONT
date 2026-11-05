@@ -8,6 +8,7 @@ import { useAsyncState, invalidateAsyncCache } from "@/lib/asyncState/useAsyncSt
 import RoleForm from "@/components/organisms/RoleForm/RoleForm";
 import MfaVerifyModal from "@/components/organisms/MfaVerifyModal/MfaVerifyModal";
 import MfaSetupRequiredNotice from "@/components/molecules/MfaSetupRequiredNotice/MfaSetupRequiredNotice";
+import { isMfaSetupRequired } from "@/lib/errors/mfaSetup";
 import { getRole, updateRole, listPermissionsCatalog } from "@/lib/api/roles";
 import styles from "../page.module.css";
 
@@ -37,7 +38,7 @@ export default function EditarPapelPage({ params }) {
         setPendingPayload(payload);
         return;
       }
-      if (err?.code === "MFA_REQUIRED_NOT_ENABLED") {
+      if (isMfaSetupRequired(err)) {
         setMfaSetupNeeded(true);
         return;
       }
@@ -50,7 +51,7 @@ export default function EditarPapelPage({ params }) {
       <div className={styles.formWrap}>
         <AsyncState result={roleQuery} loadingLabel="Carregando papel..." freshOnly>
           <>
-            {mfaSetupNeeded ? <MfaSetupRequiredNotice /> : null}
+            {mfaSetupNeeded ? <MfaSetupRequiredNotice onDismiss={() => setMfaSetupNeeded(false)} /> : null}
             <RoleForm
               key={`${params.id}-${roleQuery.fetchedAt}`}
               mode="edit"

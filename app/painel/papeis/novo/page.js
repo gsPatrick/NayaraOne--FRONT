@@ -8,6 +8,7 @@ import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import RoleForm from "@/components/organisms/RoleForm/RoleForm";
 import MfaVerifyModal from "@/components/organisms/MfaVerifyModal/MfaVerifyModal";
 import MfaSetupRequiredNotice from "@/components/molecules/MfaSetupRequiredNotice/MfaSetupRequiredNotice";
+import { isMfaSetupRequired } from "@/lib/errors/mfaSetup";
 import { createRole, listPermissionsCatalog } from "@/lib/api/roles";
 import styles from "../page.module.css";
 
@@ -34,7 +35,7 @@ export default function NovoPapelPage() {
         setPendingPayload(payload);
         return;
       }
-      if (err?.code === "MFA_REQUIRED_NOT_ENABLED") {
+      if (isMfaSetupRequired(err)) {
         setMfaSetupNeeded(true);
         return;
       }
@@ -45,7 +46,7 @@ export default function NovoPapelPage() {
   return (
     <AppShell title="Novo papel" backHref="/painel/papeis">
       <div className={styles.formWrap}>
-        {mfaSetupNeeded ? <MfaSetupRequiredNotice /> : null}
+        {mfaSetupNeeded ? <MfaSetupRequiredNotice onDismiss={() => setMfaSetupNeeded(false)} /> : null}
         <AsyncState result={catalogQuery} loadingLabel="Carregando catálogo de permissões...">
           <RoleForm
             mode="create"

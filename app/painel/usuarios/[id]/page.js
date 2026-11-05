@@ -17,6 +17,7 @@ import Input from "@/components/atoms/Input/Input";
 import FormField from "@/components/molecules/FormField/FormField";
 import MfaVerifyModal from "@/components/organisms/MfaVerifyModal/MfaVerifyModal";
 import MfaSetupRequiredNotice from "@/components/molecules/MfaSetupRequiredNotice/MfaSetupRequiredNotice";
+import { isMfaSetupRequired } from "@/lib/errors/mfaSetup";
 import { apiFetch } from "@/lib/api/client";
 import { listProperties } from "@/lib/api/properties";
 import { listRoles } from "@/lib/api/roles";
@@ -146,7 +147,7 @@ export default function UserDetailPage({ params }) {
         setPendingMfaAction("assign");
         return;
       }
-      if (err?.code === "MFA_REQUIRED_NOT_ENABLED") {
+      if (isMfaSetupRequired(err)) {
         setMfaSetupNeeded(true);
         return;
       }
@@ -178,7 +179,7 @@ export default function UserDetailPage({ params }) {
         setPendingMfaAction("setPassword");
         return;
       }
-      if (err?.code === "MFA_REQUIRED_NOT_ENABLED") {
+      if (isMfaSetupRequired(err)) {
         setPasswordModalOpen(false);
         setMfaSetupNeeded(true);
         return;
@@ -201,7 +202,7 @@ export default function UserDetailPage({ params }) {
         setPendingMfaAction({ revoke: membershipId });
         return;
       }
-      if (err?.code === "MFA_REQUIRED_NOT_ENABLED") {
+      if (isMfaSetupRequired(err)) {
         setMfaSetupNeeded(true);
         return;
       }
@@ -264,7 +265,7 @@ export default function UserDetailPage({ params }) {
         </div>
 
         {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
-        {mfaSetupNeeded ? <MfaSetupRequiredNotice /> : null}
+        {mfaSetupNeeded ? <MfaSetupRequiredNotice onDismiss={() => setMfaSetupNeeded(false)} /> : null}
 
         <div className={styles.grid}>
           <div className={styles.mainCol}>

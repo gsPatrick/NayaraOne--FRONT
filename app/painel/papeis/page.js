@@ -13,6 +13,7 @@ import Modal from "@/components/organisms/Modal/Modal";
 import RowActions from "@/components/molecules/RowActions/RowActions";
 import MfaVerifyModal from "@/components/organisms/MfaVerifyModal/MfaVerifyModal";
 import MfaSetupRequiredNotice from "@/components/molecules/MfaSetupRequiredNotice/MfaSetupRequiredNotice";
+import { isMfaSetupRequired } from "@/lib/errors/mfaSetup";
 import { listRoles, deleteRole } from "@/lib/api/roles";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import styles from "./page.module.css";
@@ -49,7 +50,9 @@ export default function PapeisPage() {
         setMfaRetryOpen(true);
         return;
       }
-      if (err?.code === "MFA_REQUIRED_NOT_ENABLED") {
+      if (isMfaSetupRequired(err)) {
+        // Fecha a confirmação: o aviso fica na página, recebe o foco e "Fechar aviso" devolve o foco à lista.
+        setDeleteTarget(null);
         setMfaSetupNeeded(true);
         return;
       }
@@ -105,7 +108,7 @@ export default function PapeisPage() {
 
       {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
       {deletedName ? <div role="status" tabIndex={-1} ref={deletedRef}><Alert tone="success">{`O papel ${deletedName} foi excluído.`}</Alert></div> : null}
-      {mfaSetupNeeded ? <MfaSetupRequiredNotice /> : null}
+      {mfaSetupNeeded ? <MfaSetupRequiredNotice onDismiss={() => setMfaSetupNeeded(false)} /> : null}
 
       <AsyncState
         result={rolesQuery}
