@@ -163,7 +163,7 @@ export default function RoleForm({ mode, role, catalog, onSubmit, onCancel, subm
                         disabled={isSystem}
                         onChange={() => togglePermission(readPermission.id, group)}
                       />
-                      {actionLabel(permissionActionKey(readPermission.code))}
+                      {actionLabel(permissionActionKey(readPermission.code), readPermission.code)}
                     </label>
                   ) : null}
                   {otherPermissions.map((permission) => (
@@ -183,7 +183,7 @@ export default function RoleForm({ mode, role, catalog, onSubmit, onCancel, subm
                         disabled={isSystem || !readChecked}
                         onChange={() => togglePermission(permission.id, group)}
                       />
-                      {actionLabel(permissionActionKey(permission.code))}
+                      {actionLabel(permissionActionKey(permission.code), permission.code)}
                     </label>
                   ))}
                 </div>
