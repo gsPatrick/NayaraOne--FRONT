@@ -1,0 +1,92 @@
+[
+  {
+    "pagina": "Login [onyx]",
+    "path": "/entrar",
+    "violacoes": []
+  },
+  {
+    "pagina": "Login (formulário da equipe) [onyx]",
+    "path": "/entrar",
+    "violacoes": []
+  },
+  {
+    "pagina": "Painel inicial [onyx]",
+    "path": "/painel",
+    "violacoes": []
+  },
+  {
+    "pagina": "Lista de pessoas [onyx]",
+    "path": "/painel/pessoas",
+    "violacoes": []
+  },
+  {
+    "pagina": "Formulário de nova pessoa [onyx]",
+    "path": "/painel/pessoas/novo",
+    "violacoes": []
+  },
+  {
+    "pagina": "Papéis [onyx]",
+    "path": "/painel/papeis",
+    "violacoes": []
+  },
+  {
+    "pagina": "Barra lateral, foco e item ativo [onyx]",
+    "path": "/painel",
+    "violacoes": [],
+    "medidas": {
+      "anel": "rgb(253, 252, 250)",
+      "larg": "2px",
+      "estilo": "solid",
+      "fundo": "rgb(13, 13, 13)",
+      "ativoCor": "rgb(13, 13, 13)",
+      "ativoFundo": "rgb(255, 255, 255)",
+      "contrasteFoco": 18.96,
+      "contrasteAtivo": 19.44
+    }
+  },
+  {
+    "pagina": "Login [classico]",
+    "path": "/entrar",
+    "violacoes": []
+  },
+  {
+    "pagina": "Login (formulário da equipe) [classico]",
+    "path": "/entrar",
+    "violacoes": []
+  },
+  {
+    "pagina": "Painel inicial [classico]",
+    "path": "/painel",
+    "violacoes": []
+  },
+  {
+    "pagina": "Lista de pessoas [classico]",
+    "path": "/painel/pessoas",
+    "violacoes": []
+  },
+  {
+    "pagina": "Formulário de nova pessoa [classico]",
+    "path": "/painel/pessoas/novo",
+    "violacoes": []
+  },
+  {
+    "pagina": "Papéis [classico]",
+    "path": "/painel/papeis",
+    "violacoes": []
+  },
+  {
+    "pagina": "Barra lateral, foco e item ativo [classico]",
+    "path": "/painel",
+    "violacoes": [],
+    "medidas": {
+      "anel": "rgb(23, 19, 15)",
+      "larg": "2px",
+      "estilo": "solid",
+      "fundo": "rgb(255, 255, 255)",
+      "ativoCor": "rgb(138, 102, 32)",
+      "ativoFundo": "rgba(190, 145, 48, 0.12)",
+      "contrasteFoco": 18.48,
+      "contrasteAtivo": 4.7
+    }
+  }
+]

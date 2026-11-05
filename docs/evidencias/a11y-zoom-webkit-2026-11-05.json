@@ -1,0 +1,167 @@
+[
+  {
+    "viewport": "zoom 200% (640x400)",
+    "rota": "/entrar",
+    "vw": 640,
+    "rolagem": 640,
+    "larguraMain": 640,
+    "passam": [],
+    "cortados": [],
+    "paradas": 80,
+    "falhasFoco": []
+  },
+  {
+    "viewport": "zoom 200% (640x400)",
+    "rota": "/painel",
+    "vw": 640,
+    "rolagem": 640,
+    "larguraMain": 640,
+    "passam": [],
+    "cortados": [],
+    "paradas": 80,
+    "falhasFoco": []
+  },
+  {
+    "viewport": "zoom 200% (640x400)",
+    "rota": "/painel/pessoas",
+    "vw": 640,
+    "rolagem": 640,
+    "larguraMain": 640,
+    "passam": [],
+    "cortados": [],
+    "paradas": 80,
+    "falhasFoco": []
+  },
+  {
+    "viewport": "zoom 200% (640x400)",
+    "rota": "/painel/pessoas/novo",
+    "vw": 640,
+    "rolagem": 640,
+    "larguraMain": 640,
+    "passam": [],
+    "cortados": [],
+    "paradas": 80,
+    "falhasFoco": []
+  },
+  {
+    "viewport": "zoom 200% (640x400)",
+    "rota": "/painel/papeis",
+    "vw": 640,
+    "rolagem": 640,
+    "larguraMain": 640,
+    "passam": [],
+    "cortados": [],
+    "paradas": 80,
+    "falhasFoco": []
+  },
+  {
+    "viewport": "zoom 400% (320x256)",
+    "rota": "/entrar",
+    "vw": 320,
+    "rolagem": 320,
+    "larguraMain": 320,
+    "passam": [],
+    "cortados": [],
+    "paradas": 80,
+    "falhasFoco": []
+  },
+  {
+    "viewport": "zoom 400% (320x256)",
+    "rota": "/painel",
+    "vw": 320,
+    "rolagem": 320,
+    "larguraMain": 320,
+    "passam": [],
+    "cortados": [],
+    "paradas": 80,
+    "falhasFoco": []
+  },
+  {
+    "viewport": "zoom 400% (320x256)",
+    "rota": "/painel/pessoas",
+    "vw": 320,
+    "rolagem": 320,
+    "larguraMain": 320,
+    "passam": [],
+    "cortados": [],
+    "paradas": 80,
+    "falhasFoco": []
+  },
+  {
+    "viewport": "zoom 400% (320x256)",
+    "rota": "/painel/pessoas/novo",
+    "vw": 320,
+    "rolagem": 320,
+    "larguraMain": 320,
+    "passam": [],
+    "cortados": [],
+    "paradas": 80,
+    "falhasFoco": []
+  },
+  {
+    "viewport": "zoom 400% (320x256)",
+    "rota": "/painel/papeis",
+    "vw": 320,
+    "rolagem": 320,
+    "larguraMain": 320,
+    "passam": [],
+    "cortados": [],
+    "paradas": 80,
+    "falhasFoco": []
+  },
+  {
+    "viewport": "reflow 320x568",
+    "rota": "/entrar",
+    "vw": 320,
+    "rolagem": 320,
+    "larguraMain": 320,
+    "passam": [],
+    "cortados": [],
+    "paradas": 80,
+    "falhasFoco": []
+  },
+  {
+    "viewport": "reflow 320x568",
+    "rota": "/painel",
+    "vw": 320,
+    "rolagem": 320,
+    "larguraMain": 320,
+    "passam": [],
+    "cortados": [],
+    "paradas": 80,
+    "falhasFoco": []
+  },
+  {
+    "viewport": "reflow 320x568",
+    "rota": "/painel/pessoas",
+    "vw": 320,
+    "rolagem": 320,
+    "larguraMain": 320,
+    "passam": [],
+    "cortados": [],
+    "paradas": 80,
+    "falhasFoco": []
+  },
+  {
+    "viewport": "reflow 320x568",
+    "rota": "/painel/pessoas/novo",
+    "vw": 320,
+    "rolagem": 320,
+    "larguraMain": 320,
+    "passam": [],
+    "cortados": [],
+    "paradas": 80,
+    "falhasFoco": []
+  },
+  {
+    "viewport": "reflow 320x568",
+    "rota": "/painel/papeis",
+    "vw": 320,
+    "rolagem": 320,
+    "larguraMain": 320,
+    "passam": [],
+    "cortados": [],
+    "paradas": 80,
+    "falhasFoco": []
+  }
+]

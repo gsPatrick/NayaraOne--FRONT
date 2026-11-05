@@ -1,0 +1,161 @@
+##### webkit a11y-formulario-erros
+[OK ] etapa 1 vazia: o foco vai ao resumo de erros (role=alert) com 2 itens: "Há 2 campos para corrigir Nome ou razão social: Informe o nome completo da pessoa. CPF ou CNPJ: Informe o CPF, só com números."
+[OK ] resumo sem texto técnico
+[OK ] #p-name (Nome / Razão social *): aria-invalid=true, mensagem lida pelo aria-describedby: "Informe o nome completo da pessoa."
+[OK ] #p-doc (CPF *): aria-invalid=true, mensagem lida pelo aria-describedby: "Informe o CPF, só com números."
+[OK ] Enter no 1º item do resumo leva o foco ao campo "Nome / Razão social"
+[OK ] ao digitar o nome, o aria-invalid do campo some
+[OK ] CPF incompleto: "Informe o CPF com 11 dígitos."
+[OK ] com o CPF completo avança para a etapa 2 e o resumo some
+[OK ] etapa 2 sem contato: foco no resumo; campo Valor com aria-invalid e "Informe pelo menos um telefone ou e-mail de contato."
+[OK ] etapa 3 vazia: resumo com 5 itens
+[OK ] #p-zip: aria-invalid=true, "Informe o CEP com 8 dígitos."
+[OK ] #p-street: aria-invalid=true, "Informe o logradouro (rua, avenida...)."
+[OK ] #p-neighborhood: aria-invalid=true, "Informe o bairro."
+[OK ] #p-city: aria-invalid=true, "Informe a cidade."
+[OK ] #p-state: aria-invalid=true, "Informe a UF com 2 letras, por exemplo SP."
+(pulado) simulação da resposta da API: este navegador não intercepta a rede do Front; coberto pelo teste unitário m9d851.erros-campo e pelo Chromium e Firefox
+##### webkit a11y-teclado-enter
+[OK ] foco + Enter | /painel/pessoas "Ver detalhes": falhas 0/20, instável antes da tecla 0/20, ms até navegar: mediana 123, máx 466, 1ª 466
+[OK ] foco + Enter | /painel/pessoas "Editar": falhas 0/20, instável antes da tecla 0/20, ms até navegar: mediana 108, máx 253, 1ª 253
+[OK ] foco + Enter | /painel/papeis "Editar": falhas 0/20, instável antes da tecla 0/20, ms até navegar: mediana 94, máx 232, 1ª 232
+[OK ] Tab + Enter | /painel/pessoas "Ver detalhes": falhas 0/20, instável antes da tecla 0/20, ms até navegar: mediana 124, máx 140, 1ª 140
+[OK ] Tab + Enter | /painel/pessoas "Editar": falhas 0/20, instável antes da tecla 0/20, ms até navegar: mediana 105, máx 118, 1ª 118
+[OK ] Tab + Enter | /painel/papeis "Editar": falhas 0/20, instável antes da tecla 0/20, ms até navegar: mediana 95, máx 117, 1ª 93
+[OK ] foco + Espaço | /painel/pessoas "Ver detalhes": falhas 0/20, instável antes da tecla 0/20, ms até navegar: mediana 124, máx 156, 1ª 156
+[OK ] foco + Espaço | /painel/pessoas "Editar": falhas 0/20, instável antes da tecla 0/20, ms até navegar: mediana 107, máx 112, 1ª 110
+[OK ] foco + Espaço | /painel/papeis "Editar": falhas 0/20, instável antes da tecla 0/20, ms até navegar: mediana 95, máx 101, 1ª 101
+##### webkit a11y-teclado-modal
+[OK ] papel de teste semeado aparece na lista
+[OK ] ao abrir o modal o foco entra nele ("Excluir papel")
+[OK ] 20 Tab/Shift+Tab: 0 vezes com o foco fora do diálogo (ciclo: Fechar > Cancelar > Excluir papel)
+[OK ] Esc fecha o modal e o foco volta ao botão Excluir da linha
+[OK ] Cancelar (Enter) fecha e devolve o foco ao botão Excluir
+[OK ] Fechar (X, Enter) fecha e devolve o foco ao botão Excluir
+[OK ] Control+k abre a paleta com o foco no campo de busca {"modal":"true","foco":true,"campo":true}
+[OK ] Control+k: Esc fecha a paleta e o foco volta ao elemento que estava focado antes ("Painel")
+[OK ] Meta+k abre a paleta com o foco no campo de busca {"modal":"true","foco":true,"campo":true}
+[OK ] Meta+k: Esc fecha a paleta e o foco volta ao elemento que estava focado antes ("Painel")
+(pulado) carregamento e erro simulados: este navegador não intercepta a rede do Front (cobertos em Chromium e Firefox)
+[OK ] envio inválido: nada vai à API (0 POST), o foco vai ao resumo "Há 2 campos para corrigir Nome ou razão social: Informe o nome completo da pessoa. CPF ou " e 2 campos têm aria-invalid
+(info) limpeza: papel de teste excluído pela API (200)
+##### webkit a11y-teclado-rodape
+[OK ] desktop 1280x800: 9 chips tabulados, todos visíveis e sem cobertura; último "Locador" pé 712 ≤ topo da barra 743
+[OK ] desktop baixo 1280x500: 9 chips tabulados, todos visíveis e sem cobertura; último "Locador" pé 359 ≤ topo da barra 443
+[OK ] tablet 768x600: 9 chips tabulados, todos visíveis e sem cobertura; último "Locador" pé 452 ≤ topo da barra 491
+[OK ] celular 390x700: 9 chips tabulados, todos visíveis e sem cobertura; último "Locador" pé 552 ≤ topo da barra 579
+[OK ] celular 390x844: 9 chips tabulados, todos visíveis e sem cobertura; último "Locador" pé 696 ≤ topo da barra 723
+##### webkit a11y-mfa-excluir-papel
+[OK ] antes de começar não existe papel "QA-M9 Papel Teste" (pilha limpa)
+[OK ] criar papel: o modal "Verificação em duas etapas" abre com o foco no campo do código
+[OK ] campo com nome acessível "Código do aplicativo autenticador" e descrição lida: "Para alterar papéis e permissões, confirme o código do seu aplicativo autenticador (ou um código de recuperação)."
+[OK ] campo com autocomplete=one-time-code (gerenciadores de senha preenchem)
+[OK ] código inválido: aria-invalid=true e o foco volta ao campo
+[OK ] mensagem lida junto do campo: "Para alterar papéis e permissões, confirme o código do seu aplicativo autenticador (ou um código de recuperação). Não foi possível verificar Código MFA inválido."
+[OK ] 8 Tab/Shift+Tab no modal de MFA: 0 vezes com o foco fora do diálogo
+[OK ] Esc fecha o modal de MFA e o foco vai ao aviso de ação cancelada: "Não foi possível salvar o papel Ação cancelada: a verificação em duas etapas não foi concluída."
+[OK ] código certo: o papel "QA-M9 Papel Teste" foi criado e aparece na lista
+[OK ] ao confirmar a exclusão abre o modal de MFA sobre o de exclusão (2 diálogos)
+[OK ] exclusão: o foco entra no campo do código do MFA
+[OK ] exclusão: 8 Tab/Shift+Tab no modal de MFA: 0 vezes fora
+[OK ] exclusão, código inválido: aria-invalid, foco no campo, "Para alterar papéis e permissões, confirme o código do seu aplicativo autenticador (ou um código de recuperação). Não foi possível verificar Código MFA inválido."
+[OK ] Esc no MFA fecha só o modal de MFA: sobram 1 diálogo(s) e o foco continua dentro do de exclusão ("Fechar")
+[OK ] código certo: o papel "QA-M9 Papel Teste" foi excluído e saiu da lista
+[OK ] depois da exclusão o foco vai ao aviso de sucesso (role=status): "O papel QA-M9 Papel Teste foi excluído."
+##### webkit a11y-arvore
+[OK ] /entrar: controles sem nome: []
+[OK ] /entrar: 1 região main
+[OK ] /entrar: 1 cabeçalhos
+[OK ] /entrar: título da aba "Entrar — Nayara One"
+[OK ] /painel: controles sem nome acessível: []
+[OK ] /painel: regiões main=1 navigation=1 banner=1
+[OK ] /painel: 1 cabeçalho de nível 1
+[OK ] /painel: título da aba "Painel — Nayara One"
+[OK ] /painel/pessoas: controles sem nome acessível: []
+[OK ] /painel/pessoas: regiões main=1 navigation=2 banner=1
+[OK ] /painel/pessoas: 1 cabeçalho de nível 1
+[OK ] /painel/pessoas: título da aba "Contatos — Nayara One"
+[OK ] /painel/pessoas/novo: controles sem nome acessível: []
+[OK ] /painel/pessoas/novo: regiões main=1 navigation=1 banner=1
+[OK ] /painel/pessoas/novo: 1 cabeçalho de nível 1
+[OK ] /painel/pessoas/novo: título da aba "Novo contato — Nayara One"
+[OK ] /painel/papeis: controles sem nome acessível: []
+[OK ] /painel/papeis: regiões main=1 navigation=1 banner=1
+[OK ] /painel/papeis: 1 cabeçalho de nível 1
+[OK ] /painel/papeis: título da aba "Papéis & Permissões — Nayara One"
+[OK ] títulos da aba distintos por tela: {"/painel":"Painel — Nayara One","/painel/pessoas":"Contatos — Nayara One","/painel/pessoas/novo":"Novo contato — Nayara One","/painel/papeis":"Papéis & Permissões — Nayara One"}
+[OK ] /painel/pessoas: 7 cabeçalhos de coluna na tabela
+[OK ] /painel/pessoas: botão de ícone "Ver detalhes" tem nome acessível
+[OK ] /painel/pessoas: botão de ícone "Editar" tem nome acessível
+[OK ] /painel/pessoas: o item da navegação da página atual tem aria-current="page"
+[OK ] barra lateral recolhida: links só de ícone sem nome: []
+[OK ] /painel/papeis: 3 cabeçalhos de coluna
+[OK ] /painel/papeis: botões de ícone "Editar" e "Excluir" têm nome
+[OK ] modal de exclusão: diálogo com nome "Excluir papel", botões Fechar, Cancelar e Excluir papel nomeados; sem nome: []
+[OK ] modal: aria-modal=true, nome "Excluir papel"
+[OK ] modal de MFA: campo "Código do aplicativo autenticador" nomeado; sem nome: []
+(pulado) carregamento e erro simulados: este navegador não intercepta a rede do Front (cobertos em Chromium e Firefox)
+[OK ] rota nova: título da aba mudou de "Contatos — Nayara One" para "Novo contato — Nayara One"
+[OK ] rota nova: o foco vai ao título da tela (<H1> "Novo contato"), lido pelo leitor de tela
+##### webkit a11y-axe
+[OK ] Login [onyx]: 0 violação(ões) abaixo de serious
+[OK ] Login (formulário da equipe) [onyx]: 0 violação(ões) abaixo de serious
+[OK ] Painel inicial [onyx]: 0 violação(ões) abaixo de serious
+[OK ] Lista de pessoas [onyx]: 0 violação(ões) abaixo de serious
+[OK ] Formulário de nova pessoa [onyx]: 0 violação(ões) abaixo de serious
+[OK ] Papéis [onyx]: 0 violação(ões) abaixo de serious
+[OK ] Barra lateral, foco e item ativo [onyx]: 0 violação(ões) abaixo de serious
+[OK ] Login [classico]: 0 violação(ões) abaixo de serious
+[OK ] Login (formulário da equipe) [classico]: 0 violação(ões) abaixo de serious
+[OK ] Painel inicial [classico]: 0 violação(ões) abaixo de serious
+[OK ] Lista de pessoas [classico]: 0 violação(ões) abaixo de serious
+[OK ] Formulário de nova pessoa [classico]: 0 violação(ões) abaixo de serious
+[OK ] Papéis [classico]: 0 violação(ões) abaixo de serious
+[OK ] Barra lateral, foco e item ativo [classico]: 0 violação(ões) abaixo de serious
+##### webkit a11y-zoom
+[OK ] zoom 200% (640x400) /entrar: o conteúdo (main) usa 640 de 640 px de largura (não é espremido por outra coluna ou barra)
+[OK ] zoom 200% (640x400) /entrar: rolagem horizontal 640/640
+[OK ] zoom 200% (640x400) /entrar: 80 paradas de Tab, 0 com foco encoberto/fora
+[OK ] zoom 200% (640x400) /painel: o conteúdo (main) usa 640 de 640 px de largura (não é espremido por outra coluna ou barra)
+[OK ] zoom 200% (640x400) /painel: rolagem horizontal 640/640
+[OK ] zoom 200% (640x400) /painel: 80 paradas de Tab, 0 com foco encoberto/fora
+[OK ] zoom 200% (640x400) /painel/pessoas: o conteúdo (main) usa 640 de 640 px de largura (não é espremido por outra coluna ou barra)
+[OK ] zoom 200% (640x400) /painel/pessoas: rolagem horizontal 640/640
+[OK ] zoom 200% (640x400) /painel/pessoas: 80 paradas de Tab, 0 com foco encoberto/fora
+[OK ] zoom 200% (640x400) /painel/pessoas/novo: o conteúdo (main) usa 640 de 640 px de largura (não é espremido por outra coluna ou barra)
+[OK ] zoom 200% (640x400) /painel/pessoas/novo: rolagem horizontal 640/640
+[OK ] zoom 200% (640x400) /painel/pessoas/novo: 80 paradas de Tab, 0 com foco encoberto/fora
+[OK ] zoom 200% (640x400) /painel/papeis: o conteúdo (main) usa 640 de 640 px de largura (não é espremido por outra coluna ou barra)
+[OK ] zoom 200% (640x400) /painel/papeis: rolagem horizontal 640/640
+[OK ] zoom 200% (640x400) /painel/papeis: 80 paradas de Tab, 0 com foco encoberto/fora
+[OK ] zoom 400% (320x256) /entrar: o conteúdo (main) usa 320 de 320 px de largura (não é espremido por outra coluna ou barra)
+[OK ] zoom 400% (320x256) /entrar: rolagem horizontal 320/320
+[OK ] zoom 400% (320x256) /entrar: 80 paradas de Tab, 0 com foco encoberto/fora
+[OK ] zoom 400% (320x256) /painel: o conteúdo (main) usa 320 de 320 px de largura (não é espremido por outra coluna ou barra)
+[OK ] zoom 400% (320x256) /painel: rolagem horizontal 320/320
+[OK ] zoom 400% (320x256) /painel: 80 paradas de Tab, 0 com foco encoberto/fora
+[OK ] zoom 400% (320x256) /painel/pessoas: o conteúdo (main) usa 320 de 320 px de largura (não é espremido por outra coluna ou barra)
+[OK ] zoom 400% (320x256) /painel/pessoas: rolagem horizontal 320/320
+[OK ] zoom 400% (320x256) /painel/pessoas: 80 paradas de Tab, 0 com foco encoberto/fora
+[OK ] zoom 400% (320x256) /painel/pessoas/novo: o conteúdo (main) usa 320 de 320 px de largura (não é espremido por outra coluna ou barra)
+[OK ] zoom 400% (320x256) /painel/pessoas/novo: rolagem horizontal 320/320
+[OK ] zoom 400% (320x256) /painel/pessoas/novo: 80 paradas de Tab, 0 com foco encoberto/fora
+[OK ] zoom 400% (320x256) /painel/papeis: o conteúdo (main) usa 320 de 320 px de largura (não é espremido por outra coluna ou barra)
+[OK ] zoom 400% (320x256) /painel/papeis: rolagem horizontal 320/320
+[OK ] zoom 400% (320x256) /painel/papeis: 80 paradas de Tab, 0 com foco encoberto/fora
+[OK ] reflow 320x568 /entrar: o conteúdo (main) usa 320 de 320 px de largura (não é espremido por outra coluna ou barra)
+[OK ] reflow 320x568 /entrar: rolagem horizontal 320/320
+[OK ] reflow 320x568 /entrar: 80 paradas de Tab, 0 com foco encoberto/fora
+[OK ] reflow 320x568 /painel: o conteúdo (main) usa 320 de 320 px de largura (não é espremido por outra coluna ou barra)
+[OK ] reflow 320x568 /painel: rolagem horizontal 320/320
+[OK ] reflow 320x568 /painel: 80 paradas de Tab, 0 com foco encoberto/fora
+[OK ] reflow 320x568 /painel/pessoas: o conteúdo (main) usa 320 de 320 px de largura (não é espremido por outra coluna ou barra)
+[OK ] reflow 320x568 /painel/pessoas: rolagem horizontal 320/320
+[OK ] reflow 320x568 /painel/pessoas: 80 paradas de Tab, 0 com foco encoberto/fora
+[OK ] reflow 320x568 /painel/pessoas/novo: o conteúdo (main) usa 320 de 320 px de largura (não é espremido por outra coluna ou barra)
+[OK ] reflow 320x568 /painel/pessoas/novo: rolagem horizontal 320/320
+[OK ] reflow 320x568 /painel/pessoas/novo: 80 paradas de Tab, 0 com foco encoberto/fora
+[OK ] reflow 320x568 /painel/papeis: o conteúdo (main) usa 320 de 320 px de largura (não é espremido por outra coluna ou barra)
+[OK ] reflow 320x568 /painel/papeis: rolagem horizontal 320/320
+[OK ] reflow 320x568 /painel/papeis: 80 paradas de Tab, 0 com foco encoberto/fora
+##### FIM webkit
