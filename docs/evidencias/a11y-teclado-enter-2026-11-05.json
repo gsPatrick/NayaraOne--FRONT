@@ -1,0 +1,101 @@
+[
+  {
+    "modo": "foco + Enter",
+    "tela": "/painel/pessoas",
+    "botao": "Ver detalhes",
+    "repeticoes": 20,
+    "falhas": 0,
+    "instaveisAntesDaTecla": 0,
+    "msMediana": 216,
+    "msMax": 7087,
+    "primeira": 7087
+  },
+  {
+    "modo": "foco + Enter",
+    "tela": "/painel/pessoas",
+    "botao": "Editar",
+    "repeticoes": 20,
+    "falhas": 0,
+    "instaveisAntesDaTecla": 0,
+    "msMediana": 199,
+    "msMax": 1806,
+    "primeira": 1806
+  },
+  {
+    "modo": "foco + Enter",
+    "tela": "/painel/papeis",
+    "botao": "Editar",
+    "repeticoes": 20,
+    "falhas": 0,
+    "instaveisAntesDaTecla": 0,
+    "msMediana": 186,
+    "msMax": 3313,
+    "primeira": 3313
+  },
+  {
+    "modo": "Tab + Enter",
+    "tela": "/painel/pessoas",
+    "botao": "Ver detalhes",
+    "repeticoes": 20,
+    "falhas": 0,
+    "instaveisAntesDaTecla": 0,
+    "msMediana": 273,
+    "msMax": 1322,
+    "primeira": 269
+  },
+  {
+    "modo": "Tab + Enter",
+    "tela": "/painel/pessoas",
+    "botao": "Editar",
+    "repeticoes": 20,
+    "falhas": 0,
+    "instaveisAntesDaTecla": 0,
+    "msMediana": 176,
+    "msMax": 327,
+    "primeira": 176
+  },
+  {
+    "modo": "Tab + Enter",
+    "tela": "/painel/papeis",
+    "botao": "Editar",
+    "repeticoes": 20,
+    "falhas": 0,
+    "instaveisAntesDaTecla": 0,
+    "msMediana": 147,
+    "msMax": 272,
+    "primeira": 117
+  },
+  {
+    "modo": "foco + Espaço",
+    "tela": "/painel/pessoas",
+    "botao": "Ver detalhes",
+    "repeticoes": 20,
+    "falhas": 0,
+    "instaveisAntesDaTecla": 0,
+    "msMediana": 179,
+    "msMax": 245,
+    "primeira": 179
+  },
+  {
+    "modo": "foco + Espaço",
+    "tela": "/painel/pessoas",
+    "botao": "Editar",
+    "repeticoes": 20,
+    "falhas": 0,
+    "instaveisAntesDaTecla": 0,
+    "msMediana": 153,
+    "msMax": 275,
+    "primeira": 154
+  },
+  {
+    "modo": "foco + Espaço",
+    "tela": "/painel/papeis",
+    "botao": "Editar",
+    "repeticoes": 20,
+    "falhas": 0,
+    "instaveisAntesDaTecla": 0,
+    "msMediana": 122,
+    "msMax": 149,
+    "primeira": 128
+  }
+]
