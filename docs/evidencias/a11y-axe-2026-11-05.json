@@ -1,0 +1,27 @@
+[
+  {
+    "pagina": "Login",
+    "path": "/entrar",
+    "violacoes": []
+  },
+  {
+    "pagina": "Login (formulário da equipe)",
+    "path": "/entrar",
+    "violacoes": []
+  },
+  {
+    "pagina": "Painel inicial",
+    "path": "/painel",
+    "violacoes": []
+  },
+  {
+    "pagina": "Lista de pessoas",
+    "path": "/painel/pessoas",
+    "violacoes": []
+  },
+  {
+    "pagina": "Formulário de nova pessoa",
+    "path": "/painel/pessoas/novo",
+    "violacoes": []
+  }
+]

@@ -1,0 +1,477 @@
+[
+  {
+    "viewport": "desktop 1280x800",
+    "paradas": [
+      {
+        "texto": "Cliente",
+        "topo": 575,
+        "pe": 613,
+        "alturaViewport": 800,
+        "topoDaBarra": 743,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Proprietário",
+        "topo": 575,
+        "pe": 613,
+        "alturaViewport": 800,
+        "topoDaBarra": 743,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Locatário",
+        "topo": 575,
+        "pe": 613,
+        "alturaViewport": 800,
+        "topoDaBarra": 743,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Fornecedor",
+        "topo": 575,
+        "pe": 613,
+        "alturaViewport": 800,
+        "topoDaBarra": 743,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Corretor",
+        "topo": 575,
+        "pe": 613,
+        "alturaViewport": 800,
+        "topoDaBarra": 743,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Comprador",
+        "topo": 575,
+        "pe": 613,
+        "alturaViewport": 800,
+        "topoDaBarra": 743,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Fiador",
+        "topo": 575,
+        "pe": 613,
+        "alturaViewport": 800,
+        "topoDaBarra": 743,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Colaborador",
+        "topo": 621,
+        "pe": 659,
+        "alturaViewport": 800,
+        "topoDaBarra": 743,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Locador",
+        "topo": 621,
+        "pe": 659,
+        "alturaViewport": 800,
+        "topoDaBarra": 743,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      }
+    ]
+  },
+  {
+    "viewport": "desktop baixo 1280x500",
+    "paradas": [
+      {
+        "texto": "Cliente",
+        "topo": 374,
+        "pe": 412,
+        "alturaViewport": 500,
+        "topoDaBarra": 443,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Proprietário",
+        "topo": 374,
+        "pe": 412,
+        "alturaViewport": 500,
+        "topoDaBarra": 443,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Locatário",
+        "topo": 374,
+        "pe": 412,
+        "alturaViewport": 500,
+        "topoDaBarra": 443,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Fornecedor",
+        "topo": 374,
+        "pe": 412,
+        "alturaViewport": 500,
+        "topoDaBarra": 443,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Corretor",
+        "topo": 374,
+        "pe": 412,
+        "alturaViewport": 500,
+        "topoDaBarra": 443,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Comprador",
+        "topo": 374,
+        "pe": 412,
+        "alturaViewport": 500,
+        "topoDaBarra": 443,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Fiador",
+        "topo": 374,
+        "pe": 412,
+        "alturaViewport": 500,
+        "topoDaBarra": 443,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Colaborador",
+        "topo": 321,
+        "pe": 359,
+        "alturaViewport": 500,
+        "topoDaBarra": 443,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Locador",
+        "topo": 321,
+        "pe": 359,
+        "alturaViewport": 500,
+        "topoDaBarra": 443,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      }
+    ]
+  },
+  {
+    "viewport": "tablet 768x600",
+    "paradas": [
+      {
+        "texto": "Cliente",
+        "topo": 325,
+        "pe": 363,
+        "alturaViewport": 600,
+        "topoDaBarra": 491,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Proprietário",
+        "topo": 325,
+        "pe": 363,
+        "alturaViewport": 600,
+        "topoDaBarra": 491,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Locatário",
+        "topo": 325,
+        "pe": 363,
+        "alturaViewport": 600,
+        "topoDaBarra": 491,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Fornecedor",
+        "topo": 325,
+        "pe": 363,
+        "alturaViewport": 600,
+        "topoDaBarra": 491,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Corretor",
+        "topo": 325,
+        "pe": 363,
+        "alturaViewport": 600,
+        "topoDaBarra": 491,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Comprador",
+        "topo": 325,
+        "pe": 363,
+        "alturaViewport": 600,
+        "topoDaBarra": 491,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Fiador",
+        "topo": 371,
+        "pe": 409,
+        "alturaViewport": 600,
+        "topoDaBarra": 491,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Colaborador",
+        "topo": 371,
+        "pe": 409,
+        "alturaViewport": 600,
+        "topoDaBarra": 491,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Locador",
+        "topo": 371,
+        "pe": 409,
+        "alturaViewport": 600,
+        "topoDaBarra": 491,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      }
+    ]
+  },
+  {
+    "viewport": "celular 390x700",
+    "paradas": [
+      {
+        "texto": "Cliente",
+        "topo": 467,
+        "pe": 505,
+        "alturaViewport": 700,
+        "topoDaBarra": 579,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Proprietário",
+        "topo": 467,
+        "pe": 505,
+        "alturaViewport": 700,
+        "topoDaBarra": 579,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Locatário",
+        "topo": 467,
+        "pe": 505,
+        "alturaViewport": 700,
+        "topoDaBarra": 579,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Fornecedor",
+        "topo": 513,
+        "pe": 551,
+        "alturaViewport": 700,
+        "topoDaBarra": 579,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Corretor",
+        "topo": 513,
+        "pe": 551,
+        "alturaViewport": 700,
+        "topoDaBarra": 579,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Comprador",
+        "topo": 513,
+        "pe": 551,
+        "alturaViewport": 700,
+        "topoDaBarra": 579,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Fiador",
+        "topo": 465,
+        "pe": 504,
+        "alturaViewport": 700,
+        "topoDaBarra": 579,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Colaborador",
+        "topo": 465,
+        "pe": 504,
+        "alturaViewport": 700,
+        "topoDaBarra": 579,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Locador",
+        "topo": 465,
+        "pe": 504,
+        "alturaViewport": 700,
+        "topoDaBarra": 579,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      }
+    ]
+  },
+  {
+    "viewport": "celular 390x844",
+    "paradas": [
+      {
+        "texto": "Cliente",
+        "topo": 517,
+        "pe": 555,
+        "alturaViewport": 844,
+        "topoDaBarra": 723,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Proprietário",
+        "topo": 517,
+        "pe": 555,
+        "alturaViewport": 844,
+        "topoDaBarra": 723,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Locatário",
+        "topo": 517,
+        "pe": 555,
+        "alturaViewport": 844,
+        "topoDaBarra": 723,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Fornecedor",
+        "topo": 563,
+        "pe": 601,
+        "alturaViewport": 844,
+        "topoDaBarra": 723,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Corretor",
+        "topo": 563,
+        "pe": 601,
+        "alturaViewport": 844,
+        "topoDaBarra": 723,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Comprador",
+        "topo": 563,
+        "pe": 601,
+        "alturaViewport": 844,
+        "topoDaBarra": 723,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Fiador",
+        "topo": 609,
+        "pe": 648,
+        "alturaViewport": 844,
+        "topoDaBarra": 723,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Colaborador",
+        "topo": 609,
+        "pe": 648,
+        "alturaViewport": 844,
+        "topoDaBarra": 723,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      },
+      {
+        "texto": "Locador",
+        "topo": 609,
+        "pe": 648,
+        "alturaViewport": 844,
+        "topoDaBarra": 723,
+        "contorno": 0,
+        "dentro": true,
+        "descoberto": true
+      }
+    ]
+  }
+]
