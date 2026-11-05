@@ -71,6 +71,8 @@ async function main() {
 function lum([r, g, b]) { const f = (c) => { c /= 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); }
 const razao = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
 const rgba = (texto) => (texto.match(/[\d.]+/g) || []).map(Number);
+// Fundo translúcido (ex.: rgba(190,145,48,0.12)) é composto sobre o fundo de baixo antes de medir o contraste.
+const compor = (cima, baixo) => { const a = cima.length > 3 ? cima[3] : 1; return [0, 1, 2].map((i) => Math.round(cima[i] * a + baixo[i] * (1 - a))); };
 
 /** Contorno de foco (3:1) e texto do item ativo/rótulo (4,5:1) medidos na barra lateral, onde o axe não vê o estado de foco. */
 async function focoNaBarraLateral(page, tema) {
@@ -91,7 +93,7 @@ async function focoNaBarraLateral(page, tema) {
     const r1 = razao(anel.slice(0, 3), fundo.slice(0, 3));
     out.medidas.contrasteFoco = Number(r1.toFixed(2));
     if (m.estilo === 'none' || parseFloat(m.larg) < 2 || r1 < 3) out.violacoes.push({ regra: 'foco-barra-lateral', impacto: 'serious', alvos: [`contorno ${m.larg} ${m.estilo} ${m.anel} sobre ${m.fundo} = ${r1.toFixed(2)}:1`] });
-    if (m.ativoCor && m.ativoFundo && !/rgba\(0, 0, 0, 0\)/.test(m.ativoFundo)) { const r2 = razao(rgba(m.ativoCor).slice(0, 3), rgba(m.ativoFundo).slice(0, 3)); out.medidas.contrasteAtivo = Number(r2.toFixed(2)); if (r2 < 4.5) out.violacoes.push({ regra: 'item-ativo-barra-lateral', impacto: 'serious', alvos: [`${m.ativoCor} sobre ${m.ativoFundo} = ${r2.toFixed(2)}:1`] }); }
+    if (m.ativoCor && m.ativoFundo && !/rgba\(0, 0, 0, 0\)/.test(m.ativoFundo)) { const r2 = razao(rgba(m.ativoCor).slice(0, 3), compor(rgba(m.ativoFundo), fundo)); out.medidas.contrasteAtivo = Number(r2.toFixed(2)); if (r2 < 4.5) out.violacoes.push({ regra: 'item-ativo-barra-lateral', impacto: 'serious', alvos: [`${m.ativoCor} sobre ${m.ativoFundo} = ${r2.toFixed(2)}:1`] }); }
   }
   return out;
 }
