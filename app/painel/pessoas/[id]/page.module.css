@@ -189,6 +189,7 @@
 }
 .consentOk { color: var(--color-success); }
 .consentPending { color: var(--color-warning); }
+.consentOut { color: var(--color-danger); }
 
 /* Merge / duplicate comparison */
 .compareGrid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); margin-top: var(--space-4); }

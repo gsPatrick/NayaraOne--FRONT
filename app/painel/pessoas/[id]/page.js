@@ -32,7 +32,7 @@ import {
   VERIFICATION_TONE,
 } from "@/lib/mock/people";
 import { OWNER_ROLE_LABELS, AVAILABILITY_STATUS_LABELS } from "@/lib/mock/properties";
-import { listPeople, getPerson, listDuplicatePairs, deletePerson, mergePeople, ingestPersonDocument, updateDocument } from "@/lib/api/people";
+import { listPeople, getPerson, listPersonConsents, consentByChannel, listDuplicatePairs, deletePerson, mergePeople, ingestPersonDocument, updateDocument } from "@/lib/api/people";
 import { listProperties } from "@/lib/api/properties";
 import { formatDate, toNumber } from "@/lib/format";
 import { buildGoogleMapsUrl, buildGoogleMapsEmbedUrl } from "@/lib/maps";
@@ -143,6 +143,7 @@ export default function PersonDetailPage({ params }) {
   const [people, setPeople] = useState([]);
   const [duplicatePairs, setDuplicatePairs] = useState([]);
   const [properties, setProperties] = useState([]);
+  const [consents, setConsents] = useState({});
   const [actionError, setActionError] = useState("");
   const [canonicalId, setCanonicalId] = useState(null);
   const [viewerFileId, setViewerFileId] = useState(null);
@@ -161,8 +162,15 @@ export default function PersonDetailPage({ params }) {
   const personQuery = useAsyncState(
     async () => {
       const isLatest = latest.begin(); // troca rápida de id: só a resposta mais recente grava o estado
-      const [apiPerson, apiPeople, pairs, apiProperties] = await Promise.all([getPerson(params.id), listPeople(), listDuplicatePairs(), listProperties()]);
+      const [apiPerson, apiPeople, pairs, apiProperties, apiConsents] = await Promise.all([
+        getPerson(params.id),
+        listPeople(),
+        listDuplicatePairs(),
+        listProperties(),
+        listPersonConsents(params.id),
+      ]);
       if (isLatest()) {
+        setConsents(consentByChannel(apiConsents));
         setPerson(apiPerson);
         setPeople(apiPeople);
         setDuplicatePairs(pairs);
@@ -480,10 +488,19 @@ export default function PersonDetailPage({ params }) {
                       </span>
                       <span className={styles.listRowRight}>
                         {c.primary ? <span className={styles.primaryTag}>Principal</span> : null}
-                        <span className={[styles.consentTag, c.consentStatus === "CONSENTED" ? styles.consentOk : styles.consentPending].join(" ")}>
-                          <Icon name={c.consentStatus === "CONSENTED" ? "check" : "bell"} size={12} />
-                          {CONSENT_LABELS[c.consentStatus] || c.consentStatus}
-                        </span>
+                        {(() => {
+                          // O opt-out de marketing é registrado por canal (histórico de consentimentos), não no contato.
+                          const vigente = consents[c.type]?.status;
+                          const estado = vigente || c.consentStatus;
+                          const tom = estado === "OPT_OUT" ? styles.consentOut : estado === "CONSENTED" || estado === "OPT_IN" ? styles.consentOk : styles.consentPending;
+                          const icone = estado === "OPT_OUT" ? "close" : estado === "CONSENTED" || estado === "OPT_IN" ? "check" : "bell";
+                          return (
+                            <span className={[styles.consentTag, tom].join(" ")}>
+                              <Icon name={icone} size={12} />
+                              {CONSENT_LABELS[estado] || estado}
+                            </span>
+                          );
+                        })()}
                       </span>
                     </>
                   );
