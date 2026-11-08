@@ -27,6 +27,13 @@ export const BI_BRIEFING_GROUPS = [
         helper: "Formato: diário 7; semanal 12. Só exceções entram: indicador normal não aparece.",
       },
       {
+        key: "analytics.brief.reintento_falha_min",
+        label: "Minutos até tentar de novo um briefing que falhou",
+        type: "number",
+        defaultValue: 60,
+        helper: "De 1 a 1440. Se o briefing do dia falhar (por exemplo, IA desligada), o sistema tenta de novo depois deste tempo, até o fim do período.",
+      },
+      {
         key: "analytics.brief.papel",
         label: "Papel cujos painéis alimentam o briefing",
         type: "text",
