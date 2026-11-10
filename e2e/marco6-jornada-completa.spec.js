@@ -59,7 +59,12 @@ async function main() {
     // --- 1. Login ---
     await page.goto(`${BASE_URL}/entrar`, { waitUntil: 'domcontentloaded' });
     const teamTab = page.getByText('Sou da equipe', { exact: false });
-    if (await teamTab.count()) await teamTab.first().click();
+    // Em `next dev` a hidratação pode demorar: o texto chega pelo SSR antes do clique funcionar. Clica até o formulário abrir.
+    await teamTab.first().waitFor({ timeout: 70000 }).catch(() => {});
+    for (let i = 0; i < 40 && !(await page.locator('input[type=email]').count()); i += 1) {
+      if (await teamTab.count()) await teamTab.first().click().catch(() => {});
+      await page.waitForTimeout(1500);
+    }
     await page.waitForSelector('input[type=email]', { timeout: 70000 });
     await page.fill('input[type=email]', EMAIL);
     await page.fill('input[type=password]', PASSWORD);
@@ -164,6 +169,14 @@ async function main() {
     await page.goto(`${projectUrl}/qualidade`, { waitUntil: 'domcontentloaded' });
     await page.click('button:has-text("Nova não conformidade")');
     await page.fill('#m-nc-description', 'Trinca identificada na fundação (teste E2E Marco 6).');
+    // Desde 07/10/2026 a NC exige responsável e evidência "antes" (Caderno §2); desde 10/11/2026 a evidência
+    // precisa ser arquivo enviado de verdade — o spec anexa uma foto JPEG pelo próprio campo de envio da tela.
+    const respValue = await page.locator('#m-nc-responsible option').nth(1).getAttribute('value');
+    if (respValue) await page.selectOption('#m-nc-responsible', respValue);
+    const ncPhoto = require('path').join(require('os').tmpdir(), `nc-antes-${suffix}.jpg`);
+    require('fs').writeFileSync(ncPhoto, Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.from(`foto ${suffix}`)]));
+    await page.setInputFiles('#m-nc-before-file', ncPhoto);
+    await page.waitForTimeout(2500);
     // "Registrar" sozinho casa com vários botões da página (ex.: "Registrar perda", "Registrar
     // RDO") — usa o locator escopado ao texto exato do botão do modal.
     await page.getByRole('button', { name: 'Registrar', exact: true }).click();
