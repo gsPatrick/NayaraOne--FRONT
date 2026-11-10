@@ -153,6 +153,7 @@ export default function KanbanBoard({
         );
       })}
 
+      {onAddColumn ? (
       <div className={styles.addColumn}>
         {addingColumn ? (
           <input
@@ -173,6 +174,7 @@ export default function KanbanBoard({
           </button>
         )}
       </div>
+      ) : null}
     </div>
   );
 }

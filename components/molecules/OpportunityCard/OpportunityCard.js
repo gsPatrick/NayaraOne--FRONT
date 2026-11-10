@@ -3,7 +3,8 @@ import Icon from "@/components/atoms/Icon/Icon";
 import { formatDate, isOverdue } from "@/lib/format";
 import styles from "./OpportunityCard.module.css";
 
-const CLOSED_STAGES = ["Fechado (Ganho)", "Fechado (Perdido)"];
+// Chaves das etapas terminais da tela (o card recebe a chave, não o rótulo): fechada não mostra "vencida".
+const CLOSED_STAGES = ["ganho", "perdido"];
 
 export default function OpportunityCard({ opportunity, onClick }) {
   const isClosed = CLOSED_STAGES.includes(opportunity.stage);
