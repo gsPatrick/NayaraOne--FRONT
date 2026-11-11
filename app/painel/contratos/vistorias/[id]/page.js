@@ -65,7 +65,7 @@ export default function VistoriaDetailPage({ params }) {
 
   // M9-D940: carregando, erro com "tentar de novo", 403 e offline vêm do padrão único de estados.
   const loadQuery = useAsyncState(() => {
-    return Promise.all([getInspection(params.id), listInspectionItems(params.id), apiFetch("/users")])
+    return Promise.all([getInspection(params.id), listInspectionItems(params.id), apiFetch("/users").catch(lookupFallback("os usuários"))])
       .catch(nullOn404) // 404 da API: o registro não existe, a tela chama notFound()
       .then(async (loaded) => {
         if (!loaded) {

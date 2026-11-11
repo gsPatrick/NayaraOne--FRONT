@@ -45,9 +45,11 @@ export default function SignaturesCard({ contract, latestVersion, signatures, pa
     }
   }
 
+  // Pedido eletrônico cancelado/substituído (ex.: trocado pela assinatura manual) não conta como signatário pendente.
+  const live = signatures.filter((s) => !["CANCELLED", "SUPERSEDED"].includes(s.status));
   const subtitle = latestVersion
-    ? signatures.length > 0
-      ? `${signatures.filter((s) => s.status === "SIGNED").length} de ${signatures.length} assinaram — versão ${latestVersion.versionNumber}`
+    ? live.length > 0
+      ? `${live.filter((s) => s.status === "SIGNED").length} de ${live.length} assinaram — versão ${latestVersion.versionNumber}`
       : `Referentes à versão ${latestVersion.versionNumber}`
     : "Sem versão de documento gerada";
 

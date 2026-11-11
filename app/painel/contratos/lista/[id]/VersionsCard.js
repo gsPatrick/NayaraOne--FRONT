@@ -133,7 +133,7 @@ export default function VersionsCard({ contract, versions, userName, onChanged, 
                 </span>
                 <span className={styles.versionTemplate}>{version.template?.name ? `Modelo: ${version.template.name}` : "Documento enviado (sem modelo)"}</span>
                 {version.approvedAt ? (
-                  <span className={styles.versionTemplate}>Aprovada por {userName(version.approvedBy)} em {formatDateTime(version.approvedAt)}</span>
+                  <span className={styles.versionTemplate}>Aprovada{userName(version.approvedBy) ? ` por ${userName(version.approvedBy)}` : ""} em {formatDateTime(version.approvedAt)}</span>
                 ) : null}
                 <span className={styles.versionHash} title={version.contentHash ? `Hash de integridade (SHA-256): ${version.contentHash}` : undefined}>
                   hash de integridade: {version.contentHash ? `${version.contentHash.slice(0, 12)}…` : "não calculado"}

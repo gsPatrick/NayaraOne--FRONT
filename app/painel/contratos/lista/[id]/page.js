@@ -117,7 +117,7 @@ export default function ContratoDetailPage({ params }) {
   if (!contract) return notFound();
 
   const personOf = (id) => people.find((p) => p.id === id) || null;
-  const userName = (id) => users.find((u) => u.id === id)?.name || "usuário não identificado";
+  const userName = (id) => users.find((u) => u.id === id)?.name || null;
   const latestVersion = versions[versions.length - 1] || null;
   const termsLocked = CONTRACT_TERMS_LOCKED_STATUSES.includes(contract.status);
   const legacyCancelled = contract.status === "CANCELLED";
@@ -199,7 +199,7 @@ export default function ContratoDetailPage({ params }) {
                     <li key={`${event.type}-${event.referenceId}-${idx}`} className={styles.timelineItem}>
                       <Badge tone={TIMELINE_TYPE_TONE[event.type] || "neutral"}>{TIMELINE_TYPE_LABELS[event.type] || "Evento"}</Badge>
                       <span className={styles.timelineDate}>{event.occurredAt ? formatDateTime(event.occurredAt) : "Sem data registrada"}</span>
-                      <span className={styles.timelineSummary}>{humanizeText(event.summary)}</span>
+                      <span className={styles.timelineSummary}>{humanizeText(String(event.summary || "").replace(/"([A-Z_]+)"/g, (m, code) => (CONTRACT_STATUS_LABELS[code] ? `"${CONTRACT_STATUS_LABELS[code]}"` : m)))}</span>
                     </li>
                   ))}
                 </ul>

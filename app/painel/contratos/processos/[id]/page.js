@@ -12,6 +12,7 @@ import Select from "@/components/atoms/Select/Select";
 import Alert from "@/components/molecules/Alert/Alert";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import { UI_STATE } from "@/lib/asyncState/states";
+import { withCurrentUser } from "@/lib/legal/useActiveUsers";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { nullOn404 } from "@/lib/asyncState/notFound";
 import { lookupFallback } from "@/lib/asyncState/lookup";
@@ -60,7 +61,7 @@ export default function ProcessoDetailPage({ params }) {
         }
         const [caseRes, usersRes, peopleRes] = loaded;
         setLegalCase(caseRes);
-        setUsers(Array.isArray(usersRes) ? usersRes : []);
+        setUsers(withCurrentUser(usersRes));
         setPeople(Array.isArray(peopleRes) ? peopleRes : []);
         if (caseRes?.contractId) {
           try {
