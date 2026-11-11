@@ -38,6 +38,13 @@ export const BI_TECNOLOGIA_KPI_GROUPS = [
         defaultValue: 40,
         helper: "De 1 a 3650. O registro de sondas e de falhas de login e MFA (só com hash, sem e-mail nem IP) é apagado depois deste prazo. Padrão: 40, acima do histórico.",
       },
+      {
+        key: "analytics.tec.recalculo_min",
+        label: "Minutos entre os recálculos dos indicadores técnicos e de IA",
+        type: "number",
+        defaultValue: 4,
+        helper: "De 1 a 60. Disponibilidade, filas, integrações, freshness, autenticação, bloqueios e IA são recalculados neste intervalo, fora da agenda geral do BI. Acima de 5 o indicador passa a aparecer como desatualizado entre dois recálculos. Padrão: 4.",
+      },
     ],
   },
   {
