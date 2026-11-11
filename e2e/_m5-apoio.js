@@ -14,7 +14,8 @@ const OUT = path.join(__dirname, "prints-m5-fechamento");
 
 function guard() {
   if (!PASSWORD) throw new Error("Defina E2E_PASSWORD (senha dos usuários fictícios do seed de dois tenants).");
-  for (const u of [FRONT, API]) if (!/^http:\/\/(localhost|127\.0\.0\.1):55\d\d\b/.test(u)) throw new Error(`RECUSADO: ${u} não é a pilha descartável local (portas 55xx).`);
+  // Pilha descartável local: portas 55xx ou a faixa 29xxx (UAT do Marco 5, agente M5ES); nunca a homologação.
+  for (const u of [FRONT, API]) if (!/^http:\/\/(localhost|127\.0\.0\.1):(55\d\d|29\d\d\d)\b/.test(u)) throw new Error(`RECUSADO: ${u} não é a pilha descartável local (portas 55xx ou 29xxx).`);
   fs.mkdirSync(OUT, { recursive: true });
 }
 
