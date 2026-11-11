@@ -1,5 +1,5 @@
 // Marco 4 — Caderno §11 e §17: os parâmetros do Financeiro que a API lê (getSetting) ficam numa aba "Financeiro" de Configurações, com o padrão que a API
-// usa enquanto a empresa não grava nada e a mesma faixa que a API confere (SETTINGS_SCHEMA em src/features/finance/finance.settings.js da API).
+// usa enquanto a empresa não grava nada e a mesma faixa que a API confere (SETTINGS_SCHEMA em src/modules/finance/application/services/finance-settings.js da API).
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";

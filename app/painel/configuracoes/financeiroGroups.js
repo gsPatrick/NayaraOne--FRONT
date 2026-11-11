@@ -1,6 +1,6 @@
 // Parâmetros do Financeiro (Marco 4) que o administrador controla na aba "Financeiro". O caderno do Marco 4 pede cada controle e diz que ele é
 // configurável, mas não traz os números: o padrão mostrado aqui é o da decisão DEC-007, o mesmo que a API usa enquanto a empresa não grava nada, e a
-// faixa é a mesma que a API confere (SETTINGS_SCHEMA, src/features/finance/finance.settings.js). Valor fora da faixa é recusado pela API.
+// faixa é a mesma que a API confere (SETTINGS_SCHEMA, src/modules/finance/application/services/finance-settings.js). Valor fora da faixa é recusado pela API.
 // Os campos marcados "exige verificação em duas etapas" só gravam com o MFA recente de quem altera (a API pede o código e a tela abre o modal).
 const MFA = " Alterar exige a verificação em duas etapas (código do MFA).";
 

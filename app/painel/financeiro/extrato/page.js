@@ -4,7 +4,7 @@
 // encontrada". O backend (importBankStatement, idempotente por externalTransactionId linha a
 // linha) já existia; esta tela é o que faltava para fechar o ponto de ponta a ponta. Formato
 // aceito: CSV com cabeçalho "externalTransactionId,transactionDate,description,amount", nessa
-// ordem exata (ver NayaraOne--API/src/features/finance/bankTransactions.service.js).
+// ordem exata (ver NayaraOne--API/src/modules/finance/application/services/bank-transactions.service.js).
 
 import { useEffect, useState } from "react";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
