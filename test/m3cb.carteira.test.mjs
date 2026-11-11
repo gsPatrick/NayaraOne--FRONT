@@ -5,7 +5,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { buildOpportunityEditPatch, ownerChangeError, ownerChanged, REASSIGN_PERMISSION } from "@/app/painel/crm/opportunityEditPatch.js";
-import { CARTEIRA_KEY, CRM_FIELDS, CRM_GROUPS } from "@/app/painel/configuracoes/crmGroups.js";
+import { CARTEIRA_KEY, CRM_CARTEIRA_FIELDS as CRM_FIELDS, CRM_CARTEIRA_GROUPS as CRM_GROUPS } from "@/app/painel/configuracoes/crmCarteiraGroups.js";
 
 const read = (p) => fs.readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
 const opp = { id: "o1", ownerUserId: "u-a" };
@@ -42,16 +42,28 @@ test("m3 CAD-18: a tela trava o responsável sem a permissão de troca e mostra 
 });
 
 test("m3 CRM-TS-012: a aba CRM traz a política da carteira com o catálogo e o padrão da API, em português", () => {
-  assert.deepEqual(CRM_FIELDS.map((f) => f.key), [CARTEIRA_KEY]);
+  assert.deepEqual(CRM_FIELDS.map((f) => f.key), [CARTEIRA_KEY, "exportacao.crm.linhas_maximo", "exportacao.crm.exige_mfa"]);
   const field = CRM_FIELDS[0];
   assert.equal(field.key, "crm.carteira.registro_sem_oportunidade");
   assert.equal(field.defaultValue, "CLIENTE_DA_CARTEIRA");
   assert.deepEqual(field.options.map((o) => o.value), ["CLIENTE_DA_CARTEIRA", "SOMENTE_PROPRIOS"]);
-  for (const text of [CRM_GROUPS[0].title, CRM_GROUPS[0].subtitle, field.label, field.helper, ...field.options.map((o) => o.label)]) {
+  for (const text of [...CRM_GROUPS.flatMap((g) => [g.title, g.subtitle]), ...CRM_FIELDS.flatMap((f) => [f.label, f.helper]), ...field.options.map((o) => o.label)]) {
     assert.doesNotMatch(text, /crm\.|_|undefined/, text);
   }
   assert.match(field.helper, /^Padrão: /);
   const pagina = read("app/painel/configuracoes/page.js");
-  assert.match(pagina, /\{ label: "CRM", content: <CrmTab \/> \}/);
-  assert.match(read("app/painel/configuracoes/CrmTab.js"), /listSettings\("crm\."\)/);
+  assert.match(pagina, /\{ label: "CRM: carteira e exportação", content: <CrmCarteiraTab \/> \}/);
+  assert.match(read("app/painel/configuracoes/CrmCarteiraTab.js"), /listSettings\("crm\."\)/);
+});
+
+test("m3 M3-21 / DEC-049: a aba CRM traz o teto de registros e o MFA da exportação com o padrão e a faixa da API", () => {
+  const teto = CRM_FIELDS.find((f) => f.key === "exportacao.crm.linhas_maximo");
+  assert.deepEqual([teto.type, teto.defaultValue, teto.min, teto.max], ["integer", 5000, 1, 100000]);
+  const mfa = CRM_FIELDS.find((f) => f.key === "exportacao.crm.exige_mfa");
+  assert.deepEqual([mfa.type, mfa.defaultValue], ["boolean", true]);
+  assert.match(mfa.helper, /não aceita desligar/);
+  const tab = read("app/painel/configuracoes/CrmCarteiraTab.js");
+  assert.match(tab, /listSettings\("exportacao\.crm\."\)/);
+  assert.match(tab, /DecimalInput/);
+  assert.match(tab, /toNumber\(value\)/);
 });

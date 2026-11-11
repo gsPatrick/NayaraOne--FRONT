@@ -1,4 +1,4 @@
-// Parâmetros do CRM que o administrador controla (Marco 3). A API valida (SETTINGS_SCHEMA, src/features/crm/carteira/carteira.settings.js)
+// Parâmetros do CRM da rodada M3CB (Marco 3: carteira do corretor e exportação da base de clientes), na aba "CRM: carteira e exportação". A API valida (SETTINGS_SCHEMA, src/features/crm/carteira/carteira.settings.js)
 // e audita cada alteração; o padrão mostrado é o valor que a API usa enquanto a empresa não gravou nada.
 export const CARTEIRA_KEY = "crm.carteira.registro_sem_oportunidade";
 
@@ -10,7 +10,7 @@ export const CARTEIRA_OPTIONS = [
   { value: "SOMENTE_PROPRIOS", label: "Só os próprios: o corretor vê apenas o que ele mesmo registrou" },
 ];
 
-export const CRM_GROUPS = [
+export const CRM_CARTEIRA_GROUPS = [
   {
     title: "Carteira do corretor",
     subtitle:
@@ -26,6 +26,29 @@ export const CRM_GROUPS = [
       },
     ],
   },
+  {
+    title: "Exportação de oportunidades",
+    subtitle:
+      "A exportação da base de clientes (oportunidades do CRM) sempre pede a permissão de exportar, a finalidade com justificativa e a confirmação do código de verificação (MFA), e fica registrada. Acima do limite de registros, o pedido é recusado (nunca sai cortado); vale o menor entre este limite e o da política de proteção contra vazamento da aba Governança.",
+    fields: [
+      {
+        key: "exportacao.crm.linhas_maximo",
+        label: "Máximo de registros por exportação",
+        type: "integer",
+        defaultValue: 5000,
+        min: 1,
+        max: 100000,
+        helper: "Padrão: 5.000. Número inteiro de 1 a 100.000.",
+      },
+      {
+        key: "exportacao.crm.exige_mfa",
+        label: "Exigir a confirmação do código de verificação (MFA) para exportar",
+        type: "boolean",
+        defaultValue: true,
+        helper: "Padrão: ligado. O livro exige o código na exportação da base de clientes: o sistema não aceita desligar. Alterar pede o seu código.",
+      },
+    ],
+  },
 ];
 
-export const CRM_FIELDS = CRM_GROUPS.flatMap((group) => group.fields);
+export const CRM_CARTEIRA_FIELDS = CRM_CARTEIRA_GROUPS.flatMap((group) => group.fields);
