@@ -2,6 +2,8 @@
 // configurável, mas não traz os números: o padrão mostrado aqui é o da decisão DEC-007, o mesmo que a API usa enquanto a empresa não grava nada, e a
 // faixa é a mesma que a API confere (SETTINGS_SCHEMA, src/modules/finance/application/services/finance-settings.js). Valor fora da faixa é recusado pela API.
 // Os campos marcados "exige verificação em duas etapas" só gravam com o MFA recente de quem altera (a API pede o código e a tela abre o modal).
+import { APROVACAO_GROUPS, APROVACAO_PREFIXES } from "./financeiroAprovacaoGroups";
+
 const MFA = " Alterar exige a verificação em duas etapas (código do MFA).";
 
 export const FINANCEIRO_GROUPS = [
@@ -162,9 +164,11 @@ export const FINANCEIRO_GROUPS = [
       },
     ],
   },
+  // Autorização do pagamento, do estorno e da reabertura de período (DEC-003, DEC-004): grupos em arquivo próprio.
+  ...APROVACAO_GROUPS,
 ];
 
 export const FINANCEIRO_FIELDS = FINANCEIRO_GROUPS.flatMap((group) => group.fields);
 
 // A tela lê só as chaves desta aba (nunca as credenciais do banco, que também começam com "finance.").
-export const FINANCEIRO_PREFIXES = ["finance.antifraud_", "finance.bank_account_cooldown_hours", "finance.reconciliation.", "antifraude."];
+export const FINANCEIRO_PREFIXES = ["finance.antifraud_", "finance.bank_account_cooldown_hours", "finance.reconciliation.", "antifraude.", ...APROVACAO_PREFIXES];

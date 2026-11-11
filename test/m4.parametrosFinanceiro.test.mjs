@@ -25,9 +25,22 @@ const ESPERADO = {
   "antifraude.conciliacao_manual_percentual_mes": { type: "decimal", defaultValue: 30, min: 1, max: 100 },
   "antifraude.estorno_frequente_usuario_30d": { type: "integer", defaultValue: 3, min: 1, max: 100 },
   "antifraude.estorno_frequente_empresa_30d": { type: "integer", defaultValue: 3, min: 1, max: 1000 },
+  // Autorização do pagamento, do estorno e da reabertura (PAYMENT_APPROVAL_SETTINGS_SCHEMA da API; DEC-003, DEC-004).
+  "pagamentos.faixa.baixo_ate": { type: "decimal", defaultValue: 5000, min: 0.01, max: 999999999.99 },
+  "pagamentos.faixa.medio_ate": { type: "decimal", defaultValue: 50000, min: 0.01, max: 999999999.99 },
+  "pagamentos.faixa.alto_ate": { type: "decimal", defaultValue: 200000, min: 0.01, max: 999999999.99 },
+  "pagamentos.aprovadores.baixo": { type: "integer", defaultValue: 1, min: 1, max: 5 },
+  "pagamentos.aprovadores.medio": { type: "integer", defaultValue: 1, min: 1, max: 5 },
+  "pagamentos.aprovadores.alto": { type: "integer", defaultValue: 2, min: 1, max: 5 },
+  "pagamentos.aprovadores.critico": { type: "integer", defaultValue: 2, min: 1, max: 5 },
+  "pagamentos.mfa.aprovacao_medio": { type: "boolean", defaultValue: false },
+  "pagamentos.risco_sem_valor": { type: "select", defaultValue: "CRITICAL" },
+  "financeiro.estorno.aprovador_distinto": { type: "boolean", defaultValue: true },
+  "fechamento.reabertura_motivo_minimo_caracteres": { type: "integer", defaultValue: 20, min: 5, max: 500 },
+  "fechamento.reabertura.aprovadores": { type: "integer", defaultValue: 1, min: 1, max: 5 },
 };
 
-test("m4 §17.7 parâmetros: a aba Financeiro lista as chaves (as seis antigas e as oito da DEC-007) com o padrão e a faixa da API", () => {
+test("m4 §17.7 parâmetros: a aba Financeiro lista as chaves (as seis antigas, as oito da DEC-007 e as doze da autorização) com o padrão e a faixa da API", () => {
   assert.deepEqual(FINANCEIRO_FIELDS.map((f) => f.key).sort(), Object.keys(ESPERADO).sort());
   for (const field of FINANCEIRO_FIELDS) {
     const esperado = ESPERADO[field.key];
@@ -106,5 +119,7 @@ test("DEC-007 MFA: o 403 de MFA recente de um parâmetro sensível não vira 'Se
     assert.match(src, /isMfaSettingError\(err\) \? mfaSettingMessage\(err\)/, file);
   }
   const financeiro = FINANCEIRO_FIELDS.filter((f) => /verificação em duas etapas/.test(f.helper)).map((f) => f.key).sort();
-  assert.deepEqual(financeiro, ["finance.antifraud_new_account_threshold", "finance.bank_account_cooldown_hours", "finance.reconciliation.auto_strong"]);
+  // Todas as chaves da autorização (pagamento, estorno, reabertura) exigem MFA para alterar, menos o tamanho mínimo do motivo (requiresMfa da API).
+  const aprovacao = Object.keys(ESPERADO).filter((k) => /^(pagamentos\.|financeiro\.estorno\.|fechamento\.reabertura\.)/.test(k));
+  assert.deepEqual(financeiro, ["finance.antifraud_new_account_threshold", "finance.bank_account_cooldown_hours", "finance.reconciliation.auto_strong", ...aprovacao].sort());
 });
