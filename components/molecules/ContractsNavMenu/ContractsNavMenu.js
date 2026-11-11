@@ -15,6 +15,7 @@ const ITEMS = [
   { label: "Entrega de chaves", href: "/painel/contratos/entrega-chaves", icon: "key" },
   { label: "Processos jurídicos", href: "/painel/contratos/processos", icon: "scale" },
   { label: "Biblioteca de cláusulas", href: "/painel/contratos/clausulas", icon: "document" },
+  { label: "Modelos de contrato", href: "/painel/contratos/modelos", icon: "layers" },
   { label: "Notificações", href: "/painel/contratos/notificacoes", icon: "document" },
 ];
 

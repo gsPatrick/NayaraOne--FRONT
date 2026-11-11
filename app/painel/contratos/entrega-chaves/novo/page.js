@@ -17,9 +17,12 @@ import { listPeople } from "@/lib/api/people";
 import { formatContractLabel, formatDate } from "@/lib/format";
 import {
   CONTRACT_TYPE_LABELS, CONTRACT_STATUS_LABELS, PARTY_ROLE_LABELS,
-  INSPECTION_TYPE_LABELS, INSPECTION_STATUS_LABELS,
-} from "@/lib/mock/legal";
+  INSPECTION_TYPE_LABELS, INSPECTION_STATUS_LABELS, normalizeInspectionType,
+  KEY_DELIVERY_TERM_TYPE_LABELS as TERM_TYPE_LABELS, keyDeliveryInspectionTypes as deliveryInspectionTypes,
+} from "@/lib/labels/juridico";
+import { legalErrorMessage } from "@/lib/legal/legalErrors";
 import styles from "./page.module.css";
+
 
 import { reportLookupProblem } from "@/lib/asyncState/lookup";
 export default function NovaEntregaChavesPage() {
@@ -33,6 +36,7 @@ export default function NovaEntregaChavesPage() {
     contractId: "",
     inspectionId: "",
     deliveredToPersonId: "",
+    termType: "KEY_DELIVERY",
     notes: "",
   });
 
@@ -80,8 +84,8 @@ export default function NovaEntregaChavesPage() {
 
   const contractOptionLabel = (c) => [
     formatContractLabel(c),
-    CONTRACT_TYPE_LABELS[c.contractType] || c.contractType,
-    CONTRACT_STATUS_LABELS[c.status] || c.status,
+    CONTRACT_TYPE_LABELS[c.contractType],
+    CONTRACT_STATUS_LABELS[c.status],
   ].filter(Boolean).join(" · ");
   const filteredContracts = useMemo(() => {
     const q = contractSearch.trim().toLowerCase();
@@ -92,11 +96,13 @@ export default function NovaEntregaChavesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contracts, contractSearch, form.contractId]);
 
-  // O4: vistorias do contrato escolhido, com rótulo em português (sem UUID cru).
-  const contractInspections = inspections.filter((i) => !form.contractId || i.contractId === form.contractId);
+  // O4: vistorias do contrato escolhido que liberam a entrega (entrada; na venda também a final), sem UUID cru.
+  const selectedContract = contracts.find((c) => c.id === form.contractId) || null;
+  const allowedTypes = deliveryInspectionTypes(selectedContract);
+  const contractInspections = inspections.filter((i) => (!form.contractId || i.contractId === form.contractId) && allowedTypes.includes(normalizeInspectionType(i.inspectionType)));
   const inspectionLabel = (i) => [
-    `Vistoria de ${(INSPECTION_TYPE_LABELS[i.inspectionType] || i.inspectionType || "").toLowerCase()}`,
-    INSPECTION_STATUS_LABELS[i.status] || i.status,
+    `Vistoria de ${(INSPECTION_TYPE_LABELS[i.inspectionType] || "").toLowerCase()}`,
+    INSPECTION_STATUS_LABELS[i.status] || "situação não identificada",
     i.completedAt || i.scheduledAt ? formatDate(i.completedAt || i.scheduledAt) : null,
   ].filter(Boolean).join(" · ");
 
@@ -120,10 +126,11 @@ export default function NovaEntregaChavesPage() {
         inspectionId: form.inspectionId || undefined,
         deliveredToPersonId: form.deliveredToPersonId,
         notes: form.notes || undefined,
+        termType: form.termType,
       });
       router.push(`/painel/contratos/entrega-chaves/${delivery.id}`);
     } catch (err) {
-      setActionError(err.message || "Erro ao criar entrega de chaves.");
+      setActionError(legalErrorMessage(err, "Erro ao criar entrega de chaves."));
     } finally {
       setSubmitting(false);
     }
@@ -143,7 +150,7 @@ export default function NovaEntregaChavesPage() {
         {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
 
         <Alert tone="info" title="Trava de liberação">
-          A liberação efetiva das chaves só é permitida quando o contrato estiver assinado ou ativo e, se houver vistoria de entrada vinculada, ela precisa estar concluída.
+          A liberação das chaves só é permitida com o contrato assinado ou ativo, o checklist da entrega atendido, a vistoria de entrada concluída e assinada pelo locador e pelo locatário, garantia vigente e a via do termo de entrega assinada pelo recebedor (anexada na liberação).
         </Alert>
 
         <Card title="Dados da entrega">
@@ -161,7 +168,15 @@ export default function NovaEntregaChavesPage() {
               </Select>
             </FormField>
 
-            <FormField label="Vistoria vinculada" htmlFor="f-inspection" helper="Opcional — vistorias deste contrato">
+            <FormField label="Tipo de termo" htmlFor="f-term-type" required helper="Imóvel usado: o termo registra o estado do imóvel e exige fotos.">
+              <Select id="f-term-type" value={form.termType} onChange={update("termType")}>
+                {Object.entries(TERM_TYPE_LABELS).map(([k, v]) => (
+                  <option key={k} value={k}>{v}</option>
+                ))}
+              </Select>
+            </FormField>
+
+            <FormField label="Vistoria vinculada" htmlFor="f-inspection" helper={allowedTypes.includes("FINAL") ? "Opcional — vistoria final ou de entrada deste contrato" : "Opcional — vistoria de entrada deste contrato"}>
               <Select id="f-inspection" value={form.inspectionId} onChange={update("inspectionId")}>
                 <option value="">Nenhuma</option>
                 {contractInspections.map((i) => (
@@ -180,7 +195,7 @@ export default function NovaEntregaChavesPage() {
                 {parties === null ? <option value="">Carregando partes…</option> : null}
                 {partyOptions.map((p) => (
                   <option key={p.personId} value={p.personId}>
-                    {(peopleById.get(p.personId)?.legalName || "Pessoa")} — {PARTY_ROLE_LABELS[p.partyRole] || p.partyRole}
+                    {(peopleById.get(p.personId)?.legalName || "Pessoa")} — {PARTY_ROLE_LABELS[p.partyRole] || "Parte"}
                   </option>
                 ))}
               </Select>

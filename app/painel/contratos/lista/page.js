@@ -25,7 +25,7 @@ import {
   CONTRACT_TYPE_TONE,
   CONTRACT_STATUS_LABELS,
   CONTRACT_STATUS_TONE,
-} from "@/lib/mock/legal";
+} from "@/lib/labels/juridico";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { UI_STATE } from "@/lib/asyncState/states";
 import { formatBRL, formatContractLabel } from "@/lib/format";
@@ -73,8 +73,9 @@ export default function ContratosListaPage() {
   }, [contracts, properties, query, typeFilter, statusFilter]);
 
   function handleDelete() {
-    // Não há endpoint de exclusão de contrato na API — cancelamento é feito via transitionContract.
-    setActionError("Contratos não podem ser excluídos — use a transição de status para CANCELLED na página de detalhe.");
+    // Não há exclusão de contrato na API, e "Cancelado" deixou de ser etapa do livro (a API recusa): o contrato segue a
+    // máquina de estados na página de detalhe.
+    setActionError("Contratos não são excluídos. Antes da aprovação, o contrato volta para rascunho; depois de em vigor, é encerrado (rescisão) e arquivado — tudo pela página de detalhe do contrato.");
     setDeleteTarget(null);
   }
 
@@ -105,7 +106,7 @@ export default function ContratosListaPage() {
       key: "contractType",
       label: "Tipo",
       width: "16%",
-      render: (row) => <Badge tone={CONTRACT_TYPE_TONE[row.contractType]}>{CONTRACT_TYPE_LABELS[row.contractType]}</Badge>,
+      render: (row) => <Badge tone={CONTRACT_TYPE_TONE[row.contractType] || "neutral"}>{CONTRACT_TYPE_LABELS[row.contractType] || "Contrato"}</Badge>,
     },
     { key: "totalValue", label: "Valor", width: "16%", render: (row) => formatBRL(row.totalValue) },
     {
@@ -114,7 +115,7 @@ export default function ContratosListaPage() {
       width: "22%",
       render: (row) => (
         <div className={styles.statusCell}>
-          <Badge tone={CONTRACT_STATUS_TONE[row.status]}>{CONTRACT_STATUS_LABELS[row.status]}</Badge>
+          <Badge tone={CONTRACT_STATUS_TONE[row.status] || "neutral"}>{CONTRACT_STATUS_LABELS[row.status] || "Situação desconhecida"}</Badge>
         </div>
       ),
     },
@@ -146,7 +147,7 @@ export default function ContratosListaPage() {
         </div>
       ) : null}
 
-      <Card title="Contratos" subtitle="Lista de contratos de venda, locação e prestação de serviço">
+      <Card title="Contratos" subtitle="Contratos de venda, locação, serviço, obra e termos vinculados (aditivos e entregas)">
         <div className={styles.toolbar}>
           <SearchInput
             placeholder="Buscar por número ou imóvel..."
@@ -160,7 +161,7 @@ export default function ContratosListaPage() {
             ))}
           </Select>
           <Select className={styles.filter} value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); resetPage(); }}>
-            <option value="">Todos os status</option>
+            <option value="">Todas as situações</option>
             {Object.entries(CONTRACT_STATUS_LABELS).map(([k, v]) => (
               <option key={k} value={k}>{v}</option>
             ))}
@@ -191,7 +192,7 @@ export default function ContratosListaPage() {
       <Modal
         open={Boolean(deleteTarget)}
         onClose={() => setDeleteTarget(null)}
-        title="Excluir contrato"
+        title="Excluir contrato?"
         footer={
           <>
             <Button variant="secondary" onClick={() => setDeleteTarget(null)}>Cancelar</Button>

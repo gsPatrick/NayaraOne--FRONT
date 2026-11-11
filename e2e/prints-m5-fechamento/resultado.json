@@ -1,0 +1,245 @@
+{
+  "when": "2026-11-11T02:39:23.412Z",
+  "results": [
+    {
+      "label": "0. login na tela (usuário fictício, sem MFA)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "T1. cláusula criada na biblioteca com responsável jurídico",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "T2. modelo criado sem versão publicada (ainda não gera contrato)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "T3. cláusula incluída na versão 1 em rascunho do modelo",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "T4. versão 1 do modelo publicada (alçada jurídica), com quem publicou",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "T5. incluir cláusula no modelo publicado cria a versão 2 em rascunho",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "1c. prévia mostra a versão 1 publicada (a que gera contrato), sem a cláusula do rascunho",
+      "ok": true,
+      "detail": "Prévia da versão 1 do modelo (publicada) — é a que gera o documento do contrato."
+    },
+    {
+      "label": "1d. Ver rascunho mostra a versão 2 em rascunho, marcada como só consulta",
+      "ok": true,
+      "detail": "Prévia da versão 2 do modelo (rascunho) — só consulta: o documento é gerado pela versão publicada."
+    },
+    {
+      "label": "1. contrato criado em rascunho pela tela",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "1b. versão 1 gerada da versão PUBLICADA do modelo",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "1a. sem botão Cancelar (CANCELLED não é estado do livro)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "2. contrato em Documentos pendentes e checklist gerado pela regra",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "2a. revisão jurídica recusada com pendências do checklist em português",
+      "ok": true,
+      "detail": "Faltam documentos do checklist (antes da revisão jurídica): Documentos PF/PJ das partes (locador/locatário); Garantia locatícia (fiador, seg"
+    },
+    {
+      "label": "3. todos os documentos do checklist anexados pela tela",
+      "ok": true,
+      "detail": "5 anexo(s)"
+    },
+    {
+      "label": "4. versão 2 do documento criada (Rascunho)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "5. contrato em Revisão jurídica",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "6. versão aprovada pela rota da versão: versão Aprovada e contrato Aprovado",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "6a. depois da aprovação, valor/vigência só por aditivo",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "7. versão aprovada enviada para assinatura (Em assinatura)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "8. assinaturas manuais com a via assinada registradas",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "9. contrato Assinado",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "9a. linha do tempo sem código de status cru",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "A1. aditivo criado em rascunho com versão base e vigência",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "A2. aditivo assinado por cada signatário (fica Assinado)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "N1. correção da notificação cria a versão 2 e preserva a versão 1 (com o motivo)",
+      "ok": true,
+      "detail": "Versão 1 Versão inicial. · 10/11/2026 às 23:37 (horário de Brasília) · por CI gestor — tenant A Versão 2 · atual Valor d"
+    },
+    {
+      "label": "10. tela avisa antes de criar que a garantia nasce pendente",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "11. seguro-fiança sem parcelas/renovação nasce Pendente com o que falta",
+      "ok": true,
+      "detail": "Parcelas do prêmio Data de renovação"
+    },
+    {
+      "label": "12. dados do tipo completados: garantia Ativa",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "13. vistoria de Entrada criada com itens por ambiente",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "14. foto anexada ao item da vistoria",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "15. vistoria de entrada concluída",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "16. assinatura sem MFA recente recusada com mensagem clara",
+      "ok": true,
+      "detail": "Assinatura não registrada: Esta ação exige verificação em duas etapas (MFA) habilitada na sua conta. Configure em Meu perfil e tente de novo"
+    },
+    {
+      "label": "17. comparação entrada x saída por ambiente/item: Sala/Piso mudou (Bom -> Danificado)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "17a. comparação avisa que a responsabilidade depende de validação humana",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "17b. preparo: assinaturas de locador e locatário pela camada de serviço (MFA não é contornado na rota)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "18. entrega de chaves recusada SEM a via assinada do termo",
+      "ok": true,
+      "detail": "Entrega recusada Anexe a via do termo de entrega assinada pelo recebedor: a entrega das chaves exige o termo assinado."
+    },
+    {
+      "label": "19. com a via assinada do termo, chaves entregues (selo Entregue e via assinada guardada)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "20. prazo criado com documento de origem (vence 23:59 de Brasília)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "20a. prazo reatribuído a outro usuário da empresa",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "20b. remarcar SEM motivo é recusado com mensagem clara",
+      "ok": true,
+      "detail": "Alteração recusada: Para remarcar o vencimento, informe o motivo da mudança: ele fica no histórico do prazo."
+    },
+    {
+      "label": "20c. remarcado COM motivo: novo vencimento na tela",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "21. prazo concluído com nota",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "21a. prazo concluído reaberto (aprovação jurídica): volta a Pendente",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "21b. histórico do prazo: vencimento anterior, novo, motivo, autor e data",
+      "ok": true,
+      "detail": "10/11/2026 às 23:39 (horário de Brasília) · por CI gestor — tenant A Prazo “Contestação do locatário”: reaberto. 10/11/2026 às 23:39 (horário de Brasília) · por"
+    },
+    {
+      "label": "R1. com só a estimativa, nada vira recebível",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "R2. valor confirmado vinculado como recebível no Financeiro",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "22. API recusa CANCELLED como alvo (409)",
+      "ok": true,
+      "detail": "HTTP 409"
+    },
+    {
+      "label": "23. contrato antigo CANCELLED legível, sem ações",
+      "ok": true,
+      "detail": ""
+    }
+  ]
+}

@@ -202,3 +202,6 @@
 .guaranteeInfo { flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 .guaranteeTitle { font-size: var(--text-body-sm); font-weight: 600; color: var(--color-ink); }
 .guaranteeMeta { font-size: var(--text-caption); color: var(--color-ink-muted); }
+
+.linkBtn { background: none; border: none; padding: 0; color: var(--color-brand); font: inherit; font-weight: 600; cursor: pointer; text-decoration: underline; }
+.linkBtn:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 2px; }

@@ -67,6 +67,7 @@ export const NAV_SECTIONS = [
           { label: "Processos jurídicos", href: "/painel/contratos/processos" },
           { label: "Jurídico (BI)", href: "/painel/analytics/juridico" },
           { label: "Biblioteca de cláusulas", href: "/painel/contratos/clausulas" },
+          { label: "Modelos de contrato", href: "/painel/contratos/modelos" },
         ],
       },
       {

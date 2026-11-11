@@ -9,62 +9,31 @@ import Input from "@/components/atoms/Input/Input";
 import Select from "@/components/atoms/Select/Select";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
-import Icon from "@/components/atoms/Icon/Icon";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import { UI_STATE } from "@/lib/asyncState/states";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { listProperties } from "@/lib/api/properties";
 import { listPeople } from "@/lib/api/people";
 import { listProjects } from "@/lib/api/construction";
-import { createContract, addContractParty, listContractTemplates, renderContractTemplate, createContractVersion } from "@/lib/api/legal";
-import { CONTRACT_TYPE_LABELS, CONTRACT_TYPE_CREATE_OPTIONS, PARTY_ROLE_LABELS } from "@/lib/mock/legal";
-import { dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE, formatDate, formatBRL, toNumber } from "@/lib/format";
-import { describeCondition } from "@/app/painel/contratos/clausulas/ClauseConditionEditor";
+import { createContract, addContractParty, listContracts, listContractTemplates, getContractTemplate, renderContractTemplate, createContractVersion } from "@/lib/api/legal";
+import { CONTRACT_TYPE_LABELS, CONTRACT_TYPE_CREATE_OPTIONS, LINKED_CONTRACT_TYPES } from "@/lib/labels/juridico";
+import { legalErrorMessage } from "@/lib/legal/legalErrors";
+import { dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE, formatContractLabel, toNumber } from "@/lib/format";
+import { findUnresolvedPlaceholders, buildKnownVariables } from "./templateVariables";
+import PartiesEditor from "./PartiesEditor";
+import ClausePreviewCard from "./ClausePreviewCard";
 import styles from "./page.module.css";
 import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 
-// Detecta placeholders "{{chave}}" que sobraram sem substituir no texto renderizado — o backend
-// (contractTemplates.service.js#applyTemplateVariables) deixa o placeholder intacto quando não
-// recebe valor pra ele, de propósito, pra nunca esconder silenciosamente que faltou preencher
-// algo. O front usa isso pra pedir os campos que faltam antes de criar a versão do contrato.
-function findUnresolvedPlaceholders(text) {
-  const matches = String(text || "").matchAll(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g);
-  return [...new Set([...matches].map((m) => m[1]))];
-}
-
-// Mapeia os placeholders mais comuns dos templates de contrato pra dados já coletados no
-// formulário — evita pedir de novo algo que o usuário já preencheu (nome das partes, endereço
-// do imóvel, valor, datas). Qualquer placeholder que não bater com essas chaves conhecidas cai
-// no formulário dinâmico de "completar o template" pra preenchimento manual.
-function buildKnownVariables({ parties, people, property, form }) {
-  const byRole = (role) => {
-    const party = parties.find((p) => p.partyRole === role);
-    return party ? people.find((p) => p.id === party.personId) : null;
-  };
-  const landlord = byRole("LANDLORD") || byRole("SELLER");
-  const tenant = byRole("TENANT") || byRole("BUYER");
-
-  const vars = {};
-  if (landlord) {
-    vars.nome_locador = landlord.legalName;
-    vars.doc_locador = landlord.taxIdNormalized || "(documento não cadastrado)";
-  }
-  if (tenant) {
-    vars.nome_locatario = tenant.legalName;
-    vars.doc_locatario = tenant.taxIdNormalized || "(documento não cadastrado)";
-  }
-  if (property) vars.endereco_imovel = property.addressLine || property.name;
-  if (form.totalValue) vars.valor_aluguel = formatBRL(toNumber(form.totalValue)).replace("R$", "").trim();
-  if (form.startsAt) vars.data_inicio = formatDate(dateOnlyInputToIso(form.startsAt));
-  if (form.endsAt) vars.data_fim = formatDate(dateOnlyInputToIso(form.endsAt));
-  return vars;
-}
+// Prévia das cláusulas com a versão do modelo que foi usada (a publicada gera o contrato; o rascunho é só consulta).
+const toPreview = (r) => ({ included: r.clauses || [], excluded: r.excludedClauses || [], versionNumber: r.templateVersionNumber || null, versionStatus: r.templateVersionStatus || null });
 
 export default function NovoContratoPage() {
   const router = useRouter();
   const [properties, setProperties] = useState([]);
   const [people, setPeople] = useState([]);
   const [templates, setTemplates] = useState([]);
+  const [contracts, setContracts] = useState([]);
   const [actionError, setActionError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
@@ -75,7 +44,10 @@ export default function NovoContratoPage() {
     endsAt: "",
     templateId: "",
     constructionProjectId: "",
+    parentContractId: "",
   });
+  // Caderno §3: aditivo e termos de entrega são VINCULADOS ao contrato principal e herdam o imóvel dele.
+  const isLinked = LINKED_CONTRACT_TYPES.includes(form.contractType);
   // F5 (auditoria M45): contrato de Obra/Construção — a API exige a obra vinculada.
   const [projects, setProjects] = useState(null);
   const [projectsError, setProjectsError] = useState("");
@@ -87,7 +59,6 @@ export default function NovoContratoPage() {
       .catch((err) => { setProjects([]); setProjectsError(err.message || "Erro ao carregar obras."); });
   }, [isConstruction, projects]);
   const [parties, setParties] = useState([]);
-  const [newParty, setNewParty] = useState({ personId: "", partyRole: "LANDLORD" });
   // Placeholders do template escolhido que não têm dado correspondente já coletado no
   // formulário (ver buildKnownVariables) — pedidos ao usuário antes de criar a versão, pra
   // nunca deixar {{assim}} sem preencher no documento gerado (bug real encontrado nesta
@@ -98,16 +69,17 @@ export default function NovoContratoPage() {
   // F01: resultado da pré-visualização — quais cláusulas entram e quais ficam de fora (e por quê),
   // decidido pelo servidor com os dados deste contrato. Mostrado antes de criar.
   const [clausePreview, setClausePreview] = useState(null);
+  const [draftPreview, setDraftPreview] = useState(null);
 
   // M9-D940: carregando, erro com "tentar de novo", 403 e offline vêm do padrão único de estados.
   const loadQuery = useAsyncState(() => {
-    return Promise.all([listProperties(), listPeople(), listContractTemplates()])
-      .then(([propertiesRes, peopleRes, templatesRes]) => {
+    return Promise.all([listProperties(), listPeople(), listContractTemplates(), listContracts()])
+      .then(([propertiesRes, peopleRes, templatesRes, contractsRes]) => {
         setProperties(propertiesRes || []);
         setPeople(peopleRes || []);
         setTemplates(templatesRes || []);
+        setContracts((contractsRes || []).filter((c) => !LINKED_CONTRACT_TYPES.includes(c.contractType)));
         setForm((prev) => ({ ...prev, propertyId: prev.propertyId || propertiesRes?.[0]?.id || "" }));
-        setNewParty((prev) => ({ ...prev, personId: prev.personId || peopleRes?.[0]?.id || "" }));
       })
       .then(() => true);
   }, { deps: [], isEmpty: () => false });
@@ -115,9 +87,11 @@ export default function NovoContratoPage() {
   const templatesForType = templates.filter((t) => t.contractType === form.contractType);
 
   const [dateErrors, setDateErrors] = useState({});
-  const isValid =
-    form.propertyId && toNumber(form.totalValue) > 0 && parties.length > 0 && !dateErrors.startsAt && !dateErrors.endsAt &&
-    (!isConstruction || Boolean(form.constructionProjectId));
+  const value = toNumber(form.totalValue);
+  const isValid = isLinked
+    ? Boolean(form.parentContractId) && (form.totalValue === "" || (!Number.isNaN(value) && value >= 0)) && !dateErrors.startsAt && !dateErrors.endsAt
+    : form.propertyId && !Number.isNaN(value) && value > 0 && parties.length > 0 && !dateErrors.startsAt && !dateErrors.endsAt &&
+      (!isConstruction || Boolean(form.constructionProjectId));
 
   function update(field) {
     return (e) => {
@@ -136,18 +110,6 @@ export default function NovoContratoPage() {
 
   function checkDate(field) {
     return (e) => setDateErrors((prev) => ({ ...prev, [field]: isDateInputInvalid(e.target.validity) }));
-  }
-
-  function addParty() {
-    const person = people.find((p) => p.id === newParty.personId);
-    if (!person) return;
-    setParties((prev) => [...prev, { id: `tmp-${Date.now()}`, personId: newParty.personId, partyRole: newParty.partyRole }]);
-    resetTemplateCheck();
-  }
-
-  function removeParty(id) {
-    setParties((prev) => prev.filter((p) => p.id !== id));
-    resetTemplateCheck();
   }
 
   function getKnownVariables() {
@@ -179,8 +141,14 @@ export default function NovoContratoPage() {
       setCheckingTemplate(true);
       try {
         const known = getKnownVariables();
+        // Só a versão PUBLICADA do modelo gera contrato (409 LEGAL_TEMPLATE_NOT_PUBLISHED): confere antes de criar nada.
+        const detail = await getContractTemplate(form.templateId);
+        if (!detail || !detail.publishedVersion) {
+          setActionError("O modelo escolhido ainda não tem versão publicada: só a versão publicada gera contrato. Publique o modelo em Modelos de contrato (alçada jurídica) ou crie sem modelo.");
+          return;
+        }
         const rendered = await renderContractTemplate(form.templateId, known, { draftContract: getDraftContract() });
-        setClausePreview({ included: rendered.clauses || [], excluded: rendered.excludedClauses || [] });
+        setClausePreview(toPreview(rendered));
         const missing = findUnresolvedPlaceholders(rendered.content);
         if (missing.length > 0) {
           setPendingPlaceholders(missing);
@@ -192,7 +160,7 @@ export default function NovoContratoPage() {
         setPendingPlaceholders([]);
         return;
       } catch (err) {
-        setActionError(err.message || "Erro ao processar o template do contrato.");
+        setActionError(legalErrorMessage(err, "Não foi possível processar o modelo do contrato."));
         return;
       } finally {
         setCheckingTemplate(false);
@@ -202,15 +170,15 @@ export default function NovoContratoPage() {
     setSubmitting(true);
     try {
       const contract = await createContract({
-        propertyId: form.propertyId,
+        ...(isLinked ? { parentContractId: form.parentContractId } : { propertyId: form.propertyId }),
         contractType: form.contractType,
-        totalValue: toNumber(form.totalValue),
+        ...(form.totalValue !== "" ? { totalValue: value } : {}),
         startsAt: dateOnlyInputToIso(form.startsAt),
         endsAt: dateOnlyInputToIso(form.endsAt),
         ...(isConstruction ? { constructionProjectId: form.constructionProjectId } : {}),
       });
       for (const party of parties) {
-        await addContractParty(contract.id, { personId: party.personId, partyRole: party.partyRole });
+        await addContractParty(contract.id, { personId: party.personId, partyRole: party.partyRole, representedByPersonId: party.representedByPersonId || undefined });
       }
       // Se um template foi escolhido, gera a primeira versão já com o texto renderizado a
       // partir dele (preview via renderContractTemplate + persistência via createContractVersion,
@@ -231,7 +199,7 @@ export default function NovoContratoPage() {
       }
       router.push(`/painel/contratos/lista/${contract.id}`);
     } catch (err) {
-      setActionError(err.message || "Erro ao criar contrato.");
+      setActionError(legalErrorMessage(err, "Não foi possível criar o contrato."));
     } finally {
       setSubmitting(false);
     }
@@ -244,6 +212,7 @@ export default function NovoContratoPage() {
     setPendingPlaceholders(null);
     setPlaceholderValues({});
     setClausePreview(null);
+    setDraftPreview(null);
   }
 
   if (loadQuery.status !== UI_STATE.CONTENT) {
@@ -259,8 +228,8 @@ export default function NovoContratoPage() {
       <div className={styles.wrap}>
         {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
 
-        <Alert tone="info" title="Máquina de estados">
-          O contrato nasce como rascunho e avança etapa por etapa (Documentos pendentes → Análise jurídica → Aprovado → Em assinatura → Assinado → Ativo) — a transição é feita na página de detalhe.
+        <Alert tone="info" title="Etapas do contrato">
+          O contrato nasce como rascunho e segue o fluxo do livro: documentos pendentes (opcional) → revisão jurídica → aprovação da versão do documento → em assinatura → assinado → em vigor. Depois de em vigor pode ser suspenso, encerrado (rescisão) e arquivado. As etapas são feitas na página de detalhe.
         </Alert>
 
         <Card title="Dados do contrato">
@@ -289,15 +258,26 @@ export default function NovoContratoPage() {
               </FormField>
             ) : null}
 
-            <FormField label="Imóvel" htmlFor="f-property" required>
-              <Select id="f-property" value={form.propertyId} onChange={update("propertyId")}>
-                {properties.map((p) => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
-                ))}
-              </Select>
-            </FormField>
+            {isLinked ? (
+              <FormField label="Contrato principal" htmlFor="f-parent" required helper="Aditivo e termos de entrega são vinculados ao contrato principal e herdam o imóvel dele.">
+                <Select id="f-parent" value={form.parentContractId} onChange={update("parentContractId")}>
+                  <option value="">Selecione o contrato principal</option>
+                  {contracts.map((c) => (
+                    <option key={c.id} value={c.id}>{`${formatContractLabel(c)} — ${CONTRACT_TYPE_LABELS[c.contractType] || "Contrato"}`}</option>
+                  ))}
+                </Select>
+              </FormField>
+            ) : (
+              <FormField label="Imóvel" htmlFor="f-property" required>
+                <Select id="f-property" value={form.propertyId} onChange={update("propertyId")}>
+                  {properties.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </Select>
+              </FormField>
+            )}
 
-            <FormField label="Template do contrato" htmlFor="f-template" helper="Opcional — gera a primeira versão do documento já preenchida a partir do modelo">
+            <FormField label="Template do contrato" htmlFor="f-template" helper="Opcional — gera a primeira versão do documento a partir da versão PUBLICADA do modelo">
               <Select id="f-template" value={form.templateId} onChange={update("templateId")}>
                 <option value="">Sem template (conteúdo manual)</option>
                 {templatesForType.map((t) => (
@@ -306,7 +286,7 @@ export default function NovoContratoPage() {
               </Select>
             </FormField>
 
-            <FormField label="Valor total (R$)" htmlFor="f-value" required>
+            <FormField label="Valor total (R$)" htmlFor="f-value" required={!isLinked} helper={isLinked ? "Opcional para termos e aditivos" : undefined}>
               <DecimalInput id="f-value" value={form.totalValue} onChange={update("totalValue")} placeholder="0,00" />
             </FormField>
 
@@ -348,48 +328,12 @@ export default function NovoContratoPage() {
           </div>
         </Card>
 
-        <Card title="Partes do contrato" subtitle="Adicione ao menos uma parte (ex: locador e locatário, ou comprador e vendedor)">
-          <div className={styles.partiesList}>
-            {parties.length === 0 ? (
-              <p className={styles.emptyText}>Nenhuma parte adicionada ainda.</p>
-            ) : (
-              parties.map((party) => {
-                const person = people.find((p) => p.id === party.personId);
-                return (
-                  <div key={party.id} className={styles.partyRow}>
-                    <div className={styles.partyInfo}>
-                      <span className={styles.partyName}>{person?.legalName || "Pessoa não encontrada"}</span>
-                      <span className={styles.partyRole}>{PARTY_ROLE_LABELS[party.partyRole]}</span>
-                    </div>
-                    <button type="button" className={styles.removeBtn} onClick={() => removeParty(party.id)} aria-label="Remover parte">
-                      <Icon name="trash" size={16} />
-                    </button>
-                  </div>
-                );
-              })
-            )}
-          </div>
-
-          <div className={styles.addPartyRow}>
-            <FormField label="Pessoa" htmlFor="f-party-person">
-              <Select id="f-party-person" value={newParty.personId} onChange={(e) => setNewParty((prev) => ({ ...prev, personId: e.target.value }))}>
-                {people.map((p) => (
-                  <option key={p.id} value={p.id}>{p.legalName}</option>
-                ))}
-              </Select>
-            </FormField>
-            <FormField label="Papel" htmlFor="f-party-role">
-              <Select id="f-party-role" value={newParty.partyRole} onChange={(e) => setNewParty((prev) => ({ ...prev, partyRole: e.target.value }))}>
-                {Object.entries(PARTY_ROLE_LABELS).map(([k, v]) => (
-                  <option key={k} value={k}>{v}</option>
-                ))}
-              </Select>
-            </FormField>
-            <Button variant="secondary" onClick={addParty}>
-              <Icon name="plus" size={16} /> Adicionar
-            </Button>
-          </div>
-        </Card>
+        <PartiesEditor
+          people={people}
+          parties={parties}
+          onChange={(next) => { setParties(next); resetTemplateCheck(); }}
+          subtitle={isLinked ? "Opcional — as partes vêm do contrato principal; inclua quem assina este termo/aditivo" : "Adicione ao menos uma parte (ex.: locador e locatário, ou comprador e vendedor) e, se houver, o procurador"}
+        />
 
         {pendingPlaceholders && pendingPlaceholders.length > 0 ? (
           <Card
@@ -411,41 +355,12 @@ export default function NovoContratoPage() {
         ) : null}
 
         {clausePreview ? (
-          <Card
-            title="Cláusulas do documento"
-            subtitle="Decidido pelo sistema com os dados deste contrato e as regras aprovadas na Biblioteca de cláusulas. Confira e clique em “Confirmar e criar contrato”."
-          >
-            <div className={styles.clausePreview} data-testid="clause-preview">
-              <p className={styles.clausePreviewHeading}>Vão entrar ({clausePreview.included.length})</p>
-              {clausePreview.included.length === 0 ? <p className={styles.emptyText}>Nenhuma cláusula.</p> : null}
-              <ul className={styles.clauseList}>
-                {clausePreview.included.map((c) => (
-                  <li key={c.contractClauseId} data-testid="clause-included">
-                    <strong>{c.title}</strong>
-                    {c.condition ? <span className={styles.clauseReason}> — regra atendida: {describeCondition(c.condition)}</span> : null}
-                  </li>
-                ))}
-              </ul>
-              {clausePreview.excluded.length > 0 ? (
-                <>
-                  <p className={styles.clausePreviewHeading}>Ficam de fora ({clausePreview.excluded.length})</p>
-                  <ul className={styles.clauseList}>
-                    {clausePreview.excluded.map((c) => (
-                      <li key={c.contractClauseId} data-testid="clause-excluded">
-                        <strong>{c.title || c.code}</strong>
-                        <span className={styles.clauseReason}>
-                          {" — "}
-                          {c.reason === "CLAUSE_RETIRED"
-                            ? "cláusula retirada de circulação na Biblioteca"
-                            : `regra não atendida por este contrato: ${describeCondition(c.condition)}`}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              ) : null}
-            </div>
-          </Card>
+          <ClausePreviewCard
+            preview={clausePreview}
+            draftPreview={draftPreview}
+            onShowDraft={() => renderContractTemplate(form.templateId, getKnownVariables(), { draftContract: getDraftContract(), draft: true }).then((r) => setDraftPreview(toPreview(r))).catch((err) => setActionError(legalErrorMessage(err, "Não foi possível pré-visualizar o rascunho do modelo.")))}
+            onHideDraft={() => setDraftPreview(null)}
+          />
         ) : null}
 
         <div className={styles.actionBar}>
