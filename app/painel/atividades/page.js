@@ -40,12 +40,9 @@ const REVERSIBLE_ENTITY_TYPES = {
     // M9-D852 (linha 2): o estorno leva a confirmação nível 3 (impacto, código digitado e justificativa) do ConfirmAction.
     run: (entityId, reason, confirmation) => apiFetch(`/finance/entries/${entityId}/reverse`, { method: "POST", body: { reason, confirmation } }),
   },
-  Contract: {
-    label: "Cancelar contrato",
-    permission: "legal:approve",
-    impactPath: (entityId) => `/legal/contracts/${entityId}/impact?targetStatus=CANCELLED`,
-    run: (entityId, reason, confirmation) => apiFetch(`/legal/contracts/${entityId}/transition`, { method: "POST", body: { targetStatus: "CANCELLED", reason, confirmation } }),
-  },
+  // Contract saiu (fechamento do Marco 5): "Cancelado" deixou de ser etapa do contrato no livro (Guia §3) e a API
+  // recusa a transição com 409. Contrato não é desfeito por aqui: antes da aprovação volta para rascunho e, depois de
+  // ativo, é rescindido e encerrado — sempre pela página de detalhe do contrato, com as travas da máquina de estados.
 };
 
 export default function AtividadesPage() {

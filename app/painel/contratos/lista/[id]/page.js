@@ -1,7 +1,8 @@
 "use client";
 
+// Detalhe do contrato (Marco 5): ações só pelas transições do livro, aprovação por versão, assinatura manual com via
+// assinada, aditivos assinados por signatário, checklist por etapa e partes com procurador. Cada card é um componente.
 import { useState } from "react";
-import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
 import { useRouter, notFound } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -11,170 +12,97 @@ import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import FileViewerModal from "@/components/organisms/FileViewerModal/FileViewerModal";
 import { UI_STATE } from "@/lib/asyncState/states";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { nullOn404 } from "@/lib/asyncState/notFound";
-import Avatar from "@/components/atoms/Avatar/Avatar";
-import Modal from "@/components/organisms/Modal/Modal";
-import ConfirmAction from "@/components/molecules/ConfirmAction/ConfirmAction";
-import FileViewerModal from "@/components/organisms/FileViewerModal/FileViewerModal";
-import FormField from "@/components/molecules/FormField/FormField";
-import Input from "@/components/atoms/Input/Input";
-import Select from "@/components/atoms/Select/Select";
+import { lookupFallback } from "@/lib/asyncState/lookup";
+import { activatable } from "@/lib/a11y/keyboard";
+import { apiFetch } from "@/lib/api/client";
 import { getProperty } from "@/lib/api/properties";
 import { listPeople } from "@/lib/api/people";
-import { fetchFileContent } from "@/lib/api/files";
 import {
   getContract,
   listContractParties,
   listContractVersions,
-  createContractVersion,
-  getContractVersionPdfBlob,
   listSignatures,
   listGuarantees,
-  transitionContract,
-  suspendContract,
-  reactivateContract,
-  terminateContract,
-  closeContract,
   listContractAmendments,
-  createContractAmendment,
-  uploadFile,
   getContractTimeline,
   listContractRequirements,
-  generateContractRequirements,
-  satisfyRequirement,
-  waiveRequirement,
 } from "@/lib/api/legal";
 import {
   CONTRACT_TYPE_LABELS,
   CONTRACT_TYPE_TONE,
-  CONTRACT_STATUS_FLOW,
   CONTRACT_STATUS_LABELS,
   CONTRACT_STATUS_TONE,
-  PARTY_ROLE_LABELS,
-  SIGNATURE_STATUS_LABELS,
-  SIGNATURE_STATUS_TONE,
+  CONTRACT_TERMS_LOCKED_STATUSES,
   GUARANTEE_TYPE_LABELS,
   GUARANTEE_TYPE_ICON,
   GUARANTEE_STATUS_LABELS,
   GUARANTEE_STATUS_TONE,
-  AMENDMENT_STATUS_LABELS,
-  AMENDMENT_STATUS_TONE,
-  REQUIREMENT_STATUS_LABELS,
-  REQUIREMENT_STATUS_TONE,
-  nextContractStatus,
-} from "@/lib/mock/legal";
+} from "@/lib/labels/juridico";
 import { formatBRL, formatDate, formatDateTime, formatContractLabel, humanizeText } from "@/lib/format";
+import ContractActions from "./ContractActions";
+import ContractStepper from "./ContractStepper";
+import VersionsCard from "./VersionsCard";
+import SignaturesCard from "./SignaturesCard";
+import AmendmentsCard from "./AmendmentsCard";
+import RequirementsCard from "./RequirementsCard";
+import PartiesCard from "./PartiesCard";
+import CorrectionModal from "./CorrectionModal";
 import styles from "./page.module.css";
 
-import { lookupFallback } from "@/lib/asyncState/lookup";
-import { activatable } from "@/lib/a11y/keyboard";
-const TIMELINE_TYPE_LABELS = { AMENDMENT: "Aditivo", NOTICE: "Notificação", DELINQUENCY: "Inadimplência", REPAIR: "Reparo", STATUS_CHANGE: "Mudança de status" };
+const TIMELINE_TYPE_LABELS = { AMENDMENT: "Aditivo", NOTICE: "Notificação", DELINQUENCY: "Inadimplência", REPAIR: "Reparo", STATUS_CHANGE: "Mudança de situação" };
 const TIMELINE_TYPE_TONE = { AMENDMENT: "info", NOTICE: "warning", DELINQUENCY: "danger", REPAIR: "neutral", STATUS_CHANGE: "brand" };
+const EMPTY = { contract: null, property: null, parent: null, people: [], users: [], parties: [], versions: [], signatures: [], guarantees: [], amendments: [], timeline: [], requirements: [] };
+
+// Carrega tudo do contrato numa chamada; usado na abertura e depois de cada ação (sem voltar ao estado "carregando").
+async function fetchAll(id) {
+  const loaded = await Promise.all([
+    getContract(id),
+    listContractParties(id),
+    listContractVersions(id),
+    listGuarantees({ contractId: id }),
+    listContractAmendments(id),
+    listPeople(),
+    getContractTimeline(id).catch(lookupFallback("a linha do tempo do contrato", { items: [] })),
+    listContractRequirements(id).catch(lookupFallback("as exigências do contrato")),
+    apiFetch("/users").catch(lookupFallback("os usuários")),
+  ]).catch(nullOn404);
+  if (!loaded) return EMPTY;
+  const [contract, parties, versions, guarantees, amendments, people, timeline, requirements, users] = loaded;
+  const list = versions || [];
+  const latest = list[list.length - 1] || null;
+  const [property, parent, signatures] = await Promise.all([
+    contract?.propertyId ? getProperty(contract.propertyId).catch(() => null) : null,
+    contract?.parentContractId ? getContract(contract.parentContractId).catch(() => null) : null,
+    latest ? listSignatures(latest.id).catch(lookupFallback("as assinaturas")) : [],
+  ]);
+  return {
+    contract, property, parent, people: people || [], users: users || [], parties: parties || [], versions: list,
+    signatures: signatures || [], guarantees: guarantees || [], amendments: amendments || [], timeline: (timeline && timeline.items) || [], requirements: requirements || [],
+  };
+}
 
 export default function ContratoDetailPage({ params }) {
   const router = useRouter();
-  const [contract, setContract] = useState(null);
-  const [property, setProperty] = useState(null);
-  const [people, setPeople] = useState([]);
-  const [parties, setParties] = useState([]);
-  const [versions, setVersions] = useState([]);
-  const [signatures, setSignatures] = useState([]);
-  const [guarantees, setGuarantees] = useState([]);
-  const [amendments, setAmendments] = useState([]);
-  const [timeline, setTimeline] = useState([]);
+  const [data, setData] = useState(EMPTY);
   const [actionError, setActionError] = useState("");
   const [notice, setNotice] = useState(null);
-  const [busy, setBusy] = useState(false);
-  const { confirm, ConfirmDialog } = useConfirm();
-  const [versionModalOpen, setVersionModalOpen] = useState(false);
-  const [versionForm, setVersionForm] = useState({ file: null });
-  const [versionError, setVersionError] = useState("");
-  const [versionBusy, setVersionBusy] = useState(false);
-  const [amendmentModalOpen, setAmendmentModalOpen] = useState(false);
-  const [amendmentForm, setAmendmentForm] = useState({
-    reason: "",
-    field: "",
-    oldValue: "",
-    newValue: "",
-    status: "DRAFT",
-    file: null,
-  });
-  const [amendmentError, setAmendmentError] = useState("");
-  const [amendmentBusy, setAmendmentBusy] = useState(false);
   const [viewerFile, setViewerFile] = useState(null);
-  const [pdfLoadingIds, setPdfLoadingIds] = useState(() => new Set());
-  const [signedLoadingIds, setSignedLoadingIds] = useState(() => new Set());
-  const [pdfError, setPdfError] = useState("");
-
-  // GAP CORRIGIDO (varredura completa do Marco 5, 12/10/2026): o gate fail-closed de
-  // documentos obrigatórios (JUR-003/JUR-015, o próprio bug crítico que foi corrigido na API
-  // nesta mesma sessão) não tinha NENHUMA tela — ninguém conseguia ver o checklist nem marcar
-  // um documento como satisfeito/dispensado pela interface.
-  const [requirements, setRequirements] = useState([]);
-  const [requirementsBusy, setRequirementsBusy] = useState(false);
-  const [requirementModal, setRequirementModal] = useState(null); // { requirement, mode: "satisfy"|"waive" }
-  const [requirementFile, setRequirementFile] = useState(null);
-  const [requirementReason, setRequirementReason] = useState("");
-  const [requirementError, setRequirementError] = useState("");
-  const [requirementBusy, setRequirementBusy] = useState(false);
-
-  // GAP CORRIGIDO (varredura completa do Marco 5, 12/10/2026): suspender/reativar/encerrar/fechar
-  // contrato (Anexo I "5. Estado do contrato") — backend já existia, tela nunca expunha.
-  const [stateActionModal, setStateActionModal] = useState(null); // { action, label, tone }
-  // M9-D852 (linha 1 do inventário): cancelar e rescindir passam pela confirmação com impacto (ConfirmAction); o servidor calcula o impacto.
-  const [criticalAction, setCriticalAction] = useState(null); // "cancel" | "terminate"
-  const [stateActionReason, setStateActionReason] = useState("");
-  const [stateActionBusy, setStateActionBusy] = useState(false);
-  const [stateActionError, setStateActionError] = useState("");
+  const [amendmentOpen, setAmendmentOpen] = useState(false);
+  const [correctionOpen, setCorrectionOpen] = useState(false);
 
   // M9-D940: carregando, erro com "tentar de novo", 403 e offline vêm do padrão único de estados.
-  const loadQuery = useAsyncState(() => {
-    return Promise.all([
-      getContract(params.id),
-      listContractParties(params.id),
-      listContractVersions(params.id),
-      listGuarantees({ contractId: params.id }),
-      listContractAmendments(params.id),
-      listPeople(),
-      getContractTimeline(params.id).catch(lookupFallback("a linha do tempo do contrato", { items: [] })),
-      listContractRequirements(params.id).catch(lookupFallback("as exigências do contrato")),
-    ])
-      .catch(nullOn404) // 404 da API: o registro não existe, a tela chama notFound()
-      .then(async (loaded) => {
-        if (!loaded) {
-          setContract(null);
-          return;
-        }
-        const [contractRes, partiesRes, versionsRes, guaranteesRes, amendmentsRes, peopleRes, timelineRes, requirementsRes] = loaded;
-        setContract(contractRes);
-        setParties(partiesRes || []);
-        setVersions(versionsRes || []);
-        setGuarantees(guaranteesRes || []);
-        setAmendments(amendmentsRes || []);
-        setPeople(peopleRes || []);
-        setTimeline((timelineRes && timelineRes.items) || []);
-        setRequirements(requirementsRes || []);
-        if (contractRes?.propertyId) {
-          try {
-            const prop = await getProperty(contractRes.propertyId);
-            setProperty(prop);
-          } catch {
-            // Imóvel pode não estar disponível — mantém property nulo, tela continua.
-          }
-        }
-        const latestVersion = (versionsRes || [])[versionsRes.length - 1] || null;
-        if (latestVersion) {
-          const sigs = await listSignatures(latestVersion.id);
-          setSignatures(sigs || []);
-        }
-      })
-      .then(() => true);
-  }, { deps: [params.id], isEmpty: () => false });
+  const loadQuery = useAsyncState(() => fetchAll(params.id).then((next) => { setData(next); return true; }), { deps: [params.id], isEmpty: () => false });
 
-  function personOf(id) {
-    return people.find((p) => p.id === id) || null;
+  async function refresh() {
+    try {
+      setData(await fetchAll(params.id));
+    } catch (err) {
+      setActionError("A ação foi feita, mas não foi possível recarregar o contrato. Atualize a página.");
+    }
   }
 
   if (loadQuery.status !== UI_STATE.CONTENT) {
@@ -185,375 +113,82 @@ export default function ContratoDetailPage({ params }) {
     );
   }
 
-
+  const { contract, property, parent, people, users, parties, versions, signatures, guarantees, amendments, timeline, requirements } = data;
   if (!contract) return notFound();
 
+  const personOf = (id) => people.find((p) => p.id === id) || null;
+  const userName = (id) => users.find((u) => u.id === id)?.name || "usuário não identificado";
   const latestVersion = versions[versions.length - 1] || null;
-  const next = nextContractStatus(contract.status);
-
-  async function handleAdvance() {
-    if (!next) return;
-    const ok = await confirm({
-      title: `Avançar contrato para "${CONTRACT_STATUS_LABELS[next]}"?`,
-      message: `O status do contrato será alterado para "${CONTRACT_STATUS_LABELS[next]}". Confirme antes de continuar.`,
-      confirmLabel: "Avançar",
-    });
-    if (!ok) return;
-    setActionError("");
-    setBusy(true);
-    try {
-      const updated = await transitionContract(contract.id, next);
-      setContract(updated);
-      setNotice({ tone: "success", text: `Contrato avançou para "${CONTRACT_STATUS_LABELS[next]}".` });
-    } catch (err) {
-      setActionError(err.message || "Erro ao avançar status do contrato.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  function handleCancel() {
-    setActionError("");
-    setCriticalAction("cancel");
-  }
-
-  async function handleCriticalConfirm(confirmation) {
-    if (criticalAction === "cancel") {
-      const updated = await transitionContract(contract.id, "CANCELLED", confirmation);
-      setContract(updated);
-      setNotice({ tone: "danger", text: "Contrato cancelado." });
-    } else {
-      const updated = await terminateContract(contract.id, confirmation.justification, confirmation);
-      setContract(updated);
-      setNotice({ tone: "info", text: 'Contrato rescindido ("TERMINATED").' });
-    }
-    setCriticalAction(null);
-  }
-
-  const STATE_ACTIONS = {
-    suspend: { fn: suspendContract, label: "Suspender contrato", confirmLabel: "Suspender", successText: 'Contrato suspenso ("SUSPENDED").', tone: "danger" },
-    reactivate: { fn: reactivateContract, label: "Reativar contrato", confirmLabel: "Reativar", successText: 'Contrato reativado ("ACTIVE").', tone: "success" },
-    close: { fn: closeContract, label: "Encerrar contrato", confirmLabel: "Encerrar", successText: 'Contrato encerrado ("CLOSED").', tone: "success" },
-  };
-
-  function openStateActionModal(action) {
-    setStateActionError("");
-    setStateActionReason("");
-    setStateActionModal(action);
-  }
-
-  async function handleConfirmStateAction() {
-    if (!stateActionModal) return;
-    if (!stateActionReason.trim()) {
-      setStateActionError("Informe o motivo desta transição — obrigatório para auditoria.");
-      return;
-    }
-    const { fn, successText } = STATE_ACTIONS[stateActionModal];
-    setStateActionBusy(true);
-    setStateActionError("");
-    try {
-      const updated = await fn(contract.id, stateActionReason.trim());
-      setContract(updated);
-      setStateActionModal(null);
-      setNotice({ tone: "info", text: successText });
-    } catch (err) {
-      setStateActionError(err.message || "Erro ao transicionar o contrato.");
-    } finally {
-      setStateActionBusy(false);
-    }
-  }
-
-  function openVersionModal() {
-    setVersionError("");
-    setVersionForm({ file: null });
-    setVersionModalOpen(true);
-  }
-
-  // FIX (pendência #3, homologação): o botão "Nova versão" chamava createContractVersion
-  // direto, sem nenhum campo de upload — mas o backend (isDocumentRequired) exige
-  // `documentFileId` quando o gate de documento está ativo no tenant, então o botão sempre
-  // falhava com LEGAL_CONTRACT_VERSION_DOCUMENT_REQUIRED. Agora um modal real de upload
-  // (mesmo padrão do modal de aditivo, que já faz `uploadFile` + `documentFileId`) coleta o
-  // arquivo e o manda junto com `content`/`templateId` na criação da versão.
-  async function handleCreateVersion() {
-    if (!versionForm.file) return;
-    setVersionError("");
-    setVersionBusy(true);
-    try {
-      const versionNumber = versions.length + 1;
-      const uploaded = await uploadFile(versionForm.file);
-      const newVersion = await createContractVersion(contract.id, {
-        content: `Versão ${versionNumber} do contrato ${formatContractLabel(contract)}`,
-        documentFileId: uploaded.id,
-      });
-      setVersions((prev) => [...prev, newVersion]);
-      setVersionModalOpen(false);
-      setNotice({ tone: "info", text: `Versão ${versionNumber} criada — versões são imutáveis, nunca editadas.` });
-    } catch (err) {
-      setVersionError(err.message || "Erro ao criar nova versão do contrato.");
-    } finally {
-      setVersionBusy(false);
-    }
-  }
-
-  async function handleGenerateRequirements() {
-    setRequirementsBusy(true);
-    setActionError("");
-    try {
-      const items = await generateContractRequirements(contract.id);
-      setRequirements(items || []);
-      setNotice({ tone: "info", text: "Checklist de documentos gerado a partir do tipo de contrato." });
-    } catch (err) {
-      setActionError(err.message || "Erro ao gerar o checklist de documentos.");
-    } finally {
-      setRequirementsBusy(false);
-    }
-  }
-
-  function openRequirementModal(requirement, mode) {
-    setRequirementModal({ requirement, mode });
-    setRequirementFile(null);
-    setRequirementReason("");
-    setRequirementError("");
-  }
-
-  async function handleResolveRequirement() {
-    if (!requirementModal) return;
-    const { requirement, mode } = requirementModal;
-    if (mode === "satisfy" && !requirementFile) return;
-    if (mode === "waive" && !requirementReason.trim()) return;
-    setRequirementError("");
-    setRequirementBusy(true);
-    try {
-      let updated;
-      if (mode === "satisfy") {
-        const uploaded = await uploadFile(requirementFile);
-        updated = await satisfyRequirement(requirement.id, { satisfiedByFileId: uploaded.id });
-      } else {
-        // Dispensa tem permissão própria (legal:waive) — a API responde 403 sem ela.
-        updated = await waiveRequirement(requirement.id, requirementReason.trim());
-      }
-      setRequirements((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
-      setRequirementModal(null);
-      setNotice({ tone: "info", text: mode === "satisfy" ? "Documento anexado — item do checklist marcado como satisfeito." : "Item do checklist dispensado, com justificativa registrada." });
-    } catch (err) {
-      setRequirementError(err.message || "Erro ao atualizar o item do checklist.");
-    } finally {
-      setRequirementBusy(false);
-    }
-  }
-
-  function triggerBlobDownload(blob, fileName) {
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    window.URL.revokeObjectURL(url);
-  }
-
-  async function handleViewVersionPdf(version) {
-    if (pdfLoadingIds.has(version.id)) return; // evita duplo-clique disparando 2 downloads
-    setPdfError("");
-    setPdfLoadingIds((prev) => new Set(prev).add(version.id));
-    try {
-      const blob = await getContractVersionPdfBlob(contract.id, version.id);
-      const url = window.URL.createObjectURL(blob);
-      window.open(url, "_blank", "noopener,noreferrer");
-      // Não revogamos a URL logo em seguida: a aba recém-aberta ainda precisa dela para
-      // renderizar o PDF — o navegador libera a memória ao fechar a aba/reload.
-    } catch (err) {
-      setPdfError(err.message || "Erro ao gerar o PDF desta versão.");
-    } finally {
-      setPdfLoadingIds((prev) => {
-        const next = new Set(prev);
-        next.delete(version.id);
-        return next;
-      });
-    }
-  }
-
-  async function handleDownloadSignedDocument(version) {
-    if (!version.signedDocumentFileId || signedLoadingIds.has(version.id)) return;
-    setPdfError("");
-    setSignedLoadingIds((prev) => new Set(prev).add(version.id));
-    try {
-      const { blob, meta } = await fetchFileContent(version.signedDocumentFileId);
-      triggerBlobDownload(blob, meta.fileName || `contrato-assinado-v${version.versionNumber}.pdf`);
-    } catch (err) {
-      setPdfError(err.message || "Erro ao baixar o documento assinado.");
-    } finally {
-      setSignedLoadingIds((prev) => {
-        const next = new Set(prev);
-        next.delete(version.id);
-        return next;
-      });
-    }
-  }
-
-  function openAmendmentModal() {
-    setAmendmentError("");
-    setAmendmentForm({ reason: "", field: "", oldValue: "", newValue: "", status: "DRAFT", file: null });
-    setAmendmentModalOpen(true);
-  }
-
-  function updateAmendmentField(field) {
-    return (e) => setAmendmentForm((prev) => ({ ...prev, [field]: e.target.value }));
-  }
-
-  const amendmentIsValid =
-    amendmentForm.reason.trim() &&
-    amendmentForm.field.trim() &&
-    (amendmentForm.status !== "SIGNED" || amendmentForm.file);
-
-  async function handleCreateAmendment() {
-    if (!amendmentIsValid) return;
-    setAmendmentError("");
-    setAmendmentBusy(true);
-    try {
-      let documentFileId;
-      if (amendmentForm.file) {
-        const uploaded = await uploadFile(amendmentForm.file);
-        documentFileId = uploaded.id;
-      }
-      const created = await createContractAmendment(contract.id, {
-        reason: amendmentForm.reason,
-        changes: [{ field: amendmentForm.field, oldValue: amendmentForm.oldValue || null, newValue: amendmentForm.newValue || null }],
-        documentFileId,
-        status: amendmentForm.status,
-      });
-      setAmendments((prev) => [...prev, created]);
-      setAmendmentModalOpen(false);
-      setNotice({ tone: "success", text: `${created.amendmentNumber}º aditivo criado.` });
-    } catch (err) {
-      setAmendmentError(err.message || "Erro ao criar aditivo.");
-    } finally {
-      setAmendmentBusy(false);
-    }
-  }
+  const termsLocked = CONTRACT_TERMS_LOCKED_STATUSES.includes(contract.status);
+  const legacyCancelled = contract.status === "CANCELLED";
+  const common = { onChanged: refresh, onNotice: setNotice, onError: setActionError };
 
   return (
-    <AppShell
-      title={formatContractLabel(contract) || "Contrato"}
-      backHref="/painel/contratos/lista"
-    >
+    <AppShell title={formatContractLabel(contract) || "Contrato"} backHref="/painel/contratos/lista">
       <div className={styles.wrap}>
         <div className={styles.topRow}>
           <div className={styles.badges}>
-            <Badge tone={CONTRACT_STATUS_TONE[contract.status]} className={styles.badgeBig}>{CONTRACT_STATUS_LABELS[contract.status]}</Badge>
-            <Badge tone={CONTRACT_TYPE_TONE[contract.contractType]}>{CONTRACT_TYPE_LABELS[contract.contractType]}</Badge>
+            <Badge tone={CONTRACT_STATUS_TONE[contract.status] || "neutral"} className={styles.badgeBig}>{CONTRACT_STATUS_LABELS[contract.status] || "Situação desconhecida"}</Badge>
+            <Badge tone={CONTRACT_TYPE_TONE[contract.contractType] || "neutral"}>{CONTRACT_TYPE_LABELS[contract.contractType] || "Contrato"}</Badge>
           </div>
-          <div className={styles.actions}>
-            {/* O5: contrato em estado terminal (cancelado, encerrado, rescindido) não oferece Cancelar. */}
-            {!["CANCELLED", "ACTIVE", "CLOSED", "TERMINATED"].includes(contract.status) ? (
-              <Button variant="secondary" onClick={handleCancel} disabled={busy}><Icon name="ban" size={16} /> Cancelar</Button>
-            ) : null}
-            {next ? (
-              <Button onClick={handleAdvance} disabled={busy}><Icon name="check" size={16} /> Avançar etapa ({CONTRACT_STATUS_LABELS[next]})</Button>
-            ) : null}
-            {contract.status === "ACTIVE" ? (
-              <Button variant="secondary" onClick={() => openStateActionModal("suspend")} disabled={busy}><Icon name="ban" size={16} /> Suspender</Button>
-            ) : null}
-            {contract.status === "SUSPENDED" ? (
-              <Button variant="secondary" onClick={() => openStateActionModal("reactivate")} disabled={busy}><Icon name="check" size={16} /> Reativar</Button>
-            ) : null}
-            {contract.status === "ACTIVE" || contract.status === "SUSPENDED" ? (
-              <Button variant="secondary" onClick={() => { setActionError(""); setCriticalAction("terminate"); }} disabled={busy}><Icon name="ban" size={16} /> Rescindir</Button>
-            ) : null}
-            {contract.status === "TERMINATED" ? (
-              <Button onClick={() => openStateActionModal("close")} disabled={busy}><Icon name="check" size={16} /> Encerrar</Button>
-            ) : null}
-          </div>
+          {legacyCancelled ? null : (
+            <ContractActions contract={contract} latestVersion={latestVersion} parties={parties} personOf={personOf} {...common} />
+          )}
         </div>
 
-        {actionError ? <Alert tone="danger" className={styles.notice}>{actionError}</Alert> : null}
-        {notice ? <Alert tone={notice.tone} className={styles.notice}>{notice.text}</Alert> : null}
-
-        <Card title="Máquina de estados" subtitle="Fluxo linear do contrato — cancelamento é um estado alternativo, fora da sequência">
-          <div className={styles.stepper}>
-            {CONTRACT_STATUS_FLOW.map((step, idx) => {
-              const currentIdx = CONTRACT_STATUS_FLOW.indexOf(contract.status);
-              const isDone = contract.status !== "CANCELLED" && idx < currentIdx;
-              const isCurrent = contract.status !== "CANCELLED" && idx === currentIdx;
-              return (
-                <div
-                  key={step}
-                  className={[styles.step, isDone ? styles.stepDone : "", isCurrent ? styles.stepCurrent : ""].filter(Boolean).join(" ")}
-                >
-                  {idx > 0 ? <span className={styles.stepLine} /> : null}
-                  <span className={styles.stepDot}>{isDone ? <Icon name="check" size={14} /> : idx + 1}</span>
-                  <span className={styles.stepLabel}>{CONTRACT_STATUS_LABELS[step]}</span>
-                </div>
-              );
-            })}
+        {/* PADRAO §1.3: erro de ação fixo, acima de qualquer modal. */}
+        {actionError ? (
+          <div data-testid="contract-action-error" style={{ position: "fixed", top: "var(--space-4)", left: "50%", transform: "translateX(-50%)", zIndex: 200, width: "min(560px, calc(100vw - 2 * var(--space-4)))" }}>
+            <Alert tone="danger">
+              {actionError}{" "}
+              <button type="button" className={styles.linkBtn} onClick={() => setActionError("")}>Fechar</button>
+            </Alert>
           </div>
-          {contract.status === "CANCELLED" ? (
-            <p className={styles.cancelledNote}>Este contrato foi cancelado — a máquina de estados linear não se aplica mais.</p>
-          ) : null}
-        </Card>
+        ) : null}
+        {notice ? <div className={styles.notice} data-testid="contract-notice"><Alert tone={notice.tone}>{notice.text}</Alert></div> : null}
+
+        <ContractStepper status={contract.status} />
 
         <div className={styles.grid}>
           <div className={styles.mainCol}>
-            <Card title="Detalhes do contrato">
+            <Card
+              title="Detalhes do contrato"
+              actions={!legacyCancelled && !termsLocked ? <Button size="sm" variant="secondary" onClick={() => setCorrectionOpen(true)}><Icon name="pencil" size={14} /> Corrigir dados</Button> : null}
+            >
               <dl className={styles.detailList}>
                 <div className={styles.detailRow}><dt>Valor total</dt><dd className={styles.amount}>{formatBRL(contract.totalValue)}</dd></div>
                 <div className={styles.detailRow}><dt>Imóvel</dt><dd>{property?.name || "Sem imóvel vinculado"}</dd></div>
                 <div className={styles.detailRow}><dt>Início de vigência</dt><dd>{contract.startsAt ? formatDate(contract.startsAt) : "Não definido"}</dd></div>
                 <div className={styles.detailRow}><dt>Fim de vigência</dt><dd>{contract.endsAt ? formatDate(contract.endsAt) : "Prazo indeterminado"}</dd></div>
                 <div className={styles.detailRow}><dt>Número</dt><dd>{contract.contractNumber || `Sem número (criado em ${formatDate(contract.createdAt)})`}</dd></div>
-              </dl>
-            </Card>
-
-            <Card
-              title="Checklist de documentos"
-              subtitle="A etapa só avança quando todo documento obrigatório foi anexado ou dispensado com justificativa"
-              actions={
-                requirements.length === 0 ? (
-                  <Button size="sm" variant="secondary" loading={requirementsBusy} onClick={handleGenerateRequirements}>Gerar checklist</Button>
-                ) : null
-              }
-            >
-              {requirements.length === 0 ? (
-                <EmptyState icon="document" title="Checklist ainda não gerado" description="Gere o checklist de documentos exigidos para este tipo de contrato." />
-              ) : (
-                requirements.map((r) => (
-                  <div key={r.id} className={styles.partyRow}>
-                    <div className={styles.partyInfo}>
-                      <span className={styles.partyName}>{humanizeText(r.description)}</span>
-                      <span className={styles.partyRole}>{r.status === "WAIVED" ? `Dispensado — motivo: ${r.waivedReason || "sem motivo registrado"}` : r.status === "SATISFIED" ? `Documento anexado${r.satisfiedAt ? ` em ${formatDate(r.satisfiedAt)}` : ""}` : "Aguardando documento"}</span>
-                    </div>
-                    <Badge tone={REQUIREMENT_STATUS_TONE[r.status] || "neutral"}>{REQUIREMENT_STATUS_LABELS[r.status] || r.status}</Badge>
-                    {r.status === "PENDING" ? (
-                      <div style={{ display: "flex", gap: 6 }}>
-                        <Button size="sm" variant="secondary" onClick={() => openRequirementModal(r, "satisfy")}>Anexar</Button>
-                        <Button size="sm" variant="ghost" onClick={() => openRequirementModal(r, "waive")}>Dispensar</Button>
-                      </div>
-                    ) : null}
+                {contract.parentContractId ? (
+                  <div className={styles.detailRow}>
+                    <dt>Contrato principal</dt>
+                    <dd>
+                      <button type="button" className={styles.linkBtn} onClick={() => router.push(`/painel/contratos/lista/${contract.parentContractId}`)}>
+                        {parent ? `${formatContractLabel(parent)} — ${CONTRACT_TYPE_LABELS[parent.contractType] || "Contrato"}` : "Abrir contrato principal"}
+                      </button>
+                    </dd>
                   </div>
-                ))
-              )}
+                ) : null}
+              </dl>
+              {termsLocked ? (
+                <p className={styles.partyRole} style={{ marginTop: 12 }} data-testid="contract-terms-locked">
+                  Valor, vigência, imóvel e número só mudam por aditivo.{" "}
+                  <button type="button" className={styles.linkBtn} onClick={() => setAmendmentOpen(true)}>Criar aditivo</button>
+                </p>
+              ) : null}
             </Card>
 
-            <Card title="Partes do contrato" subtitle="Pessoas vinculadas ao contrato e seus papéis">
-              {parties.length === 0 ? (
-                <EmptyState icon="users" title="Sem partes" description="Nenhuma parte cadastrada." />
-              ) : (
-                parties.map((party) => {
-                  const person = personOf(party.personId);
-                  return (
-                    <div key={party.id} className={styles.partyRow}>
-                      <Avatar name={person?.legalName || "?"} size="sm" />
-                      <div className={styles.partyInfo}>
-                        <span className={styles.partyName}>{person?.legalName || "Pessoa não encontrada"}</span>
-                        <span className={styles.partyRole}>{PARTY_ROLE_LABELS[party.partyRole]}</span>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </Card>
+            <RequirementsCard
+              contractId={contract.id}
+              requirements={requirements}
+              onRequirements={(next) => setData((prev) => ({ ...prev, requirements: typeof next === "function" ? next(prev.requirements) : next }))}
+              onNotice={setNotice}
+              onError={setActionError}
+            />
+
+            <PartiesCard contract={contract} parties={parties} people={people} personOf={personOf} onChanged={refresh} onNotice={setNotice} />
 
             <Card title="Linha do tempo" subtitle="Aditivos, notificações, inadimplência e reparos, em ordem cronológica">
               {timeline.length === 0 ? (
@@ -562,118 +197,31 @@ export default function ContratoDetailPage({ params }) {
                 <ul className={styles.timelineList}>
                   {timeline.map((event, idx) => (
                     <li key={`${event.type}-${event.referenceId}-${idx}`} className={styles.timelineItem}>
-                      <Badge tone={TIMELINE_TYPE_TONE[event.type] || "neutral"}>{TIMELINE_TYPE_LABELS[event.type] || event.type}</Badge>
+                      <Badge tone={TIMELINE_TYPE_TONE[event.type] || "neutral"}>{TIMELINE_TYPE_LABELS[event.type] || "Evento"}</Badge>
                       <span className={styles.timelineDate}>{event.occurredAt ? formatDateTime(event.occurredAt) : "Sem data registrada"}</span>
-                      <span className={styles.timelineSummary}>{event.summary}</span>
+                      <span className={styles.timelineSummary}>{humanizeText(event.summary)}</span>
                     </li>
                   ))}
                 </ul>
               )}
             </Card>
 
-            <Card
-              title="Versões do documento"
-              subtitle="Imutáveis — cada alteração cria uma nova versão, nunca edita a anterior"
-              actions={<Button size="sm" variant="secondary" onClick={openVersionModal} disabled={busy}><Icon name="document" size={16} /> Nova versão</Button>}
-            >
-              {pdfError ? <Alert tone="danger" className={styles.notice}>{pdfError}</Alert> : null}
-              {versions.length === 0 ? (
-                <EmptyState icon="document" title="Sem versões" description="Nenhuma versão gerada ainda." />
-              ) : (
-                [...versions].reverse().map((version) => {
-                  const pdfBusy = pdfLoadingIds.has(version.id);
-                  const signedBusy = signedLoadingIds.has(version.id);
-                  return (
-                    <div key={version.id} className={styles.versionRow}>
-                      <div className={styles.versionInfo}>
-                        <span className={styles.versionTitle}>
-                          Versão {version.versionNumber}
-                          {version.signedDocumentFileId ? (
-                            <Badge tone="success">Assinado</Badge>
-                          ) : null}
-                        </span>
-                        <span className={styles.versionTemplate}>{version.template?.name || "Sem template (conteúdo manual)"}</span>
-                        <span className={styles.versionHash} title={`Hash de integridade (SHA-256 do conteúdo): ${version.contentHash}`}>
-                          hash de integridade: {version.contentHash ? `${version.contentHash.slice(0, 12)}…` : "não calculado"}
-                        </span>
-                      </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <Button size="sm" variant="secondary" onClick={() => handleViewVersionPdf(version)} loading={pdfBusy} disabled={pdfBusy}>
-                          <Icon name="eye" size={14} /> Visualizar/Baixar PDF
-                        </Button>
-                        {version.signedDocumentFileId ? (
-                          <Button size="sm" variant="primary" onClick={() => handleDownloadSignedDocument(version)} loading={signedBusy} disabled={signedBusy}>
-                            <Icon name="arrowDownCircle" size={14} /> Baixar documento assinado
-                          </Button>
-                        ) : null}
-                        <span className={styles.versionDate}>{formatDate(version.effectiveFrom)}</span>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </Card>
+            <VersionsCard contract={contract} versions={versions} userName={userName} {...common} />
 
-            <Card
-              title="Aditivos de contrato"
-              subtitle="Numeração sequencial por contrato — append-only, cada aditivo é um fato novo"
-              actions={<Button size="sm" variant="secondary" onClick={openAmendmentModal}><Icon name="document" size={16} /> Novo aditivo</Button>}
-            >
-              {amendments.length === 0 ? (
-                <EmptyState icon="document" title="Sem aditivos" description="Nenhum aditivo registrado para este contrato." />
-              ) : (
-                [...amendments].reverse().map((amendment) => (
-                  <div key={amendment.id} className={styles.versionRow}>
-                    <div className={styles.versionInfo}>
-                      <span className={styles.versionTitle}>{amendment.amendmentNumber}º aditivo — {amendment.reason}</span>
-                      <span className={styles.versionHash}>
-                        {(amendment.changesJson || []).map((c) => c.field).join(", ")}
-                      </span>
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      {amendment.documentFileId ? (
-                        <Button size="sm" variant="ghost" onClick={() => setViewerFile({ id: amendment.documentFileId })}>
-                          <Icon name="eye" size={14} /> Documento
-                        </Button>
-                      ) : null}
-                      <Badge tone={AMENDMENT_STATUS_TONE[amendment.status] || "neutral"}>{AMENDMENT_STATUS_LABELS[amendment.status] || amendment.status}</Badge>
-                      <span className={styles.versionDate}>{formatDate(amendment.created_at || amendment.createdAt)}</span>
-                    </div>
-                  </div>
-                ))
-              )}
-            </Card>
+            <AmendmentsCard
+              contract={contract}
+              amendments={amendments}
+              versions={versions}
+              parties={parties}
+              personOf={personOf}
+              createOpen={amendmentOpen}
+              onCreateOpenChange={setAmendmentOpen}
+              onChanged={refresh}
+              onNotice={setNotice}
+              onViewFile={setViewerFile}
+            />
 
-            <Card
-              title="Assinaturas"
-              subtitle={
-                latestVersion
-                  ? signatures.length > 0
-                    ? `${signatures.filter((s) => s.status === "SIGNED").length} de ${signatures.length} assinaram — versão ${latestVersion.versionNumber}`
-                    : `Referentes à versão ${latestVersion.versionNumber}`
-                  : "Sem versão de documento gerada"
-              }
-            >
-              {signatures.length === 0 ? (
-                <EmptyState icon="signature" title="Sem assinaturas" description="Nenhuma assinatura registrada para a versão atual." />
-              ) : (
-                signatures.map((sig) => {
-                  const party = parties.find((p) => p.personId === sig.personId);
-                  const person = personOf(sig.personId);
-                  const signerLabel = person?.legalName || (party ? PARTY_ROLE_LABELS[party.partyRole] : null) || "Signatário";
-                  return (
-                    <div key={sig.id} className={styles.signatureRow}>
-                      <Avatar name={signerLabel} size="sm" />
-                      <div className={styles.signatureInfo}>
-                        <span className={styles.signatureName}>{signerLabel}</span>
-                        <span className={styles.signatureMeta}>{sig.signedAt ? `Assinado em ${formatDateTime(sig.signedAt)}` : "Aguardando assinatura"}</span>
-                      </div>
-                      <Badge tone={SIGNATURE_STATUS_TONE[sig.status]}>{SIGNATURE_STATUS_LABELS[sig.status]}</Badge>
-                    </div>
-                  );
-                })
-              )}
-            </Card>
+            <SignaturesCard contract={contract} latestVersion={latestVersion} signatures={signatures} parties={parties} personOf={personOf} onChanged={refresh} onNotice={setNotice} />
           </div>
 
           <div className={styles.sideCol}>
@@ -687,14 +235,14 @@ export default function ContratoDetailPage({ params }) {
               ) : (
                 guarantees.map((g) => (
                   <div key={g.id} className={styles.guaranteeCard}>
-                    <span className={styles.guaranteeIcon}><Icon name={GUARANTEE_TYPE_ICON[g.guaranteeType]} size={18} /></span>
+                    <span className={styles.guaranteeIcon}><Icon name={GUARANTEE_TYPE_ICON[g.guaranteeType] || "shield"} size={18} /></span>
                     <div className={styles.guaranteeInfo}>
-                      <span className={styles.guaranteeTitle}>{GUARANTEE_TYPE_LABELS[g.guaranteeType]}</span>
+                      <span className={styles.guaranteeTitle}>{GUARANTEE_TYPE_LABELS[g.guaranteeType] || "Garantia"}</span>
                       <span className={styles.guaranteeMeta}>
                         {g.guarantorPersonId ? personOf(g.guarantorPersonId)?.legalName : g.value != null ? formatBRL(g.value) : "Sem valor cadastrado"}
                       </span>
                     </div>
-                    <Badge tone={GUARANTEE_STATUS_TONE[g.status] || "neutral"}>{GUARANTEE_STATUS_LABELS[g.status] || g.status}</Badge>
+                    <Badge tone={GUARANTEE_STATUS_TONE[g.status] || "neutral"}>{GUARANTEE_STATUS_LABELS[g.status] || "Situação desconhecida"}</Badge>
                   </div>
                 ))
               )}
@@ -715,154 +263,18 @@ export default function ContratoDetailPage({ params }) {
         </div>
       </div>
 
-      <Modal
-        open={versionModalOpen}
-        onClose={() => setVersionModalOpen(false)}
-        title="Nova versão do documento"
-        footer={
-          <>
-            <Button variant="secondary" onClick={() => setVersionModalOpen(false)} disabled={versionBusy}>Cancelar</Button>
-            <Button onClick={handleCreateVersion} loading={versionBusy} disabled={!versionForm.file || versionBusy}>Criar versão</Button>
-          </>
-        }
-      >
-        {versionError ? <Alert tone="danger" className={styles.notice}>{versionError}</Alert> : null}
-        <div className={styles.formGrid}>
-          <FormField label="Documento" htmlFor="f-ver-file" required helper="Arquivo do documento desta versão do contrato (PDF recomendado).">
-            <input
-              id="f-ver-file"
-              type="file"
-              onChange={(e) => setVersionForm({ file: e.target.files?.[0] || null })}
-            />
-          </FormField>
-        </div>
-      </Modal>
-
-      <Modal
-        open={Boolean(requirementModal)}
-        onClose={() => setRequirementModal(null)}
-        title={requirementModal?.mode === "waive" ? "Dispensar item do checklist" : "Anexar documento"}
-        footer={
-          <>
-            <Button variant="secondary" onClick={() => setRequirementModal(null)} disabled={requirementBusy}>Cancelar</Button>
-            <Button
-              onClick={handleResolveRequirement}
-              loading={requirementBusy}
-              disabled={requirementBusy || (requirementModal?.mode === "satisfy" ? !requirementFile : !requirementReason.trim())}
-            >
-              {requirementModal?.mode === "waive" ? "Dispensar" : "Anexar"}
-            </Button>
-          </>
-        }
-      >
-        {requirementError ? <Alert tone="danger" className={styles.notice}>{requirementError}</Alert> : null}
-        <p className={styles.partyRole}>{requirementModal?.requirement?.description}</p>
-        {requirementModal?.mode === "waive" ? (
-          <div className={styles.formGrid}>
-            <FormField label="Motivo da dispensa" htmlFor="f-req-reason" required helper="Dispensa é uma decisão humana registrada, nunca uma omissão silenciosa.">
-              <Input id="f-req-reason" value={requirementReason} onChange={(e) => setRequirementReason(e.target.value)} placeholder="Ex.: inquilino isento por norma municipal." />
-            </FormField>
-          </div>
-        ) : (
-          <div className={styles.formGrid}>
-            <FormField label="Documento" htmlFor="f-req-file" required helper="Arquivo que comprova este item do checklist.">
-              <input id="f-req-file" type="file" onChange={(e) => setRequirementFile(e.target.files?.[0] || null)} />
-            </FormField>
-          </div>
-        )}
-      </Modal>
-
-      <Modal
-        open={amendmentModalOpen}
-        onClose={() => setAmendmentModalOpen(false)}
-        title="Novo aditivo de contrato"
-        footer={
-          <>
-            <Button variant="secondary" onClick={() => setAmendmentModalOpen(false)} disabled={amendmentBusy}>Cancelar</Button>
-            <Button onClick={handleCreateAmendment} loading={amendmentBusy} disabled={!amendmentIsValid || amendmentBusy}>Criar aditivo</Button>
-          </>
-        }
-      >
-        {amendmentError ? <Alert tone="danger" className={styles.notice}>{amendmentError}</Alert> : null}
-        <div className={styles.formGrid}>
-          <FormField label="Motivo do aditivo" htmlFor="f-am-reason" required>
-            <Input id="f-am-reason" value={amendmentForm.reason} onChange={updateAmendmentField("reason")} placeholder="Ex.: Reajuste de valor por acordo entre as partes" />
-          </FormField>
-          <FormField label="Campo alterado" htmlFor="f-am-field" required helper="Ex.: totalValue, endsAt">
-            <Input id="f-am-field" value={amendmentForm.field} onChange={updateAmendmentField("field")} placeholder="totalValue" />
-          </FormField>
-          <FormField label="Valor anterior" htmlFor="f-am-old" helper="Opcional">
-            <Input id="f-am-old" value={amendmentForm.oldValue} onChange={updateAmendmentField("oldValue")} />
-          </FormField>
-          <FormField label="Novo valor" htmlFor="f-am-new" helper="Opcional">
-            <Input id="f-am-new" value={amendmentForm.newValue} onChange={updateAmendmentField("newValue")} />
-          </FormField>
-          <FormField label="Status" htmlFor="f-am-status" required>
-            <Select id="f-am-status" value={amendmentForm.status} onChange={updateAmendmentField("status")}>
-              <option value="DRAFT">Rascunho</option>
-              <option value="SIGNED">Assinado</option>
-            </Select>
-          </FormField>
-          {amendmentForm.status === "SIGNED" ? (
-            <FormField label="Documento assinado" htmlFor="f-am-file" required helper="Obrigatório quando o aditivo já nasce assinado.">
-              <input
-                id="f-am-file"
-                type="file"
-                onChange={(e) => setAmendmentForm((prev) => ({ ...prev, file: e.target.files?.[0] || null }))}
-              />
-            </FormField>
-          ) : null}
-        </div>
-      </Modal>
-
-      <Modal
-        open={!!stateActionModal}
-        onClose={() => setStateActionModal(null)}
-        title={stateActionModal ? STATE_ACTIONS[stateActionModal].label : ""}
-        footer={
-          <>
-            <Button variant="secondary" onClick={() => setStateActionModal(null)} disabled={stateActionBusy}>Cancelar</Button>
-            <Button
-              variant={stateActionModal && STATE_ACTIONS[stateActionModal].tone === "danger" ? "danger" : "primary"}
-              onClick={handleConfirmStateAction}
-              loading={stateActionBusy}
-              disabled={stateActionBusy}
-            >
-              {stateActionModal ? STATE_ACTIONS[stateActionModal].confirmLabel : ""}
-            </Button>
-          </>
-        }
-      >
-        {stateActionError ? <Alert tone="danger" className={styles.notice}>{stateActionError}</Alert> : null}
-        <div className={styles.formGrid}>
-          <FormField label="Motivo" htmlFor="f-state-reason" required helper="Registrado na auditoria junto com a transição.">
-            <Input
-              id="f-state-reason"
-              value={stateActionReason}
-              onChange={(e) => setStateActionReason(e.target.value)}
-              placeholder="Ex.: Inadimplência em negociação com o locatário"
-            />
-          </FormField>
-        </div>
-      </Modal>
-
-      <FileViewerModal
-        open={!!viewerFile}
-        onClose={() => setViewerFile(null)}
-        file={viewerFile}
-        fileId={viewerFile?.id}
+      <CorrectionModal
+        open={correctionOpen}
+        onClose={() => setCorrectionOpen(false)}
+        contract={contract}
+        onCorrected={async () => {
+          setCorrectionOpen(false);
+          setNotice({ tone: "success", text: "Dados do contrato corrigidos, com o motivo registrado na auditoria." });
+          await refresh();
+        }}
       />
 
-      <ConfirmAction
-        open={criticalAction !== null}
-        onClose={() => setCriticalAction(null)}
-        title={criticalAction === "cancel" ? "Cancelar contrato" : "Rescindir contrato"}
-        confirmLabel={criticalAction === "cancel" ? "Cancelar contrato" : "Rescindir"}
-        target={{ method: "GET", path: `/legal/contracts/${contract.id}/impact${criticalAction === "cancel" ? "?targetStatus=CANCELLED" : ""}` }}
-        onConfirm={handleCriticalConfirm}
-      />
-
-      <ConfirmDialog />
+      <FileViewerModal open={!!viewerFile} onClose={() => setViewerFile(null)} file={viewerFile} fileId={viewerFile?.id} />
     </AppShell>
   );
 }
