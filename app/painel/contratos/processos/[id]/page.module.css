@@ -83,3 +83,22 @@
 .manifestBody { flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 .manifestDesc { color: var(--color-ink); }
 .manifestHash { color: var(--color-ink-muted); font-family: var(--font-mono, monospace); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Fechamento M5: formulários e blocos novos (prazo, partes, documentos, linha do tempo, valores). */
+.notice { margin-bottom: var(--space-4); }
+.addEvidenceRow { display: flex; align-items: flex-end; gap: var(--space-2); flex-wrap: wrap; margin-top: var(--space-3); }
+.newDeadline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  margin-bottom: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-canvas-raised);
+}
+.formRow { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-3); margin-top: var(--space-3); }
+.formActions { display: flex; justify-content: flex-end; gap: var(--space-2); flex-wrap: wrap; margin-top: var(--space-2); }
+.deadlineRow { flex-wrap: wrap; }
+.timelineList { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.timelineItem { display: flex; align-items: flex-start; gap: var(--space-3); padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); background: var(--color-canvas-sunken); }
