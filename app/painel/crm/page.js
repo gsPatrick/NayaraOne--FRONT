@@ -26,6 +26,8 @@ import {
   listMessages,
   listOpportunityTimeline,
   fromApiStage,
+  stageLabelPt,
+  OTHER_STAGES_KEY,
   listOpportunityTasks,
   createOpportunityTask,
   TASK_STATUSES,
@@ -79,8 +81,6 @@ export default function CrmPage() {
   const [selected, setSelected] = useState(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [createStageKey, setCreateStageKey] = useState(null);
-  const [addStageOpen, setAddStageOpen] = useState(false);
-  const [newStageName, setNewStageName] = useState("");
   const [actionError, setActionError] = useState("");
   const [reasonPrompt, setReasonPrompt] = useState(null); // { itemId, stageKey } | null
 
@@ -109,11 +109,22 @@ export default function CrmPage() {
   const funnelFailed = !["LOADING", "CONTENT", "EMPTY"].includes(funnelQuery.status);
 
   function openCreateForStage(stageKey) {
-    setCreateStageKey(stageKey);
+    setCreateStageKey(stageKey === OTHER_STAGES_KEY ? null : stageKey);
     setCreateOpen(true);
   }
 
-  const getItems = (stageKey) => opportunities.filter((o) => o.stage === stageKey);
+  // Funil do livro (Marco 3 §10): as colunas são as etapas fixas do livro. Oportunidade gravada com etapa fora do funil
+  // (quadro antigo, desistência) aparece em "Outras etapas" e não some da tela; essa coluna não recebe cards.
+  const knownStageKeys = useMemo(() => new Set(stages.map((s) => s.key)), [stages]);
+  const boardColumns = useMemo(
+    () => (opportunities.some((o) => !knownStageKeys.has(o.stage))
+      ? [...stages, { key: OTHER_STAGES_KEY, label: "Outras etapas (fora do funil)" }]
+      : stages),
+    [opportunities, stages, knownStageKeys]
+  );
+  const getItems = (stageKey) => (stageKey === OTHER_STAGES_KEY
+    ? opportunities.filter((o) => !knownStageKeys.has(o.stage))
+    : opportunities.filter((o) => o.stage === stageKey));
 
   const overdueCount = useMemo(
     () => opportunities.filter((o) => !CLOSED_STAGES.includes(o.stage) && isOverdue(o.nextActionDueAt)).length,
@@ -134,6 +145,7 @@ export default function CrmPage() {
   }
 
   function handleMoveItem(itemId, newStageKey) {
+    if (newStageKey === OTHER_STAGES_KEY) return;
     // FIX: a API exige um motivo estruturado (wonReason/lostReason) para fechar uma
     // oportunidade como "ganho"/"perdido" (OPPORTUNITY_OUTCOME_REASON_REQUIRED). Antes disso,
     // o drag-and-drop mandava só {stage}, a API recusava com 422 e o card voltava sozinho pro
@@ -178,18 +190,6 @@ export default function CrmPage() {
     }
   }
 
-  function handleAddColumn(label) {
-    // crm.opportunities.stage é uma coluna STRING livre (sem ENUM/CHECK no Caderno) — etapas
-    // não são fixas, a equipe pode criar novas conforme o funil da operação.
-    const key = label
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "") || `etapa-${Date.now()}`;
-    setStages((prev) => [...prev, { key, label }]);
-  }
-
   function handleRenameColumn(key, label) {
     setStages((prev) => prev.map((s) => (s.key === key ? { ...s, label } : s)));
   }
@@ -206,12 +206,6 @@ export default function CrmPage() {
     });
   }
 
-  function commitNewStage() {
-    if (newStageName.trim()) handleAddColumn(newStageName.trim());
-    setNewStageName("");
-    setAddStageOpen(false);
-  }
-
   return (
     <AppShell title="CRM">
       <div className={styles.toolbar}>
@@ -221,24 +215,6 @@ export default function CrmPage() {
         </span>
         <div className={styles.toolbarActions}>
           <CrmNavMenu />
-          {addStageOpen ? (
-            <input
-              className={styles.newStageInput}
-              placeholder="Nome da nova etapa..."
-              value={newStageName}
-              autoFocus
-              onChange={(e) => setNewStageName(e.target.value)}
-              onBlur={commitNewStage}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") commitNewStage();
-                if (e.key === "Escape") setAddStageOpen(false);
-              }}
-            />
-          ) : (
-            <Button variant="secondary" onClick={() => setAddStageOpen(true)}>
-              <Icon name="plus" size={16} /> Nova etapa
-            </Button>
-          )}
           <Button onClick={() => openCreateForStage(null)}>
             <Icon name="plus" size={16} /> Nova oportunidade
           </Button>
@@ -253,7 +229,7 @@ export default function CrmPage() {
         <AsyncState result={funnelQuery} />
       ) : (
         <KanbanBoard
-          columns={stages}
+          columns={boardColumns}
           getItems={getItems}
           emptyLabel="Nenhuma oportunidade nesta etapa"
           renderItem={(item) => (
@@ -269,7 +245,6 @@ export default function CrmPage() {
             />
           )}
           onMoveItem={handleMoveItem}
-          onAddColumn={handleAddColumn}
           onRenameColumn={handleRenameColumn}
           onReorderColumns={handleReorderColumns}
           onAddItem={openCreateForStage}
@@ -440,7 +415,7 @@ function OpportunityDetailModal({ opportunity, stages, users = [], onSave, onClo
 
   const isClosed = opportunity ? CLOSED_STAGES.includes(opportunity.stage) : false;
   const overdue = opportunity && !isClosed && isOverdue(opportunity.nextActionDueAt);
-  const stageLabel = opportunity ? stages.find((s) => s.key === opportunity.stage)?.label : "";
+  const stageLabel = opportunity ? stages.find((s) => s.key === opportunity.stage)?.label || stageLabelPt(opportunity.stage) : "";
 
   return (
     <Modal open={Boolean(opportunity)} onClose={onClose} title={opportunity?.personName}>

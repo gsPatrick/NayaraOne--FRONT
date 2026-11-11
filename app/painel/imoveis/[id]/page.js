@@ -18,6 +18,7 @@ import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import PriceHistoryTimeline from "@/components/molecules/PriceHistoryTimeline/PriceHistoryTimeline";
 import PortalListingsCard from "@/components/organisms/PortalListingsCard/PortalListingsCard";
+import MediaQualityReview from "@/components/molecules/MediaQualityReview/MediaQualityReview";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import {
   FEATURE_LABELS,
@@ -696,6 +697,13 @@ export default function PropertyDetailPage({ params }) {
                   </span>
                 </div>
                 <p className={styles.miniBannerCaption}>{property.media[mediaIndex].label}</p>
+                <MediaQualityReview
+                  propertyId={property.id}
+                  media={property.media[mediaIndex]}
+                  onReviewed={(mediaId, qualityStatus) =>
+                    setProperty((prev) => ({ ...prev, media: prev.media.map((m) => (m.id === mediaId ? { ...m, qualityStatus } : m)) }))
+                  }
+                />
               </Card>
             ) : null}
           </div>
