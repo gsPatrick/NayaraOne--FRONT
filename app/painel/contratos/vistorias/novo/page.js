@@ -9,17 +9,16 @@ import Input from "@/components/atoms/Input/Input";
 import Select from "@/components/atoms/Select/Select";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
-import Icon from "@/components/atoms/Icon/Icon";
-import Badge from "@/components/atoms/Badge/Badge";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import { UI_STATE } from "@/lib/asyncState/states";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { listProperties } from "@/lib/api/properties";
 import { listContracts, createInspectionWithItems } from "@/lib/api/legal";
-import { INSPECTION_TYPE_LABELS, CONDITION_LABELS, CONDITION_TONE, RESPONSIBLE_PARTY_LABELS } from "@/lib/mock/legal";
-import { formatContractLabel, toNumber, formatBRL } from "@/lib/format";
+import { INSPECTION_TYPES, INSPECTION_TYPE_LABELS } from "@/lib/labels/juridico";
+import { legalErrorMessage } from "@/lib/legal/legalErrors";
+import { formatContractLabel, toNumber } from "@/lib/format";
 import styles from "./page.module.css";
-import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
+import ItemsEditor from "./ItemsEditor";
 
 export default function NovaVistoriaPage() {
   const router = useRouter();
@@ -30,19 +29,10 @@ export default function NovaVistoriaPage() {
   const [form, setForm] = useState({
     propertyId: "",
     contractId: "",
-    inspectionType: "CHECK_IN",
+    inspectionType: "ENTRY",
     scheduledAt: "",
   });
   const [items, setItems] = useState([]);
-  const [newItem, setNewItem] = useState({
-    itemName: "",
-    condition: "GOOD",
-    notes: "",
-    damageDescription: "",
-    responsibleParty: "",
-    estimatedBudget: "",
-  });
-  const [newItemError, setNewItemError] = useState("");
   // FIX (reportado pela cliente): reproduzido — ao digitar a data/hora agendada direto pelo
   // teclado (sem usar Tab entre os segmentos do <input type="datetime-local">), um dígito a
   // mais no ano (ex: "202610" em vez de "2026") deixa o campo em estado inválido e o
@@ -81,6 +71,13 @@ export default function NovaVistoriaPage() {
     return (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
   }
 
+  // Contrato escolhido: o imóvel passa a ser o do contrato (a vistoria de entrada libera as chaves desse contrato).
+  function handleContractChange(e) {
+    const contractId = e.target.value;
+    const contract = contracts.find((c) => c.id === contractId);
+    setForm((prev) => ({ ...prev, contractId, propertyId: contract?.propertyId || prev.propertyId }));
+  }
+
   function handleScheduledAtChange(e) {
     const validity = e.target.validity;
     const invalid = !!validity && (validity.badInput || validity.rangeOverflow || validity.rangeUnderflow);
@@ -108,41 +105,6 @@ export default function NovaVistoriaPage() {
     setForm((prev) => (prev.scheduledAt === e.target.value ? prev : { ...prev, scheduledAt: e.target.value }));
   }
 
-  // FIX (Bug 4, reportado pela cliente): a API rejeita (400) um item com condition="DAMAGED"
-  // sem "damageDescription" (e, na prática, sem "estimatedBudget" numérico >= 0 e
-  // "responsibleParty" também — ver validação real em
-  // NayaraOne--API/src/features/legal/inspections.service.js#addInspectionItem). Antes o
-  // formulário não pedia nenhum desses campos e deixava o usuário "confirmar" o item na tela
-  // (adicionar à lista local) mesmo faltando dado obrigatório — o erro só aparecia depois, ao
-  // submeter TODA a vistoria, quando a vistoria-pai já tinha sido criada mas o item falhava.
-  // Agora validamos aqui, antes de adicionar o item à lista, então o submit nunca chega a
-  // mandar um item DAMAGED inválido pra API.
-  function addItem() {
-    if (!newItem.itemName.trim()) return;
-    setNewItemError("");
-    if (newItem.condition === "DAMAGED") {
-      if (!newItem.damageDescription.trim()) {
-        setNewItemError('Descreva o dano ("Descrição do dano" é obrigatória para itens com condição "Danificado").');
-        return;
-      }
-      const budgetNumber = toNumber(newItem.estimatedBudget);
-      if (newItem.estimatedBudget === "" || !Number.isFinite(budgetNumber) || budgetNumber < 0) {
-        setNewItemError('Informe um "Orçamento estimado" numérico (>= 0) para itens com condição "Danificado".');
-        return;
-      }
-      if (!newItem.responsibleParty) {
-        setNewItemError('Selecione o "Responsável pelo dano" para itens com condição "Danificado".');
-        return;
-      }
-    }
-    setItems((prev) => [...prev, { id: `tmp-${Date.now()}`, ...newItem }]);
-    setNewItem({ itemName: "", condition: "GOOD", notes: "", damageDescription: "", responsibleParty: "", estimatedBudget: "" });
-  }
-
-  function removeItem(id) {
-    setItems((prev) => prev.filter((i) => i.id !== id));
-  }
-
   async function handleSubmit() {
     if (!isValid) return;
     setActionError("");
@@ -155,8 +117,12 @@ export default function NovaVistoriaPage() {
         contractId: form.contractId || undefined,
         inspectionType: form.inspectionType,
         scheduledAt: new Date(form.scheduledAt).toISOString(),
+        // Fechamento M5 (Caderno §11): item estruturado por ambiente, com os códigos de pareamento e a descrição.
         items: items.map((item) => ({
           itemName: item.itemName,
+          roomCode: item.roomCode,
+          itemCode: item.itemCode,
+          description: item.description || undefined,
           condition: item.condition,
           notes: item.notes || undefined,
           damageDescription: item.damageDescription || undefined,
@@ -166,7 +132,7 @@ export default function NovaVistoriaPage() {
       });
       router.push(`/painel/contratos/vistorias/${inspection.id}`);
     } catch (err) {
-      setActionError(err.message || "Erro ao criar vistoria.");
+      setActionError(legalErrorMessage(err, "Erro ao criar vistoria."));
     } finally {
       setSubmitting(false);
     }
@@ -191,7 +157,7 @@ export default function NovaVistoriaPage() {
         ) : null}
 
         <Alert tone="info" title="Itens da vistoria">
-          Adicione os itens vistoriados (opcional na criação) — eles ficam registrados na página de detalhe, junto ao laudo comparativo entrada/saída.
+          Adicione os itens vistoriados por ambiente (opcional na criação). Fotos e vídeos de cada item são anexados na página da vistoria, antes de concluí-la.
         </Alert>
 
         <Card title="Dados da vistoria">
@@ -204,8 +170,8 @@ export default function NovaVistoriaPage() {
               </Select>
             </FormField>
 
-            <FormField label="Contrato" htmlFor="f-contract" helper="Opcional">
-              <Select id="f-contract" value={form.contractId} onChange={update("contractId")}>
+            <FormField label="Contrato" htmlFor="f-contract" helper="Opcional — com contrato, o imóvel é o do contrato">
+              <Select id="f-contract" value={form.contractId} onChange={handleContractChange}>
                 <option value="">Nenhum</option>
                 {contracts.map((c) => (
                   <option key={c.id} value={c.id}>{formatContractLabel(c)}</option>
@@ -215,8 +181,8 @@ export default function NovaVistoriaPage() {
 
             <FormField label="Tipo de vistoria" htmlFor="f-type" required>
               <Select id="f-type" value={form.inspectionType} onChange={update("inspectionType")}>
-                {Object.entries(INSPECTION_TYPE_LABELS).map(([k, v]) => (
-                  <option key={k} value={k}>{v}</option>
+                {INSPECTION_TYPES.map((k) => (
+                  <option key={k} value={k}>{INSPECTION_TYPE_LABELS[k]}</option>
                 ))}
               </Select>
             </FormField>
@@ -241,90 +207,7 @@ export default function NovaVistoriaPage() {
           </div>
         </Card>
 
-        <Card title="Itens da vistoria" subtitle="Adicione os itens que serão vistoriados">
-          <div className={styles.itemsList}>
-            {items.length === 0 ? (
-              <p className={styles.emptyText}>Nenhum item adicionado ainda.</p>
-            ) : (
-              items.map((item) => (
-                <div key={item.id} className={styles.itemRow}>
-                  <div className={styles.itemInfo}>
-                    <span className={styles.itemName}>{item.itemName}</span>
-                    {item.notes ? <span className={styles.itemNotes}>{item.notes}</span> : null}
-                    {item.condition === "DAMAGED" ? (
-                      <span className={styles.itemNotes}>
-                        Dano: {item.damageDescription}
-                        {item.responsibleParty ? ` — Responsável: ${RESPONSIBLE_PARTY_LABELS[item.responsibleParty] || item.responsibleParty}` : ""}
-                        {item.estimatedBudget !== "" ? ` — Orçamento: ${formatBRL(toNumber(item.estimatedBudget))}` : ""}
-                      </span>
-                    ) : null}
-                  </div>
-                  <Badge tone={CONDITION_TONE[item.condition]}>{CONDITION_LABELS[item.condition]}</Badge>
-                  <button type="button" className={styles.removeBtn} onClick={() => removeItem(item.id)} aria-label="Remover item">
-                    <Icon name="trash" size={16} />
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
-
-          <div className={styles.addItemRow}>
-            <FormField label="Item" htmlFor="f-item-name">
-              <Input id="f-item-name" value={newItem.itemName} onChange={(e) => setNewItem((prev) => ({ ...prev, itemName: e.target.value }))} placeholder="Ex: Pintura — sala" />
-            </FormField>
-            <FormField label="Condição" htmlFor="f-item-condition">
-              <Select id="f-item-condition" value={newItem.condition} onChange={(e) => setNewItem((prev) => ({ ...prev, condition: e.target.value }))}>
-                {Object.entries(CONDITION_LABELS).map(([k, v]) => (
-                  <option key={k} value={k}>{v}</option>
-                ))}
-              </Select>
-            </FormField>
-            <FormField label="Observações" htmlFor="f-item-notes" helper="Opcional">
-              <Input id="f-item-notes" value={newItem.notes} onChange={(e) => setNewItem((prev) => ({ ...prev, notes: e.target.value }))} placeholder="Ex: Sem marcas ou manchas" />
-            </FormField>
-          </div>
-
-          {newItem.condition === "DAMAGED" ? (
-            <div className={styles.addItemRow}>
-              <FormField label="Descrição do dano" htmlFor="f-item-damage" required helper="Obrigatório para itens danificados">
-                <Input
-                  id="f-item-damage"
-                  value={newItem.damageDescription}
-                  onChange={(e) => setNewItem((prev) => ({ ...prev, damageDescription: e.target.value }))}
-                  placeholder="Ex: Vidro trincado na janela da sala"
-                />
-              </FormField>
-              <FormField label="Responsável pelo dano" htmlFor="f-item-responsible">
-                <Select
-                  id="f-item-responsible"
-                  value={newItem.responsibleParty}
-                  onChange={(e) => setNewItem((prev) => ({ ...prev, responsibleParty: e.target.value }))}
-                >
-                  <option value="">Selecione</option>
-                  {Object.entries(RESPONSIBLE_PARTY_LABELS).map(([k, v]) => (
-                    <option key={k} value={k}>{v}</option>
-                  ))}
-                </Select>
-              </FormField>
-              <FormField label="Orçamento estimado (R$)" htmlFor="f-item-budget">
-                <DecimalInput
-                  id="f-item-budget"
-                  value={newItem.estimatedBudget}
-                  onChange={(e) => setNewItem((prev) => ({ ...prev, estimatedBudget: e.target.value }))}
-                  placeholder="Ex.: 350,00"
-                />
-              </FormField>
-            </div>
-          ) : null}
-
-          {newItemError ? <Alert tone="danger">{newItemError}</Alert> : null}
-
-          <div className={styles.addItemRow}>
-            <Button variant="secondary" onClick={addItem}>
-              <Icon name="plus" size={16} /> Adicionar item
-            </Button>
-          </div>
-        </Card>
+        <ItemsEditor items={items} onChange={setItems} />
 
         <div className={styles.actionBar}>
           <Button variant="secondary" onClick={() => router.push("/painel/contratos/vistorias")}>Cancelar</Button>

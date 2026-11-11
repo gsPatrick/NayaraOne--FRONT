@@ -19,11 +19,13 @@ import Pagination from "@/components/molecules/Pagination/Pagination";
 import { listProperties } from "@/lib/api/properties";
 import { listInspections } from "@/lib/api/legal";
 import {
+  INSPECTION_TYPES,
   INSPECTION_TYPE_LABELS,
   INSPECTION_TYPE_TONE,
   INSPECTION_STATUS_LABELS,
   INSPECTION_STATUS_TONE,
-} from "@/lib/mock/legal";
+  normalizeInspectionType,
+} from "@/lib/labels/juridico";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { formatDate } from "@/lib/format";
 import styles from "./page.module.css";
@@ -57,7 +59,7 @@ export default function VistoriasPage() {
     return inspections.filter((i) => {
       const property = propertyOf(i.propertyId);
       if (query && !(property?.name || "").toLowerCase().includes(query.toLowerCase())) return false;
-      if (typeFilter && i.inspectionType !== typeFilter) return false;
+      if (typeFilter && normalizeInspectionType(i.inspectionType) !== typeFilter) return false;
       if (statusFilter && i.status !== statusFilter) return false;
       return true;
     });
@@ -85,7 +87,7 @@ export default function VistoriasPage() {
       key: "inspectionType",
       label: "Tipo",
       width: "16%",
-      render: (row) => <Badge tone={INSPECTION_TYPE_TONE[row.inspectionType]}>{INSPECTION_TYPE_LABELS[row.inspectionType]}</Badge>,
+      render: (row) => <Badge tone={INSPECTION_TYPE_TONE[row.inspectionType]}>{INSPECTION_TYPE_LABELS[row.inspectionType] || "Tipo não identificado"}</Badge>,
     },
     { key: "scheduledAt", label: "Data agendada", width: "18%", render: (row) => (row.scheduledAt ? formatDate(row.scheduledAt) : "Sem agendamento (feita na hora)") },
     {
@@ -94,7 +96,7 @@ export default function VistoriasPage() {
       width: "20%",
       render: (row) => (
         <div className={styles.statusCell}>
-          <Badge tone={INSPECTION_STATUS_TONE[row.status]}>{INSPECTION_STATUS_LABELS[row.status]}</Badge>
+          <Badge tone={INSPECTION_STATUS_TONE[row.status]}>{INSPECTION_STATUS_LABELS[row.status] || "Situação não identificada"}</Badge>
         </div>
       ),
     },
@@ -116,17 +118,17 @@ export default function VistoriasPage() {
         <StatTile label="Itens com danos" value="Veja em cada vistoria" tone="neutral" icon="filter" />
       </div>
 
-      <Card title="Vistorias de entrada, saída e periódicas">
+      <Card title="Vistorias de entrada, saída, intermediárias e finais">
         <div className={styles.toolbar}>
           <SearchInput placeholder="Buscar por imóvel..." value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} />
           <Select className={styles.filter} value={typeFilter} onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}>
             <option value="">Todos os tipos</option>
-            {Object.entries(INSPECTION_TYPE_LABELS).map(([k, v]) => (
-              <option key={k} value={k}>{v}</option>
+            {INSPECTION_TYPES.map((k) => (
+              <option key={k} value={k}>{INSPECTION_TYPE_LABELS[k]}</option>
             ))}
           </Select>
           <Select className={styles.filter} value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}>
-            <option value="">Todos os status</option>
+            <option value="">Todas as situações</option>
             {Object.entries(INSPECTION_STATUS_LABELS).map(([k, v]) => (
               <option key={k} value={k}>{v}</option>
             ))}
