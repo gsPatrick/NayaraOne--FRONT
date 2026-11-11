@@ -48,6 +48,8 @@ export default function ObraDetalhePage({ params }) {
   const [properties, setProperties] = useState([]);
   const [users, setUsers] = useState([]);
   const [costCenters, setCostCenters] = useState([]);
+  const [projectTypes, setProjectTypes] = useState([]);
+  const [members, setMembers] = useState([]);
   const [stages, setStages] = useState([]);
   const [reportsCount, setReportsCount] = useState(0);
   const [budgetLinesCount, setBudgetLinesCount] = useState(0);
@@ -59,13 +61,13 @@ export default function ObraDetalhePage({ params }) {
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
 
   const [editOpen, setEditOpen] = useState(false);
-  const [editForm, setEditForm] = useState({ name: "", propertyId: "", responsibleUserId: "", costCenterId: "", budgetAmount: "", startsAt: "", endsAtPlanned: "" });
+  const [editForm, setEditForm] = useState({ name: "", propertyId: "", responsibleUserId: "", projectTypeId: "", costCenterId: "", budgetAmount: "", startsAt: "", endsAtPlanned: "" });
   const [editDateErrors, setEditDateErrors] = useState({});
   const [savingEdit, setSavingEdit] = useState(false);
   const [budgetApproved, setBudgetApproved] = useState(false);
 
   const [stageOpen, setStageOpen] = useState(false);
-  const [stageForm, setStageForm] = useState({ name: "", sequence: "1", plannedPct: "", plannedCost: "", startsAt: "", endsAt: "" });
+  const [stageForm, setStageForm] = useState({ name: "", sequence: "1", stageCode: "", responsibleUserId: "", plannedPct: "", plannedCost: "", startsAt: "", endsAt: "" });
   // FIX (auditoria externa Marco 6, 2026-10-07): o caderno exige prazo (início/fim) por
   // etapa e o backend (projectStages.service.js) já valida/persiste startsAt/endsAt — o
   // formulário de etapa simplesmente não expunha esses campos. Mesmo padrão de validação de
@@ -104,6 +106,8 @@ export default function ObraDetalhePage({ params }) {
     setProperties(d.properties);
     setUsers(d.users);
     setCostCenters(d.costCenters);
+    setProjectTypes(d.projectTypes || []);
+    setMembers(d.members || []);
     setStages(d.stages);
     setReportsCount(d.reportsCount);
     setBudgetLinesCount(d.budgetLinesCount);
@@ -186,6 +190,7 @@ export default function ObraDetalhePage({ params }) {
       name: project.name,
       propertyId: project.propertyId || "",
       responsibleUserId: project.responsibleUserId || "",
+      projectTypeId: project.projectTypeId || "",
       costCenterId: project.costCenterId || "",
       budgetAmount: project.budgetAmount != null ? String(project.budgetAmount) : "",
       startsAt: project.startsAt ? project.startsAt.slice(0, 10) : "",
@@ -203,6 +208,7 @@ export default function ObraDetalhePage({ params }) {
         name: editForm.name.trim(),
         propertyId: editForm.propertyId || null,
         responsibleUserId: editForm.responsibleUserId || null,
+        projectTypeId: editForm.projectTypeId || null,
         costCenterId: editForm.costCenterId || null,
         // FIX (auditoria E2E de browser, ciclo 5, 02/10/2026): com orçamento já aprovado
         // (baseline imutável), o backend agora rejeita qualquer alteração de budgetAmount —
@@ -226,7 +232,7 @@ export default function ObraDetalhePage({ params }) {
 
   function openStageModal() {
     setEditingStageId(null);
-    setStageForm({ name: "", sequence: String(stages.length + 1), plannedPct: "", plannedCost: "", startsAt: "", endsAt: "" });
+    setStageForm({ name: "", sequence: String(stages.length + 1), stageCode: "", responsibleUserId: "", plannedPct: "", plannedCost: "", startsAt: "", endsAt: "" });
     setStageDateErrors({});
     setStageOpen(true);
   }
@@ -240,6 +246,8 @@ export default function ObraDetalhePage({ params }) {
     setStageForm({
       name: stage.name || "",
       sequence: stage.sequence != null ? String(stage.sequence) : "",
+      stageCode: stage.stageCode || "",
+      responsibleUserId: stage.responsibleUserId || "",
       plannedPct: stage.plannedPct != null ? String(Number(stage.plannedPct)) : "",
       plannedCost: stage.plannedCost != null ? String(Number(stage.plannedCost)) : "",
       startsAt: stage.startsAt ? stage.startsAt.slice(0, 10) : "",
@@ -263,6 +271,8 @@ export default function ObraDetalhePage({ params }) {
       const payload = {
         name: stageForm.name.trim(),
         sequence: Number(stageForm.sequence),
+        stageCode: stageForm.stageCode.trim() || null,
+        responsibleUserId: stageForm.responsibleUserId || null,
         plannedPct: stageForm.plannedPct !== "" ? toNumber(stageForm.plannedPct) : undefined,
         plannedCost: stageForm.plannedCost !== "" ? toNumber(stageForm.plannedCost) : undefined,
         startsAt: dateOnlyInputToIso(stageForm.startsAt) || null,
@@ -411,6 +421,10 @@ export default function ObraDetalhePage({ params }) {
               <p className={styles.infoValue}>{responsible?.name || "Sem responsável definido"}</p>
             </div>
             <div>
+              <p className={styles.infoLabel}>Tipo de obra</p>
+              <p className={styles.infoValue}>{(projectTypes.find((t) => t.id === project.projectTypeId) || {}).name || "Sem tipo"}</p>
+            </div>
+            <div>
               <p className={styles.infoLabel}>Centro de custo</p>
               <p className={styles.infoValue}>{costCenters.find((c) => c.id === project.costCenterId)?.name || "Sem centro de custo"}</p>
             </div>
@@ -444,6 +458,10 @@ export default function ObraDetalhePage({ params }) {
                 <div>
                   <p className={styles.infoLabel}>Mudanças aprovadas</p>
                   <p className={styles.infoValue}>{formatBRL(health.approvedChanges)}</p>
+                </div>
+                <div>
+                  <p className={styles.infoLabel}>Orçamento vigente (baseline + aditivos)</p>
+                  <p className={styles.infoValue}>{formatBRL(health.currentApprovedBudget ?? (Number(health.baselineBudget || 0) + Number(health.approvedChanges || 0)))}</p>
                 </div>
                 <div>
                   <p className={styles.infoLabel}>Custo comprometido</p>
@@ -601,7 +619,7 @@ export default function ObraDetalhePage({ params }) {
                   <div className={styles.rowInfo}>
                     <span className={styles.rowTitle}>{s.sequence}. {s.name}</span>
                     <span className={styles.rowSubtitle}>
-                      Planejado {formatPercent(s.plannedPct)} · Medido {formatPercent(s.measuredPct)}
+                      Planejado {formatPercent(s.plannedPct)} · Medido {formatPercent(s.measuredPct)} · Responsável: {(users.find((u) => u.id === s.responsibleUserId) || {}).name || "não definido"}
                     </span>
                   </div>
                   <Badge tone={STAGE_STATUS_TONE[s.status]}>{STAGE_STATUS_LABELS[s.status]}</Badge>
@@ -699,8 +717,16 @@ export default function ObraDetalhePage({ params }) {
           <FormField label="Responsável" htmlFor="e-responsible" helper="Opcional agora — obrigatório para iniciar a execução da obra">
             <Select id="e-responsible" value={editForm.responsibleUserId} onChange={(e) => setEditForm((p) => ({ ...p, responsibleUserId: e.target.value }))}>
               <option value="">Sem responsável</option>
-              {users.map((u) => (
+              {members.map((u) => (
                 <option key={u.id} value={u.id}>{u.name}</option>
+              ))}
+            </Select>
+          </FormField>
+          <FormField label="Tipo de obra" htmlFor="e-project-type" helper="Define o checklist de qualidade por etapa">
+            <Select id="e-project-type" value={editForm.projectTypeId} onChange={(e) => setEditForm((p) => ({ ...p, projectTypeId: e.target.value }))}>
+              <option value="">Sem tipo</option>
+              {projectTypes.filter((t) => t.active || t.id === editForm.projectTypeId).map((t) => (
+                <option key={t.id} value={t.id}>{t.name}</option>
               ))}
             </Select>
           </FormField>
@@ -808,6 +834,17 @@ export default function ObraDetalhePage({ params }) {
               <Input id="m-stage-name" value={stageForm.name} onChange={(e) => setStageForm((p) => ({ ...p, name: e.target.value }))} placeholder="Ex: Fundação e estrutura" />
             </FormField>
           </div>
+          <FormField label="Código da etapa" htmlFor="m-stage-code" helper="Liga a etapa ao checklist do tipo de obra">
+            <Input id="m-stage-code" value={stageForm.stageCode} onChange={(e) => setStageForm((p) => ({ ...p, stageCode: e.target.value }))} placeholder="Ex: FUND" />
+          </FormField>
+          <FormField label="Responsável pela etapa" htmlFor="m-stage-responsible" helper="Obrigatório para iniciar a etapa">
+            <Select id="m-stage-responsible" value={stageForm.responsibleUserId} onChange={(e) => setStageForm((p) => ({ ...p, responsibleUserId: e.target.value }))}>
+              <option value="">Sem responsável</option>
+              {members.map((u) => (
+                <option key={u.id} value={u.id}>{u.name}</option>
+              ))}
+            </Select>
+          </FormField>
           <FormField label="Sequência" htmlFor="m-stage-seq" required>
             <Input id="m-stage-seq" type="number" min="1" value={stageForm.sequence} onChange={(e) => setStageForm((p) => ({ ...p, sequence: e.target.value }))} />
           </FormField>

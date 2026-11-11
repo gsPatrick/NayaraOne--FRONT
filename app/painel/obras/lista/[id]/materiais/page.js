@@ -24,6 +24,7 @@ import {
 } from "@/lib/mock/construction";
 import { listMaterialRequests, createMaterialRequest, receiveMaterialRequest, returnMaterialRequest, listLossRecords, createLossRecord, approveLossRecord, returnLossRecord, upsertApprovalThreshold } from "@/lib/api/construction";
 import { listInventoryItems, listInventoryLocations } from "@/lib/api/inventory";
+import { listProjectStages } from "@/lib/api/construction";
 import { formatBRL, formatQuantity, formatDate, toNumber } from "@/lib/format";
 import { isInvalidNumber, isLossFullyReturned, lossRemainingToReturn } from "../_components/obraShared";
 import OfflineSyncBadge from "@/components/molecules/OfflineSyncBadge/OfflineSyncBadge";
@@ -48,7 +49,8 @@ export default function MateriaisObraPage({ params }) {
   const { confirm, ConfirmDialog } = useConfirm();
 
   const [materialOpen, setMaterialOpen] = useState(false);
-  const [materialForm, setMaterialForm] = useState({ description: "", quantity: "", unit: "" });
+  const [materialForm, setMaterialForm] = useState({ description: "", quantity: "", unit: "", stageId: "" });
+  const [stages, setStages] = useState([]);
   const [savingMaterial, setSavingMaterial] = useState(false);
 
   // GAP CORRIGIDO (auditoria externa Nayara, 2026-10-07; contrato §7/§8): confirmar recebimento
@@ -57,7 +59,7 @@ export default function MateriaisObraPage({ params }) {
   const [inventoryItems, setInventoryItems] = useState([]);
   const [inventoryLocations, setInventoryLocations] = useState([]);
   const [receiveTarget, setReceiveTarget] = useState(null);
-  const [receiveForm, setReceiveForm] = useState({ inventoryItemId: "", sourceLocationId: "" });
+  const [receiveForm, setReceiveForm] = useState({ inventoryItemId: "", sourceLocationId: "", stageId: "" });
   const [savingReceive, setSavingReceive] = useState(false);
   const [returnTarget, setReturnTarget] = useState(null);
   const [returnForm, setReturnForm] = useState({ inventoryItemId: "", destinationLocationId: "", quantity: "" });
@@ -95,8 +97,8 @@ export default function MateriaisObraPage({ params }) {
     async () => {
       const project = await getProjectOrNull(params.id);
       if (!project) return { notFound: true };
-      const [materialRequests, lossRecords] = await Promise.all([listMaterialRequests(project.id), listLossRecords(project.id)]);
-      return { project, materialRequests: materialRequests || [], lossRecords: lossRecords || [] };
+      const [materialRequests, lossRecords, stages] = await Promise.all([listMaterialRequests(project.id), listLossRecords(project.id), listProjectStages(project.id)]);
+      return { project, materialRequests: materialRequests || [], lossRecords: lossRecords || [], stages: stages || [] };
     },
     { key: `obra-materiais-${params.id}`, deps: [params.id], isEmpty: () => false }
   );
@@ -107,6 +109,7 @@ export default function MateriaisObraPage({ params }) {
     setProject(d.project);
     setMaterialRequests(d.materialRequests);
     setLossRecords(d.lossRecords);
+    setStages(d.stages || []);
   }, [pageQuery.data]);
 
   useEffect(() => {
@@ -134,7 +137,7 @@ export default function MateriaisObraPage({ params }) {
   }
 
   function openMaterialModal() {
-    setMaterialForm({ description: "", quantity: "", unit: "" });
+    setMaterialForm({ description: "", quantity: "", unit: "", stageId: "" });
     setMaterialOpen(true);
   }
   async function handleCreateMaterialRequest() {
@@ -149,6 +152,7 @@ export default function MateriaisObraPage({ params }) {
       description: materialForm.description.trim(),
       quantity: toNumber(materialForm.quantity),
       unit: materialForm.unit.trim(),
+      ...(materialForm.stageId ? { stageId: materialForm.stageId } : {}),
     };
     const idempotencyKey = generateIdempotencyKey();
     try {
@@ -175,7 +179,7 @@ export default function MateriaisObraPage({ params }) {
   }
   function openReceiveModal(request) {
     setActionError("");
-    setReceiveForm({ inventoryItemId: "", sourceLocationId: "" });
+    setReceiveForm({ inventoryItemId: "", sourceLocationId: "", stageId: "" });
     setReceiveTarget(request);
   }
 
@@ -187,6 +191,7 @@ export default function MateriaisObraPage({ params }) {
       const updated = await receiveMaterialRequest(receiveTarget.id, {
         inventoryItemId: receiveForm.inventoryItemId,
         sourceLocationId: receiveForm.sourceLocationId,
+        stageId: receiveTarget.stageId ? undefined : receiveForm.stageId,
       });
       setMaterialRequests((prev) => prev.map((m) => (m.id === updated.id ? updated : m)));
       setReceiveTarget(null);
@@ -452,6 +457,12 @@ export default function MateriaisObraPage({ params }) {
           <FormField label="Unidade" htmlFor="m-material-unit" required>
             <Input id="m-material-unit" value={materialForm.unit} onChange={(e) => setMaterialForm((p) => ({ ...p, unit: e.target.value }))} placeholder="Ex: un, kg, m2, saco" />
           </FormField>
+          <FormField label="Etapa da obra" htmlFor="m-material-stage" helper="A requisição nasce da obra/etapa; a baixa do estoque exige a etapa">
+            <Select id="m-material-stage" value={materialForm.stageId} onChange={(e) => setMaterialForm((p) => ({ ...p, stageId: e.target.value }))}>
+              <option value="">Informar no recebimento</option>
+              {stages.map((st) => <option key={st.id} value={st.id}>{st.name}</option>)}
+            </Select>
+          </FormField>
         </div>
       </Modal>
 
@@ -525,11 +536,19 @@ export default function MateriaisObraPage({ params }) {
         footer={
           <>
             <Button variant="secondary" onClick={() => setReceiveTarget(null)}>Cancelar</Button>
-            <Button onClick={handleConfirmReceive} loading={savingReceive} disabled={!receiveForm.inventoryItemId || !receiveForm.sourceLocationId}>Confirmar recebimento</Button>
+            <Button onClick={handleConfirmReceive} loading={savingReceive} disabled={!receiveForm.inventoryItemId || !receiveForm.sourceLocationId || (!receiveTarget?.stageId && !receiveForm.stageId)}>Confirmar recebimento</Button>
           </>
         }
       >
         <p className={styles.rowSubtitle}>{receiveTarget?.description} — {receiveTarget ? formatQuantity(receiveTarget.quantity) : ""} {receiveTarget?.unit}</p>
+        {receiveTarget && !receiveTarget.stageId ? (
+          <FormField label="Etapa da obra" htmlFor="m-receive-stage" required helper="Em que etapa o material será usado (a baixa do estoque para a obra exige a etapa).">
+            <Select id="m-receive-stage" value={receiveForm.stageId} onChange={(e) => setReceiveForm((p) => ({ ...p, stageId: e.target.value }))}>
+              <option value="">Selecione...</option>
+              {stages.map((st) => <option key={st.id} value={st.id}>{st.name}</option>)}
+            </Select>
+          </FormField>
+        ) : null}
         <FormField label="Item do estoque" htmlFor="m-receive-item" required helper="De qual item do almoxarifado este material saiu.">
           <Select
             id="m-receive-item"

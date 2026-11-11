@@ -11,6 +11,7 @@ import Select from "@/components/atoms/Select/Select";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
 import { createProject } from "@/lib/api/construction";
+import { listProjectTypes, listConstructionMembers } from "@/lib/api/constructionConfig";
 import { listProperties } from "@/lib/api/properties";
 import { listCostCenters } from "@/lib/api/finance";
 import { apiFetch } from "@/lib/api/client";
@@ -28,6 +29,7 @@ export default function NovaObraPage() {
     name: "",
     propertyId: "",
     responsibleUserId: "",
+    projectTypeId: "",
     costCenterId: "",
     budgetAmount: "",
     startsAt: "",
@@ -38,12 +40,12 @@ export default function NovaObraPage() {
   // Filtra apenas usuários ACTIVE no seletor de responsável. Centro de custo é opcional: sem finance:read a falha é registrada (lookupFallback) e o formulário abre.
   const formQuery = useAsyncState(
     async () => {
-      const [properties, users, costCenters] = await Promise.all([listProperties(), apiFetch("/users?status=ACTIVE"), listCostCenters().catch(lookupFallback("os centros de custo"))]);
-      return { properties: properties || [], users: users || [], costCenters: costCenters || [] };
+      const [properties, users, costCenters, projectTypes] = await Promise.all([listProperties(), listConstructionMembers(), listCostCenters().catch(lookupFallback("os centros de custo")), listProjectTypes().catch(lookupFallback("os tipos de obra"))]);
+      return { properties: properties || [], users: users || [], costCenters: costCenters || [], projectTypes: (projectTypes || []).filter((t) => t.active) };
     },
     { key: "obras-lista-novo", isEmpty: () => false }
   );
-  const { properties = [], users = [], costCenters = [] } = formQuery.data || {};
+  const { properties = [], users = [], costCenters = [], projectTypes = [] } = formQuery.data || {};
 
   function update(field) {
     return (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
@@ -83,6 +85,7 @@ export default function NovaObraPage() {
         propertyId: form.propertyId || undefined,
         name: form.name.trim(),
         responsibleUserId: form.responsibleUserId || undefined,
+        projectTypeId: form.projectTypeId || undefined,
         costCenterId: form.costCenterId || undefined,
         budgetAmount: form.budgetAmount ? toNumber(form.budgetAmount) : undefined,
         startsAt: dateOnlyInputToIso(form.startsAt),
@@ -124,6 +127,15 @@ export default function NovaObraPage() {
                 <option value="">Nenhum</option>
                 {users.map((u) => (
                   <option key={u.id} value={u.id}>{u.name}</option>
+                ))}
+              </Select>
+            </FormField>
+
+            <FormField label="Tipo de obra" htmlFor="f-project-type" helper="Define o checklist de qualidade por etapa (Obras → Configurações)">
+              <Select id="f-project-type" value={form.projectTypeId} onChange={update("projectTypeId")}>
+                <option value="">Sem tipo</option>
+                {projectTypes.map((t) => (
+                  <option key={t.id} value={t.id}>{t.name}</option>
                 ))}
               </Select>
             </FormField>

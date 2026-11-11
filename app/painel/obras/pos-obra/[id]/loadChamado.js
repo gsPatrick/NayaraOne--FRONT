@@ -5,6 +5,7 @@ import { getProperty } from "@/lib/api/properties";
 import { getPerson } from "@/lib/api/people";
 import { apiFetch } from "@/lib/api/client";
 import { lookupFallback } from "@/lib/asyncState/lookup";
+import { listConstructionMembers } from "@/lib/api/constructionConfig";
 
 export async function loadChamado(id) {
   const maintenanceCase = await getMaintenanceCase(id).catch((err) => {
@@ -13,8 +14,9 @@ export async function loadChamado(id) {
   });
   if (!maintenanceCase) return { notFound: true };
   const c = maintenanceCase;
-  const [users, property, project, openedByPerson, related, warrantyActions] = await Promise.all([
+  const [users, members, property, project, openedByPerson, related, warrantyActions] = await Promise.all([
     apiFetch("/users?status=ACTIVE"),
+    listConstructionMembers(),
     c.propertyId ? getProperty(c.propertyId).catch(lookupFallback("o imóvel", null)) : Promise.resolve(null),
     c.projectId ? getProject(c.projectId).catch(lookupFallback("a obra", null)) : Promise.resolve(null),
     c.openedByPersonId ? getPerson(c.openedByPersonId).catch(lookupFallback("a pessoa", null)) : Promise.resolve(null),
@@ -24,6 +26,7 @@ export async function loadChamado(id) {
   return {
     maintenanceCase: c,
     users: users || [],
+    members: members || [],
     property,
     project,
     openedByPerson,

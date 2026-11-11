@@ -15,6 +15,7 @@ import FormField from "@/components/molecules/FormField/FormField";
 import Input from "@/components/atoms/Input/Input";
 import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import Select from "@/components/atoms/Select/Select";
+import BudgetRevisionsCard from "../_components/BudgetRevisionsCard";
 import FileDropInput from "@/components/molecules/FileDropInput/FileDropInput";
 import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
 import { CHANGE_ORDER_STATUS_LABELS, CHANGE_ORDER_STATUS_TONE, CHANGE_ORDER_REASON_LABELS } from "@/lib/mock/construction";
@@ -139,7 +140,7 @@ export default function ChangeOrdersObraPage({ params }) {
     const ok = await confirm({
       title: isApprove ? "Aprovar este aditivo (Change Order)?" : "Rejeitar este aditivo (Change Order)?",
       message: isApprove
-        ? "O aditivo será aprovado e o orçamento da obra será atualizado de acordo."
+        ? "O aditivo será aprovado e vira uma revisão nova do orçamento; a baseline aprovada continua a original."
         : "O aditivo será rejeitado e o orçamento da obra não será alterado por ele.",
       confirmLabel: isApprove ? "Aprovar" : "Rejeitar",
       tone: isApprove ? "primary" : "danger",
@@ -174,7 +175,7 @@ export default function ChangeOrdersObraPage({ params }) {
 
         <Card
           title="Change Orders"
-          subtitle="Mudanças de escopo/prazo/custo — só alteram a baseline aprovada quando decididas"
+          subtitle="Mudanças de escopo/prazo/custo — cada aditivo aprovado vira uma revisão; a baseline aprovada não muda"
           actions={
             <Button size="sm" variant="secondary" onClick={openChangeOrderModal} disabled={!budget}>
               <Icon name="plus" size={14} /> Novo Change Order
@@ -225,6 +226,10 @@ export default function ChangeOrdersObraPage({ params }) {
             </div>
           )}
         </Card>
+
+        {budget?.status === "APPROVED" ? (
+          <BudgetRevisionsCard projectId={project.id} baselineAmount={budget.baselineAmount} refreshKey={changeOrders.filter((c) => c.status === "APPROVED").length} />
+        ) : null}
       </div>
 
       <Modal
