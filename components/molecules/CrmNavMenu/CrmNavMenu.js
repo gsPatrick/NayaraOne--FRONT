@@ -11,6 +11,7 @@ const ITEMS = [
   { label: "Propostas", href: "/painel/crm/propostas", icon: "signature" },
   { label: "Painel de indicadores", href: "/painel/crm/dashboard", icon: "chart" },
   { label: "Feedback & Reclamações", href: "/painel/crm/feedback", icon: "mail" },
+  { label: "NAY Comercial", href: "/painel/crm/nay", icon: "bell" },
 ];
 
 export default function CrmNavMenu() {

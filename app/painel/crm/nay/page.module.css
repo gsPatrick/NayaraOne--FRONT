@@ -1,0 +1,44 @@
+.intro { margin-bottom: var(--space-5); }
+
+.stack { display: flex; flex-direction: column; gap: var(--space-5); }
+
+.toolbar { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--space-3); margin-bottom: var(--space-4); }
+.field { min-width: 240px; flex: 1 1 280px; }
+.actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-4); }
+.sendRow { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--space-2); }
+.channel { width: 180px; }
+
+.answer { display: flex; flex-direction: column; gap: var(--space-3); margin-top: var(--space-3); }
+.answerHead { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+.answerTitle { margin: 0; font-size: var(--text-body); font-weight: 600; }
+.text { margin: 0; font-size: var(--text-body); white-space: pre-wrap; }
+.meta { margin: 0; font-size: var(--text-caption); color: var(--color-ink-muted); }
+.sources { margin: 0; padding-left: var(--space-5); font-size: var(--text-body-sm); }
+
+.list { display: flex; flex-direction: column; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+.rowTop { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: var(--space-3); }
+.rowTitle { margin: 0; font-size: var(--text-body-sm); font-weight: 600; }
+.rowText { margin: 0; font-size: var(--text-body-sm); white-space: pre-wrap; }
+.rowMeta { margin: 0; font-size: var(--text-caption); color: var(--color-ink-muted); }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-3); margin: 0; }
+.fact { display: flex; flex-direction: column; gap: var(--space-1); }
+.fact dt { font-size: var(--text-caption); color: var(--color-ink-muted); }
+.fact dd { margin: 0; font-size: var(--text-body-sm); font-weight: 600; }
+
+.subTitle { margin: var(--space-2) 0 var(--space-1); font-size: var(--text-body-sm); font-weight: 600; }
+.bullets { margin: 0; padding-left: var(--space-5); font-size: var(--text-body-sm); }
+.empty { margin: 0; font-size: var(--text-body-sm); color: var(--color-ink-muted); }
+
+.tableWrap { overflow-x: auto; }
+.table { width: 100%; border-collapse: collapse; font-size: var(--text-body-sm); }
+.table th, .table td { text-align: left; padding: var(--space-2); border-bottom: 1px solid var(--border-subtle); }
+.table th { font-weight: 600; color: var(--color-ink-muted); }

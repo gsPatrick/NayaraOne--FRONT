@@ -64,7 +64,7 @@ export const IA_COMERCIAL_GROUPS = [
         key: "ia.comercial.termos_escopo",
         label: "Assuntos que a NAY Comercial atende",
         type: "text",
-        defaultValue: "resum,sugir,sugest,proxima,listar,liste,rascunh,descreva,recuper,retom,oportunidade,oportunidades,cliente,clientes,lead,leads,corretor,funil,pipeline,etapa,contato,interacao,interacoes,proposta,propostas,visita,visitas,radar,imovel,imoveis,follow,retomar,recuperacao,descricao,anuncio,negociacao,documento,documentos pendentes,tarefa",
+        defaultValue: "resum,sugir,sugest,proxima,listar,liste,rascunh,descreva,recuper,retom,oportunidade,oportunidades,cliente,clientes,lead,leads,corretor,funil,pipeline,etapa,contato,interacao,interacoes,proposta,propostas,visita,visitas,radar,imovel,imoveis,follow,retomar,recuperacao,descricao,anuncio,negociacao,documento,documentos pendentes,tarefa,cadastro,classifi,mensagem,sentimento,esquecid,parad,envio",
         helper: "Lista separada por vírgula. Pedido sem nenhuma dessas palavras é respondido como fora do que o assistente pode fazer.",
       },
       {

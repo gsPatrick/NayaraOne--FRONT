@@ -20,6 +20,7 @@ export const NAV_SECTIONS = [
           { label: "Marketing (BI)", href: "/painel/analytics/marketing", permission: "marketing:attribution:read" },
           { label: "Atendimento (BI)", href: "/painel/analytics/atendimento", permission: "crm:feedback:read" },
           { label: "Feedback & Reclamações", href: "/painel/crm/feedback" },
+          { label: "NAY Comercial", href: "/painel/crm/nay", permission: "ai:read" },
         ],
       },
       { label: "Radar", href: "/painel/radar", icon: "radar", permission: "radar:read" },
