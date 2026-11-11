@@ -2,8 +2,9 @@
 
 // Recebível do processo (Caderno M5 §14 "vinculados ao Financeiro somente quando juridicamente cabível"; "não
 // confundir estimativa processual com recebível confirmado"): só o valor CONFIRMADO vira recebível, com a base
-// jurídica (acordo homologado ou sentença transitada em julgado) e a referência. Exige aprovação jurídica e
-// lançamento no Financeiro — sem as duas permissões a ação não aparece.
+// jurídica e a referência. As bases oferecidas são as que a empresa aceita (GET /legal/receivable-bases, configuradas
+// em Configurações › Locação e Jurídico). Exige aprovação jurídica e lançamento no Financeiro — sem as duas
+// permissões a ação não aparece.
 import { useEffect, useState } from "react";
 import Card from "@/components/molecules/Card/Card";
 import Button from "@/components/atoms/Button/Button";
@@ -11,10 +12,11 @@ import Input from "@/components/atoms/Input/Input";
 import Select from "@/components/atoms/Select/Select";
 import FormField from "@/components/molecules/FormField/FormField";
 import Alert from "@/components/molecules/Alert/Alert";
-import { listLegalCaseReceivables, linkLegalCaseReceivable } from "@/lib/api/legal";
+import { listLegalCaseReceivables, linkLegalCaseReceivable, listReceivableBases } from "@/lib/api/legal";
 import { listResultCenters } from "@/lib/api/finance";
 import { lookupFallback } from "@/lib/asyncState/lookup";
 import { legalErrorMessage } from "@/lib/legal/legalErrors";
+import { receivableBasisOptions } from "@/lib/legal/receivableBases";
 import { useHasPermission } from "@/lib/rbac/useHasPermission";
 import { CASE_RECEIVABLE_BASIS_LABELS } from "@/lib/labels/juridico";
 import { formatBRL, formatDate } from "@/lib/format";
@@ -22,11 +24,12 @@ import { brasilia } from "./DeadlinesCard";
 import CaseValuesForm from "./CaseValuesForm";
 import styles from "./page.module.css";
 
-const EMPTY = { basis: "SETTLEMENT", basisReference: "", dueAt: "", resultCenterId: "" };
+const EMPTY = { basis: "", basisReference: "", dueAt: "", resultCenterId: "" };
 
 export default function CaseReceivableCard({ legalCase, onCaseUpdated }) {
   const [receivables, setReceivables] = useState([]);
   const [centers, setCenters] = useState([]);
+  const [bases, setBases] = useState(null); // null = ainda carregando
   const [form, setForm] = useState(EMPTY);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -51,10 +54,19 @@ export default function CaseReceivableCard({ legalCase, onCaseUpdated }) {
     listResultCenters()
       .catch(lookupFallback("os centros de resultado"))
       .then((list) => setCenters(Array.isArray(list) ? list : []));
+    listReceivableBases()
+      .then((list) => setBases(receivableBasisOptions(list)))
+      .catch((err) => { setBases([]); setError(legalErrorMessage(err, "Não foi possível carregar as bases jurídicas aceitas pela empresa.")); });
   }, [allowed, confirmed]);
 
+  // A base escolhida precisa estar entre as aceitas; sem escolha válida, vem a primeira.
+  const basisOk = Boolean(bases && bases.some((b) => b.code === form.basis));
+  useEffect(() => {
+    if (bases && bases.length > 0 && !bases.some((b) => b.code === form.basis)) setForm((prev) => ({ ...prev, basis: bases[0].code }));
+  }, [bases, form.basis]);
+
   const set = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
-  const valid = form.basisReference.trim() && form.dueAt && form.resultCenterId;
+  const valid = basisOk && form.basisReference.trim() && form.dueAt && form.resultCenterId;
 
   async function handleLink() {
     if (!valid) return;
@@ -63,7 +75,7 @@ export default function CaseReceivableCard({ legalCase, onCaseUpdated }) {
     try {
       const created = await linkLegalCaseReceivable(legalCase.id, { ...form, basisReference: form.basisReference.trim() });
       setReceivables((prev) => [...prev, created]);
-      setForm(EMPTY);
+      setForm({ ...EMPTY, basis: form.basis });
     } catch (err) {
       setError(legalErrorMessage(err, "Não foi possível vincular o recebível."));
     } finally {
@@ -95,10 +107,17 @@ export default function CaseReceivableCard({ legalCase, onCaseUpdated }) {
       ) : null}
       {receivables.length === 0 && confirmed > 0 && allowed ? (
         <div className={styles.newDeadline}>
-          <FormField label="Base jurídica" htmlFor="f-rcv-basis" required>
-            <Select id="f-rcv-basis" value={form.basis} onChange={set("basis")}>
-              {Object.entries(CASE_RECEIVABLE_BASIS_LABELS).map(([k, v]) => (
-                <option key={k} value={k}>{v}</option>
+          <FormField
+            label="Base jurídica"
+            htmlFor="f-rcv-basis"
+            required
+            helper={bases && bases.length === 0 ? "A empresa não aceita nenhuma base jurídica para gerar recebível. O administrador escolhe as bases em Configurações, aba Locação e Jurídico." : "Só aparecem as bases que a empresa aceita."}
+          >
+            <Select id="f-rcv-basis" value={form.basis} onChange={set("basis")} disabled={!bases || bases.length === 0}>
+              {!bases ? <option value="">Carregando bases aceitas...</option> : null}
+              {bases && bases.length === 0 ? <option value="">Nenhuma base aceita</option> : null}
+              {(bases || []).map((b) => (
+                <option key={b.code} value={b.code}>{b.label}</option>
               ))}
             </Select>
           </FormField>

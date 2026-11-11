@@ -3,25 +3,27 @@
 // Obrigações da locação (Caderno M5 §12 "Cada obrigação possui responsável, periodicidade, comprovante e status";
 // tabela legal.lease_obligations, mesma rota /billing/utility-obligations). Periodicidade e dia do vencimento na
 // criação; início e próximo vencimento são definidos pela entrega das chaves; a troca de titularidade tem prazo
-// (contado da entrega das chaves) e aparece vencida quando passa. As POST mandam Idempotency-Key (lib/api/billing).
+// (contado da entrega das chaves) e aparece vencida quando passa. Cada obrigação tem vencimentos (ciclos): o pagamento é
+// de um vencimento, com comprovante (UtilityPaymentModal), e a lista de vencimentos mostra a situação de cada um e permite
+// a dispensa com motivo (UtilityCyclesModal). As POST mandam Idempotency-Key (lib/api/billing).
 import { useState } from "react";
 import Card from "@/components/molecules/Card/Card";
 import Table from "@/components/organisms/Table/Table";
 import Badge from "@/components/atoms/Badge/Badge";
 import Button from "@/components/atoms/Button/Button";
 import FormField from "@/components/molecules/FormField/FormField";
-import Select from "@/components/atoms/Select/Select";
 import FileDropInput from "@/components/molecules/FileDropInput/FileDropInput";
 import PersonPicker from "@/components/molecules/PersonPicker/PersonPicker";
 import Alert from "@/components/molecules/Alert/Alert";
 import Modal from "@/components/organisms/Modal/Modal";
-import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import { uploadFile } from "@/lib/api/legal";
-import { recordUtilityPayment, requestOwnershipTransfer, completeOwnershipTransferTask } from "@/lib/api/billing";
+import { requestOwnershipTransfer, completeOwnershipTransferTask } from "@/lib/api/billing";
 import { legalErrorMessage } from "@/lib/legal/legalErrors";
 import { OBLIGATION_PERIODICITY_LABELS } from "@/lib/labels/juridico";
-import { formatDate, formatContractLabel, toNumber } from "@/lib/format";
+import { formatDate, formatContractLabel } from "@/lib/format";
 import UtilityObligationForm, { UTILITY_TYPE_LABELS } from "./UtilityObligationForm";
+import UtilityPaymentModal from "./UtilityPaymentModal";
+import UtilityCyclesModal from "./UtilityCyclesModal";
 import styles from "./page.module.css";
 
 const UTILITY_STATUS_TONE = { ACTIVE: "success", TRANSFER_PENDING: "warning", TRANSFERRED: "info" };
@@ -31,9 +33,8 @@ const todaySaoPaulo = () => new Date().toLocaleDateString("en-CA", { timeZone: "
 
 export default function UtilityObligationsTab({ utilities, leaseContracts, onChanged, onError }) {
   const [createOpen, setCreateOpen] = useState(false);
-  const [payTarget, setPayTarget] = useState(null);
-  const [payAmount, setPayAmount] = useState("");
-  const [paidBy, setPaidBy] = useState("TENANT");
+  const [payTarget, setPayTarget] = useState(null); // { obligation, cycleId }
+  const [cyclesTarget, setCyclesTarget] = useState(null);
   const [requestTarget, setRequestTarget] = useState(null);
   const [requestPerson, setRequestPerson] = useState({ name: "", personId: null });
   const [completeTarget, setCompleteTarget] = useState(null);
@@ -51,13 +52,6 @@ export default function UtilityObligationsTab({ utilities, leaseContracts, onCha
       onError(legalErrorMessage(err, fallback));
     }
   }
-
-  const handlePay = () =>
-    guarded(async () => {
-      await recordUtilityPayment(payTarget.id, { amount: toNumber(payAmount), paidByParty: paidBy });
-      setPayTarget(null);
-      setPayAmount("");
-    }, "Erro ao registrar pagamento da obrigação.");
 
   const handleRequest = () =>
     guarded(async () => {
@@ -154,7 +148,8 @@ export default function UtilityObligationsTab({ utilities, leaseContracts, onCha
               <Button variant="secondary" size="sm" onClick={() => { setRequestTarget(row); setRequestPerson({ name: "", personId: null }); }}>Solicitar transferência</Button>
             ) : null}
             {pendingTask ? <Button variant="secondary" size="sm" onClick={() => openComplete(row, pendingTask)}>Concluir transferência</Button> : null}
-            <Button variant="secondary" size="sm" onClick={() => { setPayTarget(row); setPayAmount(""); setPaidBy(row.responsibleParty); }}>Registrar pagamento</Button>
+            <Button variant="secondary" size="sm" onClick={() => setCyclesTarget(row)}>Vencimentos</Button>
+            <Button variant="secondary" size="sm" onClick={() => setPayTarget({ obligation: row, cycleId: "" })}>Registrar pagamento</Button>
           </div>
         );
       },
@@ -226,27 +221,22 @@ export default function UtilityObligationsTab({ utilities, leaseContracts, onCha
         </FormField>
       </Modal>
 
-      <Modal
-        open={Boolean(payTarget)}
+      <UtilityCyclesModal
+        obligation={cyclesTarget}
+        title={cyclesTarget ? `Vencimentos — ${UTILITY_TYPE_LABELS[cyclesTarget.utilityType] || "obrigação"} (${contractLabel(cyclesTarget.contractId)})` : ""}
+        onClose={() => setCyclesTarget(null)}
+        onPay={(cycleId) => { setPayTarget({ obligation: cyclesTarget, cycleId }); setCyclesTarget(null); }}
+        onChanged={onChanged}
+        onError={onError}
+      />
+
+      <UtilityPaymentModal
+        obligation={payTarget?.obligation || null}
+        initialCycleId={payTarget?.cycleId || ""}
         onClose={() => setPayTarget(null)}
-        title="Registrar pagamento de obrigação"
-        footer={
-          <>
-            <Button variant="secondary" onClick={() => setPayTarget(null)}>Cancelar</Button>
-            <Button onClick={handlePay} disabled={!payAmount}>Registrar</Button>
-          </>
-        }
-      >
-        <FormField label="Quem pagou">
-          <Select value={paidBy} onChange={(e) => setPaidBy(e.target.value)}>
-            <option value="TENANT">Locatário</option>
-            <option value="LANDLORD">Locador</option>
-          </Select>
-        </FormField>
-        <FormField label="Valor" required>
-          <DecimalInput value={payAmount} onChange={(e) => setPayAmount(e.target.value)} />
-        </FormField>
-      </Modal>
+        onPaid={() => { setPayTarget(null); onChanged(); }}
+        onError={onError}
+      />
     </>
   );
 }

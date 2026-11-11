@@ -22,6 +22,8 @@ const CLOSEOUT_PENDENCY_LABELS = {
   OPEN_LEGAL_CASE: "Processo jurídico aberto",
   OPEN_LEGAL_DEADLINE: "Prazo jurídico em aberto",
   OPEN_NOTICE: "Notificação em aberto",
+  OVERDUE_OBLIGATION_CYCLE: "Obrigação da locação vencida sem comprovante",
+  PENDING_REIMBURSEMENT: "Reembolso de utilidade a receber",
 };
 
 export default function CloseoutTab({ leaseContracts, onChanged, onError }) {
