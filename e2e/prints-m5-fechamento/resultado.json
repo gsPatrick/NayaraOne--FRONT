@@ -1,0 +1,155 @@
+{
+  "when": "2026-11-11T01:39:46.257Z",
+  "results": [
+    {
+      "label": "0. login na tela (usuário fictício, sem MFA)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "1. contrato criado em rascunho pela tela",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "1a. sem botão Cancelar (CANCELLED não é estado do livro)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "2. contrato em Documentos pendentes e checklist gerado pela regra",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "2a. análise recusada com pendências do checklist em português",
+      "ok": true,
+      "detail": "Faltam documentos do checklist (antes da análise jurídica): Documentos PF/PJ das partes (locador/locatário); Garantia locatícia (fiador, seg"
+    },
+    {
+      "label": "3. todos os documentos do checklist anexados pela tela",
+      "ok": true,
+      "detail": "5 anexo(s)"
+    },
+    {
+      "label": "4. versão 1 do documento criada (Rascunho)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "5. contrato em Análise jurídica",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "6. versão aprovada pela rota da versão: versão Aprovada e contrato Aprovado",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "6a. depois da aprovação, valor/vigência só por aditivo",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "7. versão aprovada enviada para assinatura (Em assinatura)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "8. assinaturas manuais com a via assinada registradas",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "9. contrato Assinado",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "9a. linha do tempo sem código de status cru",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "10. tela avisa antes de criar que a garantia nasce pendente",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "11. seguro-fiança sem parcelas/renovação nasce Pendente com o que falta",
+      "ok": true,
+      "detail": "Parcelas do prêmio Data de renovação"
+    },
+    {
+      "label": "12. dados do tipo completados: garantia Ativa",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "13. vistoria de Entrada criada com itens por ambiente",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "14. foto anexada ao item da vistoria",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "15. vistoria de entrada concluída",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "16. assinatura sem MFA recente recusada com mensagem clara",
+      "ok": true,
+      "detail": "Assinatura não registrada: Esta ação exige verificação em duas etapas (MFA) habilitada na sua conta. Configure em Meu perfil e tente de novo"
+    },
+    {
+      "label": "17. comparação entrada x saída por ambiente/item: Sala/Piso mudou (Bom -> Danificado)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "17a. comparação avisa que a responsabilidade depende de validação humana",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "17b. preparo: assinaturas de locador e locatário pela camada de serviço (MFA não é contornado na rota)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "18. entrega de chaves recusada SEM a via assinada do termo",
+      "ok": true,
+      "detail": "Entrega recusada Anexe a via do termo de entrega assinada pelo recebedor: a entrega das chaves exige o termo assinado."
+    },
+    {
+      "label": "19. com a via assinada do termo, chaves entregues (selo Entregue e via assinada guardada)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "20. prazo criado com documento de origem (vence 23:59 de Brasília)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "21. prazo concluído com nota",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "22. API recusa CANCELLED como alvo (409)",
+      "ok": true,
+      "detail": "HTTP 409"
+    },
+    {
+      "label": "23. contrato antigo CANCELLED legível, sem ações",
+      "ok": true,
+      "detail": ""
+    }
+  ]
+}
