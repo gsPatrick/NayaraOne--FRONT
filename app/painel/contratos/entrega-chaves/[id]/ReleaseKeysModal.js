@@ -12,11 +12,13 @@ import { releaseKeyDelivery, uploadFile } from "@/lib/api/legal";
 import { PARTY_ROLE_LABELS } from "@/lib/labels/juridico";
 import { legalErrorMessage } from "@/lib/legal/legalErrors";
 import { toNumber } from "@/lib/format";
+import { distinctFiles, keyReleaseProblems, minPhotosOf, minPhotosText } from "@/lib/legal/keyDeliveryRelease";
 import styles from "./page.module.css";
 
 // Liberação das chaves (Caderno §10, Guia §11): quantidade/identificação, quem assina o termo, fotos (imagens) e a via
-// do termo assinada pelo recebedor. A política de fotos e o texto do termo são do servidor; a tela não decide o que
-// falta — manda o pedido e mostra a recusa da API em português (checklist, vistoria, garantia, via assinada).
+// do termo assinada pelo recebedor. A política de fotos (com a quantidade mínima configurada pela empresa) e o texto do
+// termo vêm do servidor na prévia; a tela segura o envio enquanto falta identificação, via assinada ou fotos e mostra
+// a recusa da API em português (checklist, vistoria, garantia, via assinada).
 export default function ReleaseKeysModal({ open, onClose, delivery, parties, personOf, recipientIsParty, form, onFormChange, termPreview, termPreviewError, onReleased, onRefused }) {
   const [photos, setPhotos] = useState([]);
   const [termFile, setTermFile] = useState(null);
@@ -25,6 +27,9 @@ export default function ReleaseKeysModal({ open, onClose, delivery, parties, per
   const deliveredTo = personOf(delivery.deliveredToPersonId);
   const keysCount = toNumber(form.keysCount);
   const countOk = Number.isInteger(keysCount) && keysCount > 0;
+  const minPhotos = minPhotosOf(termPreview);
+  const problems = keyReleaseProblems({ keysCount: form.keysCount, keysIdentification: form.keysIdentification, hasTermFile: Boolean(termFile), photoCount: photos.length, minPhotos });
+  const identMissing = !String(form.keysIdentification || "").trim();
 
   async function handleRelease() {
     setError("");
@@ -38,7 +43,7 @@ export default function ReleaseKeysModal({ open, onClose, delivery, parties, per
       const termEvidence = termFile ? await uploadFile(termFile) : null;
       const updated = await releaseKeyDelivery(delivery.id, {
         keysCount,
-        keysIdentification: form.keysIdentification.trim() || undefined,
+        keysIdentification: form.keysIdentification.trim(),
         termSignedByPersonId: form.termSignedByPersonId || delivery.deliveredToPersonId,
         termEvidenceFileId: termEvidence ? termEvidence.id : undefined,
         photosFileIds,
@@ -65,7 +70,7 @@ export default function ReleaseKeysModal({ open, onClose, delivery, parties, per
       footer={
         <>
           <Button variant="secondary" onClick={onClose} disabled={busy}>Cancelar</Button>
-          <Button onClick={handleRelease} loading={busy} disabled={busy || !countOk}>Liberar chaves</Button>
+          <Button onClick={handleRelease} loading={busy} disabled={busy || problems.length > 0}>Liberar chaves</Button>
         </>
       }
     >
@@ -73,7 +78,7 @@ export default function ReleaseKeysModal({ open, onClose, delivery, parties, per
       <FormField label="Quantidade de chaves/controles" htmlFor="f-kd-count" required error={form.keysCount && !countOk ? "Informe um número inteiro maior que zero." : undefined}>
         <DecimalInput id="f-kd-count" value={form.keysCount} onChange={(e) => onFormChange({ keysCount: e.target.value })} placeholder="Ex.: 3" />
       </FormField>
-      <FormField label="Identificação" htmlFor="f-kd-ident">
+      <FormField label="Identificação das chaves e controles" htmlFor="f-kd-ident" required error={form.keysIdentification && identMissing ? "Informe a identificação." : undefined} helper="Obrigatória: descreva o que está sendo entregue.">
         <Input id="f-kd-ident" value={form.keysIdentification} onChange={(e) => onFormChange({ keysIdentification: e.target.value })} placeholder="Ex.: 2 chaves da porta, 1 controle do portão" />
       </FormField>
       <FormField label="Quem assina o termo" htmlFor="f-kd-signer" required helper="Somente partes do contrato. O texto do termo é gerado pelo sistema (prévia abaixo).">
@@ -92,10 +97,23 @@ export default function ReleaseKeysModal({ open, onClose, delivery, parties, per
       >
         <input id="f-kd-term-evidence" type="file" accept="application/pdf,image/*" onChange={(e) => setTermFile(e.target.files?.[0] || null)} />
       </FormField>
-      <FormField label="Fotos da entrega" htmlFor="f-kd-photos" helper="Somente imagens. Obrigatórias quando a política do sistema exigir (imóvel usado, entrega de venda).">
-        <input id="f-kd-photos" type="file" accept="image/*" multiple onChange={(e) => setPhotos(Array.from(e.target.files || []).filter((f) => !f.type || f.type.startsWith("image/")))} />
+      <FormField
+        label="Fotos da entrega"
+        htmlFor="f-kd-photos"
+        required={minPhotos > 0}
+        helper={minPhotos > 0
+          ? `Somente imagens. A política da empresa exige o ${minPhotosText(minPhotos)} nesta entrega, sem repetir a mesma foto (anexadas: ${photos.length}).`
+          : "Somente imagens. A política da empresa não exige fotos nesta entrega."}
+      >
+        <input id="f-kd-photos" type="file" accept="image/*" multiple onChange={(e) => setPhotos(distinctFiles(Array.from(e.target.files || []).filter((f) => !f.type || f.type.startsWith("image/"))))} />
       </FormField>
-      {termPreview?.photosRequired ? <p className={styles.mono}>Esta entrega exige fotos.</p> : null}
+      {problems.length > 0 ? (
+        <div data-testid="key-release-missing">
+          <Alert tone="warning" title="Para liberar as chaves, falta">
+            <ul>{problems.map((p) => <li key={p}>{p}</li>)}</ul>
+          </Alert>
+        </div>
+      ) : null}
       <FormField label="Prévia do termo" htmlFor="f-kd-term">
         {termPreview?.termText
           ? <pre id="f-kd-term" className={styles.mono} style={{ whiteSpace: "pre-wrap", maxHeight: 220, overflow: "auto" }}>{termPreview.termText}</pre>

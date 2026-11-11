@@ -65,7 +65,9 @@ export default function GarantiaDetailPage({ params }) {
   const personName = (id) => (id ? support.people.find((p) => p.id === id)?.legalName || "Pessoa cadastrada" : "");
   const replacedBy = guarantee.replacedByGuaranteeId ? siblings.find((g) => g.id === guarantee.replacedByGuaranteeId) : null;
   const replaces = siblings.find((g) => g.replacedByGuaranteeId === guarantee.id) || null;
-  const canReplace = !guarantee.replacedByGuaranteeId && ["PENDING", "ACTIVE"].includes(guarantee.status);
+  // Substituída = histórico do contrato (Caderno M5 §9): não se altera nem se exclui (a API recusa com 409).
+  const isHistory = Boolean(guarantee.replacedByGuaranteeId);
+  const canReplace = !isHistory && ["PENDING", "ACTIVE"].includes(guarantee.status);
 
   async function handleStatusChange(status) {
     setActionError("");
@@ -102,7 +104,7 @@ export default function GarantiaDetailPage({ params }) {
             {contract ? <Badge tone={CONTRACT_STATUS_TONE[contract.status]}>{CONTRACT_STATUS_LABELS[contract.status]}</Badge> : null}
           </div>
           <div className={styles.actions}>
-            <Select aria-label="Situação da garantia" value={guarantee.status} onChange={(e) => handleStatusChange(e.target.value)} disabled={busy || Boolean(guarantee.replacedByGuaranteeId)}>
+            <Select aria-label="Situação da garantia" value={guarantee.status} onChange={(e) => handleStatusChange(e.target.value)} disabled={busy || isHistory} title={isHistory ? "Garantia substituída não muda de situação" : undefined}>
               {statusOptions.map((s) => (
                 <option key={s} value={s} disabled={!GUARANTEE_STATUSES.includes(s)}>{GUARANTEE_STATUS_LABELS[s] || "Situação desconhecida"}</option>
               ))}
@@ -110,7 +112,7 @@ export default function GarantiaDetailPage({ params }) {
             {canReplace ? (
               <Button variant="secondary" href={`/painel/contratos/garantias/novo?substituir=${guarantee.id}`}><Icon name="swapHorizontal" size={16} /> Substituir garantia</Button>
             ) : null}
-            <Button variant="ghost" onClick={() => setDeleteOpen(true)}><Icon name="trash" size={16} /> Excluir</Button>
+            {isHistory ? null : <Button variant="ghost" onClick={() => setDeleteOpen(true)}><Icon name="trash" size={16} /> Excluir</Button>}
           </div>
         </div>
 
@@ -120,9 +122,11 @@ export default function GarantiaDetailPage({ params }) {
           </div>
         ) : null}
         {notice ? <Alert tone={notice.tone} className={styles.notice}>{notice.text}</Alert> : null}
-        {replacedBy || guarantee.replacedByGuaranteeId ? (
-          <Alert tone="info" className={styles.notice}>
-            Esta garantia foi substituída{replacedBy ? ` por ${GUARANTEE_TYPE_LABELS[normalizeGuaranteeType(replacedBy.guaranteeType)]}` : ""}; o histórico continua aqui.{" "}
+        {isHistory ? (
+          <Alert tone="info" className={styles.notice} title="Garantia substituída (histórico)">
+            Substituída pela garantia {replacedBy ? GUARANTEE_TYPE_LABELS[normalizeGuaranteeType(replacedBy.guaranteeType)] : "nova"}
+            {replacedBy ? ` (${GUARANTEE_STATUS_LABELS[replacedBy.status] || "situação não informada"})` : ""}. Ela faz parte do histórico do contrato: não pode
+            ser alterada, completada nem excluída.{" "}
             <Button size="sm" variant="ghost" href={`/painel/contratos/garantias/${guarantee.replacedByGuaranteeId}`}>Ver garantia nova</Button>
           </Alert>
         ) : null}
@@ -135,11 +139,11 @@ export default function GarantiaDetailPage({ params }) {
 
         <div className={styles.grid}>
           <div className={styles.mainCol}>
-            <CompleteGuaranteeCard
+            {isHistory ? null : <CompleteGuaranteeCard
               guarantee={guarantee}
               support={support}
               onSaved={(text) => { setNotice({ tone: "success", text }); loadQuery.reload(); }}
-            />
+            />}
             <GuaranteeDataCard guarantee={guarantee} personName={personName} onViewFile={setViewerFile} />
           </div>
 

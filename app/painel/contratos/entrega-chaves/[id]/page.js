@@ -40,6 +40,8 @@ const PHOTO_POLICY_LABELS = {
   REQUIRED_USED_PROPERTY: "Fotos obrigatórias (imóvel usado)",
   REQUIRED_SALE_DELIVERY: "Fotos obrigatórias (entrega de venda)",
   NOT_REQUIRED_LEASE_CHECKIN_SIGNED: "Fotos dispensadas (locação com vistoria de entrada assinada)",
+  REQUIRED_BY_CONTRACT_TYPE: "Fotos obrigatórias (política da empresa para este tipo de contrato)",
+  NOT_REQUIRED_BY_CONTRACT_TYPE: "Fotos dispensadas (política da empresa para este tipo de contrato)",
 };
 const EMPTY_FORM = { keysCount: "", keysIdentification: "", termSignedByPersonId: "" };
 

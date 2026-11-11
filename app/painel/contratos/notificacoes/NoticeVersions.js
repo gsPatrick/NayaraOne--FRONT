@@ -12,6 +12,7 @@ import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import { createNoticeVersion, listNoticeVersions, uploadFile } from "@/lib/api/legal";
 import { legalErrorMessage } from "@/lib/legal/legalErrors";
+import { hasNoticeRecipient, NOTICE_RECIPIENT_MESSAGE } from "@/lib/legal/noticeRecipient";
 import { formatDateTime } from "@/lib/format";
 import styles from "./page.module.css";
 
@@ -27,8 +28,11 @@ export function NoticeCorrectionModal({ notice, onClose, onSaved }) {
     setError("");
   }, [notice]);
 
+  // Destinatário da nova versão: a descrição do formulário ou a pessoa já ligada à notificação.
+  const recipientOk = hasNoticeRecipient({ recipientPersonId: notice?.recipientPersonId, recipientDescription: form.recipientDescription });
+
   async function handleSave() {
-    if (!form.reason.trim()) return;
+    if (!form.reason.trim() || !recipientOk) return;
     setError("");
     setBusy(true);
     try {
@@ -55,7 +59,7 @@ export function NoticeCorrectionModal({ notice, onClose, onSaved }) {
       footer={
         <>
           <Button variant="secondary" onClick={onClose} disabled={busy}>Cancelar</Button>
-          <Button onClick={handleSave} loading={busy} disabled={busy || !form.reason.trim()}>Criar nova versão</Button>
+          <Button onClick={handleSave} loading={busy} disabled={busy || !form.reason.trim() || !recipientOk}>Criar nova versão</Button>
         </>
       }
     >
@@ -65,7 +69,13 @@ export function NoticeCorrectionModal({ notice, onClose, onSaved }) {
         <FormField label="Motivo da correção" htmlFor="f-version-reason" required>
           <Input id="f-version-reason" value={form.reason} onChange={(e) => setForm((p) => ({ ...p, reason: e.target.value }))} placeholder="Ex.: Valor do débito corrigido" />
         </FormField>
-        <FormField label="Destinatário" htmlFor="f-version-recipient">
+        <FormField
+          label="Destinatário"
+          htmlFor="f-version-recipient"
+          required={!notice?.recipientPersonId}
+          error={recipientOk ? undefined : NOTICE_RECIPIENT_MESSAGE}
+          helper={notice?.recipientPersonId ? "A pessoa destinatária já ligada à notificação continua valendo." : "Obrigatório: descreva quem vai receber a notificação."}
+        >
           <Input id="f-version-recipient" value={form.recipientDescription} onChange={(e) => setForm((p) => ({ ...p, recipientDescription: e.target.value }))} />
         </FormField>
         <FormField label="Conteúdo" htmlFor="f-version-content">

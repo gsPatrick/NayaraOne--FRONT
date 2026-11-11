@@ -22,6 +22,7 @@ import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import ContractsNavMenu from "@/components/molecules/ContractsNavMenu/ContractsNavMenu";
 import MfaVerifyModal from "@/components/organisms/MfaVerifyModal/MfaVerifyModal";
+import PersonPicker from "@/components/molecules/PersonPicker/PersonPicker";
 import {
   listNotices,
   createNotice,
@@ -36,6 +37,7 @@ import {
 import { apiFetch } from "@/lib/api/client";
 import { lookupFallback } from "@/lib/asyncState/lookup";
 import { legalErrorMessage } from "@/lib/legal/legalErrors";
+import { hasNoticeRecipient, NOTICE_RECIPIENT_MESSAGE } from "@/lib/legal/noticeRecipient";
 import { NoticeCorrectionModal, NoticeVersionsModal, NOTICE_EDITABLE_STATUSES } from "./NoticeVersions";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { useLocalCopy } from "@/lib/asyncState/localCopy";
@@ -43,12 +45,14 @@ import { NOTICE_CHANNEL_LABELS, NOTICE_STATUS_LABELS, NOTICE_STATUS_TONE } from 
 import { formatDateTime, formatContractLabel } from "@/lib/format";
 import styles from "./page.module.css";
 
+const EMPTY_CREATE = { contractId: "", channel: "EMAIL", recipientDescription: "", recipientPersonId: null, recipientName: "", content: "" };
+
 export default function NotificacoesPage() {
   const [actionError, setActionError] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
 
   const [createModalOpen, setCreateModalOpen] = useState(false);
-  const [createForm, setCreateForm] = useState({ contractId: "", channel: "EMAIL", recipientDescription: "", content: "" });
+  const [createForm, setCreateForm] = useState(EMPTY_CREATE);
   const [createBusy, setCreateBusy] = useState(false);
   const [createError, setCreateError] = useState("");
 
@@ -86,7 +90,7 @@ export default function NotificacoesPage() {
   }, [notices, statusFilter]);
 
   async function handleCreate() {
-    if (!createForm.contractId || !createForm.content.trim()) return;
+    if (!createForm.contractId || !createForm.content.trim() || !hasNoticeRecipient(createForm)) return;
     setCreateBusy(true);
     setCreateError("");
     try {
@@ -94,11 +98,12 @@ export default function NotificacoesPage() {
         contractId: createForm.contractId,
         channel: createForm.channel,
         recipientDescription: createForm.recipientDescription.trim() || undefined,
+        recipientPersonId: createForm.recipientPersonId || undefined,
         content: createForm.content.trim(),
       });
       setNotices((prev) => [created, ...prev]);
       setCreateModalOpen(false);
-      setCreateForm({ contractId: "", channel: "EMAIL", recipientDescription: "", content: "" });
+      setCreateForm(EMPTY_CREATE);
     } catch (err) {
       setCreateError(legalErrorMessage(err, "Erro ao criar notificação."));
     } finally {
@@ -186,7 +191,9 @@ export default function NotificacoesPage() {
                 <div key={n.id} className={styles.row}>
                   <div className={styles.name}>
                     <div>{contract ? formatContractLabel(contract) : "Sem contrato vinculado"} · {NOTICE_CHANNEL_LABELS[n.channel] || "Outro canal"}</div>
-                    <div className={styles.meta}>{n.recipientDescription || "Sem destinatário descrito"} · {formatDateTime(n.createdAt || n.created_at)}</div>
+                    <div className={styles.meta}>
+                      {hasNoticeRecipient(n) ? n.recipientDescription || "Destinatário: pessoa cadastrada" : "Sem destinatário: não pode ser enviada"} · {formatDateTime(n.createdAt || n.created_at)}
+                    </div>
                     <div className={styles.meta}>
                       Versão {n.currentVersion || 1}
                       {n.approvedVersion ? (n.approvedVersion === n.currentVersion ? " · aprovada para envio" : ` · aprovada: versão ${n.approvedVersion}`) : " · ainda sem versão aprovada"}
@@ -233,7 +240,7 @@ export default function NotificacoesPage() {
         footer={
           <>
             <Button variant="secondary" onClick={() => setCreateModalOpen(false)} disabled={createBusy}>Cancelar</Button>
-            <Button onClick={handleCreate} loading={createBusy} disabled={createBusy || !createForm.contractId || !createForm.content.trim()}>Criar como rascunho</Button>
+            <Button onClick={handleCreate} loading={createBusy} disabled={createBusy || !createForm.contractId || !createForm.content.trim() || !hasNoticeRecipient(createForm)}>Criar como rascunho</Button>
           </>
         }
       >
@@ -250,9 +257,24 @@ export default function NotificacoesPage() {
               {Object.entries(NOTICE_CHANNEL_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
             </Select>
           </FormField>
-          <FormField label="Destinatário" htmlFor="f-recipient" helper={"Descrição livre (ex.: Locatário — João Silva)."}>
+          <FormField label="Pessoa destinatária" htmlFor="f-recipient-person" helper="Escolha a pessoa cadastrada ou descreva o destinatário abaixo.">
+            <PersonPicker
+              id="f-recipient-person"
+              value={createForm.recipientName}
+              personId={createForm.recipientPersonId}
+              onSelect={({ name, personId }) => setCreateForm((p) => ({ ...p, recipientName: name, recipientPersonId: personId || null }))}
+            />
+          </FormField>
+          <FormField
+            label="Destinatário"
+            htmlFor="f-recipient"
+            required={!createForm.recipientPersonId}
+            helper="Descrição livre (ex.: Locatário — João Silva). Obrigatória quando nenhuma pessoa foi escolhida."
+            error={!hasNoticeRecipient(createForm) && createForm.recipientDescription ? NOTICE_RECIPIENT_MESSAGE : undefined}
+          >
             <Input id="f-recipient" value={createForm.recipientDescription} onChange={(e) => setCreateForm((p) => ({ ...p, recipientDescription: e.target.value }))} />
           </FormField>
+          {!hasNoticeRecipient(createForm) ? <p className={styles.meta}>{NOTICE_RECIPIENT_MESSAGE}</p> : null}
           <FormField label="Conteúdo" htmlFor="f-content" required>
             <textarea id="f-content" className={styles.textarea} rows={6} value={createForm.content} onChange={(e) => setCreateForm((p) => ({ ...p, content: e.target.value }))} />
           </FormField>
