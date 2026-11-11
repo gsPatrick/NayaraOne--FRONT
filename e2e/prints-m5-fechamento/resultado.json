@@ -1,5 +1,5 @@
 {
-  "when": "2026-11-11T01:39:46.257Z",
+  "when": "2026-11-11T02:29:59.028Z",
   "results": [
     {
       "label": "0. login na tela (usuário fictício, sem MFA)",
@@ -7,7 +7,32 @@
       "detail": ""
     },
     {
+      "label": "T1. cláusula criada na biblioteca com responsável jurídico",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "T2. modelo criado sem versão publicada (ainda não gera contrato)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "T3. cláusula incluída na versão 1 em rascunho do modelo",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "T4. versão 1 do modelo publicada (alçada jurídica), com quem publicou",
+      "ok": true,
+      "detail": ""
+    },
+    {
       "label": "1. contrato criado em rascunho pela tela",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "1b. versão 1 gerada da versão PUBLICADA do modelo",
       "ok": true,
       "detail": ""
     },
@@ -32,7 +57,7 @@
       "detail": "5 anexo(s)"
     },
     {
-      "label": "4. versão 1 do documento criada (Rascunho)",
+      "label": "4. versão 2 do documento criada (Rascunho)",
       "ok": true,
       "detail": ""
     },
@@ -70,6 +95,21 @@
       "label": "9a. linha do tempo sem código de status cru",
       "ok": true,
       "detail": ""
+    },
+    {
+      "label": "A1. aditivo criado em rascunho com versão base e vigência",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "A2. aditivo assinado por cada signatário (fica Assinado)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "N1. correção da notificação cria a versão 2 e preserva a versão 1 (com o motivo)",
+      "ok": true,
+      "detail": "Versão 1 Versão inicial. · 10/11/2026 às 23:29 (horário de Brasília) · por CI gestor — tenant A Versão 2 · atual Valor d"
     },
     {
       "label": "10. tela avisa antes de criar que a garantia nasce pendente",
@@ -137,7 +177,42 @@
       "detail": ""
     },
     {
+      "label": "20a. prazo reatribuído a outro usuário da empresa",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "20b. remarcar SEM motivo é recusado com mensagem clara",
+      "ok": true,
+      "detail": "Alteração recusada: Para remarcar o vencimento, informe o motivo da mudança: ele fica no histórico do prazo."
+    },
+    {
+      "label": "20c. remarcado COM motivo: novo vencimento na tela",
+      "ok": true,
+      "detail": ""
+    },
+    {
       "label": "21. prazo concluído com nota",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "21a. prazo concluído reaberto (aprovação jurídica): volta a Pendente",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "21b. histórico do prazo: vencimento anterior, novo, motivo, autor e data",
+      "ok": true,
+      "detail": "10/11/2026 às 23:29 (horário de Brasília) · por CI gestor — tenant A Prazo “Contestação do locatário”: reaberto. 10/11/2026 às 23:29 (horário de Brasília) · por"
+    },
+    {
+      "label": "R1. com só a estimativa, nada vira recebível",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "R2. valor confirmado vinculado como recebível no Financeiro",
       "ok": true,
       "detail": ""
     },

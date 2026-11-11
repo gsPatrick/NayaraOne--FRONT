@@ -1,9 +1,10 @@
 // Marco 5 — fechamento do Front com as regras novas da API (Playwright clicando na UI, pilha descartável 5533/5534/5537).
 // Percorre: contrato DRAFT -> documentos -> análise -> aprovação da VERSÃO -> envio para assinatura -> assinaturas
-// manuais -> assinado; garantia (seguro-fiança) com os dados do tipo, nascendo Pendente e completada; vistoria de
+// manuais -> assinado (com modelo publicado: cláusula da biblioteca -> modelo -> publicar versão); aditivo assinado
+// por signatário; notificação corrigida por nova versão; garantia (seguro-fiança) com os dados do tipo, nascendo Pendente e completada; vistoria de
 // ENTRADA e de SAÍDA com comparação por ambiente/item; recusa clara da assinatura da vistoria por MFA; entrega de
 // chaves recusada sem a via assinada do termo e liberada com ela; processo com prazo de origem verificável concluído
-// com nota.
+// com nota; recebível só do valor confirmado.
 //
 // Uso: E2E_PASSWORD=<senha dos usuários fictícios> E2E_API_DIR=<raiz da API> E2E_DATABASE_URL=<banco descartável> \
 //      [E2E_DATABASE_ADMIN_URL=<superusuário do banco descartável>] node e2e/marco5-fechamento.spec.js
@@ -12,6 +13,7 @@
 const path = require("path");
 const { chromium } = require("playwright");
 const A = require("./_m5-apoio");
+const { templateFlow, amendmentFlow, noticeFlow } = require("./_m5-fluxos-extra");
 
 const today = new Date();
 const iso = (d) => d.toISOString().slice(0, 10);
@@ -30,7 +32,7 @@ async function shot(page, name) {
   await page.screenshot({ path: path.join(A.OUT, `${name}.png`), fullPage: true });
 }
 
-async function contractFlow(page, ctx, files) {
+async function contractFlow(page, ctx, files, template) {
   const { landlord, tenant, property } = ctx;
   await page.goto(`${A.FRONT}/painel/contratos/lista/novo`, { waitUntil: "domcontentloaded" });
   await page.locator("#f-type").waitFor();
@@ -44,10 +46,19 @@ async function contractFlow(page, ctx, files) {
     await page.selectOption("#f-party-role", role);
     await page.getByTestId("contract-add-party").click();
   }
+  if (template) {
+    const tplValue = await page.locator("#f-template option", { hasText: template.name }).first().getAttribute("value");
+    await page.selectOption("#f-template", tplValue);
+  }
   await page.getByRole("button", { name: "Criar contrato" }).click();
+  if (template) {
+    // Primeiro clique: prévia das cláusulas (da versão publicada); segundo: cria.
+    await page.getByRole("button", { name: "Confirmar e criar contrato" }).click();
+  }
   await page.waitForURL(/\/painel\/contratos\/lista\/[0-9a-f-]{36}$/, { timeout: 60000 });
   const contractId = page.url().split("/").pop();
   A.record("1. contrato criado em rascunho pela tela", await A.visible(page.getByText("Rascunho").first()));
+  if (template) A.record("1b. versão 1 gerada da versão PUBLICADA do modelo", await A.visible(page.getByTestId("contract-version-1").getByText(template.name)));
   A.record("1a. sem botão Cancelar (CANCELLED não é estado do livro)", (await page.getByRole("button", { name: /^Cancelar$/ }).count()) === 0);
 
   await page.getByRole("button", { name: "Enviar para documentos" }).first().click();
@@ -76,7 +87,8 @@ async function contractFlow(page, ctx, files) {
   await page.getByTestId("contract-new-version").click();
   await page.setInputFiles("#f-ver-file", files.pdf);
   await page.getByTestId("contract-new-version-confirm").click();
-  A.record("4. versão 1 do documento criada (Rascunho)", await A.visible(page.getByTestId("contract-version-1")));
+  const vN = template ? 2 : 1;
+  A.record(`4. versão ${vN} do documento criada (Rascunho)`, await A.visible(page.getByTestId(`contract-version-${vN}`)));
 
   await page.getByRole("button", { name: "Enviar para análise jurídica" }).first().click();
   await confirmDialog(page, "Enviar para análise jurídica");
@@ -84,7 +96,7 @@ async function contractFlow(page, ctx, files) {
 
   await page.getByTestId("contract-approve-version").click();
   await confirmDialog(page, "Aprovar versão");
-  const v1 = page.getByTestId("contract-version-1");
+  const v1 = page.getByTestId(`contract-version-${vN}`);
   A.record("6. versão aprovada pela rota da versão: versão Aprovada e contrato Aprovado", (await A.visible(v1.getByText("Aprovada"))) && (await A.visible(page.getByTestId("contract-send-signature"))));
   A.record("6a. depois da aprovação, valor/vigência só por aditivo", await A.visible(page.getByTestId("contract-terms-locked")));
   await shot(page, "02-versao-aprovada");
@@ -107,7 +119,7 @@ async function contractFlow(page, ctx, files) {
     await confirmDialog(page, "Marcar como assinado");
   }
   A.record("9. contrato Assinado", await A.visible(page.getByRole("button", { name: "Ativar contrato" })));
-  const timeline = await page.locator("ul").filter({ hasText: "Status mudou" }).first().innerText().catch(() => "");
+  const timeline = await page.locator("ul").filter({ hasText: "Situação do contrato mudou" }).first().innerText().catch(() => "");
   A.record("9a. linha do tempo sem código de status cru", timeline.length > 0 && !/"(DRAFT|DOCUMENTS_PENDING|LEGAL_REVIEW|APPROVED|SIGNING|SIGNED)"/.test(timeline));
   await shot(page, "03-contrato-assinado");
   return contractId;
@@ -261,11 +273,55 @@ async function deadlineFlow(page, ctx, contractId, files) {
   await page.getByRole("button", { name: "Criar prazo" }).click();
   const row = page.getByTestId("deadline-row").filter({ hasText: "Contestação do locatário" });
   A.record("20. prazo criado com documento de origem (vence 23:59 de Brasília)", (await A.visible(row)) && (await A.visible(row.getByText(/23:59/))));
+  // Caminho operacional: reatribuir -> remarcar sem motivo (recusa) -> remarcar com motivo -> concluir -> reabrir.
+  await row.getByRole("button", { name: "Reatribuir" }).click();
+  const respSelect = row.locator('select[id^="f-dl-responsible-"]');
+  const other = await respSelect.locator("option", { hasText: /checker/i }).first().getAttribute("value");
+  await respSelect.selectOption(other);
+  await row.locator('input[id^="f-dl-reason-"]').fill("Redistribuição da carteira (fictícia)");
+  await row.getByRole("button", { name: "Confirmar reatribuição" }).click();
+  A.record("20a. prazo reatribuído a outro usuário da empresa", await A.visible(row.getByText(/Responsável: .*checker/i)));
+  await row.getByRole("button", { name: "Remarcar" }).click();
+  await row.locator('input[id^="f-dl-date-"]').fill(plusDays(20));
+  await row.getByRole("button", { name: "Confirmar remarcação" }).click();
+  const refusal = row.getByTestId("deadline-change-refusal");
+  const refusalText = (await A.visible(refusal)) ? await refusal.innerText() : "";
+  A.record("20b. remarcar SEM motivo é recusado com mensagem clara", /motivo/i.test(refusalText), refusalText.slice(0, 120));
+  await row.locator('input[id^="f-dl-reason-"]').fill("Prazo devolvido por decisão publicada (fictícia)");
+  await row.getByRole("button", { name: "Confirmar remarcação" }).click();
+  const newDue = plusDays(20).split("-").reverse().join("/");
+  A.record("20c. remarcado COM motivo: novo vencimento na tela", await A.visible(row.getByText(new RegExp(`Vence em ${newDue}`))));
   await row.getByRole("button", { name: "Concluir" }).click();
   await row.locator('input[id^="f-conclusion-"]').fill("Contestação protocolada, protocolo fictício 123");
   await row.getByRole("button", { name: "Confirmar conclusão" }).click();
   A.record("21. prazo concluído com nota", await A.visible(row.getByText("Concluído")));
   await shot(page, "10-prazo-concluido");
+  await row.getByRole("button", { name: "Reabrir" }).click();
+  await row.getByRole("button", { name: "Confirmar reabertura" }).click();
+  A.record("21a. prazo concluído reaberto (aprovação jurídica): volta a Pendente", await A.visible(row.getByText("Pendente", { exact: true })));
+  await row.getByRole("button", { name: "Histórico" }).click();
+  const hist = row.getByTestId("deadline-history");
+  const histText = (await A.visible(hist)) ? await hist.innerText() : "";
+  A.record("21b. histórico do prazo: vencimento anterior, novo, motivo, autor e data", /remarcado de .* para .*motivo/i.test(histText) && /por /.test(histText), histText.replace(/\s+/g, " ").slice(0, 160));
+  await shot(page, "10a-prazo-historico");
+
+  // Recebível: estimativa não vira lançamento; só o valor confirmado vai ao Financeiro (legal:approve + finance:create).
+  await page.getByRole("button", { name: "Atualizar valores" }).click();
+  await page.fill("#f-case-estimated", "9.000,00");
+  await page.getByRole("button", { name: "Gravar valores" }).click();
+  A.record("R1. com só a estimativa, nada vira recebível", await A.visible(page.getByText(/Sem valor confirmado/)));
+  await page.getByRole("button", { name: "Atualizar valores" }).click();
+  await page.fill("#f-case-confirmed", "7.500,00");
+  await page.getByRole("button", { name: "Gravar valores" }).click();
+  await page.locator("#f-rcv-basis").waitFor();
+  await page.selectOption("#f-rcv-basis", "SETTLEMENT");
+  await page.fill("#f-rcv-ref", "Acordo homologado fictício, autos 0001234");
+  await page.fill("#f-rcv-due", plusDays(45));
+  const center = await page.locator("#f-rcv-center option", { hasText: ctx.resultCenterName }).first().getAttribute("value");
+  await page.selectOption("#f-rcv-center", center);
+  await page.getByRole("button", { name: /Vincular ao Financeiro/ }).click();
+  A.record("R2. valor confirmado vinculado como recebível no Financeiro", await A.visible(page.getByTestId("case-receivable")));
+  await shot(page, "10b-recebivel");
 }
 
 async function legacyCancelledFlow(page, token, ctx) {
@@ -288,6 +344,8 @@ async function legacyCancelledFlow(page, token, ctx) {
   const files = A.testFiles();
   const { token, claims } = await A.apiLogin();
   const ctx = await A.seedScenario(token);
+  ctx.resultCenterName = `Jurídico E2E ${ctx.sfx}`;
+  await A.api(token, "POST", "/finance/result-centers", { code: `JUR${ctx.sfx}`, name: ctx.resultCenterName });
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
   page.setDefaultTimeout(45000);
@@ -295,7 +353,10 @@ async function legacyCancelledFlow(page, token, ctx) {
   try {
     await A.uiLogin(page);
     A.record("0. login na tela (usuário fictício, sem MFA)", true);
-    const contractId = await contractFlow(page, ctx, files);
+    const template = await templateFlow(page, ctx);
+    const contractId = await contractFlow(page, ctx, files, template);
+    await amendmentFlow(page, ctx, contractId, files);
+    await noticeFlow(page, ctx, contractId);
     await guaranteeFlow(page, contractId, files);
     const { entryId } = await inspectionFlow(page, contractId, files);
     A.signInspectionByService(entryId, claims);
