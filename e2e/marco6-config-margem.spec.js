@@ -1,3 +1,4 @@
+const { requireE2ePassword } = require('./_e2e-env');
 // Marco 6 — margem mínima configurável na página Obras > Configurações (sem publicar valor no banco compartilhado).
 const { chromium } = require("playwright");
 const path = require("path");
@@ -17,7 +18,7 @@ function record(label, ok, detail) {
     if (await teamTab.count()) await teamTab.first().click();
     await page.waitForSelector("input[type=email]");
     await page.fill("input[type=email]", "admin@nayaraone.dev");
-    await page.fill("input[type=password]", "DevAdmin#2026");
+    await page.fill("input[type=password]", requireE2ePassword());
     await page.click("button[type=submit]");
     await page.waitForURL((u) => !u.pathname.includes("/entrar"));
     await page.goto(`${BASE}/painel/obras/configuracoes`, { waitUntil: "networkidle" });

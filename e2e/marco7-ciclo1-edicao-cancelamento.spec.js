@@ -1,5 +1,7 @@
 'use strict';
 
+const { requireE2ePassword } = require('./_e2e-env');
+
 /**
  * E2E Marco 7 — CICLO 1/10 do loop adversarial pedido pelo usuário: edição, cancelamento,
  * exclusão destrutiva e paginação/filtros — ângulos não cobertos por marco7-jornada-completa
@@ -12,7 +14,7 @@ const { chromium } = require('playwright');
 
 const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
 const EMAIL = process.env.E2E_EMAIL || 'admin@nayaraone.dev';
-const PASSWORD = process.env.E2E_PASSWORD || 'DevAdmin#2026';
+const PASSWORD = requireE2ePassword();
 
 const results = [];
 function record(step, ok, detail) {

@@ -1,5 +1,7 @@
 'use strict';
 
+const { requireE2ePassword } = require('./_e2e-env');
+
 /**
  * E2E real (Playwright) — reconferência 20/10/2026: R3 (sinal "-" no valor), R2 (lançamento
  * "QA-M4-03 a pagar" destravado: botão de pedir aprovação disponível), R5 (intenção antiga
@@ -10,7 +12,7 @@ const { chromium } = require('playwright');
 
 const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
 const EMAIL = process.env.E2E_EMAIL || 'admin@nayaraone.dev';
-const PASSWORD = process.env.E2E_PASSWORD || 'DevAdmin#2026';
+const PASSWORD = requireE2ePassword();
 const results = [];
 const rec = (s, ok, d) => { results.push(ok); console.log(`[${ok ? 'OK ' : 'FALHOU'}] ${s}${d ? ' — ' + d : ''}`); };
 

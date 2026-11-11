@@ -1,5 +1,7 @@
 'use strict';
 
+const { requireE2ePassword } = require('./_e2e-env');
+
 /**
  * E2E (Playwright) — varredura de "código cru" visível ao usuário nos Marcos 4/5
  * (financeiro, contratos, jurídico/processos, cobrança/régua). Abre cada tela (e até 3 detalhes
@@ -23,7 +25,7 @@ const { chromium } = require('playwright');
 
 const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
 const EMAIL = process.env.E2E_EMAIL || 'admin@nayaraone.dev';
-const PASSWORD = process.env.E2E_PASSWORD || 'DevAdmin#2026';
+const PASSWORD = requireE2ePassword();
 const SHOTS = process.env.E2E_SHOTS || path.join(__dirname, 'shots', 'm45-varredura');
 fs.mkdirSync(SHOTS, { recursive: true });
 

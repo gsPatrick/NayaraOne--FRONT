@@ -1,3 +1,4 @@
+const { requireE2ePassword } = require('./_e2e-env');
 // Marco 6 — cadastra a margem mínima de 10% (configuração de homologação) na Empresa Dev, pela tela, conforme autorização
 // da Nayara, e confere o histórico de versões. Rodar UMA vez: cada execução publica uma nova versão.
 const { chromium } = require("playwright");
@@ -17,7 +18,7 @@ async function aparece(l, ms = 30000) { try { await l.first().waitFor({ state: "
     if (await aba.count()) await aba.first().click();
     await page.waitForSelector("input[type=email]");
     await page.fill("input[type=email]", "admin@nayaraone.dev");
-    await page.fill("input[type=password]", "DevAdmin#2026");
+    await page.fill("input[type=password]", requireE2ePassword());
     await page.click("button[type=submit]");
     await page.waitForURL((u) => !u.pathname.includes("/entrar"));
     await page.goto(`${BASE}/painel/obras/configuracoes`, { waitUntil: "networkidle" });
