@@ -16,18 +16,22 @@ import Badge from "@/components/atoms/Badge/Badge";
 import Button from "@/components/atoms/Button/Button";
 import FormField from "@/components/molecules/FormField/FormField";
 import Input from "@/components/atoms/Input/Input";
+import ReopenFormCard from "./ReopenFormCard";
+import ReopenRequestsCard from "./ReopenRequestsCard";
 import Alert from "@/components/molecules/Alert/Alert";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu";
 import {
   listPeriodClosures,
   closePeriod,
-  reopenPeriod,
-  returnPeriodToOpen,
   getPeriodPreconditions,
   confirmPeriodCheck,
   approvePeriodClosure,
 } from "@/lib/api/finance";
+import { listPeriodReopenRequests } from "@/lib/api/financeApprovals";
+import { lookupFallback } from "@/lib/asyncState/lookup";
+import { getCurrentUser } from "@/lib/auth/session";
+import { pendingReopenFor } from "@/lib/finance/approvalFlows";
 import { formatDateTime, formatCompetence, humanizeText } from "@/lib/format";
 import { readRecentMfa } from "@/lib/mfaRecent";
 import styles from "./page.module.css";
@@ -56,8 +60,15 @@ const HUMAN_CHECKS = {
 
 export default function FechamentoPage() {
   // M9-D940: a lista de fechamentos vem do padrão único de estados (carregando, erro com "tentar de novo", sem acesso, sem conexão).
-  const closuresQuery = useAsyncState(() => listPeriodClosures().then((items) => items || []), { key: "fechamento", isEmpty: () => false });
-  const closures = closuresQuery.data || [];
+  // Os pedidos de reabertura pendentes (Caderno §16) vêm junto: se só eles falharem, a falha é avisada e os fechamentos continuam na tela.
+  const closuresQuery = useAsyncState(async () => {
+    const [items, reopenRequests] = await Promise.all([listPeriodClosures(), listPeriodReopenRequests({ status: "PENDING" }).catch(lookupFallback("os pedidos de reabertura"))]);
+    return { closures: items || [], reopenRequests: reopenRequests || [] };
+  }, { key: "fechamento", isEmpty: () => false });
+  const closures = closuresQuery.data?.closures || [];
+  const reopenRequests = closuresQuery.data?.reopenRequests || [];
+  const currentUser = getCurrentUser();
+  const [reopenNotice, setReopenNotice] = useState("");
   const loading = closuresQuery.status === "LOADING";
   const closuresLoaded = Boolean(closuresQuery.data);
   const reload = closuresQuery.reload;
@@ -74,9 +85,6 @@ export default function FechamentoPage() {
   const [approving, setApproving] = useState(false);
 
   const [reopenTarget, setReopenTarget] = useState(null);
-  const [reopenReason, setReopenReason] = useState("");
-  const [reopening, setReopening] = useState(false);
-  const [reopenError, setReopenError] = useState("");
 
   // Só a resposta do pedido mais recente vale: trocar de mês rápido não pode deixar o
   // checklist de um mês aparecer em outro.
@@ -143,7 +151,7 @@ export default function FechamentoPage() {
     tick();
     const id = window.setInterval(tick, 20000);
     return () => window.clearInterval(id);
-  }, [approving, reopening]);
+  }, [approving, reopenTarget]);
 
   async function handleApprove() {
     setCloseError("");
@@ -170,33 +178,11 @@ export default function FechamentoPage() {
   const preconditions = checklistForMonth?.preconditions;
   const allOk = Boolean(preconditions?.allOk);
 
-  async function handleReopen(e) {
-    e.preventDefault();
-    setReopenError("");
-    if (!reopenReason.trim()) {
-      setReopenError(
-        reopenTarget.mode === "RETURN"
-          ? "Informe o que precisa ser corrigido — o motivo é obrigatório e fica auditado."
-          : "Informe o motivo da reabertura — é obrigatório e fica auditado."
-      );
-      return;
-    }
-    setReopening(true);
-    try {
-      if (reopenTarget.mode === "RETURN") {
-        await returnPeriodToOpen(reopenTarget.referenceMonth, reopenReason.trim());
-      } else {
-        await reopenPeriod(reopenTarget.referenceMonth, reopenReason.trim());
-      }
-      const month = reopenTarget.referenceMonth;
-      setReopenTarget(null);
-      setReopenReason("");
-      await Promise.all([reload(), month === monthToClose ? loadChecklist(monthToClose) : null]);
-    } catch (err) {
-      setReopenError(msg(err, reopenTarget.mode === "RETURN" ? "Falha ao devolver o período para aberto." : "Falha ao reabrir o período."));
-    } finally {
-      setReopening(false);
-    }
+  // Devolver para aberto muda o mês na hora; o pedido de reabertura (202) só fica aguardando a aprovação de outra pessoa.
+  async function handleReopenDone({ mode, referenceMonth }) {
+    setReopenTarget(null);
+    setReopenNotice(mode === "RETURN" ? "" : `Reabertura de ${formatCompetence(referenceMonth)} pedida. O mês continua fechado até outra pessoa aprovar.`);
+    await Promise.all([reload(), referenceMonth === monthToClose ? loadChecklist(monthToClose) : null]);
   }
 
   const columns = [
@@ -230,9 +216,11 @@ export default function FechamentoPage() {
       key: "actions",
       label: "Ações",
       render: (row) =>
-        row.status === "CLOSED" ? (
-          <Button requires="finance:approve" type="button" size="sm" variant="ghost" onClick={() => setReopenTarget({ referenceMonth: row.referenceMonth, mode: "REOPEN" })}>
-            Reabrir
+        row.status === "CLOSED" && pendingReopenFor(reopenRequests, row.referenceMonth) ? (
+          "Reabertura pedida — aguardando aprovação"
+        ) : row.status === "CLOSED" ? (
+          <Button requires="finance:periodReopen" type="button" size="sm" variant="ghost" onClick={() => setReopenTarget({ referenceMonth: row.referenceMonth, mode: "REOPEN" })}>
+            Solicitar reabertura
           </Button>
         ) : row.status === "REVIEW" ? (
           <Button requires="finance:approve" type="button" size="sm" variant="ghost" onClick={() => setReopenTarget({ referenceMonth: row.referenceMonth, mode: "RETURN" })}>
@@ -358,50 +346,12 @@ export default function FechamentoPage() {
           {closeError ? <Alert tone="danger">{closeError}</Alert> : null}
         </Card>
 
+        {reopenNotice ? <Alert tone="info">{reopenNotice}</Alert> : null}
         {reopenTarget ? (
-          <Card className={styles.formCard}>
-            <h2 className={styles.sectionTitle}>
-              {reopenTarget.mode === "RETURN" ? "Devolver para aberto" : "Reabrir"} {formatCompetence(reopenTarget.referenceMonth)}
-            </h2>
-            <form onSubmit={handleReopen} className={styles.inlineForm}>
-              <p className={styles.helper}>
-                {reopenTarget.mode === "RETURN"
-                  ? "Devolver o fechamento para aberto exige motivo, permissão de aprovação e verificação em duas etapas (MFA) recente."
-                  : "Reabrir um mês fechado exige motivo, permissão de aprovação e verificação em duas etapas (MFA) recente. Se você ainda não verificou o MFA há pouco tempo, o sistema pede o código ao confirmar."}
-              </p>
-              <FormField label="Motivo (obrigatório, fica auditado)" htmlFor="reopenReason">
-                <textarea
-                  id="reopenReason"
-                  className={styles.textarea}
-                  rows={3}
-                  value={reopenReason}
-                  onChange={(e) => setReopenReason(e.target.value)}
-                />
-              </FormField>
-              <div className={styles.reopenActions}>
-                <Button type="submit" disabled={reopening}>
-                  {reopening
-                    ? "Enviando..."
-                    : reopenTarget.mode === "RETURN"
-                      ? "Confirmar devolução"
-                      : "Confirmar reabertura"}
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => {
-                    setReopenTarget(null);
-                    setReopenReason("");
-                    setReopenError("");
-                  }}
-                >
-                  Cancelar
-                </Button>
-              </div>
-              {reopenError ? <Alert tone="danger">{reopenError}</Alert> : null}
-            </form>
-          </Card>
+          <ReopenFormCard key={`${reopenTarget.mode}-${reopenTarget.referenceMonth}`} target={reopenTarget} onCancel={() => setReopenTarget(null)} onDone={handleReopenDone} />
         ) : null}
+
+        <ReopenRequestsCard requests={reopenRequests} currentUserId={currentUser?.id} onChanged={() => Promise.all([reload(), loadChecklist(monthToClose)])} />
 
         <Card>
           <h2 className={styles.sectionTitle}>Histórico de fechamentos</h2>
