@@ -47,6 +47,8 @@ import ClauseConditionEditor, {
   describeCondition,
 } from "./ClauseConditionEditor";
 import { formatDateTime } from "@/lib/format";
+import { useActiveUsers } from "@/lib/legal/useActiveUsers";
+import { legalErrorMessage } from "@/lib/legal/legalErrors";
 import styles from "./page.module.css";
 
 const CATEGORIES = ["GENERAL", "PAYMENT", "GUARANTEE", "TERMINATION", "PENALTY", "OBLIGATION", "OTHER"];
@@ -67,7 +69,9 @@ export default function ClausulasPage() {
   const [query, setQuery] = useState("");
 
   const [createModalOpen, setCreateModalOpen] = useState(false);
-  const [createForm, setCreateForm] = useState({ code: "", title: "", bodyText: "", category: "GENERAL" });
+  const [createForm, setCreateForm] = useState({ code: "", title: "", bodyText: "", category: "GENERAL", legalResponsibleUserId: "" });
+  // JUR-002 / Caderno §4 legal.clause_library: a cláusula tem responsável jurídico (padrão: quem cria).
+  const usersState = useActiveUsers(createModalOpen);
   const [createCondition, setCreateCondition] = useState(fromConditionJson(null));
   const [createBusy, setCreateBusy] = useState(false);
   const [createError, setCreateError] = useState("");
@@ -108,13 +112,14 @@ export default function ClausulasPage() {
         bodyText: createForm.bodyText.trim(),
         category: createForm.category,
         condition: toConditionPayload(createCondition),
+        ...(createForm.legalResponsibleUserId ? { legalResponsibleUserId: createForm.legalResponsibleUserId } : {}),
       });
       setClauses((prev) => [created, ...prev]);
       setCreateModalOpen(false);
-      setCreateForm({ code: "", title: "", bodyText: "", category: "GENERAL" });
+      setCreateForm({ code: "", title: "", bodyText: "", category: "GENERAL", legalResponsibleUserId: "" });
       setCreateCondition(fromConditionJson(null));
     } catch (err) {
-      setCreateError(err.message || "Erro ao criar cláusula.");
+      setCreateError(legalErrorMessage(err, "Erro ao criar cláusula."));
     } finally {
       setCreateBusy(false);
     }
@@ -277,6 +282,12 @@ export default function ClausulasPage() {
           <FormField label="Categoria" htmlFor="f-category">
             <Select id="f-category" value={createForm.category} onChange={(e) => setCreateForm((p) => ({ ...p, category: e.target.value }))}>
               {CATEGORIES.map((c) => <option key={c} value={c}>{CATEGORY_LABELS[c]}</option>)}
+            </Select>
+          </FormField>
+          <FormField label="Responsável jurídico" htmlFor="f-clause-responsible" helper={usersState.error || "Quem responde pela cláusula na biblioteca. Sem escolha, fica quem cria."}>
+            <Select id="f-clause-responsible" value={createForm.legalResponsibleUserId} onChange={(e) => setCreateForm((p) => ({ ...p, legalResponsibleUserId: e.target.value }))}>
+              <option value="">Eu (quem está criando)</option>
+              {usersState.users.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
             </Select>
           </FormField>
           <FormField label="Texto da cláusula" htmlFor="f-body" required>

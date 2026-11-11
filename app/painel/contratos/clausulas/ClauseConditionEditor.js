@@ -24,7 +24,11 @@ export const CONDITION_VARIABLES = {
   guaranteeType: {
     label: "Tipo de garantia",
     type: "enum",
-    options: { GUARANTOR: "Fiador", INSURANCE: "Seguro-fiança", DEPOSIT: "Caução", CAPITALIZATION_TITLE: "Título de capitalização", OTHER: "Outra", NONE: "Sem garantia" },
+    // Fechamento M5: só os códigos do livro são oferecidos; DEPOSIT/CAPITALIZATION_TITLE (regras antigas, append-only)
+    // continuam sendo descritos e são lidos como o código do livro (a API trata os dois como iguais).
+    options: { GUARANTOR: "Fiador", INSURANCE: "Seguro-fiança", SECURITY_DEPOSIT: "Caução", CAPITALIZATION: "Título de capitalização", OTHER: "Outra", NONE: "Sem garantia" },
+    legacyOptions: { DEPOSIT: "Caução", CAPITALIZATION_TITLE: "Título de capitalização" },
+    aliases: { DEPOSIT: "SECURITY_DEPOSIT", CAPITALIZATION_TITLE: "CAPITALIZATION" },
   },
   hasGuarantor: { label: "Possui fiador", type: "boolean" },
   propertyPurpose: { label: "Finalidade do imóvel", type: "enum", options: { RESIDENTIAL: "Residencial", COMMERCIAL: "Comercial", SEASONAL: "Temporada" } },
@@ -72,7 +76,13 @@ export function toConditionPayload(state) {
 
 export function fromConditionJson(conditionJson) {
   if (!conditionJson) return { enabled: false, match: "all", rules: [] };
-  return { enabled: true, match: conditionJson.match || "all", rules: conditionJson.rules.map((r) => ({ ...r })) };
+  // Regra antiga com código legado de garantia abre no editor com o código do livro (o seletor só oferece o do livro).
+  const canon = (r, v) => (CONDITION_VARIABLES[r.variable]?.aliases?.[v]) || v;
+  return {
+    enabled: true,
+    match: conditionJson.match || "all",
+    rules: conditionJson.rules.map((r) => ({ ...r, value: Array.isArray(r.value) ? r.value.map((v) => canon(r, v)) : canon(r, r.value) })),
+  };
 }
 
 export function isConditionStateValid(state) {
@@ -93,7 +103,7 @@ export function describeCondition(conditionJson) {
   const parts = conditionJson.rules.map((r) => {
     const def = CONDITION_VARIABLES[r.variable];
     if (!def) return r.variable;
-    const label = (v) => (def.type === "enum" ? def.options[v] || v : def.type === "boolean" ? (v ? "Sim" : "Não") : String(v));
+    const label = (v) => (def.type === "enum" ? def.options[v] || (def.legacyOptions && def.legacyOptions[v]) || v : def.type === "boolean" ? (v ? "Sim" : "Não") : String(v));
     if (r.operator === "exists") return `${def.label} ${r.value ? "informado" : "sem valor"}`;
     const value = Array.isArray(r.value) ? r.value.map(label).join(", ") : label(r.value);
     return `${def.label} ${OPERATOR_LABELS[r.operator]} ${value}`;
