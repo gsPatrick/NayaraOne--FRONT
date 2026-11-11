@@ -11,6 +11,7 @@ import IntegracoesRegistroTab from "./IntegracoesRegistroTab";
 import BiTab from "./BiTab";
 import IaNayTab from "./IaNayTab";
 import MarketingTab from "./MarketingTab";
+import CrmTab from "./CrmTab";
 import styles from "./page.module.css";
 
 export default function ConfiguracoesPage() {
@@ -31,6 +32,7 @@ export default function ConfiguracoesPage() {
             { label: "Registro de integrações", content: <IntegracoesRegistroTab /> },
             { label: "Governança", content: <GovernancaTab /> },
             { label: "IA NAY", content: <IaNayTab /> },
+            { label: "CRM", content: <CrmTab /> },
             { label: "Marketing", content: <MarketingTab /> },
             { label: "BI e Centro de Comando", content: <BiTab /> },
           ]}
