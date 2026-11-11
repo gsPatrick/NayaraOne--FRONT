@@ -44,6 +44,8 @@ import {
 import { uploadFile } from "@/lib/api/legal";
 import { friendlyFinanceError } from "@/lib/finance/extras";
 import ThirdPartyReleaseModal, { thirdPartyBalance } from "./ThirdPartyReleaseModal";
+import { ledgerBalance, reversalPreview, reversalNotice, canComplement } from "./ledgerBalance";
+import useComplementAction from "./useComplementAction";
 import { formatBRL, formatDate, formatDateTime, formatCompetence, formatContractLabel, dateOnlyInputToIso, humanizeText, toNumber } from "@/lib/format";
 import styles from "./page.module.css";
 import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
@@ -114,6 +116,9 @@ export default function LancamentoDetailPage({ params }) {
     setPaymentIntent(d.paymentIntent);
   }, [detailQuery.data]);
 
+  // Contexto lido na hora do clique (o hook vem antes do retorno antecipado; o saldo é calculado mais abaixo).
+  const { handleComplement, runComplement } = useComplementAction(() => ({ entry, remainingCents, confirm, requireAttachedEvidence, setMfaAction, setMfaOpen, setBusy, setNotice, setEntry, load }));
+
   if (detailQuery.error?.status === 404) return notFound();
 
   // Ação (liquidar, estornar, aprovar...) só com o dado fresco: na revisita o cache mostra a ficha, mas não vale agir sobre ela.
@@ -142,11 +147,11 @@ export default function LancamentoDetailPage({ params }) {
   const isDepositReceived =
     entry?.nature === "RECEIVABLE" && entry?.isThirdPartyFunds && ["SETTLED", "PARTIALLY_SETTLED"].includes(entry?.status);
   const depositBalance = isDepositReceived ? thirdPartyBalance(entry, allEntries) : null;
-  // Baixas parciais: o saldo é o valor do lançamento menos o que as baixas (filhas) já liquidaram.
-  const partialChildren = entry ? allEntries.filter((x) => x.parentEntryId === entry.id && x.status === "SETTLED") : [];
-  const alreadySettledCents = partialChildren.reduce((a, c) => a + Math.round(Number(c.amount) * 100), 0);
-  const remainingCents = entry ? Math.max(0, Math.round(Number(entry.amount) * 100) - alreadySettledCents) : 0;
+  // Baixas parciais (Caderno §6): o saldo é o valor do lançamento menos o que as baixas realizaram (cada baixa menos o estorno dela).
+  const { children: partialChildren, realizedCents: alreadySettledCents, remainingCents } = ledgerBalance(entry, allEntries);
   const hasPartialSettlements = entry?.status === "PARTIALLY_SETTLED" || partialChildren.length > 0;
+  const complementAvailable = canComplement(entry, allEntries);
+  const reversalInfo = reversalPreview(entry, allEntries);
   // Recebimento antecipado: liquidado antes do dia do vencimento (dia de calendário em São Paulo).
   const dayKey = (iso) => new Date(iso).toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" });
   const isEarlyReceipt =
@@ -369,7 +374,8 @@ export default function LancamentoDetailPage({ params }) {
       const result = await reverseFinancialEntry(entry.id, confirmation.justification, confirmation);
       setEntry(result.original || result);
       setReverseOpen(false);
-      setNotice({ tone: "info", text: "Lançamento estornado — um lançamento compensatório foi criado (o original nunca é editado, ledger imutável)." });
+      load();
+      setNotice({ tone: "info", text: reversalNotice(result) });
     } finally {
       setBusy(false);
     }
@@ -431,7 +437,8 @@ export default function LancamentoDetailPage({ params }) {
                 </Button>
               ) : entry.status === "PENDING" || entry.status === "PARTIALLY_SETTLED" ? (
                 approvalGateSatisfied ? (
-                  <Button requires="finance:settle" onClick={handleSettle} loading={busy} disabled={notFresh}><Icon name="check" size={16} /> Liquidar</Button>
+                  // Com baixa no histórico o lançamento não é liquidado de uma vez: o saldo sai pela baixa parcial ou pelo complemento (§6).
+                  hasPartialSettlements ? null : <Button requires="finance:settle" onClick={handleSettle} loading={busy} disabled={notFresh}><Icon name="check" size={16} /> Liquidar</Button>
                 ) : approvalRequest?.status === "PENDING" || paymentIntent?.status === "PENDING" ? (
                   <Button disabled title="Aguardando a decisão de outra pessoa antes de liquidar">
                     <Icon name="check" size={16} /> Aguardando aprovação
@@ -450,7 +457,12 @@ export default function LancamentoDetailPage({ params }) {
                   <Icon name="money" size={16} /> Devolver ou compensar caução
                 </Button>
               ) : null}
-              {entry.status === "SETTLED" ? (
+              {complementAvailable && !intentInTransit && approvalGateSatisfied ? (
+                <Button requires="finance:settle" variant="secondary" onClick={handleComplement} loading={busy} disabled={notFresh}>
+                  <Icon name="check" size={16} /> Quitar saldo ({formatBRL(remainingCents / 100)})
+                </Button>
+              ) : null}
+              {entry.status === "SETTLED" || (entry.status === "PARTIALLY_SETTLED" && partialChildren.length > 0) ? (
                 <Button requires="finance:settle" variant="secondary" onClick={handleReverse} loading={busy} disabled={notFresh}><Icon name="settings" size={16} /> Estornar</Button>
               ) : null}
             </div>
@@ -559,7 +571,7 @@ export default function LancamentoDetailPage({ params }) {
                   </div>
                   {hasPartialSettlements ? (
                     <>
-                      <div className={styles.detailRow}><dt>Já baixado</dt><dd>{formatBRL(alreadySettledCents / 100)}</dd></div>
+                      <div className={styles.detailRow}><dt>Já baixado (descontados os estornos)</dt><dd>{formatBRL(alreadySettledCents / 100)}</dd></div>
                       <div className={styles.detailRow}><dt>Saldo restante</dt><dd className={styles.amount}>{formatBRL(remainingCents / 100)}</dd></div>
                     </>
                   ) : null}
@@ -669,11 +681,13 @@ export default function LancamentoDetailPage({ params }) {
       <MfaVerifyModal
         open={mfaOpen}
         onClose={() => setMfaOpen(false)}
-        actionLabel={mfaAction === "settle-partial" ? "liquidar parcialmente este lançamento" : "liquidar este lançamento"}
+        actionLabel={mfaAction === "settle-partial" ? "liquidar parcialmente este lançamento" : mfaAction === "settle-complement" ? "quitar o saldo deste lançamento" : "liquidar este lançamento"}
         onVerified={async () => {
           setMfaOpen(false);
           if (mfaAction === "settle-partial") {
             await runSettlePartial();
+          } else if (mfaAction === "settle-complement") {
+            await runComplement();
           } else {
             await runSettle();
           }
@@ -702,7 +716,9 @@ export default function LancamentoDetailPage({ params }) {
         confirmLabel="Estornar"
         target={{ method: "GET", path: `/finance/entries/${entry?.id}/impact` }}
         onConfirm={handleReverseConfirmed}
-      />
+      >
+        {reversalInfo.text}
+      </ConfirmAction>
       <ConfirmDialog />
     </AppShell>
   );
