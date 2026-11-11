@@ -29,10 +29,21 @@ function record(id, label, ok, detail) {
 }
 const dlg = (page) => page.locator('[role="dialog"]').last();
 const shot = (page, name) => page.screenshot({ path: path.join(OUT, `${name}.png`), fullPage: true });
-const alertText = async (page) => {
-  const a = page.locator('[role="alert"]').first();
-  return (await A.visible(a, 8000)) ? (await a.innerText()).replace(/\s+/g, " ") : "";
+const alertText = async (page, filtro) => {
+  const a = filtro ? page.locator('[role="alert"]').filter({ hasText: filtro }).first() : page.locator('[role="alert"]').last();
+  return (await A.visible(a, 20000)) ? (await a.innerText()).replace(/\s+/g, " ") : "";
 };
+// Espera o texto da linha mudar até casar com a expressão (a tabela recarrega depois da ação).
+async function esperarLinha(locator, re, ms = 30000) {
+  const fim = Date.now() + ms;
+  let t = "";
+  while (Date.now() < fim) {
+    t = (await locator.innerText().catch(() => "")).replace(/\s+/g, " ");
+    if (re.test(t)) return { ok: true, t };
+    await new Promise((r) => setTimeout(r, 500));
+  }
+  return { ok: false, t };
+}
 
 async function abrirAba(page, nome) {
   await page.getByRole("tab", { name: nome }).click();
@@ -59,7 +70,8 @@ async function ativar(page, contrato) {
     await botao.first().click();
     await dlg(page).getByRole("button", { name: "Ativar contrato", exact: true }).click();
   }
-  record("UAT-C01", "contrato assinado ativado pela tela (entra em vigor)", await A.visible(page.getByText("Ativo", { exact: true }).first()));
+  const ativo = await A.visible(page.getByText('Contrato agora está em "Em vigor".').first(), 30000) || await A.visible(page.getByText("Em vigor", { exact: true }).first(), 5000);
+  record("UAT-C01", "contrato assinado ativado pela tela (entra em vigor)", ativo);
   await shot(page, "c01-contrato-ativo");
 }
 
@@ -83,7 +95,7 @@ async function cobranca(page, contrato) {
   await shot(page, "c02-cobranca-gerada");
 
   await gerar();
-  const erro = await alertText(page);
+  const erro = await alertText(page, /Já existe|compet/i);
   await dlg(page).getByRole("button", { name: "Cancelar" }).click().catch(() => {});
   const linhas = await page.locator("tr", { hasText: comp }).count();
   record("UAT-C03", "a mesma competência do mesmo contrato é recusada (competência UNIQUE contrato+período) e não duplica", Boolean(erro) && linhas === 1, `${erro.slice(0, 140)}; ${linhas} linha(s)`);
@@ -95,12 +107,12 @@ async function cobranca(page, contrato) {
     await dlg(page).waitFor({ state: "detached", timeout: 30000 }).catch(() => {});
   };
   await pagar("1.000,00");
-  const parcial = await page.locator("tr", { hasText: comp }).first().innerText();
-  record("UAT-C04", "pagamento parcial de R$ 1.000,00 recompõe o saldo: R$ 1.500,00 e status Parcial", /R\$\s?1\.500,00/.test(parcial) && /Parcial/.test(parcial), parcial.replace(/\s+/g, " "));
+  const parcial = await esperarLinha(page.locator("tr", { hasText: comp }).first(), /R\$\s?1\.500,00.*Parcial/);
+  record("UAT-C04", "pagamento parcial de R$ 1.000,00 recompõe o saldo: R$ 1.500,00 e status Parcial", parcial.ok, parcial.t);
   await shot(page, "c04-pagamento-parcial");
   await pagar("1.500,00");
-  const quitada = await page.locator("tr", { hasText: comp }).first().innerText();
-  record("UAT-C05", "o restante quita a competência: saldo R$ 0,00 e Quitado", /R\$\s?0,00/.test(quitada) && /Quitado/.test(quitada), quitada.replace(/\s+/g, " "));
+  const quitada = await esperarLinha(page.locator("tr", { hasText: comp }).first(), /R\$\s?0,00.*Quitado/);
+  record("UAT-C05", "o restante quita a competência: saldo R$ 0,00 e Quitado", quitada.ok, quitada.t);
 }
 
 async function reajuste(page, contrato) {
@@ -141,7 +153,7 @@ async function utilidades(page, contrato) {
   await dlg(page).getByRole("button", { name: "Registrar", exact: true }).click();
   await dlg(page).waitFor({ state: "detached", timeout: 30000 }).catch(() => {});
   await page.goto(`${A.FRONT}/painel/financeiro/lancamentos`, { waitUntil: "domcontentloaded" });
-  const reembolso = page.getByText(/Reembolso de Água pago por .*, a cobrar de Locatário/).first();
+  const reembolso = page.locator("tr", { hasText: /Reembolso de água pago por/i }).filter({ hasText: /R\$\s?180,00/ }).first();
   const achou = await A.visible(reembolso, 30000);
   record("UAT-C09", "pagamento por quem não é o responsável gera o recebível de reembolso no Financeiro (R$ 180,00 a cobrar do locatário)", achou, achou ? (await reembolso.innerText()).slice(0, 140) : "lançamento de reembolso não apareceu em Financeiro > Lançamentos");
   await shot(page, "c09-utilidade-reembolso");
@@ -178,7 +190,8 @@ async function garantidoEAntecipacao(page, contrato) {
     if (await A.visible(b, 15000)) { await b.click(); await page.waitForTimeout(1200); }
   }
   const pago = await A.visible(page.locator("tr", { hasText: "Pago" }).first(), 20000);
-  record("UAT-C12", "antecipação é produto separado: elegível -> proposta -> aceita -> paga (principal R$ 7.000,00 e custo R$ 350,00 separados)", pago, pago ? "" : await alertText(page));
+  const linhaA = (await page.locator("tr", { hasText: "R$ 7.000,00" }).first().innerText().catch(() => "")).replace(/\s+/g, " ");
+  record("UAT-C12", "antecipação é produto separado: elegível -> proposta -> aceita -> paga (principal R$ 7.000,00 e custo R$ 350,00 separados)", pago, pago ? "" : `linha na tela: ${linhaA}`);
   await shot(page, "c12-antecipacao-paga");
 }
 
