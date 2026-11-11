@@ -117,7 +117,7 @@ export default function NovaGarantiaPage() {
               label="Tipo de garantia"
               htmlFor="f-type"
               required
-              helper={otherAvailable ? undefined : support.flowsReadable ? "“Outra (homologada)” fica disponível quando a empresa configurar um fluxo homologado." : "“Outra (homologada)” depende da configuração de fluxos homologados, que você não tem acesso para ler."}
+              helper={otherAvailable ? undefined : support.flowsReadable ? "“Outra (homologada)” fica disponível quando a empresa configurar um fluxo homologado." : "Não foi possível ler os fluxos homologados de “Outra (homologada)” (veja o aviso acima)."}
             >
               <Select id="f-type" value={guaranteeType} onChange={(e) => { setGuaranteeType(e.target.value); setForm(emptyGuaranteeForm()); }}>
                 {GUARANTEE_TYPES.map((k) => (

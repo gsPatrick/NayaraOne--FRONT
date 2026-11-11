@@ -186,11 +186,11 @@ export default function NotificacoesPage() {
                 <div key={n.id} className={styles.row}>
                   <div className={styles.name}>
                     <div>{contract ? formatContractLabel(contract) : "Sem contrato vinculado"} · {NOTICE_CHANNEL_LABELS[n.channel] || "Outro canal"}</div>
-                    <span className={styles.meta}>{n.recipientDescription || "Sem destinatário descrito"} · {formatDateTime(n.createdAt)}</span>
-                    <span className={styles.meta}>
+                    <div className={styles.meta}>{n.recipientDescription || "Sem destinatário descrito"} · {formatDateTime(n.createdAt || n.created_at)}</div>
+                    <div className={styles.meta}>
                       Versão {n.currentVersion || 1}
                       {n.approvedVersion ? (n.approvedVersion === n.currentVersion ? " · aprovada para envio" : ` · aprovada: versão ${n.approvedVersion}`) : " · ainda sem versão aprovada"}
-                    </span>
+                    </div>
                   </div>
                   <Badge tone={NOTICE_STATUS_TONE[n.status] || "neutral"}>{NOTICE_STATUS_LABELS[n.status] || "Situação desconhecida"}</Badge>
                   <div className={styles.actions}>

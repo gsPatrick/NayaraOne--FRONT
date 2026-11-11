@@ -199,7 +199,7 @@ export default function ContratoDetailPage({ params }) {
                     <li key={`${event.type}-${event.referenceId}-${idx}`} className={styles.timelineItem}>
                       <Badge tone={TIMELINE_TYPE_TONE[event.type] || "neutral"}>{TIMELINE_TYPE_LABELS[event.type] || "Evento"}</Badge>
                       <span className={styles.timelineDate}>{event.occurredAt ? formatDateTime(event.occurredAt) : "Sem data registrada"}</span>
-                      <span className={styles.timelineSummary}>{humanizeText(String(event.summary || "").replace(/"([A-Z_]+)"/g, (m, code) => (CONTRACT_STATUS_LABELS[code] ? `"${CONTRACT_STATUS_LABELS[code]}"` : m)))}</span>
+                      <span className={styles.timelineSummary}>{humanizeText(event.summary)}</span>
                     </li>
                   ))}
                 </ul>

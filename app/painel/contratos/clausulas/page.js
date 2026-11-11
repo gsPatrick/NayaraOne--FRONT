@@ -23,6 +23,7 @@ import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import { SkeletonList } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { lookupFallback } from "@/lib/asyncState/lookup";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { useLocalCopy } from "@/lib/asyncState/localCopy";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
@@ -114,7 +115,9 @@ export default function ClausulasPage() {
         condition: toConditionPayload(createCondition),
         ...(createForm.legalResponsibleUserId ? { legalResponsibleUserId: createForm.legalResponsibleUserId } : {}),
       });
-      setClauses((prev) => [created, ...prev]);
+      // Relê a lista: a API devolve nela o responsável jurídico (legal.clause_library), que a criação não traz.
+      const fresh = await listClauses({ activeOnly: false }).catch(lookupFallback("a lista de cláusulas", null));
+      setClauses((prev) => (Array.isArray(fresh) ? fresh : [created, ...prev]));
       setCreateModalOpen(false);
       setCreateForm({ code: "", title: "", bodyText: "", category: "GENERAL", legalResponsibleUserId: "" });
       setCreateCondition(fromConditionJson(null));
@@ -233,7 +236,7 @@ export default function ClausulasPage() {
                 <span className={styles.code}>{c.code}</span>
                 <div className={styles.name}>
                   <div>{c.title}</div>
-                  <span className={styles.meta}>{CATEGORY_LABELS[c.category] || c.category} · v{c.versionNumber}</span>
+                  <span className={styles.meta}>{CATEGORY_LABELS[c.category] || c.category} · v{c.versionNumber}{c.legalResponsible?.name ? ` · responsável jurídico: ${c.legalResponsible.name}` : ""}</span>
                   {c.conditionJson ? <span className={styles.meta}>Condição: {describeCondition(c.conditionJson)}</span> : null}
                 </div>
                 {c.conditionJson ? (

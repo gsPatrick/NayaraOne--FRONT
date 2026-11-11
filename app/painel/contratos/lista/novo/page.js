@@ -15,7 +15,7 @@ import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { listProperties } from "@/lib/api/properties";
 import { listPeople } from "@/lib/api/people";
 import { listProjects } from "@/lib/api/construction";
-import { createContract, addContractParty, listContracts, listContractTemplates, renderContractTemplate, createContractVersion } from "@/lib/api/legal";
+import { createContract, addContractParty, listContracts, listContractTemplates, getContractTemplate, renderContractTemplate, createContractVersion } from "@/lib/api/legal";
 import { CONTRACT_TYPE_LABELS, CONTRACT_TYPE_CREATE_OPTIONS, LINKED_CONTRACT_TYPES } from "@/lib/labels/juridico";
 import { legalErrorMessage } from "@/lib/legal/legalErrors";
 import { dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE, formatContractLabel, toNumber } from "@/lib/format";
@@ -137,6 +137,12 @@ export default function NovoContratoPage() {
       setCheckingTemplate(true);
       try {
         const known = getKnownVariables();
+        // Só a versão PUBLICADA do modelo gera contrato (409 LEGAL_TEMPLATE_NOT_PUBLISHED): confere antes de criar nada.
+        const detail = await getContractTemplate(form.templateId);
+        if (!detail || !detail.publishedVersion) {
+          setActionError("O modelo escolhido ainda não tem versão publicada: só a versão publicada gera contrato. Publique o modelo em Modelos de contrato (alçada jurídica) ou crie sem modelo.");
+          return;
+        }
         const rendered = await renderContractTemplate(form.templateId, known, { draftContract: getDraftContract() });
         setClausePreview({ included: rendered.clauses || [], excluded: rendered.excludedClauses || [] });
         const missing = findUnresolvedPlaceholders(rendered.content);
@@ -266,7 +272,7 @@ export default function NovoContratoPage() {
               </FormField>
             )}
 
-            <FormField label="Template do contrato" htmlFor="f-template" helper="Opcional — gera a primeira versão do documento já preenchida a partir do modelo">
+            <FormField label="Template do contrato" htmlFor="f-template" helper="Opcional — gera a primeira versão do documento a partir da versão PUBLICADA do modelo">
               <Select id="f-template" value={form.templateId} onChange={update("templateId")}>
                 <option value="">Sem template (conteúdo manual)</option>
                 {templatesForType.map((t) => (

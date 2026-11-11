@@ -106,18 +106,3 @@ export function depositOriginCandidates(entries, contractId) {
     (e) => e.contractId === contractId && e.nature === "RECEIVABLE" && e.isThirdPartyFunds && !e.thirdPartyOriginEntryId && !e.parentEntryId && !["REVERSED", "CANCELLED"].includes(e.status)
   );
 }
-
-/** Fluxos homologados da configuração legal.guarantee_other_flows ([{ code, label, requiredFields }]). */
-export function parseOtherFlows(setting) {
-  const raw = setting && typeof setting === "object" && "value" in setting ? setting.value : setting;
-  // Configuração ilegível = nenhum fluxo homologado (fail closed, igual à API em guaranteeTypeData.readOtherFlows).
-  let list = raw;
-  if (typeof raw === "string") {
-    try {
-      list = JSON.parse(raw);
-    } catch {
-      list = undefined;
-    }
-  }
-  return Array.isArray(list) ? list.filter((f) => f && typeof f.code === "string") : [];
-}

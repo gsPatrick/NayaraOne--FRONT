@@ -11,7 +11,7 @@ import FormField from "@/components/molecules/FormField/FormField";
 import Select from "@/components/atoms/Select/Select";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
-import { addClauseToContractTemplate, listContractTemplateVersions, publishContractTemplate } from "@/lib/api/legal";
+import { addClauseToContractTemplate, getContractTemplate, publishContractTemplate } from "@/lib/api/legal";
 import { CONTRACT_TYPE_LABELS, TEMPLATE_VERSION_STATUS_LABELS, TEMPLATE_VERSION_STATUS_TONE } from "@/lib/labels/juridico";
 import { useHasPermission } from "@/lib/rbac/useHasPermission";
 import { legalErrorMessage } from "@/lib/legal/legalErrors";
@@ -19,10 +19,10 @@ import { userNameOf } from "@/lib/legal/useActiveUsers";
 import { formatDateTime } from "@/lib/format";
 import styles from "./page.module.css";
 
-export default function TemplateDetail({ template, clauses, templateClauses, users, onChanged }) {
+export default function TemplateDetail({ template, clauses, users, onChanged }) {
   const canPublish = useHasPermission("legal:approve");
   const { confirm, ConfirmDialog } = useConfirm();
-  const [versions, setVersions] = useState([]);
+  const [detail, setDetail] = useState(null);
   const [versionsError, setVersionsError] = useState("");
   const [clauseToAdd, setClauseToAdd] = useState("");
   const [busy, setBusy] = useState(false);
@@ -31,8 +31,8 @@ export default function TemplateDetail({ template, clauses, templateClauses, use
 
   const loadVersions = useCallback(() => {
     setVersionsError("");
-    return listContractTemplateVersions(template.id)
-      .then((list) => setVersions(Array.isArray(list) ? list : []))
+    return getContractTemplate(template.id)
+      .then((d) => setDetail(d || null))
       .catch((err) => setVersionsError(legalErrorMessage(err, "Não foi possível carregar as versões do modelo.")));
   }, [template.id]);
 
@@ -43,8 +43,12 @@ export default function TemplateDetail({ template, clauses, templateClauses, use
     loadVersions();
   }, [loadVersions]);
 
+  const versions = Array.isArray(detail?.versions) ? detail.versions : [];
+  const templateClauses = Array.isArray(detail?.clauses) ? detail.clauses : [];
   const latest = versions[versions.length - 1] || null;
-  const draft = versions.find((v) => v.status === "DRAFT") || null;
+  const draft = detail?.draftVersion || null;
+  const published = detail?.publishedVersion || null;
+  const responsibleName = detail?.legalResponsible?.name || userNameOf(users, template.legalResponsibleUserId) || "não definido";
   const usedIds = new Set(templateClauses.map((c) => c.contractClauseId));
   const available = clauses.filter((c) => c.isActive && !usedIds.has(c.id) && !templateClauses.some((t) => t.code === c.code));
 
@@ -95,7 +99,7 @@ export default function TemplateDetail({ template, clauses, templateClauses, use
     <div className={styles.section}>
       <Card
         title={template.name}
-        subtitle={`${CONTRACT_TYPE_LABELS[template.contractType] || "Tipo de contrato"} · responsável jurídico: ${userNameOf(users, template.legalResponsibleUserId) || "não definido"}`}
+        subtitle={`${CONTRACT_TYPE_LABELS[template.contractType] || "Tipo de contrato"} · responsável jurídico: ${responsibleName} · ${published ? `versão ${published.versionNumber} publicada (é a que gera contrato)` : "sem versão publicada: ainda não gera contrato"}`}
         actions={draft && canPublish ? <Button size="sm" onClick={handlePublish} loading={busy} disabled={busy}>Publicar versão {draft.versionNumber}</Button> : null}
       >
         {error ? <Alert tone="danger" className={styles.notice}>{error}</Alert> : null}
@@ -107,7 +111,7 @@ export default function TemplateDetail({ template, clauses, templateClauses, use
           <p className={styles.meta}>A versão {draft.versionNumber} está em rascunho. Publicar exige a permissão de aprovação jurídica.</p>
         ) : null}
 
-        <h3 className={styles.name}>Cláusulas da versão {latest ? latest.versionNumber : "atual"}</h3>
+        <h3 className={styles.name}>Cláusulas da versão {draft ? `${draft.versionNumber} (rascunho)` : published ? `${published.versionNumber} (publicada)` : latest ? latest.versionNumber : "atual"}</h3>
         {templateClauses.length === 0 ? (
           <p className={styles.emptyText}>Nenhuma cláusula neste modelo ainda. Modelo sem cláusulas não pode ser publicado.</p>
         ) : (
@@ -116,9 +120,9 @@ export default function TemplateDetail({ template, clauses, templateClauses, use
               <div key={c.contractClauseId} className={styles.row} data-testid="template-clause">
                 <div className={styles.rowButton} style={{ cursor: "default" }}>
                   <span className={styles.name}>{c.title}</span>
-                  <span className={styles.meta}>Versão {c.linkedVersionNumber} da cláusula{c.superseded ? ` · existe a versão ${c.latestVersionNumber} na biblioteca` : ""}</span>
+                  <span className={styles.meta}>Versão {c.versionNumber} da cláusula</span>
                 </div>
-                {c.superseded ? <Badge tone="warning">Cláusula desatualizada</Badge> : <Badge tone="success">Vigente</Badge>}
+                {c.isActive === false ? <Badge tone="warning">Retirada da biblioteca</Badge> : <Badge tone="success">Vigente</Badge>}
               </div>
             ))}
           </div>
@@ -146,8 +150,8 @@ export default function TemplateDetail({ template, clauses, templateClauses, use
                 <div className={styles.rowButton} style={{ cursor: "default" }}>
                   <span className={styles.name}>Versão {v.versionNumber}</span>
                   <span className={styles.meta}>
-                    Responsável jurídico: {userNameOf(users, v.legalResponsibleUserId) || "não definido"}
-                    {v.publishedAt ? ` · publicada em ${formatDateTime(v.publishedAt)} por ${userNameOf(users, v.publishedBy) || "usuário da empresa"}` : ""}
+                    Responsável jurídico: {v.legalResponsible?.name || "não definido"} · {(v.clauses || []).length} cláusula(s)
+                    {v.publishedAt ? ` · publicada em ${formatDateTime(v.publishedAt)}${v.publishedBy?.name ? ` por ${v.publishedBy.name}` : ""}` : ""}
                   </span>
                 </div>
                 <Badge tone={TEMPLATE_VERSION_STATUS_TONE[v.status] || "neutral"}>{TEMPLATE_VERSION_STATUS_LABELS[v.status] || "Situação desconhecida"}</Badge>

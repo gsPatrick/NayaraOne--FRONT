@@ -2,8 +2,7 @@
 
 // Modelos de contrato versionados (Caderno M5 §4 legal.template_versions, §6 "Modelo publicado não é editado; nova
 // versão é criada", §19 "Alterar modelo/cláusula | Governança/versionamento"; JUR-002 responsável jurídico).
-// As cláusulas da versão vigente de cada modelo vêm do uso das cláusulas (GET /legal/clauses/:code/template-usage),
-// que a API já filtra para a versão vigente do modelo.
+// O detalhe do modelo (GET /legal/contract-templates/:id) traz responsável, versões e cláusulas de cada versão.
 import { useMemo, useState } from "react";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -16,32 +15,16 @@ import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import ContractsNavMenu from "@/components/molecules/ContractsNavMenu/ContractsNavMenu";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
-import { listContractTemplates, listClauses, getClauseTemplateUsage } from "@/lib/api/legal";
+import { listContractTemplates, listClauses } from "@/lib/api/legal";
 import { CONTRACT_TYPE_LABELS } from "@/lib/labels/juridico";
 import { useActiveUsers, userNameOf } from "@/lib/legal/useActiveUsers";
-import { reportLookupProblem } from "@/lib/asyncState/lookup";
 import TemplateCreateModal from "./TemplateCreateModal";
 import TemplateDetail from "./TemplateDetail";
 import styles from "./page.module.css";
 
 async function loadTemplatesAndClauses() {
   const [templates, clauses] = await Promise.all([listContractTemplates(), listClauses()]);
-  const clauseList = Array.isArray(clauses) ? clauses : [];
-  const codes = [...new Set(clauseList.map((c) => c.code))];
-  const usageByTemplate = {};
-  await Promise.all(
-    codes.map((code) =>
-      getClauseTemplateUsage(code)
-        .then((usage) => {
-          for (const u of usage || []) {
-            const clause = clauseList.find((c) => c.id === u.contractClauseId);
-            (usageByTemplate[u.templateId] = usageByTemplate[u.templateId] || []).push({ ...u, code, title: clause ? clause.title : code });
-          }
-        })
-        .catch((error) => reportLookupProblem("as cláusulas dos modelos", error))
-    )
-  );
-  return { templates: Array.isArray(templates) ? templates : [], clauses: clauseList, usageByTemplate };
+  return { templates: Array.isArray(templates) ? templates : [], clauses: Array.isArray(clauses) ? clauses : [] };
 }
 
 export default function ModelosPage() {
@@ -54,7 +37,6 @@ export default function ModelosPage() {
   const data = query.data;
   const templates = useMemo(() => data?.templates || [], [data]);
   const selected = templates.find((t) => t.id === selectedId) || templates[0] || null;
-  const templateClauses = selected ? (data?.usageByTemplate?.[selected.id] || []) : [];
 
   return (
     <AppShell title="Modelos de contrato" backHref="/painel/contratos">
@@ -75,7 +57,7 @@ export default function ModelosPage() {
                     <button type="button" className={styles.rowButton} onClick={() => setSelectedId(t.id)} aria-pressed={Boolean(selected && selected.id === t.id)}>
                       <span className={styles.name}>{t.name}</span>
                       <span className={styles.meta}>
-                        {CONTRACT_TYPE_LABELS[t.contractType] || "Tipo de contrato"} · {(data?.usageByTemplate?.[t.id] || []).length} cláusula(s) · responsável: {userNameOf(usersState.users, t.legalResponsibleUserId) || "não definido"}
+                        {CONTRACT_TYPE_LABELS[t.contractType] || "Tipo de contrato"} · responsável: {userNameOf(usersState.users, t.legalResponsibleUserId) || "não definido"}
                       </span>
                     </button>
                     <Badge tone={t.isActive ? "success" : "neutral"}>{t.isActive ? "Ativo" : "Inativo"}</Badge>
@@ -89,7 +71,6 @@ export default function ModelosPage() {
               key={selected.id}
               template={selected}
               clauses={data?.clauses || []}
-              templateClauses={templateClauses}
               users={usersState.users}
               onChanged={() => query.reload()}
             />

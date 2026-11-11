@@ -7,7 +7,7 @@ import Card from "@/components/molecules/Card/Card";
 import Badge from "@/components/atoms/Badge/Badge";
 import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
-import { getLegalCaseTimeline, listLegalDeadlines, listLegalCaseParties } from "@/lib/api/legal";
+import { getLegalCaseTimeline } from "@/lib/api/legal";
 import { legalErrorMessage } from "@/lib/legal/legalErrors";
 import { CASE_TIMELINE_TYPE_LABELS } from "@/lib/labels/juridico";
 import { brasilia } from "./DeadlinesCard";
@@ -16,21 +16,17 @@ import styles from "./page.module.css";
 
 const TONE = { CASE_OPENED: "brand", CASE_CHANGE: "info", PARTY: "neutral", DEADLINE: "warning", DEADLINE_CHANGE: "warning", EVIDENCE_PACKAGE: "success", NOTICE: "info" };
 
-export default function CaseTimelineCard({ legalCase, people, users, refreshKey }) {
-  const [state, setState] = useState({ items: [], deadlines: [], parties: [] });
+export default function CaseTimelineCard({ legalCase, users, refreshKey }) {
+  const [state, setState] = useState({ items: [] });
   const [error, setError] = useState("");
 
   useEffect(() => {
     let alive = true;
-    Promise.all([getLegalCaseTimeline(legalCase.id), listLegalDeadlines({ legalCaseId: legalCase.id }), listLegalCaseParties(legalCase.id)])
-      .then(([timeline, deadlines, parties]) => {
+    getLegalCaseTimeline(legalCase.id)
+      .then((timeline) => {
         if (!alive) return;
         setError("");
-        setState({
-          items: Array.isArray(timeline?.items) ? [...timeline.items].reverse() : [],
-          deadlines: Array.isArray(deadlines) ? deadlines : [],
-          parties: Array.isArray(parties) ? parties : [],
-        });
+        setState({ items: Array.isArray(timeline?.items) ? [...timeline.items].reverse() : [] });
       })
       .catch((err) => alive && setError(legalErrorMessage(err, "Não foi possível carregar a linha do tempo.")));
     return () => {
@@ -38,7 +34,6 @@ export default function CaseTimelineCard({ legalCase, people, users, refreshKey 
     };
   }, [legalCase.id, refreshKey]);
 
-  const personName = (id) => people.find((p) => p.id === id)?.legalName || "pessoa do cadastro";
   const userName = (id) => users.find((u) => u.id === id)?.name || null;
 
   return (
@@ -52,7 +47,7 @@ export default function CaseTimelineCard({ legalCase, people, users, refreshKey 
             <li key={`${item.type}-${item.auditId || item.referenceId}-${idx}`} className={styles.timelineItem}>
               <Badge tone={TONE[item.type] || "neutral"}>{CASE_TIMELINE_TYPE_LABELS[item.type] || "Movimentação"}</Badge>
               <div className={styles.deadlineInfo}>
-                <span className={styles.deadlineDesc}>{timelineText(item, { ...state, personName })}</span>
+                <span className={styles.deadlineDesc}>{timelineText(item)}</span>
                 <span className={styles.deadlineDue}>
                   {item.occurredAt ? brasilia(item.occurredAt) : "Sem data registrada"}
                   {item.actorUserId && userName(item.actorUserId) ? ` · por ${userName(item.actorUserId)}` : ""}

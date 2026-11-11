@@ -29,8 +29,6 @@ export default function InspectionItemsCard({ items, mediaByItem, onMediaChange,
   const [form, setForm] = useState({ file: null, mediaType: "PHOTO" });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  // Integridade devolvida pelo anexo (sha256 + data/hora do registro), por arquivo.
-  const [integrity, setIntegrity] = useState({});
 
   function openForm(itemId) {
     setError("");
@@ -47,8 +45,7 @@ export default function InspectionItemsCard({ items, mediaByItem, onMediaChange,
     setError("");
     try {
       const uploaded = await uploadFile(form.file);
-      const link = await attachInspectionItemMedia(itemId, { fileId: uploaded.id, mediaType: form.mediaType });
-      if (link?.sha256) setIntegrity((prev) => ({ ...prev, [uploaded.id]: { sha256: link.sha256, capturedAt: link.capturedAt } }));
+      await attachInspectionItemMedia(itemId, { fileId: uploaded.id, mediaType: form.mediaType });
       const media = await listInspectionItemMedia(itemId);
       onMediaChange(itemId, Array.isArray(media) ? media : []);
       setFormItemId(null);
@@ -89,7 +86,8 @@ export default function InspectionItemsCard({ items, mediaByItem, onMediaChange,
                 {media.length > 0 ? (
                   <div className={styles.mediaList}>
                     {media.map((m, idx) => {
-                      const proof = integrity[m.fileId] || (m.sha256 ? { sha256: m.sha256, capturedAt: m.capturedAt } : null);
+                      // A lista vem de legal.inspection_media: SHA-256 e data/hora do registro de cada mídia.
+                      const proof = m.sha256 ? { sha256: m.sha256, capturedAt: m.capturedAt } : null;
                       const when = (proof && proof.capturedAt) || m.createdAt || m.created_at;
                       return (
                         <span key={m.id} className={styles.mediaItem}>
