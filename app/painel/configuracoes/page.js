@@ -4,6 +4,7 @@ import AppShell from "@/components/organisms/AppShell/AppShell";
 import Tabs from "@/components/molecules/Tabs/Tabs";
 import CobrancaTab from "./CobrancaTab";
 import FinanceiroTab from "./FinanceiroTab";
+import JuridicoTab from "./JuridicoTab";
 import SegurancaTab from "./SegurancaTab";
 import IntegracoesTab from "./IntegracoesTab";
 import GovernancaTab from "./GovernancaTab";
@@ -26,6 +27,7 @@ export default function ConfiguracoesPage() {
           items={[
             { label: "Cobrança", content: <CobrancaTab /> },
             { label: "Financeiro", content: <FinanceiroTab /> },
+            { label: "Locação e Jurídico", content: <JuridicoTab /> },
             { label: "Segurança", content: <SegurancaTab /> },
             { label: "Integrações", content: <IntegracoesTab /> },
             { label: "Registro de integrações", content: <IntegracoesRegistroTab /> },
