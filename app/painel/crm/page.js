@@ -34,6 +34,8 @@ import {
   TASK_PRIORITIES,
 } from "@/lib/api/crm";
 import CrmNavMenu from "@/components/molecules/CrmNavMenu/CrmNavMenu";
+import OpportunityFinancingStatus from "@/components/molecules/OpportunityFinancingStatus/OpportunityFinancingStatus";
+import { financingTimelineLabel } from "@/lib/crm/financingSnapshot";
 import { listProperties } from "@/lib/api/properties";
 import { listPeople } from "@/lib/api/people";
 import { apiFetch } from "@/lib/api/client";
@@ -303,6 +305,7 @@ function timelineEventLabel(event, stages) {
   if (event.type === "STAGE_CHANGE") {
     return `Etapa alterada de "${stageLabel(event.data.fromStage)}" para "${stageLabel(event.data.toStage)}"`;
   }
+  if (event.type === "FINANCING_STATUS") return financingTimelineLabel(event);
   if (event.type === "VISIT_SCHEDULED") return "Visita agendada";
   if (event.type === "MESSAGE_SENT") return "Mensagem registrada";
   return event.type;
@@ -515,6 +518,8 @@ function OpportunityDetailModal({ opportunity, stages, users = [], onSave, onClo
               </div>
             </>
           )}
+
+          <OpportunityFinancingStatus opportunity={opportunity} />
 
           <div className={styles.detailSection}>
             <p className={styles.detailSectionTitle}>Linha do tempo</p>
