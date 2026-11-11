@@ -95,6 +95,7 @@ test("m3 radar explicação: exclusão que se aplica tira o imóvel e diz o moti
   assert.equal(row.note, 'Excluído: o cliente não aceita imóvel do tipo "Residencial".');
   assert.match(scoreSummary(excluido).headline, /uma exclusão do cliente se aplica/);
   assert.equal(humanizeReason('"furnished" é "true"'), '"Mobiliado" é "Sim"');
+  assert.equal(humanizeReason("Fica a 83.65 km do ponto, o radar aceita até 5 km."), "Fica a 83,65 km do ponto, o radar aceita até 5 km.");
 });
 
 test("m3 radar explicação: o cartão do match mostra o score que a listagem já traz (radarMatch)", () => {

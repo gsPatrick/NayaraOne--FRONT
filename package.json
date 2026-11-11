@@ -9,6 +9,7 @@
     "lint": "node scripts/lintRatchet.js",
     "test:e2e:marco6": "node e2e/marco6-jornada-completa.spec.js",
     "test:e2e:marco3": "node e2e/marco3-oportunidades-estagnadas.spec.js",
+    "test:e2e:marco3-radar": "node e2e/marco3-radar-explicacao.spec.js",
     "test:e2e:marco4": "node e2e/marco4-liquidar-gate.spec.js",
     "test:e2e:marco6-change-order": "node e2e/marco6-change-order.spec.js",
     "test:e2e:marco6-chamado-fechado-fotos": "node e2e/marco6-chamado-fechado-fotos.spec.js",
