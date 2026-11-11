@@ -9,6 +9,7 @@ import styles from "./CrmNavMenu.module.css";
 const ITEMS = [
   { label: "Funil", href: "/painel/crm", icon: "chart" },
   { label: "Propostas", href: "/painel/crm/propostas", icon: "signature" },
+  { label: "Carrinhos de imóveis", href: "/painel/crm/carrinhos", icon: "home" },
   { label: "Painel de indicadores", href: "/painel/crm/dashboard", icon: "chart" },
   { label: "Feedback & Reclamações", href: "/painel/crm/feedback", icon: "mail" },
 ];
