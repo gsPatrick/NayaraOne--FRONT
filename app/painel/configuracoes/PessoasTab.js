@@ -3,45 +3,57 @@
 import { useEffect, useRef, useState } from "react";
 import Card from "@/components/molecules/Card/Card";
 import Input from "@/components/atoms/Input/Input";
+import Checkbox from "@/components/atoms/Checkbox/Checkbox";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
 import FormField from "@/components/molecules/FormField/FormField";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import { canResetForm } from "@/lib/asyncState/formSync";
-import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import { invalidateAsyncCache, useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { listSettings, updateSetting } from "@/lib/api/settings";
 import { toNumber } from "@/lib/format";
-import { isSettingForbidden } from "@/lib/settings/errorLabel";
-import { changedFields, integerFieldError, integerRangeText, invalidChangedFields, loadedValue, settingsByKey } from "./settingsFormat";
+import { buildLabelMap, isMfaSettingError, isSettingForbidden, labelSettingError, mfaSettingMessage } from "@/lib/settings/errorLabel";
+import { changedFields, decimalFieldError, decimalInRange, decimalRangeText, integerFieldError, integerInRange, integerRangeError, integerRangeText, loadedValue, settingsByKey } from "./settingsFormat";
+import { PESSOAS_FIELDS, PESSOAS_GROUPS, PESSOAS_VINCULO_FIELDS } from "./pessoasGroups";
 import styles from "./page.module.css";
 
-// Pessoas do grupo (DI-M9I-5): limite de tentativas de vínculo que não conferem. Padrões de Maturacao/demandas/parametros.csv; a API valida a faixa.
-// A proteção contra descobrir CPF/CNPJ de outra empresa não tem parâmetro: o vínculo sempre exige o nome que confere e a permissão people:link.
-export const PESSOAS_VINCULO_FIELDS = [
-  {
-    key: "people.vinculo.tentativas_max",
-    label: "Tentativas sem conferência por pessoa usuária (vínculo de pessoa do grupo)",
-    type: "integer",
-    defaultValue: 10,
-    min: 1,
-    max: 1000,
-    helper: "Conta os vínculos em que o CPF/CNPJ e o nome não conferiram e os cadastros recusados porque o CPF/CNPJ já existe em outra empresa do grupo. Passado o limite, a pessoa usuária espera a janela para tentar de novo.",
-  },
-  {
-    key: "people.vinculo.janela_minutos",
-    label: "Janela da contagem de tentativas (minutos)",
-    type: "integer",
-    defaultValue: 60,
-    min: 1,
-    max: 1440,
-    helper: "Período em que as tentativas sem conferência são somadas.",
-  },
-];
+// Aba Pessoas de Configurações: vínculo de pessoa do grupo (DI-M9I-5), catálogo de papéis (DI-M3PE-2), deduplicação (DI-M3PE-3/4) e cadastro por
+// documento (DI-M3PE-6). Mesmo caminho das outras abas (GET /settings?prefix=people., PUT /settings/:key); a API valida e audita.
+export { PESSOAS_VINCULO_FIELDS };
+const CACHE_KEY = "configuracoes:people.";
+const LABELS = buildLabelMap(PESSOAS_FIELDS);
 
-const inicial = () => Object.fromEntries(PESSOAS_VINCULO_FIELDS.map((f) => [f.key, f.defaultValue]));
+const toFormValue = (field, raw) => {
+  const value = loadedValue(field, raw);
+  if (field.type === "boolean") return value;
+  if (field.type === "decimal") return String(value ?? "").replace(".", ",");
+  return String(value ?? "");
+};
+const formFrom = (byKey) => Object.fromEntries(PESSOAS_FIELDS.map((f) => [f.key, toFormValue(f, byKey ? byKey[f.key] : undefined)]));
+
+export function pessoasFieldError(field, raw) {
+  if (field.type === "integer") return integerFieldError(field, raw);
+  if (field.type === "decimal") return decimalFieldError(field, raw);
+  if (field.type === "text" && String(raw ?? "").trim() === "") return "Informe um valor.";
+  return null;
+}
+
+/** Valor que vai para a API, conferido contra a faixa (lança com a frase da faixa). */
+export function pessoasApiValue(field, raw) {
+  if (field.type === "boolean") return Boolean(raw);
+  if (field.type === "text") return String(raw).trim();
+  const value = toNumber(raw);
+  if (field.type === "integer") {
+    if (!integerInRange(value, field)) throw new Error(integerRangeError(field));
+    return value;
+  }
+  if (!decimalInRange(value, field)) throw new Error(`"${field.label}" deve ser um número. ${decimalRangeText(field)}`);
+  return value;
+}
 
 export default function PessoasTab() {
-  const [values, setValues] = useState(inicial);
+  const [values, setValues] = useState(() => formFrom(null));
   const [original, setOriginal] = useState(null);
   const [touched, setTouched] = useState({});
   const [saving, setSaving] = useState(false);
@@ -50,32 +62,42 @@ export default function PessoasTab() {
   const [forbidden, setForbidden] = useState(false);
   const formRef = useRef({ values: null, original: null });
 
-  const query = useAsyncState(() => listSettings("people.").then((data) => settingsByKey(data)), { key: "configuracoes:people.", isEmpty: () => false });
+  const query = useAsyncState(() => listSettings("people.").then((data) => settingsByKey(data)), { key: CACHE_KEY, isEmpty: () => false });
   useEffect(() => {
-    const byKey = query.data;
-    if (!byKey || !canResetForm(formRef.current.values, formRef.current.original)) return;
-    const next = Object.fromEntries(PESSOAS_VINCULO_FIELDS.map((f) => [f.key, loadedValue(f, byKey[f.key])]));
+    if (!query.data || !canResetForm(formRef.current.values, formRef.current.original)) return;
+    const next = formFrom(query.data);
     setValues(next);
     setOriginal(next);
   }, [query.data]);
   formRef.current = { values, original };
 
-  const blocked = invalidChangedFields(PESSOAS_VINCULO_FIELDS, values, original).length > 0;
+  const blocked = changedFields(PESSOAS_FIELDS, values, original).some((field) => pessoasFieldError(field, values[field.key]));
+
+  function handleChange(key, value) {
+    setValues((prev) => ({ ...prev, [key]: value }));
+    setError("");
+    setSuccess("");
+  }
 
   async function handleSave() {
     if (!original || blocked) return;
     setSaving(true);
     setError("");
     setSuccess("");
+    const saved = { ...original };
     try {
-      for (const field of changedFields(PESSOAS_VINCULO_FIELDS, values, original)) {
-        await updateSetting(field.key, toNumber(values[field.key]));
+      for (const field of changedFields(PESSOAS_FIELDS, values, original)) {
+        await updateSetting(field.key, pessoasApiValue(field, values[field.key]));
+        saved[field.key] = values[field.key];
       }
-      setOriginal(values);
+      setOriginal(saved);
+      invalidateAsyncCache(CACHE_KEY);
+      invalidateAsyncCache("pessoas:papeis");
       setSuccess("Configurações de Pessoas salvas.");
     } catch (err) {
+      setOriginal(saved);
       if (isSettingForbidden(err)) setForbidden(true);
-      else setError(err?.message || "Não foi possível salvar as configurações de Pessoas.");
+      else setError(isMfaSettingError(err) ? mfaSettingMessage(err) : labelSettingError(err, LABELS, "Não foi possível salvar as configurações de Pessoas."));
     } finally {
       setSaving(false);
     }
@@ -89,10 +111,38 @@ export default function PessoasTab() {
     );
   }
 
+  function renderField(field) {
+    const id = `pessoas-${field.key.replace(/\./g, "-")}`;
+    if (field.type === "boolean") {
+      return (
+        <div key={field.key}>
+          <Checkbox id={id} label={field.label} checked={Boolean(values[field.key])} onChange={(e) => handleChange(field.key, e.target.checked)} />
+          <p>{field.helper}</p>
+        </div>
+      );
+    }
+    const message = touched[field.key] ? pessoasFieldError(field, values[field.key]) : null;
+    const range = field.type === "integer" ? ` ${integerRangeText(field)}` : field.type === "decimal" ? ` ${decimalRangeText(field)}` : "";
+    const commonProps = {
+      id,
+      value: String(values[field.key] ?? ""),
+      error: Boolean(message),
+      onChange: (e) => handleChange(field.key, e.target.value),
+      onBlur: () => setTouched((prev) => ({ ...prev, [field.key]: true })),
+    };
+    return (
+      <div key={field.key} className={field.type === "text" ? "formGridFull" : undefined}>
+        <FormField label={field.label} htmlFor={id} helper={`${field.helper}${range}`} error={message || undefined}>
+          {field.type === "text" ? <Input {...commonProps} /> : <DecimalInput {...commonProps} maxDecimals={field.type === "integer" ? 0 : field.maxDecimals} />}
+        </FormField>
+      </div>
+    );
+  }
+
   return (
     <Card
-      title="Pessoas do grupo"
-      subtitle="Quem tem a permissão de vincular pessoas traz para esta empresa um cadastro que outra empresa do grupo já fez, informando o CPF/CNPJ e o nome. Estes números limitam as tentativas que não conferem."
+      title="Pessoas"
+      subtitle="Cadastro de pessoas: vínculo entre empresas do grupo, papéis, cadastro repetido e cadastro por documento."
       actions={<Button onClick={handleSave} loading={saving} disabled={query.status !== "CONTENT" || blocked}>Salvar</Button>}
     >
       <AsyncState result={query} loadingLabel="Carregando configurações de Pessoas...">
@@ -103,25 +153,13 @@ export default function PessoasTab() {
               {success ? <Alert tone="success">{success}</Alert> : null}
             </div>
           ) : null}
-          {PESSOAS_VINCULO_FIELDS.map((field) => {
-            const id = `pessoas-${field.key.replace(/\./g, "-")}`;
-            const erro = touched[field.key] ? integerFieldError(field, values[field.key]) : null;
-            return (
-              <FormField key={field.key} label={field.label} htmlFor={id} helper={`${field.helper} ${integerRangeText(field)}`} error={erro || undefined}>
-                <Input
-                  id={id}
-                  type="number"
-                  min={field.min}
-                  max={field.max}
-                  step="1"
-                  value={values[field.key]}
-                  error={Boolean(erro)}
-                  onChange={(e) => { setValues((prev) => ({ ...prev, [field.key]: e.target.value })); setSuccess(""); }}
-                  onBlur={() => setTouched((prev) => ({ ...prev, [field.key]: true }))}
-                />
-              </FormField>
-            );
-          })}
+          {PESSOAS_GROUPS.map((group) => (
+            <div key={group.title} className="formGridFull">
+              <h3>{group.title}</h3>
+              <p>{group.subtitle}</p>
+              <div className={styles.formGrid}>{group.fields.map(renderField)}</div>
+            </div>
+          ))}
         </div>
       </AsyncState>
     </Card>

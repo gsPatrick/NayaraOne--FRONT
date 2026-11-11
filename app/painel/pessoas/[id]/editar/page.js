@@ -11,7 +11,7 @@ import Icon from "@/components/atoms/Icon/Icon";
 import FormField from "@/components/molecules/FormField/FormField";
 import Alert from "@/components/molecules/Alert/Alert";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
-import { ROLE_LABELS, CONTACT_TYPE_LABELS, DOCUMENT_TYPE_LABELS } from "@/lib/mock/people";
+import { CONTACT_TYPE_LABELS, DOCUMENT_TYPE_LABELS } from "@/lib/mock/people";
 import {
   getPerson,
   updatePerson,
@@ -31,6 +31,7 @@ import ChangeEvidenceFields from "@/components/molecules/ChangeEvidenceFields/Ch
 import { EMPTY_EVIDENCE, buildChangeEvidence } from "@/lib/changeEvidence";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import RoleChips from "../../RoleChips";
 import styles from "./page.module.css";
 import { BaseDeOutraEmpresa } from "../VinculoAviso";
 
@@ -282,19 +283,7 @@ export default function EditarPessoaPage({ params }) {
             </fieldset>
             <div className={styles.span2}>
               <FormField label="Papéis" helper="Selecione um ou mais papéis para este contato.">
-                <div className={styles.roleGrid}>
-                  {Object.entries(ROLE_LABELS).map(([code, label]) => (
-                    <button
-                      type="button"
-                      key={code}
-                      className={[styles.roleChip, roles.includes(code) ? styles.roleChipActive : ""].filter(Boolean).join(" ")}
-                      onClick={() => toggleRole(code)}
-                      aria-pressed={roles.includes(code)}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
+                <RoleChips selected={roles} onToggle={toggleRole} styles={styles} />
               </FormField>
             </div>
           </div>
