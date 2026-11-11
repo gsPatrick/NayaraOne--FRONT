@@ -33,9 +33,11 @@ import styles from "./page.module.css";
 // genérica do before_json (isso contornaria os gates de máquina de estado do Contract e a
 // imutabilidade do ledger financeiro, os dois garantidos nas próprias features de domínio).
 const REVERSIBLE_ENTITY_TYPES = {
+  // Guia M4 §8: o estorno é PEDIDO (finance:reverse + MFA) e só é lançado quando outra pessoa aprova o caso em Financeiro → Aprovações.
   FinancialEntry: {
-    label: "Estornar lançamento",
-    permission: "finance:settle",
+    label: "Pedir estorno do lançamento",
+    permission: "finance:reverse",
+    doneMessage: "Estorno pedido. Ele só é lançado quando outra pessoa aprovar, em Financeiro → Aprovações (Estornos pendentes).",
     impactPath: (entityId) => `/finance/entries/${entityId}/impact`,
     // M9-D852 (linha 2): o estorno leva a confirmação nível 3 (impacto, código digitado e justificativa) do ConfirmAction.
     run: (entityId, reason, confirmation) => apiFetch(`/finance/entries/${entityId}/reverse`, { method: "POST", body: { reason, confirmation } }),
@@ -62,6 +64,7 @@ export default function AtividadesPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [selected, setSelected] = useState(null);
+  const [notice, setNotice] = useState("");
 
   useEffect(() => {
     setPage(1);
@@ -146,6 +149,7 @@ export default function AtividadesPage() {
 
   return (
     <AppShell title="Atividades">
+      {notice ? <Alert tone="info">{notice}</Alert> : null}
       <Card title="Trilha de atividades" subtitle="Quem fez o quê e quando, em todo o sistema">
         <div className={styles.toolbar}>
           <SearchInput placeholder="Buscar por pessoa, ação ou entidade..." value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} />
@@ -187,8 +191,9 @@ export default function AtividadesPage() {
             setSelected(null);
             load();
           }}
-          onReverted={() => {
+          onReverted={(message) => {
             setSelected(null);
+            setNotice(message || "");
             load();
           }}
         />
@@ -214,7 +219,7 @@ function ActivityDetailModal({ entry, actor, onClose, onBlocked, onReverted }) {
 
   async function handleRevert(confirmation) {
     await reversible.run(entry.entityId, confirmation.justification || `Revertido via tela de Atividades — registro ${entry.id}.`, confirmation);
-    onReverted();
+    onReverted(reversible.doneMessage);
   }
 
   return (
