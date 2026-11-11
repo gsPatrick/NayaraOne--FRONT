@@ -1,15 +1,16 @@
 "use client";
 
-// REG-FIN-002 — publicação da regra de comissão (Caderno §14). A API já publicava versões
-// (POST /finance/commission-rule, finance:approve + MFA recente), mas não havia tela: o
-// percentual só podia ser mudado via chamada direta.
+// REG-FIN-001 — publicação da regra de comissão (Caderno §14; Guia §11 `rules.evaluate('REG-FIN-001', ...)`, DEC-005).
+// POST /finance/commission-rule (finance:approve + MFA recente). A versão guarda os percentuais e o arredondamento do
+// centavo (DI-M4CC-1): a comissão é calculada em decimal exato e arredondada UMA vez pelo modo da versão.
 
 import { useEffect, useState } from "react";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Button from "@/components/atoms/Button/Button";
 import FormField from "@/components/molecules/FormField/FormField";
-import Input from "@/components/atoms/Input/Input";
+import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
+import Select from "@/components/atoms/Select/Select";
 import Alert from "@/components/molecules/Alert/Alert";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import { useFormSync } from "@/lib/asyncState/useFormSync";
@@ -21,7 +22,8 @@ import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu
 import { getCommissionRule, publishCommissionRule, listCommissionRuleVersions } from "@/lib/api/finance";
 import Table from "@/components/organisms/Table/Table";
 import Badge from "@/components/atoms/Badge/Badge";
-import { formatDateTime, formatPercent } from "@/lib/format";
+import { formatDateTime, formatPercent, toNumber } from "@/lib/format";
+import { ROUNDING_OPTIONS, roundingLabel, roundingExample } from "./rounding";
 import styles from "./page.module.css";
 
 // O que mudou em relação à versão anterior (a lista vem da mais nova para a mais antiga).
@@ -60,7 +62,7 @@ export default function CommissionRulePage() {
   const ruleMessage = ruleQuery.data ? "Nenhuma regra de comissão publicada ainda." : "";
   const versionsQuery = useAsyncState(() => listCommissionRuleVersions().then((list) => (Array.isArray(list) ? list : [])), { key: "regra-comissao:versoes", isEmpty: () => false });
   const versions = versionsQuery.data || [];
-  const [values, setValues] = useState({ BROKER: "", MANAGER: "", CORRESPONDENT: "" });
+  const [values, setValues] = useState({ BROKER: "", MANAGER: "", CORRESPONDENT: "", rounding: "HALF_UP" });
   const [formError, setFormError] = useState("");
   const [success, setSuccess] = useState("");
   const [mfaOpen, setMfaOpen] = useState(false);
@@ -72,9 +74,9 @@ export default function CommissionRulePage() {
     form: values,
     apply: setValues,
     build: (data) => {
-      const next = { BROKER: "", MANAGER: "", CORRESPONDENT: "" };
+      const next = { BROKER: "", MANAGER: "", CORRESPONDENT: "", rounding: data?.current?.rounding || "HALF_UP" };
       Object.entries(data?.current?.components || {}).forEach(([k, v]) => {
-        next[k] = String(v);
+        next[k] = String(v).replace(".", ",");
       });
       return next;
     },
@@ -88,10 +90,10 @@ export default function CommissionRulePage() {
   function buildPayload() {
     const payload = {};
     for (const { key, label } of COMPONENTS) {
-      const raw = String(values[key] || "").trim().replace(",", ".");
+      const raw = String(values[key] || "").trim();
       if (!raw) continue;
-      const n = Number(raw);
-      if (!Number.isFinite(n) || n <= 0 || n > 100) {
+      const n = toNumber(raw);
+      if (Number.isNaN(n) || !Number.isFinite(n) || n <= 0 || n > 100) {
         throw new Error(`${label}: informe um percentual maior que 0 e até 100.`);
       }
       payload[key] = n;
@@ -116,7 +118,7 @@ export default function CommissionRulePage() {
   async function runPublish() {
     setSaving(true);
     try {
-      await publishCommissionRule(buildPayload());
+      await publishCommissionRule(buildPayload(), values.rounding);
       // A revisita não pode subir a regra pré-publicação do cache, mesmo se a recarga abaixo falhar.
       invalidateAsyncCache("regra-comissao");
       invalidateAsyncCache("regra-comissao:versoes");
@@ -136,8 +138,9 @@ export default function CommissionRulePage() {
           <h2 className={styles.sectionTitle}>Versão vigente</h2>
           {rule ? (
             <p className={styles.helper}>
-              Versão {rule.versionNumber ?? "vigente"}{rule.effectiveFrom ? ` (publicada em ${formatDateTime(rule.effectiveFrom)})` : ""} · base: valor do recebimento ·{" "}
+              Versão {rule.versionNumber ?? "vigente"}{rule.effectiveFrom ? ` (publicada em ${formatDateTime(rule.effectiveFrom)})` : ""} · regra {rule.ruleCode || "REG-FIN-001"} · base: valor do recebimento ·{" "}
               {COMPONENTS.map(({ key, label }) => `${label.replace(" (%)", "")}: ${rule.components?.[key] != null ? formatPercent(rule.components[key]) : "não se aplica"}`).join(" · ")}
+              {" · arredondamento: "}{roundingLabel(rule.rounding)}
             </p>
           ) : ruleQuery.data ? (
             <p className={styles.helper}>{ruleMessage}</p>
@@ -163,6 +166,7 @@ export default function CommissionRulePage() {
                 label: label.replace(" (%)", ""),
                 render: (v) => (v.components?.[key] != null ? formatPercent(v.components[key]) : "Não se aplica"),
               })),
+              { key: "rounding", label: "Arredondamento", render: (v) => roundingLabel(v.rounding) },
               { key: "vigencia", label: "Vigência", render: (v) => (
                 v.effectiveUntil
                   ? `De ${formatDateTime(v.effectiveFrom)} até ${formatDateTime(v.effectiveUntil)}`
@@ -184,14 +188,19 @@ export default function CommissionRulePage() {
           <form onSubmit={handleSubmit} className={styles.form}>
             {COMPONENTS.map(({ key, label }) => (
               <FormField key={key} label={label} htmlFor={`pct-${key}`}>
-                <Input
+                <DecimalInput
                   id={`pct-${key}`}
-                  inputMode="decimal"
+                  maxDecimals={6}
                   value={values[key]}
                   onChange={(e) => setValues((prev) => ({ ...prev, [key]: e.target.value }))}
                 />
               </FormField>
             ))}
+            <FormField label="Arredondamento do centavo" htmlFor="rounding" helper={roundingExample(values.rounding)}>
+              <Select id="rounding" value={values.rounding} onChange={(e) => setValues((prev) => ({ ...prev, rounding: e.target.value }))}>
+                {ROUNDING_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </Select>
+            </FormField>
             {formError ? <Alert tone="danger">{formError}</Alert> : null}
             {success ? <Alert tone="success">{success}</Alert> : null}
             <Button requires="finance:approve" type="submit" disabled={saving || !ruleQuery.fresh}>
