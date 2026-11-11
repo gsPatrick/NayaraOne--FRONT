@@ -12,14 +12,18 @@ import { canResetForm } from "@/lib/asyncState/formSync";
 import { invalidateAsyncCache, useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { toNumber } from "@/lib/format";
 import { listSettings, updateSetting } from "@/lib/api/settings";
+import { getAntifraudParameters } from "@/lib/api/financeAntifraud";
 import { buildLabelMap, isMfaSettingError, isSettingForbidden, labelSettingError, mfaSettingMessage } from "@/lib/settings/errorLabel";
 import { changedFields, decimalFieldError, decimalInRange, decimalRangeText, integerFieldError, integerInRange, integerRangeError, integerRangeText, loadedValue, settingsByKey } from "./settingsFormat";
 import { FINANCEIRO_FIELDS, FINANCEIRO_GROUPS, FINANCEIRO_PREFIXES } from "./financeiroGroups";
+import { effectiveByKey, effectiveText } from "./antifraudEffective";
 import styles from "./page.module.css";
 
 // Aba "Financeiro" de Configurações (Marco 4): mesmo caminho das outras abas (GET /settings?prefix=..., PUT /settings/:key). A API é a fonte da
-// validação; a tela só antecipa a faixa para não mandar valor que seria recusado.
+// validação; a tela só antecipa a faixa para não mandar valor que seria recusado. Cada campo numérico mostra o valor em vigor que o antifraude usa
+// (GET /finance/antifraud/parameters, DEC-007): o gravado, o padrão, ou o padrão no lugar de um gravado inválido.
 const CACHE_KEY = "configuracoes:financeiro";
+const EFFECTIVE_CACHE_KEY = "configuracoes:financeiro:em-vigor";
 const LABELS = buildLabelMap(FINANCEIRO_FIELDS);
 
 // Número aparece na tela com vírgula (o DecimalInput aceita vírgula ou ponto); booleano fica booleano.
@@ -62,6 +66,8 @@ export default function FinanceiroTab() {
     () => Promise.all(FINANCEIRO_PREFIXES.map((prefix) => listSettings(prefix))).then((responses) => settingsByKey(...responses)),
     { key: CACHE_KEY, isEmpty: () => false }
   );
+  const effectiveQuery = useAsyncState(() => getAntifraudParameters().then(effectiveByKey), { key: EFFECTIVE_CACHE_KEY, isEmpty: () => false });
+  const effective = effectiveQuery.data || {};
   useEffect(() => {
     if (!settingsQuery.data) return;
     if (!canResetForm(formRef.current.values, formRef.current.original)) return;
@@ -96,9 +102,11 @@ export default function FinanceiroTab() {
       setSuccess("Configurações do Financeiro salvas.");
     } catch (err) {
       setOriginal(saved); // o que já foi gravado antes da recusa fica como gravado
+      // 422 SETTING_INVALID_VALUE (fora da faixa ou da trava entre os múltiplos): a frase da API, com o rótulo do campo, aparece no alerta de erro.
       if (isSettingForbidden(err)) setForbidden(true);
       else setError(isMfaSettingError(err) ? mfaSettingMessage(err) : labelSettingError(err, LABELS, "Não foi possível salvar as configurações do Financeiro."));
     } finally {
+      invalidateAsyncCache(EFFECTIVE_CACHE_KEY); // o valor em vigor muda com o que foi gravado (inclusive antes de uma recusa)
       setSaving(false);
     }
   }
@@ -149,8 +157,9 @@ export default function FinanceiroTab() {
                   }
                   const message = touched[field.key] ? fieldError(field, values[field.key]) : null;
                   const range = field.type === "integer" ? integerRangeText(field) : decimalRangeText(field);
+                  const inForce = effectiveText(field, effective[field.key]);
                   return (
-                    <FormField key={field.key} label={field.label} htmlFor={id} helper={`${field.helper} ${range}`} error={message}>
+                    <FormField key={field.key} label={field.label} htmlFor={id} helper={inForce ? `${field.helper} ${range} ${inForce}` : `${field.helper} ${range}`} error={message}>
                       <DecimalInput
                         id={id}
                         maxDecimals={field.type === "integer" ? 0 : field.maxDecimals}
