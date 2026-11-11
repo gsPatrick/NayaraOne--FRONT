@@ -1,231 +1,218 @@
 'use strict';
 
 /**
- * E2E real (Playwright, navegador de verdade) da jornada completa de uma obra — Marco 6.
+ * E2E real (Playwright, navegador de verdade) da jornada completa de uma obra — Marco 6, refeito na verificação
+ * independente (M6-51/M6-98): o spec anterior gravava "OK" incondicional em 8 dos 11 passos e não conferia nada. Agora
+ * TODO passo termina num expect(): se a tela não mostrar o resultado esperado, o passo falha e o processo sai com 1.
  *
- * GAP CORRIGIDO (auditoria pós-Marco 6, item 2): a homologação anterior alegava "E2E real
- * Playwright, 10/10 passos" sem nenhum artefato versionado no repositório — só scripts
- * ad-hoc em `.qa-evidence/`, nunca commitados, nunca rodáveis de novo de forma reproduzível.
- * Este arquivo é esse artefato real: roda contra http://localhost:3000 (front em
- * desenvolvimento), dirige o NAVEGADOR de verdade (não chama a API direto) pelos 10 passos da
- * jornada de uma obra:
+ * Jornada (Caderno §1 e Guia: obra → orçamento → material → diário → medição → pagamento → qualidade → entrega):
  *   1. login
- *   2. criar obra
- *   3. criar etapa
- *   4. orçamento (criar linha)
- *   5. aprovar orçamento (configura margem mínima quando necessário)
- *   6. medição (registrar + enviar para revisão)
- *   7. aprovar medição (revisar + aprovar)
- *   8. diário (RDO)
- *   9. qualidade/NC (abrir não conformidade)
- *   10. entrega + pós-obra (tenta entregar; abre um chamado de pós-obra vinculado à obra)
+ *   2. configuração: tipo de obra com checklist por etapa (Caderno §9) e evidência mínima da medição (Guia §6)
+ *   3. obra do tipo, com responsável e prazo
+ *   4. etapa com código e responsável (Caderno §2)
+ *   5. orçamento: linha, margem mínima e aprovação (baseline congelada)
+ *   6. material: requisição da etapa e recebimento do estoque
+ *   7. obra em execução (Pronta → Em execução) e diário (RDO)
+ *   8. medição com evidência: enviar, revisar, aprovar (a aprovação confere a evidência)
+ *   9. conta a pagar criada pelo consumidor do Financeiro (measurement.approved), no valor da medição e com a obra;
+ *      a baixa pede a aprovação de outra pessoa e MFA recente — o spec captura essas exigências (regra do projeto: o
+ *      caminho feliz do MFA é do operador humano; a baixa parcial e a quitação estão provadas no teste de API
+ *      test/construction.e2e.test.js)
+ *  10. qualidade: checklist do tipo de obra gerado na etapa, itens aprovados
+ *  11. inspeção final e entrega da obra (gate) → "Em garantia"
  *
- * Uso: `node e2e/marco6-jornada-completa.spec.js` (ou `npm run test:e2e:marco6`).
- * Não depende de nenhum test runner — é um script Node simples usando o Playwright já
- * instalado em node_modules/playwright, mesmo padrão dos scripts de `.qa-evidence/`.
- *
- * Idempotência/limpeza: cada execução cria uma obra/chamado com nome único (timestamp), então
- * reexecuções nunca colidem com dados de uma execução anterior — não precisa limpar nada pra
- * rodar de novo (mesmo padrão de "não fica sujeira perigosa" já usado nos testes automatizados
- * do backend, que usam `uniqueSuffix()`).
+ * Pré-condições criadas pela API (cadastro de apoio de outros módulos, não é a jornada de Obras): item de estoque com
+ * saldo e local, e um imóvel. Sem senha no arquivo: E2E_EMAIL e E2E_PASSWORD vêm do ambiente (falha sem eles).
+ * Uso: E2E_BASE_URL=http://localhost:44902 E2E_API_URL=http://localhost:44901/api/v1 E2E_EMAIL=... E2E_PASSWORD=... \
+ *      node e2e/marco6-jornada-completa.spec.js     (só contra API em banco descartável)
  */
-
 const { chromium } = require('playwright');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const { expect, step, report, apiClient, login, fixtureJpeg } = require('./_m6-expect');
 
 const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
-const EMAIL = process.env.E2E_EMAIL || 'admin@nayaraone.dev';
-const PASSWORD = process.env.E2E_PASSWORD || 'DevAdmin#2026';
-
-const results = [];
-
-function record(step, ok, detail) {
-  results.push({ step, ok, detail: detail || '' });
-  const mark = ok ? 'OK ' : 'FALHOU';
-  console.log(`[${mark}] ${step}${detail ? ' — ' + detail : ''}`);
-}
+const EMAIL = process.env.E2E_EMAIL;
+const PASSWORD = process.env.E2E_PASSWORD;
+const UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
 
 async function main() {
+  if (!EMAIL || !PASSWORD) throw new Error('Informe E2E_EMAIL e E2E_PASSWORD (usuário do banco descartável) — o spec não guarda senha.');
+  const s = Date.now();
+  const api = await apiClient(EMAIL, PASSWORD);
+  const item = await api('POST', '/inventory/items', { sku: `E2E-M6-${s}`, name: `Cimento E2E ${s}`, unitOfMeasure: 'SC', itemType: 'CONSUMABLE' });
+  const local = await api('POST', '/inventory/locations', { name: `Almoxarifado E2E ${s}`, locationType: 'WAREHOUSE' });
+  await api('POST', '/inventory/movements', { inventoryItemId: item.id, movementType: 'IN', quantity: 100, destinationLocationId: local.id, unitCost: 30 });
+
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width: 1440, height: 1100 } });
-  // Timeout generoso: este ambiente usa um banco de dados remoto compartilhado
-  // (não localhost), cuja latência varia bastante sob carga concorrente de outras
-  // sessões de auditoria — 15s era curto demais e gerava falso-negativo.
   page.setDefaultTimeout(70000);
-
-  const suffix = Date.now();
-  const projectName = `E2E Marco6 Obra ${suffix}`;
-
+  const tipo = `Casa E2E ${s}`;
+  const obra = `E2E Marco6 Obra ${s}`;
+  let projectUrl;
   try {
-    // --- 1. Login ---
-    await page.goto(`${BASE_URL}/entrar`, { waitUntil: 'domcontentloaded' });
-    const teamTab = page.getByText('Sou da equipe', { exact: false });
-    // Em `next dev` a hidratação pode demorar: o texto chega pelo SSR antes do clique funcionar. Clica até o formulário abrir.
-    await teamTab.first().waitFor({ timeout: 70000 }).catch(() => {});
-    for (let i = 0; i < 40 && !(await page.locator('input[type=email]').count()); i += 1) {
-      if (await teamTab.count()) await teamTab.first().click().catch(() => {});
-      await page.waitForTimeout(1500);
-    }
-    await page.waitForSelector('input[type=email]', { timeout: 70000 });
-    await page.fill('input[type=email]', EMAIL);
-    await page.fill('input[type=password]', PASSWORD);
-    await page.click('button[type=submit]');
-    await page.waitForURL((url) => !url.pathname.includes('/entrar'), { timeout: 70000 }).catch(() => {});
-    await page.waitForTimeout(1500);
-    record('1. login', true, `${EMAIL}`);
+    await step('1. login', async () => {
+      await login(page, BASE_URL, EMAIL, PASSWORD);
+      expect(new URL(page.url()).pathname).not.toContain('/entrar');
+    });
 
-    // --- 2. Criar obra ---
-    await page.goto(`${BASE_URL}/painel/obras/lista/novo`, { waitUntil: 'domcontentloaded' });
-    await page.fill('#f-name', projectName);
-    await page.click('button:has-text("Criar obra")');
-    await page.waitForURL(/\/painel\/obras\/lista\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/, { timeout: 70000 });
-    const projectUrl = page.url();
-    record('2. criar obra', true, projectUrl);
+    await step('2. configuração: tipo de obra, checklist da etapa FUND e evidência mínima = 1', async () => {
+      await page.goto(`${BASE_URL}/painel/obras/configuracoes`, { waitUntil: 'domcontentloaded' });
+      await page.fill('#tipo-code', `CASA${s}`.slice(0, 40));
+      await page.fill('#tipo-name', tipo);
+      await page.click('button:has-text("Cadastrar tipo de obra")');
+      await expect.visible(page.getByText('Tipo de obra cadastrado.'));
+      await page.fill('#item-stage', 'FUND');
+      await page.fill('#item-text', 'Prumo das sapatas');
+      await page.selectOption('#item-severity', 'HIGH');
+      await page.click('button:has-text("Incluir item no checklist")');
+      await expect.visible(page.getByRole('cell', { name: 'Prumo das sapatas' }));
+      await page.fill('#param-min-evidence', '1');
+      await page.click('button:has-text("Salvar parâmetros")');
+      await expect.visible(page.getByText('Parâmetros de Obras salvos e registrados na auditoria.'));
+    });
 
-    // --- 3. Criar etapa ---
-    await page.click('button:has-text("Nova etapa")');
-    await page.fill('#m-stage-name', 'Fundação e estrutura');
-    await page.fill('#m-stage-seq', '1');
-    await page.click('button:has-text("Criar etapa")');
-    await page.waitForTimeout(1500);
-    record('3. criar etapa', true, 'Fundação e estrutura');
+    await step('3. obra do tipo, com responsável e prazo', async () => {
+      await page.goto(`${BASE_URL}/painel/obras/lista/novo`, { waitUntil: 'domcontentloaded' });
+      await page.fill('#f-name', obra);
+      await page.locator('#f-project-type option', { hasText: tipo }).waitFor({ state: 'attached' });
+      await page.selectOption('#f-project-type', { label: tipo });
+      const resp = await page.locator('#f-responsible option').nth(1).getAttribute('value');
+      await page.selectOption('#f-responsible', resp);
+      await page.fill('#f-starts', '2026-11-01');
+      await page.fill('#f-ends', '2027-06-30');
+      await page.click('button:has-text("Criar obra")');
+      await page.waitForURL(new RegExp(`/painel/obras/lista/${UUID}$`));
+      projectUrl = page.url();
+      await expect.visible(page.getByText(tipo, { exact: true }));
+    });
 
-    // --- 4. Orçamento (linha) ---
-    // GAP CORRIGIDO (reauditoria pós-split de páginas): Orçamento virou rota dedicada
-    // (/orcamento) em vez de aba na página principal — precisa navegar até lá.
-    await page.goto(`${projectUrl}/orcamento`, { waitUntil: 'domcontentloaded' });
-    await page.click('button:has-text("Nova linha de orçamento")');
-    await page.fill('#m-budget-category', 'Fundação');
-    await page.fill('#m-budget-planned', '10000');
-    await page.click('button:has-text("Criar linha")');
-    await page.waitForTimeout(1500);
-    record('4. orçamento (linha criada)', true, 'R$ 10.000,00');
+    await step('4. etapa FUND com responsável (Caderno §2)', async () => {
+      await page.click('button:has-text("Nova etapa")');
+      await page.fill('#m-stage-name', 'Fundação');
+      await page.fill('#m-stage-code', 'FUND');
+      const resp = await page.locator('#m-stage-responsible option').nth(1).getAttribute('value');
+      await page.selectOption('#m-stage-responsible', resp);
+      await page.fill('#m-stage-cost', '10000');
+      await page.fill('#m-stage-start', '2026-11-01');
+      await page.fill('#m-stage-end', '2027-01-31');
+      await page.click('button:has-text("Criar etapa")');
+      await expect.visible(page.getByText(/1\. Fundação/));
+      await expect.notVisible(page.getByText('Responsável: não definido'));
+    });
 
-    // --- 5. Aprovar orçamento (garante margem mínima configurada antes) ---
-    let approveOk = false;
-    try {
-      await page.click('button:has-text("Configurar margem mínima")');
-      await page.fill('#m-margin-pct', '10');
-      await page.click('button:has-text("Salvar")');
-      await page.waitForTimeout(1200);
-    } catch (err) {
-      record('5a. configurar margem mínima', false, err.message);
-    }
-    try {
-      await page.click('button:has-text("Aprovar orçamento")');
-      await page.waitForTimeout(800);
-      await page.click('button:has-text("Confirmar aprovação")');
-      await page.waitForTimeout(1500);
-      approveOk = true;
-    } catch (err) {
-      record('5. aprovar orçamento', false, err.message);
-    }
-    if (approveOk) record('5. aprovar orçamento', true);
-
-    // --- Abrir etapa para registrar medição ---
-    // O link da etapa vive no resumo da obra (página principal), não em /orcamento.
-    await page.goto(projectUrl, { waitUntil: 'domcontentloaded' });
-    await page.click('text=Fundação e estrutura');
-    await page.waitForURL(/\/etapas\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/, { timeout: 70000 });
-
-    // --- 6. Medição (registrar) ---
-    await page.click('button:has-text("Registrar medição")');
-    await page.fill('#m-meas-pct', '20');
-    await page.fill('#m-meas-total', '2000');
-    // O botão de confirmar dentro do modal tem o MESMO texto do botão que abre o modal
-    // ("Registrar medição") — usa o último da página (o modal é renderizado depois no DOM).
-    await page.click('button:has-text("Registrar medição") >> nth=-1');
-    await page.waitForTimeout(1500);
-    record('6. medição registrada', true, '20% / R$ 2.000,00');
-
-    // --- 7. Aprovar medição (enviar -> revisar -> aprovar) ---
-    try {
-      await page.click('button:has-text("Enviar para revisão")');
-      await page.waitForTimeout(1000);
-      await page.click('button:has-text("Marcar como revisada")');
-      await page.waitForTimeout(1000);
-      await page.click('button:has-text("Aprovar")');
-      await page.waitForTimeout(1500);
-      record('7. medição aprovada (fluxo DRAFT->SUBMITTED->REVIEWED->APPROVED)', true);
-    } catch (err) {
-      record('7. medição aprovada', false, err.message);
-    }
-
-    // --- 8. Diário (RDO) ---
-    // GAP CORRIGIDO (reauditoria pós-split de páginas): Diário virou rota dedicada (/diario).
-    await page.goto(`${projectUrl}/diario`, { waitUntil: 'domcontentloaded' });
-    await page.click('button:has-text("Novo RDO")');
-    await page.fill('#m-rdo-date', new Date().toISOString().slice(0, 10));
-    // "Clima" é obrigatório (botão fica desabilitado sem ele) — seleciona a primeira opção real.
-    const weatherSelect = page.locator('#m-rdo-weather');
-    const weatherOptions = await weatherSelect.locator('option').allTextContents();
-    if (weatherOptions.length > 0) await weatherSelect.selectOption({ index: 0 });
-    await page.fill('#m-rdo-workforce', '8');
-    await page.click('button:has-text("Registrar RDO")');
-    await page.waitForTimeout(1500);
-    record('8. diário (RDO) registrado', true, '8 trabalhadores');
-
-    // --- 9. Qualidade/NC ---
-    // GAP CORRIGIDO (reauditoria pós-split de páginas): Qualidade/NC virou rota dedicada.
-    await page.goto(`${projectUrl}/qualidade`, { waitUntil: 'domcontentloaded' });
-    await page.click('button:has-text("Nova não conformidade")');
-    await page.fill('#m-nc-description', 'Trinca identificada na fundação (teste E2E Marco 6).');
-    // Desde 07/10/2026 a NC exige responsável e evidência "antes" (Caderno §2); desde 10/11/2026 a evidência
-    // precisa ser arquivo enviado de verdade — o spec anexa uma foto JPEG pelo próprio campo de envio da tela.
-    const respValue = await page.locator('#m-nc-responsible option').nth(1).getAttribute('value');
-    if (respValue) await page.selectOption('#m-nc-responsible', respValue);
-    const ncPhoto = require('path').join(require('os').tmpdir(), `nc-antes-${suffix}.jpg`);
-    require('fs').writeFileSync(ncPhoto, Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.from(`foto ${suffix}`)]));
-    await page.setInputFiles('#m-nc-before-file', ncPhoto);
-    await page.waitForTimeout(2500);
-    // "Registrar" sozinho casa com vários botões da página (ex.: "Registrar perda", "Registrar
-    // RDO") — usa o locator escopado ao texto exato do botão do modal.
-    await page.getByRole('button', { name: 'Registrar', exact: true }).click();
-    await page.waitForTimeout(1500);
-    record('9. não conformidade aberta', true, 'Trinca na fundação');
-
-    // --- 10. Entrega + Pós-obra ---
-    // "Entregar obra" vive no resumo (página principal), não em /qualidade.
-    await page.goto(projectUrl, { waitUntil: 'domcontentloaded' });
-    let deliverOutcome = 'não tentado';
-    try {
-      const deliverBtn = page.locator('button:has-text("Entregar obra")');
-      if (await deliverBtn.count()) {
-        await deliverBtn.click();
-        await page.waitForTimeout(1500);
-        deliverOutcome = 'botão clicado (pode ter sido bloqueado pelo gate de pendência crítica — comportamento esperado do contrato)';
-      } else {
-        deliverOutcome = 'botão de entrega não visível no status atual da obra';
+    await step('5. orçamento: linha de R$ 10.000,00, margem mínima e aprovação (baseline congelada)', async () => {
+      await page.goto(`${projectUrl}/orcamento`, { waitUntil: 'domcontentloaded' });
+      await page.click('button:has-text("Nova linha de orçamento")');
+      await page.fill('#m-budget-category', 'Fundação');
+      await page.fill('#m-budget-planned', '10000');
+      await page.click('button:has-text("Criar linha")');
+      await expect.visible(page.getByText('Fundação').first());
+      if (await page.locator('button:has-text("Configurar margem mínima")').count()) {
+        await page.click('button:has-text("Configurar margem mínima")');
+        await page.fill('#m-margin-pct', '10');
+        await page.click('button:has-text("Salvar")');
       }
-    } catch (err) {
-      deliverOutcome = `bloqueado: ${err.message}`;
-    }
-    record('10a. tentativa de entrega da obra', true, deliverOutcome);
+      await page.click('button:has-text("Aprovar orçamento")');
+      await page.click('button:has-text("Confirmar aprovação")');
+      await expect.visible(page.getByText(/Baseline congelada em R\$\s?10\.000,00/));
+    });
 
-    await page.goto(`${BASE_URL}/painel/obras/pos-obra/novo`, { waitUntil: 'domcontentloaded' });
-    const propertySelect = page.locator('#f-property');
-    // "Imóvel" é obrigatório (isValid exige propertyId) e a lista carrega assíncrona — espera
-    // sair do estado "só placeholder" (mesma causa raiz do timeout de latência já documentado).
-    await propertySelect.locator('option').nth(1).waitFor({ state: 'attached', timeout: 70000 });
-    await propertySelect.selectOption({ index: 1 });
-    await page.fill('#f-description', `Chamado de pós-obra — teste E2E Marco 6 (${suffix}).`);
-    await page.click('button:has-text("Criar chamado")');
-    await page.waitForTimeout(1500);
-    record('10b. chamado de pós-obra criado', true);
+    await step('6. material: requisição da etapa e recebimento do estoque', async () => {
+      await page.goto(`${projectUrl}/materiais`, { waitUntil: 'domcontentloaded' });
+      await page.click('button:has-text("Nova requisição")');
+      await page.fill('#m-material-description', 'Cimento CP-II');
+      await page.fill('#m-material-quantity', '10');
+      await page.fill('#m-material-unit', 'saco');
+      await page.selectOption('#m-material-stage', { label: 'Fundação' });
+      await page.click('button:has-text("Criar requisição")');
+      await page.click('button:has-text("Marcar como recebido")');
+      await page.selectOption('#m-receive-item', item.id);
+      await page.selectOption('#m-receive-location', local.id);
+      await page.click('button:has-text("Confirmar recebimento")');
+      await expect.visible(page.getByText('Recebido', { exact: true }).first());
+    });
+
+    await step('7. obra em execução e diário (RDO)', async () => {
+      await page.goto(projectUrl, { waitUntil: 'domcontentloaded' });
+      await page.click('button:has-text("Pronta para iniciar")');
+      await expect.visible(page.locator('button:has-text("Em execução")'));
+      await page.click('button:has-text("Em execução")');
+      await expect.visible(page.locator('button:has-text("Inspeção final")'));
+      await page.goto(`${projectUrl}/diario`, { waitUntil: 'domcontentloaded' });
+      await page.click('button:has-text("Novo RDO")');
+      await page.fill('#m-rdo-date', '2026-11-10');
+      await page.selectOption('#m-rdo-weather', { index: 1 }).catch(() => page.selectOption('#m-rdo-weather', { index: 0 }));
+      await page.fill('#m-rdo-workforce', '8');
+      await page.click('button:has-text("Registrar RDO")');
+      await expect.visible(page.getByText('Efetivo: 8').first());
+    });
+
+    let medicaoUrl;
+    await step('8. medição com evidência: registrar, enviar, revisar e aprovar', async () => {
+      await page.goto(projectUrl, { waitUntil: 'domcontentloaded' });
+      await page.click('text=1. Fundação');
+      await page.waitForURL(new RegExp(`/etapas/${UUID}$`));
+      medicaoUrl = page.url();
+      await page.click('button:has-text("Registrar medição")');
+      await page.fill('#m-meas-pct', '100');
+      await page.fill('#m-meas-total', '9500');
+      await page.setInputFiles('#m-meas-evidence', fixtureJpeg(path.join(os.tmpdir(), `medicao-${s}.jpg`), s));
+      await expect.visible(page.getByText(`medicao-${s}.jpg`));
+      await page.click('button:has-text("Registrar medição") >> nth=-1');
+      await expect.visible(page.getByText('1 evidência(s)').first());
+      await page.click('button:has-text("Enviar para revisão")');
+      await page.click('button:has-text("Marcar como revisada")');
+      await page.click('button:has-text("Aprovar") >> nth=0');
+      await page.getByRole('dialog').getByRole('button', { name: 'Aprovar' }).click();
+      await expect.visible(page.getByText(/Aprovada por/));
+    });
+
+    await step('9. conta a pagar pelo consumidor do Financeiro; a baixa exige aprovação de outra pessoa e MFA', async () => {
+      const projectId = projectUrl.split('/').pop();
+      const health = await api('GET', `/construction/projects/${projectId}/health`);
+      expect(health.kpis.payablePendingTotal).toBe(9500);
+      const entries = await api('GET', '/finance/entries?nature=PAYABLE');
+      const conta = (entries.data || entries).find((e) => e.constructionProjectId === projectId);
+      expect(Boolean(conta && conta.sourceEventId)).toBe(true);
+      expect(Number(conta.amount)).toBe(9500);
+      await page.goto(`${BASE_URL}/painel/financeiro/lancamentos/${conta.id}`, { waitUntil: 'domcontentloaded' });
+      await expect.visible(page.getByText(/9\.500,00/).first());
+      await page.click('button:has-text("Solicitar aprovação")');
+      await page.getByRole('dialog').getByRole('button', { name: 'Solicitar aprovação' }).click();
+      await expect.visible(page.getByText(/Aprovação solicitada/));
+    });
+
+    await step('10. qualidade: checklist do tipo de obra gerado na etapa e aprovado', async () => {
+      await page.goto(`${projectUrl}/qualidade`, { waitUntil: 'domcontentloaded' });
+      await expect.visible(page.getByText('Prumo das sapatas'));
+      await expect.visible(page.getByText(/do checklist do tipo de obra · etapa Fundação/));
+      await page.getByRole('button', { name: 'OK', exact: true }).first().click();
+      await expect.visible(page.getByText(/Verificado por/).first());
+    });
+
+    await step('11. inspeção final e entrega da obra (gate) → Em garantia', async () => {
+      await page.goto(projectUrl, { waitUntil: 'domcontentloaded' });
+      await page.click('button:has-text("Inspeção final")');
+      await expect.visible(page.locator('button:has-text("Entregar obra")'));
+      await page.click('button:has-text("Entregar obra")');
+      await expect.visible(page.getByText('Em garantia', { exact: true }).first());
+    });
   } catch (err) {
-    record('ERRO FATAL', false, err.stack || err.message);
+    const shot = process.env.E2E_SHOTS_DIR ? path.join(process.env.E2E_SHOTS_DIR, `m6-jornada-falha-${s}.png`) : null;
+    if (shot) await page.screenshot({ path: shot, fullPage: true }).catch(() => {});
+    const alerts = await page.locator('[role=alert]').allInnerTexts().catch(() => []);
+    if (alerts.length) console.log(`Alertas na tela: ${alerts.join(' | ')}`);
+    throw err;
   } finally {
     await browser.close();
+    fs.rmSync(path.join(os.tmpdir(), `medicao-${s}.jpg`), { force: true });
   }
-
-  const passed = results.filter((r) => r.ok).length;
-  console.log(`\n=== Resumo: ${passed}/${results.length} passos OK ===`);
-  for (const r of results) {
-    console.log(`  ${r.ok ? '✔' : '✖'} ${r.step}${r.detail ? ' — ' + r.detail : ''}`);
-  }
-
-  if (results.some((r) => !r.ok && r.step === 'ERRO FATAL')) {
-    process.exitCode = 1;
-  }
+  report();
 }
 
-main();
+main().catch((err) => {
+  console.error(err.stack || err.message);
+  process.exitCode = 1;
+});
