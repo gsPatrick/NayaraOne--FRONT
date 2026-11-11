@@ -132,8 +132,12 @@ test("CAD-05 ficha: classificação e motores da leitura em texto simples; M3-01
 });
 
 test("Configurações > Pessoas: os parâmetros novos estão na aba, com o tipo certo e a conversão para a API", async () => {
-  const { PESSOAS_FIELDS, PESSOAS_VINCULO_FIELDS } = await grupos();
-  const { pessoasApiValue, pessoasFieldError } = await aba();
+  const tab = await aba();
+  const PESSOAS_FIELDS = tab.PESSOAS_FIELDS || tab.PESSOAS_VINCULO_FIELDS || [];
+  const chavesDaAba = PESSOAS_FIELDS.map((f) => f.key);
+  assert.ok(chavesDaAba.includes("people.papeis") && chavesDaAba.includes("people.documentos.confianca_minima"), `a aba Pessoas não tem os parâmetros novos: ${chavesDaAba.join(", ")}`);
+  const { PESSOAS_VINCULO_FIELDS } = await grupos();
+  const { pessoasApiValue, pessoasFieldError } = tab;
   const chaves = PESSOAS_FIELDS.map((f) => f.key);
   for (const k of ["people.vinculo.tentativas_max", "people.papeis", "people.deduplicacao.ddi_padrao", "people.deduplicacao.motivo_minimo", "people.deduplicacao.contato_no_grupo",
     "people.documentos.confianca_minima", "people.documentos.campos_criticos", "people.documentos.classificacao", "people.documentos.motores_laboratorio"]) assert.ok(chaves.includes(k), k);

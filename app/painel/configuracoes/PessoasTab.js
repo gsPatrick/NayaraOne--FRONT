@@ -20,7 +20,7 @@ import styles from "./page.module.css";
 
 // Aba Pessoas de Configurações: vínculo de pessoa do grupo (DI-M9I-5), catálogo de papéis (DI-M3PE-2), deduplicação (DI-M3PE-3/4) e cadastro por
 // documento (DI-M3PE-6). Mesmo caminho das outras abas (GET /settings?prefix=people., PUT /settings/:key); a API valida e audita.
-export { PESSOAS_VINCULO_FIELDS };
+export { PESSOAS_VINCULO_FIELDS, PESSOAS_FIELDS };
 const CACHE_KEY = "configuracoes:people.";
 const LABELS = buildLabelMap(PESSOAS_FIELDS);
 
