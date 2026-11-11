@@ -11,6 +11,8 @@
     "test:e2e:marco3": "node e2e/marco3-oportunidades-estagnadas.spec.js",
     "test:e2e:marco4": "node e2e/marco4-liquidar-gate.spec.js",
     "test:e2e:marco6-change-order": "node e2e/marco6-change-order.spec.js",
+    "test:e2e:marco6-chamado-fechado-fotos": "node e2e/marco6-chamado-fechado-fotos.spec.js",
+    "test:e2e:marco6-custo-realizado": "node e2e/marco6-custo-realizado.spec.js",
     "test:e2e:marco8": "node e2e/marco8-agente-fluxo.spec.js",
     "test:e2e": "npm run test:e2e:marco3 && npm run test:e2e:marco4 && npm run test:e2e:marco6 && npm run test:e2e:marco6-change-order",
     "test:unit": "node --import ./test/_loader/register.mjs --test test/*.test.mjs",
