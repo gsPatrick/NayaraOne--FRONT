@@ -19,6 +19,11 @@ import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import PriceHistoryTimeline from "@/components/molecules/PriceHistoryTimeline/PriceHistoryTimeline";
 import PortalListingsCard from "@/components/organisms/PortalListingsCard/PortalListingsCard";
 import MediaQualityReview from "@/components/molecules/MediaQualityReview/MediaQualityReview";
+import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
+import PropertyDocumentsPanel from "@/components/organisms/PropertyFilesPanel/PropertyDocumentsPanel";
+import PropertyMediaManager from "@/components/organisms/PropertyFilesPanel/PropertyMediaManager";
+import OfferHistoryList from "@/components/organisms/PropertyFilesPanel/OfferHistoryList";
+import { mapMedia } from "@/lib/api/properties";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
 import {
   FEATURE_LABELS,
@@ -41,7 +46,7 @@ import {
   createOffer,
 } from "@/lib/api/properties";
 import { getPerson } from "@/lib/api/people";
-import { formatBRL } from "@/lib/format";
+import { formatBRL, toNumber } from "@/lib/format";
 import { buildGoogleMapsUrl, buildGoogleMapsEmbedUrl, buildGoogleMapsDirectionsUrl, buildAddressLine } from "@/lib/maps";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import ReloadAlert from "@/components/molecules/ReloadAlert/ReloadAlert";
@@ -92,7 +97,7 @@ export default function PropertyDetailPage({ params }) {
   const [newOfferOpen, setNewOfferOpen] = useState(false);
   const [newOfferSaving, setNewOfferSaving] = useState(false);
   const [newOfferError, setNewOfferError] = useState("");
-  const [newOfferForm, setNewOfferForm] = useState({ offerType: "RENT", askingPrice: "" });
+  const [newOfferForm, setNewOfferForm] = useState({ offerType: "RENT", askingPrice: "", conditions: "" });
   const [mediaIndex, setMediaIndex] = useState(0);
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [addressCopied, setAddressCopied] = useState(false);
@@ -160,6 +165,8 @@ export default function PropertyDetailPage({ params }) {
   }
 
   const mediaCount = property?.media?.length || 0;
+  // A mídia pode ser removida na própria ficha (PropertyMediaManager): o índice do banner nunca passa do fim da lista.
+  const safeMediaIndex = mediaCount ? Math.min(mediaIndex, mediaCount - 1) : 0;
 
   function prevMedia(event) {
     event?.stopPropagation();
@@ -262,15 +269,17 @@ export default function PropertyDetailPage({ params }) {
   async function handleCreateOffer(event) {
     event.preventDefault();
     setNewOfferError("");
-    if (!newOfferForm.askingPrice) {
-      setNewOfferError("Informe o preço da nova oferta.");
+    const price = toNumber(newOfferForm.askingPrice);
+    if (Number.isNaN(price) || price <= 0) {
+      setNewOfferError("Informe o preço da nova oferta (maior que zero).");
       return;
     }
     setNewOfferSaving(true);
     try {
       const created = await createOffer(property.id, {
         offerType: newOfferForm.offerType,
-        askingPrice: Number(newOfferForm.askingPrice),
+        askingPrice: price,
+        conditions: newOfferForm.conditions && newOfferForm.conditions.trim() ? newOfferForm.conditions.trim() : null,
       });
       setProperty((prev) => ({
         ...prev,
@@ -278,7 +287,7 @@ export default function PropertyDetailPage({ params }) {
         activeOffer: prev.activeOffer || created,
       }));
       setNewOfferOpen(false);
-      setNewOfferForm({ offerType: availableOfferTypes[0] || "RENT", askingPrice: "" });
+      setNewOfferForm({ offerType: availableOfferTypes[0] || "RENT", askingPrice: "", conditions: "" });
     } catch (err) {
       setNewOfferError(err?.message || "Não foi possível criar a nova oferta.");
     } finally {
@@ -470,6 +479,13 @@ export default function PropertyDetailPage({ params }) {
               ) : (
                 <EmptyState icon="document" title="Sem documentação" description="Nenhuma documentação cadastrada para este imóvel." />
               )}
+              <PropertyDocumentsPanel
+                propertyId={property.id}
+                documents={property.documents || []}
+                onChange={(documents, result) =>
+                  setProperty((prev) => ({ ...prev, documents, ...(result?.unpublished ? { publicationStatus: "INACTIVE" } : {}) }))
+                }
+              />
             </Card>
 
             <Card title="Histórico de preço">
@@ -595,6 +611,18 @@ export default function PropertyDetailPage({ params }) {
               ) : (
                 <EmptyState icon="image" title="Sem mídia" description="Nenhuma mídia cadastrada para este imóvel." />
               )}
+              <PropertyMediaManager
+                propertyId={property.id}
+                media={property.media || []}
+                onAdded={(created) => setProperty((prev) => ({ ...prev, media: [...(prev.media || []), mapMedia(created)] }))}
+                onRemoved={(mediaId, result) =>
+                  setProperty((prev) => ({
+                    ...prev,
+                    media: (prev.media || []).filter((m) => m.id !== mediaId),
+                    ...(result?.unpublished ? { publicationStatus: "INACTIVE" } : {}),
+                  }))
+                }
+              />
             </Card>
           </div>
 
@@ -607,7 +635,7 @@ export default function PropertyDetailPage({ params }) {
                     variant="secondary"
                     size="sm"
                     onClick={() => {
-                      setNewOfferForm({ offerType: availableOfferTypes[0], askingPrice: "" });
+                      setNewOfferForm({ offerType: availableOfferTypes[0], askingPrice: "", conditions: "" });
                       setNewOfferError("");
                       setNewOfferOpen(true);
                     }}
@@ -640,6 +668,7 @@ export default function PropertyDetailPage({ params }) {
                         {o.acceptsFinancing ? <Badge tone="info">Aceita financiamento</Badge> : null}
                         {o.acceptsTrade ? <Badge tone="info">Aceita permuta</Badge> : null}
                       </div>
+                      {o.conditions ? <p className={styles.offerValidity}>Condições: {o.conditions}</p> : null}
 
                       {o.validFrom || o.validUntil ? (
                         <p className={styles.offerValidity}>
@@ -653,6 +682,7 @@ export default function PropertyDetailPage({ params }) {
               ) : (
                 <EmptyState icon="money" title="Sem oferta ativa" description="Nenhuma oferta ativa cadastrada para este imóvel no momento." />
               )}
+              <OfferHistoryList offers={property.offers || []} />
             </Card>
 
             {mediaCount > 0 ? (
@@ -669,10 +699,10 @@ export default function PropertyDetailPage({ params }) {
                     }
                   }}
                   aria-label="Ver galeria de mídia em tela cheia"
-                  style={{ background: GRADIENTS[Math.abs(hashCode(property.id + mediaIndex)) % GRADIENTS.length] }}
+                  style={{ background: GRADIENTS[Math.abs(hashCode(property.id + safeMediaIndex)) % GRADIENTS.length] }}
                 >
-                  <Icon name={property.media[mediaIndex].type === "video" ? "video" : "image"} size={24} className={styles.miniBannerIcon} />
-                  {property.media[mediaIndex].type === "video" ? (
+                  <Icon name={property.media[safeMediaIndex].type === "video" ? "video" : "image"} size={24} className={styles.miniBannerIcon} />
+                  {property.media[safeMediaIndex].type === "video" ? (
                     <span className={styles.mediaBadge}>Vídeo</span>
                   ) : null}
 
@@ -686,7 +716,7 @@ export default function PropertyDetailPage({ params }) {
                       </button>
                       <div className={styles.miniBannerDots} aria-hidden="true">
                         {property.media.map((_, i) => (
-                          <span key={i} className={[styles.miniBannerDot, i === mediaIndex ? styles.miniBannerDotActive : ""].filter(Boolean).join(" ")} />
+                          <span key={i} className={[styles.miniBannerDot, i === safeMediaIndex ? styles.miniBannerDotActive : ""].filter(Boolean).join(" ")} />
                         ))}
                       </div>
                     </>
@@ -696,10 +726,10 @@ export default function PropertyDetailPage({ params }) {
                     <Icon name="search" size={14} />
                   </span>
                 </div>
-                <p className={styles.miniBannerCaption}>{property.media[mediaIndex].label}</p>
+                <p className={styles.miniBannerCaption}>{property.media[safeMediaIndex].label}</p>
                 <MediaQualityReview
                   propertyId={property.id}
-                  media={property.media[mediaIndex]}
+                  media={property.media[safeMediaIndex]}
                   onReviewed={(mediaId, qualityStatus) =>
                     setProperty((prev) => ({ ...prev, media: prev.media.map((m) => (m.id === mediaId ? { ...m, qualityStatus } : m)) }))
                   }
@@ -729,9 +759,9 @@ export default function PropertyDetailPage({ params }) {
 
               <div
                 className={styles.galleryMedia}
-                style={{ background: GRADIENTS[Math.abs(hashCode(property.id + mediaIndex)) % GRADIENTS.length] }}
+                style={{ background: GRADIENTS[Math.abs(hashCode(property.id + safeMediaIndex)) % GRADIENTS.length] }}
               >
-                <Icon name={property.media[mediaIndex].type === "video" ? "video" : "image"} size={48} />
+                <Icon name={property.media[safeMediaIndex].type === "video" ? "video" : "image"} size={48} />
               </div>
 
               {mediaCount > 1 ? (
@@ -741,7 +771,7 @@ export default function PropertyDetailPage({ params }) {
               ) : null}
             </div>
 
-            <p className={styles.galleryLabel}>{property.media[mediaIndex].label}</p>
+            <p className={styles.galleryLabel}>{property.media[safeMediaIndex].label}</p>
 
             {mediaCount > 1 ? (
               <div className={styles.galleryThumbs}>
@@ -825,12 +855,19 @@ export default function PropertyDetailPage({ params }) {
               </Select>
             </FormField>
             <FormField label={`Preço (R$${newOfferForm.offerType !== "SALE" ? "/mês" : ""})`} htmlFor="new-offer-price" required>
-              <Input
+              <DecimalInput
                 id="new-offer-price"
-                type="number"
                 placeholder="0,00"
                 value={newOfferForm.askingPrice}
                 onChange={(e) => setNewOfferForm({ ...newOfferForm, askingPrice: e.target.value })}
+              />
+            </FormField>
+            <FormField label="Condições da oferta" htmlFor="new-offer-conditions" helper="Entrada, prazo, reajuste, o que está incluso etc.">
+              <Input
+                id="new-offer-conditions"
+                maxLength={4000}
+                value={newOfferForm.conditions || ""}
+                onChange={(e) => setNewOfferForm({ ...newOfferForm, conditions: e.target.value })}
               />
             </FormField>
           </form>

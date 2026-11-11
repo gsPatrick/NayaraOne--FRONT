@@ -1,0 +1,26 @@
+.span2 { grid-column: 1 / -1; }
+.confidentialField {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.confidentialIcon {
+  position: absolute;
+  left: var(--space-3);
+  color: var(--color-ink-muted);
+  pointer-events: none;
+}
+.confidentialField input {
+  padding-left: var(--space-8, 32px);
+}
+.textarea {
+  width: 100%;
+  padding: var(--space-3);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: var(--text-body);
+  color: var(--color-ink);
+  background: var(--color-canvas);
+  resize: vertical;
+}

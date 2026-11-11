@@ -18,7 +18,7 @@ export function signatureOf(value) {
 const emptyStep = () => ({ id: null, sig: null, attemptSig: null, n: 0 });
 
 export function createSaveProgress() {
-  return { key: null, property: emptyStep(), created: null, docs: { sig: null }, offer: emptyStep(), owners: {} };
+  return { key: null, property: emptyStep(), created: null, docs: { sig: null }, offer: emptyStep(), owners: {}, media: {} };
 }
 
 /** Chave da etapa: a base da ação; sobe um sufixo quando o payload mudou depois de uma tentativa que não gravou. */
@@ -59,9 +59,11 @@ export async function runSave(holder, idempotencyKey, plan, api) {
   }
   const propertyId = p.id;
 
-  const docsSig = signatureOf(plan.docs);
+  // Documentação com o arquivo de cada documento (Marco 3 §6): o arquivo escolhido entra na assinatura pelo nome, tamanho e data.
+  const docFiles = plan.docFiles || {};
+  const docsSig = signatureOf({ docs: plan.docs, files: fileIdentities(docFiles) });
   if (progress.docs.sig !== docsSig) {
-    await api.saveDocumentation(propertyId, plan.docs);
+    await api.saveDocumentation(propertyId, plan.docs, docFiles);
     progress.docs.sig = docsSig;
   }
 
@@ -100,5 +102,24 @@ export async function runSave(holder, idempotencyKey, plan, api) {
     delete progress.owners[key];
   }
 
+  // Mídia escolhida no wizard (Marco 3 §6): cada arquivo sobe uma vez só (POST /files + POST /properties/:id/media); no
+  // "Tentar novamente" a mídia já enviada é pulada. Só roda quando a tela manda mídia e a função de envio.
+  if (api.uploadMedia) {
+    for (const [index, item] of (plan.media || []).entries()) {
+      if (!item.file || progress.media[item.id]) continue;
+      const saved = await api.uploadMedia(propertyId, item.file, { position: index });
+      progress.media[item.id] = (saved && saved.id) || true;
+    }
+  }
+
   return progress.created;
+}
+
+/** Identidade do arquivo escolhido (sem ler o conteúdo): nome, tamanho e data de modificação. */
+export function fileIdentities(files) {
+  return Object.keys(files || {}).sort().reduce((acc, k) => {
+    const f = files[k];
+    acc[k] = f ? `${f.name}|${f.size}|${f.lastModified || 0}` : null;
+    return acc;
+  }, {});
 }
