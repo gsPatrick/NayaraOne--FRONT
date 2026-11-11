@@ -71,7 +71,7 @@ async function main() {
   // F2
   if (!process.env.E2E_SKIP_F2) {
     await page.goto(`${BASE_URL}/painel/financeiro/intencoes-pagamento`); await settle();
-    await page.getByRole('button', { name: /Em trânsito no banco \(/ }).click();
+    await page.getByRole('button', { name: /Em execução \(/ }).click(); // estados do Guia M4 §3: o envio ao banco é EXECUTING
     const row = page.locator('li', { hasText: 'HOMO M45 — pagamento sandbox em trânsito' }).first();
     if (await row.count()) {
       await row.getByRole('button', { name: 'Consultar banco' }).click();
@@ -80,7 +80,7 @@ async function main() {
       const f2Text = await page.locator('main').innerText();
       await page.screenshot({ path: path.join(SHOTS, 'F2-consultar-banco.png'), fullPage: true });
       const msg = (f2Text.match(/Banco consultado em[^\n]*/) || [''])[0];
-      record('F2 Consultar banco', /Situação atual: Executada/.test(msg), msg || 'sem mensagem');
+      record('F2 Consultar banco', /Situação atual: Paga/.test(msg), msg || 'sem mensagem');
     } else {
       record('F2 Consultar banco', false, 'intenção HOMO M45 em trânsito não encontrada (rode scripts/seed-homo-m45.js)');
     }
