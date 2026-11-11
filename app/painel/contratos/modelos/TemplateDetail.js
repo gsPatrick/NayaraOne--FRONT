@@ -152,6 +152,7 @@ export default function TemplateDetail({ template, clauses, users, onChanged }) 
                   <span className={styles.meta}>
                     Responsável jurídico: {v.legalResponsible?.name || "não definido"} · {(v.clauses || []).length} cláusula(s)
                     {v.publishedAt ? ` · publicada em ${formatDateTime(v.publishedAt)}${v.publishedBy?.name ? ` por ${v.publishedBy.name}` : ""}` : ""}
+                    {v.origin === "CODE_SEED" ? " · versão inicial com o texto que já vigorava no sistema (sem aprovador): publique uma nova versão para registrar a aprovação jurídica" : ""}
                   </span>
                 </div>
                 <Badge tone={TEMPLATE_VERSION_STATUS_TONE[v.status] || "neutral"}>{TEMPLATE_VERSION_STATUS_LABELS[v.status] || "Situação desconhecida"}</Badge>
