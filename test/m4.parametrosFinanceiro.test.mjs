@@ -25,6 +25,11 @@ const ESPERADO = {
   "antifraude.conciliacao_manual_percentual_mes": { type: "decimal", defaultValue: 30, min: 1, max: 100 },
   "antifraude.estorno_frequente_usuario_30d": { type: "integer", defaultValue: 3, min: 1, max: 100 },
   "antifraude.estorno_frequente_empresa_30d": { type: "integer", defaultValue: 3, min: 1, max: 1000 },
+  // M4LR (Caderno §19, DI-M4LR-2): pesos dos recebíveis por status no relatório semanal (finance-health-settings.js na API).
+  "finance.relatorio.peso_recebivel_em_dia": { type: "decimal", defaultValue: 1, min: 0, max: 1 },
+  "finance.relatorio.peso_recebivel_parcial": { type: "decimal", defaultValue: 1, min: 0, max: 1 },
+  "finance.relatorio.peso_recebivel_vencido": { type: "decimal", defaultValue: 0, min: 0, max: 1 },
+  "finance.ledger.conta_bancaria_obrigatoria_na_baixa": { type: "boolean", defaultValue: false },
 };
 
 test("m4 §17.7 parâmetros: a aba Financeiro lista as chaves (as seis antigas e as oito da DEC-007) com o padrão e a faixa da API", () => {
