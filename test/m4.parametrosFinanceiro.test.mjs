@@ -14,11 +14,20 @@ const ESPERADO = {
   "finance.antifraud_manual_reconciliation_window_days": { type: "integer", defaultValue: 30, min: 1, max: 365 },
   "finance.reconciliation.auto_strong": { type: "boolean", defaultValue: false },
   "finance.bank_account_cooldown_hours": { type: "integer", defaultValue: 48, min: 0, max: 720 },
-  "finance.antifraud_new_account_threshold": { type: "decimal", defaultValue: 10000, min: 0, max: 999999999.99 },
+  // DEC-007 (DI-DEC007-1 na API): conta nova R$ 5.000,00 (antes 10.000) e as chaves antifraude.* que a decisão pede.
+  "finance.antifraud_new_account_threshold": { type: "decimal", defaultValue: 5000, min: 0, max: 999999999.99 },
   "finance.antifraud_history_multiplier": { type: "decimal", defaultValue: 3, min: 1, max: 100 },
+  "antifraude.outlier_bloqueio_multiplicador": { type: "decimal", defaultValue: 10, min: 1, max: 1000 },
+  "antifraude.duplicidade_janela_dias": { type: "integer", defaultValue: 90, min: 1, max: 365 },
+  "antifraude.fornecedor_novo_dias": { type: "integer", defaultValue: 30, min: 1, max: 365 },
+  "antifraude.fornecedor_novo_valor_minimo": { type: "decimal", defaultValue: 20000, min: 0.01, max: 999999999.99 },
+  "antifraude.conciliacao_manual_usuario_7d": { type: "integer", defaultValue: 5, min: 1, max: 100 },
+  "antifraude.conciliacao_manual_percentual_mes": { type: "decimal", defaultValue: 30, min: 1, max: 100 },
+  "antifraude.estorno_frequente_usuario_30d": { type: "integer", defaultValue: 3, min: 1, max: 100 },
+  "antifraude.estorno_frequente_empresa_30d": { type: "integer", defaultValue: 3, min: 1, max: 1000 },
 };
 
-test("m4 §17.7 parâmetros: a aba Financeiro lista as seis chaves com o padrão e a faixa da API", () => {
+test("m4 §17.7 parâmetros: a aba Financeiro lista as chaves (as seis antigas e as oito da DEC-007) com o padrão e a faixa da API", () => {
   assert.deepEqual(FINANCEIRO_FIELDS.map((f) => f.key).sort(), Object.keys(ESPERADO).sort());
   for (const field of FINANCEIRO_FIELDS) {
     const esperado = ESPERADO[field.key];
@@ -79,4 +88,23 @@ test("m4 §17.7 parâmetros: a aba está registrada em Configurações e grava p
   assert.match(tab, /await updateSetting\(field\.key, toApiValue\(field, values\[field\.key\]\)\)/);
   assert.match(tab, /changedFields\(FINANCEIRO_FIELDS, values, original\)/);
   assert.ok(tab.split("\n").length <= 400);
+});
+
+test("DEC-007 MFA: o 403 de MFA recente de um parâmetro sensível não vira 'Sem permissão' (a aba mostra a frase do MFA)", async () => {
+  const { isMfaSettingError, isSettingForbidden, mfaSettingMessage } = await import("@/lib/settings/errorLabel.js");
+  for (const code of ["MFA_STEP_UP_REQUIRED", "MFA_STEP_UP_CANCELLED", "MFA_REQUIRED_NOT_ENABLED"]) {
+    const err = { status: 403, code };
+    assert.equal(isMfaSettingError(err), true, code);
+    assert.equal(isSettingForbidden(err), false, code);
+    assert.match(mfaSettingMessage(err), /verificação em duas etapas/);
+  }
+  assert.equal(isSettingForbidden({ status: 403, code: "PERMISSION_DENIED" }), true);
+  assert.equal(isMfaSettingError({ status: 400, code: "MFA_STEP_UP_REQUIRED" }), false);
+  for (const file of ["FinanceiroTab", "CobrancaTab", "SegurancaTab", "IaNayTab", "IntegracoesRegistroTab", "GovernancaTab"]) {
+    const src = read(`app/painel/configuracoes/${file}.js`);
+    assert.match(src, /isSettingForbidden\(err\)\) \{?\s*setForbidden\(true\)/, file);
+    assert.match(src, /isMfaSettingError\(err\) \? mfaSettingMessage\(err\)/, file);
+  }
+  const financeiro = FINANCEIRO_FIELDS.filter((f) => /verificação em duas etapas/.test(f.helper)).map((f) => f.key).sort();
+  assert.deepEqual(financeiro, ["finance.antifraud_new_account_threshold", "finance.bank_account_cooldown_hours", "finance.reconciliation.auto_strong"]);
 });

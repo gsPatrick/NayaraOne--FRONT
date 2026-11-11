@@ -31,6 +31,7 @@ import { IA_DOCUMENTAL_GROUPS } from "./iaDocumentalGroups";
 import { IA_CONVERSA_GROUPS } from "./iaConversaGroups";
 import { IA_COMERCIAL_GROUPS } from "./iaComercialGroups";
 import { IA_OBSERVABILIDADE_GROUPS } from "./iaObservabilidadeGroups";
+import { isMfaSettingError, isSettingForbidden, mfaSettingMessage } from "@/lib/settings/errorLabel";
 
 // Parâmetros da NAY (Marco 9, bloco A) que o administrador controla. A API valida (SETTINGS_SCHEMA); o padrão mostrado é
 // o de Maturacao/demandas/parametros.csv e só vale enquanto a empresa não configurou nada. Cada demanda do bloco acrescenta
@@ -473,8 +474,8 @@ export default function IaNayTab() {
       setOriginal(values);
       setSuccess("Configurações da NAY salvas.");
     } catch (err) {
-      if (err?.status === 403) setForbidden(true);
-      else setError(err?.message || "Não foi possível salvar as configurações da NAY.");
+      if (isSettingForbidden(err)) setForbidden(true);
+      else setError(isMfaSettingError(err) ? mfaSettingMessage(err) : err?.message || "Não foi possível salvar as configurações da NAY.");
     } finally {
       setSaving(false);
     }

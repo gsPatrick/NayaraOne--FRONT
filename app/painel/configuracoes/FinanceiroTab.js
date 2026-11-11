@@ -12,7 +12,7 @@ import { canResetForm } from "@/lib/asyncState/formSync";
 import { invalidateAsyncCache, useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { toNumber } from "@/lib/format";
 import { listSettings, updateSetting } from "@/lib/api/settings";
-import { buildLabelMap, labelSettingError } from "@/lib/settings/errorLabel";
+import { buildLabelMap, isMfaSettingError, isSettingForbidden, labelSettingError, mfaSettingMessage } from "@/lib/settings/errorLabel";
 import { changedFields, decimalFieldError, decimalInRange, decimalRangeText, integerFieldError, integerInRange, integerRangeError, integerRangeText, loadedValue, settingsByKey } from "./settingsFormat";
 import { FINANCEIRO_FIELDS, FINANCEIRO_GROUPS, FINANCEIRO_PREFIXES } from "./financeiroGroups";
 import styles from "./page.module.css";
@@ -96,8 +96,8 @@ export default function FinanceiroTab() {
       setSuccess("Configurações do Financeiro salvas.");
     } catch (err) {
       setOriginal(saved); // o que já foi gravado antes da recusa fica como gravado
-      if (err?.status === 403) setForbidden(true);
-      else setError(labelSettingError(err, LABELS, "Não foi possível salvar as configurações do Financeiro."));
+      if (isSettingForbidden(err)) setForbidden(true);
+      else setError(isMfaSettingError(err) ? mfaSettingMessage(err) : labelSettingError(err, LABELS, "Não foi possível salvar as configurações do Financeiro."));
     } finally {
       setSaving(false);
     }

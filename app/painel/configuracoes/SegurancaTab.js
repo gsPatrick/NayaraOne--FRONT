@@ -14,6 +14,7 @@ import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { listSettings, updateSetting } from "@/lib/api/settings";
 import { toSettingValue, settingsByKey } from "./settingsFormat";
 import styles from "./page.module.css";
+import { isMfaSettingError, isSettingForbidden, mfaSettingMessage } from "@/lib/settings/errorLabel";
 
 const MFA_KEYS = {
   stepUpTtlMinutes: "mfa.step_up_ttl_minutes",
@@ -70,10 +71,10 @@ export default function SegurancaTab() {
       setOriginal(values);
       setSuccess("Configurações de segurança salvas.");
     } catch (err) {
-      if (err?.status === 403) {
+      if (isSettingForbidden(err)) {
         setForbidden(true);
       } else {
-        setError(err?.message || "Não foi possível salvar as configurações de segurança.");
+        setError(isMfaSettingError(err) ? mfaSettingMessage(err) : err?.message || "Não foi possível salvar as configurações de segurança.");
       }
     } finally {
       setSaving(false);
