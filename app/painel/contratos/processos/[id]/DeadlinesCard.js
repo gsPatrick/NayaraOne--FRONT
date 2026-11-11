@@ -2,7 +2,7 @@
 
 // Prazos do processo (Caderno M5 §15): lista com situação, severidade (calculada pela API), criticidade, responsável,
 // vencimento em horário de Brasília e origem; novo prazo; concluir com nota (só o responsável ou quem aprova) e
-// cancelar com motivo (aprovação jurídica).
+// cancelar com motivo (aprovação jurídica); reatribuir, remarcar (com motivo), reabrir e histórico de cada prazo.
 import { useEffect, useState } from "react";
 import Card from "@/components/molecules/Card/Card";
 import Badge from "@/components/atoms/Badge/Badge";
@@ -25,6 +25,8 @@ import {
 } from "@/lib/labels/juridico";
 import { formatDateTime } from "@/lib/format";
 import NewDeadlineForm from "./NewDeadlineForm";
+import DeadlineChangeForm from "./DeadlineChangeForm";
+import DeadlineHistory from "./DeadlineHistory";
 import styles from "./page.module.css";
 
 export const brasilia = (iso) => (iso ? `${formatDateTime(iso)} (horário de Brasília)` : "Sem data");
@@ -39,6 +41,9 @@ export default function DeadlinesCard({ legalCase, users, onChanged }) {
   const [busy, setBusy] = useState(false);
   const [viewerFileId, setViewerFileId] = useState(null);
   const canCancel = useHasPermission("legal:approve");
+  const [change, setChange] = useState(null); // { id, mode: "reassign" | "reschedule" | "reopen" }
+  const [historyOpen, setHistoryOpen] = useState(() => new Set());
+  const [historyKey, setHistoryKey] = useState(0);
 
   useEffect(() => {
     let alive = true;
@@ -79,6 +84,21 @@ export default function DeadlinesCard({ legalCase, users, onChanged }) {
       setBusy(false);
     }
   }
+
+  function handleChanged(updated, mode) {
+    const severity = mode === "reopen" ? "NORMAL" : undefined;
+    setDeadlines((prev) => prev.map((d) => (d.id === updated.id ? { ...d, ...updated, ...(severity ? { severity: updated.severity || severity } : {}) } : d)));
+    setChange(null);
+    setHistoryKey((k) => k + 1);
+    onChanged?.();
+  }
+
+  const toggleHistory = (id) => setHistoryOpen((prev) => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    return next;
+  });
 
   function handleCreated(created) {
     setDeadlines((prev) => [...prev, { ...created, severity: created.severity || "NORMAL" }].sort((a, b) => new Date(a.dueAt) - new Date(b.dueAt)));
@@ -123,12 +143,21 @@ export default function DeadlinesCard({ legalCase, users, onChanged }) {
             {d.sourceFileId ? (
               <Button size="sm" variant="ghost" onClick={() => setViewerFileId(d.sourceFileId)}>Ver documento de origem</Button>
             ) : null}
-            {d.status === "PENDING" && action?.id !== d.id ? (
+            {action?.id !== d.id && change?.id !== d.id ? (
               <div className={styles.formActions}>
-                <Button size="sm" variant="secondary" onClick={() => start(d, "done")} disabled={busy}>Concluir</Button>
-                {canCancel ? <Button size="sm" variant="ghost" onClick={() => start(d, "cancel")} disabled={busy}>Cancelar prazo</Button> : null}
+                {d.status === "PENDING" ? (
+                  <>
+                    <Button size="sm" variant="secondary" onClick={() => start(d, "done")} disabled={busy}>Concluir</Button>
+                    <Button size="sm" variant="ghost" onClick={() => setChange({ id: d.id, mode: "reassign" })} disabled={busy}>Reatribuir</Button>
+                    <Button size="sm" variant="ghost" onClick={() => setChange({ id: d.id, mode: "reschedule" })} disabled={busy}>Remarcar</Button>
+                    {canCancel ? <Button size="sm" variant="ghost" onClick={() => start(d, "cancel")} disabled={busy}>Cancelar prazo</Button> : null}
+                  </>
+                ) : null}
+                {d.status === "DONE" && canCancel ? <Button size="sm" variant="ghost" onClick={() => setChange({ id: d.id, mode: "reopen" })} disabled={busy}>Reabrir</Button> : null}
+                <Button size="sm" variant="ghost" onClick={() => toggleHistory(d.id)} aria-expanded={historyOpen.has(d.id)}>{historyOpen.has(d.id) ? "Ocultar histórico" : "Histórico"}</Button>
               </div>
             ) : null}
+            {change?.id === d.id ? <DeadlineChangeForm deadline={d} mode={change.mode} users={users} onDone={handleChanged} onCancel={() => setChange(null)} /> : null}
             {d.status === "PENDING" && action?.id === d.id ? (
               <div className={styles.concludeBox}>
                 <FormField
@@ -148,6 +177,7 @@ export default function DeadlinesCard({ legalCase, users, onChanged }) {
                 <Button size="sm" variant="ghost" onClick={() => setAction(null)} disabled={busy}>Voltar</Button>
               </div>
             ) : null}
+            {historyOpen.has(d.id) ? <DeadlineHistory legalCaseId={legalCase.id} deadlineId={d.id} users={users} refreshKey={historyKey} /> : null}
           </div>
         ))
       )}

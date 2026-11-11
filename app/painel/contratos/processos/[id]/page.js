@@ -152,11 +152,11 @@ export default function ProcessoDetailPage({ params }) {
             <DeadlinesCard legalCase={legalCase} users={users} onChanged={refreshTimeline} />
             <CasePartiesCard legalCase={legalCase} people={people} onChanged={refreshTimeline} />
             <CaseDocumentsCard legalCase={legalCase} onChanged={refreshTimeline} />
-            <CaseTimelineCard legalCase={legalCase} people={people} users={users} refreshKey={timelineKey} />
+            <CaseTimelineCard legalCase={legalCase} users={users} refreshKey={timelineKey} />
           </div>
 
           <div className={styles.sideCol}>
-            <CaseReceivableCard legalCase={legalCase} />
+            <CaseReceivableCard legalCase={legalCase} onCaseUpdated={(updated) => { setLegalCase(updated); refreshTimeline(); }} />
             <EvidencePackagesCard legalCase={legalCase} userName={userName} onChanged={refreshTimeline} />
           </div>
         </div>

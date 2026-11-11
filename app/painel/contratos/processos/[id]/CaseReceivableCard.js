@@ -19,11 +19,12 @@ import { useHasPermission } from "@/lib/rbac/useHasPermission";
 import { CASE_RECEIVABLE_BASIS_LABELS } from "@/lib/labels/juridico";
 import { formatBRL, formatDate } from "@/lib/format";
 import { brasilia } from "./DeadlinesCard";
+import CaseValuesForm from "./CaseValuesForm";
 import styles from "./page.module.css";
 
 const EMPTY = { basis: "SETTLEMENT", basisReference: "", dueAt: "", resultCenterId: "" };
 
-export default function CaseReceivableCard({ legalCase }) {
+export default function CaseReceivableCard({ legalCase, onCaseUpdated }) {
   const [receivables, setReceivables] = useState([]);
   const [centers, setCenters] = useState([]);
   const [form, setForm] = useState(EMPTY);
@@ -32,6 +33,7 @@ export default function CaseReceivableCard({ legalCase }) {
   const canApprove = useHasPermission("legal:approve");
   const canFinance = useHasPermission("finance:create");
   const allowed = canApprove && canFinance;
+  const canUpdate = useHasPermission("legal:update");
   const confirmed = Number(legalCase.confirmedAmount || 0);
 
   useEffect(() => {
@@ -76,6 +78,9 @@ export default function CaseReceivableCard({ legalCase }) {
         <div className={styles.detailRow}><dt>Valor estimado</dt><dd>{legalCase.estimatedAmount != null ? formatBRL(legalCase.estimatedAmount) : "Não informado"}</dd></div>
         <div className={styles.detailRow}><dt>Valor confirmado</dt><dd>{confirmed > 0 ? formatBRL(confirmed) : "Ainda não confirmado"}</dd></div>
       </dl>
+      {canUpdate ? (
+        <CaseValuesForm key={`${legalCase.estimatedAmount}-${legalCase.confirmedAmount}`} legalCase={legalCase} locked={receivables.length > 0} onSaved={(updated) => onCaseUpdated && onCaseUpdated(updated)} onError={setError} />
+      ) : null}
       {receivables.map((r) => (
         <p key={r.id} className={styles.emptyText} data-testid="case-receivable">
           Recebível de {formatBRL(r.amount)} vinculado ao Financeiro em {brasilia(r.createdAt)} — {CASE_RECEIVABLE_BASIS_LABELS[r.basis] || "base jurídica"}: {r.basisReference}
