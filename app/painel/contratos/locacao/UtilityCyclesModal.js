@@ -13,14 +13,13 @@ import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { useHasPermission } from "@/lib/rbac/useHasPermission";
 import { listUtilityObligationCycles, waiveUtilityCycle } from "@/lib/api/billing";
 import { legalErrorMessage } from "@/lib/legal/legalErrors";
-import { CYCLE_STATUS_LABELS, CYCLE_STATUS_TONE, isOpenCycle, PAID_BY_LABELS, waiveReasonProblem } from "@/lib/legal/obligationCycles";
+import { CYCLE_STATUS_LABELS, CYCLE_STATUS_TONE, isOpenCycle, paidByPhrase, waiveReasonProblem } from "@/lib/legal/obligationCycles";
 import { formatBRL, formatDate } from "@/lib/format";
 import styles from "./page.module.css";
 
 function cycleDetail(cycle) {
   if (cycle.status === "PAID") {
-    const who = PAID_BY_LABELS[cycle.paidByParty] || "parte não informada";
-    return `Pago${cycle.paidAt ? ` em ${formatDate(cycle.paidAt)}` : ""} por ${who.toLowerCase()}${cycle.amount != null ? ` — ${formatBRL(cycle.amount)}` : ""}${cycle.proofFileId ? " · com comprovante" : ""}${cycle.reimbursementId ? " · gerou reembolso" : ""}`;
+    return `Pago${cycle.paidAt ? ` em ${formatDate(cycle.paidAt)}` : ""} ${paidByPhrase(cycle.paidByParty)}${cycle.amount != null ? ` — ${formatBRL(cycle.amount)}` : ""}${cycle.proofFileId ? " · com comprovante" : ""}${cycle.reimbursementId ? " · gerou reembolso" : ""}`;
   }
   if (cycle.status === "WAIVED") return `Dispensado${cycle.waivedReason ? `: ${cycle.waivedReason}` : ""}`;
   if (cycle.status === "OVERDUE") return `Sem comprovante${cycle.overdueSince ? ` desde ${formatDate(cycle.overdueSince)}` : ""}`;

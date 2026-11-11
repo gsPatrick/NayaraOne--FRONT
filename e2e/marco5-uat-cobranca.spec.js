@@ -144,18 +144,22 @@ async function utilidades(page, contrato) {
   record("UAT-C07", "obrigação de água com responsável (Locatário) e fornecedor cadastrada", (await A.visible(linha)) && /Locatário/.test(await linha.innerText()));
 
   await linha.getByRole("button", { name: "Registrar pagamento" }).click();
-  const opcoes = await dlg(page).locator("select option").allInnerTexts();
+  // Pagamento de UM vencimento, com comprovante (livro §12; correção M5VP): quem pagou, vencimento, valor e comprovante.
+  const opcoes = await dlg(page).locator("#utility-pay-by option").allInnerTexts();
   const temImobiliaria = opcoes.some((o) => /imobili|empresa/i.test(o));
   record("UAT-C08", "a tela permite registrar a conta paga pela IMOBILIÁRIA (livro: conta paga pela imobiliária gera reembolso)", temImobiliaria, `opções de "Quem pagou": ${opcoes.join(", ")}`);
-  if (temImobiliaria) await dlg(page).locator("select").selectOption({ label: opcoes.find((o) => /imobili|empresa/i.test(o)) });
-  else await dlg(page).locator("select").selectOption("LANDLORD");
-  await dlg(page).locator("input").last().fill("180,00");
+  await dlg(page).locator("#utility-pay-by").selectOption(temImobiliaria ? { label: opcoes.find((o) => /imobili|empresa/i.test(o)) } : "LANDLORD");
+  if (await A.visible(dlg(page).locator("#utility-pay-due"), 3000)) await dlg(page).locator("#utility-pay-due").fill(plusDays(0));
+  await dlg(page).locator("#utility-pay-amount").fill("180,00");
+  await dlg(page).locator("#utility-pay-proof").setInputFiles(A.testFiles().pdf);
+  await A.visible(dlg(page).getByText("documento-ficticio.pdf").first(), 30000);
   await dlg(page).getByRole("button", { name: "Registrar", exact: true }).click();
   await dlg(page).waitFor({ state: "detached", timeout: 30000 }).catch(() => {});
   await page.goto(`${A.FRONT}/painel/financeiro/lancamentos`, { waitUntil: "domcontentloaded" });
-  const reembolso = page.locator("tr", { hasText: /Reembolso de água pago por/i }).filter({ hasText: /R\$\s?180,00/ }).first();
+  // Texto com concordância (correção M5VP): "pago pela imobiliária, a cobrar do locatário" — nunca "pago por o ...".
+  const reembolso = page.locator("tr", { hasText: /Reembolso de água pago pela imobiliária, a cobrar do locatário/i }).filter({ hasText: /R\$\s?180,00/ }).first();
   const achou = await A.visible(reembolso, 30000);
-  record("UAT-C09", "pagamento por quem não é o responsável gera o recebível de reembolso no Financeiro (R$ 180,00 a cobrar do locatário)", achou, achou ? (await reembolso.innerText()).slice(0, 140) : "lançamento de reembolso não apareceu em Financeiro > Lançamentos");
+  record("UAT-C09", "pagamento pela imobiliária gera o recebível de reembolso no Financeiro (R$ 180,00 a cobrar do locatário, texto com concordância)", achou, achou ? (await reembolso.innerText()).slice(0, 140) : "lançamento de reembolso não apareceu em Financeiro > Lançamentos");
   await shot(page, "c09-utilidade-reembolso");
 }
 
