@@ -14,6 +14,8 @@ import Modal from "@/components/organisms/Modal/Modal";
 import FormField from "@/components/molecules/FormField/FormField";
 import { fetchFileContent } from "@/lib/api/files";
 import { createContractVersion, getContractVersionPdfBlob, approveContractVersion, uploadFile } from "@/lib/api/legal";
+import { useHasPermission } from "@/lib/rbac/useHasPermission";
+import { VERSION_APPROVE_PERMISSION, canShowVersionApproval } from "@/lib/legal/versionApproval";
 import { CONTRACT_VERSION_STATUS_LABELS, CONTRACT_VERSION_STATUS_TONE, CONTRACT_TERMS_LOCKED_STATUSES } from "@/lib/labels/juridico";
 import { legalErrorMessage } from "@/lib/legal/legalErrors";
 import { formatDate, formatDateTime, formatContractLabel } from "@/lib/format";
@@ -39,8 +41,9 @@ export default function VersionsCard({ contract, versions, userName, onChanged, 
   const [loadingId, setLoadingId] = useState(null);
   const [cardError, setCardError] = useState("");
 
+  const hasVersionApprove = useHasPermission(VERSION_APPROVE_PERMISSION);
   const latest = versions[versions.length - 1] || null;
-  const canApprove = ["LEGAL_REVIEW", "APPROVED"].includes(contract.status);
+  const canApprove = canShowVersionApproval(contract.status, hasVersionApprove);
   const afterApproval = CONTRACT_TERMS_LOCKED_STATUSES.includes(contract.status);
 
   async function handleCreate() {

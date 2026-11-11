@@ -23,6 +23,8 @@ import {
 } from "@/lib/api/legal";
 import { allowedContractTransitions, CONTRACT_STATUS_LABELS, PARTY_ROLE_LABELS } from "@/lib/labels/juridico";
 import { legalErrorMessage } from "@/lib/legal/legalErrors";
+import { useHasPermission } from "@/lib/rbac/useHasPermission";
+import { VERSION_APPROVE_PERMISSION, transitionNeedsVersionApprove } from "@/lib/legal/versionApproval";
 import styles from "./page.module.css";
 
 // Transição simples pela rota /transition: rótulo do botão e texto da confirmação.
@@ -53,7 +55,8 @@ export default function ContractActions({ contract, latestVersion, parties, pers
   const [signers, setSigners] = useState([]);
   const [sendError, setSendError] = useState("");
 
-  const allowed = allowedContractTransitions(contract.status);
+  const canApproveVersion = useHasPermission(VERSION_APPROVE_PERMISSION);
+  const allowed = allowedContractTransitions(contract.status).filter((t) => canApproveVersion || !transitionNeedsVersionApprove(t));
   const versionStatus = latestVersion ? latestVersion.status || "DRAFT" : null;
 
   async function run(fn, successText) {
@@ -163,7 +166,7 @@ export default function ContractActions({ contract, latestVersion, parties, pers
       );
     }
   }
-  if (contract.status === "LEGAL_REVIEW") {
+  if (contract.status === "LEGAL_REVIEW" && canApproveVersion) {
     buttons.unshift(
       <Button key="approve" onClick={handleApproveVersion} disabled={busy || !latestVersion} data-testid="contract-approve-version">
         <Icon name="check" size={16} /> Aprovar versão vigente
@@ -171,7 +174,7 @@ export default function ContractActions({ contract, latestVersion, parties, pers
     );
   }
   if (contract.status === "APPROVED") {
-    if (versionStatus === "DRAFT") {
+    if (versionStatus === "DRAFT" && canApproveVersion) {
       buttons.push(
         <Button key="approve-new" onClick={handleApproveVersion} disabled={busy} data-testid="contract-approve-new-version">
           <Icon name="check" size={16} /> Aprovar nova versão
