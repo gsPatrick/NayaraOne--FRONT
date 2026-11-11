@@ -32,7 +32,7 @@ export default function ChecklistPolicyPage() {
   const canPublish = useHasPermission("legal:approve");
   const query = useAsyncState(loadPolicy, { key: "contratos-checklist-regra", isEmpty: () => false });
   const current = query.data && query.data.current;
-  const facts = (current && current.catalog && current.catalog.facts) || {};
+  const facts = useMemo(() => (current && current.catalog && current.catalog.facts) || {}, [current]);
   const rows = useMemo(() => policyRows(current && current.action, facts), [current, facts]);
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState("");
