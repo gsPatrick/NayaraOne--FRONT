@@ -1,7 +1,7 @@
 "use client";
 
 // Ações do contrato SÓ pelas transições do livro (Guia §3, espelho em lib/labels/juridico.js). Não existe "Cancelar":
-// antes da aprovação o contrato volta para rascunho; depois de ativo é rescindido e encerrado.
+// antes da aprovação o contrato volta para rascunho; depois de em vigor é rescindido (encerrado) e arquivado.
 import { useState } from "react";
 import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
 import Button from "@/components/atoms/Button/Button";
@@ -28,8 +28,8 @@ import styles from "./page.module.css";
 // Transição simples pela rota /transition: rótulo do botão e texto da confirmação.
 const SIMPLE = {
   "DRAFT>DOCUMENTS_PENDING": { label: "Enviar para documentos", icon: "document", message: "O contrato passa a aguardar os documentos do checklist." },
-  "DRAFT>LEGAL_REVIEW": { label: "Enviar para análise jurídica", icon: "scale", message: "O contrato vai para a análise jurídica. Os documentos obrigatórios desta etapa precisam estar anexados ou dispensados." },
-  "DOCUMENTS_PENDING>LEGAL_REVIEW": { label: "Enviar para análise jurídica", icon: "scale", message: "O contrato vai para a análise jurídica. Os documentos obrigatórios desta etapa precisam estar anexados ou dispensados." },
+  "DRAFT>LEGAL_REVIEW": { label: "Enviar para revisão jurídica", icon: "scale", message: "O contrato vai para a revisão jurídica. Os documentos obrigatórios desta etapa precisam estar anexados ou dispensados." },
+  "DOCUMENTS_PENDING>LEGAL_REVIEW": { label: "Enviar para revisão jurídica", icon: "scale", message: "O contrato vai para a revisão jurídica. Os documentos obrigatórios desta etapa precisam estar anexados ou dispensados." },
   "LEGAL_REVIEW>DRAFT": { label: "Devolver para rascunho", icon: "refreshCcw", variant: "secondary", message: "O contrato volta para rascunho para ajustes antes de nova análise." },
   "SIGNING>SIGNED": { label: "Marcar como assinado", icon: "check", message: "Todas as partes obrigatórias precisam ter assinado a versão vigente." },
   "SIGNING>APPROVED": { label: "Voltar para aprovado", icon: "refreshCcw", variant: "secondary", message: "O envio para assinatura é interrompido e o contrato volta para aprovado (use quando o documento precisa mudar)." },
@@ -147,7 +147,7 @@ export default function ContractActions({ contract, latestVersion, parties, pers
   async function handleTerminate(confirmation) {
     await terminateContract(contract.id, confirmation.justification, confirmation);
     setTerminateOpen(false);
-    onNotice({ tone: "info", text: "Contrato rescindido." });
+    onNotice({ tone: "info", text: "Contrato encerrado (rescisão registrada)." });
     await onChanged();
   }
 

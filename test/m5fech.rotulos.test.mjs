@@ -78,7 +78,7 @@ test("m5fech recusas da API em português: checklist pela descrição, sem códi
     message: "Não é possível avançar para LEGAL_REVIEW: há requirement(s) obrigatório(s) pendente(s): LEASE_GUARANTEE, LEASE_INSPECTION.",
     details: { stage: "LEGAL_REVIEW", pending: [{ requirementCode: "LEASE_GUARANTEE", description: "Garantia locatícia." }, { requirementCode: "LEASE_INSPECTION", description: "Vistoria de entrada do imóvel." }] },
   }));
-  assert.match(text, /Faltam documentos do checklist \(antes da análise jurídica\): Garantia locatícia; Vistoria de entrada do imóvel\./);
+  assert.match(text, /Faltam documentos do checklist \(antes da revisão jurídica\): Garantia locatícia; Vistoria de entrada do imóvel\./);
   assert.doesNotMatch(text, CRU);
 });
 

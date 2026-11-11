@@ -1,5 +1,5 @@
 // Marco 5 — fechamento do Front com as regras novas da API (Playwright clicando na UI, pilha descartável 5533/5534/5537).
-// Percorre: contrato DRAFT -> documentos -> análise -> aprovação da VERSÃO -> envio para assinatura -> assinaturas
+// Percorre: contrato DRAFT -> documentos -> revisão jurídica -> aprovação da VERSÃO -> envio para assinatura -> assinaturas
 // manuais -> assinado (com modelo publicado: cláusula da biblioteca -> modelo -> publicar versão); aditivo assinado
 // por signatário; notificação corrigida por nova versão; garantia (seguro-fiança) com os dados do tipo, nascendo Pendente e completada; vistoria de
 // ENTRADA e de SAÍDA com comparação por ambiente/item; recusa clara da assinatura da vistoria por MFA; entrega de
@@ -52,7 +52,14 @@ async function contractFlow(page, ctx, files, template) {
   }
   await page.getByRole("button", { name: "Criar contrato" }).click();
   if (template) {
-    // Primeiro clique: prévia das cláusulas (da versão publicada); segundo: cria.
+    // Primeiro clique: prévia das cláusulas (da versão PUBLICADA); "Ver rascunho" só consulta; segundo clique: cria.
+    const pv = page.getByTestId("clause-preview");
+    const pvText = (await A.visible(pv)) ? await pv.innerText() : "";
+    A.record("1c. prévia mostra a versão 1 publicada (a que gera contrato), sem a cláusula do rascunho", /versão 1 do modelo \(publicada\)/.test(pvText) && pvText.includes(template.publishedTitle) && !pvText.includes(template.draftTitle), pvText.split("\n")[0]);
+    await page.getByRole("button", { name: "Ver rascunho" }).click();
+    const dv = page.getByTestId("clause-preview-draft");
+    const dvText = (await A.visible(dv)) ? await dv.innerText() : "";
+    A.record("1d. Ver rascunho mostra a versão 2 em rascunho, marcada como só consulta", /versão 2 do modelo \(rascunho\).*só consulta/.test(dvText) && dvText.includes(template.draftTitle), dvText.split("\n")[0]);
     await page.getByRole("button", { name: "Confirmar e criar contrato" }).click();
   }
   await page.waitForURL(/\/painel\/contratos\/lista\/[0-9a-f-]{36}$/, { timeout: 60000 });
@@ -65,12 +72,12 @@ async function contractFlow(page, ctx, files, template) {
   await confirmDialog(page, "Enviar para documentos");
   A.record("2. contrato em Documentos pendentes e checklist gerado pela regra", await A.visible(page.getByTestId("requirement-row")));
 
-  // Antes de anexar: a análise jurídica é recusada com a lista de documentos em português (sem código de exigência).
-  await page.getByRole("button", { name: "Enviar para análise jurídica" }).first().click();
-  await confirmDialog(page, "Enviar para análise jurídica");
+  // Antes de anexar: a revisão jurídica é recusada com a lista de documentos em português (sem código de exigência).
+  await page.getByRole("button", { name: "Enviar para revisão jurídica" }).first().click();
+  await confirmDialog(page, "Enviar para revisão jurídica");
   const err = page.getByTestId("contract-action-error");
   const errText = (await A.visible(err)) ? await err.innerText() : "";
-  A.record("2a. análise recusada com pendências do checklist em português", /Faltam documentos do checklist/.test(errText) && !/[A-Z]{3,}_[A-Z_]+/.test(errText), errText.slice(0, 140));
+  A.record("2a. revisão jurídica recusada com pendências do checklist em português", /Faltam documentos do checklist/.test(errText) && !/[A-Z]{3,}_[A-Z_]+/.test(errText), errText.slice(0, 140));
   await shot(page, "01-checklist-pendente");
 
   let guard = 0;
@@ -90,9 +97,9 @@ async function contractFlow(page, ctx, files, template) {
   const vN = template ? 2 : 1;
   A.record(`4. versão ${vN} do documento criada (Rascunho)`, await A.visible(page.getByTestId(`contract-version-${vN}`)));
 
-  await page.getByRole("button", { name: "Enviar para análise jurídica" }).first().click();
-  await confirmDialog(page, "Enviar para análise jurídica");
-  A.record("5. contrato em Análise jurídica", await A.visible(page.getByTestId("contract-approve-version")));
+  await page.getByRole("button", { name: "Enviar para revisão jurídica" }).first().click();
+  await confirmDialog(page, "Enviar para revisão jurídica");
+  A.record("5. contrato em Revisão jurídica", await A.visible(page.getByTestId("contract-approve-version")));
 
   await page.getByTestId("contract-approve-version").click();
   await confirmDialog(page, "Aprovar versão");
@@ -136,7 +143,7 @@ async function guaranteeFlow(page, contractId, files) {
   await page.fill("#f-g-value", "7500,00");
   await page.fill("#f-g-starts", plusDays(-1));
   await page.fill("#f-g-ends", plusDays(365));
-  A.record("10. tela avisa antes de criar que a garantia nasce pendente", await A.visible(page.getByText(/Pendente \(faltam dados\)/)));
+  A.record("10. tela avisa antes de criar que a garantia nasce pendente", await A.visible(page.getByText(/criada como Pendente/)));
   await page.getByRole("button", { name: "Criar garantia" }).click();
   await page.waitForURL(/\/garantias\/[0-9a-f-]{36}$/, { timeout: 60000 });
   const missing = page.getByTestId("guarantee-missing");

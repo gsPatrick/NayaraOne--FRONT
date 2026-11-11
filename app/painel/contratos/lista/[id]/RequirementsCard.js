@@ -84,7 +84,7 @@ export default function RequirementsCard({ contractId, requirements, onRequireme
             <div className={styles.partyInfo}>
               <span className={styles.partyName}>{humanizeText(r.description)}</span>
               <span className={styles.partyRole}>
-                {REQUIREMENT_STAGE_LABELS[r.requiredStage || "LEGAL_REVIEW"] || "Antes da análise jurídica"}
+                {REQUIREMENT_STAGE_LABELS[r.requiredStage || "LEGAL_REVIEW"] || "Antes da revisão jurídica"}
                 {" · "}
                 {r.status === "WAIVED" ? `Dispensada — motivo: ${r.waivedReason || "sem motivo registrado"}` : r.status === "SATISFIED" ? `Documento anexado${r.satisfiedAt ? ` em ${formatDate(r.satisfiedAt)}` : ""}` : "Aguardando documento"}
               </span>

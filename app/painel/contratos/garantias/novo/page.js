@@ -134,7 +134,7 @@ export default function NovaGarantiaPage() {
 
         {problem ? <Alert tone={baseProblem ? "info" : "danger"}>{problem}</Alert> : null}
         {missing.length ? (
-          <Alert tone="warning" title="A garantia será criada como Pendente (faltam dados)">
+          <Alert tone="warning" title="A garantia será criada como Pendente (faltam dados do tipo)">
             Ela não vale como garantia ativa até completar: {missing.map((k) => GUARANTEE_FIELD_LABELS[k] || "dado do tipo").join(", ")}.
           </Alert>
         ) : (

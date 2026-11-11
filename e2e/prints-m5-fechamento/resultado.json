@@ -1,5 +1,5 @@
 {
-  "when": "2026-11-11T02:29:59.028Z",
+  "when": "2026-11-11T02:39:23.412Z",
   "results": [
     {
       "label": "0. login na tela (usuário fictício, sem MFA)",
@@ -27,6 +27,21 @@
       "detail": ""
     },
     {
+      "label": "T5. incluir cláusula no modelo publicado cria a versão 2 em rascunho",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "1c. prévia mostra a versão 1 publicada (a que gera contrato), sem a cláusula do rascunho",
+      "ok": true,
+      "detail": "Prévia da versão 1 do modelo (publicada) — é a que gera o documento do contrato."
+    },
+    {
+      "label": "1d. Ver rascunho mostra a versão 2 em rascunho, marcada como só consulta",
+      "ok": true,
+      "detail": "Prévia da versão 2 do modelo (rascunho) — só consulta: o documento é gerado pela versão publicada."
+    },
+    {
       "label": "1. contrato criado em rascunho pela tela",
       "ok": true,
       "detail": ""
@@ -47,9 +62,9 @@
       "detail": ""
     },
     {
-      "label": "2a. análise recusada com pendências do checklist em português",
+      "label": "2a. revisão jurídica recusada com pendências do checklist em português",
       "ok": true,
-      "detail": "Faltam documentos do checklist (antes da análise jurídica): Documentos PF/PJ das partes (locador/locatário); Garantia locatícia (fiador, seg"
+      "detail": "Faltam documentos do checklist (antes da revisão jurídica): Documentos PF/PJ das partes (locador/locatário); Garantia locatícia (fiador, seg"
     },
     {
       "label": "3. todos os documentos do checklist anexados pela tela",
@@ -62,7 +77,7 @@
       "detail": ""
     },
     {
-      "label": "5. contrato em Análise jurídica",
+      "label": "5. contrato em Revisão jurídica",
       "ok": true,
       "detail": ""
     },
@@ -109,7 +124,7 @@
     {
       "label": "N1. correção da notificação cria a versão 2 e preserva a versão 1 (com o motivo)",
       "ok": true,
-      "detail": "Versão 1 Versão inicial. · 10/11/2026 às 23:29 (horário de Brasília) · por CI gestor — tenant A Versão 2 · atual Valor d"
+      "detail": "Versão 1 Versão inicial. · 10/11/2026 às 23:37 (horário de Brasília) · por CI gestor — tenant A Versão 2 · atual Valor d"
     },
     {
       "label": "10. tela avisa antes de criar que a garantia nasce pendente",
@@ -204,7 +219,7 @@
     {
       "label": "21b. histórico do prazo: vencimento anterior, novo, motivo, autor e data",
       "ok": true,
-      "detail": "10/11/2026 às 23:29 (horário de Brasília) · por CI gestor — tenant A Prazo “Contestação do locatário”: reaberto. 10/11/2026 às 23:29 (horário de Brasília) · por"
+      "detail": "10/11/2026 às 23:39 (horário de Brasília) · por CI gestor — tenant A Prazo “Contestação do locatário”: reaberto. 10/11/2026 às 23:39 (horário de Brasília) · por"
     },
     {
       "label": "R1. com só a estimativa, nada vira recebível",

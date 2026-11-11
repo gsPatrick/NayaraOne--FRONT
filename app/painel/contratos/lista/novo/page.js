@@ -25,6 +25,9 @@ import ClausePreviewCard from "./ClausePreviewCard";
 import styles from "./page.module.css";
 import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 
+// Prévia das cláusulas com a versão do modelo que foi usada (a publicada gera o contrato; o rascunho é só consulta).
+const toPreview = (r) => ({ included: r.clauses || [], excluded: r.excludedClauses || [], versionNumber: r.templateVersionNumber || null, versionStatus: r.templateVersionStatus || null });
+
 export default function NovoContratoPage() {
   const router = useRouter();
   const [properties, setProperties] = useState([]);
@@ -66,6 +69,7 @@ export default function NovoContratoPage() {
   // F01: resultado da pré-visualização — quais cláusulas entram e quais ficam de fora (e por quê),
   // decidido pelo servidor com os dados deste contrato. Mostrado antes de criar.
   const [clausePreview, setClausePreview] = useState(null);
+  const [draftPreview, setDraftPreview] = useState(null);
 
   // M9-D940: carregando, erro com "tentar de novo", 403 e offline vêm do padrão único de estados.
   const loadQuery = useAsyncState(() => {
@@ -144,7 +148,7 @@ export default function NovoContratoPage() {
           return;
         }
         const rendered = await renderContractTemplate(form.templateId, known, { draftContract: getDraftContract() });
-        setClausePreview({ included: rendered.clauses || [], excluded: rendered.excludedClauses || [] });
+        setClausePreview(toPreview(rendered));
         const missing = findUnresolvedPlaceholders(rendered.content);
         if (missing.length > 0) {
           setPendingPlaceholders(missing);
@@ -208,6 +212,7 @@ export default function NovoContratoPage() {
     setPendingPlaceholders(null);
     setPlaceholderValues({});
     setClausePreview(null);
+    setDraftPreview(null);
   }
 
   if (loadQuery.status !== UI_STATE.CONTENT) {
@@ -224,7 +229,7 @@ export default function NovoContratoPage() {
         {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
 
         <Alert tone="info" title="Etapas do contrato">
-          O contrato nasce como rascunho e segue o fluxo do livro: documentos pendentes (opcional) → análise jurídica → aprovação da versão do documento → em assinatura → assinado → ativo. Depois de ativo pode ser suspenso, rescindido e encerrado. As etapas são feitas na página de detalhe.
+          O contrato nasce como rascunho e segue o fluxo do livro: documentos pendentes (opcional) → revisão jurídica → aprovação da versão do documento → em assinatura → assinado → em vigor. Depois de em vigor pode ser suspenso, encerrado (rescisão) e arquivado. As etapas são feitas na página de detalhe.
         </Alert>
 
         <Card title="Dados do contrato">
@@ -349,7 +354,14 @@ export default function NovoContratoPage() {
           </Card>
         ) : null}
 
-        {clausePreview ? <ClausePreviewCard preview={clausePreview} /> : null}
+        {clausePreview ? (
+          <ClausePreviewCard
+            preview={clausePreview}
+            draftPreview={draftPreview}
+            onShowDraft={() => renderContractTemplate(form.templateId, getKnownVariables(), { draftContract: getDraftContract(), draft: true }).then((r) => setDraftPreview(toPreview(r))).catch((err) => setActionError(legalErrorMessage(err, "Não foi possível pré-visualizar o rascunho do modelo.")))}
+            onHideDraft={() => setDraftPreview(null)}
+          />
+        ) : null}
 
         <div className={styles.actionBar}>
           <Button variant="secondary" onClick={() => router.push("/painel/contratos/lista")}>Cancelar</Button>

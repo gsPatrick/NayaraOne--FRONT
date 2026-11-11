@@ -91,7 +91,7 @@ export default function NovoProcessoPage() {
       <div className={styles.wrap}>
         {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
 
-        <Alert tone="info" title="Contencioso, consultivo ou cobrança">
+        <Alert tone="info" title="Judicial, consultivo ou cobrança">
           Vincule o processo a um contrato e/ou imóvel quando aplicável — ambos são opcionais.
         </Alert>
 

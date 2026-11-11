@@ -75,7 +75,7 @@ export default function ContratosListaPage() {
   function handleDelete() {
     // Não há exclusão de contrato na API, e "Cancelado" deixou de ser etapa do livro (a API recusa): o contrato segue a
     // máquina de estados na página de detalhe.
-    setActionError("Contratos não são excluídos. Antes da aprovação, o contrato volta para rascunho; depois de ativo, é rescindido e encerrado — tudo pela página de detalhe do contrato.");
+    setActionError("Contratos não são excluídos. Antes da aprovação, o contrato volta para rascunho; depois de em vigor, é encerrado (rescisão) e arquivado — tudo pela página de detalhe do contrato.");
     setDeleteTarget(null);
   }
 

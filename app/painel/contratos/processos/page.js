@@ -131,11 +131,11 @@ export default function ProcessosPage() {
       <div className={styles.grid}>
         <StatTile label="Total de processos" value={legalCases.length} tone="neutral" icon="scale" />
         <StatTile label="Abertos" value={openCount} tone={openCount > 0 ? "danger" : "success"} icon="filter" />
-        <StatTile label="Contencioso" value={legalCases.filter((c) => c.caseType === "LITIGATION").length} tone="danger" icon="scale" />
+        <StatTile label="Judicial" value={legalCases.filter((c) => c.caseType === "LITIGATION").length} tone="danger" icon="scale" />
         <StatTile label="Cobrança" value={legalCases.filter((c) => c.caseType === "COLLECTION").length} tone="warning" icon="money" />
       </div>
 
-      <Card title="Processos jurídicos" subtitle="Contencioso, consultivo e cobrança">
+      <Card title="Processos jurídicos" subtitle="Judicial, consultivo e cobrança">
         <div className={styles.toolbar}>
           <SearchInput placeholder="Buscar por número ou resumo..." value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} />
           <Select className={styles.filter} value={typeFilter} onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}>

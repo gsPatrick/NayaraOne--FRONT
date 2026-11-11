@@ -13,14 +13,28 @@ async function shot(page, name) {
   await page.screenshot({ path: path.join(A.OUT, `${name}.png`), fullPage: true });
 }
 
+async function createClause(page, code, title, body) {
+  await page.getByRole("button", { name: /Nova cláusula/ }).click();
+  await page.fill("#f-code", code);
+  await page.fill("#f-title", title);
+  await page.fill("#f-body", body);
+  await confirmDialog(page, "Criar");
+  await page.locator('[role="dialog"]').waitFor({ state: "detached", timeout: 30000 }).catch(() => {});
+}
+
+async function addClause(page, title) {
+  await page.locator("#f-tpl-add-clause").waitFor();
+  const optValue = await page.locator("#f-tpl-add-clause option", { hasText: title }).first().getAttribute("value");
+  await page.selectOption("#f-tpl-add-clause", optValue);
+  await page.getByRole("button", { name: "Adicionar cláusula" }).click();
+}
+
 async function templateFlow(page, ctx) {
   const title = `Cláusula de vigência E2E ${ctx.sfx}`;
+  const title2 = `Cláusula de multa E2E ${ctx.sfx}`;
   await page.goto(`${A.FRONT}/painel/contratos/clausulas`, { waitUntil: "domcontentloaded" });
-  await page.getByRole("button", { name: /Nova cláusula/ }).click();
-  await page.fill("#f-code", `E2E_VIGENCIA_${ctx.sfx}`);
-  await page.fill("#f-title", title);
-  await page.fill("#f-body", "O prazo de locação é o definido no quadro-resumo deste contrato (texto fictício de teste).");
-  await confirmDialog(page, "Criar");
+  await createClause(page, `E2E_VIGENCIA_${ctx.sfx}`, title, "O prazo de locação é o definido no quadro-resumo deste contrato (texto fictício de teste).");
+  await createClause(page, `E2E_MULTA_${ctx.sfx}`, title2, "Multa fictícia de três aluguéis em caso de rescisão antecipada (texto de teste).");
   const clauseRow = page.getByText(title).first();
   A.record("T1. cláusula criada na biblioteca com responsável jurídico", (await A.visible(clauseRow)) && (await A.visible(page.getByText(/responsável jurídico: /).first())));
 
@@ -32,17 +46,18 @@ async function templateFlow(page, ctx) {
   await confirmDialog(page, "Criar modelo");
   await page.getByRole("button", { name: new RegExp(name) }).first().click();
   A.record("T2. modelo criado sem versão publicada (ainda não gera contrato)", await A.visible(page.getByText(/sem versão publicada: ainda não gera contrato/)));
-  await page.locator("#f-tpl-add-clause").waitFor();
-  const optValue = await page.locator("#f-tpl-add-clause option", { hasText: title }).first().getAttribute("value");
-  await page.selectOption("#f-tpl-add-clause", optValue);
-  await page.getByRole("button", { name: "Adicionar cláusula" }).click();
+  await addClause(page, title);
   A.record("T3. cláusula incluída na versão 1 em rascunho do modelo", await A.visible(page.getByTestId("template-clause").filter({ hasText: title })));
   await page.getByRole("button", { name: /Publicar versão 1/ }).click();
   await confirmDialog(page, "Publicar versão");
   const v1 = page.getByTestId("template-version").filter({ hasText: "Versão 1" });
   A.record("T4. versão 1 do modelo publicada (alçada jurídica), com quem publicou", (await A.visible(v1.getByText("Publicada"))) && (await A.visible(v1.getByText(/publicada em .* por /))));
   await shot(page, "00-modelo-publicado");
-  return { name };
+  // Mexer no modelo publicado cria a versão 2 em rascunho (a publicada não muda).
+  await addClause(page, title2);
+  const v2 = page.getByTestId("template-version").filter({ hasText: "Versão 2" });
+  A.record("T5. incluir cláusula no modelo publicado cria a versão 2 em rascunho", await A.visible(v2.getByText("Rascunho")));
+  return { name, publishedTitle: title, draftTitle: title2 };
 }
 
 async function amendmentFlow(page, ctx, contractId, files) {

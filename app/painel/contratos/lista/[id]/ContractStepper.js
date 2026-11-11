@@ -15,7 +15,7 @@ export default function ContractStepper({ status }) {
   const currentIdx = CONTRACT_STATUS_FLOW.indexOf(anchor);
   const pastActive = Boolean(END_STATES[status]);
   return (
-    <Card title="Etapas do contrato" subtitle="Rascunho → documentos → análise jurídica → aprovação da versão → assinatura → ativo; depois de ativo: suspensão, rescisão e encerramento">
+    <Card title="Etapas do contrato" subtitle="Rascunho → documentos → revisão jurídica → aprovação da versão → assinatura → em vigor; depois de em vigor: suspensão, encerramento (rescisão) e arquivamento">
       <div className={styles.stepper}>
         {CONTRACT_STATUS_FLOW.map((step, idx) => {
           const isDone = !legacyCancelled && (idx < currentIdx || (pastActive && idx === currentIdx));
