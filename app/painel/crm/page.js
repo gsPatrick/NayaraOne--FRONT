@@ -32,6 +32,7 @@ import {
   createOpportunityTask,
   TASK_STATUSES,
   TASK_PRIORITIES,
+  listOutcomeReasons,
 } from "@/lib/api/crm";
 import CrmNavMenu from "@/components/molecules/CrmNavMenu/CrmNavMenu";
 import { listProperties } from "@/lib/api/properties";
@@ -42,6 +43,8 @@ import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { createLatestGuard } from "@/lib/asyncState/latest";
 import { formatDateTime, isOverdue, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE, dateTimeLocalInputToIso, isoToDateTimeLocalInput } from "@/lib/format";
 import styles from "./page.module.css";
+import { OUTCOME_REASON_FIELD, toReasonOptions, ownerError, ownerPatch } from "./opportunityRules";
+import OpportunityJourneyLinks from "./OpportunityJourneyLinks";
 
 import { lookupFallback } from "@/lib/asyncState/lookup";
 const CLOSED_STAGES = ["ganho", "perdido"];
@@ -51,26 +54,7 @@ const TASK_STATUS_LABELS = { OPEN: "Aberta", IN_PROGRESS: "Em andamento", DONE: 
 const TASK_STATUS_TONE = { OPEN: "info", IN_PROGRESS: "warning", DONE: "success", CANCELED: "neutral" };
 const TASK_PRIORITY_LABELS = { LOW: "Baixa", NORMAL: "Normal", HIGH: "Alta", URGENT: "Urgente" };
 
-// A API (opportunityOutcomeReason.validator.js) exige um motivo ESTRUTURADO sempre que a
-// oportunidade entra num estágio de desfecho — sem ele, POST/PATCH volta 422
-// (OPPORTUNITY_OUTCOME_REASON_REQUIRED). O funil da tela só expõe "ganho"/"perdido" (não há
-// coluna de desistência), então só precisamos cobrir wonReason/lostReason aqui.
-const OUTCOME_REASON_FIELD = { ganho: "wonReason", perdido: "lostReason" };
-const OUTCOME_REASON_OPTIONS = {
-  ganho: [
-    { value: "PRICE_ACCEPTED", label: "Preço aceito" },
-    { value: "FAST_DECISION", label: "Decisão rápida" },
-    { value: "REFERRAL", label: "Indicação" },
-    { value: "OTHER", label: "Outro" },
-  ],
-  perdido: [
-    { value: "PRICE_TOO_HIGH", label: "Preço muito alto" },
-    { value: "COMPETITOR", label: "Foi para um concorrente" },
-    { value: "FINANCING_DENIED", label: "Financiamento negado" },
-    { value: "LOCATION", label: "Localização não atendeu" },
-    { value: "OTHER", label: "Outro" },
-  ],
-};
+// Motivos de desfecho e responsável obrigatório: regras em ./opportunityRules.js (motivos vêm da API, configurados pelo admin).
 
 export default function CrmPage() {
   const [opportunities, setOpportunities] = useState([]);
@@ -83,6 +67,7 @@ export default function CrmPage() {
   const [createStageKey, setCreateStageKey] = useState(null);
   const [actionError, setActionError] = useState("");
   const [reasonPrompt, setReasonPrompt] = useState(null); // { itemId, stageKey } | null
+  const [reasonOptions, setReasonOptions] = useState({ ganho: [], perdido: [] });
 
   const personName = (id) => people.find((p) => p.id === id)?.legalName || "Sem pessoa vinculada";
   const propertyName = (id) => properties.find((p) => p.id === id)?.name || "Sem imóvel vinculado";
@@ -95,12 +80,13 @@ export default function CrmPage() {
   const funnelQuery = useAsyncState(
     async () => {
       const isLatest = latestLoad.begin();
-      const [opps, apiPeople, apiProperties, apiUsers] = await Promise.all([listOpportunities(), listPeople(), listProperties(), apiFetch("/users?status=ACTIVE")]);
+      const [opps, apiPeople, apiProperties, apiUsers, catalog] = await Promise.all([listOpportunities(), listPeople(), listProperties(), apiFetch("/users?status=ACTIVE"), listOutcomeReasons()]);
       if (!isLatest()) return { opportunities: opps }; // recarga mais nova já em andamento: não aplica dado velho
       setOpportunities(opps);
       setPeople(apiPeople || []);
       setProperties(apiProperties);
       setUsers(apiUsers || []);
+      setReasonOptions(toReasonOptions(catalog));
       return { opportunities: opps };
     },
     { isEmpty: () => false }
@@ -276,10 +262,12 @@ export default function CrmPage() {
         initialStageKey={createStageKey}
         properties={properties}
         users={users}
+        reasonOptions={reasonOptions}
       />
       <ReasonPromptModal
         prompt={reasonPrompt}
         stages={stages}
+        reasonOptions={reasonOptions}
         onClose={() => setReasonPrompt(null)}
         onConfirm={async (reason) => {
           const { itemId, stageKey } = reasonPrompt;
@@ -318,6 +306,7 @@ function OpportunityDetailModal({ opportunity, stages, users = [], onSave, onClo
   const [form, setForm] = useState(null);
   const [saving, setSaving] = useState(false);
   const [dueInvalid, setDueInvalid] = useState(false);
+  const [ownerInvalid, setOwnerInvalid] = useState("");
   const [taskForm, setTaskForm] = useState({ title: "", dueAt: "", priority: "NORMAL", assignedToUserId: "" });
   const [taskDueInvalid, setTaskDueInvalid] = useState(false);
   const [taskError, setTaskError] = useState("");
@@ -400,11 +389,14 @@ function OpportunityDetailModal({ opportunity, stages, users = [], onSave, onClo
 
   async function saveEditing() {
     if (dueInvalid) return;
+    const missingOwner = ownerError(form.ownerUserId);
+    setOwnerInvalid(missingOwner);
+    if (missingOwner) return;
     setSaving(true);
     const patch = {
       nextAction: form.nextAction.trim() || null,
       nextActionDueAt: dateTimeLocalInputToIso(form.nextActionDueAt) || null,
-      ownerUserId: form.ownerUserId || null,
+      ...ownerPatch(opportunity.ownerUserId, form.ownerUserId),
       temperature: form.temperature || null,
       expectedValue: form.expectedValue !== "" ? Number(form.expectedValue) : null,
     };
@@ -428,6 +420,7 @@ function OpportunityDetailModal({ opportunity, stages, users = [], onSave, onClo
           <p className={styles.detailMeta}>
             Responsável: {opportunity.repName} · Criada em {formatDateTime(opportunity.createdAt)}
           </p>
+          <OpportunityJourneyLinks opportunity={opportunity} />
 
           {editing ? (
             <div className={styles.detailSection}>
@@ -458,13 +451,13 @@ function OpportunityDetailModal({ opportunity, stages, users = [], onSave, onClo
                   onBlur={(e) => setDueInvalid(isDateInputInvalid(e.target.validity))}
                 />
               </FormField>
-              <FormField label="Responsável" htmlFor="oe-owner">
+              <FormField label="Responsável" htmlFor="oe-owner" required error={ownerInvalid || undefined}>
                 <Select
                   id="oe-owner"
                   value={form.ownerUserId}
-                  onChange={(e) => setForm((p) => ({ ...p, ownerUserId: e.target.value }))}
+                  onChange={(e) => { setOwnerInvalid(""); setForm((p) => ({ ...p, ownerUserId: e.target.value })); }}
                 >
-                  <option value="">Sem responsável</option>
+                  <option value="">Selecionar…</option>
                   {users.map((u) => (
                     <option key={u.id} value={u.id}>{u.name}</option>
                   ))}
@@ -665,7 +658,7 @@ function OpportunityDetailModal({ opportunity, stages, users = [], onSave, onClo
   );
 }
 
-function ReasonPromptModal({ prompt, stages, onClose, onConfirm }) {
+function ReasonPromptModal({ prompt, stages, reasonOptions, onClose, onConfirm }) {
   const [reason, setReason] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -677,7 +670,7 @@ function ReasonPromptModal({ prompt, stages, onClose, onConfirm }) {
   }, [prompt]);
 
   if (!prompt) return null;
-  const options = OUTCOME_REASON_OPTIONS[prompt.stageKey] || [];
+  const options = reasonOptions[prompt.stageKey] || [];
   const stageLabel = stages.find((s) => s.key === prompt.stageKey)?.label || prompt.stageKey;
 
   async function handleConfirm() {
@@ -717,7 +710,7 @@ function ReasonPromptModal({ prompt, stages, onClose, onConfirm }) {
   );
 }
 
-function CreateOpportunityModal({ open, onClose, onCreate, stages, initialStageKey, properties, users }) {
+function CreateOpportunityModal({ open, onClose, onCreate, stages, initialStageKey, properties, users, reasonOptions: optionsByStage }) {
   const [personName, setPersonName] = useState("");
   const [personId, setPersonId] = useState(null);
   const [stageKey, setStageKey] = useState(initialStageKey || stages[0]?.key || "");
@@ -766,11 +759,12 @@ function CreateOpportunityModal({ open, onClose, onCreate, stages, initialStageK
   }
 
   const reasonField = OUTCOME_REASON_FIELD[stageKey];
-  const reasonOptions = OUTCOME_REASON_OPTIONS[stageKey] || [];
+  const reasonOptions = optionsByStage[stageKey] || [];
 
   async function handleSubmit() {
     const nextErrors = {};
     if (!personId) nextErrors.personName = "Selecione o contato (cliente/lead).";
+    if (ownerError(ownerUserId)) nextErrors.ownerUserId = ownerError(ownerUserId);
     if (!CLOSED_STAGES.includes(stageKey)) {
       if (!nextAction.trim()) nextErrors.nextAction = "Toda oportunidade ativa precisa de uma próxima ação.";
       if (!nextActionDueAt) nextErrors.nextActionDueAt = "Informe o prazo da próxima ação.";
@@ -789,7 +783,7 @@ function CreateOpportunityModal({ open, onClose, onCreate, stages, initialStageK
       stage: stageKey,
       personId,
       propertyId: propertyId || undefined,
-      ownerUserId: ownerUserId || undefined,
+      ownerUserId,
       nextAction: nextAction.trim(),
       nextActionDueAt: dateTimeLocalInputToIso(nextActionDueAt),
       ...(reasonField && outcomeReason ? { [reasonField]: outcomeReason } : {}),
@@ -842,7 +836,7 @@ function CreateOpportunityModal({ open, onClose, onCreate, stages, initialStageK
           </Select>
         </FormField>
         <div className={styles.span2}>
-          <FormField label="Vendedor responsável" htmlFor="o-rep">
+          <FormField label="Vendedor responsável" htmlFor="o-rep" required error={errors.ownerUserId}>
             <Select id="o-rep" value={ownerUserId} onChange={(e) => setOwnerUserId(e.target.value)}>
               <option value="">Selecionar…</option>
               {users.map((u) => (

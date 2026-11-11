@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import { STAGES } from "@/lib/mock/opportunities.js";
 import { toApiStage, fromApiStage, stageLabelPt, OTHER_STAGES_KEY } from "@/lib/api/crm.js";
 
-const LIVRO = ["NEW", "QUALIFIED", "MATCHING", "VISIT_SCHEDULED", "VISITED", "PROPOSAL", "FINANCING", "CONTRACT", "CLOSED_WON", "CLOSED_LOST", "NURTURE"];
+const LIVRO = ["NEW", "QUALIFIED", "MATCHING", "VISIT_SCHEDULED", "VISITED", "PROPOSAL", "FINANCING", "CONTRACT", "WON", "LOST", "NURTURE"];
 
 test("m3 funil: as colunas são as 11 etapas do livro, na ordem do §10, e mandam o código do livro à API", () => {
   assert.deepEqual(STAGES.map((s) => toApiStage(s.key)), LIVRO);
@@ -16,6 +16,10 @@ test("m3 funil: o que a API devolve volta para a mesma coluna (ida e volta) e WO
   for (const s of STAGES) assert.equal(fromApiStage(toApiStage(s.key)), s.key);
   assert.equal(fromApiStage("WON"), "ganho");
   assert.equal(fromApiStage("LOST"), "perdido");
+  // Dado antigo não convertido (DI-M3CA-3): CLOSED_WON/CLOSED_LOST e a desistência (WITHDRAWN = perda) caem na coluna do livro.
+  assert.equal(fromApiStage("CLOSED_WON"), "ganho");
+  assert.equal(fromApiStage("CLOSED_LOST"), "perdido");
+  assert.equal(fromApiStage("WITHDRAWN"), "perdido");
 });
 
 test("m3 funil: etapa do quadro antigo é exibida na coluna equivalente; etapa desconhecida não cai em coluna do livro", () => {
@@ -24,7 +28,7 @@ test("m3 funil: etapa do quadro antigo é exibida na coluna equivalente; etapa d
   assert.equal(fromApiStage("VISITA"), "visit_scheduled");
   assert.equal(fromApiStage("PROPOSTA"), "proposal");
   const keys = new Set(STAGES.map((s) => s.key));
-  assert.equal(keys.has(fromApiStage("WITHDRAWN")), false);
+  assert.equal(keys.has(fromApiStage("FASE_DESCONHECIDA")), false);
   assert.equal(keys.has(OTHER_STAGES_KEY), false, "a coluna de outras etapas não é etapa do funil");
   assert.equal(stageLabelPt("WITHDRAWN"), "Desistência");
 });

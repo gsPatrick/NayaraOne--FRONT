@@ -28,8 +28,10 @@ import {
 import { listProperties } from "@/lib/api/properties";
 import { listPeople } from "@/lib/api/people";
 import { STAGES } from "@/lib/mock/opportunities";
-import { formatBRL, formatDate, formatDateTime, dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
+import { formatBRL, formatDate, formatDateTime, dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE, toNumber } from "@/lib/format";
 import styles from "./page.module.css";
+import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
+import { proposalPropertyFor, proposalPropertyError } from "../opportunityRules";
 
 // `opportunity.stage` já vem mapeado pela camada de API (fromApiStage em lib/api/crm.js) —
 // aqui só traduzimos a CHAVE (ex.: "ganho") pro rótulo em pt-BR do funil (ex.: "Fechado
@@ -208,7 +210,7 @@ function CreateProposalModal({ open, onClose, onCreate, opportunities, propertie
   useEffect(() => {
     if (open) {
       setOpportunityId(opportunities[0]?.id || "");
-      setPropertyId("");
+      setPropertyId(proposalPropertyFor(opportunities[0]?.id, opportunities));
       setValue("");
       setValidUntil("");
       setValidUntilInvalid(false);
@@ -237,7 +239,9 @@ function CreateProposalModal({ open, onClose, onCreate, opportunities, propertie
   async function handleSubmit() {
     const nextErrors = {};
     if (!opportunityId) nextErrors.opportunityId = "Selecione a oportunidade.";
-    if (!value || Number(value) <= 0) nextErrors.value = "Informe um valor maior que zero.";
+    if (proposalPropertyError(propertyId)) nextErrors.propertyId = proposalPropertyError(propertyId);
+    const numericValue = toNumber(value);
+    if (Number.isNaN(numericValue) || !(numericValue > 0)) nextErrors.value = "Informe um valor maior que zero.";
     if (validUntilInvalid) nextErrors.validUntil = DATE_INPUT_ERROR_MESSAGE;
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
@@ -245,8 +249,8 @@ function CreateProposalModal({ open, onClose, onCreate, opportunities, propertie
     setSubmitting(true);
     const ok = await onCreate({
       opportunityId,
-      propertyId: propertyId || undefined,
-      value: Number(value),
+      propertyId,
+      value: toNumber(value),
       validUntil: dateOnlyInputToIso(validUntil),
       notes: notes.trim() || undefined,
     });
@@ -267,23 +271,23 @@ function CreateProposalModal({ open, onClose, onCreate, opportunities, propertie
       }
     >
       <FormField label="Oportunidade" htmlFor="p-opportunity" required error={errors.opportunityId}>
-        <Select id="p-opportunity" value={opportunityId} onChange={(e) => setOpportunityId(e.target.value)}>
+        <Select id="p-opportunity" value={opportunityId} onChange={(e) => { setOpportunityId(e.target.value); setPropertyId(proposalPropertyFor(e.target.value, opportunities)); }}>
           <option value="">Selecionar…</option>
           {opportunities.map((o) => (
             <option key={o.id} value={o.id}>{`${personName(o.personId)} — ${stageLabel(o.stage)}`}</option>
           ))}
         </Select>
       </FormField>
-      <FormField label="Imóvel (opcional)" htmlFor="p-property">
+      <FormField label="Imóvel" htmlFor="p-property" required error={errors.propertyId} helper={errors.propertyId ? undefined : "Vem preenchido com o imóvel de interesse da oportunidade."}>
         <Select id="p-property" value={propertyId} onChange={(e) => setPropertyId(e.target.value)}>
-          <option value="">Usar imóvel da oportunidade</option>
+          <option value="">Selecionar…</option>
           {properties.map((p) => (
             <option key={p.id} value={p.id}>{p.name}</option>
           ))}
         </Select>
       </FormField>
       <FormField label="Valor (R$)" htmlFor="p-value" required error={errors.value}>
-        <Input id="p-value" type="number" min="0.01" step="0.01" value={value} onChange={(e) => setValue(e.target.value)} />
+        <DecimalInput id="p-value" value={value} onChange={(e) => setValue(e.target.value)} />
       </FormField>
       <FormField
         label="Válida até"

@@ -8,7 +8,8 @@ import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import StickyActionBar from "@/components/organisms/StickyActionBar/StickyActionBar";
 import Table from "@/components/organisms/Table/Table";
 import CrmNavMenu from "@/components/molecules/CrmNavMenu/CrmNavMenu";
-import { getCrmDashboard, fromApiStage, stageLabelPt, LOST_REASON_LABELS } from "@/lib/api/crm";
+import { getCrmDashboard, fromApiStage, stageLabelPt, LOST_REASON_LABELS, listOutcomeReasons } from "@/lib/api/crm";
+import { lostReasonLabels } from "../opportunityRules";
 import { STAGES } from "@/lib/mock/opportunities";
 import { formatBRL, formatDateTime } from "@/lib/format";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
@@ -31,7 +32,12 @@ function stageLabel(apiStage) {
 
 export default function CrmDashboardPage() {
   // M9-D850: carregando, vazio real, 403, sem conexão e "tentar de novo" vêm do padrão único de estados.
-  const dashboardQuery = useAsyncState(() => getCrmDashboard(), { key: "crm-dashboard" });
+  // Os números vêm do escopo de carteira de quem vê (corretor: só a carteira dele; M3-17). Os rótulos dos motivos são os
+  // configurados pela empresa (GET /crm/outcome-reasons).
+  const dashboardQuery = useAsyncState(async () => {
+    const [data, catalog] = await Promise.all([getCrmDashboard(), listOutcomeReasons()]);
+    return { ...data, reasonLabels: { ...LOST_REASON_LABELS, ...lostReasonLabels(catalog) } };
+  }, { key: "crm-dashboard" });
   const dashboard = dashboardQuery.data;
 
   return (
@@ -77,7 +83,7 @@ export default function CrmDashboardPage() {
               <div className={styles.closedGrid}>
                 <StatTile label="Ganhas" value={dashboard.opportunities.closed.won} tone="success" icon="check" />
                 <StatTile label="Perdidas" value={dashboard.opportunities.closed.lost} tone="danger" icon="close" />
-                <StatTile label="Desistências" value={dashboard.opportunities.closed.withdrawn} tone="neutral" icon="ban" />
+                <StatTile label="Desistências (entre as perdidas)" value={dashboard.opportunities.closed.withdrawn} tone="neutral" icon="ban" />
               </div>
             </Card>
           </div>
@@ -91,7 +97,7 @@ export default function CrmDashboardPage() {
                   {dashboard.topLostReasons.map((r) => (
                     <div className={styles.barRow} key={r.reason}>
                       <span className={styles.barLabel}>
-                        {r.inEnum ? (LOST_REASON_LABELS[r.reason] || r.reason) : r.reason}
+                        {r.inEnum ? (dashboard.reasonLabels[r.reason] || r.reason) : r.reason}
                         {!r.inEnum ? <Badge tone="neutral" className={styles.legacyBadge}>legado</Badge> : null}
                       </span>
                       <span className={styles.barValue}>{r.total}</span>
