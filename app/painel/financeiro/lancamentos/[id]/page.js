@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { generateIdempotencyKey } from "@/lib/offline/offlineQueue";
 import { useRouter, notFound } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
@@ -77,6 +78,9 @@ export default function LancamentoDetailPage({ params }) {
   const [mfaAction, setMfaAction] = useState("settle");
   const [partialOpen, setPartialOpen] = useState(false);
   const [partialAmount, setPartialAmount] = useState("");
+  // FIN-004: uma chave por baixa; a mesma chave é reenviada se a tentativa falhar (replay sem baixa dupla).
+  const settleKeyRef = useRef(null);
+  const partialKeyRef = useRef(null);
   // F03 — baixa manual de pagamento bancário: comprovante + motivo (exceção formal).
   const [manualOpen, setManualOpen] = useState(false);
   const [manualFile, setManualFile] = useState(null);
@@ -204,6 +208,7 @@ export default function LancamentoDetailPage({ params }) {
       confirmLabel: "Liquidar",
     });
     if (!ok) return;
+    if (!settleKeyRef.current) settleKeyRef.current = generateIdempotencyKey();
     setMfaAction("settle");
     setMfaOpen(true);
   }
@@ -257,7 +262,8 @@ export default function LancamentoDetailPage({ params }) {
     setBusy(true);
     setNotice(null);
     try {
-      const updated = await settleFinancialEntry(entry.id);
+      const updated = await settleFinancialEntry(entry.id, null, settleKeyRef.current);
+      settleKeyRef.current = null;
       setEntry(updated);
       load();
       setNotice({ tone: "success", text: needsManualEvidence ? "Baixa manual registrada com o comprovante anexado." : "Lançamento liquidado com sucesso." });
@@ -282,6 +288,9 @@ export default function LancamentoDetailPage({ params }) {
       confirmLabel: "Liquidar parcial",
     });
     if (!ok) return;
+    if (!partialKeyRef.current || partialKeyRef.current.amount !== amount) {
+      partialKeyRef.current = { amount, key: generateIdempotencyKey() };
+    }
     setMfaAction("settle-partial");
     setMfaOpen(true);
   }
@@ -290,7 +299,10 @@ export default function LancamentoDetailPage({ params }) {
     setBusy(true);
     setNotice(null);
     try {
-      const updated = await settleFinancialEntryPartial(entry.id, toNumber(partialAmount));
+      const amount = toNumber(partialAmount);
+      if (!partialKeyRef.current || partialKeyRef.current.amount !== amount) partialKeyRef.current = { amount, key: generateIdempotencyKey() };
+      const updated = await settleFinancialEntryPartial(entry.id, amount, null, partialKeyRef.current.key);
+      partialKeyRef.current = null;
       setEntry(updated.original || updated);
       load();
       setPartialOpen(false);
