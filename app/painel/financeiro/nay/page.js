@@ -31,6 +31,11 @@ const INDICATOR_LABELS = {
   indiceInadimplencia: "Índice de inadimplência",
   necessidadeParaRespirar: "Necessidade de capital para a próxima semana",
   anomaliasAltoRisco: "Casos de anomalia de alto risco em aberto",
+  aReceber30d: "A receber nos próximos 30 dias",
+  aPagar30d: "A pagar nos próximos 30 dias",
+  repassesPendentes: "Repasses pendentes a proprietários",
+  comissoesProvisionadas: "Comissões provisionadas (ainda não pagas)",
+  conciliacoesPendentes: "Transações de extrato sem conciliação",
 };
 
 const SECTION_TITLES = {
@@ -41,6 +46,12 @@ const SECTION_TITLES = {
   anomalias: "Anomalias",
 };
 
+// Guia M4 §13: a NAY lê o retrato financeiro (read model), não o ledger a cada pergunta.
+const READ_MODEL_LABELS = {
+  "analytics.rm_finance_health": "Retrato da saúde financeira (read model)",
+  "analytics.rm_finance_sector_margin": "Retrato de receita e custo por setor (read model)",
+};
+
 const TABLE_LABELS = {
   "finance.financial_entries": "Lançamentos",
   "finance.bank_transactions": "Extrato bancário importado",
@@ -49,10 +60,12 @@ const TABLE_LABELS = {
   "finance.commissions": "Comissões",
   "finance.owner_repasses": "Repasses a proprietários",
   "finance.anomaly_cases": "Casos de anomalia",
+  "finance.result_centers": "Setores (centros de resultado)",
 };
 
 function sourceLabel(source) {
-  if (source?.readModel) return "Relatório de saúde financeira";
+  if (source?.readModel) return READ_MODEL_LABELS[source.readModel] || "Retrato da saúde financeira";
+  if (source?.tabela === "finance.financial_entries") return "Lançamentos em aberto (fila de trabalho)";
   if (source?.tabela) return TABLE_LABELS[source.tabela] || "Dados do Financeiro";
   return "Dados do Financeiro";
 }
@@ -60,14 +73,14 @@ function sourceLabel(source) {
 function indicatorLabel(code) {
   if (INDICATOR_LABELS[code]) return INDICATOR_LABELS[code];
   const m = /^(recebido|pago)_(\d{4}-\d{2})$/.exec(code);
-  if (m) return `${m[1] === "recebido" ? "Recebido" : "Pago"} em ${formatCompetence(m[2])}`;
+  if (m) return `${m[1] === "recebido" ? "Receita realizada" : "Custo realizado"} em ${formatCompetence(m[2])}`;
   return "Indicador";
 }
 
 function indicatorValue(code, value) {
   if (value == null) return "Indisponível";
   if (code === "indiceInadimplencia") return formatPercent(Number(value) * 100);
-  if (code === "anomaliasAltoRisco") return String(value);
+  if (code === "anomaliasAltoRisco" || code === "conciliacoesPendentes") return String(value);
   return formatBRL(value);
 }
 
@@ -92,7 +105,7 @@ function NumberList({ numbers }) {
 
 function SuggestionList({ items, empty, render }) {
   if (!items || items.length === 0) return <p className={styles.empty}>{empty}</p>;
-  return <ul className={styles.sugList}>{items.map((item, i) => <li key={item.financialEntryId || item.costCenterId || i} className={styles.sugRow}>{render(item)}</li>)}</ul>;
+  return <ul className={styles.sugList}>{items.map((item, i) => <li key={item.financialEntryId || item.resultCenterId || i} className={styles.sugRow}>{render(item)}</li>)}</ul>;
 }
 
 export default function NayFinanceiraPage() {
@@ -162,11 +175,11 @@ export default function NayFinanceiraPage() {
             <h3 className={styles.numberLabel}>Reduzir custo</h3>
             <SuggestionList
               items={s?.reducaoCusto}
-              empty="Nenhum centro de custo com gasto em alta nos dois últimos meses."
+              empty="Nenhum setor com custo em alta nos dois últimos meses."
               render={(x) => (
                 <>
-                  <div className={styles.sugTop}><span className={styles.sugTitle}>{humanizeText(x.nome || x.centroCusto || "Centro de custo")}</span><span className={styles.numberValue}>{formatBRL(x.crescimento)}</span></div>
-                  <span className={styles.sugReason}>O gasto liquidado cresceu {formatBRL(x.crescimento)} em relação ao mês anterior.</span>
+                  <div className={styles.sugTop}><span className={styles.sugTitle}>{humanizeText(x.nome || "Setor sem nome")}</span><span className={styles.numberValue}>{formatBRL(x.crescimento)}</span></div>
+                  <span className={styles.sugReason}>O custo realizado do setor cresceu {formatBRL(x.crescimento)} em relação ao mês anterior.</span>
                 </>
               )}
             />
@@ -187,8 +200,9 @@ export default function NayFinanceiraPage() {
 
           <Card title="Fontes e versões usadas" subtitle={`Gerado em ${formatDateTime(data.geradoEm)}`}>
             <ul className={styles.sources}>
-              {(data.fontes?.tabelas || []).map((t) => <li key={t}>{TABLE_LABELS[t] || "Dados do Financeiro"}</li>)}
-              <li>Relatório de saúde financeira, atualizado em {formatDateTime(data.fontes?.sourceSnapshotAt || data.sourceSnapshotAt)}</li>
+              {(data.fontes?.readModels || []).map((t) => <li key={t}>{READ_MODEL_LABELS[t] || "Retrato financeiro"}</li>)}
+              {(data.fontes?.cadastros || []).map((t) => <li key={t}>Cadastro: {TABLE_LABELS[t] || "Dados do Financeiro"}</li>)}
+              <li>Retrato de {data.fontes?.asOfDate ? formatCalendarDay(data.fontes.asOfDate) : "data indisponível"}, atualizado em {data.fontes?.sourceSnapshotAt || data.sourceSnapshotAt ? formatDateTime(data.fontes?.sourceSnapshotAt || data.sourceSnapshotAt) : "ainda não calculado"}</li>
               {(data.fontes?.regras || []).map((r) => <li key={r.codigo}>Regra de antifraude {r.codigo}: {r.origem}</li>)}
             </ul>
             <p className={styles.limits}>{data.limites}</p>

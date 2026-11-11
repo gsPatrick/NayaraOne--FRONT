@@ -25,6 +25,11 @@ const ESPERADO = {
   "antifraude.conciliacao_manual_percentual_mes": { type: "decimal", defaultValue: 30, min: 1, max: 100 },
   "antifraude.estorno_frequente_usuario_30d": { type: "integer", defaultValue: 3, min: 1, max: 100 },
   "antifraude.estorno_frequente_empresa_30d": { type: "integer", defaultValue: 3, min: 1, max: 1000 },
+  // Guia §9 regra AUTO_STRONG parametrizada (DEC-006; DI-M4CC-3 na API: sugestão 0,45 e folga 0,05).
+  "conciliacao.score_auto_minimo": { type: "decimal", defaultValue: 0.9, min: 0.5, max: 1 },
+  "conciliacao.score_sugestao_minimo": { type: "decimal", defaultValue: 0.45, min: 0.1, max: 0.99 },
+  "conciliacao.janela_data_dias": { type: "integer", defaultValue: 3, min: 0, max: 30 },
+  "conciliacao.folga_ambiguidade": { type: "decimal", defaultValue: 0.05, min: 0, max: 1 },
 };
 
 test("m4 §17.7 parâmetros: a aba Financeiro lista as chaves (as seis antigas e as oito da DEC-007) com o padrão e a faixa da API", () => {
@@ -106,5 +111,6 @@ test("DEC-007 MFA: o 403 de MFA recente de um parâmetro sensível não vira 'Se
     assert.match(src, /isMfaSettingError\(err\) \? mfaSettingMessage\(err\)/, file);
   }
   const financeiro = FINANCEIRO_FIELDS.filter((f) => /verificação em duas etapas/.test(f.helper)).map((f) => f.key).sort();
-  assert.deepEqual(financeiro, ["finance.antifraud_new_account_threshold", "finance.bank_account_cooldown_hours", "finance.reconciliation.auto_strong"]);
+  // conciliacao.score_auto_minimo: exige MFA no catálogo (parametros.csv, DEC-006), como a API (requiresMfa).
+  assert.deepEqual(financeiro, ["conciliacao.score_auto_minimo", "finance.antifraud_new_account_threshold", "finance.bank_account_cooldown_hours", "finance.reconciliation.auto_strong"]);
 });
