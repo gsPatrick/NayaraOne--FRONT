@@ -23,6 +23,7 @@ import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
 import { getActiveSlaRule, createSlaRule, getActiveMarginRule, createMarginRule, deactivateMarginRule, listMarginRuleVersions } from "@/lib/api/construction";
 import { toNumber, formatDateTime } from "@/lib/format";
 import styles from "./page.module.css";
+import CostBasisCard from "./CostBasisCard";
 
 import { reportLookupProblem } from "@/lib/asyncState/lookup";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
@@ -214,6 +215,8 @@ export default function ObrasConfiguracoesPage() {
         </Card>
         )}
       </AsyncState>
+
+      <CostBasisCard />
 
       <AsyncState result={marginQuery}>
         {() => (
