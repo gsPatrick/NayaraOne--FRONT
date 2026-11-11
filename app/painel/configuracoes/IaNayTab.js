@@ -2,9 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Card from "@/components/molecules/Card/Card";
-import Checkbox from "@/components/atoms/Checkbox/Checkbox";
-import Input from "@/components/atoms/Input/Input";
-import FormField from "@/components/molecules/FormField/FormField";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
 import Spinner from "@/components/atoms/Spinner/Spinner";
@@ -30,6 +27,9 @@ import { IA_CORRESPONDENTE_GROUPS } from "./iaCorrespondenteGroups";
 import { IA_DOCUMENTAL_GROUPS } from "./iaDocumentalGroups";
 import { IA_CONVERSA_GROUPS } from "./iaConversaGroups";
 import { IA_COMERCIAL_GROUPS } from "./iaComercialGroups";
+import { IA_COMERCIAL_CAPACIDADES_GROUPS } from "./iaComercialCapacidadesGroups";
+import { IA_COMERCIAL_SENSIVEL_GROUPS } from "./iaComercialSensivelGroups";
+import IaNayField from "./IaNayField";
 import { IA_OBSERVABILIDADE_GROUPS } from "./iaObservabilidadeGroups";
 import { isMfaSettingError, isSettingForbidden, mfaSettingMessage } from "@/lib/settings/errorLabel";
 
@@ -56,6 +56,8 @@ const IA_GROUPS = [
   ...IA_DOCUMENTAL_GROUPS,
   ...IA_CONVERSA_GROUPS,
   ...IA_COMERCIAL_GROUPS,
+  ...IA_COMERCIAL_CAPACIDADES_GROUPS,
+  ...IA_COMERCIAL_SENSIVEL_GROUPS,
   ...IA_OBSERVABILIDADE_GROUPS,
   {
     title: "Chave geral da NAY",
@@ -519,26 +521,7 @@ export default function IaNayTab() {
               <div className={styles.formGrid}>
                 {group.fields.map((field) => (
                   <div key={field.key}>
-                    {field.type === "text" || field.type === "integer" || field.type === "decimal" ? (
-                      <FormField label={field.label} htmlFor={`ia-nay-${field.key}`} helper={field.helper}>
-                        <Input
-                          id={`ia-nay-${field.key}`}
-                          inputMode={field.type === "integer" ? "numeric" : field.type === "decimal" ? "decimal" : undefined}
-                          value={values[field.key] ?? ""}
-                          onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
-                        />
-                      </FormField>
-                    ) : (
-                      <>
-                        <Checkbox
-                          id={`ia-nay-${field.key}`}
-                          label={field.label}
-                          checked={Boolean(values[field.key])}
-                          onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.checked }))}
-                        />
-                        {field.helper ? <p>{field.helper}</p> : null}
-                      </>
-                    )}
+                    <IaNayField field={field} value={values[field.key]} onChange={(next) => setValues((prev) => ({ ...prev, [field.key]: next }))} />
                   </div>
                 ))}
               </div>
