@@ -41,6 +41,7 @@ import ReloadAlert from "@/components/molecules/ReloadAlert/ReloadAlert";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { createLatestGuard } from "@/lib/asyncState/latest";
 import styles from "./page.module.css";
+import VinculoAviso from "./VinculoAviso";
 
 const GRADIENTS = [
   "linear-gradient(135deg, #17130F 0%, #3A2E14 100%)",
@@ -379,6 +380,9 @@ export default function PersonDetailPage({ params }) {
     }
   }
 
+  // Pessoa do grupo vinculada a esta empresa (DI-M9I-3): a base é da outra empresa; aqui não se exclui nem se mescla.
+  const vinculada = person.vinculo === "VINCULADA";
+
   return (
     <AppShell title={person.legalName} backHref="/painel/pessoas">
       <div className={styles.wrap}>
@@ -392,7 +396,7 @@ export default function PersonDetailPage({ params }) {
             </div>
           </div>
           <div className={styles.actions}>
-            {duplicatePartner && person.status !== "MERGED" ? (
+            {duplicatePartner && person.status !== "MERGED" && !vinculada ? (
               <Button
                 variant="secondary"
                 onClick={() => {
@@ -403,19 +407,21 @@ export default function PersonDetailPage({ params }) {
                 <Icon name="layers" size={16} /> Mesclar cadastros (duplicata detectada)
               </Button>
             ) : null}
-            {person.status !== "MERGED" ? (
+            {person.status !== "MERGED" && !vinculada ? (
               <Button variant="secondary" onClick={() => setManualSearchOpen(true)}>
                 <Icon name="layers" size={16} /> Mesclar com outro cadastro
               </Button>
             ) : null}
             {person.status !== "MERGED" ? (
               <Button variant="secondary" onClick={() => router.push(`/painel/pessoas/${person.id}/editar`)}>
-                <Icon name="pencil" size={16} /> Editar
+                <Icon name="pencil" size={16} /> {vinculada ? "Editar dados desta empresa" : "Editar"}
               </Button>
             ) : null}
-            <Button variant="danger" onClick={() => setDeleteOpen(true)}>
-              <Icon name="trash" size={16} /> Excluir
-            </Button>
+            {!vinculada ? (
+              <Button variant="danger" onClick={() => setDeleteOpen(true)}>
+                <Icon name="trash" size={16} /> Excluir
+              </Button>
+            ) : null}
           </div>
         </div>
 
@@ -424,6 +430,8 @@ export default function PersonDetailPage({ params }) {
             <Alert tone="danger" title="Ação não concluída">{actionError}</Alert>
           </div>
         ) : null}
+
+        <VinculoAviso person={person} onUnlinked={() => router.push("/painel/pessoas")} />
 
         {person.status === "MERGED" && mergedIntoPerson ? (
           <div className={styles.mergedAlert}>

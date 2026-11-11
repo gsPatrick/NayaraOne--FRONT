@@ -179,6 +179,7 @@ export default function PessoasPage() {
       render: (row) => (
         <div className={styles.statusCell}>
           <Badge tone={STATUS_TONE[row.status] || "neutral"}>{STATUS_LABELS[row.status] || row.status}</Badge>
+          {row.vinculo === "VINCULADA" ? <Badge tone="info">Vinculada do grupo</Badge> : null}
           {duplicateIds.has(row.id) && row.status !== "MERGED" ? (
             <div className={styles.duplicateFlag}>
               <Badge tone="warning">Possível duplicata</Badge>
@@ -245,7 +246,7 @@ export default function PessoasPage() {
         <RowActions
           onView={() => router.push(`/painel/pessoas/${row.id}`)}
           onEdit={() => router.push(`/painel/pessoas/${row.id}/editar`)}
-          onDelete={() => setDeleteTarget(row)}
+          onDelete={row.vinculo === "VINCULADA" ? undefined : () => setDeleteTarget(row)}
         />
       ),
     },

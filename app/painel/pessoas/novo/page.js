@@ -17,6 +17,7 @@ import ErrorSummary from "@/components/molecules/ErrorSummary/ErrorSummary";
 import { humanizeApiError } from "@/lib/errors/apiErrors";
 import { FIELD_LABELS } from "@/lib/errors/fieldLabels";
 import { validatePersonStep, PERSON_FIELD_IDS, PERSON_FIELD_STEP } from "@/lib/errors/personWizard";
+import { oferecerVinculo, podeOferecerVinculo } from "./vinculoNoGrupo";
 import LocationPicker from "@/components/molecules/LocationPicker/LocationPicker";
 import PhotoUpload from "@/components/molecules/PhotoUpload/PhotoUpload";
 import Avatar from "@/components/atoms/Avatar/Avatar";
@@ -323,6 +324,13 @@ export default function NovaPessoaPage() {
               return;
             }
             created = await createPerson({ ...payload, allowDuplicate: true });
+          } else if (podeOferecerVinculo(err)) {
+            // CPF/CNPJ de outra empresa do grupo: vira vínculo explícito, só com confirmação (DI-M9I-2).
+            created = await oferecerVinculo(payload, confirm);
+            if (!created) {
+              setSubmitting(false);
+              return;
+            }
           } else {
             throw err;
           }

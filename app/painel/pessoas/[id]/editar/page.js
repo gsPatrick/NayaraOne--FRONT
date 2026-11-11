@@ -32,6 +32,7 @@ import { EMPTY_EVIDENCE, buildChangeEvidence } from "@/lib/changeEvidence";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import styles from "./page.module.css";
+import { BaseDeOutraEmpresa } from "../VinculoAviso";
 
 const EMPTY_CONTACT = { id: null, type: "PHONE", value: "", primary: false };
 // FIX (homologação): "value" nunca existiu de verdade na API (PersonDocument só tem
@@ -56,6 +57,7 @@ export default function EditarPessoaPage({ params }) {
   const [contacts, setContacts] = useState([]);
   const [initialDocuments, setInitialDocuments] = useState([]);
   const [documents, setDocuments] = useState([]);
+  const [vinculada, setVinculada] = useState(false); // DI-M9I-3: pessoa do grupo vinculada; a base é da outra empresa
 
   // M9-D850: o contato carrega pelo padrão de estados (carregando, 403, sem conexão, tentar de novo); 404 continua virando notFound().
   const personQuery = useAsyncState(
@@ -69,6 +71,7 @@ export default function EditarPessoaPage({ params }) {
         birthOrFoundationDate: person.birthOrFoundationDate ? person.birthOrFoundationDate.slice(0, 10) : "",
         status: person.status,
       });
+      setVinculada(person.vinculo === "VINCULADA");
       setInitialRoles(personRoles);
       setRoles(personRoles.map((r) => r.roleCode));
       const mappedContacts = person.contacts.map((c) => ({ id: c.id, type: c.type, value: c.value, primary: c.primary }));
@@ -153,16 +156,18 @@ export default function EditarPessoaPage({ params }) {
     setSubmitting(true);
     setSubmitError("");
     try {
-      const changeEvidence = await buildChangeEvidence(evidence);
-      await updatePerson(params.id, {
-        ...(changeEvidence ? { changeEvidence } : {}),
-        legalName: basic.legalName,
-        preferredName: basic.preferredName || null,
-        personType: basic.personType,
-        taxIdNormalized: basic.taxIdNormalized.replace(/\D/g, "") || null,
-        birthOrFoundationDate: basic.birthOrFoundationDate || null,
-        status: basic.status,
-      });
+      if (!vinculada) {
+        const changeEvidence = await buildChangeEvidence(evidence);
+        await updatePerson(params.id, {
+          ...(changeEvidence ? { changeEvidence } : {}),
+          legalName: basic.legalName,
+          preferredName: basic.preferredName || null,
+          personType: basic.personType,
+          taxIdNormalized: basic.taxIdNormalized.replace(/\D/g, "") || null,
+          birthOrFoundationDate: basic.birthOrFoundationDate || null,
+          status: basic.status,
+        });
+      }
 
       // Papéis: cria os novos, remove os que saíram da seleção.
       const rolesToAdd = roles.filter((code) => !initialRoles.some((r) => r.roleCode === code));
@@ -225,7 +230,9 @@ export default function EditarPessoaPage({ params }) {
         {submitError ? <Alert tone="danger" title="Não foi possível salvar">{submitError}</Alert> : null}
 
         <Card title="Dados básicos" className={styles.card}>
+          {vinculada ? <BaseDeOutraEmpresa /> : null}
           <div className={styles.formGrid}>
+            <fieldset disabled={vinculada} className={styles.fieldsetBase}>
             <FormField label="Tipo de pessoa" htmlFor="e-type">
               <Select id="e-type" value={basic.personType} onChange={(e) => setBasic({ ...basic, personType: e.target.value })}>
                 <option value="PF">Pessoa física</option>
@@ -272,6 +279,7 @@ export default function EditarPessoaPage({ params }) {
                 onBlur={(e) => setBirthDateInvalid(isDateInputInvalid(e.target.validity))}
               />
             </FormField>
+            </fieldset>
             <div className={styles.span2}>
               <FormField label="Papéis" helper="Selecione um ou mais papéis para este contato.">
                 <div className={styles.roleGrid}>
@@ -292,9 +300,11 @@ export default function EditarPessoaPage({ params }) {
           </div>
         </Card>
 
+        {!vinculada ? (
         <Card title="Origem da alteração" className={styles.card}>
           <ChangeEvidenceFields idPrefix="pessoa-evidence" value={evidence} onChange={setEvidence} />
         </Card>
+        ) : null}
 
         <Card title="Contatos" className={styles.card}>
           <div className={styles.rowsWrap}>
