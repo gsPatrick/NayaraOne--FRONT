@@ -15,7 +15,8 @@ test("m4 FIN-004 o cliente da API envia idempotencyKey na baixa parcial e na int
 });
 
 test("m4 FIN-004 a tela gera a chave uma vez por baixa, reaproveita no retry e só troca quando o valor muda ou a baixa conclui", () => {
-  const page = read("app/painel/financeiro/lancamentos/[id]/page.js");
+  // M4LR: a lógica da baixa saiu da página para o hook useSettlementActions.js (limite de 400 linhas), sem mudar o comportamento.
+  const page = read("app/painel/financeiro/lancamentos/[id]/useSettlementActions.js");
   assert.match(page, /const partialKeyRef = useRef\(null\)/);
   assert.match(page, /if \(!partialKeyRef\.current \|\| partialKeyRef\.current\.amount !== amount\)/);
   assert.match(page, /settleFinancialEntryPartial\(entry\.id, amount, null, partialKeyRef\.current\.key\);\s*partialKeyRef\.current = null;/);

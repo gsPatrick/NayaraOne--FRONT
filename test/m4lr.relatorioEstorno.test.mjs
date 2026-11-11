@@ -74,10 +74,15 @@ test("§6 estorno de parcial: o saldo segue o ledger e o estorno do lançamento 
 
 test("§6 tela do lançamento: estorno também no parcialmente recebido, complemento com chave e saldo conferido", () => {
   const page = read("app/painel/financeiro/lancamentos/[id]/page.js");
-  assert.match(page, /entry\.status === "PARTIALLY_SETTLED" && partialChildren\.length > 0\) \? \(\s*<Button requires="finance:settle" variant="secondary" onClick=\{handleReverse\}/);
+  const actions = read("app/painel/financeiro/lancamentos/[id]/EntryActions.js");
+  assert.match(actions, /entry\.status === "PARTIALLY_SETTLED" && partialChildren\.length > 0\) \? \(\s*<Button requires="finance:settle" variant="secondary" onClick=\{on\.reverse\}/);
+  assert.match(actions, /Quitar saldo/);
   assert.match(page, /\{reversalInfo\.text\}/);
   assert.match(page, /setNotice\(\{ tone: "info", text: reversalNotice\(result\) \}\)/);
-  assert.match(page, /Quitar saldo/);
+  // A ficha foi dividida em cartões e hooks por responsabilidade: nenhum arquivo passa de 400 linhas.
+  for (const f of ["page.js", "EntryActions.js", "SettlementForms.js", "EditEntryCard.js", "EntryDetailsCard.js", "EntrySideCards.js", "useSettlementActions.js", "useManualEvidence.js", "useEntryEdit.js", "useEntryDetailState.js", "useComplementAction.js", "ledgerBalance.js"]) {
+    assert.ok(read(`app/painel/financeiro/lancamentos/[id]/${f}`).split("\n").length <= 400, f);
+  }
   const hook = read("app/painel/financeiro/lancamentos/[id]/useComplementAction.js");
   assert.match(hook, /settleFinancialEntryComplement\(entry\.id, \(remainingCents \/ 100\)\.toFixed\(2\), keyRef\.current\.key\)/);
   const api = read("lib/api/finance.js");
