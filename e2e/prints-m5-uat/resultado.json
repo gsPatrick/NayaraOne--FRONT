@@ -1,0 +1,96 @@
+{
+  "when": "2026-11-12T09:43:23.292Z",
+  "contrato": "9255514f-a576-4cdd-966c-2ee5e0f4d1e6",
+  "results": [
+    {
+      "id": "UAT-C00",
+      "label": "login na tela (usuário fictício gestor da empresa A, sem MFA)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "UAT-C01",
+      "label": "contrato assinado ativado pela tela (entra em vigor)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "UAT-C02",
+      "label": "cobrança da competência 12/2026 gerada: total e saldo R$ 2.500,00, Em aberto",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "UAT-C03",
+      "label": "a mesma competência do mesmo contrato é recusada (competência UNIQUE contrato+período) e não duplica",
+      "ok": true,
+      "detail": "Já existe cronograma de cobrança gerado para o na competência \"12/2026\".; 1 linha(s)"
+    },
+    {
+      "id": "UAT-C04",
+      "label": "pagamento parcial de R$ 1.000,00 recompõe o saldo: R$ 1.500,00 e status Parcial",
+      "ok": true,
+      "detail": "LOC-2026-0001 12/2026 17/12/2026 R$ 2.500,00 R$ 1.500,00 Parcial Registrar pagamento"
+    },
+    {
+      "id": "UAT-C05",
+      "label": "o restante quita a competência: saldo R$ 0,00 e Quitado",
+      "ok": true,
+      "detail": "LOC-2026-0001 12/2026 17/12/2026 R$ 2.500,00 R$ 0,00 Quitado Paga — nada a fazer"
+    },
+    {
+      "id": "UAT-C06",
+      "label": "reajuste IGPM sem fonte de índice fica Aguardando índice (PENDING_SOURCE), sem percentual inventado",
+      "ok": true,
+      "detail": "LOC-2026-0001 01/2027 IGPM R$ 2.500,00 Aguardando índice Aguardando índice"
+    },
+    {
+      "id": "UAT-C07",
+      "label": "obrigação de água com responsável (Locatário) e fornecedor cadastrada",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "UAT-C08",
+      "label": "a tela permite registrar a conta paga pela IMOBILIÁRIA (livro: conta paga pela imobiliária gera reembolso)",
+      "ok": true,
+      "detail": "opções de \"Quem pagou\": Locatário, Locador, Imobiliária"
+    },
+    {
+      "id": "UAT-C09",
+      "label": "pagamento pela imobiliária gera o recebível de reembolso no Financeiro (R$ 180,00 a cobrar do locatário, texto com concordância)",
+      "ok": true,
+      "detail": "PX\nReembolso de água pago pela imobiliária, a cobrar do locatário.\nSem conta bancária vinculada\n\t\nA receber\tR$ 180,00\t12/11/2026\t\nPendente\n\t"
+    },
+    {
+      "id": "UAT-C10",
+      "label": "contrato matriculado no aluguel garantido (obrigação da empresa ao proprietário)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "UAT-C11",
+      "label": "repasse do aluguel garantido ao proprietário registrado (crédito a recuperar do locatário)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "UAT-C12",
+      "label": "antecipação é produto separado: elegível -> proposta -> aceita -> paga (principal R$ 7.000,00 e custo R$ 350,00 separados)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "UAT-C13",
+      "label": "encerramento com pendência crítica é bloqueado e a tela lista as pendências",
+      "ok": true,
+      "detail": "Bloqueado por 4 pendência(s): Garantia ainda ativa: 1 garantia(s) ainda ativa(s) (não devolvida(s)/liberada(s)). Processo jurídico aberto: 1 processo(s) jurídico(s) vinculado(s) ainda não encerrado(s). Prazo jurídico em "
+    },
+    {
+      "id": "UAT-C14",
+      "label": "o contrato NÃO foi encerrado com a pendência aberta",
+      "ok": true,
+      "detail": ""
+    }
+  ]
+}

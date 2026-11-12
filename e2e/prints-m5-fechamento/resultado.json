@@ -1,5 +1,5 @@
 {
-  "when": "2026-11-11T02:39:23.412Z",
+  "when": "2026-11-12T09:42:52.430Z",
   "results": [
     {
       "label": "0. login na tela (usuário fictício, sem MFA)",
@@ -69,7 +69,7 @@
     {
       "label": "3. todos os documentos do checklist anexados pela tela",
       "ok": true,
-      "detail": "5 anexo(s)"
+      "detail": "6 anexo(s)"
     },
     {
       "label": "4. versão 2 do documento criada (Rascunho)",
@@ -124,7 +124,7 @@
     {
       "label": "N1. correção da notificação cria a versão 2 e preserva a versão 1 (com o motivo)",
       "ok": true,
-      "detail": "Versão 1 Versão inicial. · 10/11/2026 às 23:37 (horário de Brasília) · por CI gestor — tenant A Versão 2 · atual Valor d"
+      "detail": "Versão 1 Versão inicial. · 12/11/2026 às 06:42 (horário de Brasília) · por CI gestor — tenant A Versão 2 · atual Valor d"
     },
     {
       "label": "10. tela avisa antes de criar que a garantia nasce pendente",
@@ -179,7 +179,7 @@
     {
       "label": "18. entrega de chaves recusada SEM a via assinada do termo",
       "ok": true,
-      "detail": "Entrega recusada Anexe a via do termo de entrega assinada pelo recebedor: a entrega das chaves exige o termo assinado."
+      "detail": "Para liberar as chaves, falta Anexe a via do termo assinada pelo recebedor."
     },
     {
       "label": "19. com a via assinada do termo, chaves entregues (selo Entregue e via assinada guardada)",
@@ -219,7 +219,7 @@
     {
       "label": "21b. histórico do prazo: vencimento anterior, novo, motivo, autor e data",
       "ok": true,
-      "detail": "10/11/2026 às 23:39 (horário de Brasília) · por CI gestor — tenant A Prazo “Contestação do locatário”: reaberto. 10/11/2026 às 23:39 (horário de Brasília) · por"
+      "detail": "12/11/2026 às 06:42 (horário de Brasília) · por CI gestor — tenant A Prazo “Contestação do locatário”: reaberto. 12/11/2026 às 06:42 (horário de Brasília) · por"
     },
     {
       "label": "R1. com só a estimativa, nada vira recebível",
@@ -237,7 +237,7 @@
       "detail": "HTTP 409"
     },
     {
-      "label": "23. contrato antigo CANCELLED legível, sem ações",
+      "label": "23. contrato antigo CANCELLED legível (pulado: defina E2E_DATABASE_ADMIN_URL)",
       "ok": true,
       "detail": ""
     }
