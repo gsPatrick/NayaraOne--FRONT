@@ -30,6 +30,10 @@ Padrão de referência: WCAG 2.1 AA. Foco: contorno de 2 px (token `--focus-ring
 ## Registro da revisão
 | Data | Responsável | Telas | Resultado |
 |---|---|---|---|
-| (a preencher na execução) | (nome) | (telas) | (achados) |
+| 09/11/2026 | Patrick, com o VoiceOver | `/entrar`, `/painel`, `/painel/pessoas`, `/painel/pessoas/novo`, `/painel/papeis` e a paleta Ctrl/Cmd+K, no Front `0e75774` | Roteiro de 12 passos do leitor de tela: o Patrick informou que todos os 12 passos ficaram conforme o esperado. Nenhum achado informado. |
 
-Situação no Marco 9: a lista existe; a execução manual (teclado e leitor de tela) está pendente do roteiro acima e não foi registrada nesta rodada.
+Situação no Marco 9: o roteiro de 12 passos do leitor de tela (VoiceOver) foi executado em 09/11/2026 no Front `0e75774`. A tabela passo a passo (ação, o que se espera ouvir e o resultado) está em `Maturacao/marco9-pagina/voiceover-roteiro-executado.md`. O resultado de cada passo é o que o Patrick informou para o conjunto ("todos os 12 passos conforme o esperado"): a resposta literal de cada passo não foi gravada. O passo do código MFA ficou de fora porque exige o código do Patrick.
+
+Do `0e75774` ao `26bba9e` (Front entregue) nenhum arquivo dessas telas mudou: os 5 commits do intervalo alteram só `app/painel/configuracoes/biTecnologiaKpiGroups.js` (Configurações do BI), `public/marco9.html` e testes. A execução vale, portanto, para o `26bba9e`.
+
+Os itens da lista acima que os 12 passos não percorrem (contorno do foco sobre a barra lateral Onyx, texto alternativo de imagem, estado que depende só da cor e o texto das mensagens de erro fora do cadastro de contato) não entram neste registro. Eles seguem cobertos só pelas verificações automáticas (`npm run test:unit` e `npm run test:a11y`, com o axe).
