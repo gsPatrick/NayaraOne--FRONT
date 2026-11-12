@@ -1,4 +1,4 @@
-// Mensageria do CRM (Marco 9, M9-D229): telefone no formato internacional e prazo do contato novo. Padrão = Maturacao/demandas/parametros.csv; a API valida a faixa. Entra na aba "Registro de integrações".
+// Mensageria do CRM (Marco 9, M9-D229): telefone no formato internacional, prazo do contato novo e tamanho máximo dos textos (DI-M9R-16). Padrão = Maturacao/demandas/parametros.csv; a API valida a faixa. Entra na aba "Registro de integrações".
 export const MENSAGERIA_GROUPS = [
   {
     title: "Mensageria e atendimento (WhatsApp)",
@@ -7,6 +7,7 @@ export const MENSAGERIA_GROUPS = [
     fields: [
       { key: "integration.messaging.country_code", label: "Código do país dos telefones das mensagens", type: "text", defaultValue: "55", helper: "Só dígitos (de 1 a 3). O número do destinatário precisa vir completo, com o sinal de + e este código (ex.: +5511999990000). Sem ele, a mensagem é recusada." },
       { key: "integration.messaging.inbound_lead_prazo_horas", label: "Prazo para responder um contato novo que escreveu primeiro (horas)", type: "integer", defaultValue: 24, helper: "De 1 a 720. É o prazo da primeira ação da oportunidade criada quando um número desconhecido envia mensagem." },
+      { key: "integration.messaging.record_body_max_chars", label: "Tamanho máximo do texto do registro manual de interação (caracteres)", type: "integer", defaultValue: 65536, helper: "De 1 a 1048576. Vale para a interação registrada à mão no histórico do contato. Acima disso o registro é recusado com o nome do campo." },
     ],
   },
   {
@@ -17,6 +18,9 @@ export const MENSAGERIA_GROUPS = [
       { key: "integration.whatsapp.session_window_h", label: "Janela de atendimento (horas desde a última mensagem do cliente)", type: "integer", defaultValue: 24, helper: "De 1 a 168. O livro e o WhatsApp usam 24 horas. Passado esse prazo, texto livre e mídia são recusados e só vai modelo aprovado." },
       { key: "integration.whatsapp.optout_keywords", label: "Palavras de saída (separadas por vírgula)", type: "text", defaultValue: "PARAR,SAIR,CANCELAR", helper: "Quando o cliente responde só com uma destas palavras, o consentimento do WhatsApp é revogado na hora. Frases que apenas contêm a palavra não contam. Letras maiúsculas, acentos e pontuação são ignorados." },
       { key: "integration.whatsapp.transactional_requires_opt_in", label: "Exigir consentimento explícito também nas mensagens transacionais", type: "boolean", defaultValue: false, helper: "Desligado: o contato que nunca revogou recebe avisos transacionais (visita, cobrança). Ligado: só recebe quem aceitou. Marketing sempre exige o aceite." },
+      { key: "integration.whatsapp.max_text_chars", label: "Tamanho máximo do texto enviado (caracteres)", type: "integer", defaultValue: 4096, helper: "De 1 a 4096, o limite do WhatsApp. Texto maior é recusado antes de entrar na fila." },
+      { key: "integration.whatsapp.max_caption_chars", label: "Tamanho máximo da legenda da mídia (caracteres)", type: "integer", defaultValue: 1024, helper: "De 1 a 1024, o limite do WhatsApp para a legenda de imagem, vídeo ou documento." },
+      { key: "integration.whatsapp.max_template_var_chars", label: "Tamanho máximo de cada variável do modelo (caracteres)", type: "integer", defaultValue: 1024, helper: "De 1 a 32768. O padrão de 1024 é o limite do WhatsApp para a variável do corpo de um modelo que tem outras partes; só o modelo com apenas o corpo aceita até 32768." },
       { key: "integration.whatsapp.max_media_bytes", label: "Tamanho máximo da mídia enviada (bytes)", type: "integer", defaultValue: 16777216, helper: "De 1024 a 104857600. O padrão é 16 MiB, limite típico do canal." },
       { key: "integration.whatsapp.media_allowed_types", label: "Tipos de mídia aceitos", type: "text", defaultValue: "image/jpeg,image/png,image/webp,application/pdf,video/mp4,audio/ogg", helper: "Tipos separados por vírgula (até 40)." },
       { key: "integration.whatsapp.media_max_classification", label: "Classificação mais alta do arquivo que pode ir como mídia", type: "enum", defaultValue: "PUBLIC", options: [{ value: "PUBLIC", label: "Público" }, { value: "INTERNAL", label: "Interno" }, { value: "CONFIDENTIAL", label: "Confidencial" }], helper: "O padrão do livro é só arquivo público. Documento restrito ou sem classificação nunca sai." },
