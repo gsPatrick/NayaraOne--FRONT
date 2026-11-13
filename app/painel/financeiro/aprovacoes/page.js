@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Badge from "@/components/atoms/Badge/Badge";
@@ -20,7 +21,6 @@ import Pagination from "@/components/molecules/Pagination/Pagination";
 import MfaVerifyModal from "@/components/organisms/MfaVerifyModal/MfaVerifyModal";
 import useConfirm from "@/components/organisms/ConfirmDialog/useConfirm";
 import {
-  REQUIRED_STEPS_BY_RISK,
   APPROVAL_STATUS_LABELS,
   APPROVAL_STATUS_TONE,
   RISK_LEVEL_LABELS,
@@ -30,7 +30,11 @@ import { listApprovalRequests, decideApprovalStep } from "@/lib/api/finance";
 import { apiFetch } from "@/lib/api/client";
 import { getCurrentUser } from "@/lib/auth/session";
 import { entityTypeLabel, approvalRequestLabel } from "@/lib/finance/labels";
-import { formatDate, humanizeText } from "@/lib/format";
+import { formatDate } from "@/lib/format";
+import { requiredApprovalsOf, riskSourceLabel } from "@/lib/finance/paymentIntents";
+import { dedicatedFlowOf } from "@/lib/finance/approvalFlows";
+import { financeAuthErrorMessage } from "@/lib/finance/authorizationErrors";
+import ReversalCasesCard from "./ReversalCasesCard";
 import styles from "./page.module.css";
 
 import { lookupFallback } from "@/lib/asyncState/lookup";
@@ -39,19 +43,15 @@ import { lookupFallback } from "@/lib/asyncState/lookup";
 const STATUS_LABELS = { ...APPROVAL_STATUS_LABELS, STALE: "Invalidada" };
 const STATUS_TONE = { ...APPROVAL_STATUS_TONE, STALE: "warning" };
 
-function msg(err, fallback) {
-  const raw = String(err?.message || "").trim();
-  if (!raw) return fallback;
-  if (/failed to fetch|load failed|networkerror/i.test(raw)) return "Não foi possível conectar ao servidor. Verifique sua internet e tente de novo.";
-  return humanizeText(raw);
-}
-
 const ENTITY_ICON = {
   BankAccount: "money",
   FinancialEntry: "document",
   Commission: "chart",
   CommissionInstallment: "chart",
   OwnerRepass: "layers",
+  PaymentIntent: "money",
+  LedgerReversal: "refreshCcw",
+  PeriodReopen: "calendar",
 };
 
 // Risco cujo doc de negócio exige step-up MFA antes da decisão (Caderno §3.3/3.4) — mesmo
@@ -106,7 +106,7 @@ export default function AprovacoesPage() {
       if (decision === "REJECTED") showNotice("info", "Solicitação rejeitada", approvalRequestLabel(request));
       else showNotice("success", updated.status === "APPROVED" ? "Aprovado" : "Aprovação registrada", approvalRequestLabel(request));
     } catch (err) {
-      showNotice("danger", "Não foi possível decidir", msg(err, "Tente novamente."));
+      showNotice("danger", "Não foi possível decidir", financeAuthErrorMessage(err, "Tente novamente."));
     } finally {
       setBusyId(null);
     }
@@ -173,7 +173,11 @@ export default function AprovacoesPage() {
 
   return (
     <AppShell title="Aprovações" backHref="/painel/financeiro">
-      {notice ? <Alert tone={notice.tone} title={notice.title} className={styles.notice}>{notice.message}</Alert> : null}
+      {notice ? (
+        <div style={{ position: "fixed", top: "var(--space-4)", left: "50%", transform: "translateX(-50%)", zIndex: 200, width: "min(560px, calc(100vw - 2 * var(--space-4)))" }}>
+          <Alert tone={notice.tone} title={notice.title}>{notice.message}</Alert>
+        </div>
+      ) : null}
 
       <AsyncState result={approvalsQuery} lockStale loadingLabel="Carregando aprovações...">
         <>
@@ -184,6 +188,8 @@ export default function AprovacoesPage() {
             <StatTile label="Rejeitadas" value={rejectedCount} tone={rejectedCount > 0 ? "danger" : "neutral"} icon="document" />
             <StatTile label="Invalidadas" value={staleCount} tone={staleCount > 0 ? "warning" : "neutral"} icon="shield" />
           </div>
+
+          <ReversalCasesCard currentUserId={currentUser?.id} userName={(id) => userName(users, id)} onNotice={showNotice} onDecided={approvalsQuery.reload} />
 
           <div className={styles.layout}>
             <Card title="Aprovações" subtitle="Quem solicita não pode aprovar a própria solicitação" className={styles.listCard}>
@@ -202,7 +208,9 @@ export default function AprovacoesPage() {
               ) : (
                 <ul className={styles.list}>
                   {pageItems.map((r) => {
-                    const required = REQUIRED_STEPS_BY_RISK[r.riskLevel] || 1;
+                    // O nº de aprovações é o que a API gravou no pedido (regra ou faixas de valor), não uma tabela fixa da tela.
+                    const required = requiredApprovalsOf(r);
+                    const flow = dedicatedFlowOf(r);
                     const isRequester = r.requestedByUserId === currentUser?.id;
                     return (
                       <li key={r.id} className={styles.approvalRow}>
@@ -212,11 +220,13 @@ export default function AprovacoesPage() {
                         <div className={styles.listRowInfo}>
                           <span className={styles.listRowTitle}>{approvalRequestLabel(r)}</span>
                           <span className={styles.listRowSubtitle}>
-                            {entityTypeLabel(r.relatedEntityType)} · Solicitado em {formatDate(r.createdAt || r.created_at)}
+                            {entityTypeLabel(r.relatedEntityType)} · Solicitado em {formatDate(r.createdAt || r.created_at)} · exige {required}{" "}
+                            {required === 1 ? "aprovação" : "aprovações"}{r.riskSource ? ` · risco por: ${riskSourceLabel(r.riskSource)}` : ""}
                           </span>
+                          {flow && r.status === "PENDING" ? <span className={styles.listRowSubtitle}>{flow.note}</span> : null}
                           {r.status === "STALE" ? (
                             <span className={styles.listRowSubtitle}>
-                              Invalidada: o lançamento foi alterado depois da aprovação. Peça uma nova aprovação sobre a versão atual.
+                              Invalidada: o que foi pedido mudou depois do pedido (ou foi cancelado). Peça uma nova aprovação sobre a versão atual.
                             </span>
                           ) : null}
                         </div>
@@ -227,7 +237,9 @@ export default function AprovacoesPage() {
                         <div className={styles.approvalRight}>
                           <Badge tone={RISK_LEVEL_TONE[r.riskLevel]}>Risco {RISK_LEVEL_LABELS[r.riskLevel]}</Badge>
                           <Badge tone={STATUS_TONE[r.status]}>{STATUS_LABELS[r.status] || "Situação não reconhecida"}</Badge>
-                          {r.status === "PENDING" ? (
+                          {r.status === "PENDING" && flow ? (
+                            <Link href={flow.href}>{flow.action}</Link>
+                          ) : r.status === "PENDING" ? (
                             isRequester ? (
                               <span className={styles.selfBlockNote}>Você solicitou — não pode decidir</span>
                             ) : (

@@ -8,7 +8,6 @@ import Card from "@/components/molecules/Card/Card";
 import Badge from "@/components/atoms/Badge/Badge";
 import Icon from "@/components/atoms/Icon/Icon";
 import Button from "@/components/atoms/Button/Button";
-import ConfirmAction from "@/components/molecules/ConfirmAction/ConfirmAction";
 import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
@@ -36,11 +35,12 @@ import {
   settleFinancialEntry,
   settleFinancialEntryPartial,
   attachSettlementEvidence,
-  reverseFinancialEntry,
   updateFinancialEntry,
   createApprovalRequest,
-  createPaymentIntent,
 } from "@/lib/api/finance";
+import { isInFlight, isOpenIntent, openBalanceCents, nextInstallmentNumber, toCents } from "@/lib/finance/paymentIntents";
+import PaymentIntentPrepare, { IntentInvalidatedNotice } from "./PaymentIntentPrepare";
+import { ReversalRequestButton, PendingReversalNotice } from "./ReversalRequest";
 import { uploadFile } from "@/lib/api/legal";
 import { friendlyFinanceError } from "@/lib/finance/extras";
 import ThirdPartyReleaseModal, { thirdPartyBalance } from "./ThirdPartyReleaseModal";
@@ -72,7 +72,8 @@ export default function LancamentoDetailPage({ params }) {
   const [reconciliation, setReconciliation] = useState(null);
   const [reconciledTransaction, setReconciledTransaction] = useState(null);
   const [notice, setNotice] = useState(null);
-  const [reverseOpen, setReverseOpen] = useState(false);
+  const [prepareOpen, setPrepareOpen] = useState(false);
+  const [pendingReversal, setPendingReversal] = useState(null);
   const [busy, setBusy] = useState(false);
   const [mfaOpen, setMfaOpen] = useState(false);
   const [mfaAction, setMfaAction] = useState("settle");
@@ -112,6 +113,7 @@ export default function LancamentoDetailPage({ params }) {
     setReconciledTransaction(d.reconciledTransaction);
     setApprovalRequest(d.approvalRequest);
     setPaymentIntent(d.paymentIntent);
+    setPendingReversal(d.pendingReversal);
   }, [detailQuery.data]);
 
   if (detailQuery.error?.status === 404) return notFound();
@@ -132,7 +134,7 @@ export default function LancamentoDetailPage({ params }) {
   const evidenceAttached = Boolean(entry?.settlementEvidenceFileId);
   const needsManualEvidence = isPayable && !isCompensation;
   // A2: com intenção em trânsito no banco, a baixa só pode acontecer pela resposta do banco.
-  const intentInTransit = ["SUBMITTING", "SUBMITTED"].includes(paymentIntent?.status);
+  const intentInTransit = isInFlight(paymentIntent);
   const approvalGateSatisfied =
     !isPayable ||
     approvalRequest?.status === "APPROVED" ||
@@ -144,8 +146,8 @@ export default function LancamentoDetailPage({ params }) {
   const depositBalance = isDepositReceived ? thirdPartyBalance(entry, allEntries) : null;
   // Baixas parciais: o saldo é o valor do lançamento menos o que as baixas (filhas) já liquidaram.
   const partialChildren = entry ? allEntries.filter((x) => x.parentEntryId === entry.id && x.status === "SETTLED") : [];
-  const alreadySettledCents = partialChildren.reduce((a, c) => a + Math.round(Number(c.amount) * 100), 0);
-  const remainingCents = entry ? Math.max(0, Math.round(Number(entry.amount) * 100) - alreadySettledCents) : 0;
+  const alreadySettledCents = partialChildren.reduce((a, c) => a + toCents(c.amount), 0);
+  const remainingCents = openBalanceCents(entry, allEntries);
   const hasPartialSettlements = entry?.status === "PARTIALLY_SETTLED" || partialChildren.length > 0;
   // Recebimento antecipado: liquidado antes do dia do vencimento (dia de calendário em São Paulo).
   const dayKey = (iso) => new Date(iso).toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" });
@@ -237,25 +239,12 @@ export default function LancamentoDetailPage({ params }) {
     }
   }
 
-  async function handleCreatePaymentIntent() {
-    const ok = await confirm({
-      title: "Criar intenção de pagamento?",
-      message: `Será gravado um "retrato" (snapshot com hash) dos dados atuais de "${humanizeText(entry?.description) || ""}". Se o lançamento mudar depois disso, aprovar ou executar a intenção será recusado por segurança.`,
-      confirmLabel: "Criar intenção",
-    });
-    if (!ok) return;
-    setBusy(true);
-    setNotice(null);
-    try {
-      const created = await createPaymentIntent({ financialEntryId: entry.id, approvalRequestId: approvalRequest?.id });
-      setPaymentIntent(created);
-      load();
-      setNotice({ tone: "success", text: "Intenção de pagamento criada. Acompanhe em Financeiro → Intenções de pagamento." });
-    } catch (err) {
-      setNotice({ tone: "danger", text: friendlyFinanceError(err, "Não foi possível criar a intenção de pagamento.") });
-    } finally {
-      setBusy(false);
-    }
+  // Guia §4: a intenção nasce do PREPARE com o valor escolhido (saldo inteiro ou parcela); a aprovação nasce da regra.
+  function handlePaymentIntentCreated(created) {
+    setPaymentIntent(created);
+    setPrepareOpen(false);
+    load();
+    setNotice({ tone: "success", text: `Pagamento preparado (${formatBRL(created?.amount)}). A aprovação é de outra pessoa, em Financeiro → Intenções de pagamento.` });
   }
 
   async function runSettle() {
@@ -357,22 +346,11 @@ export default function LancamentoDetailPage({ params }) {
     }
   }
 
-  // M9-D852 (linha 2): o estorno passa pelo ConfirmAction (impacto, código digitado e justificativa).
-  function handleReverse() {
-    setReverseOpen(true);
-  }
-
-  async function handleReverseConfirmed(confirmation) {
-    setBusy(true);
-    setNotice(null);
-    try {
-      const result = await reverseFinancialEntry(entry.id, confirmation.justification, confirmation);
-      setEntry(result.original || result);
-      setReverseOpen(false);
-      setNotice({ tone: "info", text: "Lançamento estornado — um lançamento compensatório foi criado (o original nunca é editado, ledger imutável)." });
-    } finally {
-      setBusy(false);
-    }
+  // Guia §8: o pedido de estorno (202) abre o caso; o estorno só é lançado quando outra pessoa aprova.
+  function handleReversalRequested(created) {
+    setPendingReversal(created);
+    load();
+    setNotice({ tone: "info", text: "Estorno pedido. Ele só é lançado quando outra pessoa aprovar, em Financeiro → Aprovações (Estornos pendentes)." });
   }
 
   return (
@@ -410,9 +388,9 @@ export default function LancamentoDetailPage({ params }) {
                   {approvalRequest?.status === "PENDING" ? "Aprovação pendente" : "Solicitar aprovação"}
                 </Button>
               ) : null}
-              {entry.status === "PENDING" && isPayable && entry.bankAccountId && !["PENDING", "APPROVED", "SUBMITTING", "SUBMITTED"].includes(paymentIntent?.status) ? (
-                <Button requires="finance:create" variant="secondary" onClick={handleCreatePaymentIntent} loading={busy} disabled={notFresh}>
-                  <Icon name="shield" size={16} /> Criar intenção de pagamento
+              {(entry.status === "PENDING" || entry.status === "PARTIALLY_SETTLED") && isPayable && entry.bankAccountId && !isOpenIntent(paymentIntent) && remainingCents > 0 ? (
+                <Button requires="finance:create" variant="secondary" onClick={() => setPrepareOpen((v) => !v)} disabled={busy || notFresh}>
+                  <Icon name="shield" size={16} /> Preparar pagamento
                 </Button>
               ) : null}
               {/* FIN-004 (Caderno §3.3/3.4): liquidar um PAYABLE com execução bancária real
@@ -432,7 +410,7 @@ export default function LancamentoDetailPage({ params }) {
               ) : entry.status === "PENDING" || entry.status === "PARTIALLY_SETTLED" ? (
                 approvalGateSatisfied ? (
                   <Button requires="finance:settle" onClick={handleSettle} loading={busy} disabled={notFresh}><Icon name="check" size={16} /> Liquidar</Button>
-                ) : approvalRequest?.status === "PENDING" || paymentIntent?.status === "PENDING" ? (
+                ) : approvalRequest?.status === "PENDING" || paymentIntent?.status === "PENDING_APPROVAL" ? (
                   <Button disabled title="Aguardando a decisão de outra pessoa antes de liquidar">
                     <Icon name="check" size={16} /> Aguardando aprovação
                   </Button>
@@ -451,12 +429,17 @@ export default function LancamentoDetailPage({ params }) {
                 </Button>
               ) : null}
               {entry.status === "SETTLED" ? (
-                <Button requires="finance:settle" variant="secondary" onClick={handleReverse} loading={busy} disabled={notFresh}><Icon name="settings" size={16} /> Estornar</Button>
+                <ReversalRequestButton entry={entry} pendingCase={pendingReversal} disabled={busy || notFresh} onRequested={handleReversalRequested} />
               ) : null}
             </div>
           </div>
 
           {notice ? <Alert tone={notice.tone} className={styles.notice}>{notice.text}</Alert> : null}
+          <PendingReversalNotice pendingCase={pendingReversal} />
+          {["PENDING", "PARTIALLY_SETTLED"].includes(entry.status) ? <IntentInvalidatedNotice intent={paymentIntent} /> : null}
+          {prepareOpen ? (
+            <PaymentIntentPrepare entry={entry} balanceCents={remainingCents} installmentNumber={nextInstallmentNumber(entry, allEntries)} onCancel={() => setPrepareOpen(false)} onCreated={handlePaymentIntentCreated} />
+          ) : null}
 
           {manualOpen && needsManualEvidence ? (
             <Card
@@ -695,14 +678,6 @@ export default function LancamentoDetailPage({ params }) {
         }}
       />
 
-      <ConfirmAction
-        open={reverseOpen}
-        onClose={() => setReverseOpen(false)}
-        title="Estornar este lançamento?"
-        confirmLabel="Estornar"
-        target={{ method: "GET", path: `/finance/entries/${entry?.id}/impact` }}
-        onConfirm={handleReverseConfirmed}
-      />
       <ConfirmDialog />
     </AppShell>
   );

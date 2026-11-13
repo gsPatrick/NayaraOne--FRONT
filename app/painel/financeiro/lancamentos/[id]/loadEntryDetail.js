@@ -12,6 +12,7 @@ import {
   listApprovalRequests,
   listPaymentIntents,
 } from "@/lib/api/finance";
+import { listReversalCases } from "@/lib/api/financeApprovals";
 import { getContract } from "@/lib/api/legal";
 import { getPerson } from "@/lib/api/people";
 import { lookupFallback } from "@/lib/asyncState/lookup";
@@ -19,7 +20,7 @@ import { lookupFallback } from "@/lib/asyncState/lookup";
 const newestFirst = (a, b) => new Date(b.createdAt) - new Date(a.createdAt);
 
 export async function loadEntryDetail(id) {
-  const [entry, bankAccounts, costCenters, resultCenters, allEntriesRaw, reconciliations, bankTransactions, approvalRequests, paymentIntents] = await Promise.all([
+  const [entry, bankAccounts, costCenters, resultCenters, allEntriesRaw, reconciliations, bankTransactions, approvalRequests, paymentIntents, reversalCases] = await Promise.all([
     getFinancialEntry(id),
     listBankAccounts(),
     listCostCenters(),
@@ -29,6 +30,8 @@ export async function loadEntryDetail(id) {
     listBankTransactions(),
     listApprovalRequests(),
     listPaymentIntents(),
+    // Guia §8: pedido de estorno aguardando a aprovação de outra pessoa (apoio: se falhar, a ficha abre e a falha é avisada).
+    listReversalCases({ entryId: id, status: "PENDING" }).catch(lookupFallback("os pedidos de estorno")),
   ]);
   const allEntries = allEntriesRaw || [];
   const [contractInfo, holderInfo] = await Promise.all([
@@ -57,5 +60,6 @@ export async function loadEntryDetail(id) {
     reconciledTransaction: reconciliation ? bankTransactions.find((t) => t.id === reconciliation.bankTransactionId) || null : null,
     approvalRequest: related[0] || null,
     paymentIntent: relatedIntents[0] || null,
+    pendingReversal: (reversalCases || [])[0] || null,
   };
 }

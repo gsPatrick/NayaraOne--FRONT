@@ -4,6 +4,8 @@
 // (422, com a frase do rótulo). O valor gravado vale sempre, mais restritivo ou mais frouxo que o padrão (DEC-007, DI-DEC007-2 na API); a aba mostra, em
 // cada campo, o valor em vigor que o antifraude está usando (GET /finance/antifraud/parameters).
 // Os campos marcados "exige verificação em duas etapas" só gravam com o MFA recente de quem altera (a API pede o código e a tela abre o modal).
+import { APROVACAO_GROUPS, APROVACAO_PREFIXES } from "./financeiroAprovacaoGroups";
+
 const MFA = " Alterar exige a verificação em duas etapas (código do MFA).";
 
 export const FINANCEIRO_GROUPS = [
@@ -182,9 +184,11 @@ export const FINANCEIRO_GROUPS = [
       },
     ],
   },
+  // Autorização do pagamento, do estorno e da reabertura de período (DEC-003, DEC-004): grupos em arquivo próprio.
+  ...APROVACAO_GROUPS,
 ];
 
 export const FINANCEIRO_FIELDS = FINANCEIRO_GROUPS.flatMap((group) => group.fields);
 
 // A tela lê só as chaves desta aba (nunca as credenciais do banco, que também começam com "finance.").
-export const FINANCEIRO_PREFIXES = ["finance.antifraud_", "finance.bank_account_cooldown_hours", "finance.reconciliation.", "antifraude."];
+export const FINANCEIRO_PREFIXES = ["finance.antifraud_", "finance.bank_account_cooldown_hours", "finance.reconciliation.", "antifraude.", ...APROVACAO_PREFIXES];

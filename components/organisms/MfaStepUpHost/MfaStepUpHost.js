@@ -10,7 +10,13 @@ import { setMfaStepUpHandler } from "@/lib/api/client";
 const ACTION_LABELS = [
   [/\/finance\/period-closures\/approve/, "aprovar o fechamento"],
   [/\/finance\/period-closures\/return-to-open/, "devolver o período para aberto"],
-  [/\/finance\/period-closures\/reopen/, "reabrir o período"],
+  [/\/reopen-requests\/[^/]+\/approve/, "aprovar a reabertura do período"],
+  [/\/reopen-requests\/[^/]+\/reject/, "recusar a reabertura do período"],
+  [/\/finance\/period-closures\/reopen/, "pedir a reabertura do período"],
+  [/\/reversal-cases\/[^/]+\/approve/, "aprovar o estorno"],
+  [/\/reversal-cases\/[^/]+\/reject/, "recusar o estorno"],
+  [/\/finance\/(entries|ledger)\/[^/]+\/reverse/, "pedir o estorno"],
+  [/\/payment-intents\/[^/]+\/approve/, "aprovar o pagamento"],
   [/\/resolve-uncertainty/, "resolver a incerteza do pagamento"],
   [/\/submit-to-bank/, "enviar o pagamento ao banco"],
   [/\/payment-intents\/[^/]+\/execute/, "executar o pagamento"],
@@ -23,6 +29,7 @@ const ACTION_LABELS = [
   [/\/clear-manual-review/, "liberar a revisão manual"],
   [/\/bank-accounts\//, "alterar a conta bancária"],
   [/\/approvals\//, "decidir a aprovação"],
+  [/\/approval-requests\/[^/]+\/decide/, "decidir a aprovação"],
   [/\/memberships/, "alterar acessos de usuário"],
   [/\/set-password/, "redefinir a senha do usuário"],
   [/\/roles/, "alterar papéis e permissões"],
@@ -30,9 +37,10 @@ const ACTION_LABELS = [
   [/\/legal\/notices\/[^/]+\/send/, "enviar a notificação"],
   [/\/legal\/inspections\/[^/]+\/sign/, "assinar a vistoria"],
   [/\/export/, "exportar os dados"],
+  [/\/settings\//, "alterar o parâmetro"],
 ];
 
-function labelFor(path = "") {
+export function labelFor(path = "") {
   const found = ACTION_LABELS.find(([re]) => re.test(path));
   return found ? found[1] : "concluir esta ação";
 }
