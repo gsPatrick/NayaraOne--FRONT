@@ -26,8 +26,6 @@ import {
   compareInspections,
   listInspectionSignatures,
   listInspectionItemMedia,
-  generateInspectionReport,
-  getInspectionReportBlob,
 } from "@/lib/api/legal";
 import {
   INSPECTION_TYPE_LABELS,
@@ -42,6 +40,7 @@ import { formatDate, formatDateTime, formatContractLabel } from "@/lib/format";
 import InspectionItemsCard from "./InspectionItemsCard";
 import InspectionSignaturesCard from "./InspectionSignaturesCard";
 import InspectionComparisonCard from "./InspectionComparisonCard";
+import InspectionReportActions, { InspectionReportNotice } from "./InspectionReportActions";
 import { findCounterpart } from "./inspectionCounterpart";
 import styles from "./page.module.css";
 
@@ -61,7 +60,6 @@ export default function VistoriaDetailPage({ params }) {
   const [signatures, setSignatures] = useState([]);
   const [mediaByItem, setMediaByItem] = useState({});
   const [viewerFile, setViewerFile] = useState(null);
-  const [reportBusy, setReportBusy] = useState(false);
 
   // M9-D940: carregando, erro com "tentar de novo", 403 e offline vêm do padrão único de estados.
   const loadQuery = useAsyncState(() => {
@@ -144,39 +142,6 @@ export default function VistoriaDetailPage({ params }) {
     }
   }
 
-  async function handleGenerateReport() {
-    setActionError("");
-    setReportBusy(true);
-    try {
-      const result = await generateInspectionReport(inspection.id);
-      setInspection((prev) => ({ ...prev, reportHash: result.reportHash, reportGeneratedAt: result.reportGeneratedAt }));
-    } catch (err) {
-      setActionError(legalErrorMessage(err, "Erro ao gerar relatório."));
-    } finally {
-      setReportBusy(false);
-    }
-  }
-
-  async function handleDownloadReport() {
-    setActionError("");
-    setReportBusy(true);
-    try {
-      const blob = await getInspectionReportBlob(inspection.id);
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `vistoria-${formatDate(inspection.scheduledAt).replace(/\//g, "-")}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (err) {
-      setActionError(legalErrorMessage(err, "Erro ao baixar relatório."));
-    } finally {
-      setReportBusy(false);
-    }
-  }
-
   async function handleToggleCompare() {
     if (comparison) {
       setComparison(null);
@@ -213,24 +178,13 @@ export default function VistoriaDetailPage({ params }) {
                 {comparison ? "Ocultar comparação" : `Comparar com a vistoria de ${counterpartLabel}`}
               </Button>
             ) : null}
-            {inspection.status === "COMPLETED" && !inspection.reportHash ? (
-              <Button variant="secondary" onClick={handleGenerateReport} loading={reportBusy} disabled={reportBusy}>
-                <Icon name="document" size={16} /> Gerar relatório
-              </Button>
-            ) : null}
-            {inspection.status === "COMPLETED" && inspection.reportHash ? (
-              <>
-                <Button
-                  variant="secondary"
-                  onClick={() => setViewerFile({ fileName: "relatorio-vistoria.pdf", mimeType: "application/pdf", blobLoader: () => getInspectionReportBlob(inspection.id) })}
-                >
-                  <Icon name="eye" size={16} /> Visualizar relatório
-                </Button>
-                <Button variant="secondary" onClick={handleDownloadReport} loading={reportBusy} disabled={reportBusy}>
-                  <Icon name="arrowDownCircle" size={16} /> Baixar relatório
-                </Button>
-              </>
-            ) : null}
+            <InspectionReportActions
+              inspection={inspection}
+              signatures={signatures}
+              onGenerated={(report) => setInspection((prev) => ({ ...prev, ...report }))}
+              onError={setActionError}
+              onView={setViewerFile}
+            />
           </div>
         </div>
 
@@ -239,6 +193,8 @@ export default function VistoriaDetailPage({ params }) {
             <Alert tone="danger">{actionError}</Alert>
           </div>
         ) : null}
+
+        <InspectionReportNotice inspection={inspection} signatures={signatures} />
 
         <Card title="Detalhes da vistoria">
           <dl className={styles.detailList}>
@@ -267,7 +223,7 @@ export default function VistoriaDetailPage({ params }) {
         ) : null}
 
         {comparison && entry && exit ? (
-          <InspectionComparisonCard entry={entry} exit={exit} comparison={comparison} onViewMedia={setViewerFile} />
+          <InspectionComparisonCard entry={entry} exit={exit} comparison={comparison} onViewMedia={setViewerFile} onError={setActionError} />
         ) : null}
       </div>
 

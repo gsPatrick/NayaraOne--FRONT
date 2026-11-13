@@ -247,10 +247,11 @@ async function keyDeliveryFlow(page, ctx, contractId, entryId, files) {
   await page.fill("#f-kd-ident", "2 chaves da porta e 1 controle do portão");
   // Quem assina: o padrão é o próprio recebedor (locatário, parte do contrato).
   await page.setInputFiles("#f-kd-photos", files.png);
-  await (await dialogButton(page, "Liberar chaves")).click();
-  const refusal = page.getByTestId("key-release-refusal");
-  const text = (await A.visible(refusal)) ? await refusal.innerText() : "";
-  A.record("18. entrega de chaves recusada SEM a via assinada do termo", /via do termo de entrega assinada/i.test(text), text.replace(/\s+/g, " ").slice(0, 140));
+  // Correção M5VP: sem a via assinada do termo a tela nem envia (botão desabilitado e a pendência listada); a API também recusa.
+  const missing = page.getByTestId("key-release-missing");
+  const text = (await A.visible(missing)) ? await missing.innerText() : "";
+  const blocked = await (await dialogButton(page, "Liberar chaves")).isDisabled();
+  A.record("18. entrega de chaves recusada SEM a via assinada do termo", blocked && /via do termo assinada/i.test(text), text.replace(/\s+/g, " ").slice(0, 140));
   await shot(page, "08-chaves-recusa-sem-via");
   await page.setInputFiles("#f-kd-term-evidence", files.pdf);
   await (await dialogButton(page, "Liberar chaves")).click();

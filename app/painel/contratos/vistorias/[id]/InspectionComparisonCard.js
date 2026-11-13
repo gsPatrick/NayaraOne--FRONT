@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import Button from "@/components/atoms/Button/Button";
 import Card from "@/components/molecules/Card/Card";
 import Badge from "@/components/atoms/Badge/Badge";
 import Alert from "@/components/molecules/Alert/Alert";
@@ -7,31 +9,50 @@ import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import { CONDITION_LABELS, INSPECTION_TYPE_LABELS } from "@/lib/labels/juridico";
 import { splitItemName } from "@/lib/legal/inspectionCodes";
 import { formatDate } from "@/lib/format";
+import { compareInspectionsWithNay } from "@/lib/api/legal";
+import { legalErrorMessage } from "@/lib/legal/legalErrors";
+import { comparisonRows, nayComparisonView } from "@/lib/legal/inspectionNay";
+import InspectionNayPanel from "./InspectionNayPanel";
 import styles from "./page.module.css";
 
 const conditionText = (code) => (code ? CONDITION_LABELS[code] || "Estado não informado" : "Item ausente");
 
-// Linhas da comparação: a resposta nova (items[]: ambiente/item, antes, depois, mudou, mídias); vistorias antigas sem
-// `items` caem nas divergências.
-function rowsOf(comparison) {
-  if (Array.isArray(comparison.items)) return comparison.items;
-  return (comparison.divergences || []).map((d) => ({ itemName: d.itemName, before: d.entryCondition, after: d.exitCondition, changed: true, mediaRefs: [] }));
-}
-
 // Comparação entrada x saída (Guia §10): pareada por ambiente + item. É apoio à decisão — responsabilidade e cobrança
-// continuam com validação humana (requiresHumanValidation), nada é cobrado automaticamente.
-export default function InspectionComparisonCard({ entry, exit, comparison, onViewMedia }) {
-  const rows = rowsOf(comparison);
+// continuam com validação humana (requiresHumanValidation), nada é cobrado automaticamente. "Comparar com a NAY" pede a
+// sugestão da NAY (com fontes) por cima da mesma comparação (InspectionNayPanel).
+export default function InspectionComparisonCard({ entry, exit, comparison, onViewMedia, onError }) {
+  const [nayView, setNayView] = useState(null);
+  const [nayBusy, setNayBusy] = useState(false);
+  const rows = comparisonRows(comparison);
+
+  async function handleNay() {
+    onError("");
+    setNayBusy(true);
+    try {
+      setNayView(nayComparisonView(await compareInspectionsWithNay(entry.id, exit.id)));
+    } catch (err) {
+      onError(legalErrorMessage(err, "Não foi possível comparar com a NAY."));
+    } finally {
+      setNayBusy(false);
+    }
+  }
+
   const changedCount = rows.filter((r) => r.changed).length;
   return (
     <Card
       title="Comparação de vistorias"
       subtitle={`${changedCount} item(ns) com diferença entre ${INSPECTION_TYPE_LABELS[entry.inspectionType].toLowerCase()} (${formatDate(entry.scheduledAt)}) e ${INSPECTION_TYPE_LABELS[exit.inspectionType].toLowerCase()} (${formatDate(exit.scheduledAt)})`}
+      actions={
+        <Button size="sm" variant="secondary" onClick={handleNay} loading={nayBusy} disabled={nayBusy}>
+          {nayView ? "Comparar com a NAY de novo" : "Comparar com a NAY"}
+        </Button>
+      }
     >
       <div data-testid="inspection-comparison">
         <Alert tone="warning" title="Comparação de apoio">
           Responsabilidade e cobrança dependem de validação humana: confira cada diferença com as fotos antes de decidir.
         </Alert>
+        {nayView ? <InspectionNayPanel key={nayView.runId || "item-a-item"} view={nayView} onError={onError} /> : null}
         {rows.length === 0 ? (
           <EmptyState icon="check" title="Sem itens para comparar" description="As duas vistorias não têm itens registrados." />
         ) : (

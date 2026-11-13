@@ -140,6 +140,9 @@ export default function GarantiasPage() {
                     {guarantor ? (
                       <div className={styles.guaranteeMetaRow}><span>Fiador</span><strong>{guarantor.legalName}</strong></div>
                     ) : null}
+                    {g.replacedByGuaranteeId ? (
+                      <div className={styles.guaranteeMetaRow}><span>Histórico</span><strong>Substituída por outra garantia</strong></div>
+                    ) : null}
                     {g.value != null ? (
                       <div className={styles.guaranteeMetaRow}><span>Valor</span><strong>{formatBRL(g.value)}</strong></div>
                     ) : null}
@@ -151,8 +154,8 @@ export default function GarantiasPage() {
                   <div className={styles.guaranteeActions}>
                     <RowActions
                       onView={() => router.push(`/painel/contratos/garantias/${g.id}`)}
-                      onEdit={() => router.push(`/painel/contratos/garantias/${g.id}`)}
-                      onDelete={() => setDeleteTarget(g)}
+                      onEdit={g.replacedByGuaranteeId ? undefined : () => router.push(`/painel/contratos/garantias/${g.id}`)}
+                      onDelete={g.replacedByGuaranteeId ? undefined : () => setDeleteTarget(g)}
                     />
                   </div>
                 </div>

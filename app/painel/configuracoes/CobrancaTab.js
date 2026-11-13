@@ -119,6 +119,11 @@ export default function CobrancaTab() {
             </div>
           ) : null}
 
+          <p className="formGridFull">
+            Multa, juros e carência valem pelo Motor de Regras: ao salvar, o sistema publica uma nova versão da regra da locação que o valor alimenta
+            (multa e juros: REG-LOC-001; carência: REG-LOC-002), e é essa versão que o cálculo da cobrança usa dali em diante.
+          </p>
+
           <FormField label="Multa por atraso (%)" htmlFor="billing-late-fee">
             <Input
               id="billing-late-fee"

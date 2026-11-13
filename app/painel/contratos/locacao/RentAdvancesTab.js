@@ -16,8 +16,7 @@ import { legalErrorMessage } from "@/lib/legal/legalErrors";
 import { formatBRL, formatContractLabel, toNumber } from "@/lib/format";
 import styles from "./page.module.css";
 
-const RENT_ADVANCE_STATUS_TONE = { ELIGIBLE: "neutral", PROPOSED: "warning", ACCEPTED: "info", PAID: "success", RECOVERING: "warning", RECOVERED: "success" };
-const RENT_ADVANCE_STATUS_LABEL = { ELIGIBLE: "Elegível", PROPOSED: "Proposto", ACCEPTED: "Aceito", PAID: "Pago", RECOVERING: "Recuperando", RECOVERED: "Recuperado" };
+import { RENT_ADVANCE_STATUS_TONE, rentAdvanceAction, rentAdvanceStatusLabel } from "@/lib/legal/rentAdvanceStatus";
 
 export default function RentAdvancesTab({ rentAdvances, leaseContracts, onChanged, onError }) {
   const load = onChanged;
@@ -70,16 +69,17 @@ export default function RentAdvancesTab({ rentAdvances, leaseContracts, onChange
     { key: "contractId", label: "Contrato", render: (row) => formatContractLabel(leaseContracts.find((c) => c.id === row.contractId)) || row.contractId.slice(0, 8) },
     { key: "monthsAdvanced", label: "Meses", render: (row) => row.monthsAdvanced },
     { key: "principalAmount", label: "Principal", render: (row) => formatBRL(row.principalAmount) },
-    { key: "status", label: "Status", render: (row) => <Badge tone={RENT_ADVANCE_STATUS_TONE[row.status] || "neutral"}>{RENT_ADVANCE_STATUS_LABEL[row.status] || row.status}</Badge> },
+    { key: "status", label: "Status", render: (row) => <Badge tone={RENT_ADVANCE_STATUS_TONE[row.status] || "neutral"}>{rentAdvanceStatusLabel(row.status)}</Badge> },
     {
       key: "actions",
       label: "Ações",
       render: (row) => {
-        if (row.status === "ELIGIBLE") return <Button variant="secondary" size="sm" onClick={() => handleAdvanceTransition(row.id, proposeRentAdvance)}>Propor</Button>;
-        if (row.status === "PROPOSED") return <Button variant="secondary" size="sm" onClick={() => handleAdvanceTransition(row.id, acceptRentAdvance)}>Aceitar</Button>;
-        if (row.status === "ACCEPTED") return <Button variant="secondary" size="sm" onClick={() => handleAdvanceTransition(row.id, payRentAdvance)}>Pagar</Button>;
-        if (row.status === "PAID" || row.status === "RECOVERING") return <Button variant="secondary" size="sm" onClick={() => { setRecoverTarget(row); setRecoverAmount(""); }}>Registrar recuperação</Button>;
-        return row.status === "RECOVERED" ? "Recuperada — nada a fazer" : "Nenhuma ação disponível";
+        // UAT M5 C12: a ação segue o estado que a API devolve (nasce em ELIGIBILITY_PENDING), lib/legal/rentAdvanceStatus.js.
+        const action = rentAdvanceAction(row.status);
+        if (action.text) return action.text;
+        if (action.kind === "recover") return <Button variant="secondary" size="sm" onClick={() => { setRecoverTarget(row); setRecoverAmount(""); }}>{action.label}</Button>;
+        const call = { propose: proposeRentAdvance, accept: acceptRentAdvance, pay: payRentAdvance }[action.kind];
+        return <Button variant="secondary" size="sm" onClick={() => handleAdvanceTransition(row.id, call)}>{action.label}</Button>;
       },
     },
   ];
