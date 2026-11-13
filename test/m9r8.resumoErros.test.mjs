@@ -6,7 +6,8 @@ import assert from "node:assert/strict";
 import { html } from "./_loader/render.mjs";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState.js";
 import { classifyFailure, fieldErrorsOf } from "@/lib/asyncState/states.js";
-import { fieldProblemsForDisplay, humanizeApiError, withFieldLabels } from "@/lib/errors/apiErrors.js";
+import { fieldProblemsForDisplay, humanizeApiError, withFieldLabels, saveErrorText } from "@/lib/errors/apiErrors.js";
+import { readFileSync } from "node:fs";
 import { PERSON_FIELD_IDS } from "@/lib/errors/personWizard.js";
 
 const TECH = /legalName|preferredName|nextActionDueAt|campoInternoQualquer|"|[a-z]+[A-Z][A-Za-z]+/;
@@ -67,4 +68,17 @@ test("m9r8 humanizeApiError com details.fields em lista aponta o campo certo da 
   assert.doesNotMatch(r.fields["p-name"] + r.message, TECH);
   const z = humanizeApiError(DOIS, PERSON_FIELD_IDS);
   assert.equal(z.fields["p-zip"], "Confira o campo CEP.");
+});
+
+test("m9r8 edição de pessoa: o erro ao salvar diz o rótulo e o limite, marca o campo e não mostra o nome interno (antes: a mensagem crua com \"preferredName\")", () => {
+  const e = erro(400, "PERSON_VALIDATION", 'O campo "preferredName" deve ser um texto de até 150 caracteres.', { fields: ["preferredName"], problems: [{ field: "preferredName", message: 'O campo "preferredName" deve ser um texto de até 150 caracteres.' }] });
+  const ids = { legalName: "e-name", preferredName: "e-preferred" };
+  const t = saveErrorText(e, ids);
+  assert.equal(t.message, "O campo Nome de uso deve ser um texto de até 150 caracteres.");
+  assert.deepEqual(Object.keys(t.fields), ["e-preferred"]);
+  assert.doesNotMatch(t.message + Object.values(t.fields).join(" "), TECH);
+  assert.equal(saveErrorText(erro(500, "INTERNAL_ERROR", "Algo deu errado. Informe o código abc ao suporte.", undefined), ids).message, "Algo deu errado. Informe o código abc ao suporte.");
+  const fonte = readFileSync(new URL("../app/painel/pessoas/[id]/editar/page.js", import.meta.url), "utf8");
+  assert.match(fonte, /saveErrorText\(err, EDIT_FIELD_IDS\)/, "a tela de edição usa o texto humano");
+  assert.doesNotMatch(fonte, /setSubmitError\(err\?\.message/, "e não a mensagem crua da API");
 });

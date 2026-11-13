@@ -31,7 +31,11 @@ import ChangeEvidenceFields from "@/components/molecules/ChangeEvidenceFields/Ch
 import { EMPTY_EVIDENCE, buildChangeEvidence } from "@/lib/changeEvidence";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import { saveErrorText } from "@/lib/errors/apiErrors";
 import styles from "./page.module.css";
+
+// Campo da API -> id do campo nesta tela (o erro do salvamento marca o campo certo, com o rótulo humano).
+const EDIT_FIELD_IDS = { legalName: "e-name", preferredName: "e-preferred", taxIdNormalized: "e-doc", birthOrFoundationDate: "e-birth", personType: "e-type", status: "e-status" };
 
 const EMPTY_CONTACT = { id: null, type: "PHONE", value: "", primary: false };
 // FIX (homologação): "value" nunca existiu de verdade na API (PersonDocument só tem
@@ -46,6 +50,7 @@ export default function EditarPessoaPage({ params }) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
 
   const [basic, setBasic] = useState(null);
   const [evidence, setEvidence] = useState(EMPTY_EVIDENCE); // M9-D807: origem da alteração de campo crítico
@@ -152,6 +157,7 @@ export default function EditarPessoaPage({ params }) {
   async function handleSubmit() {
     setSubmitting(true);
     setSubmitError("");
+    setFieldErrors({});
     try {
       const changeEvidence = await buildChangeEvidence(evidence);
       await updatePerson(params.id, {
@@ -214,7 +220,10 @@ export default function EditarPessoaPage({ params }) {
 
       router.push(`/painel/pessoas/${params.id}`);
     } catch (err) {
-      setSubmitError(err?.message || "Não foi possível salvar as alterações.");
+      // Rodada 8: a mensagem crua da API trazia o nome interno do campo ("preferredName"); agora vai o rótulo da tela e o campo fica marcado.
+      const texto = saveErrorText(err, EDIT_FIELD_IDS);
+      setSubmitError(texto.message);
+      setFieldErrors(texto.fields);
       setSubmitting(false);
     }
   }
@@ -239,14 +248,14 @@ export default function EditarPessoaPage({ params }) {
               </Select>
             </FormField>
             <div className={styles.span2}>
-              <FormField label="Nome / Razão social" htmlFor="e-name" required>
+              <FormField label="Nome / Razão social" htmlFor="e-name" required error={fieldErrors["e-name"]}>
                 <Input id="e-name" value={basic.legalName} onChange={(e) => setBasic({ ...basic, legalName: e.target.value })} />
               </FormField>
             </div>
-            <FormField label="Nome de uso" htmlFor="e-preferred">
+            <FormField label="Nome de uso" htmlFor="e-preferred" error={fieldErrors["e-preferred"]}>
               <Input id="e-preferred" value={basic.preferredName} onChange={(e) => setBasic({ ...basic, preferredName: e.target.value })} />
             </FormField>
-            <FormField label={basic.personType === "PJ" ? "CNPJ" : "CPF"} htmlFor="e-doc">
+            <FormField label={basic.personType === "PJ" ? "CNPJ" : "CPF"} htmlFor="e-doc" error={fieldErrors["e-doc"]}>
               <Input
                 id="e-doc"
                 value={basic.taxIdNormalized}
@@ -256,7 +265,7 @@ export default function EditarPessoaPage({ params }) {
             <FormField
               label={basic.personType === "PF" ? "Data de nascimento" : "Data de fundação"}
               htmlFor="e-birth"
-              error={birthDateInvalid ? DATE_INPUT_ERROR_MESSAGE : undefined}
+              error={birthDateInvalid ? DATE_INPUT_ERROR_MESSAGE : fieldErrors["e-birth"]}
             >
               <Input
                 id="e-birth"
