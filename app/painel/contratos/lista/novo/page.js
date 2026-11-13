@@ -24,6 +24,7 @@ import PartiesEditor from "./PartiesEditor";
 import ClausePreviewCard from "./ClausePreviewCard";
 import styles from "./page.module.css";
 import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
+import { readLinkParams } from "@/lib/crm/journeyLinks";
 
 // Prévia das cláusulas com a versão do modelo que foi usada (a publicada gera o contrato; o rascunho é só consulta).
 const toPreview = (r) => ({ included: r.clauses || [], excluded: r.excludedClauses || [], versionNumber: r.templateVersionNumber || null, versionStatus: r.templateVersionStatus || null });
@@ -52,6 +53,13 @@ export default function NovoContratoPage() {
   const [projects, setProjects] = useState(null);
   const [projectsError, setProjectsError] = useState("");
   const isConstruction = form.contractType === "CONSTRUCTION";
+  // M3-25: aberto pela oportunidade do CRM ("Criar contrato desta oportunidade"), o contrato nasce ligado a ela e ao imóvel dela.
+  const [opportunityId, setOpportunityId] = useState("");
+  useEffect(() => {
+    const link = readLinkParams(window.location.search, ["opportunityId", "propertyId"]);
+    if (link.opportunityId) setOpportunityId(link.opportunityId);
+    if (link.propertyId) setForm((prev) => ({ ...prev, propertyId: link.propertyId }));
+  }, []);
   useEffect(() => {
     if (!isConstruction || projects !== null) return;
     listProjects()
@@ -172,6 +180,7 @@ export default function NovoContratoPage() {
       const contract = await createContract({
         ...(isLinked ? { parentContractId: form.parentContractId } : { propertyId: form.propertyId }),
         contractType: form.contractType,
+        ...(opportunityId ? { opportunityId } : {}),
         ...(form.totalValue !== "" ? { totalValue: value } : {}),
         startsAt: dateOnlyInputToIso(form.startsAt),
         endsAt: dateOnlyInputToIso(form.endsAt),
@@ -232,6 +241,7 @@ export default function NovoContratoPage() {
           O contrato nasce como rascunho e segue o fluxo do livro: documentos pendentes (opcional) → revisão jurídica → aprovação da versão do documento → em assinatura → assinado → em vigor. Depois de em vigor pode ser suspenso, encerrado (rescisão) e arquivado. As etapas são feitas na página de detalhe.
         </Alert>
 
+        {opportunityId ? <Alert tone="info" data-testid="contrato-da-oportunidade">Contrato da oportunidade do CRM: o vínculo vai junto com o contrato.</Alert> : null}
         <Card title="Dados do contrato">
           <div className={styles.formGrid}>
             <FormField label="Tipo de contrato" htmlFor="f-type">

@@ -43,6 +43,7 @@ import {
   GUARANTEE_STATUS_TONE,
 } from "@/lib/labels/juridico";
 import { formatBRL, formatDate, formatDateTime, formatContractLabel, humanizeText } from "@/lib/format";
+import ContractReceivableLink from "./ContractReceivableLink";
 import ContractActions from "./ContractActions";
 import ContractStepper from "./ContractStepper";
 import VersionsCard from "./VersionsCard";
@@ -130,6 +131,7 @@ export default function ContratoDetailPage({ params }) {
           <div className={styles.badges}>
             <Badge tone={CONTRACT_STATUS_TONE[contract.status] || "neutral"} className={styles.badgeBig}>{CONTRACT_STATUS_LABELS[contract.status] || "Situação desconhecida"}</Badge>
             <Badge tone={CONTRACT_TYPE_TONE[contract.contractType] || "neutral"}>{CONTRACT_TYPE_LABELS[contract.contractType] || "Contrato"}</Badge>
+            <ContractReceivableLink contract={contract} />
           </div>
           {legacyCancelled ? null : (
             <ContractActions contract={contract} latestVersion={latestVersion} parties={parties} personOf={personOf} {...common} />

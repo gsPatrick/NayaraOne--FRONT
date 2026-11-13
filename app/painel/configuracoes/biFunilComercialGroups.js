@@ -64,7 +64,7 @@ export const BI_FUNIL_COMERCIAL_GROUPS = [
         key: "analytics.comercial.ordem_estagios",
         label: "Ordem dos estágios do funil",
         type: "text",
-        defaultValue: "NEW,QUALIFIED,MATCHING,VISIT_SCHEDULED,VISITED,PROPOSAL,FINANCING,CONTRACT,NURTURE,CLOSED_WON,CLOSED_LOST,WITHDRAWN",
+        defaultValue: "NEW,QUALIFIED,MATCHING,VISIT_SCHEDULED,VISITED,PROPOSAL,FINANCING,CONTRACT,NURTURE,WON,LOST,WITHDRAWN",
         helper: "Códigos dos estágios separados por vírgula, na ordem em que aparecem em Oportunidades por estágio. Estágio fora da lista aparece depois, em ordem alfabética.",
       },
       {

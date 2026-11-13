@@ -134,7 +134,7 @@ export default function FeedbackPage() {
         <StatTile label="Escalonados" value={cases.filter((c) => c.status === "ESCALATED").length} tone="warning" icon="bell" />
       </div>
 
-      <Card title="Casos de reclamação, elogio e conflito" subtitle="SLA calculado na criação por severidade (alta 24h · média 72h · baixa 7 dias)">
+      <Card title="Casos de reclamação, elogio e conflito" subtitle="SLA calculado na criação pela severidade, com os prazos definidos pelo administrador em Configurações > CRM">
         <div className={styles.toolbar}>
           <Select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className={styles.filter}>
             <option value="">Todos os tipos</option>
@@ -288,7 +288,7 @@ function CreateFeedbackModal({ open, onClose, onCreate, users }) {
           ))}
         </Select>
       </FormField>
-      <FormField label="Severidade" htmlFor="f-severity" helper="Define o prazo de SLA: alta 24h, média 72h, baixa 7 dias.">
+      <FormField label="Severidade" htmlFor="f-severity" helper="Define o prazo de SLA (prazos por severidade em Configurações > CRM). Vencido o SLA, o caso escala para a gerência.">
         <Select id="f-severity" value={severity} onChange={(e) => setSeverity(e.target.value)}>
           {FEEDBACK_SEVERITIES.map((s) => (
             <option key={s} value={s}>{SEVERITY_LABELS[s]}</option>

@@ -23,6 +23,7 @@ import { generateIdempotencyKey } from "@/lib/offline/offlineQueue";
 import { dateOnlyInputToIso, formatContractLabel, parseCompetenceInput, toNumber } from "@/lib/format";
 import styles from "./page.module.css";
 import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
+import { readLinkParams } from "@/lib/crm/journeyLinks";
 
 import { lookupFallback, reportLookupProblem } from "@/lib/asyncState/lookup";
 export default function NovoLancamentoPage() {
@@ -61,6 +62,13 @@ export default function NovoLancamentoPage() {
   // o lançamento com dueAt null, sem nenhum aviso. Agora detectamos a invalidez via
   // validity.badInput/rangeOverflow/rangeUnderflow e bloqueamos o submit com erro visível.
   const [dueAtInvalid, setDueAtInvalid] = useState(false);
+  const [linkedContractId, setLinkedContractId] = useState("");
+  useEffect(() => {
+    const { contractId } = readLinkParams(window.location.search, ["contractId"]);
+    if (!contractId) return;
+    setLinkedContractId(contractId);
+    setForm((prev) => ({ ...prev, nature: "RECEIVABLE", entryType: "CREDIT" }));
+  }, []);
   // Idempotência client-side (achado da auditoria de idempotência, Marco 7): o campo
   // "idempotencyKey" abaixo era só um texto livre OPCIONAL digitado manualmente pelo usuário —
   // na prática, quase sempre fica em branco (vira `undefined` no payload) e createFinancialEntry
@@ -107,6 +115,8 @@ export default function NovoLancamentoPage() {
   );
   const competenceInvalid = form.competenceMonth && !parseCompetenceInput(form.competenceMonth);
   const isTerceiroRecebimento = form.isThirdPartyFunds && form.nature === "RECEIVABLE";
+  // M3-25: recebível aberto pelo contrato ("Lançar recebível deste contrato") fica ligado a ele mesmo sem ser de terceiros.
+  const linkedContractReceivable = !form.isThirdPartyFunds && form.nature === "RECEIVABLE" && Boolean(linkedContractId);
   const isTerceiroSaida = form.isThirdPartyFunds && form.nature === "PAYABLE";
   const contractMissing = isTerceiroRecebimento && !form.contractId;
   const holderMissing = isTerceiroRecebimento && !form.thirdPartyHolderPersonId;
@@ -191,7 +201,7 @@ export default function NovoLancamentoPage() {
         idempotencyKey: manualKey || entryIdempotencyKeyRef.current,
         isThirdPartyFunds: form.isThirdPartyFunds,
         thirdPartyReference: form.isThirdPartyFunds ? form.thirdPartyReference.trim() || undefined : undefined,
-        contractId: isTerceiroRecebimento ? form.contractId : undefined,
+        contractId: isTerceiroRecebimento ? form.contractId : linkedContractReceivable ? linkedContractId : undefined,
         thirdPartyHolderPersonId: isTerceiroRecebimento ? form.thirdPartyHolderPersonId : undefined,
       });
       entryIdempotencyKeyRef.current = null;
@@ -213,6 +223,7 @@ export default function NovoLancamentoPage() {
         {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
 
         <AsyncState result={formDataQuery} loadingLabel="Carregando dados do formulário...">
+          {linkedContractReceivable ? <Alert tone="info" data-testid="recebivel-do-contrato">Recebível do contrato: o lançamento fica ligado ao contrato de origem.</Alert> : null}
           <Card title="Dados do lançamento">
             <div className={styles.formGrid}>
               <FormField label="Descrição" htmlFor="f-desc" required>

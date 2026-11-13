@@ -13,6 +13,7 @@ import IaNayTab from "./IaNayTab";
 import MarketingTab from "./MarketingTab";
 import PessoasTab from "./PessoasTab";
 import CrmCarteiraTab from "./CrmCarteiraTab";
+import CrmTab from "./CrmTab";
 import styles from "./page.module.css";
 
 export default function ConfiguracoesPage() {
@@ -35,6 +36,7 @@ export default function ConfiguracoesPage() {
             { label: "Governança", content: <GovernancaTab /> },
             { label: "IA NAY", content: <IaNayTab /> },
             { label: "CRM: carteira e exportação", content: <CrmCarteiraTab /> },
+            { label: "CRM", content: <CrmTab /> },
             { label: "Marketing", content: <MarketingTab /> },
             { label: "BI e Centro de Comando", content: <BiTab /> },
           ]}
