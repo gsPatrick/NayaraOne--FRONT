@@ -1,5 +1,7 @@
 "use client";
 
+// Detalhe da garantia (Caderno M5 §9): dados do tipo, o que falta para ativar (com "Completar dados"), trilha da caução
+// no Financeiro e substituição sem perder histórico (a antiga fica Liberada e ligada à nova).
 import { useState } from "react";
 import { useRouter, notFound } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
@@ -12,64 +14,42 @@ import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import { UI_STATE } from "@/lib/asyncState/states";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { nullOn404 } from "@/lib/asyncState/notFound";
-import RowActions from "@/components/molecules/RowActions/RowActions";
+import { lookupFallback } from "@/lib/asyncState/lookup";
 import Modal from "@/components/organisms/Modal/Modal";
+import FileViewerModal from "@/components/organisms/FileViewerModal/FileViewerModal";
 import Button from "@/components/atoms/Button/Button";
 import Select from "@/components/atoms/Select/Select";
-import { listPeople } from "@/lib/api/people";
-import { getGuarantee, getContract, updateGuarantee, deleteGuarantee } from "@/lib/api/legal";
+import { getGuarantee, getContract, updateGuarantee, deleteGuarantee, listGuarantees } from "@/lib/api/legal";
 import {
-  GUARANTEE_TYPE_LABELS,
-  GUARANTEE_TYPE_ICON,
-  GUARANTEE_STATUS_LABELS,
-  GUARANTEE_STATUS_TONE,
-  CONTRACT_STATUS_LABELS,
-  CONTRACT_STATUS_TONE,
-} from "@/lib/mock/legal";
-import { formatBRL, formatDate, formatContractLabel } from "@/lib/format";
-import styles from "./page.module.css";
-
+  GUARANTEE_TYPE_LABELS, GUARANTEE_STATUSES, GUARANTEE_STATUS_LABELS, GUARANTEE_STATUS_TONE, CONTRACT_STATUS_LABELS, CONTRACT_STATUS_TONE, normalizeGuaranteeType,
+} from "@/lib/labels/juridico";
+import { formatBRL, formatContractLabel } from "@/lib/format";
+import { legalErrorMessage } from "@/lib/legal/legalErrors";
 import { activatable } from "@/lib/a11y/keyboard";
-// Espelha o enum real de legal_guarantees.status na API (ACTIVE | RELEASED | CANCELLED).
-const STATUS_OPTIONS = ["ACTIVE", "RELEASED", "CANCELLED"];
+import GuaranteeDataCard from "./GuaranteeDataCard";
+import CompleteGuaranteeCard from "./CompleteGuaranteeCard";
+import { useGuaranteeSupport } from "../useGuaranteeSupport";
+import styles from "./page.module.css";
 
 export default function GarantiaDetailPage({ params }) {
   const router = useRouter();
-  const [guarantee, setGuarantee] = useState(null);
-  const [contract, setContract] = useState(null);
-  const [people, setPeople] = useState([]);
   const [actionError, setActionError] = useState("");
   const [notice, setNotice] = useState(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [viewerFile, setViewerFile] = useState(null);
   const [busy, setBusy] = useState(false);
+  const support = useGuaranteeSupport();
 
   // M9-D940: carregando, erro com "tentar de novo", 403 e offline vêm do padrão único de estados.
-  const loadQuery = useAsyncState(() => {
-    return Promise.all([getGuarantee(params.id), listPeople()])
-      .catch(nullOn404) // 404 da API: o registro não existe, a tela chama notFound()
-      .then(async (loaded) => {
-        if (!loaded) {
-          setGuarantee(null);
-          return;
-        }
-        const [guaranteeRes, peopleRes] = loaded;
-        setGuarantee(guaranteeRes);
-        setPeople(peopleRes || []);
-        if (guaranteeRes?.contractId) {
-          try {
-            const c = await getContract(guaranteeRes.contractId);
-            setContract(c);
-          } catch {
-            // Contrato pode não existir mais — segue sem vínculo.
-          }
-        }
-      })
-      .then(() => true);
+  const loadQuery = useAsyncState(async () => {
+    const guarantee = await getGuarantee(params.id).catch(nullOn404);
+    if (!guarantee) return { guarantee: null };
+    const [contract, siblings] = await Promise.all([
+      getContract(guarantee.contractId).catch(lookupFallback("o contrato da garantia", null)),
+      listGuarantees({ contractId: guarantee.contractId }).catch(lookupFallback("as outras garantias do contrato")),
+    ]);
+    return { guarantee, contract, siblings: siblings || [] };
   }, { deps: [params.id], isEmpty: () => false });
-
-  function personOf(id) {
-    return people.find((p) => p.id === id) || null;
-  }
 
   if (loadQuery.status !== UI_STATE.CONTENT) {
     return (
@@ -79,20 +59,23 @@ export default function GarantiaDetailPage({ params }) {
     );
   }
 
-
+  const { guarantee, contract, siblings } = loadQuery.data || {};
   if (!guarantee) return notFound();
-
-  const guarantor = guarantee.guarantorPersonId ? personOf(guarantee.guarantorPersonId) : null;
+  const type = normalizeGuaranteeType(guarantee.guaranteeType);
+  const personName = (id) => (id ? support.people.find((p) => p.id === id)?.legalName || "Pessoa cadastrada" : "");
+  const replacedBy = guarantee.replacedByGuaranteeId ? siblings.find((g) => g.id === guarantee.replacedByGuaranteeId) : null;
+  const replaces = siblings.find((g) => g.replacedByGuaranteeId === guarantee.id) || null;
+  const canReplace = !guarantee.replacedByGuaranteeId && ["PENDING", "ACTIVE"].includes(guarantee.status);
 
   async function handleStatusChange(status) {
     setActionError("");
     setBusy(true);
     try {
-      const updated = await updateGuarantee(guarantee.id, { status });
-      setGuarantee(updated);
-      setNotice({ tone: "success", text: `Status atualizado para "${GUARANTEE_STATUS_LABELS[status] || status}".` });
+      await updateGuarantee(guarantee.id, { status });
+      setNotice({ tone: "success", text: `Situação atualizada para "${GUARANTEE_STATUS_LABELS[status]}".` });
+      loadQuery.reload();
     } catch (err) {
-      setActionError(err.message || "Erro ao atualizar status da garantia.");
+      setActionError(legalErrorMessage(err, "Erro ao atualizar a situação da garantia."));
     } finally {
       setBusy(false);
     }
@@ -105,46 +88,59 @@ export default function GarantiaDetailPage({ params }) {
       await deleteGuarantee(guarantee.id);
       router.push("/painel/contratos/garantias");
     } catch (err) {
-      setActionError(err.message || "Erro ao excluir garantia.");
+      setActionError(legalErrorMessage(err, "Erro ao excluir garantia."));
     }
   }
 
+  const statusOptions = GUARANTEE_STATUSES.includes(guarantee.status) ? GUARANTEE_STATUSES : [guarantee.status, ...GUARANTEE_STATUSES];
   return (
-    <AppShell title={GUARANTEE_TYPE_LABELS[guarantee.guaranteeType] || guarantee.guaranteeType} backHref="/painel/contratos/garantias">
+    <AppShell title={GUARANTEE_TYPE_LABELS[type] || "Garantia"} backHref="/painel/contratos/garantias">
       <div className={styles.wrap}>
         <div className={styles.topRow}>
           <div className={styles.badges}>
-            <Badge tone={GUARANTEE_STATUS_TONE[guarantee.status] || "neutral"}>{GUARANTEE_STATUS_LABELS[guarantee.status] || guarantee.status}</Badge>
+            <Badge tone={GUARANTEE_STATUS_TONE[guarantee.status] || "neutral"}>{GUARANTEE_STATUS_LABELS[guarantee.status] || "Situação desconhecida"}</Badge>
             {contract ? <Badge tone={CONTRACT_STATUS_TONE[contract.status]}>{CONTRACT_STATUS_LABELS[contract.status]}</Badge> : null}
           </div>
           <div className={styles.actions}>
-            <Select value={guarantee.status} onChange={(e) => handleStatusChange(e.target.value)} disabled={busy}>
-              {STATUS_OPTIONS.map((s) => (
-                <option key={s} value={s}>{GUARANTEE_STATUS_LABELS[s] || s}</option>
+            <Select aria-label="Situação da garantia" value={guarantee.status} onChange={(e) => handleStatusChange(e.target.value)} disabled={busy || Boolean(guarantee.replacedByGuaranteeId)}>
+              {statusOptions.map((s) => (
+                <option key={s} value={s} disabled={!GUARANTEE_STATUSES.includes(s)}>{GUARANTEE_STATUS_LABELS[s] || "Situação desconhecida"}</option>
               ))}
             </Select>
-            <RowActions
-              onView={() => setNotice({ tone: "info", text: "Você já está vendo os detalhes desta garantia." })}
-              onDelete={() => setDeleteOpen(true)}
-            />
+            {canReplace ? (
+              <Button variant="secondary" href={`/painel/contratos/garantias/novo?substituir=${guarantee.id}`}><Icon name="swapHorizontal" size={16} /> Substituir garantia</Button>
+            ) : null}
+            <Button variant="ghost" onClick={() => setDeleteOpen(true)}><Icon name="trash" size={16} /> Excluir</Button>
           </div>
         </div>
 
-        {actionError ? <Alert tone="danger" className={styles.notice}>{actionError}</Alert> : null}
+        {actionError ? (
+          <div style={{ position: "fixed", top: "var(--space-4)", left: "50%", transform: "translateX(-50%)", zIndex: 200, width: "min(560px, calc(100vw - 2 * var(--space-4)))" }}>
+            <Alert tone="danger">{actionError}</Alert>
+          </div>
+        ) : null}
         {notice ? <Alert tone={notice.tone} className={styles.notice}>{notice.text}</Alert> : null}
+        {replacedBy || guarantee.replacedByGuaranteeId ? (
+          <Alert tone="info" className={styles.notice}>
+            Esta garantia foi substituída{replacedBy ? ` por ${GUARANTEE_TYPE_LABELS[normalizeGuaranteeType(replacedBy.guaranteeType)]}` : ""}; o histórico continua aqui.{" "}
+            <Button size="sm" variant="ghost" href={`/painel/contratos/garantias/${guarantee.replacedByGuaranteeId}`}>Ver garantia nova</Button>
+          </Alert>
+        ) : null}
+        {replaces ? (
+          <Alert tone="info" className={styles.notice}>
+            Esta garantia substituiu a anterior ({GUARANTEE_TYPE_LABELS[normalizeGuaranteeType(replaces.guaranteeType)]}).{" "}
+            <Button size="sm" variant="ghost" href={`/painel/contratos/garantias/${replaces.id}`}>Ver garantia anterior</Button>
+          </Alert>
+        ) : null}
 
         <div className={styles.grid}>
           <div className={styles.mainCol}>
-            <Card title="Detalhes da garantia">
-              <dl className={styles.detailList}>
-                <div className={styles.detailRow}><dt>Tipo</dt><dd className={styles.typeCell}><Icon name={GUARANTEE_TYPE_ICON[guarantee.guaranteeType]} size={16} /> {GUARANTEE_TYPE_LABELS[guarantee.guaranteeType]}</dd></div>
-                <div className={styles.detailRow}><dt>Fiador</dt><dd>{guarantor?.legalName || "Não se aplica"}</dd></div>
-                <div className={styles.detailRow}><dt>Valor</dt><dd className={styles.amount}>{guarantee.value != null ? formatBRL(guarantee.value) : "Sem valor cadastrado"}</dd></div>
-                <div className={styles.detailRow}><dt>Início de vigência</dt><dd>{guarantee.startsAt ? formatDate(guarantee.startsAt) : "Sem data de início"}</dd></div>
-                <div className={styles.detailRow}><dt>Fim de vigência</dt><dd>{guarantee.endsAt ? formatDate(guarantee.endsAt) : "Prazo indeterminado"}</dd></div>
-                <div className={styles.detailRow}><dt>ID</dt><dd className={styles.mono}>{guarantee.id}</dd></div>
-              </dl>
-            </Card>
+            <CompleteGuaranteeCard
+              guarantee={guarantee}
+              support={support}
+              onSaved={(text) => { setNotice({ tone: "success", text }); loadQuery.reload(); }}
+            />
+            <GuaranteeDataCard guarantee={guarantee} personName={personName} onViewFile={setViewerFile} />
           </div>
 
           <div className={styles.sideCol}>
@@ -165,6 +161,8 @@ export default function GarantiaDetailPage({ params }) {
         </div>
       </div>
 
+      <FileViewerModal open={Boolean(viewerFile)} onClose={() => setViewerFile(null)} file={viewerFile} fileId={viewerFile?.id} />
+
       <Modal
         open={deleteOpen}
         onClose={() => setDeleteOpen(false)}
@@ -176,7 +174,7 @@ export default function GarantiaDetailPage({ params }) {
           </>
         }
       >
-        <p>Tem certeza que deseja excluir a garantia <strong>{GUARANTEE_TYPE_LABELS[guarantee.guaranteeType]}</strong> do contrato <strong>{contract ? formatContractLabel(contract) : "não encontrado"}</strong>? Esta ação não pode ser desfeita.</p>
+        <p>Tem certeza que deseja excluir a garantia <strong>{GUARANTEE_TYPE_LABELS[type]}</strong> do contrato <strong>{contract ? formatContractLabel(contract) : "não encontrado"}</strong>? Para trocar de garantia sem perder o histórico, use &quot;Substituir garantia&quot;.</p>
       </Modal>
     </AppShell>
   );

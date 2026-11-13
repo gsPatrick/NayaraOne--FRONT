@@ -11,7 +11,7 @@ import Spinner from "@/components/atoms/Spinner/Spinner";
 import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import { toNumber } from "@/lib/format";
 import { listSettings, updateSetting } from "@/lib/api/settings";
-import { buildLabelMap, labelSettingError } from "@/lib/settings/errorLabel";
+import { buildLabelMap, isMfaSettingError, isSettingForbidden, labelSettingError, mfaSettingMessage } from "@/lib/settings/errorLabel";
 import { changedFields, integerFieldError, integerInRange, integerRangeError, integerRangeText, invalidChangedFields, loadedValue } from "./settingsFormat";
 import styles from "./page.module.css";
 import { GOVERNANCA_DLP_GROUPS } from "./governancaDlpGroups";
@@ -316,8 +316,8 @@ export default function GovernancaTab() {
       setError("");
       setSuccess("Configurações de governança salvas.");
     } catch (err) {
-      if (err?.status === 403) setForbidden(true);
-      else setError(labelSettingError(err, buildLabelMap(ALL_FIELDS), "Não foi possível salvar as configurações de governança.")); // F03: rótulo do campo, nunca a chave técnica
+      if (isSettingForbidden(err)) setForbidden(true);
+      else setError(isMfaSettingError(err) ? mfaSettingMessage(err) : labelSettingError(err, buildLabelMap(ALL_FIELDS), "Não foi possível salvar as configurações de governança.")); // F03: rótulo do campo, nunca a chave técnica
       setSuccess("");
     } finally {
       setSaving(false);

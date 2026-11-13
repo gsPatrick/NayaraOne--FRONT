@@ -84,7 +84,7 @@ export default function ProcessosPage() {
                 fallback, processos sem número apareciam sem nenhuma identificação na listagem. */}
             {row.caseNumber && row.caseNumber.trim()
               ? row.caseNumber
-              : `${CASE_TYPE_LABELS[row.caseType] || row.caseType || "Processo"} — ${String(row.id || "").slice(0, 8)}`}
+              : `${CASE_TYPE_LABELS[row.caseType] || "Processo"} sem número`}
           </span>
           <span className={styles.nameSub}>{row.summary}</span>
         </div>
@@ -100,7 +100,7 @@ export default function ProcessosPage() {
       key: "status",
       label: "Status",
       width: "14%",
-      render: (row) => <Badge tone={CASE_STATUS_TONE[row.status] || "neutral"}>{CASE_STATUS_LABELS[row.status] || row.status}</Badge>,
+      render: (row) => <Badge tone={CASE_STATUS_TONE[row.status] || "neutral"}>{CASE_STATUS_LABELS[row.status] || "Situação desconhecida"}</Badge>,
     },
     {
       key: "related",
@@ -131,11 +131,11 @@ export default function ProcessosPage() {
       <div className={styles.grid}>
         <StatTile label="Total de processos" value={legalCases.length} tone="neutral" icon="scale" />
         <StatTile label="Abertos" value={openCount} tone={openCount > 0 ? "danger" : "success"} icon="filter" />
-        <StatTile label="Contencioso" value={legalCases.filter((c) => c.caseType === "LITIGATION").length} tone="danger" icon="scale" />
+        <StatTile label="Judicial" value={legalCases.filter((c) => c.caseType === "LITIGATION").length} tone="danger" icon="scale" />
         <StatTile label="Cobrança" value={legalCases.filter((c) => c.caseType === "COLLECTION").length} tone="warning" icon="money" />
       </div>
 
-      <Card title="Processos jurídicos" subtitle="Contencioso, consultivo e cobrança">
+      <Card title="Processos jurídicos" subtitle="Judicial, consultivo e cobrança">
         <div className={styles.toolbar}>
           <SearchInput placeholder="Buscar por número ou resumo..." value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} />
           <Select className={styles.filter} value={typeFilter} onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}>

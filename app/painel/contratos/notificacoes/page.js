@@ -33,6 +33,10 @@ import {
   registerNoticeDeliveryEvidence,
   uploadFile,
 } from "@/lib/api/legal";
+import { apiFetch } from "@/lib/api/client";
+import { lookupFallback } from "@/lib/asyncState/lookup";
+import { legalErrorMessage } from "@/lib/legal/legalErrors";
+import { NoticeCorrectionModal, NoticeVersionsModal, NOTICE_EDITABLE_STATUSES } from "./NoticeVersions";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { useLocalCopy } from "@/lib/asyncState/localCopy";
 import { NOTICE_CHANNEL_LABELS, NOTICE_STATUS_LABELS, NOTICE_STATUS_TONE } from "@/lib/mock/legal";
@@ -57,15 +61,19 @@ export default function NotificacoesPage() {
 
   const [mfaOpen, setMfaOpen] = useState(false);
   const [pendingSendId, setPendingSendId] = useState(null);
+  const [correctTarget, setCorrectTarget] = useState(null);
+  const [versionsTarget, setVersionsTarget] = useState(null);
 
   // M9-D940: carregando, erro com "tentar de novo", 403 e offline vêm do padrão único de estados.
   // A lista é editada no lugar (criar/aprovar/enviar), então o vazio fica dentro da tela e a leitura só alimenta `notices`.
   const listQuery = useAsyncState(async () => {
-    const [noticesRes, contractsRes] = await Promise.all([listNotices(), listContracts()]);
-    return { notices: noticesRes || [], contracts: contractsRes || [] };
+    const [noticesRes, contractsRes, usersRes] = await Promise.all([listNotices(), listContracts(), apiFetch("/users").catch(lookupFallback("os usuários"))]);
+    return { notices: noticesRes || [], contracts: contractsRes || [], users: Array.isArray(usersRes) ? usersRes : [] };
   }, { key: "contratos-notificacoes", isEmpty: () => false });
   const loaded = listQuery.data;
   const contracts = useMemo(() => loaded?.contracts || [], [loaded]);
+  const users = useMemo(() => loaded?.users || [], [loaded]);
+  const userName = (id) => users.find((u) => u.id === id)?.name || "usuário da empresa";
   const [notices, setNotices] = useLocalCopy(loaded?.notices, []); // derivada do dado lido: sem flash de lista vazia no 1º render
 
   function contractOf(id) {
@@ -92,7 +100,7 @@ export default function NotificacoesPage() {
       setCreateModalOpen(false);
       setCreateForm({ contractId: "", channel: "EMAIL", recipientDescription: "", content: "" });
     } catch (err) {
-      setCreateError(err.message || "Erro ao criar notificação.");
+      setCreateError(legalErrorMessage(err, "Erro ao criar notificação."));
     } finally {
       setCreateBusy(false);
     }
@@ -104,7 +112,7 @@ export default function NotificacoesPage() {
       const updated = await fn(id);
       setNotices((prev) => prev.map((n) => (n.id === updated.id ? updated : n)));
     } catch (err) {
-      setActionError(err.message || "Erro ao atualizar notificação.");
+      setActionError(legalErrorMessage(err, "Erro ao atualizar notificação."));
     }
   }
 
@@ -118,7 +126,7 @@ export default function NotificacoesPage() {
         setPendingSendId(id);
         setMfaOpen(true);
       } else {
-        setActionError(err.message || "Erro ao enviar notificação.");
+        setActionError(legalErrorMessage(err, "Erro ao enviar notificação."));
       }
     }
   }
@@ -141,7 +149,7 @@ export default function NotificacoesPage() {
       setEvidenceTarget(null);
       setEvidenceFile(null);
     } catch (err) {
-      setActionError(err.message || "Erro ao registrar evidência de entrega.");
+      setActionError(legalErrorMessage(err, "Erro ao registrar evidência de entrega."));
     } finally {
       setEvidenceBusy(false);
     }
@@ -149,16 +157,20 @@ export default function NotificacoesPage() {
 
   return (
     <AppShell title="Notificações" backHref="/painel/contratos">
-      {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
+      {actionError ? (
+        <div style={{ position: "fixed", top: "var(--space-4)", left: "50%", transform: "translateX(-50%)", zIndex: 200, width: "min(560px, calc(100vw - 2 * var(--space-4)))" }}>
+          <Alert tone="danger">{actionError}</Alert>
+        </div>
+      ) : null}
 
       <Card
         title="Notificações formais"
-        subtitle="Canal, destinatário, conteúdo e evidência de envio/recebimento (Caderno, seção 13)"
+        subtitle="Canal, destinatário, conteúdo e evidência de envio e recebimento. Corrigir cria nova versão; só a versão aprovada é enviada"
         actions={<Button size="sm" onClick={() => setCreateModalOpen(true)}><Icon name="plus" size={16} /> Nova notificação</Button>}
       >
         <div className={styles.toolbar}>
           <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-            <option value="">Todos os status</option>
+            <option value="">Todas as situações</option>
             {Object.entries(NOTICE_STATUS_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </Select>
         </div>
@@ -173,11 +185,19 @@ export default function NotificacoesPage() {
               return (
                 <div key={n.id} className={styles.row}>
                   <div className={styles.name}>
-                    <div>{contract ? formatContractLabel(contract) : "Sem contrato vinculado"} · {NOTICE_CHANNEL_LABELS[n.channel] || n.channel}</div>
-                    <span className={styles.meta}>{n.recipientDescription || "Sem destinatário descrito"} · {formatDateTime(n.createdAt)}</span>
+                    <div>{contract ? formatContractLabel(contract) : "Sem contrato vinculado"} · {NOTICE_CHANNEL_LABELS[n.channel] || "Outro canal"}</div>
+                    <div className={styles.meta}>{n.recipientDescription || "Sem destinatário descrito"} · {formatDateTime(n.createdAt || n.created_at)}</div>
+                    <div className={styles.meta}>
+                      Versão {n.currentVersion || 1}
+                      {n.approvedVersion ? (n.approvedVersion === n.currentVersion ? " · aprovada para envio" : ` · aprovada: versão ${n.approvedVersion}`) : " · ainda sem versão aprovada"}
+                    </div>
                   </div>
-                  <Badge tone={NOTICE_STATUS_TONE[n.status] || "neutral"}>{NOTICE_STATUS_LABELS[n.status] || n.status}</Badge>
+                  <Badge tone={NOTICE_STATUS_TONE[n.status] || "neutral"}>{NOTICE_STATUS_LABELS[n.status] || "Situação desconhecida"}</Badge>
                   <div className={styles.actions}>
+                    {NOTICE_EDITABLE_STATUSES.includes(n.status) ? (
+                      <Button size="sm" variant="ghost" onClick={() => setCorrectTarget(n)}>Corrigir (nova versão)</Button>
+                    ) : null}
+                    <Button size="sm" variant="ghost" onClick={() => setVersionsTarget(n)}>Ver versões</Button>
                     {n.status === "DRAFT" ? (
                       <Button size="sm" variant="secondary" onClick={() => runAction(n.id, submitNoticeForReview)}>Enviar p/ revisão</Button>
                     ) : null}
@@ -230,7 +250,7 @@ export default function NotificacoesPage() {
               {Object.entries(NOTICE_CHANNEL_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
             </Select>
           </FormField>
-          <FormField label="Destinatário" htmlFor="f-recipient" helper="Descrição livre (ex: 'Locatário — João Silva').">
+          <FormField label="Destinatário" htmlFor="f-recipient" helper={"Descrição livre (ex.: Locatário — João Silva)."}>
             <Input id="f-recipient" value={createForm.recipientDescription} onChange={(e) => setCreateForm((p) => ({ ...p, recipientDescription: e.target.value }))} />
           </FormField>
           <FormField label="Conteúdo" htmlFor="f-content" required>
@@ -270,6 +290,16 @@ export default function NotificacoesPage() {
           <input id="f-evidence-file" type="file" onChange={(e) => setEvidenceFile(e.target.files?.[0] || null)} />
         </FormField>
       </Modal>
+
+      <NoticeCorrectionModal
+        notice={correctTarget}
+        onClose={() => setCorrectTarget(null)}
+        onSaved={(updated) => {
+          setNotices((prev) => prev.map((n) => (n.id === updated.id ? updated : n)));
+          setCorrectTarget(null);
+        }}
+      />
+      <NoticeVersionsModal notice={versionsTarget} userName={userName} onClose={() => setVersionsTarget(null)} />
 
       <MfaVerifyModal
         open={mfaOpen}

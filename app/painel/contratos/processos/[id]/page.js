@@ -1,49 +1,36 @@
 "use client";
 
+// Detalhe do processo jurídico (Caderno M5 §14/§15). Cada bloco é um componente deste diretório: prazos (origem,
+// responsável, conclusão com nota, cancelamento), partes, documentos e provas, linha do tempo, valores/recebível e
+// dossiê. A linha do tempo recarrega quando um bloco registra algo.
 import { useState } from "react";
 import { notFound } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import Badge from "@/components/atoms/Badge/Badge";
-import Button from "@/components/atoms/Button/Button";
 import Select from "@/components/atoms/Select/Select";
-import Input from "@/components/atoms/Input/Input";
-import FormField from "@/components/molecules/FormField/FormField";
 import Alert from "@/components/molecules/Alert/Alert";
-import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import { UI_STATE } from "@/lib/asyncState/states";
+import { withCurrentUser } from "@/lib/legal/useActiveUsers";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { nullOn404 } from "@/lib/asyncState/notFound";
-import { listProperties, getProperty } from "@/lib/api/properties";
+import { lookupFallback } from "@/lib/asyncState/lookup";
+import { getProperty } from "@/lib/api/properties";
+import { listPeople } from "@/lib/api/people";
 import { apiFetch } from "@/lib/api/client";
-import {
-  getLegalCase,
-  getContract,
-  listLegalDeadlines,
-  updateLegalDeadline,
-  listEvidencePackages,
-  createEvidencePackage,
-  createEvidencePackageAuto,
-  exportEvidencePackage,
-  listEvidencePackageAccessLog,
-  updateLegalCase,
-} from "@/lib/api/legal";
-import FileDownloadRequestModal from "@/components/organisms/FileDownloadRequestModal/FileDownloadRequestModal";
-import { needsDlpPrompt } from "@/lib/api/dlpFiles";
-import {
-  CASE_TYPE_LABELS,
-  CASE_TYPE_TONE,
-  CASE_STATUS_LABELS,
-  CASE_STATUS_TONE,
-  DEADLINE_STATUS_LABELS,
-  DEADLINE_API_SEVERITY_LABELS,
-  DEADLINE_API_SEVERITY_TONE,
-} from "@/lib/mock/legal";
-import { formatDate, formatDateTime, formatContractLabel } from "@/lib/format";
+import { getLegalCase, getContract, updateLegalCase } from "@/lib/api/legal";
+import { legalErrorMessage } from "@/lib/legal/legalErrors";
+import { CASE_TYPE_LABELS, CASE_TYPE_TONE, CASE_STATUS_LABELS, CASE_STATUS_TONE } from "@/lib/mock/legal";
+import { CASE_PHASE_LABELS, CASE_RISK_LABELS } from "@/lib/labels/juridico";
+import { formatContractLabel } from "@/lib/format";
+import DeadlinesCard from "./DeadlinesCard";
+import CasePartiesCard from "./CasePartiesCard";
+import CaseDocumentsCard from "./CaseDocumentsCard";
+import CaseTimelineCard from "./CaseTimelineCard";
+import CaseReceivableCard from "./CaseReceivableCard";
+import EvidencePackagesCard from "./EvidencePackagesCard";
 import styles from "./page.module.css";
-import { EVIDENCE_MANIFEST_TYPE_LABELS, EVIDENCE_ACCESS_ACTION_LABELS } from "@/lib/mock/legal";
-import { humanizeText } from "@/lib/format";
 
 const STATUS_OPTIONS = ["OPEN", "CLOSED"];
 
@@ -52,25 +39,19 @@ export default function ProcessoDetailPage({ params }) {
   const [contract, setContract] = useState(null);
   const [property, setProperty] = useState(null);
   const [users, setUsers] = useState([]);
-  const [deadlines, setDeadlines] = useState([]);
-  const [evidencePackages, setEvidencePackages] = useState([]);
+  const [people, setPeople] = useState([]);
   const [actionError, setActionError] = useState("");
   const [notice, setNotice] = useState(null);
   const [busy, setBusy] = useState(false);
-  const [newEvidence, setNewEvidence] = useState({ type: "DOCUMENT", description: "", referenceId: "" });
-  const [custodyByPackage, setCustodyByPackage] = useState({});
-  // M9-D920: a exportação do dossiê passa pela DLP; quando a API pede finalidade e justificativa, o pacote fica aqui até a pessoa preencher.
-  const [exportAsk, setExportAsk] = useState(null);
-  const [concludingId, setConcludingId] = useState(null);
-  const [conclusionNote, setConclusionNote] = useState("");
+  const [timelineKey, setTimelineKey] = useState(0);
+  const refreshTimeline = () => setTimelineKey((k) => k + 1);
 
   // M9-D940: carregando, erro com "tentar de novo", 403 e offline vêm do padrão único de estados.
   const loadQuery = useAsyncState(() => {
     return Promise.all([
       getLegalCase(params.id),
-      listLegalDeadlines({ legalCaseId: params.id }),
-      listEvidencePackages(params.id),
-      apiFetch("/users?status=ACTIVE"),
+      apiFetch("/users?status=ACTIVE").catch(lookupFallback("os usuários")),
+      listPeople().catch(lookupFallback("as pessoas")),
     ])
       .catch(nullOn404) // 404 da API: o registro não existe, a tela chama notFound()
       .then(async (loaded) => {
@@ -78,23 +59,20 @@ export default function ProcessoDetailPage({ params }) {
           setLegalCase(null);
           return;
         }
-        const [caseRes, deadlinesRes, evidenceRes, usersRes] = loaded;
+        const [caseRes, usersRes, peopleRes] = loaded;
         setLegalCase(caseRes);
-        setDeadlines(deadlinesRes || []);
-        setEvidencePackages(evidenceRes || []);
-        setUsers(usersRes || []);
+        setUsers(withCurrentUser(usersRes));
+        setPeople(Array.isArray(peopleRes) ? peopleRes : []);
         if (caseRes?.contractId) {
           try {
-            const c = await getContract(caseRes.contractId);
-            setContract(c);
+            setContract(await getContract(caseRes.contractId));
           } catch {
             // Contrato pode não estar disponível.
           }
         }
         if (caseRes?.propertyId) {
           try {
-            const p = await getProperty(caseRes.propertyId);
-            setProperty(p);
+            setProperty(await getProperty(caseRes.propertyId));
           } catch {
             // Imóvel pode não estar disponível.
           }
@@ -115,7 +93,6 @@ export default function ProcessoDetailPage({ params }) {
     );
   }
 
-
   if (!legalCase) return notFound();
 
   async function handleStatusChange(status) {
@@ -124,284 +101,66 @@ export default function ProcessoDetailPage({ params }) {
     try {
       const updated = await updateLegalCase(legalCase.id, { status });
       setLegalCase(updated);
-      setNotice({ tone: "success", text: `Status atualizado para "${CASE_STATUS_LABELS[status] || status}".` });
+      setNotice({ tone: "success", text: `Situação atualizada para "${CASE_STATUS_LABELS[status] || "nova situação"}".` });
+      refreshTimeline();
     } catch (err) {
-      setActionError(err.message || "Erro ao atualizar status do processo.");
+      setActionError(legalErrorMessage(err, "Erro ao atualizar a situação do processo."));
     } finally {
       setBusy(false);
     }
   }
 
-  function startConclude(deadline) {
-    setActionError("");
-    setConcludingId(deadline.id);
-    setConclusionNote("");
-  }
-
-  async function handleDeadlineDone(deadline) {
-    setActionError("");
-    setBusy(true);
-    try {
-      // A API exige nota de conclusão (ou evidência) para concluir um prazo.
-      const updated = await updateLegalDeadline(deadline.id, { status: "DONE", conclusionNote });
-      setDeadlines((prev) => prev.map((d) => (d.id === deadline.id ? { ...updated, severity: "DONE" } : d)));
-      setConcludingId(null);
-      setConclusionNote("");
-    } catch (err) {
-      setActionError(err.message || "Erro ao atualizar prazo.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function handleAddEvidence() {
-    if (!newEvidence.description.trim()) return;
-    setActionError("");
-    setBusy(true);
-    try {
-      const pkg = await createEvidencePackage(legalCase.id, [
-        { type: newEvidence.type, description: newEvidence.description, referenceId: newEvidence.referenceId || undefined },
-      ]);
-      setEvidencePackages((prev) => [...prev, pkg]);
-      setNewEvidence({ type: "DOCUMENT", description: "", referenceId: "" });
-    } catch (err) {
-      setActionError(err.message || "Erro ao criar pacote de evidência.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  // JUR-010 ("custódia de todos os anexos"): monta o dossiê a partir de TODO anexo conhecido
-  // do contrato (versões, checklist, vistorias), sem depender de listar manualmente.
-  async function handleAutoAssembleEvidence() {
-    setActionError("");
-    setBusy(true);
-    try {
-      const pkg = await createEvidencePackageAuto(legalCase.id);
-      setEvidencePackages((prev) => [...prev, pkg]);
-    } catch (err) {
-      setActionError(err.message || "Erro ao montar dossiê automaticamente.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function runEvidenceExport(pkg, input) {
-    const exported = await exportEvidencePackage(pkg.id, input);
-    setCustodyByPackage((prev) => ({
-      ...prev,
-      [pkg.id]: { ...(prev[pkg.id] || {}), exported },
-    }));
-  }
-
-  async function handleExportEvidence(pkg) {
-    setActionError("");
-    try {
-      await runEvidenceExport(pkg, {});
-    } catch (err) {
-      if (needsDlpPrompt(err)) {
-        setExportAsk(pkg);
-        return;
-      }
-      setActionError(err.message || "Erro ao exportar pacote de evidência.");
-    }
-  }
-
-  async function handleViewCustody(pkg) {
-    setActionError("");
-    try {
-      const log = await listEvidencePackageAccessLog(pkg.id);
-      setCustodyByPackage((prev) => ({
-        ...prev,
-        [pkg.id]: { ...(prev[pkg.id] || {}), log: log || [] },
-      }));
-    } catch (err) {
-      setActionError(err.message || "Erro ao carregar cadeia de custódia.");
-    }
-  }
+  // FIX (homologação 23/09/2026): caseNumber é opcional — o cabeçalho usa o tipo quando não há número (nunca o id).
+  const title = legalCase.caseNumber && legalCase.caseNumber.trim() ? legalCase.caseNumber : `${CASE_TYPE_LABELS[legalCase.caseType] || "Processo"} sem número`;
 
   return (
-    // FIX (homologação 23/09/2026): caseNumber é opcional no cadastro. A listagem já tinha
-    // fallback (fix de 18/09), mas o detalhe não — processos sem número abriam com o cabeçalho
-    // da página totalmente vazio, sem nenhuma identificação do registro aberto. Usa o mesmo
-    // fallback da listagem ("<Tipo> — <8 primeiros do id>") pra manter as duas telas coerentes.
-    <AppShell
-      title={
-        legalCase.caseNumber && legalCase.caseNumber.trim()
-          ? legalCase.caseNumber
-          : `${CASE_TYPE_LABELS[legalCase.caseType] || legalCase.caseType || "Processo"} — ${String(legalCase.id || "").slice(0, 8)}`
-      }
-      backHref="/painel/contratos/processos"
-    >
+    <AppShell title={title} backHref="/painel/contratos/processos">
       <div className={styles.wrap}>
         <div className={styles.topRow}>
           <div className={styles.badges}>
-            <Badge tone={CASE_TYPE_TONE[legalCase.caseType]}>{CASE_TYPE_LABELS[legalCase.caseType]}</Badge>
-            <Badge tone={CASE_STATUS_TONE[legalCase.status] || "neutral"}>{CASE_STATUS_LABELS[legalCase.status] || legalCase.status}</Badge>
+            <Badge tone={CASE_TYPE_TONE[legalCase.caseType]}>{CASE_TYPE_LABELS[legalCase.caseType] || "Processo"}</Badge>
+            <Badge tone={CASE_STATUS_TONE[legalCase.status] || "neutral"}>{CASE_STATUS_LABELS[legalCase.status] || "Situação desconhecida"}</Badge>
+            {legalCase.legalHold ? <Badge tone="danger">Retenção legal</Badge> : null}
           </div>
-          <Select value={legalCase.status} onChange={(e) => handleStatusChange(e.target.value)} disabled={busy}>
+          <Select value={legalCase.status} onChange={(e) => handleStatusChange(e.target.value)} disabled={busy} aria-label="Situação do processo">
             {STATUS_OPTIONS.map((s) => (
-              <option key={s} value={s}>{CASE_STATUS_LABELS[s] || s}</option>
+              <option key={s} value={s}>{CASE_STATUS_LABELS[s]}</option>
             ))}
           </Select>
         </div>
 
-        {actionError ? <Alert tone="danger" className={styles.notice}>{actionError}</Alert> : null}
+        {actionError ? (
+          <div style={{ position: "fixed", top: "var(--space-4)", left: "50%", transform: "translateX(-50%)", zIndex: 200, width: "min(560px, calc(100vw - 2 * var(--space-4)))" }}>
+            <Alert tone="danger">{actionError}</Alert>
+          </div>
+        ) : null}
         {notice ? <Alert tone={notice.tone} className={styles.notice}>{notice.text}</Alert> : null}
 
         <div className={styles.grid}>
           <div className={styles.mainCol}>
             <Card title="Detalhes do processo">
               <dl className={styles.detailList}>
-                <div className={styles.detailRow}><dt>Resumo</dt><dd>{legalCase.summary}</dd></div>
+                <div className={styles.detailRow}><dt>Resumo</dt><dd>{legalCase.summary || "Sem resumo"}</dd></div>
                 <div className={styles.detailRow}><dt>Contrato vinculado</dt><dd>{contract ? formatContractLabel(contract) : "Sem contrato vinculado"}</dd></div>
                 <div className={styles.detailRow}><dt>Imóvel vinculado</dt><dd>{property?.name || "Sem imóvel vinculado"}</dd></div>
                 <div className={styles.detailRow}><dt>Responsável</dt><dd>{legalCase.responsibleUserId ? userName(legalCase.responsibleUserId) : "Sem responsável definido"}</dd></div>
+                {legalCase.phase ? <div className={styles.detailRow}><dt>Fase</dt><dd>{CASE_PHASE_LABELS[legalCase.phase] || "Fase personalizada"}</dd></div> : null}
+                {legalCase.riskLevel ? <div className={styles.detailRow}><dt>Risco</dt><dd>{CASE_RISK_LABELS[legalCase.riskLevel] || "Não classificado"}</dd></div> : null}
               </dl>
             </Card>
 
-            <Card title="Prazos" subtitle="Severidade calculada pela API a partir do vencimento (OVERDUE/DUE_SOON/NORMAL/DONE)">
-              {deadlines.length === 0 ? (
-                <EmptyState icon="calendar" title="Sem prazos" description="Nenhum prazo cadastrado." />
-              ) : (
-                deadlines.map((d) => (
-                  <div key={d.id} className={styles.deadlineRow}>
-                    <div className={styles.deadlineInfo}>
-                      <span className={styles.deadlineDesc}>{d.description}</span>
-                      <span className={styles.deadlineDue}>Vencimento em {formatDate(d.dueAt)} · {DEADLINE_STATUS_LABELS[d.status] || d.status}</span>
-                    </div>
-                    <Badge tone={DEADLINE_API_SEVERITY_TONE[d.severity] || "neutral"}>{DEADLINE_API_SEVERITY_LABELS[d.severity] || d.severity}</Badge>
-                    {d.status === "PENDING" && concludingId !== d.id ? (
-                      <Button size="sm" variant="secondary" onClick={() => startConclude(d)} disabled={busy}>Concluir</Button>
-                    ) : null}
-                    {d.status === "PENDING" && concludingId === d.id ? (
-                      <div className={styles.concludeBox}>
-                        <FormField label="Nota de conclusão (obrigatória)" htmlFor={`f-conclusion-${d.id}`}>
-                          <Input
-                            id={`f-conclusion-${d.id}`}
-                            value={conclusionNote}
-                            onChange={(e) => setConclusionNote(e.target.value)}
-                            placeholder="Ex: Petição protocolada, protocolo nº 123"
-                          />
-                        </FormField>
-                        <Button size="sm" variant="secondary" onClick={() => handleDeadlineDone(d)} disabled={busy || !conclusionNote.trim()}>
-                          Confirmar conclusão
-                        </Button>
-                        <Button size="sm" variant="ghost" onClick={() => setConcludingId(null)} disabled={busy}>Cancelar</Button>
-                      </div>
-                    ) : null}
-                  </div>
-                ))
-              )}
-            </Card>
+            <DeadlinesCard legalCase={legalCase} users={users} onChanged={refreshTimeline} />
+            <CasePartiesCard legalCase={legalCase} people={people} onChanged={refreshTimeline} />
+            <CaseDocumentsCard legalCase={legalCase} onChanged={refreshTimeline} />
+            <CaseTimelineCard legalCase={legalCase} users={users} refreshKey={timelineKey} />
           </div>
 
           <div className={styles.sideCol}>
-            <Card title="Pacotes de evidência" subtitle="Append-only — cada pacote é imutável após criado">
-              {legalCase?.contractId ? (
-                <div className={styles.addEvidenceRow}>
-                  <Button size="sm" onClick={handleAutoAssembleEvidence} disabled={busy}>
-                    Montar dossiê automaticamente (todos os anexos do contrato)
-                  </Button>
-                </div>
-              ) : null}
-              {evidencePackages.length === 0 ? (
-                <EmptyState icon="document" title="Sem pacotes de evidência" description="Nenhum pacote de evidência gerado para este processo." />
-              ) : (
-                evidencePackages.map((pkg) => {
-                  const custody = custodyByPackage[pkg.id] || {};
-                  return (
-                    <div key={pkg.id} className={styles.evidencePackage}>
-                      <div className={styles.evidenceHead}>
-                        <span className={styles.evidenceHash} title={pkg.packageHash}>{pkg.packageHash}</span>
-                        <span className={styles.evidenceDate}>{formatDateTime(pkg.createdAt)}</span>
-                      </div>
-                      <div className={styles.manifestList}>
-                        {(pkg.manifestJson || []).map((item, idx) => (
-                          <div key={idx} className={styles.manifestItem}>
-                            <span className={styles.manifestType}>{EVIDENCE_MANIFEST_TYPE_LABELS[item.type] || "Documento"}</span>
-                            <div className={styles.manifestBody}>
-                              <span className={styles.manifestDesc}>{humanizeText(item.description)}</span>
-                              {item.hash ? <span className={styles.manifestHash} title={item.hash}>{item.hash}</span> : null}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-
-                      <div className={styles.addEvidenceRow}>
-                        <Button size="sm" variant="ghost" onClick={() => handleExportEvidence(pkg)} disabled={busy}>
-                          Exportar dossiê
-                        </Button>
-                        <Button size="sm" variant="ghost" onClick={() => handleViewCustody(pkg)} disabled={busy}>
-                          Ver cadeia de custódia
-                        </Button>
-                      </div>
-
-                      {custody.exported ? (
-                        <div className={styles.manifestList} data-testid="evidence-export">
-                          <div className={styles.evidenceHead}>
-                            <span>Hash no export: <code>{custody.exported.packageHash}</code></span>
-                          </div>
-                          <div className={styles.evidenceHead}>
-                            <span>
-                              {custody.exported.packageHash === pkg.packageHash
-                                ? "Hash do export confere com o hash gravado no banco."
-                                : "ALERTA: hash do export DIVERGE do hash gravado no banco."}
-                            </span>
-                          </div>
-                        </div>
-                      ) : null}
-
-                      {custody.log ? (
-                        <div className={styles.manifestList} data-testid="evidence-custody-log">
-                          {custody.log.length === 0 ? (
-                            <span>Nenhum acesso registrado ainda.</span>
-                          ) : (
-                            custody.log.map((entry) => (
-                              <div key={entry.id} className={styles.manifestItem}>
-                                <span className={styles.manifestType}>{EVIDENCE_ACCESS_ACTION_LABELS[entry.action] || "Acesso"}</span>
-                                <div className={styles.manifestBody}>
-                                  <span className={styles.manifestDesc}>
-                                    {entry.accessedByUserId ? userName(entry.accessedByUserId) : "Acesso automático do sistema"}
-                                  </span>
-                                  <span className={styles.manifestHash}>{formatDateTime(entry.accessedAt)}</span>
-                                </div>
-                              </div>
-                            ))
-                          )}
-                        </div>
-                      ) : null}
-                    </div>
-                  );
-                })
-              )}
-
-              <div className={styles.addEvidenceRow}>
-                <FormField label="Descrição" htmlFor="f-evidence-desc">
-                  <Input
-                    id="f-evidence-desc"
-                    value={newEvidence.description}
-                    onChange={(e) => setNewEvidence((prev) => ({ ...prev, description: e.target.value }))}
-                    placeholder="Ex: Contrato assinado (v2)"
-                  />
-                </FormField>
-                <Button size="sm" variant="secondary" onClick={handleAddEvidence} disabled={busy || !newEvidence.description.trim()}>
-                  Novo pacote de evidência
-                </Button>
-              </div>
-            </Card>
+            <CaseReceivableCard legalCase={legalCase} onCaseUpdated={(updated) => { setLegalCase(updated); refreshTimeline(); }} />
+            <EvidencePackagesCard legalCase={legalCase} userName={userName} onChanged={refreshTimeline} />
           </div>
         </div>
       </div>
-      <FileDownloadRequestModal
-        open={Boolean(exportAsk)}
-        mode="export"
-        onClose={() => setExportAsk(null)}
-        onSubmit={async (input) => {
-          await runEvidenceExport(exportAsk, input);
-          setExportAsk(null);
-        }}
-      />
     </AppShell>
   );
 }

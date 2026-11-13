@@ -14,6 +14,7 @@ import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { listSettings, updateSetting } from "@/lib/api/settings";
 import { toSettingValue, settingsByKey } from "./settingsFormat";
 import styles from "./page.module.css";
+import { isMfaSettingError, isSettingForbidden, mfaSettingMessage } from "@/lib/settings/errorLabel";
 
 export const BILLING_KEYS = {
   lateFeePercentage: "billing.late_fee_percentage",
@@ -79,10 +80,10 @@ export default function CobrancaTab() {
       setOriginal(values);
       setSuccess("Configurações de cobrança salvas.");
     } catch (err) {
-      if (err?.status === 403) {
+      if (isSettingForbidden(err)) {
         setForbidden(true);
       } else {
-        setError(err?.message || "Não foi possível salvar as configurações de cobrança.");
+        setError(isMfaSettingError(err) ? mfaSettingMessage(err) : err?.message || "Não foi possível salvar as configurações de cobrança.");
       }
     } finally {
       setSaving(false);

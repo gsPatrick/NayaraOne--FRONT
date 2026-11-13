@@ -1,197 +1,149 @@
 "use client";
 
-import { useState } from "react";
+// Nova garantia (Caderno M5 §9): códigos do livro e os dados de cada tipo. Sem todos os dados a garantia nasce
+// Pendente (a tela avisa antes o que vai faltar). Com `?substituir=<id>` a mesma tela substitui uma garantia: a nova
+// nasce no mesmo contrato e a antiga fica Liberada, ligada à nova (POST /legal/guarantees/:id/replace).
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/organisms/AppShell/AppShell";
 import Card from "@/components/molecules/Card/Card";
 import FormField from "@/components/molecules/FormField/FormField";
-import Input from "@/components/atoms/Input/Input";
 import Select from "@/components/atoms/Select/Select";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import { UI_STATE } from "@/lib/asyncState/states";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
-import { listPeople } from "@/lib/api/people";
-import { listContracts, createGuarantee } from "@/lib/api/legal";
-import { GUARANTEE_TYPE_LABELS, GUARANTEE_TYPES_REQUIRING_VALIDITY } from "@/lib/mock/legal";
-import { formatContractLabel, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE, toNumber } from "@/lib/format";
+import { listContracts, createGuarantee, replaceGuarantee, getGuarantee, uploadFile } from "@/lib/api/legal";
+import { GUARANTEE_TYPES, GUARANTEE_TYPE_LABELS, GUARANTEE_FIELD_LABELS, GUARANTEE_TYPES_REQUIRING_VALIDITY, normalizeGuaranteeType } from "@/lib/labels/juridico";
+import { formatContractLabel } from "@/lib/format";
+import { legalErrorMessage } from "@/lib/legal/legalErrors";
+import GuaranteeTypeFields from "../GuaranteeTypeFields";
+import { emptyGuaranteeForm, missingForType, installmentsProblem, flowProblem, buildGuaranteePayload, depositOriginCandidates } from "../guaranteeForm";
+import { useGuaranteeSupport } from "../useGuaranteeSupport";
 import styles from "./page.module.css";
-import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 
 export default function NovaGarantiaPage() {
   const router = useRouter();
   const [contracts, setContracts] = useState([]);
-  const [people, setPeople] = useState([]);
+  const [contractId, setContractId] = useState("");
+  const [guaranteeType, setGuaranteeType] = useState("GUARANTOR");
+  const [form, setForm] = useState(emptyGuaranteeForm());
+  const [replacing, setReplacing] = useState(null); // garantia a substituir
   const [actionError, setActionError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({
-    contractId: "",
-    guaranteeType: "GUARANTOR",
-    guarantorPersonId: "",
-    value: "",
-    startsAt: "",
-    endsAt: "",
-  });
+  const support = useGuaranteeSupport();
 
-  // M9-D940: carregando, erro com "tentar de novo", 403 e offline vêm do padrão único de estados.
-  const loadQuery = useAsyncState(() => {
-    return Promise.all([listContracts(), listPeople()])
-      .then(([contractsRes, peopleRes]) => {
-        setContracts(contractsRes || []);
-        setPeople(peopleRes || []);
-        setForm((prev) => ({
-          ...prev,
-          contractId: prev.contractId || contractsRes?.[0]?.id || "",
-          guarantorPersonId: prev.guarantorPersonId || peopleRes?.[0]?.id || "",
-        }));
-      })
-      .then(() => true);
+  const loadQuery = useAsyncState(async () => {
+    const replaceId = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("substituir") : null;
+    const [contractsRes, old] = await Promise.all([listContracts(), replaceId ? getGuarantee(replaceId) : Promise.resolve(null)]);
+    setContracts(contractsRes || []);
+    setReplacing(old);
+    setContractId((prev) => (old ? old.contractId : prev || contractsRes?.[0]?.id || ""));
+    return true;
   }, { deps: [], isEmpty: () => false });
 
-  const isGuarantor = form.guaranteeType === "GUARANTOR";
-  const requiresValidity = GUARANTEE_TYPES_REQUIRING_VALIDITY.includes(form.guaranteeType);
-  const [dateErrors, setDateErrors] = useState({});
-  const isValid =
-    form.contractId &&
-    form.guaranteeType &&
-    (!isGuarantor || form.guarantorPersonId) &&
-    (!requiresValidity || form.endsAt) &&
-    !dateErrors.startsAt &&
-    !dateErrors.endsAt;
+  // Tipo do livro com fluxo: OTHER só quando a empresa homologou um fluxo (configuração legal.guarantee_other_flows).
+  const otherAvailable = support.otherFlows.length > 0;
+  useEffect(() => {
+    if (guaranteeType === "OTHER" && !otherAvailable) setGuaranteeType("GUARANTOR");
+  }, [guaranteeType, otherAvailable]);
 
-  function update(field) {
-    return (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
-  }
-
-  function updateDate(field) {
-    return (e) => {
-      setDateErrors((prev) => ({ ...prev, [field]: isDateInputInvalid(e.target.validity) }));
-      setForm((prev) => ({ ...prev, [field]: e.target.value }));
-    };
-  }
-
-  function checkDate(field) {
-    return (e) => setDateErrors((prev) => ({ ...prev, [field]: isDateInputInvalid(e.target.validity) }));
-  }
+  const depositEntries = depositOriginCandidates(support.entries, contractId);
+  const missing = missingForType(guaranteeType, form);
+  // A API recusa já na criação (400) fiador sem pessoa e tipo com vigência sem o fim da vigência (Caderno §9).
+  const baseProblem = guaranteeType === "GUARANTOR" && !form.guarantorPersonId
+    ? "Escolha a pessoa fiadora."
+    : GUARANTEE_TYPES_REQUIRING_VALIDITY.includes(guaranteeType) && !form.endsAt ? "Informe o fim da vigência: é obrigatório para este tipo de garantia." : "";
+  const problem = baseProblem || installmentsProblem(form) || (guaranteeType === "OTHER" ? flowProblem(guaranteeType, form, support.otherFlows) : "");
+  const isValid = contractId && guaranteeType && !problem;
 
   async function handleSubmit() {
     if (!isValid) return;
     setActionError("");
     setSubmitting(true);
     try {
-      await createGuarantee(form.contractId, {
-        guaranteeType: form.guaranteeType,
-        guarantorPersonId: isGuarantor ? form.guarantorPersonId : undefined,
-        value: form.value ? toNumber(form.value) : undefined,
-        startsAt: form.startsAt || undefined,
-        endsAt: form.endsAt || undefined,
-      });
-      router.push("/painel/contratos/garantias");
+      const payload = { guaranteeType, ...(await buildGuaranteePayload(guaranteeType, form, uploadFile)) };
+      if (replacing) {
+        const result = await replaceGuarantee(replacing.id, payload);
+        router.push(`/painel/contratos/garantias/${result.newGuarantee.id}`);
+      } else {
+        const created = await createGuarantee(contractId, payload);
+        router.push(`/painel/contratos/garantias/${created.id}`);
+      }
     } catch (err) {
-      setActionError(err.message || "Erro ao criar garantia.");
+      setActionError(legalErrorMessage(err, "Erro ao gravar a garantia."));
     } finally {
       setSubmitting(false);
     }
   }
 
+  const title = replacing ? "Substituir garantia" : "Nova garantia";
   if (loadQuery.status !== UI_STATE.CONTENT) {
     return (
-      <AppShell title="Nova garantia" backHref="/painel/contratos/garantias">
+      <AppShell title={title} backHref="/painel/contratos/garantias">
         <AsyncState result={loadQuery} loadingLabel="Carregando dados..." />
       </AppShell>
     );
   }
 
+  const replacedContract = replacing ? contracts.find((c) => c.id === replacing.contractId) : null;
   return (
-    <AppShell title="Nova garantia" backHref="/painel/contratos/garantias">
+    <AppShell title={title} backHref={replacing ? `/painel/contratos/garantias/${replacing.id}` : "/painel/contratos/garantias"}>
       <div className={styles.wrap}>
-        {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
+        {actionError ? (
+          <div style={{ position: "fixed", top: "var(--space-4)", left: "50%", transform: "translateX(-50%)", zIndex: 200, width: "min(560px, calc(100vw - 2 * var(--space-4)))" }}>
+            <Alert tone="danger">{actionError}</Alert>
+          </div>
+        ) : null}
 
-        <Alert tone="info" title="Fiador exige pessoa vinculada">
-          Quando o tipo de garantia for “Fiador”, é necessário indicar a pessoa que responde como fiadora do contrato.
-        </Alert>
+        {replacing ? (
+          <Alert tone="info" title="Substituição sem perder histórico">
+            A garantia atual ({GUARANTEE_TYPE_LABELS[normalizeGuaranteeType(replacing.guaranteeType)]}) do contrato {formatContractLabel(replacedContract) || "vinculado"} fica Liberada e ligada à nova; nada é apagado.
+          </Alert>
+        ) : null}
 
-        <Card title="Dados da garantia">
+        <Card title="Dados da garantia" subtitle="Cada tipo pede os dados do livro: fiador, seguro-fiança, caução, título de capitalização ou outra forma homologada">
           <div className={styles.formGrid}>
             <FormField label="Contrato" htmlFor="f-contract" required>
-              <Select id="f-contract" value={form.contractId} onChange={update("contractId")}>
+              <Select id="f-contract" value={contractId} onChange={(e) => setContractId(e.target.value)} disabled={Boolean(replacing)}>
                 {contracts.map((c) => (
                   <option key={c.id} value={c.id}>{formatContractLabel(c)}</option>
                 ))}
               </Select>
             </FormField>
 
-            <FormField label="Tipo de garantia" htmlFor="f-type" required>
-              <Select id="f-type" value={form.guaranteeType} onChange={update("guaranteeType")}>
-                {Object.entries(GUARANTEE_TYPE_LABELS).map(([k, v]) => (
-                  <option key={k} value={k}>{v}</option>
+            <FormField
+              label="Tipo de garantia"
+              htmlFor="f-type"
+              required
+              helper={otherAvailable ? undefined : support.flowsReadable ? "“Outra (homologada)” fica disponível quando a empresa configurar um fluxo homologado." : "Não foi possível ler os fluxos homologados de “Outra (homologada)” (veja o aviso acima)."}
+            >
+              <Select id="f-type" value={guaranteeType} onChange={(e) => { setGuaranteeType(e.target.value); setForm(emptyGuaranteeForm()); }}>
+                {GUARANTEE_TYPES.map((k) => (
+                  <option key={k} value={k} disabled={k === "OTHER" && !otherAvailable}>{GUARANTEE_TYPE_LABELS[k]}</option>
                 ))}
               </Select>
             </FormField>
-
-            {isGuarantor ? (
-              <FormField label="Fiador" htmlFor="f-guarantor" required helper="Pessoa que responde como fiadora">
-                <Select id="f-guarantor" value={form.guarantorPersonId} onChange={update("guarantorPersonId")}>
-                  {people.map((p) => (
-                    <option key={p.id} value={p.id}>{p.legalName}</option>
-                  ))}
-                </Select>
-              </FormField>
-            ) : (
-              <FormField label="Valor (R$)" htmlFor="f-value" helper="Opcional — relevante para seguro-fiança, caução e título de capitalização">
-                <DecimalInput id="f-value" value={form.value} onChange={update("value")} placeholder="0,00" />
-              </FormField>
-            )}
-
-            <FormField
-              label="Início de vigência"
-              htmlFor="f-starts"
-              helper={dateErrors.startsAt ? undefined : "Opcional"}
-              error={dateErrors.startsAt ? DATE_INPUT_ERROR_MESSAGE : undefined}
-            >
-              <Input
-                id="f-starts"
-                type="date"
-                min="1900-01-01"
-                max="2100-12-31"
-                error={dateErrors.startsAt}
-                value={form.startsAt}
-                onChange={updateDate("startsAt")}
-                onBlur={checkDate("startsAt")}
-              />
-            </FormField>
-
-            <FormField
-              label="Fim de vigência"
-              htmlFor="f-ends"
-              required={requiresValidity}
-              helper={dateErrors.endsAt ? undefined : requiresValidity ? "Obrigatório para este tipo de garantia" : "Opcional"}
-              error={dateErrors.endsAt ? DATE_INPUT_ERROR_MESSAGE : undefined}
-            >
-              <Input
-                id="f-ends"
-                type="date"
-                min="1900-01-01"
-                max="2100-12-31"
-                error={dateErrors.endsAt}
-                value={form.endsAt}
-                onChange={updateDate("endsAt")}
-                onBlur={checkDate("endsAt")}
-              />
-            </FormField>
-
-            {isGuarantor ? (
-              <FormField label="Valor (R$)" htmlFor="f-value-2" helper="Opcional">
-                <DecimalInput id="f-value-2" value={form.value} onChange={update("value")} placeholder="0,00" />
-              </FormField>
-            ) : null}
           </div>
         </Card>
 
+        <Card title={`Dados de ${GUARANTEE_TYPE_LABELS[guaranteeType]}`}>
+          <GuaranteeTypeFields type={guaranteeType} form={form} onChange={setForm} support={{ people: support.people, depositEntries, otherFlows: support.otherFlows }} />
+        </Card>
+
+        {problem ? <Alert tone={baseProblem ? "info" : "danger"}>{problem}</Alert> : null}
+        {missing.length ? (
+          <Alert tone="warning" title="A garantia será criada como Pendente (faltam dados do tipo)">
+            Ela não vale como garantia ativa até completar: {missing.map((k) => GUARANTEE_FIELD_LABELS[k] || "dado do tipo").join(", ")}.
+          </Alert>
+        ) : (
+          <Alert tone="success" title="Dados completos">A garantia será criada como Ativa.</Alert>
+        )}
+
         <div className={styles.actionBar}>
           <Button variant="secondary" onClick={() => router.push("/painel/contratos/garantias")}>Cancelar</Button>
-          <Button onClick={handleSubmit} loading={submitting} disabled={!isValid}>Criar garantia</Button>
+          <Button onClick={handleSubmit} loading={submitting} disabled={!isValid || submitting}>{replacing ? "Substituir garantia" : "Criar garantia"}</Button>
         </div>
       </div>
     </AppShell>

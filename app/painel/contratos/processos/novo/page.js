@@ -11,6 +11,8 @@ import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import { UI_STATE } from "@/lib/asyncState/states";
+import { lookupFallback } from "@/lib/asyncState/lookup";
+import { withCurrentUser } from "@/lib/legal/useActiveUsers";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { listContracts, createLegalCase } from "@/lib/api/legal";
 import { listProperties } from "@/lib/api/properties";
@@ -40,11 +42,11 @@ export default function NovoProcessoPage() {
     // FIX (reportado pela cliente): usuário suspenso/de QA aparecia no seletor e, pior, vinha
     // PRÉ-SELECIONADO por padrão. Além de filtrar por ACTIVE, agora nunca pré-selecionamos
     // nenhum usuário — o campo começa vazio e obriga escolha explícita.
-    return Promise.all([listContracts(), listProperties(), apiFetch("/users?status=ACTIVE")])
+    return Promise.all([listContracts(), listProperties(), apiFetch("/users?status=ACTIVE").catch(lookupFallback("os usuários"))])
       .then(([contractsRes, propertiesRes, usersRes]) => {
         setContracts(contractsRes || []);
         setProperties(propertiesRes || []);
-        setUsers(usersRes || []);
+        setUsers(withCurrentUser(usersRes));
       })
       .then(() => true);
   }, { deps: [], isEmpty: () => false });
@@ -89,7 +91,7 @@ export default function NovoProcessoPage() {
       <div className={styles.wrap}>
         {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
 
-        <Alert tone="info" title="Contencioso, consultivo ou cobrança">
+        <Alert tone="info" title="Judicial, consultivo ou cobrança">
           Vincule o processo a um contrato e/ou imóvel quando aplicável — ambos são opcionais.
         </Alert>
 

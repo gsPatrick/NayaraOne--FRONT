@@ -56,7 +56,12 @@ async function main() {
     // --- 1. Login ---
     await page.goto(`${BASE_URL}/entrar`, { waitUntil: 'domcontentloaded' });
     const teamTab = page.getByText('Sou da equipe', { exact: false });
-    if (await teamTab.count()) await teamTab.first().click();
+    // Em `next dev` a hidratação pode demorar: o texto chega pelo SSR antes do clique funcionar. Clica até o formulário abrir.
+    await teamTab.first().waitFor({ timeout: 70000 }).catch(() => {});
+    for (let i = 0; i < 40 && !(await page.locator('input[type=email]').count()); i += 1) {
+      if (await teamTab.count()) await teamTab.first().click().catch(() => {});
+      await page.waitForTimeout(1500);
+    }
     await page.waitForSelector('input[type=email]', { timeout: 70000 });
     await page.fill('input[type=email]', EMAIL);
     await page.fill('input[type=password]', PASSWORD);

@@ -59,6 +59,30 @@ export function integerFieldError(field, raw) {
   return integerInRange(toNumber(raw), field) ? null : `Valor inválido. ${integerRangeText(field)}`;
 }
 
+/** Número com casas decimais (multiplicador, valor em reais): mesmo texto de faixa, com vírgula como separador ("Entre 1 e 100."). */
+const decimalText = (n) => String(n).replace(".", ",");
+export function decimalRangeText(field) {
+  const hasMin = hasLimit(field?.min);
+  const hasMax = hasLimit(field?.max);
+  if (hasMin && hasMax) return `Entre ${decimalText(field.min)} e ${decimalText(field.max)}.`;
+  if (hasMin) return `A partir de ${decimalText(field.min)}.`;
+  if (hasMax) return `Até ${decimalText(field.max)}.`;
+  return "Número.";
+}
+
+export function decimalInRange(value, field) {
+  if (typeof value !== "number" || !Number.isFinite(value)) return false;
+  if (hasLimit(field?.min) && value < field.min) return false;
+  if (hasLimit(field?.max) && value > field.max) return false;
+  return true;
+}
+
+/** Erro inline do campo decimal ao sair dele (vazio não acusa; "2,5" e "2.5" valem o mesmo). */
+export function decimalFieldError(field, raw) {
+  if (raw === "" || raw === null || raw === undefined) return null;
+  return decimalInRange(toNumber(raw), field) ? null : `Valor inválido. ${decimalRangeText(field)}`;
+}
+
 /** Campos cujo valor mudou em relação ao que veio da API (o Salvar só envia estes; sem mudança, nenhum PUT). */
 export function changedFields(fields, values, original) {
   if (!original) return [];

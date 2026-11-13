@@ -21,11 +21,14 @@ import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { listPeople } from "@/lib/api/people";
 import { listContracts, listGuarantees, deleteGuarantee } from "@/lib/api/legal";
 import {
+  GUARANTEE_TYPES,
   GUARANTEE_TYPE_LABELS,
   GUARANTEE_TYPE_ICON,
   GUARANTEE_STATUS_LABELS,
   GUARANTEE_STATUS_TONE,
-} from "@/lib/mock/legal";
+  normalizeGuaranteeType,
+} from "@/lib/labels/juridico";
+import { legalErrorMessage } from "@/lib/legal/legalErrors";
 import { formatBRL, formatDate, formatContractLabel } from "@/lib/format";
 import styles from "./page.module.css";
 
@@ -64,7 +67,7 @@ export default function GarantiasPage() {
     return guarantees.filter((g) => {
       const contract = contractOf(g.contractId);
       if (query && !formatContractLabel(contract).toLowerCase().includes(query.toLowerCase())) return false;
-      if (typeFilter && g.guaranteeType !== typeFilter) return false;
+      if (typeFilter && normalizeGuaranteeType(g.guaranteeType) !== typeFilter) return false;
       return true;
     });
   }, [guarantees, contracts, query, typeFilter]);
@@ -78,13 +81,14 @@ export default function GarantiasPage() {
       await deleteGuarantee(deleteTarget.id);
       listQuery.reload();
     } catch (err) {
-      setActionError(err.message || "Erro ao excluir garantia.");
+      setActionError(legalErrorMessage(err, "Erro ao excluir garantia."));
     } finally {
       setDeleteTarget(null);
     }
   }
 
   const activeCount = guarantees.filter((g) => g.status === "ACTIVE").length;
+  const pendingCount = guarantees.filter((g) => g.status === "PENDING").length;
   const totalValue = guarantees.reduce((s, g) => s + Number(g.value || 0), 0);
 
   return (
@@ -94,6 +98,7 @@ export default function GarantiasPage() {
       <div className={styles.grid}>
         <StatTile label="Total de garantias" value={guarantees.length} tone="neutral" icon="shield" />
         <StatTile label="Ativas" value={activeCount} tone="success" icon="check" />
+        <StatTile label="Pendentes (faltam dados)" value={pendingCount} tone="warning" icon="clock" />
         <StatTile label="Valor em depósitos/seguros" value={formatBRL(totalValue)} tone="info" icon="money" />
         <StatTile label="Com fiador" value={guarantees.filter((g) => g.guaranteeType === "GUARANTOR").length} tone="neutral" icon="users" />
       </div>
@@ -107,8 +112,8 @@ export default function GarantiasPage() {
           />
           <Select className={styles.filter} value={typeFilter} onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}>
             <option value="">Todos os tipos</option>
-            {Object.entries(GUARANTEE_TYPE_LABELS).map(([k, v]) => (
-              <option key={k} value={k}>{v}</option>
+            {GUARANTEE_TYPES.map((k) => (
+              <option key={k} value={k}>{GUARANTEE_TYPE_LABELS[k]}</option>
             ))}
           </Select>
         </div>
@@ -124,12 +129,12 @@ export default function GarantiasPage() {
               return (
                 <div key={g.id} className={styles.guaranteeCard}>
                   <div className={styles.guaranteeHead}>
-                    <span className={styles.guaranteeIcon}><Icon name={GUARANTEE_TYPE_ICON[g.guaranteeType]} size={20} /></span>
+                    <span className={styles.guaranteeIcon}><Icon name={GUARANTEE_TYPE_ICON[normalizeGuaranteeType(g.guaranteeType)]} size={20} /></span>
                     <div className={styles.guaranteeTitleBlock}>
-                      <span className={styles.guaranteeTitle}>{GUARANTEE_TYPE_LABELS[g.guaranteeType]}</span>
+                      <span className={styles.guaranteeTitle}>{GUARANTEE_TYPE_LABELS[normalizeGuaranteeType(g.guaranteeType)]}</span>
                       <span className={styles.guaranteeSub}>{contract ? formatContractLabel(contract) : "Contrato não encontrado"}</span>
                     </div>
-                    <Badge tone={GUARANTEE_STATUS_TONE[g.status] || "neutral"}>{GUARANTEE_STATUS_LABELS[g.status] || g.status}</Badge>
+                    <Badge tone={GUARANTEE_STATUS_TONE[g.status] || "neutral"}>{GUARANTEE_STATUS_LABELS[g.status] || "Situação desconhecida"}</Badge>
                   </div>
                   <div className={styles.guaranteeMeta}>
                     {guarantor ? (
