@@ -15,6 +15,7 @@ export const NAV_SECTIONS = [
         children: [
           { label: "Funil", href: "/painel/crm" },
           { label: "Propostas", href: "/painel/crm/propostas" },
+          { label: "Carrinhos de imóveis", href: "/painel/crm/carrinhos" },
           { label: "Painel de indicadores", href: "/painel/crm/dashboard" },
           { label: "Vendas/CRM (BI)", href: "/painel/analytics/crm" },
           { label: "Marketing (BI)", href: "/painel/analytics/marketing", permission: "marketing:attribution:read" },

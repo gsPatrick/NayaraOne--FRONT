@@ -27,8 +27,8 @@ function nextLocalId() {
 }
 
 // items: [{ id, type: 'image'|'video', label, previewUrl? }]
-// Itens sem previewUrl (mídia mockada pré-existente do imóvel) exibem um placeholder em
-// gradiente, no mesmo padrão visual usado em PropertyCard — sem upload real a servidor.
+// Itens sem previewUrl (mídia já gravada do imóvel) exibem um placeholder em gradiente, no mesmo padrão visual de
+// PropertyCard. Itens novos carregam `file`: quem salva o imóvel envia o arquivo e anexa como mídia (nasce PENDENTE de revisão).
 export default function MediaUploader({ items = [], onChange }) {
   const inputRef = useRef(null);
   const [dragOver, setDragOver] = useState(false);
@@ -58,6 +58,8 @@ export default function MediaUploader({ items = [], onChange }) {
         type: isVideo ? "video" : "image",
         label: file.name,
         previewUrl: URL.createObjectURL(file),
+        // Marco 3 §6: o arquivo real vai junto — a tela que salva sobe o arquivo (POST /files) e anexa como mídia do imóvel.
+        file,
       };
     });
     onChange?.([...items, ...added]);

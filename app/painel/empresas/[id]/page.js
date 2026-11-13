@@ -18,6 +18,7 @@ import Alert from "@/components/molecules/Alert/Alert";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import ReloadAlert from "@/components/molecules/ReloadAlert/ReloadAlert";
+import UnitEditPanel from "@/components/molecules/UnitEditPanel/UnitEditPanel";
 import { UI_STATE } from "@/lib/asyncState/states";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { COMPANY_STATUS_LABELS, UNIT_STATUS_LABELS } from "@/lib/mock/companies";
@@ -329,6 +330,7 @@ export default function CompanyDetailPage({ params }) {
                     </div>
                   </button>
 
+                  {isOpen ? <UnitEditPanel unit={unit} onSaved={loadAll} /> : null}
                   {isOpen ? (
                     <div className={styles.unitUsers}>
                       {unitUsers.length === 0 ? (

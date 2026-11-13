@@ -20,12 +20,16 @@ import ChangeEvidenceFields from "@/components/molecules/ChangeEvidenceFields/Ch
 import { EMPTY_EVIDENCE, buildChangeEvidence } from "@/lib/changeEvidence";
 import {
   FEATURE_LABELS,
-  REGULARIZATION_OPTIONS,
   OFFER_TYPE_LABELS,
   OWNER_ROLE_LABELS,
 } from "@/lib/mock/properties";
+import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
+import PropertyDocumentationFields from "@/components/organisms/PropertyDocumentationFields/PropertyDocumentationFields";
+import OfferExtraFields from "@/components/organisms/OfferExtraFields/OfferExtraFields";
+import { buildOfferPayload, CONFIDENTIAL_PERMISSION } from "@/lib/properties/offerPayload";
+import { hasPermission } from "@/lib/rbac/permissions";
 import { fetchAddressByCep } from "@/lib/cep";
-import { formatBRL, dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
+import { formatBRL, toNumber, dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
 import { buildGoogleMapsUrl } from "@/lib/maps";
 import {
   getProperty,
@@ -36,6 +40,8 @@ import {
   createOffer,
   updateOffer,
   savePropertyDocumentation,
+  uploadPropertyMedia,
+  removePropertyMedia,
   toApiPropertyType,
 } from "@/lib/api/properties";
 import Alert from "@/components/molecules/Alert/Alert";
@@ -60,7 +66,8 @@ const EMPTY_OWNER = { name: "", percentage: "", roleCode: "OWNER", validFrom: ""
 let mockMediaIdSeq = 0;
 function toMockMediaItem(entry) {
   mockMediaIdSeq += 1;
-  return { id: `media-${entry.type}-${mockMediaIdSeq}`, type: entry.type, label: entry.label, previewUrl: null };
+  // apiId: a mídia já gravada; tirada da lista na edição, ela é removida do imóvel ao salvar.
+  return { id: `media-${entry.type}-${mockMediaIdSeq}`, apiId: entry.id, type: entry.type, label: entry.label, previewUrl: null };
 }
 
 function toEditableProperty(property) {
@@ -91,6 +98,7 @@ function toEditableProperty(property) {
           confidentialMinPrice: property.activeOffer.confidentialMinPrice ?? "",
           acceptsFinancing: property.activeOffer.acceptsFinancing,
           acceptsTrade: property.activeOffer.acceptsTrade,
+          conditions: property.activeOffer.conditions || "",
           status: property.activeOffer.status,
           validFrom: property.activeOffer.validFrom ? property.activeOffer.validFrom.slice(0, 10) : "",
           validUntil: property.activeOffer.validUntil ? property.activeOffer.validUntil.slice(0, 10) : "",
@@ -119,7 +127,11 @@ export default function EditPropertyPage({ params }) {
   const [address, setAddress] = useState(null);
   const [features, setFeatures] = useState(null);
   const [docs, setDocs] = useState(null);
+  const [docFiles, setDocFiles] = useState({}); // Marco 3 §6: arquivo novo de cada documento
   const [media, setMedia] = useState([]);
+  // M3-07: o preço mínimo confidencial só aparece e só vai no corpo para quem tem properties:internal.
+  const [canSeeConfidential, setCanSeeConfidential] = useState(false);
+  useEffect(() => setCanSeeConfidential(hasPermission(CONFIDENTIAL_PERMISSION)), []);
   const [offer, setOffer] = useState(null);
   const [owners, setOwners] = useState([]);
   const [evidence, setEvidence] = useState(EMPTY_EVIDENCE); // M9-D807: origem da alteração de matrícula/proprietário
@@ -283,12 +295,15 @@ export default function EditPropertyPage({ params }) {
       try {
         const addressPayload = buildAddressPayload();
         const changeEvidence = await buildChangeEvidence(evidence);
+        // Publicar passa pelo gate (Marco 3 §7): o pedido de publicação vai por último, depois de documentos, oferta,
+        // proprietários e mídia gravados — o gate confere o imóvel como ele ficou.
+        const wantsPublish = basic.publicationStatus === "PUBLISHED" && property.publicationStatus !== "PUBLISHED";
         await updateProperty(property.id, {
           ...(changeEvidence ? { changeEvidence } : {}),
           title: basic.name,
           internalCode: basic.internalCode,
           propertyType: toApiPropertyType(basic.type),
-          publicationStatus: basic.publicationStatus,
+          publicationStatus: wantsPublish ? property.publicationStatus : basic.publicationStatus,
           availabilityStatus: basic.availabilityStatus,
           publicAddressPolicy: basic.publicAddressPolicy,
           addressVisibility: basic.addressVisibility,
@@ -310,19 +325,10 @@ export default function EditPropertyPage({ params }) {
           attributesJson: features,
         });
 
-        await savePropertyDocumentation(property.id, docs);
+        await savePropertyDocumentation(property.id, docs, docFiles);
 
         if (offer?.askingPrice) {
-          const offerPayload = {
-            offerType: offer.offerType,
-            askingPrice: offer.askingPrice,
-            confidentialMinPrice: offer.confidentialMinPrice || null,
-            acceptsFinancing: offer.acceptsFinancing,
-            acceptsTrade: offer.acceptsTrade,
-            status: offer.status,
-            startsAt: dateOnlyInputToIso(offer.validFrom) || null,
-            endsAt: dateOnlyInputToIso(offer.validUntil) || null,
-          };
+          const offerPayload = buildOfferPayload(offer, { canSeeConfidential });
           if (offer.id) await updateOffer(property.id, offer.id, offerPayload);
           else await createOffer(property.id, offerPayload);
         }
@@ -367,6 +373,17 @@ export default function EditPropertyPage({ params }) {
             });
           }
         }
+
+        // Mídia (Marco 3 §6): a retirada da lista sai do imóvel; a nova sobe com o arquivo e nasce pendente de revisão.
+        const keptMediaIds = new Set(media.filter((m) => m.apiId).map((m) => m.apiId));
+        for (const original of property.media || []) {
+          if (!keptMediaIds.has(original.id)) await removePropertyMedia(property.id, original.id);
+        }
+        for (const item of media) {
+          if (item.file && !item.apiId) await uploadPropertyMedia(property.id, item.file);
+        }
+
+        if (wantsPublish) await updateProperty(property.id, { publicationStatus: "PUBLISHED" });
 
         router.push(`/painel/imoveis/${property.id}`);
       } catch (err) {
@@ -577,29 +594,7 @@ export default function EditPropertyPage({ params }) {
           ) : null}
 
           {step.id === "documentacao" ? (
-            <div className={styles.formGrid}>
-              <FormField label="Matrícula" htmlFor="e-registry">
-                <Input id="e-registry" value={docs.registryNumber} onChange={(e) => setDocs({ ...docs, registryNumber: e.target.value })} />
-              </FormField>
-              <FormField label="Cartório de registro" htmlFor="e-registry-office">
-                <Input id="e-registry-office" value={docs.registryOffice} onChange={(e) => setDocs({ ...docs, registryOffice: e.target.value })} />
-              </FormField>
-              <FormField label="Número do IPTU" htmlFor="e-iptu">
-                <Input id="e-iptu" value={docs.iptuNumber} onChange={(e) => setDocs({ ...docs, iptuNumber: e.target.value })} />
-              </FormField>
-              <FormField label="Valor do condomínio (R$)" htmlFor="e-condo">
-                <Input id="e-condo" type="number" value={docs.condoFee} onChange={(e) => setDocs({ ...docs, condoFee: e.target.value })} />
-              </FormField>
-              <div className={styles.span2}>
-                <FormField label="Situação de regularização" htmlFor="e-reg-status">
-                  <Select id="e-reg-status" value={docs.regularizationStatus} onChange={(e) => setDocs({ ...docs, regularizationStatus: e.target.value })}>
-                    {REGULARIZATION_OPTIONS.map((option) => (
-                      <option key={option}>{option}</option>
-                    ))}
-                  </Select>
-                </FormField>
-              </div>
-            </div>
+            <PropertyDocumentationFields idPrefix="e" docs={docs} onDocsChange={setDocs} files={docFiles} onFilesChange={setDocFiles} existingDocuments={property.documents || []} />
           ) : null}
 
           {step.id === "midia" ? (
@@ -616,19 +611,9 @@ export default function EditPropertyPage({ params }) {
                 </Select>
               </FormField>
               <FormField label={`Preço (R$${offer.offerType !== "SALE" ? "/mês" : ""})`} htmlFor="e-offer-price" required>
-                <Input id="e-offer-price" type="number" value={offer.askingPrice} onChange={(e) => setOffer({ ...offer, askingPrice: e.target.value })} />
+                <DecimalInput id="e-offer-price" value={offer.askingPrice} onChange={(e) => setOffer({ ...offer, askingPrice: e.target.value })} />
               </FormField>
-              <FormField label="Preço mínimo confidencial" htmlFor="e-offer-min-price" helper="Uso interno, nunca público.">
-                <div className={styles.confidentialField}>
-                  <Icon name="shield" size={14} className={styles.confidentialIcon} />
-                  <Input
-                    id="e-offer-min-price"
-                    type="number"
-                    value={offer.confidentialMinPrice}
-                    onChange={(e) => setOffer({ ...offer, confidentialMinPrice: e.target.value })}
-                  />
-                </div>
-              </FormField>
+              <OfferExtraFields idPrefix="e" offer={offer} onChange={setOffer} canSeeConfidential={canSeeConfidential} />
               <FormField
                 label="Vigência inicial"
                 htmlFor="e-offer-valid-from"
@@ -825,8 +810,9 @@ export default function EditPropertyPage({ params }) {
               <div className={styles.reviewSection}>
                 <p className={styles.reviewTitle}>Documentação</p>
                 <p className={styles.reviewMeta}>Matrícula {docs.registryNumber || "Sem número de matrícula"} {docs.registryOffice ? `— ${docs.registryOffice}` : ""}</p>
-                <p className={styles.reviewMeta}>IPTU {docs.iptuNumber || "Sem número de IPTU"} · Condomínio {docs.condoFee ? formatBRL(Number(docs.condoFee)) : "Sem taxa de condomínio"}</p>
-                <Badge tone={docs.regularizationStatus === "Regularizado" ? "success" : "warning"}>{docs.regularizationStatus}</Badge>
+                <p className={styles.reviewMeta}>IPTU {docs.iptuNumber || "Sem número de IPTU"} · Condomínio {docs.condoFee ? formatBRL(toNumber(docs.condoFee)) : "Sem taxa de condomínio"}</p>
+                <Badge tone={docs.regularizationStatus === "Regularizado" ? "success" : "warning"}>{docs.regularizationStatus || "Situação não informada"}</Badge>
+                <p className={styles.reviewMeta}>Arquivos novos a enviar: {Object.values(docFiles).filter(Boolean).length}</p>
               </div>
 
               <div className={styles.reviewSection}>
@@ -839,7 +825,7 @@ export default function EditPropertyPage({ params }) {
                   <p className={styles.reviewTitle}>Oferta</p>
                   <div className={styles.reviewOfferRow}>
                     <span className={styles.reviewPrice}>
-                      {offer.askingPrice ? formatBRL(Number(offer.askingPrice)) : "Sem oferta ativa"}
+                      {offer.askingPrice ? formatBRL(toNumber(offer.askingPrice)) : "Sem oferta ativa"}
                       {offer.offerType !== "SALE" ? <span className={styles.reviewPriceSuffix}>/mês</span> : null}
                     </span>
                     <Badge tone={offer.status === "ACTIVE" ? "success" : offer.status === "PAUSED" ? "warning" : "neutral"}>
@@ -847,9 +833,12 @@ export default function EditPropertyPage({ params }) {
                     </Badge>
                   </div>
                   <p className={styles.reviewMeta}>{OFFER_TYPE_LABELS[offer.offerType]}</p>
-                  <p className={styles.reviewMeta}>
-                    Preço mínimo confidencial: {offer.confidentialMinPrice ? formatBRL(Number(offer.confidentialMinPrice)) : "Sem preço mínimo definido"} (uso interno)
-                  </p>
+                  {canSeeConfidential ? (
+                    <p className={styles.reviewMeta}>
+                      Preço mínimo confidencial: {offer.confidentialMinPrice !== "" && offer.confidentialMinPrice != null ? formatBRL(toNumber(offer.confidentialMinPrice)) : "Sem preço mínimo definido"} (uso interno)
+                    </p>
+                  ) : null}
+                  {offer.conditions ? <p className={styles.reviewMeta}>Condições: {offer.conditions}</p> : null}
                   <p className={styles.reviewMeta}>
                     {offer.acceptsFinancing ? "Aceita financiamento" : "Não financia"} · {offer.acceptsTrade ? "Aceita permuta" : "Sem permuta"}
                   </p>

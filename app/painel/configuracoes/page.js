@@ -14,6 +14,7 @@ import MarketingTab from "./MarketingTab";
 import PessoasTab from "./PessoasTab";
 import CrmCarteiraTab from "./CrmCarteiraTab";
 import CrmTab from "./CrmTab";
+import ImoveisCrmTab from "./ImoveisCrmTab";
 import styles from "./page.module.css";
 
 export default function ConfiguracoesPage() {
@@ -31,6 +32,7 @@ export default function ConfiguracoesPage() {
             { label: "Financeiro", content: <FinanceiroTab /> },
             { label: "Segurança", content: <SegurancaTab /> },
             { label: "Pessoas", content: <PessoasTab /> },
+            { label: "Imóveis e CRM", content: <ImoveisCrmTab /> },
             { label: "Integrações", content: <IntegracoesTab /> },
             { label: "Registro de integrações", content: <IntegracoesRegistroTab /> },
             { label: "Governança", content: <GovernancaTab /> },
