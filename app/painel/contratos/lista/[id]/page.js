@@ -47,6 +47,7 @@ import ContractReceivableLink from "./ContractReceivableLink";
 import ContractActions from "./ContractActions";
 import ContractStepper from "./ContractStepper";
 import VersionsCard from "./VersionsCard";
+import NayDraftCard from "./NayDraftCard";
 import SignaturesCard from "./SignaturesCard";
 import AmendmentsCard from "./AmendmentsCard";
 import RequirementsCard from "./RequirementsCard";
@@ -209,6 +210,8 @@ export default function ContratoDetailPage({ params }) {
             </Card>
 
             <VersionsCard contract={contract} versions={versions} userName={userName} {...common} />
+
+            <NayDraftCard contract={contract} onChanged={refresh} onNotice={setNotice} />
 
             <AmendmentsCard
               contract={contract}

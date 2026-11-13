@@ -16,6 +16,7 @@ const ITEMS = [
   { label: "Processos jurídicos", href: "/painel/contratos/processos", icon: "scale" },
   { label: "Biblioteca de cláusulas", href: "/painel/contratos/clausulas", icon: "document" },
   { label: "Modelos de contrato", href: "/painel/contratos/modelos", icon: "layers" },
+  { label: "Política do checklist", href: "/painel/contratos/checklist", icon: "check" },
   { label: "Notificações", href: "/painel/contratos/notificacoes", icon: "document" },
 ];
 

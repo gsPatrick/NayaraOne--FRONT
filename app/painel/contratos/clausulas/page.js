@@ -50,6 +50,7 @@ import ClauseConditionEditor, {
 import { formatDateTime } from "@/lib/format";
 import { useActiveUsers } from "@/lib/legal/useActiveUsers";
 import { legalErrorMessage } from "@/lib/legal/legalErrors";
+import ClauseHomologation from "./ClauseHomologation";
 import styles from "./page.module.css";
 
 const CATEGORIES = ["GENERAL", "PAYMENT", "GUARANTEE", "TERMINATION", "PENALTY", "OBLIGATION", "OTHER"];
@@ -162,6 +163,11 @@ export default function ClausulasPage() {
     }
   }
 
+  function replaceClause(updated) {
+    setClauses((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+    setVersions((prev) => prev.map((v) => (v.id === updated.id ? updated : v)));
+  }
+
   async function handleApproveCondition(clause) {
     const ok = await confirm({
       title: `Aprovar a condição de "${clause.title}" v${clause.versionNumber}?`,
@@ -245,6 +251,7 @@ export default function ClausulasPage() {
                   </Badge>
                 ) : null}
                 <Badge tone={c.isActive ? "success" : "neutral"}>{c.isActive ? "Ativa" : "Inativa"}</Badge>
+                <ClauseHomologation clause={c} onUpdated={replaceClause} onError={setLoadError} />
                 {canApproveCondition(c) ? (
                   <Button size="sm" variant="secondary" onClick={() => handleApproveCondition(c)}>Aprovar condição</Button>
                 ) : null}
@@ -331,6 +338,7 @@ export default function ClausulasPage() {
                   </Badge>
                 ) : null}
                 <Badge tone={v.isActive ? "success" : "neutral"}>{v.isActive ? "Vigente" : "Histórico"}</Badge>
+                <ClauseHomologation clause={v} onUpdated={replaceClause} onError={setVersionError} />
                 {canApproveCondition(v) ? (
                   <Button size="sm" variant="secondary" onClick={() => handleApproveCondition(v)}>Aprovar condição</Button>
                 ) : null}
