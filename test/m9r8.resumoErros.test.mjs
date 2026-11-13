@@ -54,6 +54,13 @@ test("m9r8 AsyncState: o resumo do 400 mostra rótulo e mensagem (antes: o link 
   }
 });
 
+test("m9r8 AsyncState: mensagem sem o nome do campo ganha o rótulo na frente; mensagem que já diz o campo fica como veio", () => {
+  const semRotulo = erro(400, "PERSON_VALIDATION", "Dados inválidos.", { problems: [{ field: "zipCode", message: "Use 8 números." }] });
+  assert.match(html(AsyncState, { result: { status: classifyFailure(semRotulo), error: semRotulo } }), /<a href="#error-zipCode">CEP: Use 8 números\.<\/a>/);
+  const comRotulo = erro(422, "VALIDATION_ERROR", "Dados inválidos", { problems: [{ field: "email", reason: "Informe um e-mail válido" }] });
+  assert.match(html(AsyncState, { result: { status: classifyFailure(comRotulo), error: comRotulo } }), /<a href="#error-email">Informe um e-mail válido<\/a>/);
+});
+
 test("m9r8 humanizeApiError com details.fields em lista aponta o campo certo da tela, com texto humano", () => {
   const r = humanizeApiError(PORTA, PERSON_FIELD_IDS);
   assert.deepEqual(Object.keys(r.fields), ["p-name"]);

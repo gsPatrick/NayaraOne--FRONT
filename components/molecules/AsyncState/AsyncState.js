@@ -35,7 +35,7 @@ function ValidationSummary({ error }) {
       {problems.length ? (
         <ul className={styles.list}>
           {problems.map((problem) => (
-            <li key={`${problem.field}-${problem.message}`}><a href={`#${fieldErrorId(problem.field)}`}>{problem.label && !problem.message.includes(problem.label) ? `${problem.label}: ` : ""}{safeText(problem.message) || (problem.label ? `Confira o campo ${problem.label}.` : "Confira este campo.")}</a></li>
+            <li key={`${problem.field}-${problem.message}`}><a href={`#${fieldErrorId(problem.field)}`}>{problem.label && !problem.message.toLocaleLowerCase("pt-BR").includes(problem.label.toLocaleLowerCase("pt-BR")) ? `${problem.label}: ` : ""}{safeText(problem.message) || (problem.label ? `Confira o campo ${problem.label}.` : "Confira este campo.")}</a></li>
           ))}
         </ul>
       ) : null}
