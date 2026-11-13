@@ -18,16 +18,20 @@ const ESPERADO = {
   "finance.antifraud_new_account_threshold": { type: "decimal", defaultValue: 5000, min: 0, max: 999999999.99 },
   "finance.antifraud_history_multiplier": { type: "decimal", defaultValue: 3, min: 1, max: 100 },
   "antifraude.outlier_bloqueio_multiplicador": { type: "decimal", defaultValue: 10, min: 1, max: 1000 },
+  // DEC-007 / M4-D022 item 5 (DI-DEC007-3 na API): amostra mínima e meses de histórico da mediana.
+  "antifraude.outlier_amostra_minima": { type: "integer", defaultValue: 5, min: 1, max: 100 },
+  "antifraude.outlier_historico_meses": { type: "integer", defaultValue: 12, min: 1, max: 60 },
   "antifraude.duplicidade_janela_dias": { type: "integer", defaultValue: 90, min: 1, max: 365 },
   "antifraude.fornecedor_novo_dias": { type: "integer", defaultValue: 30, min: 1, max: 365 },
   "antifraude.fornecedor_novo_valor_minimo": { type: "decimal", defaultValue: 20000, min: 0.01, max: 999999999.99 },
   "antifraude.conciliacao_manual_usuario_7d": { type: "integer", defaultValue: 5, min: 1, max: 100 },
   "antifraude.conciliacao_manual_percentual_mes": { type: "decimal", defaultValue: 30, min: 1, max: 100 },
   "antifraude.estorno_frequente_usuario_30d": { type: "integer", defaultValue: 3, min: 1, max: 100 },
-  "antifraude.estorno_frequente_empresa_30d": { type: "integer", defaultValue: 3, min: 1, max: 1000 },
+  // DEC-007, parametros.csv e M4-D006 item 9: 5 por empresa em 30 dias (DI-DEC007-2 na API; antes a aba mostrava 3).
+  "antifraude.estorno_frequente_empresa_30d": { type: "integer", defaultValue: 5, min: 1, max: 1000 },
 };
 
-test("m4 §17.7 parâmetros: a aba Financeiro lista as chaves (as seis antigas e as oito da DEC-007) com o padrão e a faixa da API", () => {
+test("m4 §17.7 parâmetros: a aba Financeiro lista as chaves (as seis antigas e as dez da DEC-007) com o padrão e a faixa da API", () => {
   assert.deepEqual(FINANCEIRO_FIELDS.map((f) => f.key).sort(), Object.keys(ESPERADO).sort());
   for (const field of FINANCEIRO_FIELDS) {
     const esperado = ESPERADO[field.key];
@@ -107,4 +111,32 @@ test("DEC-007 MFA: o 403 de MFA recente de um parâmetro sensível não vira 'Se
   }
   const financeiro = FINANCEIRO_FIELDS.filter((f) => /verificação em duas etapas/.test(f.helper)).map((f) => f.key).sort();
   assert.deepEqual(financeiro, ["finance.antifraud_new_account_threshold", "finance.bank_account_cooldown_hours", "finance.reconciliation.auto_strong"]);
+});
+
+test("DEC-007 rodada 2: cada campo numérico mostra o valor em vigor que o antifraude usa (gravado, padrão ou padrão no lugar de gravado inválido)", async () => {
+  const { effectiveByKey, effectiveText, formatParameterValue } = await import("@/app/painel/configuracoes/antifraudEffective.js");
+  const dias = FINANCEIRO_FIELDS.find((f) => f.key === "antifraude.duplicidade_janela_dias");
+  const valor = FINANCEIRO_FIELDS.find((f) => f.key === "antifraude.fornecedor_novo_valor_minimo");
+  assert.equal(effectiveText(dias, { effectiveValue: 120, source: "STORED" }), "Em vigor: 120 (valor gravado).");
+  assert.equal(effectiveText(dias, { effectiveValue: 90, source: "DEFAULT" }), "Em vigor: 90 (padrão da decisão DEC-007).");
+  assert.match(effectiveText(dias, { effectiveValue: 90, storedValue: "", source: "INVALID_STORED" }), /^Em vigor: 90, o padrão da decisão DEC-007: o valor gravado está fora da faixa e não é usado/);
+  assert.equal(formatParameterValue(valor, 20000).replace(/\s/g, " "), "R$ 20.000,00");
+  assert.equal(effectiveText(dias, undefined), "", "sem a linha da API a aba não inventa valor");
+  assert.deepEqual(Object.keys(effectiveByKey([{ key: "a", effectiveValue: 1 }, null])), ["a"]);
+  const tab = read("app/painel/configuracoes/FinanceiroTab.js");
+  assert.match(tab, /import \{ getAntifraudParameters \} from "@\/lib\/api\/financeAntifraud"/);
+  assert.match(tab, /effectiveText\(field, effective\[field\.key\]\)/);
+  assert.match(tab, /invalidateAsyncCache\(EFFECTIVE_CACHE_KEY\)/, "depois de salvar, o valor em vigor é relido");
+  assert.match(read("lib/api/financeAntifraud.js"), /apiFetch\("\/finance\/antifraud\/parameters"\)/);
+});
+
+test("DEC-007 rodada 2: a recusa 422 da API (valor fora da faixa) aparece na aba com o rótulo do campo, sem virar 'Sem permissão'", async () => {
+  const { isSettingForbidden, isMfaSettingError, labelSettingError } = await import("@/lib/settings/errorLabel.js");
+  const err = { status: 422, code: "SETTING_INVALID_VALUE", message: '"Pagamento duplicado: janela de dias" deve ser um número inteiro de 1 a 365. O valor enviado (0) foi recusado e nada foi gravado.' };
+  assert.equal(isSettingForbidden(err), false);
+  assert.equal(isMfaSettingError(err), false);
+  assert.equal(labelSettingError(err, {}, "x"), err.message);
+  const tab = read("app/painel/configuracoes/FinanceiroTab.js");
+  assert.match(tab, /labelSettingError\(err, LABELS, "Não foi possível salvar as configurações do Financeiro\."\)/);
+  assert.match(tab, /<Alert tone="danger" title="Erro">\{error\}<\/Alert>/);
 });

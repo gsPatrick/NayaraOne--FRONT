@@ -1,6 +1,8 @@
 // Parâmetros do Financeiro (Marco 4) que o administrador controla na aba "Financeiro". O caderno do Marco 4 pede cada controle e diz que ele é
 // configurável, mas não traz os números: o padrão mostrado aqui é o da decisão DEC-007, o mesmo que a API usa enquanto a empresa não grava nada, e a
-// faixa é a mesma que a API confere (SETTINGS_SCHEMA, src/modules/finance/application/services/finance-settings.js). Valor fora da faixa é recusado pela API.
+// faixa é a mesma que a API confere (SETTINGS_SCHEMA, src/modules/finance/application/services/finance-settings.js). Valor fora da faixa é recusado pela API
+// (422, com a frase do rótulo). O valor gravado vale sempre, mais restritivo ou mais frouxo que o padrão (DEC-007, DI-DEC007-2 na API); a aba mostra, em
+// cada campo, o valor em vigor que o antifraude está usando (GET /finance/antifraud/parameters).
 // Os campos marcados "exige verificação em duas etapas" só gravam com o MFA recente de quem altera (a API pede o código e a tela abre o modal).
 const MFA = " Alterar exige a verificação em duas etapas (código do MFA).";
 
@@ -85,36 +87,54 @@ export const FINANCEIRO_GROUPS = [
         min: 0,
         max: 999999999.99,
         maxDecimals: 2,
-        helper: `Padrão: R$ 5.000,00. Vale para a conta bancária que ainda não recebeu nenhum pagamento; o lançamento só é pago depois que alguém da equipe revisar.${MFA}`,
+        helper: `Padrão: R$ 5.000,00. Vale para a conta bancária que ainda não recebeu nenhum pagamento; o lançamento só é pago depois que outra pessoa da equipe revisar.${MFA}`,
       },
       {
         key: "finance.antifraud_history_multiplier",
-        label: "Valor fora do padrão: quantas vezes a média que deixa o pagamento retido para revisão",
+        label: "Valor fora do padrão: quantas vezes a mediana que deixa o pagamento retido para revisão",
         type: "decimal",
         defaultValue: 3,
         min: 1,
         max: 100,
         maxDecimals: 2,
-        helper: "Padrão: 3 vezes. Compara com a média dos pagamentos já feitos à mesma conta bancária; acima disso, o lançamento só é pago depois que alguém da equipe revisar. Não pode passar do múltiplo que bloqueia.",
+        helper: "Padrão: 3 vezes. Compara com a mediana dos pagamentos já feitos ao mesmo favorecido na mesma categoria do plano de contas; a partir disso, o lançamento só é pago depois que alguém da equipe revisar. Não pode passar do múltiplo que bloqueia.",
       },
       {
         key: "antifraude.outlier_bloqueio_multiplicador",
-        label: "Valor fora do padrão: quantas vezes a média que bloqueia o pagamento",
+        label: "Valor fora do padrão: quantas vezes a mediana que bloqueia o pagamento",
         type: "decimal",
         defaultValue: 10,
         min: 1,
         max: 1000,
         maxDecimals: 2,
-        helper: "Padrão: 10 vezes. Acima disso, além de ficar retido, o pagamento não vira intenção nem pedido de aprovação até alguém da equipe revisar. Não pode ser menor que o múltiplo de revisão.",
+        helper: "Padrão: 10 vezes. A partir disso, além de ficar retido, o pagamento não vira intenção nem pedido de aprovação até alguém da equipe revisar. Não pode ser menor que o múltiplo de revisão.",
+      },
+      {
+        key: "antifraude.outlier_amostra_minima",
+        label: "Valor fora do padrão: mínimo de pagamentos no histórico",
+        type: "integer",
+        defaultValue: 5,
+        min: 1,
+        max: 100,
+        helper: "Padrão: 5. Com menos pagamentos já feitos ao mesmo favorecido na mesma categoria, a comparação usa a categoria inteira da empresa; se nem a categoria tiver esse mínimo, o valor não é comparado.",
+      },
+      {
+        key: "antifraude.outlier_historico_meses",
+        label: "Valor fora do padrão: meses de histórico",
+        type: "integer",
+        defaultValue: 12,
+        min: 1,
+        max: 60,
+        helper: "Padrão: 12 meses. Só os pagamentos liquidados nesses últimos meses entram na mediana.",
       },
       {
         key: "antifraude.duplicidade_janela_dias",
-        label: "Pagamento duplicado: dias em que o mesmo favorecido, valor e vencimento é bloqueado",
+        label: "Pagamento duplicado: dias em que o mesmo favorecido, valor e vencimento são bloqueados",
         type: "integer",
         defaultValue: 90,
         min: 1,
         max: 365,
-        helper: "Padrão: 90 dias. Um pagamento com a mesma conta de destino, o mesmo valor e o mesmo vencimento de outro (não cancelado) lançado neste período fica retido e bloqueado até a revisão.",
+        helper: "Padrão: 90 dias. Um pagamento com a mesma conta de destino, o mesmo valor e o mesmo vencimento de outro (não cancelado) lançado neste período fica retido e bloqueado até a revisão. Sem vencimento, vale o mesmo mês de competência.",
       },
       {
         key: "antifraude.fornecedor_novo_dias",
@@ -140,7 +160,7 @@ export const FINANCEIRO_GROUPS = [
   {
     title: "Estorno frequente",
     subtitle:
-      "O caderno do Marco 4 (§17) pede um caso de anomalia quando há estornos frequentes. A decisão DEC-007 definiu 3 estornos pela mesma pessoa e 5 na empresa em 30 dias; como a regra que já existia abria o caso com 3 estornos na empresa, esse continua sendo o padrão da empresa até você mudar aqui.",
+      "O caderno do Marco 4 (§17) pede um caso de anomalia quando há estornos frequentes. A decisão DEC-007 definiu 3 estornos pela mesma pessoa e 5 na empresa em 30 dias. Se a empresa já tinha gravado outro número aqui, o número gravado continua valendo.",
     fields: [
       {
         key: "antifraude.estorno_frequente_usuario_30d",
@@ -155,10 +175,10 @@ export const FINANCEIRO_GROUPS = [
         key: "antifraude.estorno_frequente_empresa_30d",
         label: "Estornos na empresa em 30 dias que abrem o caso",
         type: "integer",
-        defaultValue: 3,
+        defaultValue: 5,
         min: 1,
         max: 1000,
-        helper: "Padrão: 3. Ao chegar a este número de estornos na empresa em 30 dias, o sistema abre um caso de estorno frequente (a decisão DEC-007 sugere 5; o padrão fica no valor mais protetor, o que já valia).",
+        helper: "Padrão: 5. Ao chegar a este número de estornos na empresa em 30 dias, o sistema abre um caso de estorno frequente.",
       },
     ],
   },
