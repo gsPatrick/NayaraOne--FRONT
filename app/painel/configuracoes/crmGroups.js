@@ -33,6 +33,19 @@ export const CRM_GROUPS = [
       { key: "crm.lead_automatico.responsavel_padrao", label: "Responsável pelo lead que chega sem usuário (WhatsApp, parceiro)", type: "user", defaultValue: "", helper: "Sem escolha, o lead vai para o gestor mais antigo da empresa." },
     ],
   },
+  {
+    title: "Mensagens: finalidade do contato",
+    subtitle: "A finalidade diz qual consentimento vale (Configurações > Marketing: quais finalidades exigem a autorização do cliente). Mensagem recebida do cliente nunca depende dela.",
+    fields: [
+      {
+        key: "crm.mensagens.finalidade_obrigatoria",
+        label: "Exigir a finalidade em toda mensagem enviada a um cliente",
+        type: "boolean",
+        defaultValue: false,
+        helper: "Desligado (padrão): mensagem sem finalidade é tratada como transacional (aviso de atendimento). Ligado: a mensagem só sai com a finalidade escolhida, e quem pediu para não receber marketing não recebe nada por omissão.",
+      },
+    ],
+  },
 ];
 
 export const CRM_FIELDS = CRM_GROUPS.flatMap((group) => group.fields);

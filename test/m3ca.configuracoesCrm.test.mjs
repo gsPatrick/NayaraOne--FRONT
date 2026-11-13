@@ -6,11 +6,14 @@ import { crmFieldError, crmApiValue, parseReasonList } from "@/app/painel/config
 
 const byKey = Object.fromEntries(CRM_FIELDS.map((f) => [f.key, f]));
 
-test("m3ca config: a aba tem as nove chaves do CRM com os padrões da API", () => {
+test("m3ca config: a aba tem as dez chaves do CRM com os padrões da API", () => {
   assert.deepEqual(CRM_FIELDS.map((f) => f.key).sort(), [
-    "crm.gerencia.permissao", "crm.lead_automatico.responsavel_padrao", "crm.motivos.desistencia", "crm.motivos.ganho", "crm.motivos.perda",
+    "crm.gerencia.permissao", "crm.lead_automatico.responsavel_padrao", "crm.mensagens.finalidade_obrigatoria", "crm.motivos.desistencia", "crm.motivos.ganho", "crm.motivos.perda",
     "crm.ocorrencia.sla_horas.alta", "crm.ocorrencia.sla_horas.baixa", "crm.ocorrencia.sla_horas.media", "crm.tarefa_vencida.escalar_gerencia_apos_horas",
   ]);
+  // M3-18 com o padrão do Marco 9 entregue: desligado (sem finalidade, a mensagem é tratada como transacional).
+  assert.equal(byKey["crm.mensagens.finalidade_obrigatoria"].defaultValue, false);
+  assert.equal(byKey["crm.mensagens.finalidade_obrigatoria"].type, "boolean");
   assert.deepEqual([byKey["crm.ocorrencia.sla_horas.alta"].defaultValue, byKey["crm.ocorrencia.sla_horas.media"].defaultValue, byKey["crm.ocorrencia.sla_horas.baixa"].defaultValue], [24, 72, 168]);
   assert.equal(byKey["crm.tarefa_vencida.escalar_gerencia_apos_horas"].defaultValue, 24);
   assert.equal(byKey["crm.gerencia.permissao"].defaultValue, "crm:dashboard:read");
