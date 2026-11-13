@@ -1,3 +1,4 @@
+const { requireE2ePassword } = require('./_e2e-env');
 // Verificação dedicada M6-R05 (projeto já avançado até FINAL_INSPECTION via a mesma rota
 // que os botões da tela chamam): abre NC crítica e tenta entregar pela interface de verdade.
 const { chromium } = require("playwright");
@@ -20,7 +21,7 @@ function record(label, ok, detail) {
     if (await teamTab.count()) await teamTab.first().click();
     await page.waitForSelector("input[type=email]", { timeout: 70000 });
     await page.fill("input[type=email]", "admin@nayaraone.dev");
-    await page.fill("input[type=password]", "DevAdmin#2026");
+    await page.fill("input[type=password]", requireE2ePassword());
     await page.click("button[type=submit]");
     await page.waitForURL((u) => !u.pathname.includes("/entrar"), { timeout: 70000 }).catch(() => {});
     record("1. login", true);

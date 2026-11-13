@@ -5,9 +5,10 @@ import { listProperties } from "@/lib/api/properties";
 import { listCostCenters } from "@/lib/api/finance";
 import { apiFetch } from "@/lib/api/client";
 import { lookupFallback } from "@/lib/asyncState/lookup";
+import { listProjectTypes, listConstructionMembers } from "@/lib/api/constructionConfig";
 
 export async function loadObraDetail(id) {
-  const [project, properties, users, costCenters] = await Promise.all([
+  const [project, properties, users, costCenters, projectTypes, members] = await Promise.all([
     getProject(id).catch((err) => {
       if (err?.status === 404) return null;
       throw err;
@@ -16,6 +17,8 @@ export async function loadObraDetail(id) {
     apiFetch("/users?status=ACTIVE"),
     // Centro de custo é opcional: sem finance:read a falha é registrada (aviso no topo) e a página abre.
     listCostCenters().catch(lookupFallback("os centros de custo")),
+    listProjectTypes().catch(lookupFallback("os tipos de obra")),
+    listConstructionMembers(),
   ]);
   if (!project) return { notFound: true };
   const [stages, reports, budgetLines, changeOrders, budgets] = await Promise.all([
@@ -30,6 +33,8 @@ export async function loadObraDetail(id) {
     properties: properties || [],
     users: users || [],
     costCenters: costCenters || [],
+    projectTypes: projectTypes || [],
+    members: members || [],
     stages: stages || [],
     reportsCount: (reports || []).length,
     budgetLinesCount: (budgetLines || []).length,

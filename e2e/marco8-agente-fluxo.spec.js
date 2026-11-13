@@ -1,5 +1,7 @@
 'use strict';
 
+const { requireE2ePassword } = require('./_e2e-env');
+
 /**
  * Agente de ponta a ponta do Marco 8 (Correspondente bancário).
  * Entra pela tela de login, percorre o fluxo como usuário e grava o que falhou
@@ -19,7 +21,7 @@ const { chromium } = require('playwright');
 
 const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
 const EMAIL = process.env.E2E_EMAIL || 'admin@nayaraone.dev';
-const PASSWORD = process.env.E2E_PASSWORD || 'DevAdmin#2026';
+const PASSWORD = requireE2ePassword();
 const OUT = process.env.E2E_ACHADOS || path.join(__dirname, 'achados', 'MARCO8_ACHADOS.md');
 
 const passos = [];

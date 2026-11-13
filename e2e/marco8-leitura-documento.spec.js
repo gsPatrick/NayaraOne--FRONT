@@ -1,3 +1,4 @@
+const { requireE2ePassword } = require('./_e2e-env');
 // Marco 8 — documento do caso passa pelo antivírus e pela leitura real (ClamAV + pdftotext/Tesseract).
 // Requer a API local com ANTIVIRUS_PROVIDER=clamav e OCR_PROVIDER=local e o clamd rodando.
 const { chromium } = require("playwright");
@@ -55,7 +56,7 @@ function buildPdf(lines) {
     if (await teamTab.count()) await teamTab.first().click();
     await page.waitForSelector("input[type=email]");
     await page.fill("input[type=email]", "admin@nayaraone.dev");
-    await page.fill("input[type=password]", "DevAdmin#2026");
+    await page.fill("input[type=password]", requireE2ePassword());
     await page.click("button[type=submit]");
     await page.waitForURL((u) => !u.pathname.includes("/entrar"));
 

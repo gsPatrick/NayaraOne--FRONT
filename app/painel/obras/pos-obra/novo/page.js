@@ -12,7 +12,7 @@ import Alert from "@/components/molecules/Alert/Alert";
 import { createMaintenanceCase, listProjects } from "@/lib/api/construction";
 import { listProperties } from "@/lib/api/properties";
 import { listPeople } from "@/lib/api/people";
-import { apiFetch } from "@/lib/api/client";
+import { listConstructionMembers } from "@/lib/api/constructionConfig";
 import { dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib/format";
 import { MAINTENANCE_CATEGORY_LABELS, MAINTENANCE_SEVERITY_LABELS } from "@/lib/mock/construction";
 import styles from "./page.module.css";
@@ -38,7 +38,7 @@ export default function NovoChamadoPosObraPage() {
   // Filtra apenas usuários ACTIVE no seletor de responsável.
   const formQuery = useAsyncState(
     async () => {
-      const [properties, projects, people, users] = await Promise.all([listProperties(), listProjects(), listPeople(), apiFetch("/users?status=ACTIVE")]);
+      const [properties, projects, people, users] = await Promise.all([listProperties(), listProjects(), listPeople(), listConstructionMembers()]);
       return { properties: properties || [], projects: projects || [], people: people || [], users: users || [] };
     },
     { key: "obras-pos-obra-novo", isEmpty: () => false }

@@ -1,3 +1,4 @@
+const { requireE2ePassword } = require('../_e2e-env');
 // Varredura de telas: procura texto vazio ou de preenchimento ("—", "Não informado", "undefined", "null", "NaN",
 // célula vazia) em todas as telas do painel e em algumas fichas de detalhe. Sai com código 1 se achar algo.
 const { chromium } = require("playwright");
@@ -43,7 +44,7 @@ async function varrer(page, rota) {
   if (await aba.count()) await aba.first().click();
   await page.waitForSelector("input[type=email]");
   await page.fill("input[type=email]", "admin@nayaraone.dev");
-  await page.fill("input[type=password]", "DevAdmin#2026");
+  await page.fill("input[type=password]", requireE2ePassword());
   await page.click("button[type=submit]");
   await page.waitForURL((u) => !u.pathname.includes("/entrar"));
   const detalhes = new Set();

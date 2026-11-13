@@ -1,3 +1,4 @@
+const { requireE2ePassword } = require('./_e2e-env');
 // Marco 5 — transferência de titularidade de água/energia pela tela (Locação > Obrigações).
 // Cobre: criar obrigação exigindo transferência, solicitar transferência numa obrigação ativa,
 // recusa de conclusão sem comprovante/novo titular (botão desabilitado) e conclusão com anexo real.
@@ -42,7 +43,7 @@ async function pickPerson(page, scope, text) {
     if (await teamTab.count()) await teamTab.first().click();
     await page.waitForSelector("input[type=email]");
     await page.fill("input[type=email]", "admin@nayaraone.dev");
-    await page.fill("input[type=password]", "DevAdmin#2026");
+    await page.fill("input[type=password]", requireE2ePassword());
     await page.click("button[type=submit]");
     await page.waitForURL((u) => !u.pathname.includes("/entrar"));
     record("1. login", true);

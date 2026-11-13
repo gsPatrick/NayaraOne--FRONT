@@ -24,6 +24,9 @@ import { getActiveSlaRule, createSlaRule, getActiveMarginRule, createMarginRule,
 import { toNumber, formatDateTime } from "@/lib/format";
 import styles from "./page.module.css";
 import CostBasisCard from "./CostBasisCard";
+import ApprovalThresholdsCard from "./ApprovalThresholdsCard";
+import ConstructionParametersCard from "./ConstructionParametersCard";
+import ProjectTypesChecklistCard from "./ProjectTypesChecklistCard";
 
 import { reportLookupProblem } from "@/lib/asyncState/lookup";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
@@ -217,6 +220,12 @@ export default function ObrasConfiguracoesPage() {
       </AsyncState>
 
       <CostBasisCard />
+
+      <ApprovalThresholdsCard />
+
+      <ConstructionParametersCard />
+
+      <ProjectTypesChecklistCard />
 
       <AsyncState result={marginQuery}>
         {() => (

@@ -1,5 +1,7 @@
 'use strict';
 
+const { requireE2ePassword } = require('./_e2e-env');
+
 /**
  * E2E real (Playwright) — R9: "Trocar de empresa" (reconferência ao vivo 20/10/2026).
  * admin@nayaraone.dev tem ADMIN em 2 empresas; o seletor precisa listá-las, trocar e,
@@ -10,7 +12,7 @@ const { chromium } = require('playwright');
 
 const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
 const EMAIL = process.env.E2E_EMAIL || 'admin@nayaraone.dev';
-const PASSWORD = process.env.E2E_PASSWORD || 'DevAdmin#2026';
+const PASSWORD = requireE2ePassword();
 const API = process.env.E2E_API_URL || 'http://localhost:4001/api/v1';
 
 let failed = 0;

@@ -36,6 +36,7 @@ const ACTION_LABELS = [
   [/\/legal\/contracts\/[^/]+\/correct/, "corrigir os dados do contrato"],
   [/\/legal\/notices\/[^/]+\/send/, "enviar a notificação"],
   [/\/legal\/inspections\/[^/]+\/sign/, "assinar a vistoria"],
+  [/\/construction\/approval-thresholds/, "alterar a alçada de aprovação de Obras"],
   [/\/export/, "exportar os dados"],
   [/\/settings\//, "alterar o parâmetro"],
 ];

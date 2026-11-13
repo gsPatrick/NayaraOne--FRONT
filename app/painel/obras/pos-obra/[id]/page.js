@@ -76,6 +76,7 @@ export default function PosObraDetalhePage({ params }) {
   const [project, setProject] = useState(null);
   const [openedByPerson, setOpenedByPerson] = useState(null);
   const [users, setUsers] = useState([]);
+  const [members, setMembers] = useState([]);
   const [relatedCases, setRelatedCases] = useState([]);
   const [actionError, setActionError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -126,6 +127,7 @@ export default function PosObraDetalhePage({ params }) {
     if (!d || d.notFound) return;
     setMaintenanceCase(d.maintenanceCase);
     setUsers(d.users);
+    setMembers(d.members || []);
     setProperty(d.property);
     setProject(d.project);
     setOpenedByPerson(d.openedByPerson);
@@ -635,7 +637,7 @@ export default function PosObraDetalhePage({ params }) {
           <FormField label="Responsável" htmlFor="e-responsible" helper="Opcional">
             <Select id="e-responsible" value={editForm.responsibleUserId} onChange={(e) => setEditForm((p) => ({ ...p, responsibleUserId: e.target.value }))}>
               <option value="">Sem responsável</option>
-              {users.map((u) => (
+              {members.map((u) => (
                 <option key={u.id} value={u.id}>{u.name}</option>
               ))}
             </Select>

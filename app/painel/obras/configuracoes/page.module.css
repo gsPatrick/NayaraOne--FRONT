@@ -24,3 +24,41 @@
 @media (max-width: 700px) {
   .grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* Verificação do Marco 6: alçadas, parâmetros de Obras e tipos de obra/checklist. */
+.thresholdRow {
+  display: grid;
+  gap: var(--space-2);
+  padding-bottom: var(--space-3);
+  margin-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.checkRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin: var(--space-3) 0;
+}
+
+.sectionTitle {
+  font-size: var(--text-body);
+  font-weight: 600;
+  margin: var(--space-4) 0 var(--space-2);
+}
+
+.linkButton {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--color-brand-text);
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+}

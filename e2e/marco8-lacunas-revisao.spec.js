@@ -1,5 +1,7 @@
 'use strict';
 
+const { requireE2ePassword } = require('./_e2e-env');
+
 /**
  * E2E (Playwright) das lacunas da revisão de 24/10/2026: revisão de duplicata, erros de integração,
  * resumo da NAY, prazo da NFS-e em Parâmetros e arquivo do DIMOB. Escrito para rodar com
@@ -15,7 +17,7 @@ const { chromium } = require('playwright');
 
 const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
 const EMAIL = process.env.E2E_EMAIL || 'admin@nayaraone.dev';
-const PASSWORD = process.env.E2E_PASSWORD || 'DevAdmin#2026';
+const PASSWORD = requireE2ePassword();
 const API_DIR = process.env.E2E_API_DIR || path.join(__dirname, '..', '..', 'NayaraOne--API');
 const PRINTS = process.env.E2E_PRINTS || '';
 

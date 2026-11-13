@@ -25,6 +25,7 @@ import {
   NONCONFORMITY_STATUS_TONE,
 } from "@/lib/mock/construction";
 import { listProjectStages, listQualityItems, createQualityItem, checkQualityItem, removeQualityItem, listNonconformities, createNonconformity, closeNonconformity } from "@/lib/api/construction";
+import { applyProjectChecklist, listConstructionMembers } from "@/lib/api/constructionConfig";
 import { apiFetch } from "@/lib/api/client";
 import { uploadFile } from "@/lib/api/legal";
 import { formatDate, dateOnlyInputToIso } from "@/lib/format";
@@ -85,6 +86,9 @@ export default function QualidadeObraPage({ params }) {
   const [ncAfterUploadError, setNcAfterUploadError] = useState("");
   const [ncAcceptedByUserId, setNcAcceptedByUserId] = useState("");
   const [savingNcClose, setSavingNcClose] = useState(false);
+  const [applyingChecklist, setApplyingChecklist] = useState(false);
+  const [members, setMembers] = useState([]);
+  const [checklistNotice, setChecklistNotice] = useState("");
 
   // M9-D850: a leitura passa pelo padrão único de estados (carregando, erro com "tentar de novo", 403, offline).
   // Os dados vão para o estado local, que as ações da tela continuam atualizando.
@@ -92,8 +96,8 @@ export default function QualidadeObraPage({ params }) {
     async () => {
       const [project, users] = await Promise.all([getProjectOrNull(params.id), apiFetch("/users?status=ACTIVE").catch(lookupFallback("os usuários"))]);
       if (!project) return { notFound: true };
-      const [stages, qualityItems, nonconformities] = await Promise.all([listProjectStages(project.id), listQualityItems(project.id), listNonconformities(project.id)]);
-      return { project, users: users || [], stages: stages || [], qualityItems: qualityItems || [], nonconformities: nonconformities || [] };
+      const [stages, qualityItems, nonconformities, members] = await Promise.all([listProjectStages(project.id), listQualityItems(project.id), listNonconformities(project.id), listConstructionMembers()]);
+      return { project, users: users || [], members: members || [], stages: stages || [], qualityItems: qualityItems || [], nonconformities: nonconformities || [] };
     },
     { key: `obra-qualidade-${params.id}`, deps: [params.id], isEmpty: () => false }
   );
@@ -103,6 +107,7 @@ export default function QualidadeObraPage({ params }) {
     if (!d || d.notFound) return;
     setProject(d.project);
     setUsers(d.users);
+    setMembers(d.members || []);
     setStages(d.stages);
     setQualityItems(d.qualityItems);
     setNonconformities(d.nonconformities);
@@ -147,6 +152,23 @@ export default function QualidadeObraPage({ params }) {
       setQualityRejectUploadError(err?.message || "Erro ao enviar evidência.");
     } finally {
       setQualityRejectUploading(false);
+    }
+  }
+
+  // Checklist por etapa/tipo de obra (Caderno §9, verificação do Marco 6): gera os itens configurados que ainda faltam.
+  async function handleApplyChecklist() {
+    if (applyingChecklist) return;
+    setApplyingChecklist(true);
+    setActionError("");
+    setChecklistNotice("");
+    try {
+      const result = await applyProjectChecklist(project.id);
+      setChecklistNotice(result?.created ? `${result.created} item(ns) do checklist do tipo de obra incluído(s).` : "O checklist do tipo de obra já está completo nesta obra.");
+      await load();
+    } catch (err) {
+      setActionError(err?.message || "Não foi possível aplicar o checklist do tipo de obra.");
+    } finally {
+      setApplyingChecklist(false);
     }
   }
 
@@ -346,10 +368,16 @@ export default function QualidadeObraPage({ params }) {
         <Card
           title="Qualidade"
           subtitle="Checklist de qualidade"
-          actions={<Button size="sm" variant="secondary" onClick={openQualityModal}>
-            <Icon name="plus" size={14} /> Novo item de checklist
-          </Button>}
+          actions={<div style={{ display: "flex", gap: "var(--space-2)", flexWrap: "wrap" }}>
+            <Button size="sm" variant="secondary" onClick={handleApplyChecklist} loading={applyingChecklist}>
+              <Icon name="check" size={14} /> Aplicar checklist do tipo de obra
+            </Button>
+            <Button size="sm" variant="secondary" onClick={openQualityModal}>
+              <Icon name="plus" size={14} /> Novo item de checklist
+            </Button>
+          </div>}
         >
+          {checklistNotice ? <Alert tone="success">{checklistNotice}</Alert> : null}
           {qualityItems.length === 0 ? (
             <EmptyState icon="check" title="Sem itens de checklist" description="Nenhum item de qualidade cadastrado para esta obra." />
           ) : (
@@ -366,6 +394,8 @@ export default function QualidadeObraPage({ params }) {
                       </span>
                       <span className={styles.rowSubtitle}>
                         {checkedBy ? `Verificado por ${checkedBy.name}` : "Ainda não verificado"}
+                        {q.checklistTemplateId ? " · do checklist do tipo de obra" : ""}
+                        {q.projectStageId ? ` · etapa ${(stages.find((st) => st.id === q.projectStageId) || {}).name || ""}` : ""}
                       </span>
                       {/* FIX (2ª varredura final do Front do Marco 6, 30/09/2026): o motivo
                           digitado ao marcar "Não OK" era salvo (checkQualityItem já grava
@@ -624,7 +654,7 @@ export default function QualidadeObraPage({ params }) {
           <FormField label="Responsável" htmlFor="m-nc-responsible" required>
             <Select id="m-nc-responsible" value={ncForm.responsibleUserId} onChange={(e) => setNcForm((p) => ({ ...p, responsibleUserId: e.target.value }))}>
               <option value="">Sem responsável</option>
-              {users.map((u) => (
+              {members.map((u) => (
                 <option key={u.id} value={u.id}>{u.name}</option>
               ))}
             </Select>
@@ -709,7 +739,7 @@ export default function QualidadeObraPage({ params }) {
               <FormField label="Aceite por" htmlFor="m-nc-accepted-by" helper="Esta NC exige aceite — obrigatório para fechar." required>
                 <Select id="m-nc-accepted-by" value={ncAcceptedByUserId} onChange={(e) => setNcAcceptedByUserId(e.target.value)}>
                   <option value="">Selecione quem aceitou</option>
-                  {users.map((u) => (
+                  {members.map((u) => (
                     <option key={u.id} value={u.id}>{u.name}</option>
                   ))}
                 </Select>

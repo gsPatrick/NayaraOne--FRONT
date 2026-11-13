@@ -1,5 +1,7 @@
 'use strict';
 
+const { requireE2ePassword } = require('./_e2e-env');
+
 /**
  * E2E ADVERSARIAL do Marco 7 — Estoque, Ferramentas, Patrimônio, Compras/Procurement, Seguros.
  * Testa como a auditora externa (Abacus AI) testaria: cenários de erro, campos obrigatórios,
@@ -13,7 +15,7 @@ const { chromium } = require('playwright');
 
 const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
 const EMAIL = process.env.E2E_EMAIL || 'admin@nayaraone.dev';
-const PASSWORD = process.env.E2E_PASSWORD || 'DevAdmin#2026';
+const PASSWORD = requireE2ePassword();
 
 const results = [];
 function record(step, ok, detail) {

@@ -1,5 +1,7 @@
 'use strict';
 
+const { requireE2ePassword } = require('./_e2e-env');
+
 /**
  * E2E (Playwright) — correções da reconferência ao vivo M45-RECONF (19/10/2026), clicando na tela:
  *   F1 Locação → Encerramento → "Checar elegibilidade" mostra as pendências em português (sem erro);
@@ -20,7 +22,7 @@ const { chromium } = require('playwright');
 
 const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
 const EMAIL = process.env.E2E_EMAIL || 'admin@nayaraone.dev';
-const PASSWORD = process.env.E2E_PASSWORD || 'DevAdmin#2026';
+const PASSWORD = requireE2ePassword();
 const SHOTS = process.env.E2E_SHOTS || path.join(__dirname, 'shots', 'm45-reconf');
 fs.mkdirSync(SHOTS, { recursive: true });
 

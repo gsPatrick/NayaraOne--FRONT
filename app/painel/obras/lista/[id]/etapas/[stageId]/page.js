@@ -42,6 +42,8 @@ import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import ReloadAlert from "@/components/molecules/ReloadAlert/ReloadAlert";
 import Spinner from "@/components/atoms/Spinner/Spinner";
+import FileDropInput from "@/components/molecules/FileDropInput/FileDropInput";
+import { uploadFile } from "@/lib/api/legalContracts";
 
 // Fila offline (Marco 6, contrato §13) — medição.
 const OFFLINE_QUEUE_NAME = "construction.stage-measurements";
@@ -82,6 +84,7 @@ export default function EtapaDetalhePage({ params }) {
     notes: "",
     totalAmount: "",
     items: [],
+    evidenceFiles: [],
   });
   const [savingMeasurement, setSavingMeasurement] = useState(false);
   // FIX (homologação 23/09/2026): este useState estava declarado lá embaixo, DEPOIS dos
@@ -223,7 +226,7 @@ export default function EtapaDetalhePage({ params }) {
   }
 
   function openMeasurementModal() {
-    setMeasurementForm({ measuredPct: "", measuredAt: new Date().toISOString().slice(0, 10), notes: "", totalAmount: "", items: [] });
+    setMeasurementForm({ measuredPct: "", measuredAt: new Date().toISOString().slice(0, 10), notes: "", totalAmount: "", items: [], evidenceFiles: [] });
     setMeasuredAtInvalid(false);
     setMeasurementOpen(true);
   }
@@ -269,7 +272,12 @@ export default function EtapaDetalhePage({ params }) {
     setActionError("");
     try {
       const validItems = measurementForm.items.filter((it) => it.description.trim() && it.quantity !== "" && it.unitPrice !== "");
+      // Guia §6 (verificação do Marco 6, M6-21): a medição leva as evidências (enviadas e examinadas pelo antivírus);
+      // a aprovação confere de novo e exige o mínimo configurado pela empresa.
+      const evidenceFileIds = [];
+      for (const file of measurementForm.evidenceFiles) evidenceFileIds.push((await uploadFile(file)).id);
       const measurementPayload = {
+        evidenceFileIds: evidenceFileIds.length ? evidenceFileIds : undefined,
         measuredPct: toNumber(measurementForm.measuredPct),
         measuredAt: measurementForm.measuredAt,
         notes: measurementForm.notes.trim() || undefined,
@@ -341,6 +349,14 @@ export default function EtapaDetalhePage({ params }) {
               <p className={styles.infoValue}>{stage.sequence}</p>
             </div>
             <div>
+              <p className={styles.infoLabel}>Código da etapa</p>
+              <p className={styles.infoValue}>{stage.stageCode || "Sem código"}</p>
+            </div>
+            <div>
+              <p className={styles.infoLabel}>Responsável</p>
+              <p className={styles.infoValue}>{(users.find((u) => u.id === stage.responsibleUserId) || {}).name || "Sem responsável definido"}</p>
+            </div>
+            <div>
               <p className={styles.infoLabel}>Planejado</p>
               <p className={styles.infoValue}>{formatPercent(stage.plannedPct)}</p>
             </div>
@@ -403,6 +419,7 @@ export default function EtapaDetalhePage({ params }) {
                       <span className={styles.rowTitle}>{formatDate(m.measuredAt)} · {formatPercent(m.measuredPct)}</span>
                       <span className={styles.rowSubtitle}>
                         Medido por {measuredBy?.name || "Sem responsável definido"} · Valor: {formatBRL(m.totalAmount)}
+                        {` · ${(m.evidenceFileIds || []).length} evidência(s)`}
                         {m.notes ? ` · ${m.notes}` : ""}
                       </span>
                       {m.status === "PAYABLE" || m.status === "REJECTED" ? (
@@ -537,6 +554,17 @@ export default function EtapaDetalhePage({ params }) {
                 rows={3}
                 value={measurementForm.notes}
                 onChange={(e) => setMeasurementForm((p) => ({ ...p, notes: e.target.value }))}
+              />
+            </FormField>
+          </div>
+          <div className={styles.span2}>
+            <FormField label="Evidências da medição" htmlFor="m-meas-evidence" helper="Fotos ou documentos que sustentam a medição; a aprovação confere os arquivos">
+              <FileDropInput
+                id="m-meas-evidence"
+                multiple
+                fileNames={measurementForm.evidenceFiles.map((f) => f.name)}
+                onFiles={(files) => setMeasurementForm((p) => ({ ...p, evidenceFiles: [...p.evidenceFiles, ...files] }))}
+                onRemove={(idx) => setMeasurementForm((p) => ({ ...p, evidenceFiles: p.evidenceFiles.filter((_, i) => i !== idx) }))}
               />
             </FormField>
           </div>

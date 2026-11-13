@@ -1,5 +1,7 @@
 'use strict';
 
+const { requireE2ePassword } = require('./_e2e-env');
+
 /**
  * E2E real (Playwright) — consolidação das frentes dos Marcos 4/5 (19/10/2026).
  * Clica na UI: fechamento (devolver para aberto), comprovante no lançamento, régua de cobrança
@@ -20,7 +22,7 @@ const { chromium } = require('playwright');
 const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
 const API_URL = process.env.E2E_API_URL || 'http://localhost:4001/api/v1';
 const EMAIL = process.env.E2E_EMAIL || 'admin@nayaraone.dev';
-const PASSWORD = process.env.E2E_PASSWORD || 'DevAdmin#2026';
+const PASSWORD = requireE2ePassword();
 const SHOTS = process.env.E2E_SHOTS || path.join(__dirname, 'shots');
 fs.mkdirSync(SHOTS, { recursive: true });
 
