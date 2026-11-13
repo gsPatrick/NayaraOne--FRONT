@@ -9,7 +9,8 @@ import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import SupportCode from "@/components/molecules/SupportCode/SupportCode";
 import LiveAnnouncer from "./LiveAnnouncer";
 import { announcementOf } from "@/lib/asyncState/announce";
-import { UI_STATE, fieldErrorsOf, missingPermissionOf } from "@/lib/asyncState/states";
+import { UI_STATE, missingPermissionOf } from "@/lib/asyncState/states";
+import { fieldProblemsForDisplay } from "@/lib/errors/apiErrors";
 import { MESSAGES, genericErrorText, businessMessageOf, safeText } from "@/lib/asyncState/messages";
 import { buildLoginUrl } from "@/lib/auth/returnTo";
 import { fieldErrorId } from "@/lib/asyncState/fields";
@@ -24,7 +25,7 @@ function ActionButton({ action }) {
 
 function ValidationSummary({ error }) {
   const ref = useRef(null);
-  const problems = fieldErrorsOf(error);
+  const problems = fieldProblemsForDisplay(error);
   // Resumo no topo com foco (M9-D850 §3.1): quem usa teclado ou leitor de tela cai direto nos erros.
   useEffect(() => { if (ref.current) ref.current.focus(); }, []);
   return (
@@ -34,7 +35,7 @@ function ValidationSummary({ error }) {
       {problems.length ? (
         <ul className={styles.list}>
           {problems.map((problem) => (
-            <li key={`${problem.field}-${problem.message}`}><a href={`#${fieldErrorId(problem.field)}`}>{safeText(problem.message) || problem.field}</a></li>
+            <li key={`${problem.field}-${problem.message}`}><a href={`#${fieldErrorId(problem.field)}`}>{problem.label && !problem.message.includes(problem.label) ? `${problem.label}: ` : ""}{safeText(problem.message) || (problem.label ? `Confira o campo ${problem.label}.` : "Confira este campo.")}</a></li>
           ))}
         </ul>
       ) : null}
