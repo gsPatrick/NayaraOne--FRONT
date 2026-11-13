@@ -5,10 +5,13 @@
 // cada campo, o valor em vigor que o antifraude está usando (GET /finance/antifraud/parameters).
 // Os campos marcados "exige verificação em duas etapas" só gravam com o MFA recente de quem altera (a API pede o código e a tela abre o modal).
 import { APROVACAO_GROUPS, APROVACAO_PREFIXES } from "./financeiroAprovacaoGroups";
+import { FINANCEIRO_LEDGER_GROUP, FINANCEIRO_LEDGER_PREFIX, FINANCEIRO_RELATORIO_GROUP, FINANCEIRO_RELATORIO_PREFIX } from "./financeiroRelatorioGroup";
 
 const MFA = " Alterar exige a verificação em duas etapas (código do MFA).";
 
 export const FINANCEIRO_GROUPS = [
+  FINANCEIRO_RELATORIO_GROUP, // M4LR: pesos do relatório semanal (§19)
+  FINANCEIRO_LEDGER_GROUP, // M4LR: conta bancária na baixa (§7)
   {
     title: "Conciliação manual recorrente",
     subtitle:
@@ -230,4 +233,4 @@ export const FINANCEIRO_GROUPS = [
 export const FINANCEIRO_FIELDS = FINANCEIRO_GROUPS.flatMap((group) => group.fields);
 
 // A tela lê só as chaves desta aba (nunca as credenciais do banco, que também começam com "finance.").
-export const FINANCEIRO_PREFIXES = ["finance.antifraud_", "finance.bank_account_cooldown_hours", "finance.reconciliation.", "antifraude.", "conciliacao.", ...APROVACAO_PREFIXES];
+export const FINANCEIRO_PREFIXES = ["finance.antifraud_", "finance.bank_account_cooldown_hours", "finance.reconciliation.", "antifraude.", "conciliacao.", FINANCEIRO_RELATORIO_PREFIX, FINANCEIRO_LEDGER_PREFIX, ...APROVACAO_PREFIXES];

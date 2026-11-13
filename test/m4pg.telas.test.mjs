@@ -106,13 +106,15 @@ test("m4pg tela: pedidos de reabertura com progresso; quem pediu não decide", (
 });
 
 test("m4pg telas: nenhum nome de estado antigo nas telas do Financeiro e o preparo não manda mais approvalRequestId", () => {
-  const files = ["app/painel/financeiro/intencoes-pagamento/page.js", "app/painel/financeiro/intencoes-pagamento/IntentRow.js", "app/painel/financeiro/lancamentos/[id]/page.js"];
+  const files = ["app/painel/financeiro/intencoes-pagamento/page.js", "app/painel/financeiro/intencoes-pagamento/IntentRow.js", "app/painel/financeiro/lancamentos/[id]/page.js",
+    // a ficha foi dividida em cartões e hooks (M4LR): as ações e a baixa também não podem ter estado antigo
+    "app/painel/financeiro/lancamentos/[id]/EntryActions.js", "app/painel/financeiro/lancamentos/[id]/useSettlementActions.js"];
   for (const file of files) {
     const src = read(file);
     assert.doesNotMatch(src, /"SUBMITTING"|"SUBMITTED"|"EXECUTED"|"CANCELLED"/, file);
     assert.ok(src.split("\n").length < 709, file);
   }
-  assert.doesNotMatch(read("app/painel/financeiro/lancamentos/[id]/page.js"), /approvalRequestId/);
+  for (const f of ["page.js", "useSettlementActions.js", "EntryActions.js"]) assert.doesNotMatch(read(`app/painel/financeiro/lancamentos/[id]/${f}`), /approvalRequestId/, f);
   assert.ok(read("app/painel/financeiro/intencoes-pagamento/page.js").split("\n").length <= 400);
   const api = read("lib/api/finance.js");
   assert.match(api, /createPaymentIntent\(\{ financialEntryId, amount \}\)/);

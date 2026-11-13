@@ -22,6 +22,7 @@ import FinanceNavMenu from "@/components/molecules/FinanceNavMenu/FinanceNavMenu
 import { getWeeklyHealthReport, listResultCenters } from "@/lib/api/finance";
 import { formatBRL, formatDate } from "@/lib/format";
 import styles from "./page.module.css";
+import { receivableDelta, weightsText, freeCashDelta, thirdPartyHeldDelta, delinquencyView, breathingDelta, windowRows, pendingRows } from "./reportView";
 
 export default function RelatorioFinanceiroPage() {
   // M9-D940: carregando, erro com "tentar de novo", sem acesso e sem conexão vêm do padrão único de estados.
@@ -42,8 +43,8 @@ export default function RelatorioFinanceiroPage() {
           </p>
 
           <div className={styles.grid}>
-            <StatTile label="A pagar (pendente)" value={formatBRL(report.payablePending.total)} delta={`${report.payablePending.count} lançamentos`} tone="danger" />
-            <StatTile label="A receber (pendente)" value={formatBRL(report.receivablePending.total)} delta={`${report.receivablePending.count} lançamentos`} tone="success" />
+            <StatTile label="A pagar (saldo em aberto)" value={formatBRL(report.payablePending.total)} delta={`${report.payablePending.count} lançamentos`} tone="danger" />
+            <StatTile label="A receber (saldo em aberto)" value={formatBRL(report.receivablePending.total)} delta={receivableDelta(report)} tone="success" />
             <StatTile
               label="Saldo líquido projetado"
               value={formatBRL(report.projectedNetBalance)}
@@ -51,24 +52,10 @@ export default function RelatorioFinanceiroPage() {
               tone={report.projectedNetBalance >= 0 ? "success" : "danger"}
             />
             <StatTile label="Terceiros ainda a movimentar" value={formatBRL(report.thirdPartyFunds.total)} delta={`${report.thirdPartyFunds.count} lançamento(s) pendente(s) de terceiros (cauções e repasses), fora da receita própria`} tone="neutral" />
-            <StatTile
-              label="Caixa disponível"
-              value={formatBRL(report.freeCash.value)}
-              delta={`Saldo bancário ${formatBRL(report.freeCash.grossBankBalance)} − terceiros retidos no caixa (recebido menos devolvido) ${formatBRL(report.freeCash.thirdPartyHeld)}`}
-              tone={report.freeCash.value >= 0 ? "success" : "danger"}
-            />
-            <StatTile
-              label="Inadimplência"
-              value={`${(report.delinquencyRatio * 100).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`}
-              delta="Vencido ÷ total elegível (próprio)"
-              tone={report.delinquencyRatio > 0.1 ? "danger" : "neutral"}
-            />
-            <StatTile
-              label="Necessidade para respirar"
-              value={formatBRL(report.breathingNeed.value)}
-              delta="Saídas obrigatórias 7d − caixa livre − entradas prováveis"
-              tone={report.breathingNeed.value > 0 ? "danger" : "success"}
-            />
+            <StatTile label="Caixa disponível (conciliado)" value={formatBRL(report.freeCash.value)} delta={freeCashDelta(report)} tone={report.freeCash.value >= 0 ? "success" : "danger"} />
+            <StatTile label="Dinheiro de terceiros retido" value={formatBRL(report.freeCash.thirdPartyHeld)} delta={thirdPartyHeldDelta(report)} tone="neutral" />
+            <StatTile label="Inadimplência (recebíveis)" value={delinquencyView(report).value} delta={delinquencyView(report).delta} tone={report.delinquencyRatio > 0.1 ? "danger" : "neutral"} />
+            <StatTile label="Necessidade para respirar" value={formatBRL(report.breathingNeed.value)} delta={breathingDelta(report)} tone={report.breathingNeed.value > 0 ? "danger" : "success"} />
           </div>
 
           <div className={styles.columns}>
@@ -91,58 +78,27 @@ export default function RelatorioFinanceiroPage() {
               </ul>
             </Card>
 
-            <Card title="Vencendo nos próximos 7 / 30 / 60 dias">
+            <Card title="Vencendo nos próximos 7 / 30 / 60 dias" subtitle={weightsText(report) ? `Recebíveis ponderados por status: ${weightsText(report)}` : undefined}>
               <ul className={styles.list}>
-                <li>
-                  <span>7 dias — a pagar</span>
-                  <strong>{formatBRL(report.dueNextSevenDays.payable.total)}</strong>
-                  <span className={styles.count}>{report.dueNextSevenDays.payable.count}</span>
-                </li>
-                <li>
-                  <span>7 dias — a receber</span>
-                  <strong>{formatBRL(report.dueNextSevenDays.receivable.total)}</strong>
-                  <span className={styles.count}>{report.dueNextSevenDays.receivable.count}</span>
-                </li>
-                <li>
-                  <span>30 dias — a pagar</span>
-                  <strong>{formatBRL(report.dueNext30Days.payable.total)}</strong>
-                  <span className={styles.count}>{report.dueNext30Days.payable.count}</span>
-                </li>
-                <li>
-                  <span>30 dias — a receber</span>
-                  <strong>{formatBRL(report.dueNext30Days.receivable.total)}</strong>
-                  <span className={styles.count}>{report.dueNext30Days.receivable.count}</span>
-                </li>
-                <li>
-                  <span>60 dias — a pagar</span>
-                  <strong>{formatBRL(report.dueNext60Days.payable.total)}</strong>
-                  <span className={styles.count}>{report.dueNext60Days.payable.count}</span>
-                </li>
-                <li>
-                  <span>60 dias — a receber</span>
-                  <strong>{formatBRL(report.dueNext60Days.receivable.total)}</strong>
-                  <span className={styles.count}>{report.dueNext60Days.receivable.count}</span>
-                </li>
+                {windowRows(report).map((row) => (
+                  <li key={row.key}>
+                    <span>{row.label}</span>
+                    <strong>{row.value}</strong>
+                    <span className={styles.count}>{row.count}</span>
+                  </li>
+                ))}
               </ul>
             </Card>
 
             <Card title="Pendências de operação">
               <ul className={styles.list}>
-                <li>
-                  <span>Conciliação pendente</span>
-                  <strong>{formatBRL(report.pendingReconciliations.total)}</strong>
-                  <span className={styles.count}>{report.pendingReconciliations.count}</span>
-                </li>
-                <li>
-                  <span>Comissões provisionadas</span>
-                  <strong>{formatBRL(report.provisionedCommissions.total)}</strong>
-                  <span className={styles.count}>{report.provisionedCommissions.count}</span>
-                </li>
-                <li>
-                  <span>Repasses de proprietário pendentes</span>
-                  <strong>{formatBRL(report.pendingOwnerRepasses.total)}</strong>
-                  <span className={styles.count}>{report.pendingOwnerRepasses.count}</span>
-                </li>
+                {pendingRows(report).map((row) => (
+                  <li key={row.key}>
+                    <span>{row.label}</span>
+                    <strong>{row.value}</strong>
+                    <span className={styles.count}>{row.count}</span>
+                  </li>
+                ))}
                 <li>
                   <span>Anomalias de alto risco abertas</span>
                   <strong className={report.openHighRiskAnomalies > 0 ? styles.danger : undefined}>

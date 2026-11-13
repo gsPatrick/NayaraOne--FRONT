@@ -14,7 +14,7 @@ import { formatBRL, formatDateTime } from "@/lib/format";
 import { validateReversalAmount } from "@/lib/finance/approvalFlows";
 import { financeAuthErrorMessage } from "@/lib/finance/authorizationErrors";
 
-export function ReversalRequestButton({ entry, pendingCase, disabled, onRequested }) {
+export function ReversalRequestButton({ entry, pendingCase, disabled, onRequested, preview = null, allowPartial = true }) {
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState("");
   const check = validateReversalAmount(amount, entry?.amount);
@@ -31,7 +31,7 @@ export function ReversalRequestButton({ entry, pendingCase, disabled, onRequeste
   async function handleConfirmed(confirmation) {
     if (check.error) throw new Error(check.error);
     try {
-      const created = await reverseFinancialEntry(entry.id, confirmation.justification, confirmation, check.amount);
+      const created = await reverseFinancialEntry(entry.id, confirmation.justification, confirmation, allowPartial ? check.amount : null);
       setOpen(false);
       setAmount("");
       onRequested(created);
@@ -58,6 +58,8 @@ export function ReversalRequestButton({ entry, pendingCase, disabled, onRequeste
           O estorno não acontece agora: o pedido fica aguardando a aprovação de outra pessoa (com verificação em duas etapas). Só depois da
           aprovação o lançamento compensatório é criado — o original nunca é editado.
         </p>
+        {preview ? <p>{preview}</p> : null}
+        {allowPartial ? (
         <FormField
           label="Valor do estorno (opcional)"
           htmlFor="reversal-amount"
@@ -66,6 +68,7 @@ export function ReversalRequestButton({ entry, pendingCase, disabled, onRequeste
         >
           <DecimalInput id="reversal-amount" maxDecimals={2} value={amount} placeholder="0,00" onChange={(e) => setAmount(e.target.value)} error={Boolean(check.error)} />
         </FormField>
+        ) : null}
       </ConfirmAction>
     </>
   );
