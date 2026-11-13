@@ -10,7 +10,7 @@ import Avatar from "@/components/atoms/Avatar/Avatar";
 import Badge from "@/components/atoms/Badge/Badge";
 import Card from "@/components/molecules/Card/Card";
 import Modal from "@/components/organisms/Modal/Modal";
-import PropertyCard from "@/components/molecules/PropertyCard/PropertyCard";
+import RadarMatchItem from "./RadarMatchItem";
 import EmptyState from "@/components/molecules/EmptyState/EmptyState";
 import Alert from "@/components/molecules/Alert/Alert";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
@@ -24,6 +24,7 @@ import { getOpportunity } from "@/lib/api/crm";
 import { getProperty, mapProperty } from "@/lib/api/properties";
 import { apiFetch } from "@/lib/api/client";
 import { PROPERTY_TYPE_LABELS, OFFER_TYPE_LABELS } from "@/lib/radarMatching";
+import { requiredCriteriaOf, criteriaSummary } from "@/lib/radarCriteria";
 import { formatBRL, formatDate } from "@/lib/format";
 import styles from "./page.module.css";
 
@@ -55,7 +56,8 @@ export default function RadarDetailPage({ params }) {
           return;
         }
         setRadar(apiRadar);
-        setMatches((apiRadar.matches || []).map(mapProperty));
+        // M3-15: cada match traz `radarMatch` (score e critérios atendidos/falhos, livro §13); o cartão mostra o score.
+        setMatches((apiRadar.matches || []).map((m) => ({ property: mapProperty(m), radarMatch: m.radarMatch || null })));
         const [apiPerson, apiOpportunity] = await Promise.all([
           apiRadar.personId ? getPerson(apiRadar.personId).catch(lookupFallback("a pessoa", null)) : Promise.resolve(null),
           apiRadar.opportunityId ? getOpportunity(apiRadar.opportunityId).catch(lookupFallback("a oportunidade", null)) : Promise.resolve(null),
@@ -88,7 +90,8 @@ export default function RadarDetailPage({ params }) {
 
   if (!radar) return notFound();
 
-  const c = radar.criteriaJson;
+  const c = requiredCriteriaOf(radar.criteriaJson);
+  const extras = criteriaSummary(radar.criteriaJson);
 
   async function handleDelete() {
     setDeleting(true);
@@ -104,6 +107,11 @@ export default function RadarDetailPage({ params }) {
 
   return (
     <AppShell title={person ? `Radar de ${person.legalName}` : "Radar"} backHref="/painel/radar">
+      {actionError ? (
+        <div style={{ position: "fixed", top: "var(--space-4)", left: "50%", transform: "translateX(-50%)", zIndex: 200, width: "min(560px, calc(100vw - 2 * var(--space-4)))" }}>
+          <Alert tone="danger">{actionError}</Alert>
+        </div>
+      ) : null}
       <div className={styles.wrap}>
         <div className={styles.topRow}>
           <div className={styles.personBlock}>
@@ -119,6 +127,9 @@ export default function RadarDetailPage({ params }) {
           </div>
           <div className={styles.actions}>
             <Badge tone={radar.status === "ACTIVE" ? "success" : "neutral"}>{radar.status === "ACTIVE" ? "Ativo" : radar.status}</Badge>
+            <Button variant="secondary" href={`/painel/radar/${radar.id}/editar`} requires="radar:update">
+              <Icon name="pencil" size={16} /> Editar critérios
+            </Button>
             <Button variant="danger" onClick={() => setDeleteOpen(true)}>
               <Icon name="trash" size={16} /> Excluir radar
             </Button>
@@ -129,11 +140,18 @@ export default function RadarDetailPage({ params }) {
           <div className={styles.mainCol}>
             <Card title={`${matches.length} imóve${matches.length === 1 ? "l compatível" : "is compatíveis"}`}>
               {matches.length === 0 ? (
-                <EmptyState icon="radar" title="Nenhum match no momento" description="Nenhum imóvel ativo atende a todos os critérios deste radar ainda." />
+                <EmptyState icon="radar" title="Nenhum match no momento" description="Nenhum imóvel ativo atende a todos os obrigatórios deste radar sem cair numa exclusão." />
               ) : (
                 <div className={styles.matchGrid}>
-                  {matches.map((property) => (
-                    <PropertyCard key={property.id} property={property} onClick={() => router.push(`/painel/imoveis/${property.id}`)} />
+                  {matches.map(({ property, radarMatch }) => (
+                    <RadarMatchItem
+                      key={property.id}
+                      radarId={radar.id}
+                      criteriaJson={radar.criteriaJson}
+                      property={property}
+                      radarMatch={radarMatch}
+                      onOpen={() => router.push(`/painel/imoveis/${property.id}`)}
+                    />
                   ))}
                 </div>
               )}
@@ -178,6 +196,7 @@ export default function RadarDetailPage({ params }) {
 
             <Card title="Critérios de busca">
               <div className={styles.criteriaList}>
+                <span className={styles.criteriaHeading}>Obrigatórios</span>
                 <div className={styles.criteriaRow}>
                   <span className={styles.criteriaLabel}>Tipo de imóvel</span>
                   <span className={styles.criteriaValue}>{PROPERTY_TYPE_LABELS[c.propertyType] || c.propertyType || "Sem tipo de imóvel"}</span>
@@ -202,6 +221,21 @@ export default function RadarDetailPage({ params }) {
                     {c.minAreaM2 != null || c.maxAreaM2 != null ? `${c.minAreaM2 ?? 0}–${c.maxAreaM2 ?? "∞"} m²` : "Qualquer"}
                   </span>
                 </div>
+                {[["PREFERENCE", "Preferências", "Nenhuma preferência."], ["FLEXIBLE", "Flexíveis", "Nenhum critério flexível."], ["EXCLUSION", "Exclusões", "Nenhuma exclusão."]].map(([category, title, none]) => (
+                  <div key={category} className={styles.criteriaGroup} data-criteria-category={category}>
+                    <span className={styles.criteriaHeading}>{title}</span>
+                    {extras[category].length ? (
+                      <ul className={styles.criteriaGroupList}>
+                        {extras[category].map((item, i) => (
+                          <li key={`${category}-${i}`}>
+                            {item.text}
+                            {item.weight !== undefined ? <span className={styles.criteriaWeight}> (peso {Number(item.weight).toLocaleString("pt-BR")})</span> : null}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : <span className={styles.criteriaWeight}>{none}</span>}
+                  </div>
+                ))}
                 <div className={styles.criteriaRow}>
                   <span className={styles.criteriaLabel}>Criado em</span>
                   <span className={styles.criteriaValue}>{formatDate(radar.createdAt)}</span>
@@ -230,7 +264,6 @@ export default function RadarDetailPage({ params }) {
           </>
         }
       >
-        {actionError ? <Alert tone="danger">{actionError}</Alert> : null}
         <p className={styles.description}>
           Tem certeza que deseja excluir o radar de <strong>{person?.legalName || "este contato"}</strong>? Esta ação não pode ser desfeita.
         </p>

@@ -34,10 +34,14 @@ import {
   TASK_PRIORITIES,
 } from "@/lib/api/crm";
 import CrmNavMenu from "@/components/molecules/CrmNavMenu/CrmNavMenu";
+import OpportunityFinancingStatus from "@/components/molecules/OpportunityFinancingStatus/OpportunityFinancingStatus";
+import { financingTimelineLabel } from "@/lib/crm/financingSnapshot";
 import { listProperties } from "@/lib/api/properties";
 import { listPeople } from "@/lib/api/people";
 import { apiFetch } from "@/lib/api/client";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { useHasPermission } from "@/lib/rbac/useHasPermission";
+import { REASSIGN_PERMISSION, buildOpportunityEditPatch, ownerChangeError, ownerChanged } from "./opportunityEditPatch";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { createLatestGuard } from "@/lib/asyncState/latest";
 import { formatDateTime, isOverdue, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE, dateTimeLocalInputToIso, isoToDateTimeLocalInput } from "@/lib/format";
@@ -303,6 +307,7 @@ function timelineEventLabel(event, stages) {
   if (event.type === "STAGE_CHANGE") {
     return `Etapa alterada de "${stageLabel(event.data.fromStage)}" para "${stageLabel(event.data.toStage)}"`;
   }
+  if (event.type === "FINANCING_STATUS") return financingTimelineLabel(event);
   if (event.type === "VISIT_SCHEDULED") return "Visita agendada";
   if (event.type === "MESSAGE_SENT") return "Mensagem registrada";
   return event.type;
@@ -322,6 +327,9 @@ function OpportunityDetailModal({ opportunity, stages, users = [], onSave, onClo
   const [taskDueInvalid, setTaskDueInvalid] = useState(false);
   const [taskError, setTaskError] = useState("");
   const [taskSaving, setTaskSaving] = useState(false);
+  const [ownerError, setOwnerError] = useState("");
+  // Livro do Marco 3 §18 (CAD-18): trocar o responsável exige a permissão específica e um motivo; sem ela o campo fica travado.
+  const canReassign = useHasPermission(REASSIGN_PERMISSION);
 
   useEffect(() => {
     if (!opportunity) return;
@@ -391,23 +399,22 @@ function OpportunityDetailModal({ opportunity, stages, users = [], onSave, onClo
       // datetime-local espera "YYYY-MM-DDTHH:mm" no horário local.
       nextActionDueAt: isoToDateTimeLocalInput(opportunity.nextActionDueAt),
       ownerUserId: opportunity.ownerUserId || "",
+      ownerChangeReason: "",
       temperature: opportunity.temperature || "",
       expectedValue: opportunity.expectedValue != null ? String(opportunity.expectedValue) : "",
     });
     setDueInvalid(false);
+    setOwnerError("");
     setEditing(true);
   }
 
   async function saveEditing() {
     if (dueInvalid) return;
+    const invalidOwner = ownerChangeError(form, opportunity);
+    setOwnerError(invalidOwner);
+    if (invalidOwner) return;
     setSaving(true);
-    const patch = {
-      nextAction: form.nextAction.trim() || null,
-      nextActionDueAt: dateTimeLocalInputToIso(form.nextActionDueAt) || null,
-      ownerUserId: form.ownerUserId || null,
-      temperature: form.temperature || null,
-      expectedValue: form.expectedValue !== "" ? Number(form.expectedValue) : null,
-    };
+    const patch = buildOpportunityEditPatch(form, opportunity);
     const ok = await onSave?.(opportunity.id, patch);
     setSaving(false);
     if (ok) setEditing(false);
@@ -458,10 +465,15 @@ function OpportunityDetailModal({ opportunity, stages, users = [], onSave, onClo
                   onBlur={(e) => setDueInvalid(isDateInputInvalid(e.target.validity))}
                 />
               </FormField>
-              <FormField label="Responsável" htmlFor="oe-owner">
+              <FormField
+                label="Responsável"
+                htmlFor="oe-owner"
+                helper={canReassign ? "Trocar o responsável pede o motivo e fica registrado na auditoria." : "Só quem tem a permissão de troca de responsável pode mudar este campo."}
+              >
                 <Select
                   id="oe-owner"
                   value={form.ownerUserId}
+                  disabled={!canReassign}
                   onChange={(e) => setForm((p) => ({ ...p, ownerUserId: e.target.value }))}
                 >
                   <option value="">Sem responsável</option>
@@ -470,6 +482,16 @@ function OpportunityDetailModal({ opportunity, stages, users = [], onSave, onClo
                   ))}
                 </Select>
               </FormField>
+              {ownerChanged(form, opportunity) ? (
+                <FormField label="Motivo da troca de responsável" htmlFor="oe-owner-reason" error={ownerError || undefined}>
+                  <Input
+                    id="oe-owner-reason"
+                    value={form.ownerChangeReason}
+                    error={Boolean(ownerError)}
+                    onChange={(e) => setForm((p) => ({ ...p, ownerChangeReason: e.target.value }))}
+                  />
+                </FormField>
+              ) : null}
               <FormField label="Temperatura" htmlFor="oe-temp">
                 <Select
                   id="oe-temp"
@@ -515,6 +537,8 @@ function OpportunityDetailModal({ opportunity, stages, users = [], onSave, onClo
               </div>
             </>
           )}
+
+          <OpportunityFinancingStatus opportunity={opportunity} />
 
           <div className={styles.detailSection}>
             <p className={styles.detailSectionTitle}>Linha do tempo</p>
