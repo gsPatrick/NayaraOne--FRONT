@@ -42,6 +42,11 @@ const ESPERADO = {
   "financeiro.estorno.aprovador_distinto": { type: "boolean", defaultValue: true },
   "fechamento.reabertura_motivo_minimo_caracteres": { type: "integer", defaultValue: 20, min: 5, max: 500 },
   "fechamento.reabertura.aprovadores": { type: "integer", defaultValue: 1, min: 1, max: 5 },
+  // Guia §9 regra AUTO_STRONG parametrizada (DEC-006; DI-M4CC-3 na API: sugestão 0,45 e folga 0,05).
+  "conciliacao.score_auto_minimo": { type: "decimal", defaultValue: 0.9, min: 0.5, max: 1 },
+  "conciliacao.score_sugestao_minimo": { type: "decimal", defaultValue: 0.45, min: 0.1, max: 0.99 },
+  "conciliacao.janela_data_dias": { type: "integer", defaultValue: 3, min: 0, max: 30 },
+  "conciliacao.folga_ambiguidade": { type: "decimal", defaultValue: 0.05, min: 0, max: 1 },
 };
 
 test("m4 §17.7 parâmetros: a aba Financeiro lista as chaves (as seis antigas, as dez da DEC-007 e as doze da autorização) com o padrão e a faixa da API", () => {
@@ -125,7 +130,8 @@ test("DEC-007 MFA: o 403 de MFA recente de um parâmetro sensível não vira 'Se
   const financeiro = FINANCEIRO_FIELDS.filter((f) => /verificação em duas etapas/.test(f.helper)).map((f) => f.key).sort();
   // Todas as chaves da autorização (pagamento, estorno, reabertura) exigem MFA para alterar, menos o tamanho mínimo do motivo (requiresMfa da API).
   const aprovacao = Object.keys(ESPERADO).filter((k) => /^(pagamentos\.|financeiro\.estorno\.|fechamento\.reabertura\.)/.test(k));
-  assert.deepEqual(financeiro, ["finance.antifraud_new_account_threshold", "finance.bank_account_cooldown_hours", "finance.reconciliation.auto_strong", ...aprovacao].sort());
+  // conciliacao.score_auto_minimo: exige MFA no catálogo (parametros.csv, DEC-006), como a API (requiresMfa).
+  assert.deepEqual(financeiro, ["conciliacao.score_auto_minimo", "finance.antifraud_new_account_threshold", "finance.bank_account_cooldown_hours", "finance.reconciliation.auto_strong", ...aprovacao].sort());
 });
 
 test("DEC-007 rodada 2: cada campo numérico mostra o valor em vigor que o antifraude usa (gravado, padrão ou padrão no lugar de gravado inválido)", async () => {

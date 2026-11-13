@@ -54,9 +54,9 @@ export const FINANCEIRO_GROUPS = [
     ],
   },
   {
-    title: "Conciliação automática",
+    title: "Conciliação automática (regra AUTO_STRONG)",
     subtitle:
-      "O caderno do Marco 4 (§11) diz que a correspondência exata, vinda de fonte confiável, é confirmada sozinha; a ambígua nunca é; e a forte (valor, cliente ou fornecedor, referência e data batendo) é \"automática ou revisão, conforme a regra\". Aqui você escolhe a regra da correspondência forte.",
+      "O caderno do Marco 4 (§11 e Guia §9) diz que a correspondência exata, vinda de fonte confiável, é confirmada sozinha; a ambígua nunca é; e a forte (valor, cliente ou fornecedor, referência e data batendo) é \"automática ou revisão, conforme a regra\". O caderno dá os pesos da pontuação (valor 0,45, referência 0,30, contraparte 0,15, data 0,10), mas não os limites: aqui você define a regra AUTO_STRONG (decisão DEC-006). Linha de extrato digitada à mão nunca é confirmada sozinha; arquivo de extrato só é fonte confiável quando quem importa tem permissão de conciliar.",
     fields: [
       {
         key: "finance.reconciliation.auto_strong",
@@ -64,6 +64,45 @@ export const FINANCEIRO_GROUPS = [
         type: "boolean",
         defaultValue: false,
         helper: `Padrão: desligado. Desligado, a correspondência forte fica esperando alguém da equipe confirmar.${MFA}`,
+      },
+      {
+        key: "conciliacao.score_auto_minimo",
+        label: "Pontuação mínima da correspondência forte (confirmação automática)",
+        type: "decimal",
+        defaultValue: 0.9,
+        min: 0.5,
+        max: 1,
+        maxDecimals: 2,
+        helper: `Padrão: 0,90 (decisão DEC-006). A partir desta pontuação a correspondência é forte; abaixo, no máximo provável. Precisa ser maior que a pontuação mínima para sugerir.${MFA}`,
+      },
+      {
+        key: "conciliacao.score_sugestao_minimo",
+        label: "Pontuação mínima para sugerir uma correspondência",
+        type: "decimal",
+        defaultValue: 0.45,
+        min: 0.1,
+        max: 0.99,
+        maxDecimals: 2,
+        helper: "Padrão: 0,45 (o caderno trata valor e data parecidos como correspondência provável; a decisão DEC-006 sugeria 0,60, que esconderia esse caso). Abaixo desta pontuação a linha vai para a fila de pendências. Precisa ser menor que a pontuação da correspondência forte.",
+      },
+      {
+        key: "conciliacao.janela_data_dias",
+        label: "Janela de data da conciliação (dias)",
+        type: "integer",
+        defaultValue: 3,
+        min: 0,
+        max: 30,
+        helper: "Padrão: 3 dias (decisão DEC-006). A data do extrato que fica até este número de dias do vencimento do lançamento (dia de São Paulo) soma o critério de data.",
+      },
+      {
+        key: "conciliacao.folga_ambiguidade",
+        label: "Folga de empate entre candidatos",
+        type: "decimal",
+        defaultValue: 0.05,
+        min: 0,
+        max: 1,
+        maxDecimals: 2,
+        helper: "Padrão: 0,05. Outro candidato com pontuação a menos disso do primeiro torna o caso ambíguo, que nunca é conciliado sozinho. Dois ou mais candidatos fortes são sempre ambíguos, qualquer que seja a folga.",
       },
     ],
   },
@@ -191,4 +230,4 @@ export const FINANCEIRO_GROUPS = [
 export const FINANCEIRO_FIELDS = FINANCEIRO_GROUPS.flatMap((group) => group.fields);
 
 // A tela lê só as chaves desta aba (nunca as credenciais do banco, que também começam com "finance.").
-export const FINANCEIRO_PREFIXES = ["finance.antifraud_", "finance.bank_account_cooldown_hours", "finance.reconciliation.", "antifraude.", ...APROVACAO_PREFIXES];
+export const FINANCEIRO_PREFIXES = ["finance.antifraud_", "finance.bank_account_cooldown_hours", "finance.reconciliation.", "antifraude.", "conciliacao.", ...APROVACAO_PREFIXES];
