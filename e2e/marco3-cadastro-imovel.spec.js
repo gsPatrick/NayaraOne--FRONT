@@ -97,7 +97,9 @@ async function main() {
       const btn = page.getByRole('button', { name: /salvar|criar contato|concluir|avançar|continuar/i }).first();
       await btn.waitFor({ state: 'visible', timeout: 10000 }).catch(() => {});
       if (await btn.isDisabled().catch(() => true)) { await page.waitForTimeout(500); continue; }
-      const dados = { '#p-contact-value-0': '(11) 90000-0000', '#p-zip': '01001000', '#p-street': 'Rua Teste', '#p-neighborhood': 'Centro', '#p-city': 'Sao Paulo', '#p-state': 'SP' };
+      // telefone único por execução: o cadastro recusa outro contato com o mesmo contato principal (PERSON_DUPLICATE), e o banco pode ser compartilhado com outros roteiros
+      const telefone = `(11) 9${String(suffix).slice(-8, -4)}-${String(suffix).slice(-4)}`;
+      const dados = { '#p-contact-value-0': telefone, '#p-zip': '01001000', '#p-street': 'Rua Teste', '#p-neighborhood': 'Centro', '#p-city': 'Sao Paulo', '#p-state': 'SP' };
       for (const [seletor, valor] of Object.entries(dados)) {
         const campo = page.locator(seletor);
         if ((await campo.count()) && !(await campo.inputValue().catch(() => 'x'))) await campo.fill(valor).catch(() => {});
