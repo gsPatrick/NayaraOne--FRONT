@@ -11,6 +11,7 @@ import IntegracoesRegistroTab from "./IntegracoesRegistroTab";
 import BiTab from "./BiTab";
 import IaNayTab from "./IaNayTab";
 import MarketingTab from "./MarketingTab";
+import PessoasTab from "./PessoasTab";
 import styles from "./page.module.css";
 
 export default function ConfiguracoesPage() {
@@ -27,6 +28,7 @@ export default function ConfiguracoesPage() {
             { label: "Cobrança", content: <CobrancaTab /> },
             { label: "Financeiro", content: <FinanceiroTab /> },
             { label: "Segurança", content: <SegurancaTab /> },
+            { label: "Pessoas", content: <PessoasTab /> },
             { label: "Integrações", content: <IntegracoesTab /> },
             { label: "Registro de integrações", content: <IntegracoesRegistroTab /> },
             { label: "Governança", content: <GovernancaTab /> },

@@ -17,6 +17,9 @@ import ErrorSummary from "@/components/molecules/ErrorSummary/ErrorSummary";
 import { humanizeApiError } from "@/lib/errors/apiErrors";
 import { FIELD_LABELS } from "@/lib/errors/fieldLabels";
 import { validatePersonStep, PERSON_FIELD_IDS, PERSON_FIELD_STEP } from "@/lib/errors/personWizard";
+import { oferecerVinculo, podeOferecerVinculo } from "./vinculoNoGrupo";
+import { revisarAntesDeCriar } from "./duplicidade";
+import useMotivo from "./useMotivo";
 import LocationPicker from "@/components/molecules/LocationPicker/LocationPicker";
 import PhotoUpload from "@/components/molecules/PhotoUpload/PhotoUpload";
 import Avatar from "@/components/atoms/Avatar/Avatar";
@@ -27,7 +30,7 @@ import {
   DOCUMENT_TYPE_LABELS,
 } from "@/lib/mock/people";
 import { OWNER_ROLE_LABELS } from "@/lib/mock/properties";
-import { listPeople, createPerson } from "@/lib/api/people";
+import { listPeople, createPerson, checkPersonDuplicates } from "@/lib/api/people";
 import { uploadFile } from "@/lib/api/legal";
 import { listProperties, addPropertyOwner } from "@/lib/api/properties";
 import { fetchAddressByCep } from "@/lib/cep";
@@ -35,6 +38,7 @@ import { formatTaxId, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE } from "@/lib
 import { buildGoogleMapsUrl } from "@/lib/maps";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
+import RoleChips from "../RoleChips";
 import styles from "./page.module.css";
 
 const STEPS = [
@@ -65,6 +69,8 @@ const ERROR_LABELS = {
 export default function NovaPessoaPage() {
   const router = useRouter();
   const { confirm, ConfirmDialog } = useConfirm();
+  const { pedirMotivo, MotivoDialog } = useMotivo();
+  const [submitLink, setSubmitLink] = useState("");
   const [stepIndex, setStepIndex] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [duplicateError, setDuplicateError] = useState("");
@@ -273,6 +279,7 @@ export default function NovaPessoaPage() {
     if (isLast) {
       setSubmitting(true);
       setSubmitError("");
+      setSubmitLink("");
       // Nomes de campo conforme people.service.js da API: contactType/valueNormalized/isPrimary
       // em person_contacts e documentType/fileId em person_documents. `roles` e `address` são
       // aceitos aninhados no POST /people e criados na mesma transação da pessoa.
@@ -302,27 +309,33 @@ export default function NovaPessoaPage() {
       };
 
       try {
+        // Deduplicação ANTES de criar (livro §4, CRMX-010; DI-M3PE-4): forte, médio e fraco revisados aqui, sem gravar nada antes.
+        const revisao = await revisarAntesDeCriar(payload, { verificar: checkPersonDuplicates, confirm, pedirMotivo });
+        if (revisao.cancelado) {
+          setSubmitting(false);
+          return;
+        }
+        if (revisao.bloqueio) {
+          setSubmitError(revisao.bloqueio.mensagem);
+          setSubmitLink(revisao.bloqueio.link || "");
+          setSubmitting(false);
+          return;
+        }
         let created;
         try {
-          created = await createPerson(payload);
+          created = revisao.vincular ? await oferecerVinculo(payload, confirm) : await createPerson(revisao.payload);
+          if (!created) {
+            setSubmitting(false);
+            return;
+          }
         } catch (err) {
-          // BUG REAL CORRIGIDO (auditoria Claude Browser, 13/10/2026, §3.2): o backend
-          // bloqueava contato/telefone repetido e a mensagem instruía o usuário a "enviar
-          // allowDuplicate: true", um parâmetro de API que não existe na tela. Esse é o caso
-          // de "match médio" do Caderno (contato igual, não documento) — abre revisão, não
-          // bloqueia de verdade. Agora a própria tela oferece a opção, sem jargão técnico.
-          if (err?.code === "PERSON_DUPLICATE") {
-            const ok = await confirm({
-              title: "Pode já existir um cadastro parecido",
-              message: "Encontramos uma pessoa com o mesmo telefone ou contato principal. Isso pode ser um cadastro duplicado — revise antes de continuar. Quer criar este cadastro mesmo assim?",
-              confirmLabel: "Criar mesmo assim",
-              tone: "primary",
-            });
-            if (!ok) {
+          if (podeOferecerVinculo(err)) {
+            // CPF/CNPJ de outra empresa do grupo (cadastro feito entre a consulta e o envio): vínculo explícito, com confirmação (DI-M9I-2).
+            created = await oferecerVinculo(payload, confirm);
+            if (!created) {
               setSubmitting(false);
               return;
             }
-            created = await createPerson({ ...payload, allowDuplicate: true });
           } else {
             throw err;
           }
@@ -451,19 +464,7 @@ export default function NovaPessoaPage() {
                 </FormField>
                 <div className={styles.span2}>
                   <FormField label="Papéis" helper="Selecione um ou mais papéis para este contato.">
-                    <div className={styles.roleGrid}>
-                      {Object.entries(ROLE_LABELS).map(([code, label]) => (
-                        <button
-                          type="button"
-                          key={code}
-                          className={[styles.roleChip, roles.includes(code) ? styles.roleChipActive : ""].filter(Boolean).join(" ")}
-                          onClick={() => toggleRole(code)}
-                          aria-pressed={roles.includes(code)}
-                        >
-                          {label}
-                        </button>
-                      ))}
-                    </div>
+                    <RoleChips selected={roles} onToggle={toggleRole} styles={styles} />
                   </FormField>
                 </div>
 
@@ -685,7 +686,10 @@ export default function NovaPessoaPage() {
               <div className={styles.reviewWrap}>
                 {submitError ? (
                   <div className={styles.reviewSection} ref={errorRef} tabIndex={-1}>
-                    <Alert tone="danger" title="Não foi possível cadastrar o contato">{submitError}</Alert>
+                    <Alert tone="danger" title="Não foi possível cadastrar o contato">
+                      {submitError}
+                      {submitLink ? <> <a href={submitLink}>Abrir o cadastro existente</a></> : null}
+                    </Alert>
                   </div>
                 ) : null}
                 <div className={styles.reviewSection}>
@@ -701,7 +705,7 @@ export default function NovaPessoaPage() {
                     {basic.personType === "PF" ? "Nascimento" : "Fundação"}: {basic.birthOrFoundationDate || "Sem data preenchida"}
                   </p>
                   <div className={styles.reviewChips}>
-                    {roles.map((r) => <Badge tone="neutral" key={r}>{ROLE_LABELS[r]}</Badge>)}
+                    {roles.map((r) => <Badge tone="neutral" key={r}>{ROLE_LABELS[r] || r}</Badge>)}
                   </div>
                 </div>
 
@@ -760,6 +764,7 @@ export default function NovaPessoaPage() {
         </div>
       </div>
       <ConfirmDialog />
+      <MotivoDialog />
     </AppShell>
   );
 }

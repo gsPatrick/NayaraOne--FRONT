@@ -41,6 +41,8 @@ import ReloadAlert from "@/components/molecules/ReloadAlert/ReloadAlert";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { createLatestGuard } from "@/lib/asyncState/latest";
 import styles from "./page.module.css";
+import VinculoAviso from "./VinculoAviso";
+import { textoClassificacao, textoMotores } from "@/lib/people/documentoLeitura";
 
 const GRADIENTS = [
   "linear-gradient(135deg, #17130F 0%, #3A2E14 100%)",
@@ -65,7 +67,9 @@ function hashCode(str = "") {
   return hash;
 }
 
+// "" = o tipo é decidido pela etapa de classificação da API (nome do arquivo e conteúdo; CAD-05, DI-M3PE-6).
 const DOC_READER_TYPES = {
+  "": "Identificar pelo conteúdo",
   RG: "RG",
   CIN: "CIN",
   CNH: "CNH",
@@ -379,6 +383,9 @@ export default function PersonDetailPage({ params }) {
     }
   }
 
+  // Pessoa do grupo vinculada a esta empresa (DI-M9I-3): a base é da outra empresa; aqui não se exclui nem se mescla.
+  const vinculada = person.vinculo === "VINCULADA";
+
   return (
     <AppShell title={person.legalName} backHref="/painel/pessoas">
       <div className={styles.wrap}>
@@ -392,7 +399,7 @@ export default function PersonDetailPage({ params }) {
             </div>
           </div>
           <div className={styles.actions}>
-            {duplicatePartner && person.status !== "MERGED" ? (
+            {duplicatePartner && person.status !== "MERGED" && !vinculada ? (
               <Button
                 variant="secondary"
                 onClick={() => {
@@ -403,19 +410,21 @@ export default function PersonDetailPage({ params }) {
                 <Icon name="layers" size={16} /> Mesclar cadastros (duplicata detectada)
               </Button>
             ) : null}
-            {person.status !== "MERGED" ? (
+            {person.status !== "MERGED" && !vinculada ? (
               <Button variant="secondary" onClick={() => setManualSearchOpen(true)}>
                 <Icon name="layers" size={16} /> Mesclar com outro cadastro
               </Button>
             ) : null}
             {person.status !== "MERGED" ? (
               <Button variant="secondary" onClick={() => router.push(`/painel/pessoas/${person.id}/editar`)}>
-                <Icon name="pencil" size={16} /> Editar
+                <Icon name="pencil" size={16} /> {vinculada ? "Editar dados desta empresa" : "Editar"}
               </Button>
             ) : null}
-            <Button variant="danger" onClick={() => setDeleteOpen(true)}>
-              <Icon name="trash" size={16} /> Excluir
-            </Button>
+            {!vinculada ? (
+              <Button variant="danger" onClick={() => setDeleteOpen(true)}>
+                <Icon name="trash" size={16} /> Excluir
+              </Button>
+            ) : null}
           </div>
         </div>
 
@@ -424,6 +433,14 @@ export default function PersonDetailPage({ params }) {
             <Alert tone="danger" title="Ação não concluída">{actionError}</Alert>
           </div>
         ) : null}
+
+        <VinculoAviso person={person} onUnlinked={() => router.push("/painel/pessoas")} />
+
+        {(person.revisao || []).map((marca) => (
+          <div className={styles.mergedAlert} key={marca.key}>
+            <Alert tone="warning" title="Cadastro para revisar">{marca.label}</Alert>
+          </div>
+        ))}
 
         {person.status === "MERGED" && mergedIntoPerson ? (
           <div className={styles.mergedAlert}>
@@ -557,6 +574,7 @@ export default function PersonDetailPage({ params }) {
                           {d.extractedData.illegible
                             ? "Documento ilegível: a leitura automática não extraiu dados."
                             : `Leitura automática com confiança de ${Math.round((d.extractedData.confidence || 0) * 100)}%.`}{" "}
+                          {textoClassificacao(d.extractedData)} {textoMotores(d.extractedData)}{" "}
                           {d.verificationStatus === "PENDING" ? (
                             <button type="button" className={styles.mediaViewBtn} onClick={() => openDocumentReview(d)}>
                               Revisar dados
@@ -839,6 +857,9 @@ export default function PersonDetailPage({ params }) {
                 Os dados só ficam validados depois da sua confirmação.
               </Alert>
             )}
+            {textoClassificacao(docResult.data) || textoMotores(docResult.data) ? (
+              <p className={styles.meta}>{textoClassificacao(docResult.data)} {textoMotores(docResult.data)}</p>
+            ) : null}
             {!docResult.illegible && docResult.fields.length === 0 ? (
               <p className={styles.meta}>Nenhum campo conhecido foi encontrado no texto do documento.</p>
             ) : null}

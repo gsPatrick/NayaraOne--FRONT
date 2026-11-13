@@ -21,6 +21,7 @@
 .headerType { font-size: var(--text-body-sm); color: var(--color-ink-muted); }
 
 .mergedAlert { margin-bottom: var(--space-5); }
+.vinculoAcao { display: block; margin-top: var(--space-3); }
 .mergedLink { color: inherit; text-decoration: underline; text-underline-offset: 2px; font-weight: 700; }
 
 .grid {

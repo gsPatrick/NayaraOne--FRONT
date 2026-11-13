@@ -128,3 +128,6 @@
 @media (max-height: 520px) {
   .actionBar { position: static; }
 }
+
+/* Campos da base da pessoa vinculada (DI-M9I-3): desabilitados sem mudar a grade. */
+.fieldsetBase { display: contents; border: 0; margin: 0; padding: 0; min-width: 0; }

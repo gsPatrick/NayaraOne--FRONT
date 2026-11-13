@@ -11,7 +11,7 @@ import Icon from "@/components/atoms/Icon/Icon";
 import FormField from "@/components/molecules/FormField/FormField";
 import Alert from "@/components/molecules/Alert/Alert";
 import { SkeletonDetail } from "@/components/molecules/SkeletonPatterns/SkeletonPatterns";
-import { ROLE_LABELS, CONTACT_TYPE_LABELS, DOCUMENT_TYPE_LABELS } from "@/lib/mock/people";
+import { CONTACT_TYPE_LABELS, DOCUMENT_TYPE_LABELS } from "@/lib/mock/people";
 import {
   getPerson,
   updatePerson,
@@ -32,7 +32,9 @@ import { EMPTY_EVIDENCE, buildChangeEvidence } from "@/lib/changeEvidence";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { saveErrorText } from "@/lib/errors/apiErrors";
+import RoleChips from "../../RoleChips";
 import styles from "./page.module.css";
+import { BaseDeOutraEmpresa } from "../VinculoAviso";
 
 // Campo da API -> id do campo nesta tela (o erro do salvamento marca o campo certo, com o rótulo humano).
 const EDIT_FIELD_IDS = { legalName: "e-name", preferredName: "e-preferred", taxIdNormalized: "e-doc", birthOrFoundationDate: "e-birth", personType: "e-type", status: "e-status" };
@@ -61,6 +63,7 @@ export default function EditarPessoaPage({ params }) {
   const [contacts, setContacts] = useState([]);
   const [initialDocuments, setInitialDocuments] = useState([]);
   const [documents, setDocuments] = useState([]);
+  const [vinculada, setVinculada] = useState(false); // DI-M9I-3: pessoa do grupo vinculada; a base é da outra empresa
 
   // M9-D850: o contato carrega pelo padrão de estados (carregando, 403, sem conexão, tentar de novo); 404 continua virando notFound().
   const personQuery = useAsyncState(
@@ -74,6 +77,7 @@ export default function EditarPessoaPage({ params }) {
         birthOrFoundationDate: person.birthOrFoundationDate ? person.birthOrFoundationDate.slice(0, 10) : "",
         status: person.status,
       });
+      setVinculada(person.vinculo === "VINCULADA");
       setInitialRoles(personRoles);
       setRoles(personRoles.map((r) => r.roleCode));
       const mappedContacts = person.contacts.map((c) => ({ id: c.id, type: c.type, value: c.value, primary: c.primary }));
@@ -159,16 +163,18 @@ export default function EditarPessoaPage({ params }) {
     setSubmitError("");
     setFieldErrors({});
     try {
-      const changeEvidence = await buildChangeEvidence(evidence);
-      await updatePerson(params.id, {
-        ...(changeEvidence ? { changeEvidence } : {}),
-        legalName: basic.legalName,
-        preferredName: basic.preferredName || null,
-        personType: basic.personType,
-        taxIdNormalized: basic.taxIdNormalized.replace(/\D/g, "") || null,
-        birthOrFoundationDate: basic.birthOrFoundationDate || null,
-        status: basic.status,
-      });
+      if (!vinculada) {
+        const changeEvidence = await buildChangeEvidence(evidence);
+        await updatePerson(params.id, {
+          ...(changeEvidence ? { changeEvidence } : {}),
+          legalName: basic.legalName,
+          preferredName: basic.preferredName || null,
+          personType: basic.personType,
+          taxIdNormalized: basic.taxIdNormalized.replace(/\D/g, "") || null,
+          birthOrFoundationDate: basic.birthOrFoundationDate || null,
+          status: basic.status,
+        });
+      }
 
       // Papéis: cria os novos, remove os que saíram da seleção.
       const rolesToAdd = roles.filter((code) => !initialRoles.some((r) => r.roleCode === code));
@@ -234,7 +240,9 @@ export default function EditarPessoaPage({ params }) {
         {submitError ? <Alert tone="danger" title="Não foi possível salvar">{submitError}</Alert> : null}
 
         <Card title="Dados básicos" className={styles.card}>
+          {vinculada ? <BaseDeOutraEmpresa /> : null}
           <div className={styles.formGrid}>
+            <fieldset disabled={vinculada} className={styles.fieldsetBase}>
             <FormField label="Tipo de pessoa" htmlFor="e-type">
               <Select id="e-type" value={basic.personType} onChange={(e) => setBasic({ ...basic, personType: e.target.value })}>
                 <option value="PF">Pessoa física</option>
@@ -281,29 +289,20 @@ export default function EditarPessoaPage({ params }) {
                 onBlur={(e) => setBirthDateInvalid(isDateInputInvalid(e.target.validity))}
               />
             </FormField>
+            </fieldset>
             <div className={styles.span2}>
               <FormField label="Papéis" helper="Selecione um ou mais papéis para este contato.">
-                <div className={styles.roleGrid}>
-                  {Object.entries(ROLE_LABELS).map(([code, label]) => (
-                    <button
-                      type="button"
-                      key={code}
-                      className={[styles.roleChip, roles.includes(code) ? styles.roleChipActive : ""].filter(Boolean).join(" ")}
-                      onClick={() => toggleRole(code)}
-                      aria-pressed={roles.includes(code)}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
+                <RoleChips selected={roles} onToggle={toggleRole} styles={styles} />
               </FormField>
             </div>
           </div>
         </Card>
 
+        {!vinculada ? (
         <Card title="Origem da alteração" className={styles.card}>
           <ChangeEvidenceFields idPrefix="pessoa-evidence" value={evidence} onChange={setEvidence} />
         </Card>
+        ) : null}
 
         <Card title="Contatos" className={styles.card}>
           <div className={styles.rowsWrap}>
