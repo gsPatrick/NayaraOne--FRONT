@@ -6,10 +6,15 @@ import assert from "node:assert/strict";
 import { html } from "./_loader/render.mjs";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState.js";
 import { classifyFailure, fieldErrorsOf } from "@/lib/asyncState/states.js";
-import { fieldProblemsForDisplay, humanizeApiError, withFieldLabels, saveErrorText } from "@/lib/errors/apiErrors.js";
+// importação por nome do módulo (e não das funções), para que cada teste falhe pelo próprio comportamento na versão anterior, sem a função nova
+import * as apiErrors from "@/lib/errors/apiErrors.js";
 import { readFileSync } from "node:fs";
 import { PERSON_FIELD_IDS } from "@/lib/errors/personWizard.js";
 
+const { humanizeApiError } = apiErrors;
+const fieldProblemsForDisplay = (...a) => apiErrors.fieldProblemsForDisplay(...a);
+const withFieldLabels = (...a) => apiErrors.withFieldLabels(...a);
+const saveErrorText = (...a) => apiErrors.saveErrorText(...a);
 const TECH = /legalName|preferredName|nextActionDueAt|campoInternoQualquer|"|[a-z]+[A-Z][A-Za-z]+/;
 const erro = (status, code, message, details) => Object.assign(new Error(message), { status, code, details });
 
