@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Resposta de 13/11/2026 — Marco 9, correções e comprovações</title>
+<meta name="robots" content="noindex">
+<style>
+:root{--bg:#faf9f7;--sf:#fff;--sf2:#f2f0ec;--bd:#ddd8cf;--fg:#1f1b16;--mu:#6b6558;--ac:#7a3b4a;--ok-bg:#e6f0e4;--ok:#2f5d34;--wa-bg:#fdf0dd;--wa:#8a5a12}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#140f10;--sf:#1f1718;--sf2:#271d1e;--bd:#3a2a2c;--fg:#f1e9ea;--mu:#ad9a9c;--ac:#d98fa3;--ok-bg:#1f2e1f;--ok:#9bd49a;--wa-bg:#2e260f;--wa:#e0b36a}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.55 -apple-system,BlinkMacSystemFont,'Segoe UI',Inter,sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:40px 16px;display:flex;flex-direction:column;gap:28px}.wrap>*{min-width:0}
+h1{font:600 28px/1.2 Georgia,serif;margin:0}h2{font:600 22px/1.25 Georgia,serif;margin:0 0 10px}h3{font-size:16px;margin:16px 0 6px}
+.eb{font:12px ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--mu)}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:18px 20px}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:13.5px}th,td{border:1px solid var(--bd);padding:7px 9px;text-align:left;vertical-align:top}th{background:var(--sf2);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+code{overflow-wrap:anywhere;font:12.5px ui-monospace,monospace;background:var(--sf2);padding:1px 5px;border-radius:4px}
+.pill{display:inline-block;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:600}.ok{background:var(--ok-bg);color:var(--ok)}.wa{background:var(--wa-bg);color:var(--wa)}
+.kp{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}.kp div{background:var(--sf2);border-radius:10px;padding:10px 12px}.kp b{display:block;font-size:22px}
+blockquote{margin:8px 0;padding:8px 14px;border-left:3px solid var(--bd);color:var(--mu);background:var(--sf2);border-radius:0 8px 8px 0}
+nav ol{columns:2;margin:0;padding-left:20px}a{color:var(--ac)}ul{margin:6px 0;padding-left:20px}
+@media(max-width:640px){nav ol{columns:1}h1{font-size:23px}}
+@media print{.card{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="eb">Resposta da Contratada · Nayara One</div>
+  <h1>Resposta de 13/11/2026: Marco 9, correções e comprovações (os cinco pontos)</h1>
+  <p>Data: 13/11/2026 02:43 (horário de Brasília) · Autor: Patrick Siqueira (desenvolvedor) · API: commit <code>9863bee2</code> · Front: commit <code>ffc5c2c</code> · Node v24.18.0</p>
+  <div class="card">
+    <p><b>Resumo.</b> O Marco 9 está corrigido e verificado de forma independente. Respondo abaixo, ponto a ponto, ao pedido "Marco 9: correções e comprovações". Cada correção passou por verificação feita por quem não a implementou; as verificações de 12 e 13/11 acharam defeitos, eu corrigi, e a última (9c, de 13/11/2026) confirmou tudo. Depois dela rodei a suíte completa da API na versão entregue.</p>
+    <p>Versão entregue: API <code>9863bee2</code> e Front <code>ffc5c2c</code>. A homologação ainda roda a API <code>14217771</code> e o Front <code>edece71</code>: o deploy da versão nova é o próximo passo, meu, e os retestes na homologação vêm logo depois dele.</p>
+    <div class="kp">
+      <div><b>8.630</b>testes da API na versão entregue, 0 falhas, 0 pulados</div>
+      <div><b>185/185</b>testes de unidade do Front no <code>ffc5c2c</code></div>
+      <div><b>36/36</b>testes de acessibilidade do Front</div>
+      <div><b>5 de 5</b>pontos respondidos com evidência</div>
+    </div>
+    <p>A página técnica completa é <a href="marco9.html">marco9.html</a>. Os links desta resposta levam direto à parte dela que prova cada ponto.</p>
+  </div>
+</header>
+
+<nav class="card" aria-label="Índice"><b>Índice</b><ol>
+<li><a href="#p1">Briefing da NAY Diretoria</a></li><li><a href="#p2">BI de Tecnologia</a></li><li><a href="#p3">DEV, LAB e conciliação com os responsáveis</a></li><li><a href="#p4">Versões e VoiceOver</a></li><li><a href="#p5">Opt-out, automações, isolamento e auditoria</a></li><li><a href="#decisao">Decisão por escrito que preciso de você</a></li><li><a href="#verificacao">Verificação independente e testes</a></li><li><a href="#proximos">Próximos passos e os outros marcos</a></li></ol></nav>
+
+<section id="p1" class="card"><h2>1. Briefing da NAY Diretoria</h2>
+<blockquote>"Preciso da causa da falha nessa empresa, do briefing gerado e exibido no painel e da evidência de uma nova tentativa após falha."</blockquote>
+<h3>A causa</h3>
+<p>Em 09/11 a IA não estava ligada na empresa A. O parâmetro que liga a IA na empresa não existia, e o padrão do sistema é desligado; também não havia versão ativa da NAY Diretoria nem identidade de serviço para ela. O job do briefing deixou a empresa fora da geração e o Centro de Comando mostrou "Briefing indisponível", sem inventar texto, como o livro manda. Não houve uma geração que falhou: a empresa não tem nenhum briefing com falha em nenhuma data. Provei isso com 18 consultas só de leitura no banco da homologação.</p>
+<h3>Briefing gerado e exibido</h3>
+<p>A configuração foi feita em 10/11 às 16:02. Às 16:03 o job gerou o diário de 09/11 (7 itens, 53 fontes) e o semanal de 02 a 08/11 (9 itens), exibidos no Centro de Comando. Desde então os diários saem às 06:30, no horário (10/11 e 11/11).</p>
+<h3>Nova tentativa após falha</h3>
+<p>Com o mesmo código, provoquei a falha desligando a identidade de serviço: às 20:25:13 de 10/11 o briefing falhou e o painel mostrou "Briefing indisponível"; religada a identidade, às 20:26:18 o job tentou de novo sozinho, a falha foi substituída e o briefing saiu com 3 itens, exibido no painel. O intervalo da nova tentativa é configurável na aba "BI e Centro de Comando" (padrão de 60 minutos). Também corrigi dois defeitos que achei no caminho: a lembrança de "sem fontes" durava até o servidor reiniciar, e a hora da falha era gravada com outro relógio.</p>
+<p><b>Evidência:</b> <a href="marco9.html#ponto-1">marco9.html, ponto 1</a> (com a cronologia, os arquivos e os testes, que falham na versão da homologação e passam na entrega). <span class="pill ok">Corrigido e verificado</span></p>
+</section>
+
+<section id="p2" class="card"><h2>2. BI de Tecnologia</h2>
+<blockquote>"Prepare dados de teste suficientes para demonstrar os indicadores calculados e conciliados com as fontes. Identifique separadamente o que depende de completar a série de sondas, de chamadas de integração ou de consumo de IA."</blockquote>
+<p>Gerei os dados pela própria API na homologação: chamadas de integração com falha (inclusive de autenticação e de validação), falhas de login e de MFA, um bloqueio de cópia, execuções da NAY, chamadas de ferramenta bloqueadas, uma avaliação e orçamentos por agente. Resultado: <b>9 dos 10 indicadores calculados</b>, e os 9 batem com a contagem direta nas tabelas de origem. A disponibilidade ficou sem valor por um defeito, que corrigi: o dia em que as sondas começaram contava inteiro como ausente. No total corrigi 8 defeitos do BI, entre eles o selo de "desatualizado" em número que a fonte confirmou e a janela de integrações lida ainda aberta.</p>
+<div class="tw"><table><thead><tr><th>Depende de</th><th>Indicadores</th></tr></thead><tbody>
+<tr><td>Série de sondas</td><td>Disponibilidade</td></tr>
+<tr><td>Chamadas de integração</td><td>Integrações com erro; falhas de autenticação (a parte das integrações); eventos bloqueados (a parte de validação)</td></tr>
+<tr><td>Consumo de IA</td><td>Custo de IA por agente; orçamento de IA; fundamentação e nota de avaliação; chamadas de ferramenta bloqueadas</td></tr>
+<tr><td>Outros (agenda do BI e filas)</td><td>Frescor dos dados do BI; filas e fila de mensagens mortas</td></tr>
+</tbody></table></div>
+<p><b>Evidência:</b> <a href="marco9.html#ponto-2">marco9.html, ponto 2</a>. A disponibilidade com valor aparece na homologação no primeiro recálculo depois do deploy (a conta feita à parte dá cerca de 99,95%; ainda não é um número medido lá). <span class="pill ok">Corrigido e verificado</span></p>
+</section>
+
+<section id="p3" class="card"><h2>3. DEV, LAB e conciliação com os responsáveis</h2>
+<blockquote>"Envie a evidência do que foi executado e indique, com o trecho do caderno, o que será concluído no Marco 9 e o que você propõe para o Marco 10. Quero decidir essa divisão por escrito. A conciliação automatizada, a promoção de ambiente e o aceite dos responsáveis precisam aparecer separadamente."</blockquote>
+<h3>O que foi executado</h3>
+<ul>
+<li>A Esteira do BI no GitHub, sobre a versão da homologação: etapas 1 a 11 aprovadas e os 15 testes adversariais do livro verdes (execução 42522480841, 08/11/2026).</li>
+<li>A mesma esteira na versão de entrega: 1.029 testes, 0 falhas, refeita na versão final pela verificação independente.</li>
+<li>A etapa 12 (DEV) reprova quando não há ambiente DEV, como deve: nada é dado como feito sem o ambiente.</li>
+<li>As etapas 13 e 14 rodaram à parte, num banco descartável que não é o LAB. A recriação deu 8 de 8. A carga em escala cheia reprovou duas vezes no limite de 10% de degradação do fluxo operacional, nesta máquina compartilhada, e eu não a dou como aprovada: é exatamente a medição que tem de ser feita no LAB.</li>
+</ul>
+<h3>O que o caderno diz</h3>
+<blockquote>Guia do BI, §12 CI/CD: "lint → typecheck → migrations → metric formula tests → read model idempotency → reconciliation tests → RLS → quality checks → alert dedup → export security → load/rebuild → DEV → LAB → owner reconciliation."<br>Caderno do BI, §23 Status: "PRONTO PARA LAB; produção exige reconciliação de KPIs com relatórios-fonte e aceite dos owners."<br>Guia do BI, §17 Status: "PRONTO PARA LAB; produção após reconciliação dos indicadores e aceite dos responsáveis."</blockquote>
+<p>Leio assim: a definição de pronto do bloco pede os testes de reconciliação verdes; DEV, LAB e o aceite dos responsáveis vêm depois das 11 etapas e são a condição para a produção. A proposta de divisão, com os três itens separados, está na seção <a href="#decisao">Decisão por escrito</a>.</p>
+<p><b>Evidência:</b> <a href="marco9.html#ponto-3">marco9.html, ponto 3</a>. <span class="pill wa">Aguarda a sua decisão por escrito</span></p>
+</section>
+
+<section id="p4" class="card"><h2>4. Versões e VoiceOver</h2>
+<blockquote>"Atualize a página, anexe o roteiro executado dos 12 passos e vincule as evidências de teste à versão entregue. Se algum teste veio de um commit anterior, indique o que mudou e o que foi retestado."</blockquote>
+<ul>
+<li><b>Página atualizada</b> com a versão entregue: API <code>9863bee2</code> e Front <code>ffc5c2c</code> (<a href="marco9.html#versao-entregue">versão entregue</a>).</li>
+<li><b>Todos os testes desta entrega são da versão entregue:</b> a suíte completa da API (8.630 testes, 0 falhas, 0 pulados) e, no Front, 185 testes de unidade, 36 de acessibilidade e o lint, todos em 13/11/2026 (<a href="marco9.html#execucao-testes">execução dos testes</a>).</li>
+<li><b>O que mudou desde o 3b8700b:</b> 20 arquivos do Front: 7 de código (configurações do BI e dos limites de texto, resumo de erros devolvidos pela API, rótulos de campo e edição de pessoa), 6 de teste (5 arquivos novos com 20 testes e o carregador dos testes), o roteiro automático do cadastro de imóvel, o checklist de acessibilidade e a página de entrega com os seus dados. Os 165 testes que já existiam e os 20 novos foram todos executados no <code>ffc5c2c</code>; nenhum número vem de commit anterior.</li>
+<li><b>VoiceOver:</b> eu executei o roteiro dos 12 passos em 09/11/2026, no Front <code>0e75774</code>, e todos saíram conforme o esperado. O roteiro está anexado na página, passo a passo (<a href="marco9.html#voiceover">leitor de tela</a>). Conferi com git diff que nenhuma tela dos 12 passos mudou entre o Front em que executei e o entregue: os arquivos das telas têm diff vazio, e os 4 arquivos compartilhados que mudaram tratam só do erro devolvido pela API, que não aparece nos passos.</li>
+<li><b>Registros anteriores preservados:</b> o que a página dizia antes (165 testes no 00c1953 e no 0e75774, CI de 05/11) ficou no <a href="marco9.html#historico-fechamento">histórico</a>, com a data.</li>
+</ul>
+<p><b>Evidência:</b> <a href="marco9.html#ponto-4">marco9.html, ponto 4</a>. <span class="pill ok">Atendido</span></p>
+</section>
+
+<section id="p5" class="card"><h2>5. Opt-out, automações, isolamento e auditoria</h2>
+<blockquote>"Envie os identificadores dos contatos, automações e perfis fictícios do roteiro. Precisamos conferir o opt-out na ficha e o bloqueio efetivo do envio, a recusa 422 MKT_AUTOMATION_INCOMPLETE ao criar e publicar os cinco tipos de ação incompletos, o isolamento entre empresas e a trilha dos três eventos de auditoria."</blockquote>
+<p>Os dois pontos que ficaram inconclusivos agora são conclusivos.</p>
+<ul>
+<li><b>Bloqueio do envio:</b> cada destinatário barrado passa a gerar um registro na ficha da pessoa (motivo opt-out ou sem consentimento, "não enviado"), visível em Atividades e na Auditoria, e nenhuma mensagem sai para ele. O contato com opt-in recebe. O e-mail dele não saía na homologação porque ela roda sem o cofre de segredos que assina o link de descadastro; a API agora se recusa a subir assim, e o cofre entra no deploy.</li>
+<li><b>Isolamento:</b> a gravação de Pessoas passou a ser por empresa, e contatos, endereços, documentos, papéis, consentimentos e mensagens só aceitam registros da mesma empresa, com a regra no próprio banco. A outra empresa do mesmo grupo recebe "não encontrado" e nada é gravado.</li>
+<li><b>Automações:</b> os cinco tipos incompletos (notificar usuário sem título, criar tarefa sem título, rascunho de conteúdo sem tipo, abrir caso sem descrição, mudar etapa sem etapa) são recusados com 422 MKT_AUTOMATION_INCOMPLETE ao criar e ao publicar.</li>
+<li><b>Trilha:</b> criação da pessoa, registro de consentimento (opt-in e opt-out) e conclusão da execução da automação, que a outra empresa não consegue ler.</li>
+</ul>
+<h3>Perfis e registros fictícios do roteiro</h3>
+<div class="tw"><table><thead><tr><th>Tipo</th><th>Identificação</th></tr></thead><tbody>
+<tr><td>Perfil administrador</td><td>Empresa A, <code>110723f9-4ad2-45fb-b6ec-1f2631821f32</code></td></tr>
+<tr><td>Perfil somente leitura</td><td>"HOMO QA, Financeiro (somente leitura)", empresa A</td></tr>
+<tr><td>Perfil de outra empresa</td><td>Auditor da empresa B "HOMO QA, M45 Intercompany Destino", <code>b6c27725-5fa3-4451-b775-16118b4b16f5</code>, do mesmo grupo da A</td></tr>
+<tr><td>Contatos</td><td>"ACEITE-M9 P5 Contato Com Opt-in", "ACEITE-M9 P5 Contato Com Opt-out", "ACEITE-M9 P5 Contato Sem Consentimento", "ACEITE-M9 P5 Contato Gatilho da Automacao", "ACEITE-M9 P5 Pessoa com Documento (empresa A)" e "ACEITE-M9 P5 Contato da Outra Empresa"</td></tr>
+<tr><td>Automações</td><td>ACEITE-M9-P5-AUTOMACAO (a completa, criada, publicada, executada e pausada) e as cinco recusadas ACEITE-M9-P5-INCOMPLETA-NOTIFY_USER, -CREATE_TASK, -CREATE_CONTENT_DRAFT, -OPEN_CASE e -UPDATE_CRM_STAGE_TAG</td></tr>
+<tr><td>Campanha</td><td>ACEITE-M9-P5-CAMPANHA</td></tr>
+</tbody></table></div>
+<p>O roteiro roda só pela API, com os três perfis, e no fim imprime o id de cada registro. Contra uma pilha com o código final, na verificação 9, ele deu 68 conferências certas, 0 falhas e 0 não verificadas. Os ids da homologação saem na execução logo depois do deploy, e eu os envio a você com o arquivo da execução. As credenciais de acesso dos perfis continuam indo só pelo canal separado.</p>
+<p><b>Evidência:</b> <a href="marco9.html#ponto-5">marco9.html, ponto 5</a>. <span class="pill ok">Corrigido e verificado</span> <span class="pill wa">Execução na homologação logo depois do deploy</span></p>
+</section>
+
+<section id="decisao" class="card"><h2>Decisão por escrito que preciso de você (ponto 3)</h2>
+<p>Esta é a minha proposta. Peço que você responda por escrito, item por item, "de acordo" ou a divisão que preferir.</p>
+<div class="tw"><table><thead><tr><th>Item</th><th>Concluído no Marco 9</th><th>Proposto para o Marco 10</th><th>Sua decisão</th></tr></thead><tbody>
+<tr><td><b>Conciliação automatizada</b></td><td>Concluída. Roda a cada passada do BI na homologação (4.727 checagens aprovadas em 24 horas) e em toda execução da esteira (etapas 6 e 8).</td><td>Nada novo. Só rodar a conciliação sobre os dados do LAB, como entrada do aceite.</td><td>☐ de acordo ☐ outra divisão</td></tr>
+<tr><td><b>Promoção de ambiente (DEV e LAB)</b></td><td>Mecanismo entregue e testado: etapas 12 e 13, job de promoção manual com revisor obrigatório.</td><td>Executar a promoção nos ambientes DEV e LAB, que eu preparo, incluindo a medição de carga em escala cheia no LAB.</td><td>☐ de acordo ☐ outra divisão</td></tr>
+<tr><td><b>Aceite dos responsáveis</b></td><td>Mecanismo entregue e testado: registro do aceite, comando de aceite com evidência, trava que impede a produção sem aceite, etapa 14.</td><td>Cada responsável confere e aceita os seus indicadores no LAB. Para isso, você indica uma pessoa por papel de responsável (financeiro, comercial, tecnologia, locação, obras, marketing, estoque, jurídico, atendimento e correspondente).</td><td>☐ de acordo ☐ outra divisão</td></tr>
+</tbody></table></div>
+</section>
+
+<section id="verificacao" class="card"><h2>Verificação independente e testes</h2>
+<p>Cada correção foi conferida por quem não a implementou, num banco descartável, sem gravar nada na homologação. A linha do tempo completa (achado, correção, reconfirmação) está na página: <a href="marco9.html#linha-do-tempo-verificacoes">linha do tempo das verificações</a>. Em resumo:</p>
+<ul>
+<li>12/11: a primeira verificação dos cinco pontos achou o que faltava (a causa do briefing, o documento do ponto 3, testes do BI que dependiam da ordem, o roteiro de deploy e a escrita de outra empresa em mensagens). Corrigi e a verificação seguinte confirmou.</li>
+<li>12/11 e 13/11: as verificações seguintes procuraram com sondas cada vez mais amplas (milhares de pedidos malformados em todas as rotas) e acharam respostas de erro interno e casos de travamento, nenhum deles regressão. Corrigi pela causa, para a API inteira, e cada uma foi reconfirmada.</li>
+<li>13/11: a última verificação (9c) confirmou tudo, 3 de 3 itens, na versão entregue.</li>
+<li>Depois dela, a suíte completa da API: 8.630 testes (5.393 do Marco 9 e 3.237 da regressão dos marcos anteriores), 0 falhas, 0 pulados, todos os 1.570 arquivos de teste do repositório (<a href="marco9.html#execucao-testes">execução dos testes</a>).</li>
+</ul>
+</section>
+
+<section id="proximos" class="card"><h2>Próximos passos e os outros marcos</h2>
+<ul>
+<li><b>Marco 9:</b> corrigido e verificado. Falta publicar: o envio ao GitHub com o CI no commit entregue e o deploy na homologação (cofre de segredos, cópia de segurança, sete migrations, API e Front juntos) são comigo. Logo depois, rodo na homologação o reprocessamento da campanha, o roteiro do ponto 5 com os ids reais e o de isolamento, e mando o resultado.</li>
+<li><b>Ponto 3:</b> aguardo a sua decisão por escrito sobre a divisão entre o Marco 9 e o Marco 10.</li>
+<li><b>Marcos 3 a 6:</b> estão em verificação final e vêm em seguida.</li>
+<li><b>Recebível de R$ 0,30 (duas baixas de R$ 0,10 e R$ 0,20):</b> é do Marco 4 e entra no fechamento dele.</li>
+</ul>
+<p>Qualquer item desta resposta pode ser conferido na <a href="marco9.html">página do Marco 9</a>, que tem o anexo de dados em JSON e o roteiro de conferência sem acesso ao sistema.</p>
+</section>
+
+<footer><p class="eb">Patrick Siqueira · Nayara One · 13/11/2026</p></footer>
+</div>
+</body>
+</html>
