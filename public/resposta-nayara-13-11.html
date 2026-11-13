@@ -28,14 +28,15 @@ nav ol{columns:2;margin:0;padding-left:20px}a{color:var(--ac)}ul{margin:6px 0;pa
 <header>
   <div class="eb">Resposta da Contratada · Nayara One</div>
   <h1>Resposta de 13/11/2026: Marco 9, correções e comprovações (os cinco pontos)</h1>
-  <p>Data: 13/11/2026 02:43 (horário de Brasília) · Autor: Patrick Siqueira (desenvolvedor) · API: commit <code>9863bee2</code> · Front: commit <code>ffc5c2c</code> · Node v24.18.0</p>
+  <p>Data: 13/11/2026 02:43, atualizada às 10:10 depois do deploy (horário de Brasília) · Autor: Patrick Siqueira (desenvolvedor) · API: commit <code>9863bee2</code> · Front: commit <code>ffc5c2c</code> · Node v24.18.0</p>
   <div class="card">
     <p><b>Resumo.</b> O Marco 9 está corrigido e verificado de forma independente. Respondo abaixo, ponto a ponto, ao pedido "Marco 9: correções e comprovações". Cada correção passou por verificação feita por quem não a implementou; as verificações de 12 e 13/11 acharam defeitos, eu corrigi, e a última (9c, de 13/11/2026) confirmou tudo. Depois dela rodei a suíte completa da API na versão entregue.</p>
-    <p>Versão entregue: API <code>9863bee2</code> e Front <code>ffc5c2c</code>. A homologação ainda roda a API <code>14217771</code> e o Front <code>edece71</code>: o deploy da versão nova é o próximo passo, meu, e os retestes na homologação vêm logo depois dele.</p>
+    <p>Versão entregue: API <code>9863bee2</code> e Front <code>ffc5c2c</code>. Essa versão está na homologação desde 13/11/2026 às 08:15, com as sete migrations aplicadas e o cofre de segredos ativo, e as seis esteiras do CI no GitHub ficaram verdes nela. Os retestes na homologação, feitos logo depois do deploy, estão nos pontos 2 e 5.</p>
     <div class="kp">
       <div><b>8.630</b>testes da API na versão entregue, 0 falhas, 0 pulados</div>
       <div><b>185/185</b>testes de unidade do Front no <code>ffc5c2c</code></div>
       <div><b>36/36</b>testes de acessibilidade do Front</div>
+      <div><b>69/69</b>conferências do ponto 5 na homologação, depois do deploy</div>
       <div><b>5 de 5</b>pontos respondidos com evidência</div>
     </div>
     <p>A página técnica completa é <a href="marco9.html">marco9.html</a>. Os links desta resposta levam direto à parte dela que prova cada ponto.</p>
@@ -58,14 +59,14 @@ nav ol{columns:2;margin:0;padding-left:20px}a{color:var(--ac)}ul{margin:6px 0;pa
 
 <section id="p2" class="card"><h2>2. BI de Tecnologia</h2>
 <blockquote>"Prepare dados de teste suficientes para demonstrar os indicadores calculados e conciliados com as fontes. Identifique separadamente o que depende de completar a série de sondas, de chamadas de integração ou de consumo de IA."</blockquote>
-<p>Gerei os dados pela própria API na homologação: chamadas de integração com falha (inclusive de autenticação e de validação), falhas de login e de MFA, um bloqueio de cópia, execuções da NAY, chamadas de ferramenta bloqueadas, uma avaliação e orçamentos por agente. Resultado: <b>9 dos 10 indicadores calculados</b>, e os 9 batem com a contagem direta nas tabelas de origem. A disponibilidade ficou sem valor por um defeito, que corrigi: o dia em que as sondas começaram contava inteiro como ausente. No total corrigi 8 defeitos do BI, entre eles o selo de "desatualizado" em número que a fonte confirmou e a janela de integrações lida ainda aberta.</p>
+<p>Gerei os dados pela própria API na homologação: chamadas de integração com falha (inclusive de autenticação e de validação), falhas de login e de MFA, um bloqueio de cópia, execuções da NAY, chamadas de ferramenta bloqueadas, uma avaliação e orçamentos por agente. Resultado antes do deploy: 9 dos 10 indicadores calculados, e os 9 batem com a contagem direta nas tabelas de origem. A disponibilidade ficava sem valor por um defeito, que corrigi: o dia em que as sondas começaram contava inteiro como ausente. <b>Depois do deploy, os 10 têm valor:</b> no primeiro recálculo na homologação (13/11/2026 às 09:03) a disponibilidade da empresa A saiu com 99,94%, status OK. No total corrigi 8 defeitos do BI, entre eles o selo de "desatualizado" em número que a fonte confirmou e a janela de integrações lida ainda aberta.</p>
 <div class="tw"><table><thead><tr><th>Depende de</th><th>Indicadores</th></tr></thead><tbody>
 <tr><td>Série de sondas</td><td>Disponibilidade</td></tr>
 <tr><td>Chamadas de integração</td><td>Integrações com erro; falhas de autenticação (a parte das integrações); eventos bloqueados (a parte de validação)</td></tr>
 <tr><td>Consumo de IA</td><td>Custo de IA por agente; orçamento de IA; fundamentação e nota de avaliação; chamadas de ferramenta bloqueadas</td></tr>
 <tr><td>Outros (agenda do BI e filas)</td><td>Frescor dos dados do BI; filas e fila de mensagens mortas</td></tr>
 </tbody></table></div>
-<p><b>Evidência:</b> <a href="marco9.html#ponto-2">marco9.html, ponto 2</a>. A disponibilidade com valor aparece na homologação no primeiro recálculo depois do deploy (a conta feita à parte dá cerca de 99,95%; ainda não é um número medido lá). <span class="pill ok">Corrigido e verificado</span></p>
+<p><b>Evidência:</b> <a href="marco9.html#ponto-2">marco9.html, ponto 2</a>. Disponibilidade medida na homologação depois do deploy: 99,94%. <span class="pill ok">Corrigido e verificado</span></p>
 </section>
 
 <section id="p3" class="card"><h2>3. DEV, LAB e conciliação com os responsáveis</h2>
@@ -99,22 +100,28 @@ nav ol{columns:2;margin:0;padding-left:20px}a{color:var(--ac)}ul{margin:6px 0;pa
 <blockquote>"Envie os identificadores dos contatos, automações e perfis fictícios do roteiro. Precisamos conferir o opt-out na ficha e o bloqueio efetivo do envio, a recusa 422 MKT_AUTOMATION_INCOMPLETE ao criar e publicar os cinco tipos de ação incompletos, o isolamento entre empresas e a trilha dos três eventos de auditoria."</blockquote>
 <p>Os dois pontos que ficaram inconclusivos agora são conclusivos.</p>
 <ul>
-<li><b>Bloqueio do envio:</b> cada destinatário barrado passa a gerar um registro na ficha da pessoa (motivo opt-out ou sem consentimento, "não enviado"), visível em Atividades e na Auditoria, e nenhuma mensagem sai para ele. O contato com opt-in recebe. O e-mail dele não saía na homologação porque ela roda sem o cofre de segredos que assina o link de descadastro; a API agora se recusa a subir assim, e o cofre entra no deploy.</li>
+<li><b>Bloqueio do envio:</b> cada destinatário barrado passa a gerar um registro na ficha da pessoa (motivo opt-out ou sem consentimento, "não enviado"), visível em Atividades e na Auditoria, e nenhuma mensagem sai para ele. O contato com opt-in recebe. O e-mail dele não saía na homologação porque ela rodava sem o cofre de segredos que assina o link de descadastro; a API agora se recusa a subir assim, e o cofre entrou no deploy de 13/11. No reteste depois do deploy o contato com opt-in recebeu (enviado) e os outros dois ficaram bloqueados. A campanha antiga que tinha falhado já estava encerrada e o sistema não reabre campanha encerrada; a campanha nova do reteste cobre o mesmo caso.</li>
 <li><b>Isolamento:</b> a gravação de Pessoas passou a ser por empresa, e contatos, endereços, documentos, papéis, consentimentos e mensagens só aceitam registros da mesma empresa, com a regra no próprio banco. A outra empresa do mesmo grupo recebe "não encontrado" e nada é gravado.</li>
 <li><b>Automações:</b> os cinco tipos incompletos (notificar usuário sem título, criar tarefa sem título, rascunho de conteúdo sem tipo, abrir caso sem descrição, mudar etapa sem etapa) são recusados com 422 MKT_AUTOMATION_INCOMPLETE ao criar e ao publicar.</li>
 <li><b>Trilha:</b> criação da pessoa, registro de consentimento (opt-in e opt-out) e conclusão da execução da automação, que a outra empresa não consegue ler.</li>
 </ul>
-<h3>Perfis e registros fictícios do roteiro</h3>
-<div class="tw"><table><thead><tr><th>Tipo</th><th>Identificação</th></tr></thead><tbody>
-<tr><td>Perfil administrador</td><td>Empresa A, <code>110723f9-4ad2-45fb-b6ec-1f2631821f32</code></td></tr>
-<tr><td>Perfil somente leitura</td><td>"HOMO QA, Financeiro (somente leitura)", empresa A</td></tr>
-<tr><td>Perfil de outra empresa</td><td>Auditor da empresa B "HOMO QA, M45 Intercompany Destino", <code>b6c27725-5fa3-4451-b775-16118b4b16f5</code>, do mesmo grupo da A</td></tr>
-<tr><td>Contatos</td><td>"ACEITE-M9 P5 Contato Com Opt-in", "ACEITE-M9 P5 Contato Com Opt-out", "ACEITE-M9 P5 Contato Sem Consentimento", "ACEITE-M9 P5 Contato Gatilho da Automacao", "ACEITE-M9 P5 Pessoa com Documento (empresa A)" e "ACEITE-M9 P5 Contato da Outra Empresa"</td></tr>
-<tr><td>Automações</td><td>ACEITE-M9-P5-AUTOMACAO (a completa, criada, publicada, executada e pausada) e as cinco recusadas ACEITE-M9-P5-INCOMPLETA-NOTIFY_USER, -CREATE_TASK, -CREATE_CONTENT_DRAFT, -OPEN_CASE e -UPDATE_CRM_STAGE_TAG</td></tr>
-<tr><td>Campanha</td><td>ACEITE-M9-P5-CAMPANHA</td></tr>
+<h3>Identificadores na homologação (reteste de 13/11/2026, depois do deploy)</h3>
+<div class="tw"><table><thead><tr><th>Registro</th><th>Identificação</th></tr></thead><tbody>
+<tr><td>Perfil administrador (empresa A)</td><td><code>admin@nayaraone.dev</code>, usuário <code>33477648-c752-4bed-83cb-a04114224f4d</code>, empresa <code>110723f9-4ad2-45fb-b6ec-1f2631821f32</code>, grupo <code>51cca01b-6a2e-4815-9aa1-70d40e3aba24</code></td></tr>
+<tr><td>Perfil somente leitura (empresa A)</td><td><code>auditoria.leitura@nayaraone.dev</code> (papel "HOMO QA, Auditoria somente leitura"), usuário <code>3f37b387-8457-40d8-8ce3-57aeb7c652aa</code>, empresa <code>110723f9-4ad2-45fb-b6ec-1f2631821f32</code></td></tr>
+<tr><td>Perfil de outra empresa</td><td>Administrador entrando na empresa B "HOMO QA, M45 Intercompany Destino" <code>b6c27725-5fa3-4451-b775-16118b4b16f5</code>, do mesmo grupo da A (usuário <code>33477648-c752-4bed-83cb-a04114224f4d</code>). O isolamento é por empresa: a sessão aberta na empresa B não vê nem grava nada da A</td></tr>
+<tr><td>Contato com opt-in</td><td>"ACEITE-M9 P5 Contato Com Opt-in", <code>9aa72c51-7366-4080-8927-7ab2a94522e9</code> (ficha /painel/pessoas/9aa72c51-7366-4080-8927-7ab2a94522e9): recebeu o e-mail da campanha</td></tr>
+<tr><td>Contato com opt-out</td><td>"ACEITE-M9 P5 Contato Com Opt-out", <code>c56a3734-858a-4257-a573-187e07ac0d74</code>: ficha com "Optou por não receber"; mensagem bloqueada (SUPPRESSED), não enviada</td></tr>
+<tr><td>Contato sem consentimento</td><td>"ACEITE-M9 P5 Contato Sem Consentimento", <code>db88b600-027f-493b-9774-0b816e73b432</code>: mensagem bloqueada (NO_CONSENT), não enviada</td></tr>
+<tr><td>Contato gatilho da automação</td><td>"ACEITE-M9 P5 Contato Gatilho da Automacao", <code>f600e1dd-d4df-40e7-b0fd-711572227721</code></td></tr>
+<tr><td>Automação de demonstração</td><td>ACEITE-M9-P5-AUTOMACAO <code>bacc88ee-ab63-4a8d-afaa-3f16b715f688</code>: criada, publicada, executada e pausada; execução concluída <code>43a52c0d-792a-42e0-b148-a51e344defba</code>; tarefa gerada <code>6c2bfd8c-c1b9-426e-b664-3c5fb2ca5acf</code></td></tr>
+<tr><td>Automações incompletas</td><td>ACEITE-M9-P5-INCOMPLETA-NOTIFY_USER, -CREATE_TASK, -CREATE_CONTENT_DRAFT, -OPEN_CASE e -UPDATE_CRM_STAGE_TAG: recusadas com 422 MKT_AUTOMATION_INCOMPLETE ao criar e ao publicar, por isso não existem</td></tr>
+<tr><td>Campanha</td><td>ACEITE-M9-P5-CAMPANHA <code>78003e6f-01df-4d2d-988c-b2035a37f870</code>, modelo <code>6ab1a45f-61c2-4495-bf34-84fff0179956</code></td></tr>
+<tr><td>Pessoa com documento (empresa A)</td><td><code>b960223f-a7de-47cc-9601-dc040a954f21</code>, documento <code>5ba86667-efc1-4d5b-bf9d-62964324285b</code>, arquivo <code>cae6b584-12d6-4583-9ed8-3a695f1c86d6</code></td></tr>
+<tr><td>Contato da outra empresa (empresa B)</td><td><code>4edb98f5-e2b9-41dd-aee2-43a4b17a172c</code>: controle da lista da empresa B</td></tr>
 </tbody></table></div>
-<p>O roteiro roda só pela API, com os três perfis, e no fim imprime o id de cada registro. Contra uma pilha com o código final, na verificação 9, ele deu 68 conferências certas, 0 falhas e 0 não verificadas. Os ids da homologação saem na execução logo depois do deploy, e eu os envio a você com o arquivo da execução. As credenciais de acesso dos perfis continuam indo só pelo canal separado.</p>
-<p><b>Evidência:</b> <a href="marco9.html#ponto-5">marco9.html, ponto 5</a>. <span class="pill ok">Corrigido e verificado</span> <span class="pill wa">Execução na homologação logo depois do deploy</span></p>
+<p>Resultado do reteste na homologação, em 13/11/2026 às 09:55, só pela API e com os três perfis: <b>69 conferências certas, 0 falhas, 0 não verificadas</b>. Por item: opt-out na ficha 4 de 4; bloqueio do envio 7 de 7; automações 15 de 15; isolamento entre empresas 35 de 35; trilha de auditoria 8 de 8 (people.person.create, people.consent.record com opt-in e opt-out, marketing.automation_run.completed; a empresa B pediu as 7 linhas por id e recebeu 0). As credenciais de acesso dos perfis continuam indo só pelo canal separado.</p>
+<p><b>Evidência:</b> <a href="marco9.html#ponto-5">marco9.html, ponto 5</a>. <span class="pill ok">Corrigido, verificado e conferido na homologação</span></p>
 </section>
 
 <section id="decisao" class="card"><h2>Decisão por escrito que preciso de você (ponto 3)</h2>
@@ -138,7 +145,7 @@ nav ol{columns:2;margin:0;padding-left:20px}a{color:var(--ac)}ul{margin:6px 0;pa
 
 <section id="proximos" class="card"><h2>Próximos passos e os outros marcos</h2>
 <ul>
-<li><b>Marco 9:</b> corrigido e verificado. Falta publicar: o envio ao GitHub com o CI no commit entregue e o deploy na homologação (cofre de segredos, cópia de segurança, sete migrations, API e Front juntos) são comigo. Logo depois, rodo na homologação o reprocessamento da campanha, o roteiro do ponto 5 com os ids reais e o de isolamento, e mando o resultado.</li>
+<li><b>Marco 9:</b> corrigido, verificado e publicado. O CI das seis esteiras ficou verde no commit entregue, o deploy na homologação foi feito em 13/11/2026 (cópia de segurança antes, cofre de segredos, sete migrations, API e Front) e os retestes lá passaram: disponibilidade 99,94% e ponto 5 com 69 de 69.</li>
 <li><b>Ponto 3:</b> aguardo a sua decisão por escrito sobre a divisão entre o Marco 9 e o Marco 10.</li>
 <li><b>Marcos 3 a 6:</b> estão em verificação final e vêm em seguida.</li>
 <li><b>Recebível de R$ 0,30 (duas baixas de R$ 0,10 e R$ 0,20):</b> é do Marco 4 e entra no fechamento dele.</li>
