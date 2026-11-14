@@ -12,6 +12,8 @@ import { emptyRadarForm, buildRadarCriteria, formFromCriteriaJson, errorSummaryI
 // O react-dom decide no import se o navegador tem o evento "input": o DOM precisa existir antes de carregá-lo.
 const boot = new JSDOM("<!doctype html><body></body>", { virtualConsole: new VirtualConsole() });
 globalThis.window = boot.window; globalThis.document = boot.window.document;
+// Node 20 (o do CI) não tem `navigator` global e o react-dom o lê na carga; Node 21+ já tem (nada muda).
+if (!("navigator" in globalThis)) Object.defineProperty(globalThis, "navigator", { value: boot.window.navigator, configurable: true });
 const { createRoot } = await import("react-dom/client");
 
 const ESPERADO = {

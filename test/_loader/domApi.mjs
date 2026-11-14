@@ -6,6 +6,8 @@ import { JSDOM, VirtualConsole } from "jsdom";
 // O documento existe ANTES de o react-dom carregar: ele decide na carga se há DOM (sem isso o evento `input` dos campos não chega ao onChange).
 const { window } = new JSDOM("<!doctype html><body></body>", { url: "http://localhost/", pretendToBeVisual: true, virtualConsole: new VirtualConsole() });
 globalThis.window = window; globalThis.document = window.document; globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+// Node 20 (o do CI) não tem `navigator` global e o react-dom o lê na carga; Node 21+ já tem (nada muda).
+if (!("navigator" in globalThis)) Object.defineProperty(globalThis, "navigator", { value: window.navigator, configurable: true });
 const { createRoot } = await import("react-dom/client");
 
 export const API_BASE = "http://127.0.0.1:9/api/v1";
