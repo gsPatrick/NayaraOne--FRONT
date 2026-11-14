@@ -37,8 +37,9 @@ const ACTION_LABELS = [
   [/\/legal\/notices\/[^/]+\/send/, "enviar a notificação"],
   [/\/legal\/inspections\/[^/]+\/sign/, "assinar a vistoria"],
   [/\/construction\/approval-thresholds/, "alterar a alçada de aprovação de Obras"],
-  [/\/export/, "exportar os dados"],
+  // Parâmetro antes de exportar: a chave do parâmetro pode conter "export" (ex.: /settings/exportacao.*) e continua sendo alterar o parâmetro.
   [/\/settings\//, "alterar o parâmetro"],
+  [/\/export/, "exportar os dados"],
 ];
 
 export function labelFor(path = "") {

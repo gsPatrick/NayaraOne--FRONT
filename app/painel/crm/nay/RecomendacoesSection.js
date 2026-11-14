@@ -11,7 +11,9 @@ import Pagination from "@/components/molecules/Pagination/Pagination";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 import { UI_STATE } from "@/lib/asyncState/states";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
-import { acceptAiRecommendation, listAiRecommendations } from "@/lib/api/ai";
+import { listAiRecommendations } from "@/lib/api/ai";
+// Aceite (corpo vazio): marca a recomendação informativa como vista, não executa nada (M9-D019).
+import { acceptAiRecommendation } from "@/lib/api/aiRecommendations";
 import { formatDateTime } from "@/lib/format";
 import { RECOMMENDATIONS_PAGE_SIZE as PAGE_SIZE, nayErrorMessage, recommendationType, totalPagesOf } from "./nayComercial.format.js";
 import styles from "./page.module.css";

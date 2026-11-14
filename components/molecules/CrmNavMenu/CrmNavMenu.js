@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Icon from "@/components/atoms/Icon/Icon";
+import { hasPermission } from "@/lib/rbac/permissions";
 import styles from "./CrmNavMenu.module.css";
 
 const ITEMS = [
@@ -12,7 +13,8 @@ const ITEMS = [
   { label: "Carrinhos de imóveis", href: "/painel/crm/carrinhos", icon: "home" },
   { label: "Painel de indicadores", href: "/painel/crm/dashboard", icon: "chart" },
   { label: "Feedback & Reclamações", href: "/painel/crm/feedback", icon: "mail" },
-  { label: "NAY Comercial", href: "/painel/crm/nay", icon: "bell" },
+  // Mesma permissão do item do menu lateral (app/painel/_nav.js).
+  { label: "NAY Comercial", href: "/painel/crm/nay", icon: "bell", permission: "ai:read" },
 ];
 
 export default function CrmNavMenu() {
@@ -40,7 +42,7 @@ export default function CrmNavMenu() {
 
       {open ? (
         <div className={styles.panel}>
-          {ITEMS.map((item) => (
+          {ITEMS.filter((item) => hasPermission(item.permission)).map((item) => (
             <Link
               key={item.href}
               href={item.href}

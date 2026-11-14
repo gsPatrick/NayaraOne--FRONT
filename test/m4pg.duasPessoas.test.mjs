@@ -129,6 +129,8 @@ test("m4pg permissões: Pedir estorno e Reabrir período fechado têm rótulo e 
 test("m4pg MFA: o pedido do código diz qual ação está sendo confirmada", () => {
   assert.equal(labelFor("/finance/payment-intents/x/approve"), "aprovar o pagamento");
   assert.equal(labelFor("/finance/reversal-cases/x/approve"), "aprovar o estorno");
+  assert.equal(labelFor("/settings/exportacao.limite_linhas"), "alterar o parâmetro", "chave de parâmetro com \"export\" é parâmetro");
+  assert.equal(labelFor("/legal/evidence-packages/x/export"), "exportar os dados");
   assert.equal(labelFor("/finance/reversal-cases/x/reject"), "recusar o estorno");
   assert.equal(labelFor("/finance/entries/x/reverse"), "pedir o estorno");
   assert.equal(labelFor("/finance/period-closures/reopen"), "pedir a reabertura do período");
