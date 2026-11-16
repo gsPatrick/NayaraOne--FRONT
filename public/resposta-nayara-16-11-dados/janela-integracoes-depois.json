@@ -1,0 +1,50 @@
+{
+  "fase": "ler",
+  "quando": "2026-11-16T23:10:57.840Z",
+  "ids": {},
+  "indicador": {
+    "http": 200,
+    "status": "OK",
+    "valor": "0.0000",
+    "frescor": "FRESH",
+    "sourceSnapshotAt": "2026-11-16T23:07:59.341Z",
+    "refreshedAt": "2026-11-16T23:07:59.621Z",
+    "janela": {
+      "tecWindow": 60,
+      "tecClosedBy": "2026-11-16T23:07:59.341Z"
+    }
+  },
+  "series": {},
+  "origem": {
+    "http": 200,
+    "linhas": [
+      {
+        "fornecedor": "email-sandbox",
+        "janela": "Invalid Date",
+        "chamadas": 0,
+        "falhas": 0
+      },
+      {
+        "fornecedor": "messaging-sandbox",
+        "janela": "Invalid Date",
+        "chamadas": 5,
+        "falhas": 0
+      },
+      {
+        "fornecedor": "financing-sandbox",
+        "janela": "Invalid Date",
+        "chamadas": 0,
+        "falhas": 0
+      }
+    ],
+    "chamadas": 5,
+    "falhas": 0
+  },
+  "conciliacao": {
+    "chamadasNaOrigem": 5,
+    "falhasNaOrigem": 0,
+    "percentualCalculado": 0,
+    "valorDoPainel": 0,
+    "bate": true
+  }
+}

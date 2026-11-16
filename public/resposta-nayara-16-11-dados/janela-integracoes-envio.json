@@ -1,0 +1,40 @@
+{
+  "fase": "enviar",
+  "quando": "2026-11-16T22:20:58.053Z",
+  "ids": {
+    "pessoa": "a174fca2-3426-4be5-87fb-804ae9888c4a"
+  },
+  "envios": [
+    {
+      "i": 1,
+      "http": 202,
+      "erro": null,
+      "status": "QUEUED"
+    },
+    {
+      "i": 2,
+      "http": 202,
+      "erro": null,
+      "status": "QUEUED"
+    },
+    {
+      "i": 3,
+      "http": 202,
+      "erro": null,
+      "status": "QUEUED"
+    },
+    {
+      "i": 4,
+      "http": 202,
+      "erro": null,
+      "status": "QUEUED"
+    },
+    {
+      "i": 5,
+      "http": 202,
+      "erro": null,
+      "status": "QUEUED"
+    }
+  ],
+  "janelaEsperada": "19:00 até a hora seguinte (horário de Brasília)"
+}

@@ -1,0 +1,2574 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Resposta de 16/11/2026: Centro de Comando, BI e Marcos 3 a 6</title><meta name="robots" content="noindex">
+<style>
+:root{--bg:#faf9f7;--sf:#fff;--sf2:#f2f0ec;--bd:#ddd8cf;--fg:#1f1b16;--mu:#6b6558;--ac:#7a3b4a;--ok-bg:#e6f0e4;--ok:#2f5d34;--wa-bg:#fdf0dd;--wa:#8a5a12}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#140f10;--sf:#1f1718;--sf2:#271d1e;--bd:#3a2a2c;--fg:#f1e9ea;--mu:#ad9a9c;--ac:#d98fa3;--ok-bg:#1f2e1f;--ok:#9bd49a;--wa-bg:#2e260f;--wa:#e0b36a}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.55 -apple-system,BlinkMacSystemFont,'Segoe UI',Inter,sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:40px 16px;display:flex;flex-direction:column;gap:28px}.wrap>*{min-width:0}
+h1{font:600 28px/1.2 Georgia,serif;margin:0}h2{font:600 22px/1.25 Georgia,serif;margin:0 0 10px}h3{font-size:16px;margin:16px 0 6px}
+.eb{font:12px ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--mu)}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:18px 20px}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:13.5px}th,td{border:1px solid var(--bd);padding:7px 9px;text-align:left;vertical-align:top}th{background:var(--sf2);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+code{overflow-wrap:anywhere;font:12.5px ui-monospace,monospace;background:var(--sf2);padding:1px 5px;border-radius:4px}
+.pill{display:inline-block;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:600}.ok{background:var(--ok-bg);color:var(--ok)}.wa{background:var(--wa-bg);color:var(--wa)}
+.kp{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}.kp div{background:var(--sf2);border-radius:10px;padding:10px 12px}.kp b{display:block;font-size:22px}
+blockquote{margin:8px 0;padding:8px 14px;border-left:3px solid var(--bd);color:var(--mu);background:var(--sf2);border-radius:0 8px 8px 0}
+nav ol{columns:2;margin:0;padding-left:20px}a{color:var(--ac)}ul{margin:6px 0;padding-left:20px}
+@media(max-width:640px){nav ol{columns:1}h1{font-size:23px}}
+@media print{.card{break-inside:avoid}}
+</style></head>
+<body><div class="wrap">
+<header><div class="eb">Resposta da Contratada · Nayara One</div>
+<h1>Resposta de 16/11/2026: Centro de Comando, BI de Tecnologia, DEV e LAB, VoiceOver, opt-out e Marcos 3 a 6</h1>
+<p>Gerada em 16/11/2026 20:18:08 (horário de Brasília) · Autor: Patrick Siqueira · API publicada <code>447ed21d</code> · Front publicado <code>68d9a33</code> · Node v24.18.0</p>
+<div class="card"><p><b>Resumo.</b> Respondo ponto a ponto à sua mensagem. O Centro de Comando tinha ficado lento a ponto de cair; achei as duas causas, corrigi e ele responde em menos de 2 s (meta de 2,5 s). Os 16 indicadores sinalizados estão explicados um a um, com a causa medida: registros de origem incompletos que bloqueiam a atualização, listados registro a registro, e retratos que só atualizam por evento e nunca foram alimentados. Corrigi também as contas a pagar geradas pelo sistema sem vencimento. Os retestes do ponto 5 e dos Marcos 3 e 5 passaram inteiros na versão publicada, e o recebível de R$ 0,30 está pronto para as suas duas baixas. O que ainda falta está na seção 8, com responsável e previsão.</p>
+<div class="kp"><div><b>16</b>indicadores explicados</div><div><b>1938</b>registros de origem listados</div><div><b>78/78</b>reteste do ponto 5</div><div><b>&lt; 2 s</b>Centro de Comando e semáforo</div></div></div></header>
+<nav class="card"><h2>Índice</h2><ol><li><a href="#s1">1. Centro de Comando: os indicadores sinalizados</a></li><li><a href="#s2">2. BI de Tecnologia: a janela de &quot;Integrações com erro&quot;</a></li><li><a href="#s3">3. DEV, LAB e responsáveis</a></li><li><a href="#s4">4. Versões, testes e VoiceOver</a></li><li><a href="#s5">5. Opt-out, automações, isolamento e auditoria</a></li><li><a href="#s6">6. Marcos 3 a 6</a></li><li><a href="#s7">7. Linha do tempo de hoje: achado, causa, correção e reconfirmação</a></li><li><a href="#s8">8. Pendências, com responsável e previsão</a></li><li><a href="#s9">9. Como conferir sem acesso ao sistema</a></li><li><a href="#anexo">10. Anexo de dados (JSON)</a></li></ol></nav>
+<section class="card" id="s1"><h2>1. Centro de Comando: os indicadores sinalizados</h2>
+<p>Na leitura de 16/11/2026 18:58:21 o Centro de Comando mostrava <b>16 indicadores</b> sinalizados; o 17º da sua lista, oportunidades por estágio, já estava OK. Antes de chegar aos indicadores, achei e corrigi um problema maior: o próprio painel tinha ficado lento a ponto de cair.</p>
+<h3>1.1 Tempo de resposta do painel na homologação</h3>
+<div class="tw"><table><thead><tr><th>Painel</th><th>Antes</th><th>Depois da 1ª correção</th><th>Agora</th><th>Meta</th></tr></thead><tbody><tr><td>Centro de Comando</td><td>504 (tempo esgotado) após mais de 40 s</td><td>19 a 29 s</td><td><b>0,5 a 1,3 s (0,95 s na versão 447ed21d)</b></td><td>2,5 s</td></tr><tr><td>Semáforo por área</td><td>504 (tempo esgotado) após mais de 45 s</td><td>38 a 52 s</td><td><b>0,5 a 1,7 s (1,66 s na versão 447ed21d)</b></td><td>2,5 s</td></tr></tbody></table></div>
+<h3>1.2 Cada indicador: fonte, período, dado necessário, esperado, estado e causa</h3>
+<div class="tw"><table><thead><tr><th>Indicador</th><th>Fonte</th><th>Período</th><th>Para sair do sinal</th><th>Resultado esperado</th><th>Estado ao vivo</th><th>Causa medida</th><th>Registro fictício / ação</th></tr></thead><tbody><tr><td><b>Contratos assinados</b><br><code>legal.contracts_signed</code><br>O que aconteceu</td><td>Fatos do dia (contratos com assinatura registrada)</td><td>Últimas 24 h até o recálculo (analytics.centro.janela_horas)</td><td>Nenhum contrato &quot;assinado&quot; sem data de assinatura e um evento de contrato recente</td><td>Quantidade de contratos assinados na janela</td><td>Sem registro do dia (404)</td><td>Verificação command_events_occurred_at_completeness reprovada: 79 de 185 registros de origem sem occurred_at (data do fato); a atualização fica bloqueada e o retrato para no último bom</td><td>Contrato levado até a assinatura manual com evidência (rota de assinaturas manuais)</td></tr><tr><td><b>Oportunidades ganhas</b><br><code>crm.opportunities_won</code><br>O que aconteceu</td><td>Fatos do dia (oportunidades em ganho)</td><td>Últimas 24 h até o recálculo</td><td>Nenhuma oportunidade ganha sem data de fechamento e uma oportunidade ganha na janela</td><td>Quantidade de oportunidades ganhas na janela</td><td>Sem registro do dia (404)</td><td>Verificação command_events_occurred_at_completeness reprovada: 79 de 185 registros de origem sem occurred_at (data do fato); a atualização fica bloqueada e o retrato para no último bom. Verificação crm_outcome_closed_at_completeness reprovada: 2 de 19 registros de origem sem closed_at; a atualização fica bloqueada e o retrato para no último bom</td><td>Oportunidade criada como ganha (a data de fechamento é gravada pelo sistema)</td></tr><tr><td><b>Pagamentos acima do valor relevante</b><br><code>fin.payments_settled_relevant</code><br>O que aconteceu</td><td>Fatos do dia (contas a pagar liquidadas)</td><td>Últimas 24 h até o recálculo; valor relevante padrão R$ 10.000,00</td><td>Nenhuma conta paga sem data de liquidação e uma liquidação de pelo menos R$ 10.000,00 na janela</td><td>Quantidade de pagamentos relevantes na janela</td><td>Sem registro do dia (404)</td><td>Verificação command_events_occurred_at_completeness reprovada: 79 de 185 registros de origem sem occurred_at (data do fato); a atualização fica bloqueada e o retrato para no último bom</td><td>Conta a pagar de R$ 10.000,00 aprovada por outra pessoa e liquidada com o código do autenticador</td></tr><tr><td><b>Processos por risco</b><br><code>legal.cases_by_risk</code><br>Onde há risco</td><td>Processos jurídicos ativos</td><td>Posição atual, sem janela</td><td>Todo processo ativo com nível de risco</td><td>Total de processos ativos e o item &quot;processos de risco alto ou crítico&quot;</td><td>DEGRADED, frescor STALE</td><td>Verificação legal_cases_risk_risk_level_completeness reprovada: 24 de 24 registros de origem sem risk_level; a atualização fica bloqueada e o retrato para no último bom</td><td>Processo com nível de risco informado</td></tr><tr><td><b>Margem projetada</b><br><code>obra.projected_margin</code><br>Onde há risco</td><td>Custo das obras (orçamento base, custo pago, receita contratada, avanço das etapas)</td><td>Posição de hoje</td><td>Retrato do custo das obras atualizado e todas as obras com orçamento base, etapa e contrato com valor</td><td>Margem em reais e as obras abaixo da margem mínima</td><td>Sem registro do dia (404)</td><td>O retrato rm_project_cost só atualiza por evento e nunca foi alimentado na empresa A: sem retrato não há número</td><td>Obra com orçamento, etapa e contrato de obra assinado</td></tr><tr><td><b>Integrações com erro</b><br><code>tec.integration_errors</code><br>Onde há risco</td><td>Tentativas de envio das conexões ativas</td><td>Última hora cheia fechada (analytics.tec.janela_minutos = 60)</td><td>Pelo menos uma chamada na última hora fechada</td><td>Percentual de erro e quantos fornecedores acima do limite</td><td>INCOMPLETE, frescor STALE</td><td>Nenhuma chamada na última hora fechada (seção 3)</td><td>Envio por uma conexão ativa (demonstração na seção 3)</td></tr><tr><td><b>Inadimplência (valor vencido)</b><br><code>fin.overdue_receivables</code><br>Dinheiro parado e perdido</td><td>Contas a receber em aberto vencidas</td><td>Tudo que venceu antes de hoje</td><td>Nenhuma conta a pagar/receber em aberto sem vencimento</td><td>Valor vencido a receber</td><td>INCOMPLETE, frescor FRESH</td><td>Verificação finance_health_due_date_completeness reprovada: 335 de 506 registros de origem sem due_at (vencimento); a atualização fica bloqueada e o retrato para no último bom</td><td>Conta a receber com vencimento passado</td></tr><tr><td><b>Medições</b><br><code>obra.measurements</code><br>Dinheiro parado e perdido</td><td>Medições das etapas e as contas a pagar delas</td><td>Posição de hoje</td><td>Retrato das medições atualizado e nenhuma medição aprovada sem conta a pagar</td><td>Total medido e o pendente de aprovação</td><td>INCOMPLETE, frescor FRESH</td><td>O retrato rm_project_measurements só atualiza por evento e nunca foi alimentado na empresa A: sem retrato não há número</td><td>Medição enviada para aprovação</td></tr><tr><td><b>Comissões</b><br><code>cor.commission</code><br>Dinheiro parado e perdido</td><td>Comissões do correspondente (esperada, confirmada, recebida)</td><td>Empresa inteira, mês corrente</td><td>Retrato das comissões atualizado (evento de comissão)</td><td>Comissão a receber</td><td>Sem registro do dia (404)</td><td>O retrato rm_fin_commission só atualiza por evento e nunca foi alimentado na empresa A: sem retrato não há número</td><td>Caso de financiamento com comissão criada e confirmada</td></tr><tr><td><b>Repasses ao proprietário</b><br><code>fin.owner_repasses_pending</code><br>Dinheiro parado e perdido</td><td>Repasses pendentes e aprovados</td><td>Posição atual, idade em dias úteis</td><td>Todo repasse com mês de referência</td><td>Repasses vencidos (à parte do dinheiro parado)</td><td>DEGRADED, frescor FRESH</td><td>Verificação rental_repasses_reference_month_completeness reprovada: 26 de 33 registros de origem sem reference_month; a atualização fica bloqueada e o retrato para no último bom</td><td>Repasse criado a partir de recebível liquidado</td></tr><tr><td><b>Perdas de estoque</b><br><code>inv.losses</code><br>Dinheiro parado e perdido</td><td>Perdas aprovadas e movimentos de estoque</td><td>Últimos 30 dias (analytics.estoque.janela_perdas_dias)</td><td>Todo item ativo com custo médio</td><td>Valor das perdas no período</td><td>DEGRADED, frescor FRESH</td><td>Verificação inventory_health_item_cost_completeness reprovada: 16 de 44 registros de origem sem item_cost; a atualização fica bloqueada e o retrato para no último bom</td><td>Perda de item com custo, aprovada por outra pessoa</td></tr><tr><td><b>Desperdício</b><br><code>obra.waste</code><br>Dinheiro parado e perdido</td><td>Saídas e perdas de estoque ligadas a obras</td><td>Acumulado</td><td>Retrato atualizado e pelo menos uma saída de material com custo para uma obra</td><td>Valor do desperdício</td><td>INCOMPLETE, frescor UNKNOWN</td><td>O retrato rm_project_waste só atualiza por evento e nunca foi alimentado na empresa A: sem retrato não há número</td><td>Recebimento com custo e saída de material para uma etapa da obra</td></tr><tr><td><b>Custo pós-obra</b><br><code>obra.postwork_cost</code><br>Dinheiro parado e perdido</td><td>Chamados de garantia e ações</td><td>Posição atual</td><td>Chamados com causa raiz (a verificação conta também os abertos)</td><td>Custo realizado de garantia</td><td>DEGRADED, frescor FRESH</td><td>Verificação postwork_cost_root_cause_code_completeness reprovada: 121 de 124 registros de origem sem root_cause_code; a atualização fica bloqueada e o retrato para no último bom</td><td>Chamado de garantia com obra e causa raiz</td></tr><tr><td><b>Contas a pagar em 7 dias</b><br><code>fin.payables_7d</code><br>Prazos</td><td>Contas a pagar em aberto</td><td>Hoje até hoje + 6 (00:00 de São Paulo)</td><td>Nenhuma conta a pagar/receber em aberto sem vencimento</td><td>Valor a pagar nos próximos 7 dias</td><td>INCOMPLETE, frescor FRESH</td><td>Verificação finance_health_due_date_completeness reprovada: 335 de 506 registros de origem sem due_at (vencimento); a atualização fica bloqueada e o retrato para no último bom</td><td>Conta a pagar com vencimento nos próximos 7 dias</td></tr><tr><td><b>Atrasos</b><br><code>obra.delays</code><br>Prazos</td><td>Etapas das obras</td><td>Data-base de hoje em São Paulo</td><td>Todas as etapas abertas com data prevista</td><td>Etapas atrasadas por obra</td><td>INCOMPLETE, frescor FRESH</td><td>Verificação project_delays_ends_at_completeness reprovada: 354 de 358 registros de origem sem ends_at; a atualização fica bloqueada e o retrato para no último bom</td><td>Etapa com data prevista no passado</td></tr><tr><td><b>Vistorias e chaves</b><br><code>rent.inspections_keys</code><br>Prazos</td><td>Vistorias, entregas de chave e contratos de locação</td><td>Posição de hoje</td><td>Toda vistoria ligada a um contrato</td><td>Vistorias e chaves atrasadas</td><td>DEGRADED, frescor FRESH</td><td>Verificação rental_insp_keys_contract_id_completeness reprovada: 8 de 34 registros de origem sem contract_id; a atualização fica bloqueada e o retrato para no último bom</td><td>Vistoria de entrada ligada a contrato de locação</td></tr></tbody></table></div>
+<p>Prova: <a href="resposta-nayara-16-11-dados/indicadores-ao-vivo.json">indicadores-ao-vivo.json</a> <code>2cb30e3c17ef</code> e <a href="resposta-nayara-16-11-dados/residuo-homologacao.json">residuo-homologacao.json</a> <code>72f40a454270</code>. Fonte e regra de cada indicador no código: <a href="resposta-nayara-16-11-dados/indicadores-no-codigo.md">indicadores-no-codigo.md</a> <code>d618af7dff1e</code>.</p>
+<h3>1.3 Por que estão sinalizados: dados de origem incompletos</h3>
+<p>O BI roda verificações de qualidade a cada atualização. Uma verificação crítica reprova quando mais de 5% dos registros de origem estão sem um campo obrigatório. Reprovada, ela bloqueia a atualização e o painel mostra "conclusão adiada": dado ruim não vira número para decisão. Listei, só lendo o banco, cada registro que reprova cada verificação. Em todas as 21 verificações a quantidade listada bate com a contagem gravada pela própria verificação. Nada foi apagado.</p>
+<div class="tw"><table><thead><tr><th>Verificação</th><th>Campo que falta</th><th>Sem o campo / total</th><th>Listados</th><th>Classificação</th></tr></thead><tbody><tr><td><code>command_events_occurred_at_completeness</code></td><td>occurred_at (data do fato)</td><td>79 de 185</td><td>79 (bate)</td><td>79 criados por conta de teste</td></tr><tr><td><code>crm_lead_daily_lead_source_completeness</code></td><td>lead_source</td><td>119 de 119</td><td>119 (bate)</td><td>119 criados por conta de teste</td></tr><tr><td><code>crm_next_action_next_action_completeness</code></td><td>next_action</td><td>44 de 100</td><td>44 (bate)</td><td>44 criados por conta de teste</td></tr><tr><td><code>crm_outcome_closed_at_completeness</code></td><td>closed_at</td><td>2 de 19</td><td>2 (bate)</td><td>2 criados por conta de teste</td></tr><tr><td><code>finance_health_due_date_completeness</code></td><td>due_at (vencimento)</td><td>335 de 506</td><td>335 (bate)</td><td>210 com marca de teste no nome; 121 criados por conta de teste; 4 gerados por rotina</td></tr><tr><td><code>intercompany_due_date_completeness</code></td><td>due_at (vencimento da perna de saída)</td><td>1 de 1</td><td>1 (bate)</td><td>1 com marca de teste no nome</td></tr><tr><td><code>sector_margin_center_completeness</code></td><td>result_center_id (centro de resultado)</td><td>185 de 317</td><td>185 (bate)</td><td>169 com marca de teste no nome; 16 criados por conta de teste</td></tr><tr><td><code>sector_margin_competence_completeness</code></td><td>competence_month (mês de competência)</td><td>23 de 317</td><td>23 (bate)</td><td>23 com marca de teste no nome</td></tr><tr><td><code>inventory_health_item_cost_completeness</code></td><td>item_cost</td><td>16 de 44</td><td>16 (bate)</td><td>16 com marca de teste no nome</td></tr><tr><td><code>legal_cases_risk_risk_level_completeness</code></td><td>risk_level</td><td>24 de 24</td><td>24 (bate)</td><td>21 com marca de teste no nome; 3 criados por conta de teste</td></tr><tr><td><code>legal_values_estimated_amount_completeness</code></td><td>estimated_amount</td><td>24 de 24</td><td>24 (bate)</td><td>21 com marca de teste no nome; 3 criados por conta de teste</td></tr><tr><td><code>postwork_cost_root_cause_code_completeness</code></td><td>root_cause_code</td><td>121 de 124</td><td>121 (bate)</td><td>121 com marca de teste no nome</td></tr><tr><td><code>project_delays_ends_at_completeness</code></td><td>ends_at</td><td>354 de 358</td><td>354 (bate)</td><td>82 criados por conta de teste; 272 com marca de teste no nome</td></tr><tr><td><code>project_nonconf_cause_code_completeness</code></td><td>cause_code</td><td>15 de 15</td><td>15 (bate)</td><td>13 com marca de teste no nome; 2 criados por conta de teste</td></tr><tr><td><code>project_occurrences_cause_code_completeness</code></td><td>cause_code</td><td>15 de 15</td><td>15 (bate)</td><td>13 com marca de teste no nome; 2 criados por conta de teste</td></tr><tr><td><code>project_progress_planned_end_date_completeness</code></td><td>planned_end_date</td><td>436 de 441</td><td>436 (bate)</td><td>361 com marca de teste no nome; 75 criados por conta de teste</td></tr><tr><td><code>price_changes_old_price_completeness</code></td><td>old_price</td><td>51 de 53</td><td>51 (bate)</td><td>51 gerados por rotina</td></tr><tr><td><code>rental_arrears_due_at_completeness</code></td><td>due_at</td><td>37 de 73</td><td>37 (bate)</td><td>33 com marca de teste no nome; 4 gerados por rotina</td></tr><tr><td><code>rental_contracts_total_value_completeness</code></td><td>total_value</td><td>23 de 226</td><td>23 (bate)</td><td>23 criados por conta de teste</td></tr><tr><td><code>rental_insp_keys_contract_id_completeness</code></td><td>contract_id</td><td>8 de 34</td><td>8 (bate)</td><td>8 criados por conta de teste</td></tr><tr><td><code>rental_repasses_reference_month_completeness</code></td><td>reference_month</td><td>26 de 33</td><td>26 (bate)</td><td>26 com marca de teste no nome</td></tr></tbody></table></div>
+<p>Lista completa, registro a registro: <a href="resposta-nayara-16-11-dados/residuo-homologacao.md">residuo-homologacao.md</a> <code>aea66d94fa74</code> e <a href="resposta-nayara-16-11-dados/residuo-homologacao.json">residuo-homologacao.json</a> <code>72f40a454270</code>.</p>
+<h3>1.4 Resíduo de teste ou falha do produto</h3>
+<ul><li><b>Defeito corrigido hoje:</b> as contas a pagar geradas pelo sistema (medição aprovada, recebimento de compra, resolução de garantia) nasciam sem vencimento. Agora o vencimento vem de parâmetro do administrador (Configurações &gt; Financeiro, padrão 30 dias).</li>
+<li><b>Bloqueariam também em produção</b>, porque a API ou a tela deixam o campo vazio no uso normal: risco do processo (o caderno do Marco 5 exige e a tela não tem o campo), causa da não conformidade, origem do lead e o histórico de criação da oferta. Correção em andamento (seção 8).</li>
+<li><b>Só resíduo de teste:</b> próxima ação, data de fechamento, mês de referência, mês de competência e data do fato. A API já exige ou grava esses campos.</li></ul>
+<p>Conferência campo a campo, com arquivo e linha: <a href="resposta-nayara-16-11-dados/campos-obrigatorios-bi.md">campos-obrigatorios-bi.md</a> <code>fce75e0b66ec</code>.</p>
+<h3>1.5 Briefing da NAY Diretoria</h3><p>Continua exibido no Centro de Comando da empresa principal, na mesma resposta do painel. A falha provocada e a nova tentativa automática seguem registradas como evidência do meu reteste anterior.</p></section>
+<section class="card" id="s2"><h2>2. BI de Tecnologia: a janela de &quot;Integrações com erro&quot;</h2>
+<p><b>Janela usada:</b> a última hora cheia já fechada de cada conexão ativa (parâmetro analytics.tec.janela_minutos, padrão 60). Às 14:20, por exemplo, vale 13:00 a 14:00. <b>O que conta:</b> cada tentativa de envio com resultado, exceto erro de validação nosso; é erro tudo que não terminou em sucesso. O "testar conexão" não conta.</p>
+<div class="tw"><table><thead><tr><th>Situação</th><th>Resultado esperado</th></tr></thead><tbody><tr><td>Janela vazia (nenhuma chamada)</td><td>Dado incompleto, sem valor. O painel diz "A fonte deste indicador não trouxe dados suficientes". É o que você viu à noite.</td></tr><tr><td>Uma ou mais chamadas</td><td>OK, com o percentual de erro e quantos fornecedores estão acima do limite. Não há amostra mínima além de 1 chamada.</td></tr></tbody></table></div>
+<h3>Demonstração na homologação publicada</h3>
+<div class="tw"><table><thead><tr><th>Momento</th><th>O que foi feito</th><th>Resultado</th><th>Prova</th></tr></thead><tbody><tr><td>16/11/2026 19:19:52</td><td>Leitura do indicador, das janelas por fornecedor e das linhas de origem</td><td>INCOMPLETE, sem número; origem: 0 chamadas, 0 falhas; bate com o painel</td><td><a href="resposta-nayara-16-11-dados/janela-integracoes-antes.json">janela-integracoes-antes.json</a> <code>08bc4cac1cca</code></td></tr><tr><td>16/11/2026 19:20:58</td><td>Envio de 5 mensagens por modelo aprovado pela conexão de mensagens (contato fictício, telefone fictício)</td><td>HTTP 202, HTTP 202, HTTP 202, HTTP 202, HTTP 202</td><td><a href="resposta-nayara-16-11-dados/janela-integracoes-envio.json">janela-integracoes-envio.json</a> <code>9ca86f9d5f69</code></td></tr><tr><td>16/11/2026 20:10:57</td><td>Leitura depois de a hora fechar e o BI recalcular</td><td>OK, 0,00% de erro; origem: 5 chamadas, 0 falhas; bate com o painel</td><td><a href="resposta-nayara-16-11-dados/janela-integracoes-depois.json">janela-integracoes-depois.json</a> <code>aeeef02abcaf</code></td></tr></tbody></table></div>
+<p>Texto livre fora da janela de 24 h de conversa é recusado antes do envio (regra do WhatsApp, erro <code>INTEGRATION_MESSAGING_OUTSIDE_SESSION_WINDOW</code>) e não vira tentativa; por isso o envio de teste usa modelo aprovado.</p></section>
+<section class="card" id="s3"><h2>3. DEV, LAB e responsáveis</h2>
+<ul><li><b>Conciliação automatizada:</b> registrada no Marco 9; será rodada de novo sobre os dados do LAB.</li>
+<li><b>Promoção para DEV e LAB e carga:</b> aceito concluir no Marco 9. Responsável e previsão na seção 8. O relatório da carga no LAB trará a versão, a massa usada, os tempos sem e com o BI, a degradação medida e o resultado frente ao limite.</li>
+<li><b>Aceite dos responsáveis e produção:</b> ficam no Marco 10. Cada responsável compara os indicadores dele com os relatórios das telas de origem (tabela abaixo). O aceite fica registrado pelo comando oficial de aceite: só o responsável do indicador aceita, com evidência anexada, sobre a versão vigente e dentro da tolerância da reconciliação; tudo vai para a auditoria com antes e depois.</li></ul>
+<h3>Relatórios por responsável (Marco 10)</h3>
+<div class="tw"><table><thead><tr><th>Responsável</th><th>Indicadores</th><th>Quantidade</th></tr></thead><tbody><tr><td>Almoxarifado (papel estoque-gestor)</td><td><code>inv.below_minimum, inv.losses, inv.stock_value, inv.tools_overdue</code></td><td>4</td></tr><tr><td>Atendimento (papel atendimento-gestor)</td><td><code>sup.complaints_by_reason, sup.reviews, sup.satisfaction, sup.sla_resolution</code></td><td>4</td></tr><tr><td>Correspondente Bancário (papel correspondente-gestor)</td><td><code>cor.analysis_time, cor.approval_rate_by_provider, cor.cases_by_stage, cor.commission</code></td><td>4</td></tr><tr><td>Diretoria de Obras (papel obras-gestor)</td><td><code>obra.baseline_actual_forecast, obra.delays, obra.measurements, obra.nonconformities, obra.postwork_cost, obra.progress_vs_schedule, obra.projected_margin, obra.recurrence, obra.waste</code></td><td>9</td></tr><tr><td>Diretoria Financeira (papel financeiro-gestor)</td><td><code>fin.anomalies_open, fin.approvals_pending, fin.breathing_need, fin.commissions_paid, fin.commissions_provisioned, fin.delinquency_rate, fin.free_cash, fin.overdue_payables, fin.overdue_receivables, fin.owner_repasses_pending, fin.payables_30d, fin.payables_60d, fin.payables_7d, fin.payments_settled_relevant, fin.receivables_30d, fin.receivables_60d, fin.receivables_7d, fin.reconciliations_pending, fin.sector_margin, fin.third_party_cash</code></td><td>20</td></tr><tr><td>Gerência Comercial (papel comercial-gestor)</td><td><code>crm.broker_capture, crm.broker_conversion, crm.conversion_rate, crm.first_response_time, crm.leads_by_origin, crm.loss_reasons, crm.opportunities_by_stage, crm.opportunities_won, crm.portfolio_without_next_action, crm.proposals, crm.visits, prop.active_properties, prop.price_changes, prop.without_sale_by_period, radar.matches</code></td><td>15</td></tr><tr><td>Gerência de Locação (papel locação-gestor)</td><td><code>rent.active_contracts, rent.delinquency, rent.guarantees_expiring, rent.inspections_keys, rent.obligations_pending, rent.repasses, rent.satisfaction, rent.tickets, rent.vacancy</code></td><td>9</td></tr><tr><td>Gestor de Estoque (papel estoque-gestor)</td><td><code>inv.adjustments_pending</code></td><td>1</td></tr><tr><td>Jurídico (papel juridico-gestor)</td><td><code>legal.contracts_signed</code></td><td>1</td></tr><tr><td>Jurídico (papel jurídico-gestor)</td><td><code>legal.cases_by_risk, legal.deadlines, legal.missing_documents, legal.values</code></td><td>4</td></tr><tr><td>Marketing (papel marketing-gestor)</td><td><code>mkt.attribution, mkt.automations_blocked_failed, mkt.campaigns, mkt.cost, mkt.deliverability, mkt.frequency, mkt.leads, mkt.opt_out</code></td><td>8</td></tr><tr><td>Tecnologia (papel tecnologia-gestor)</td><td><code>tec.rule_approvals_pending</code></td><td>1</td></tr><tr><td>Tecnologia (papel ti-gestor)</td><td><code>ai.budget, ai.cost_by_agent, ai.quality_scores, ai.tool_calls_blocked, tec.auth_failures, tec.availability, tec.blocked_events, tec.freshness, tec.integration_errors, tec.queues_dlq</code></td><td>10</td></tr><tr><td>Tecnologia/IA (papel ia-gestor)</td><td><code>ai.proposals_pending</code></td><td>1</td></tr></tbody></table></div>
+<p>Achado ao montar esta lista: o mesmo papel aparece com nomes diferentes no catálogo (com e sem acento; "Almoxarifado" e "Gestor de Estoque"; dois papéis de Tecnologia). Vou uniformizar antes do aceite (seção 8).</p></section>
+<section class="card" id="s4"><h2>4. Versões, testes e VoiceOver</h2>
+<p><b>Publicado agora na homologação:</b> API <code>447ed21d</code> (16/11/2026 19:34:53), Front <code>68d9a33</code> (16/11/2026 20:18:04).</p>
+<div class="tw"><table><thead><tr><th>Commit</th><th>Esteira</th><th>Resultado</th><th>Execução</th></tr></thead><tbody><tr><td><code>db42822d</code></td><td>Esteira do Marketing</td><td>success</td><td><a href="https://github.com/gsPatrick/NayaraOne--API/actions/runs/43910979203">43910979203</a></td></tr><tr><td><code>db42822d</code></td><td>Governanca</td><td>success</td><td><a href="https://github.com/gsPatrick/NayaraOne--API/actions/runs/43910979007">43910979007</a></td></tr><tr><td><code>db42822d</code></td><td>Esteira do Marco 3</td><td>success</td><td><a href="https://github.com/gsPatrick/NayaraOne--API/actions/runs/43910979173">43910979173</a></td></tr><tr><td><code>db42822d</code></td><td>Esteira de Obras</td><td>success</td><td><a href="https://github.com/gsPatrick/NayaraOne--API/actions/runs/43910978831">43910978831</a></td></tr><tr><td><code>db42822d</code></td><td>Esteira do juridico</td><td>success</td><td><a href="https://github.com/gsPatrick/NayaraOne--API/actions/runs/43910978860">43910978860</a></td></tr><tr><td><code>db42822d</code></td><td>Esteira do Financeiro</td><td>success</td><td><a href="https://github.com/gsPatrick/NayaraOne--API/actions/runs/43910979110">43910979110</a></td></tr><tr><td><code>db42822d</code></td><td>Esteira das integracoes</td><td>success</td><td><a href="https://github.com/gsPatrick/NayaraOne--API/actions/runs/43910978663">43910978663</a></td></tr><tr><td><code>db42822d</code></td><td>Contract tests</td><td>success</td><td><a href="https://github.com/gsPatrick/NayaraOne--API/actions/runs/43910978550">43910978550</a></td></tr><tr><td><code>db42822d</code></td><td>Esteira do BI</td><td>success</td><td><a href="https://github.com/gsPatrick/NayaraOne--API/actions/runs/43910978483">43910978483</a></td></tr><tr><td><code>447ed21d</code></td><td>Esteira de Obras</td><td>success</td><td><a href="https://github.com/gsPatrick/NayaraOne--API/actions/runs/43971129793">43971129793</a></td></tr><tr><td><code>447ed21d</code></td><td>Esteira do Marco 3</td><td>success</td><td><a href="https://github.com/gsPatrick/NayaraOne--API/actions/runs/43971129816">43971129816</a></td></tr><tr><td><code>447ed21d</code></td><td>Governanca</td><td>success</td><td><a href="https://github.com/gsPatrick/NayaraOne--API/actions/runs/43971129954">43971129954</a></td></tr><tr><td><code>447ed21d</code></td><td>Esteira do juridico</td><td>success</td><td><a href="https://github.com/gsPatrick/NayaraOne--API/actions/runs/43971129786">43971129786</a></td></tr><tr><td><code>447ed21d</code></td><td>Contract tests</td><td>success</td><td><a href="https://github.com/gsPatrick/NayaraOne--API/actions/runs/43971129823">43971129823</a></td></tr><tr><td><code>447ed21d</code></td><td>Esteira do Marketing</td><td>success</td><td><a href="https://github.com/gsPatrick/NayaraOne--API/actions/runs/43971129761">43971129761</a></td></tr><tr><td><code>447ed21d</code></td><td>Esteira do Financeiro</td><td>success</td><td><a href="https://github.com/gsPatrick/NayaraOne--API/actions/runs/43971129945">43971129945</a></td></tr><tr><td><code>447ed21d</code></td><td>Esteira do BI</td><td>success</td><td><a href="https://github.com/gsPatrick/NayaraOne--API/actions/runs/43971129766">43971129766</a></td></tr><tr><td><code>447ed21d</code></td><td>Esteira da NAY</td><td>success</td><td><a href="https://github.com/gsPatrick/NayaraOne--API/actions/runs/43971129795">43971129795</a></td></tr><tr><td><code>447ed21d</code></td><td>Esteira das integracoes</td><td>success</td><td><a href="https://github.com/gsPatrick/NayaraOne--API/actions/runs/43971129993">43971129993</a></td></tr><tr><td><code>5d83396</code></td><td>CI Front</td><td>success</td><td><a href="https://github.com/gsPatrick/NayaraOne--FRONT/actions/runs/43894069538">43894069538</a></td></tr><tr><td><code>68d9a33</code></td><td>CI Front</td><td>success</td><td><a href="https://github.com/gsPatrick/NayaraOne--FRONT/actions/runs/43972907622">43972907622</a></td></tr></tbody></table></div>
+<p><b>VoiceOver:</b> a conclusão de acessibilidade mantém explícito que a etapa do código MFA ficou fora do roteiro manual do VoiceOver e que o resultado foi registrado para o conjunto dos passos executados.</p></section>
+<section class="card" id="s5"><h2>5. Opt-out, automações, isolamento e auditoria</h2>
+<p>Reteste completo na versão publicada em 16/11/2026 19:57:05: <b>78 conferências aprovadas, 0 reprovadas</b>. Os registros que comprovam o envio autorizado, os dois bloqueios, os erros 422 das cinco ações incompletas, a restrição de escrita e os eventos de auditoria estão mantidos na homologação.</p>
+<div class="tw"><table><thead><tr><th>Bloco</th><th>Aprovadas</th><th>Reprovadas</th></tr></thead><tbody><tr><td>(3) automações</td><td>12</td><td>0</td></tr><tr><td>(1) opt-out na ficha</td><td>4</td><td>0</td></tr><tr><td>(2) bloqueio do envio</td><td>7</td><td>0</td></tr><tr><td>(4) isolamento entre empresas</td><td>47</td><td>0</td></tr><tr><td>(5) trilha de auditoria</td><td>8</td><td>0</td></tr></tbody></table></div>
+<p>Prova com os identificadores: <a href="resposta-nayara-16-11-dados/reteste-ponto5.json">reteste-ponto5.json</a> <code>46a15a0eca2b</code>.</p></section>
+<section class="card" id="s6"><h2>6. Marcos 3 a 6</h2>
+<div class="tw"><table><thead><tr><th>Requisito</th><th>Versão</th><th>Procedimento</th><th>Esperado</th><th>Obtido</th><th>Prova</th></tr></thead><tbody><tr><td>Marco 3: trocar o arquivo de um documento validado</td><td>publicada</td><td>Pessoa fictícia, documento validado, troca do arquivo pela API</td><td>Original preservado, versão pendente, antivírus, leitura e revisão próprios</td><td>13 de 13 conferências; arquivo de teste de vírus recusado</td><td><a href="resposta-nayara-16-11-dados/reteste-m3-troca-de-arquivo.json">reteste-m3-troca-de-arquivo.json</a> <code>26c4850a2837</code></td></tr><tr><td>Marco 4: recebível de R$ 0,30 em duas baixas</td><td>publicada</td><td>Financeiro &gt; Lançamentos (/painel/financeiro/lancamentos) → abrir &quot;ACEITE-M4 recebível fictício de R$ 0,30&quot; → preencher &quot;Motivo da baixa manual&quot; e &quot;Valor da baixa parcial&quot; = 0,10 → &quot;Liquidar parcial&quot; → confirmar → código do autenticador → &quot;Já baixado&quot; 0,10 e saldo 0,20; repetir com 0,20 → saldo 0,00 e status Liquidado; o histórico do lançamento e a auditoria mostram as duas baixas, sem duplicidade.</td><td>Saldo R$ 0,20 depois da primeira baixa e R$ 0,00 depois da segunda, com as duas na auditoria e sem duplicidade</td><td>Lançamento <code>1ec84d67-dd14-46a6-a969-e715a6291f2a</code> pronto para a sua confirmação pelo autenticador</td><td><a href="resposta-nayara-16-11-dados/recebivel-030.json">recebivel-030.json</a> <code>d5ff33e5747f</code></td></tr><tr><td>Marco 5: criar, atribuir, remarcar e concluir prazo</td><td>publicada</td><td>Processo fictício pela API; pela tela: Contratos &gt; Processos &gt; cartão Prazos</td><td>Recusas sem origem, sem motivo, sem prova e sem permissão; auditoria de cada passo</td><td>10 de 10 conferências</td><td><a href="resposta-nayara-16-11-dados/reteste-m5-prazos.json">reteste-m5-prazos.json</a> <code>41a5f145126f</code></td></tr></tbody></table></div>
+<p>A matriz completa dos Marcos 3 a 6, com cada requisito, a versão publicada e a prova correspondente, está na <a href="fechamento-marcos-3-6.html">página de fechamento dos Marcos 3 a 6</a>.</p></section>
+<section class="card" id="s7"><h2>7. Linha do tempo de hoje: achado, causa, correção e reconfirmação</h2><div class="tw"><table><thead><tr><th>Achado</th><th>Causa</th><th>Correção</th><th>Reconfirmação</th></tr></thead><tbody><tr><td>Migration de recriação das contas canceladas das medições de ensaio recusada no deploy (&quot;must be owner&quot;)</td><td>Rodada com o usuário de execução da API, que não é dono das tabelas</td><td>Roteiro de deploy: migrations com o usuário dono (db42822d); aplicadas as 58 migrations da integração</td><td>0 pendentes; regra &quot;medição a pagar sempre tem conta&quot; validada no banco</td></tr><tr><td>Centro de Comando e semáforo em 504 (tempo esgotado)</td><td>A unidade de cada alerta lia a tabela de retratos inteira (2,5 GB) uma vez por alerta: com a regra de isolamento por empresa o banco não usava o índice</td><td>Leitura pelo índice (7bcb70c2); teste de regressão que reprova a forma antiga</td><td>Painéis voltaram a responder (200)</td></tr><tr><td>Centro de Comando em 19 a 29 s e semáforo em 38 a 52 s</td><td>O estado de qualidade de cada indicador lia as 510 mil verificações da empresa (~1 s por indicador, dezenas por abertura)</td><td>Índice da última execução de cada verificação e uma leitura por abertura (b32187c5, migration 20261116210000)</td><td>0,5 a 1,7 s na homologação</td></tr><tr><td>Esteira do BI reprovada no commit b32187c5 (consolidado do grupo)</td><td>A memória por requisição podia reaproveitar a leitura de uma empresa sob outra na consolidação</td><td>Memória com a empresa da sessão na chave; definição de indicador por índice (65c9bd2d, migration 20261116220000)</td><td>Bateria completa do BI: 1.627 testes aprovados</td></tr><tr><td>Contas a pagar geradas pelo sistema sem vencimento (medição, recebimento de compra, garantia)</td><td>Os fluxos não informavam vencimento e os cadernos não definem o prazo</td><td>Parâmetros do administrador, padrão 30 dias (API 666b9d61, tela 68d9a33)</td><td>Testes dos três fluxos e da aba Financeiro aprovados</td></tr><tr><td>No detalhamento de &quot;Integrações com erro&quot; o início da janela vinha vazio</td><td>O mascaramento de dados restritos do BI tratava data como objeto comum e a esvaziava; valia para toda coluna de data do detalhamento, da exportação e do briefing</td><td>Data passa intacta pelo mascaramento (API 4c43f5c1)</td><td>563 testes de detalhamento, exportação, briefing e IA aprovados; publicação no próximo deploy</td></tr><tr><td>Esteira das integrações reprovada no b32187c5</td><td>Migration nova sem o nome completo no roteiro de deploy (verificação de governança)</td><td>Roteiro de deploy atualizado (65c9bd2d)</td><td>Verificação aprovada</td></tr></tbody></table></div></section>
+<section class="card" id="s8"><h2>8. Pendências, com responsável e previsão</h2><div class="tw"><table><thead><tr><th>Item</th><th>Responsável</th><th>Previsão</th><th>Motivo</th></tr></thead><tbody><tr><td>Ensaios de restauração dos Marcos 4, 5 e 6 executados de novo na versão integrada</td><td>Patrick</td><td>até 18/11/2026</td><td>As provas atuais foram medidas em commits anteriores à integração. Rodam localmente, nunca na homologação.</td></tr><tr><td>Campos que travariam indicadores também em produção (risco do processo, causa da não conformidade, origem do lead e verificações que contam registros que o indicador não usa)</td><td>Patrick</td><td>até 18/11/2026</td><td>Conferência campo a campo do código em 16/11 (seção 1.4). O vencimento das contas geradas pelo sistema já foi corrigido hoje.</td></tr><tr><td>Reconstrução, na homologação, dos retratos que só atualizam por evento (custo das obras, medições, comissões, desperdício)</td><td>Patrick (console da API)</td><td>junto com o próximo deploy</td><td>Esses retratos nunca foram alimentados na empresa A; o comando oficial é scripts/analytics/rebuildReadModel.js, com permissão própria e parâmetro de habilitação.</td></tr><tr><td>Disponibilidade de DEV e LAB, promoção nesses ambientes e relatório de carga no LAB</td><td>Patrick</td><td>data a confirmar pelo Patrick até 18/11/2026</td><td>Depende de eu publicar os ambientes e os segredos do repositório; o mecanismo está entregue e testado.</td></tr><tr><td>Uniformizar os papéis de responsável no catálogo dos indicadores (com e sem acento, nomes diferentes para o mesmo papel)</td><td>Patrick</td><td>antes do aceite do Marco 10</td><td>Achado ao montar a lista de relatórios por responsável (seção 4).</td></tr></tbody></table></div></section>
+<section class="card" id="s9"><h2>9. Como conferir sem acesso ao sistema</h2><ul>
+<li>Cada indicador: <code>indicadores</code> no JSON abaixo e <a href="resposta-nayara-16-11-dados/indicadores-ao-vivo.json">indicadores-ao-vivo.json</a> <code>2cb30e3c17ef</code>.</li>
+<li>Cada registro incompleto: <a href="resposta-nayara-16-11-dados/residuo-homologacao.json">residuo-homologacao.json</a> <code>72f40a454270</code>; a soma por verificação está em <code>residuo</code> no JSON abaixo.</li>
+<li>Janela de integrações: <code>integracoes</code> no JSON abaixo.</li>
+<li>Integridade: o SHA-256 do JSON embutido está no topo desta seção; cada arquivo da pasta de dados tem o seu em <code>auxiliares</code>.</li></ul></section>
+<section class="card" id="anexo"><h2>10. Anexo de dados (JSON)</h2>
+<p>SHA-256 do JSON: <code>d395dc4b55622f53733dff828c1b0600955fa8dc8e0d66f40dfbaee8e9ac03a8</code></p>
+<p><button type="button" onclick="navigator.clipboard.writeText(document.getElementById('evidencias-resposta-16-11').textContent)">Copiar JSON</button>
+<button type="button" onclick="const b=new Blob([document.getElementById('evidencias-resposta-16-11').textContent],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='resposta-16-11.json';a.click()">Baixar JSON</button></p>
+<details><summary>Ver o JSON</summary><pre>{
+  &quot;meta&quot;: {
+    &quot;titulo&quot;: &quot;Resposta de 16/11/2026&quot;,
+    &quot;geradoEm&quot;: &quot;2026-11-16T23:18:08.967Z&quot;,
+    &quot;autor&quot;: &quot;Patrick Siqueira&quot;,
+    &quot;node&quot;: &quot;v24.18.0&quot;,
+    &quot;publicado&quot;: {
+      &quot;api&quot;: &quot;447ed21dc54ada6f0730957ce75016cf48b58716&quot;,
+      &quot;apiDeployedAt&quot;: &quot;2026-11-16T22:34:53.755Z&quot;,
+      &quot;front&quot;: &quot;68d9a3397151a0e14cce960b94a59a0e508c0f2a&quot;,
+      &quot;frontDeployedAt&quot;: &quot;2026-11-16T23:18:04.400Z&quot;
+    }
+  },
+  &quot;desempenho&quot;: [
+    {
+      &quot;painel&quot;: &quot;Centro de Comando&quot;,
+      &quot;antes&quot;: &quot;504 (tempo esgotado) após mais de 40 s&quot;,
+      &quot;intermediario&quot;: &quot;19 a 29 s&quot;,
+      &quot;depois&quot;: &quot;0,5 a 1,3 s (0,95 s na versão 447ed21d)&quot;,
+      &quot;meta&quot;: &quot;2,5 s&quot;
+    },
+    {
+      &quot;painel&quot;: &quot;Semáforo por área&quot;,
+      &quot;antes&quot;: &quot;504 (tempo esgotado) após mais de 45 s&quot;,
+      &quot;intermediario&quot;: &quot;38 a 52 s&quot;,
+      &quot;depois&quot;: &quot;0,5 a 1,7 s (1,66 s na versão 447ed21d)&quot;,
+      &quot;meta&quot;: &quot;2,5 s&quot;
+    }
+  ],
+  &quot;indicadores&quot;: [
+    {
+      &quot;code&quot;: &quot;legal.contracts_signed&quot;,
+      &quot;nome&quot;: &quot;Contratos assinados&quot;,
+      &quot;bloco&quot;: &quot;O que aconteceu&quot;,
+      &quot;fonte&quot;: &quot;Fatos do dia (contratos com assinatura registrada)&quot;,
+      &quot;periodo&quot;: &quot;Últimas 24 h até o recálculo (analytics.centro.janela_horas)&quot;,
+      &quot;sair&quot;: &quot;Nenhum contrato \&quot;assinado\&quot; sem data de assinatura e um evento de contrato recente&quot;,
+      &quot;esperado&quot;: &quot;Quantidade de contratos assinados na janela&quot;,
+      &quot;registro&quot;: &quot;Contrato levado até a assinatura manual com evidência (rota de assinaturas manuais)&quot;,
+      &quot;checks&quot;: [
+        &quot;command_events_occurred_at_completeness&quot;
+      ],
+      &quot;estado&quot;: &quot;Sem registro do dia (404)&quot;,
+      &quot;causa&quot;: &quot;Verificação command_events_occurred_at_completeness reprovada: 79 de 185 registros de origem sem occurred_at (data do fato); a atualização fica bloqueada e o retrato para no último bom&quot;,
+      &quot;prova&quot;: &quot;residuo-homologacao.json&quot;
+    },
+    {
+      &quot;code&quot;: &quot;crm.opportunities_won&quot;,
+      &quot;nome&quot;: &quot;Oportunidades ganhas&quot;,
+      &quot;bloco&quot;: &quot;O que aconteceu&quot;,
+      &quot;fonte&quot;: &quot;Fatos do dia (oportunidades em ganho)&quot;,
+      &quot;periodo&quot;: &quot;Últimas 24 h até o recálculo&quot;,
+      &quot;sair&quot;: &quot;Nenhuma oportunidade ganha sem data de fechamento e uma oportunidade ganha na janela&quot;,
+      &quot;esperado&quot;: &quot;Quantidade de oportunidades ganhas na janela&quot;,
+      &quot;registro&quot;: &quot;Oportunidade criada como ganha (a data de fechamento é gravada pelo sistema)&quot;,
+      &quot;checks&quot;: [
+        &quot;command_events_occurred_at_completeness&quot;,
+        &quot;crm_outcome_closed_at_completeness&quot;
+      ],
+      &quot;estado&quot;: &quot;Sem registro do dia (404)&quot;,
+      &quot;causa&quot;: &quot;Verificação command_events_occurred_at_completeness reprovada: 79 de 185 registros de origem sem occurred_at (data do fato); a atualização fica bloqueada e o retrato para no último bom. Verificação crm_outcome_closed_at_completeness reprovada: 2 de 19 registros de origem sem closed_at; a atualização fica bloqueada e o retrato para no último bom&quot;,
+      &quot;prova&quot;: &quot;residuo-homologacao.json&quot;
+    },
+    {
+      &quot;code&quot;: &quot;fin.payments_settled_relevant&quot;,
+      &quot;nome&quot;: &quot;Pagamentos acima do valor relevante&quot;,
+      &quot;bloco&quot;: &quot;O que aconteceu&quot;,
+      &quot;fonte&quot;: &quot;Fatos do dia (contas a pagar liquidadas)&quot;,
+      &quot;periodo&quot;: &quot;Últimas 24 h até o recálculo; valor relevante padrão R$ 10.000,00&quot;,
+      &quot;sair&quot;: &quot;Nenhuma conta paga sem data de liquidação e uma liquidação de pelo menos R$ 10.000,00 na janela&quot;,
+      &quot;esperado&quot;: &quot;Quantidade de pagamentos relevantes na janela&quot;,
+      &quot;registro&quot;: &quot;Conta a pagar de R$ 10.000,00 aprovada por outra pessoa e liquidada com o código do autenticador&quot;,
+      &quot;checks&quot;: [
+        &quot;command_events_occurred_at_completeness&quot;
+      ],
+      &quot;estado&quot;: &quot;Sem registro do dia (404)&quot;,
+      &quot;causa&quot;: &quot;Verificação command_events_occurred_at_completeness reprovada: 79 de 185 registros de origem sem occurred_at (data do fato); a atualização fica bloqueada e o retrato para no último bom&quot;,
+      &quot;prova&quot;: &quot;residuo-homologacao.json&quot;
+    },
+    {
+      &quot;code&quot;: &quot;legal.cases_by_risk&quot;,
+      &quot;nome&quot;: &quot;Processos por risco&quot;,
+      &quot;bloco&quot;: &quot;Onde há risco&quot;,
+      &quot;fonte&quot;: &quot;Processos jurídicos ativos&quot;,
+      &quot;periodo&quot;: &quot;Posição atual, sem janela&quot;,
+      &quot;sair&quot;: &quot;Todo processo ativo com nível de risco&quot;,
+      &quot;esperado&quot;: &quot;Total de processos ativos e o item \&quot;processos de risco alto ou crítico\&quot;&quot;,
+      &quot;registro&quot;: &quot;Processo com nível de risco informado&quot;,
+      &quot;checks&quot;: [
+        &quot;legal_cases_risk_risk_level_completeness&quot;
+      ],
+      &quot;estado&quot;: &quot;DEGRADED, frescor STALE&quot;,
+      &quot;causa&quot;: &quot;Verificação legal_cases_risk_risk_level_completeness reprovada: 24 de 24 registros de origem sem risk_level; a atualização fica bloqueada e o retrato para no último bom&quot;,
+      &quot;prova&quot;: &quot;residuo-homologacao.json&quot;
+    },
+    {
+      &quot;code&quot;: &quot;obra.projected_margin&quot;,
+      &quot;nome&quot;: &quot;Margem projetada&quot;,
+      &quot;bloco&quot;: &quot;Onde há risco&quot;,
+      &quot;fonte&quot;: &quot;Custo das obras (orçamento base, custo pago, receita contratada, avanço das etapas)&quot;,
+      &quot;periodo&quot;: &quot;Posição de hoje&quot;,
+      &quot;sair&quot;: &quot;Retrato do custo das obras atualizado e todas as obras com orçamento base, etapa e contrato com valor&quot;,
+      &quot;esperado&quot;: &quot;Margem em reais e as obras abaixo da margem mínima&quot;,
+      &quot;registro&quot;: &quot;Obra com orçamento, etapa e contrato de obra assinado&quot;,
+      &quot;semRetrato&quot;: &quot;rm_project_cost&quot;,
+      &quot;estado&quot;: &quot;Sem registro do dia (404)&quot;,
+      &quot;causa&quot;: &quot;O retrato rm_project_cost só atualiza por evento e nunca foi alimentado na empresa A: sem retrato não há número&quot;,
+      &quot;prova&quot;: &quot;indicadores-ao-vivo.json&quot;
+    },
+    {
+      &quot;code&quot;: &quot;tec.integration_errors&quot;,
+      &quot;nome&quot;: &quot;Integrações com erro&quot;,
+      &quot;bloco&quot;: &quot;Onde há risco&quot;,
+      &quot;fonte&quot;: &quot;Tentativas de envio das conexões ativas&quot;,
+      &quot;periodo&quot;: &quot;Última hora cheia fechada (analytics.tec.janela_minutos = 60)&quot;,
+      &quot;sair&quot;: &quot;Pelo menos uma chamada na última hora fechada&quot;,
+      &quot;esperado&quot;: &quot;Percentual de erro e quantos fornecedores acima do limite&quot;,
+      &quot;registro&quot;: &quot;Envio por uma conexão ativa (demonstração na seção 3)&quot;,
+      &quot;janela&quot;: true,
+      &quot;estado&quot;: &quot;INCOMPLETE, frescor STALE&quot;,
+      &quot;causa&quot;: &quot;Nenhuma chamada na última hora fechada (seção 3)&quot;,
+      &quot;prova&quot;: &quot;indicadores-ao-vivo.json&quot;
+    },
+    {
+      &quot;code&quot;: &quot;fin.overdue_receivables&quot;,
+      &quot;nome&quot;: &quot;Inadimplência (valor vencido)&quot;,
+      &quot;bloco&quot;: &quot;Dinheiro parado e perdido&quot;,
+      &quot;fonte&quot;: &quot;Contas a receber em aberto vencidas&quot;,
+      &quot;periodo&quot;: &quot;Tudo que venceu antes de hoje&quot;,
+      &quot;sair&quot;: &quot;Nenhuma conta a pagar/receber em aberto sem vencimento&quot;,
+      &quot;esperado&quot;: &quot;Valor vencido a receber&quot;,
+      &quot;registro&quot;: &quot;Conta a receber com vencimento passado&quot;,
+      &quot;checks&quot;: [
+        &quot;finance_health_due_date_completeness&quot;
+      ],
+      &quot;estado&quot;: &quot;INCOMPLETE, frescor FRESH&quot;,
+      &quot;causa&quot;: &quot;Verificação finance_health_due_date_completeness reprovada: 335 de 506 registros de origem sem due_at (vencimento); a atualização fica bloqueada e o retrato para no último bom&quot;,
+      &quot;prova&quot;: &quot;residuo-homologacao.json&quot;
+    },
+    {
+      &quot;code&quot;: &quot;obra.measurements&quot;,
+      &quot;nome&quot;: &quot;Medições&quot;,
+      &quot;bloco&quot;: &quot;Dinheiro parado e perdido&quot;,
+      &quot;fonte&quot;: &quot;Medições das etapas e as contas a pagar delas&quot;,
+      &quot;periodo&quot;: &quot;Posição de hoje&quot;,
+      &quot;sair&quot;: &quot;Retrato das medições atualizado e nenhuma medição aprovada sem conta a pagar&quot;,
+      &quot;esperado&quot;: &quot;Total medido e o pendente de aprovação&quot;,
+      &quot;registro&quot;: &quot;Medição enviada para aprovação&quot;,
+      &quot;semRetrato&quot;: &quot;rm_project_measurements&quot;,
+      &quot;estado&quot;: &quot;INCOMPLETE, frescor FRESH&quot;,
+      &quot;causa&quot;: &quot;O retrato rm_project_measurements só atualiza por evento e nunca foi alimentado na empresa A: sem retrato não há número&quot;,
+      &quot;prova&quot;: &quot;indicadores-ao-vivo.json&quot;
+    },
+    {
+      &quot;code&quot;: &quot;cor.commission&quot;,
+      &quot;nome&quot;: &quot;Comissões&quot;,
+      &quot;bloco&quot;: &quot;Dinheiro parado e perdido&quot;,
+      &quot;fonte&quot;: &quot;Comissões do correspondente (esperada, confirmada, recebida)&quot;,
+      &quot;periodo&quot;: &quot;Empresa inteira, mês corrente&quot;,
+      &quot;sair&quot;: &quot;Retrato das comissões atualizado (evento de comissão)&quot;,
+      &quot;esperado&quot;: &quot;Comissão a receber&quot;,
+      &quot;registro&quot;: &quot;Caso de financiamento com comissão criada e confirmada&quot;,
+      &quot;semRetrato&quot;: &quot;rm_fin_commission&quot;,
+      &quot;estado&quot;: &quot;Sem registro do dia (404)&quot;,
+      &quot;causa&quot;: &quot;O retrato rm_fin_commission só atualiza por evento e nunca foi alimentado na empresa A: sem retrato não há número&quot;,
+      &quot;prova&quot;: &quot;indicadores-ao-vivo.json&quot;
+    },
+    {
+      &quot;code&quot;: &quot;fin.owner_repasses_pending&quot;,
+      &quot;nome&quot;: &quot;Repasses ao proprietário&quot;,
+      &quot;bloco&quot;: &quot;Dinheiro parado e perdido&quot;,
+      &quot;fonte&quot;: &quot;Repasses pendentes e aprovados&quot;,
+      &quot;periodo&quot;: &quot;Posição atual, idade em dias úteis&quot;,
+      &quot;sair&quot;: &quot;Todo repasse com mês de referência&quot;,
+      &quot;esperado&quot;: &quot;Repasses vencidos (à parte do dinheiro parado)&quot;,
+      &quot;registro&quot;: &quot;Repasse criado a partir de recebível liquidado&quot;,
+      &quot;checks&quot;: [
+        &quot;rental_repasses_reference_month_completeness&quot;
+      ],
+      &quot;estado&quot;: &quot;DEGRADED, frescor FRESH&quot;,
+      &quot;causa&quot;: &quot;Verificação rental_repasses_reference_month_completeness reprovada: 26 de 33 registros de origem sem reference_month; a atualização fica bloqueada e o retrato para no último bom&quot;,
+      &quot;prova&quot;: &quot;residuo-homologacao.json&quot;
+    },
+    {
+      &quot;code&quot;: &quot;inv.losses&quot;,
+      &quot;nome&quot;: &quot;Perdas de estoque&quot;,
+      &quot;bloco&quot;: &quot;Dinheiro parado e perdido&quot;,
+      &quot;fonte&quot;: &quot;Perdas aprovadas e movimentos de estoque&quot;,
+      &quot;periodo&quot;: &quot;Últimos 30 dias (analytics.estoque.janela_perdas_dias)&quot;,
+      &quot;sair&quot;: &quot;Todo item ativo com custo médio&quot;,
+      &quot;esperado&quot;: &quot;Valor das perdas no período&quot;,
+      &quot;registro&quot;: &quot;Perda de item com custo, aprovada por outra pessoa&quot;,
+      &quot;checks&quot;: [
+        &quot;inventory_health_item_cost_completeness&quot;
+      ],
+      &quot;estado&quot;: &quot;DEGRADED, frescor FRESH&quot;,
+      &quot;causa&quot;: &quot;Verificação inventory_health_item_cost_completeness reprovada: 16 de 44 registros de origem sem item_cost; a atualização fica bloqueada e o retrato para no último bom&quot;,
+      &quot;prova&quot;: &quot;residuo-homologacao.json&quot;
+    },
+    {
+      &quot;code&quot;: &quot;obra.waste&quot;,
+      &quot;nome&quot;: &quot;Desperdício&quot;,
+      &quot;bloco&quot;: &quot;Dinheiro parado e perdido&quot;,
+      &quot;fonte&quot;: &quot;Saídas e perdas de estoque ligadas a obras&quot;,
+      &quot;periodo&quot;: &quot;Acumulado&quot;,
+      &quot;sair&quot;: &quot;Retrato atualizado e pelo menos uma saída de material com custo para uma obra&quot;,
+      &quot;esperado&quot;: &quot;Valor do desperdício&quot;,
+      &quot;registro&quot;: &quot;Recebimento com custo e saída de material para uma etapa da obra&quot;,
+      &quot;semRetrato&quot;: &quot;rm_project_waste&quot;,
+      &quot;estado&quot;: &quot;INCOMPLETE, frescor UNKNOWN&quot;,
+      &quot;causa&quot;: &quot;O retrato rm_project_waste só atualiza por evento e nunca foi alimentado na empresa A: sem retrato não há número&quot;,
+      &quot;prova&quot;: &quot;indicadores-ao-vivo.json&quot;
+    },
+    {
+      &quot;code&quot;: &quot;obra.postwork_cost&quot;,
+      &quot;nome&quot;: &quot;Custo pós-obra&quot;,
+      &quot;bloco&quot;: &quot;Dinheiro parado e perdido&quot;,
+      &quot;fonte&quot;: &quot;Chamados de garantia e ações&quot;,
+      &quot;periodo&quot;: &quot;Posição atual&quot;,
+      &quot;sair&quot;: &quot;Chamados com causa raiz (a verificação conta também os abertos)&quot;,
+      &quot;esperado&quot;: &quot;Custo realizado de garantia&quot;,
+      &quot;registro&quot;: &quot;Chamado de garantia com obra e causa raiz&quot;,
+      &quot;checks&quot;: [
+        &quot;postwork_cost_root_cause_code_completeness&quot;
+      ],
+      &quot;estado&quot;: &quot;DEGRADED, frescor FRESH&quot;,
+      &quot;causa&quot;: &quot;Verificação postwork_cost_root_cause_code_completeness reprovada: 121 de 124 registros de origem sem root_cause_code; a atualização fica bloqueada e o retrato para no último bom&quot;,
+      &quot;prova&quot;: &quot;residuo-homologacao.json&quot;
+    },
+    {
+      &quot;code&quot;: &quot;fin.payables_7d&quot;,
+      &quot;nome&quot;: &quot;Contas a pagar em 7 dias&quot;,
+      &quot;bloco&quot;: &quot;Prazos&quot;,
+      &quot;fonte&quot;: &quot;Contas a pagar em aberto&quot;,
+      &quot;periodo&quot;: &quot;Hoje até hoje + 6 (00:00 de São Paulo)&quot;,
+      &quot;sair&quot;: &quot;Nenhuma conta a pagar/receber em aberto sem vencimento&quot;,
+      &quot;esperado&quot;: &quot;Valor a pagar nos próximos 7 dias&quot;,
+      &quot;registro&quot;: &quot;Conta a pagar com vencimento nos próximos 7 dias&quot;,
+      &quot;checks&quot;: [
+        &quot;finance_health_due_date_completeness&quot;
+      ],
+      &quot;estado&quot;: &quot;INCOMPLETE, frescor FRESH&quot;,
+      &quot;causa&quot;: &quot;Verificação finance_health_due_date_completeness reprovada: 335 de 506 registros de origem sem due_at (vencimento); a atualização fica bloqueada e o retrato para no último bom&quot;,
+      &quot;prova&quot;: &quot;residuo-homologacao.json&quot;
+    },
+    {
+      &quot;code&quot;: &quot;obra.delays&quot;,
+      &quot;nome&quot;: &quot;Atrasos&quot;,
+      &quot;bloco&quot;: &quot;Prazos&quot;,
+      &quot;fonte&quot;: &quot;Etapas das obras&quot;,
+      &quot;periodo&quot;: &quot;Data-base de hoje em São Paulo&quot;,
+      &quot;sair&quot;: &quot;Todas as etapas abertas com data prevista&quot;,
+      &quot;esperado&quot;: &quot;Etapas atrasadas por obra&quot;,
+      &quot;registro&quot;: &quot;Etapa com data prevista no passado&quot;,
+      &quot;checks&quot;: [
+        &quot;project_delays_ends_at_completeness&quot;
+      ],
+      &quot;estado&quot;: &quot;INCOMPLETE, frescor FRESH&quot;,
+      &quot;causa&quot;: &quot;Verificação project_delays_ends_at_completeness reprovada: 354 de 358 registros de origem sem ends_at; a atualização fica bloqueada e o retrato para no último bom&quot;,
+      &quot;prova&quot;: &quot;residuo-homologacao.json&quot;
+    },
+    {
+      &quot;code&quot;: &quot;rent.inspections_keys&quot;,
+      &quot;nome&quot;: &quot;Vistorias e chaves&quot;,
+      &quot;bloco&quot;: &quot;Prazos&quot;,
+      &quot;fonte&quot;: &quot;Vistorias, entregas de chave e contratos de locação&quot;,
+      &quot;periodo&quot;: &quot;Posição de hoje&quot;,
+      &quot;sair&quot;: &quot;Toda vistoria ligada a um contrato&quot;,
+      &quot;esperado&quot;: &quot;Vistorias e chaves atrasadas&quot;,
+      &quot;registro&quot;: &quot;Vistoria de entrada ligada a contrato de locação&quot;,
+      &quot;checks&quot;: [
+        &quot;rental_insp_keys_contract_id_completeness&quot;
+      ],
+      &quot;estado&quot;: &quot;DEGRADED, frescor FRESH&quot;,
+      &quot;causa&quot;: &quot;Verificação rental_insp_keys_contract_id_completeness reprovada: 8 de 34 registros de origem sem contract_id; a atualização fica bloqueada e o retrato para no último bom&quot;,
+      &quot;prova&quot;: &quot;residuo-homologacao.json&quot;
+    }
+  ],
+  &quot;residuo&quot;: [
+    {
+      &quot;verificacao&quot;: &quot;command_events_occurred_at_completeness&quot;,
+      &quot;readModel&quot;: &quot;rm_command_events&quot;,
+      &quot;campo&quot;: &quot;occurred_at (data do fato)&quot;,
+      &quot;contagem&quot;: {
+        &quot;pct&quot;: 42.7,
+        &quot;nulls&quot;: 79,
+        &quot;total&quot;: 185
+      },
+      &quot;listados&quot;: 79,
+      &quot;bate&quot;: true,
+      &quot;classes&quot;: {
+        &quot;CRIADO_POR_USUARIO_DE_TESTE&quot;: 79
+      }
+    },
+    {
+      &quot;verificacao&quot;: &quot;crm_lead_daily_lead_source_completeness&quot;,
+      &quot;readModel&quot;: &quot;rm_crm_lead_daily&quot;,
+      &quot;campo&quot;: &quot;lead_source&quot;,
+      &quot;contagem&quot;: {
+        &quot;pct&quot;: 100,
+        &quot;nulls&quot;: 119,
+        &quot;total&quot;: 119
+      },
+      &quot;listados&quot;: 119,
+      &quot;bate&quot;: true,
+      &quot;classes&quot;: {
+        &quot;CRIADO_POR_USUARIO_DE_TESTE&quot;: 119
+      }
+    },
+    {
+      &quot;verificacao&quot;: &quot;crm_next_action_next_action_completeness&quot;,
+      &quot;readModel&quot;: &quot;rm_crm_next_action&quot;,
+      &quot;campo&quot;: &quot;next_action&quot;,
+      &quot;contagem&quot;: {
+        &quot;pct&quot;: 44,
+        &quot;nulls&quot;: 44,
+        &quot;total&quot;: 100
+      },
+      &quot;listados&quot;: 44,
+      &quot;bate&quot;: true,
+      &quot;classes&quot;: {
+        &quot;CRIADO_POR_USUARIO_DE_TESTE&quot;: 44
+      }
+    },
+    {
+      &quot;verificacao&quot;: &quot;crm_outcome_closed_at_completeness&quot;,
+      &quot;readModel&quot;: &quot;rm_crm_outcome&quot;,
+      &quot;campo&quot;: &quot;closed_at&quot;,
+      &quot;contagem&quot;: {
+        &quot;pct&quot;: 10.53,
+        &quot;nulls&quot;: 2,
+        &quot;total&quot;: 19
+      },
+      &quot;listados&quot;: 2,
+      &quot;bate&quot;: true,
+      &quot;classes&quot;: {
+        &quot;CRIADO_POR_USUARIO_DE_TESTE&quot;: 2
+      }
+    },
+    {
+      &quot;verificacao&quot;: &quot;finance_health_due_date_completeness&quot;,
+      &quot;readModel&quot;: &quot;rm_finance_health&quot;,
+      &quot;campo&quot;: &quot;due_at (vencimento)&quot;,
+      &quot;contagem&quot;: {
+        &quot;pct&quot;: 66.21,
+        &quot;nulls&quot;: 335,
+        &quot;total&quot;: 506
+      },
+      &quot;listados&quot;: 335,
+      &quot;bate&quot;: true,
+      &quot;classes&quot;: {
+        &quot;RESIDUO_DE_TESTE_PELO_NOME&quot;: 210,
+        &quot;CRIADO_POR_USUARIO_DE_TESTE&quot;: 121,
+        &quot;SEM_AUTOR_REGISTRADO&quot;: 4
+      }
+    },
+    {
+      &quot;verificacao&quot;: &quot;intercompany_due_date_completeness&quot;,
+      &quot;readModel&quot;: &quot;rm_finance_intercompany&quot;,
+      &quot;campo&quot;: &quot;due_at (vencimento da perna de saída)&quot;,
+      &quot;contagem&quot;: {
+        &quot;pct&quot;: 100,
+        &quot;nulls&quot;: 1,
+        &quot;total&quot;: 1
+      },
+      &quot;listados&quot;: 1,
+      &quot;bate&quot;: true,
+      &quot;classes&quot;: {
+        &quot;RESIDUO_DE_TESTE_PELO_NOME&quot;: 1
+      }
+    },
+    {
+      &quot;verificacao&quot;: &quot;sector_margin_center_completeness&quot;,
+      &quot;readModel&quot;: &quot;rm_finance_sector_margin&quot;,
+      &quot;campo&quot;: &quot;result_center_id (centro de resultado)&quot;,
+      &quot;contagem&quot;: {
+        &quot;pct&quot;: 58.36,
+        &quot;nulls&quot;: 185,
+        &quot;total&quot;: 317
+      },
+      &quot;listados&quot;: 185,
+      &quot;bate&quot;: true,
+      &quot;classes&quot;: {
+        &quot;RESIDUO_DE_TESTE_PELO_NOME&quot;: 169,
+        &quot;CRIADO_POR_USUARIO_DE_TESTE&quot;: 16
+      }
+    },
+    {
+      &quot;verificacao&quot;: &quot;sector_margin_competence_completeness&quot;,
+      &quot;readModel&quot;: &quot;rm_finance_sector_margin&quot;,
+      &quot;campo&quot;: &quot;competence_month (mês de competência)&quot;,
+      &quot;contagem&quot;: {
+        &quot;pct&quot;: 7.26,
+        &quot;nulls&quot;: 23,
+        &quot;total&quot;: 317
+      },
+      &quot;listados&quot;: 23,
+      &quot;bate&quot;: true,
+      &quot;classes&quot;: {
+        &quot;RESIDUO_DE_TESTE_PELO_NOME&quot;: 23
+      }
+    },
+    {
+      &quot;verificacao&quot;: &quot;inventory_health_item_cost_completeness&quot;,
+      &quot;readModel&quot;: &quot;rm_inventory_health&quot;,
+      &quot;campo&quot;: &quot;item_cost&quot;,
+      &quot;contagem&quot;: {
+        &quot;pct&quot;: 36.36,
+        &quot;nulls&quot;: 16,
+        &quot;total&quot;: 44
+      },
+      &quot;listados&quot;: 16,
+      &quot;bate&quot;: true,
+      &quot;classes&quot;: {
+        &quot;RESIDUO_DE_TESTE_PELO_NOME&quot;: 16
+      }
+    },
+    {
+      &quot;verificacao&quot;: &quot;legal_cases_risk_risk_level_completeness&quot;,
+      &quot;readModel&quot;: &quot;rm_legal_cases_risk&quot;,
+      &quot;campo&quot;: &quot;risk_level&quot;,
+      &quot;contagem&quot;: {
+        &quot;pct&quot;: 100,
+        &quot;nulls&quot;: 24,
+        &quot;total&quot;: 24
+      },
+      &quot;listados&quot;: 24,
+      &quot;bate&quot;: true,
+      &quot;classes&quot;: {
+        &quot;RESIDUO_DE_TESTE_PELO_NOME&quot;: 21,
+        &quot;CRIADO_POR_USUARIO_DE_TESTE&quot;: 3
+      }
+    },
+    {
+      &quot;verificacao&quot;: &quot;legal_values_estimated_amount_completeness&quot;,
+      &quot;readModel&quot;: &quot;rm_legal_values&quot;,
+      &quot;campo&quot;: &quot;estimated_amount&quot;,
+      &quot;contagem&quot;: {
+        &quot;pct&quot;: 100,
+        &quot;nulls&quot;: 24,
+        &quot;total&quot;: 24
+      },
+      &quot;listados&quot;: 24,
+      &quot;bate&quot;: true,
+      &quot;classes&quot;: {
+        &quot;RESIDUO_DE_TESTE_PELO_NOME&quot;: 21,
+        &quot;CRIADO_POR_USUARIO_DE_TESTE&quot;: 3
+      }
+    },
+    {
+      &quot;verificacao&quot;: &quot;postwork_cost_root_cause_code_completeness&quot;,
+      &quot;readModel&quot;: &quot;rm_postwork_cost&quot;,
+      &quot;campo&quot;: &quot;root_cause_code&quot;,
+      &quot;contagem&quot;: {
+        &quot;pct&quot;: 97.58,
+        &quot;nulls&quot;: 121,
+        &quot;total&quot;: 124
+      },
+      &quot;listados&quot;: 121,
+      &quot;bate&quot;: true,
+      &quot;classes&quot;: {
+        &quot;RESIDUO_DE_TESTE_PELO_NOME&quot;: 121
+      }
+    },
+    {
+      &quot;verificacao&quot;: &quot;project_delays_ends_at_completeness&quot;,
+      &quot;readModel&quot;: &quot;rm_project_delays&quot;,
+      &quot;campo&quot;: &quot;ends_at&quot;,
+      &quot;contagem&quot;: {
+        &quot;pct&quot;: 98.88,
+        &quot;nulls&quot;: 354,
+        &quot;total&quot;: 358
+      },
+      &quot;listados&quot;: 354,
+      &quot;bate&quot;: true,
+      &quot;classes&quot;: {
+        &quot;CRIADO_POR_USUARIO_DE_TESTE&quot;: 82,
+        &quot;RESIDUO_DE_TESTE_PELO_NOME&quot;: 272
+      }
+    },
+    {
+      &quot;verificacao&quot;: &quot;project_nonconf_cause_code_completeness&quot;,
+      &quot;readModel&quot;: &quot;rm_project_nonconformities&quot;,
+      &quot;campo&quot;: &quot;cause_code&quot;,
+      &quot;contagem&quot;: {
+        &quot;pct&quot;: 100,
+        &quot;nulls&quot;: 15,
+        &quot;total&quot;: 15
+      },
+      &quot;listados&quot;: 15,
+      &quot;bate&quot;: true,
+      &quot;classes&quot;: {
+        &quot;RESIDUO_DE_TESTE_PELO_NOME&quot;: 13,
+        &quot;CRIADO_POR_USUARIO_DE_TESTE&quot;: 2
+      }
+    },
+    {
+      &quot;verificacao&quot;: &quot;project_occurrences_cause_code_completeness&quot;,
+      &quot;readModel&quot;: &quot;rm_project_occurrences&quot;,
+      &quot;campo&quot;: &quot;cause_code&quot;,
+      &quot;contagem&quot;: {
+        &quot;pct&quot;: 100,
+        &quot;nulls&quot;: 15,
+        &quot;total&quot;: 15
+      },
+      &quot;listados&quot;: 15,
+      &quot;bate&quot;: true,
+      &quot;classes&quot;: {
+        &quot;RESIDUO_DE_TESTE_PELO_NOME&quot;: 13,
+        &quot;CRIADO_POR_USUARIO_DE_TESTE&quot;: 2
+      }
+    },
+    {
+      &quot;verificacao&quot;: &quot;project_progress_planned_end_date_completeness&quot;,
+      &quot;readModel&quot;: &quot;rm_project_progress&quot;,
+      &quot;campo&quot;: &quot;planned_end_date&quot;,
+      &quot;contagem&quot;: {
+        &quot;pct&quot;: 98.87,
+        &quot;nulls&quot;: 436,
+        &quot;total&quot;: 441
+      },
+      &quot;listados&quot;: 436,
+      &quot;bate&quot;: true,
+      &quot;classes&quot;: {
+        &quot;RESIDUO_DE_TESTE_PELO_NOME&quot;: 361,
+        &quot;CRIADO_POR_USUARIO_DE_TESTE&quot;: 75
+      }
+    },
+    {
+      &quot;verificacao&quot;: &quot;price_changes_old_price_completeness&quot;,
+      &quot;readModel&quot;: &quot;rm_property_price_changes&quot;,
+      &quot;campo&quot;: &quot;old_price&quot;,
+      &quot;contagem&quot;: {
+        &quot;pct&quot;: 96.23,
+        &quot;nulls&quot;: 51,
+        &quot;total&quot;: 53
+      },
+      &quot;listados&quot;: 51,
+      &quot;bate&quot;: true,
+      &quot;classes&quot;: {
+        &quot;SEM_AUTOR_REGISTRADO&quot;: 51
+      }
+    },
+    {
+      &quot;verificacao&quot;: &quot;rental_arrears_due_at_completeness&quot;,
+      &quot;readModel&quot;: &quot;rm_rental_arrears&quot;,
+      &quot;campo&quot;: &quot;due_at&quot;,
+      &quot;contagem&quot;: {
+        &quot;pct&quot;: 50.68,
+        &quot;nulls&quot;: 37,
+        &quot;total&quot;: 73
+      },
+      &quot;listados&quot;: 37,
+      &quot;bate&quot;: true,
+      &quot;classes&quot;: {
+        &quot;RESIDUO_DE_TESTE_PELO_NOME&quot;: 33,
+        &quot;SEM_AUTOR_REGISTRADO&quot;: 4
+      }
+    },
+    {
+      &quot;verificacao&quot;: &quot;rental_contracts_total_value_completeness&quot;,
+      &quot;readModel&quot;: &quot;rm_rental_contracts&quot;,
+      &quot;campo&quot;: &quot;total_value&quot;,
+      &quot;contagem&quot;: {
+        &quot;pct&quot;: 10.18,
+        &quot;nulls&quot;: 23,
+        &quot;total&quot;: 226
+      },
+      &quot;listados&quot;: 23,
+      &quot;bate&quot;: true,
+      &quot;classes&quot;: {
+        &quot;CRIADO_POR_USUARIO_DE_TESTE&quot;: 23
+      }
+    },
+    {
+      &quot;verificacao&quot;: &quot;rental_insp_keys_contract_id_completeness&quot;,
+      &quot;readModel&quot;: &quot;rm_rental_inspections_keys&quot;,
+      &quot;campo&quot;: &quot;contract_id&quot;,
+      &quot;contagem&quot;: {
+        &quot;pct&quot;: 23.53,
+        &quot;nulls&quot;: 8,
+        &quot;total&quot;: 34
+      },
+      &quot;listados&quot;: 8,
+      &quot;bate&quot;: true,
+      &quot;classes&quot;: {
+        &quot;CRIADO_POR_USUARIO_DE_TESTE&quot;: 8
+      }
+    },
+    {
+      &quot;verificacao&quot;: &quot;rental_repasses_reference_month_completeness&quot;,
+      &quot;readModel&quot;: &quot;rm_rental_repasses&quot;,
+      &quot;campo&quot;: &quot;reference_month&quot;,
+      &quot;contagem&quot;: {
+        &quot;pct&quot;: 78.79,
+        &quot;nulls&quot;: 26,
+        &quot;total&quot;: 33
+      },
+      &quot;listados&quot;: 26,
+      &quot;bate&quot;: true,
+      &quot;classes&quot;: {
+        &quot;RESIDUO_DE_TESTE_PELO_NOME&quot;: 26
+      }
+    }
+  ],
+  &quot;integracoes&quot;: {
+    &quot;antes&quot;: {
+      &quot;fase&quot;: &quot;ler&quot;,
+      &quot;quando&quot;: &quot;2026-11-16T22:19:52.004Z&quot;,
+      &quot;ids&quot;: {},
+      &quot;indicador&quot;: {
+        &quot;http&quot;: 200,
+        &quot;status&quot;: &quot;INCOMPLETE&quot;,
+        &quot;valor&quot;: null,
+        &quot;frescor&quot;: &quot;STALE&quot;,
+        &quot;sourceSnapshotAt&quot;: &quot;2026-11-16T02:56:53.787Z&quot;,
+        &quot;refreshedAt&quot;: &quot;2026-11-16T03:01:08.840Z&quot;,
+        &quot;janela&quot;: {
+          &quot;tecWindow&quot;: 60,
+          &quot;tecClosedBy&quot;: &quot;2026-11-16T02:56:53.787Z&quot;
+        }
+      },
+      &quot;series&quot;: {},
+      &quot;origem&quot;: {
+        &quot;http&quot;: 200,
+        &quot;linhas&quot;: [
+          {
+            &quot;janela&quot;: &quot;-&quot;
+          },
+          {
+            &quot;janela&quot;: &quot;-&quot;
+          },
+          {
+            &quot;janela&quot;: &quot;-&quot;
+          }
+        ],
+        &quot;chamadas&quot;: 0,
+        &quot;falhas&quot;: 0
+      },
+      &quot;conciliacao&quot;: {
+        &quot;chamadasNaOrigem&quot;: 0,
+        &quot;falhasNaOrigem&quot;: 0,
+        &quot;percentualCalculado&quot;: null,
+        &quot;valorDoPainel&quot;: null,
+        &quot;bate&quot;: true
+      }
+    },
+    &quot;envio&quot;: {
+      &quot;fase&quot;: &quot;enviar&quot;,
+      &quot;quando&quot;: &quot;2026-11-16T22:20:58.053Z&quot;,
+      &quot;ids&quot;: {
+        &quot;pessoa&quot;: &quot;a174fca2-3426-4be5-87fb-804ae9888c4a&quot;
+      },
+      &quot;envios&quot;: [
+        {
+          &quot;i&quot;: 1,
+          &quot;http&quot;: 202,
+          &quot;erro&quot;: null,
+          &quot;status&quot;: &quot;QUEUED&quot;
+        },
+        {
+          &quot;i&quot;: 2,
+          &quot;http&quot;: 202,
+          &quot;erro&quot;: null,
+          &quot;status&quot;: &quot;QUEUED&quot;
+        },
+        {
+          &quot;i&quot;: 3,
+          &quot;http&quot;: 202,
+          &quot;erro&quot;: null,
+          &quot;status&quot;: &quot;QUEUED&quot;
+        },
+        {
+          &quot;i&quot;: 4,
+          &quot;http&quot;: 202,
+          &quot;erro&quot;: null,
+          &quot;status&quot;: &quot;QUEUED&quot;
+        },
+        {
+          &quot;i&quot;: 5,
+          &quot;http&quot;: 202,
+          &quot;erro&quot;: null,
+          &quot;status&quot;: &quot;QUEUED&quot;
+        }
+      ],
+      &quot;janelaEsperada&quot;: &quot;19:00 até a hora seguinte (horário de Brasília)&quot;
+    },
+    &quot;depois&quot;: {
+      &quot;fase&quot;: &quot;ler&quot;,
+      &quot;quando&quot;: &quot;2026-11-16T23:10:57.840Z&quot;,
+      &quot;ids&quot;: {},
+      &quot;indicador&quot;: {
+        &quot;http&quot;: 200,
+        &quot;status&quot;: &quot;OK&quot;,
+        &quot;valor&quot;: &quot;0.0000&quot;,
+        &quot;frescor&quot;: &quot;FRESH&quot;,
+        &quot;sourceSnapshotAt&quot;: &quot;2026-11-16T23:07:59.341Z&quot;,
+        &quot;refreshedAt&quot;: &quot;2026-11-16T23:07:59.621Z&quot;,
+        &quot;janela&quot;: {
+          &quot;tecWindow&quot;: 60,
+          &quot;tecClosedBy&quot;: &quot;2026-11-16T23:07:59.341Z&quot;
+        }
+      },
+      &quot;series&quot;: {},
+      &quot;origem&quot;: {
+        &quot;http&quot;: 200,
+        &quot;linhas&quot;: [
+          {
+            &quot;fornecedor&quot;: &quot;email-sandbox&quot;,
+            &quot;janela&quot;: &quot;Invalid Date&quot;,
+            &quot;chamadas&quot;: 0,
+            &quot;falhas&quot;: 0
+          },
+          {
+            &quot;fornecedor&quot;: &quot;messaging-sandbox&quot;,
+            &quot;janela&quot;: &quot;Invalid Date&quot;,
+            &quot;chamadas&quot;: 5,
+            &quot;falhas&quot;: 0
+          },
+          {
+            &quot;fornecedor&quot;: &quot;financing-sandbox&quot;,
+            &quot;janela&quot;: &quot;Invalid Date&quot;,
+            &quot;chamadas&quot;: 0,
+            &quot;falhas&quot;: 0
+          }
+        ],
+        &quot;chamadas&quot;: 5,
+        &quot;falhas&quot;: 0
+      },
+      &quot;conciliacao&quot;: {
+        &quot;chamadasNaOrigem&quot;: 5,
+        &quot;falhasNaOrigem&quot;: 0,
+        &quot;percentualCalculado&quot;: 0,
+        &quot;valorDoPainel&quot;: 0,
+        &quot;bate&quot;: true
+      }
+    }
+  },
+  &quot;responsaveisMarco10&quot;: [
+    {
+      &quot;responsavel&quot;: &quot;Almoxarifado (papel estoque-gestor)&quot;,
+      &quot;indicadores&quot;: [
+        &quot;inv.below_minimum&quot;,
+        &quot;inv.losses&quot;,
+        &quot;inv.stock_value&quot;,
+        &quot;inv.tools_overdue&quot;
+      ]
+    },
+    {
+      &quot;responsavel&quot;: &quot;Atendimento (papel atendimento-gestor)&quot;,
+      &quot;indicadores&quot;: [
+        &quot;sup.complaints_by_reason&quot;,
+        &quot;sup.reviews&quot;,
+        &quot;sup.satisfaction&quot;,
+        &quot;sup.sla_resolution&quot;
+      ]
+    },
+    {
+      &quot;responsavel&quot;: &quot;Correspondente Bancário (papel correspondente-gestor)&quot;,
+      &quot;indicadores&quot;: [
+        &quot;cor.analysis_time&quot;,
+        &quot;cor.approval_rate_by_provider&quot;,
+        &quot;cor.cases_by_stage&quot;,
+        &quot;cor.commission&quot;
+      ]
+    },
+    {
+      &quot;responsavel&quot;: &quot;Diretoria de Obras (papel obras-gestor)&quot;,
+      &quot;indicadores&quot;: [
+        &quot;obra.baseline_actual_forecast&quot;,
+        &quot;obra.delays&quot;,
+        &quot;obra.measurements&quot;,
+        &quot;obra.nonconformities&quot;,
+        &quot;obra.postwork_cost&quot;,
+        &quot;obra.progress_vs_schedule&quot;,
+        &quot;obra.projected_margin&quot;,
+        &quot;obra.recurrence&quot;,
+        &quot;obra.waste&quot;
+      ]
+    },
+    {
+      &quot;responsavel&quot;: &quot;Diretoria Financeira (papel financeiro-gestor)&quot;,
+      &quot;indicadores&quot;: [
+        &quot;fin.anomalies_open&quot;,
+        &quot;fin.approvals_pending&quot;,
+        &quot;fin.breathing_need&quot;,
+        &quot;fin.commissions_paid&quot;,
+        &quot;fin.commissions_provisioned&quot;,
+        &quot;fin.delinquency_rate&quot;,
+        &quot;fin.free_cash&quot;,
+        &quot;fin.overdue_payables&quot;,
+        &quot;fin.overdue_receivables&quot;,
+        &quot;fin.owner_repasses_pending&quot;,
+        &quot;fin.payables_30d&quot;,
+        &quot;fin.payables_60d&quot;,
+        &quot;fin.payables_7d&quot;,
+        &quot;fin.payments_settled_relevant&quot;,
+        &quot;fin.receivables_30d&quot;,
+        &quot;fin.receivables_60d&quot;,
+        &quot;fin.receivables_7d&quot;,
+        &quot;fin.reconciliations_pending&quot;,
+        &quot;fin.sector_margin&quot;,
+        &quot;fin.third_party_cash&quot;
+      ]
+    },
+    {
+      &quot;responsavel&quot;: &quot;Gerência Comercial (papel comercial-gestor)&quot;,
+      &quot;indicadores&quot;: [
+        &quot;crm.broker_capture&quot;,
+        &quot;crm.broker_conversion&quot;,
+        &quot;crm.conversion_rate&quot;,
+        &quot;crm.first_response_time&quot;,
+        &quot;crm.leads_by_origin&quot;,
+        &quot;crm.loss_reasons&quot;,
+        &quot;crm.opportunities_by_stage&quot;,
+        &quot;crm.opportunities_won&quot;,
+        &quot;crm.portfolio_without_next_action&quot;,
+        &quot;crm.proposals&quot;,
+        &quot;crm.visits&quot;,
+        &quot;prop.active_properties&quot;,
+        &quot;prop.price_changes&quot;,
+        &quot;prop.without_sale_by_period&quot;,
+        &quot;radar.matches&quot;
+      ]
+    },
+    {
+      &quot;responsavel&quot;: &quot;Gerência de Locação (papel locação-gestor)&quot;,
+      &quot;indicadores&quot;: [
+        &quot;rent.active_contracts&quot;,
+        &quot;rent.delinquency&quot;,
+        &quot;rent.guarantees_expiring&quot;,
+        &quot;rent.inspections_keys&quot;,
+        &quot;rent.obligations_pending&quot;,
+        &quot;rent.repasses&quot;,
+        &quot;rent.satisfaction&quot;,
+        &quot;rent.tickets&quot;,
+        &quot;rent.vacancy&quot;
+      ]
+    },
+    {
+      &quot;responsavel&quot;: &quot;Gestor de Estoque (papel estoque-gestor)&quot;,
+      &quot;indicadores&quot;: [
+        &quot;inv.adjustments_pending&quot;
+      ]
+    },
+    {
+      &quot;responsavel&quot;: &quot;Jurídico (papel juridico-gestor)&quot;,
+      &quot;indicadores&quot;: [
+        &quot;legal.contracts_signed&quot;
+      ]
+    },
+    {
+      &quot;responsavel&quot;: &quot;Jurídico (papel jurídico-gestor)&quot;,
+      &quot;indicadores&quot;: [
+        &quot;legal.cases_by_risk&quot;,
+        &quot;legal.deadlines&quot;,
+        &quot;legal.missing_documents&quot;,
+        &quot;legal.values&quot;
+      ]
+    },
+    {
+      &quot;responsavel&quot;: &quot;Marketing (papel marketing-gestor)&quot;,
+      &quot;indicadores&quot;: [
+        &quot;mkt.attribution&quot;,
+        &quot;mkt.automations_blocked_failed&quot;,
+        &quot;mkt.campaigns&quot;,
+        &quot;mkt.cost&quot;,
+        &quot;mkt.deliverability&quot;,
+        &quot;mkt.frequency&quot;,
+        &quot;mkt.leads&quot;,
+        &quot;mkt.opt_out&quot;
+      ]
+    },
+    {
+      &quot;responsavel&quot;: &quot;Tecnologia (papel tecnologia-gestor)&quot;,
+      &quot;indicadores&quot;: [
+        &quot;tec.rule_approvals_pending&quot;
+      ]
+    },
+    {
+      &quot;responsavel&quot;: &quot;Tecnologia (papel ti-gestor)&quot;,
+      &quot;indicadores&quot;: [
+        &quot;ai.budget&quot;,
+        &quot;ai.cost_by_agent&quot;,
+        &quot;ai.quality_scores&quot;,
+        &quot;ai.tool_calls_blocked&quot;,
+        &quot;tec.auth_failures&quot;,
+        &quot;tec.availability&quot;,
+        &quot;tec.blocked_events&quot;,
+        &quot;tec.freshness&quot;,
+        &quot;tec.integration_errors&quot;,
+        &quot;tec.queues_dlq&quot;
+      ]
+    },
+    {
+      &quot;responsavel&quot;: &quot;Tecnologia/IA (papel ia-gestor)&quot;,
+      &quot;indicadores&quot;: [
+        &quot;ai.proposals_pending&quot;
+      ]
+    }
+  ],
+  &quot;execucoesCi&quot;: [
+    {
+      &quot;commit&quot;: &quot;db42822d&quot;,
+      &quot;conclusion&quot;: &quot;success&quot;,
+      &quot;databaseId&quot;: 43910979203,
+      &quot;name&quot;: &quot;Esteira do Marketing&quot;,
+      &quot;status&quot;: &quot;completed&quot;,
+      &quot;url&quot;: &quot;https://github.com/gsPatrick/NayaraOne--API/actions/runs/43910979203&quot;
+    },
+    {
+      &quot;commit&quot;: &quot;db42822d&quot;,
+      &quot;conclusion&quot;: &quot;success&quot;,
+      &quot;databaseId&quot;: 43910979007,
+      &quot;name&quot;: &quot;Governanca&quot;,
+      &quot;status&quot;: &quot;completed&quot;,
+      &quot;url&quot;: &quot;https://github.com/gsPatrick/NayaraOne--API/actions/runs/43910979007&quot;
+    },
+    {
+      &quot;commit&quot;: &quot;db42822d&quot;,
+      &quot;conclusion&quot;: &quot;success&quot;,
+      &quot;databaseId&quot;: 43910979173,
+      &quot;name&quot;: &quot;Esteira do Marco 3&quot;,
+      &quot;status&quot;: &quot;completed&quot;,
+      &quot;url&quot;: &quot;https://github.com/gsPatrick/NayaraOne--API/actions/runs/43910979173&quot;
+    },
+    {
+      &quot;commit&quot;: &quot;db42822d&quot;,
+      &quot;conclusion&quot;: &quot;success&quot;,
+      &quot;databaseId&quot;: 43910978831,
+      &quot;name&quot;: &quot;Esteira de Obras&quot;,
+      &quot;status&quot;: &quot;completed&quot;,
+      &quot;url&quot;: &quot;https://github.com/gsPatrick/NayaraOne--API/actions/runs/43910978831&quot;
+    },
+    {
+      &quot;commit&quot;: &quot;db42822d&quot;,
+      &quot;conclusion&quot;: &quot;success&quot;,
+      &quot;databaseId&quot;: 43910978860,
+      &quot;name&quot;: &quot;Esteira do juridico&quot;,
+      &quot;status&quot;: &quot;completed&quot;,
+      &quot;url&quot;: &quot;https://github.com/gsPatrick/NayaraOne--API/actions/runs/43910978860&quot;
+    },
+    {
+      &quot;commit&quot;: &quot;db42822d&quot;,
+      &quot;conclusion&quot;: &quot;success&quot;,
+      &quot;databaseId&quot;: 43910979110,
+      &quot;name&quot;: &quot;Esteira do Financeiro&quot;,
+      &quot;status&quot;: &quot;completed&quot;,
+      &quot;url&quot;: &quot;https://github.com/gsPatrick/NayaraOne--API/actions/runs/43910979110&quot;
+    },
+    {
+      &quot;commit&quot;: &quot;db42822d&quot;,
+      &quot;conclusion&quot;: &quot;success&quot;,
+      &quot;databaseId&quot;: 43910978663,
+      &quot;name&quot;: &quot;Esteira das integracoes&quot;,
+      &quot;status&quot;: &quot;completed&quot;,
+      &quot;url&quot;: &quot;https://github.com/gsPatrick/NayaraOne--API/actions/runs/43910978663&quot;
+    },
+    {
+      &quot;commit&quot;: &quot;db42822d&quot;,
+      &quot;conclusion&quot;: &quot;success&quot;,
+      &quot;databaseId&quot;: 43910978550,
+      &quot;name&quot;: &quot;Contract tests&quot;,
+      &quot;status&quot;: &quot;completed&quot;,
+      &quot;url&quot;: &quot;https://github.com/gsPatrick/NayaraOne--API/actions/runs/43910978550&quot;
+    },
+    {
+      &quot;commit&quot;: &quot;db42822d&quot;,
+      &quot;conclusion&quot;: &quot;success&quot;,
+      &quot;databaseId&quot;: 43910978483,
+      &quot;name&quot;: &quot;Esteira do BI&quot;,
+      &quot;status&quot;: &quot;completed&quot;,
+      &quot;url&quot;: &quot;https://github.com/gsPatrick/NayaraOne--API/actions/runs/43910978483&quot;
+    },
+    {
+      &quot;commit&quot;: &quot;447ed21d&quot;,
+      &quot;conclusion&quot;: &quot;success&quot;,
+      &quot;databaseId&quot;: 43971129793,
+      &quot;name&quot;: &quot;Esteira de Obras&quot;,
+      &quot;status&quot;: &quot;completed&quot;,
+      &quot;url&quot;: &quot;https://github.com/gsPatrick/NayaraOne--API/actions/runs/43971129793&quot;
+    },
+    {
+      &quot;commit&quot;: &quot;447ed21d&quot;,
+      &quot;conclusion&quot;: &quot;success&quot;,
+      &quot;databaseId&quot;: 43971129816,
+      &quot;name&quot;: &quot;Esteira do Marco 3&quot;,
+      &quot;status&quot;: &quot;completed&quot;,
+      &quot;url&quot;: &quot;https://github.com/gsPatrick/NayaraOne--API/actions/runs/43971129816&quot;
+    },
+    {
+      &quot;commit&quot;: &quot;447ed21d&quot;,
+      &quot;conclusion&quot;: &quot;success&quot;,
+      &quot;databaseId&quot;: 43971129954,
+      &quot;name&quot;: &quot;Governanca&quot;,
+      &quot;status&quot;: &quot;completed&quot;,
+      &quot;url&quot;: &quot;https://github.com/gsPatrick/NayaraOne--API/actions/runs/43971129954&quot;
+    },
+    {
+      &quot;commit&quot;: &quot;447ed21d&quot;,
+      &quot;conclusion&quot;: &quot;success&quot;,
+      &quot;databaseId&quot;: 43971129786,
+      &quot;name&quot;: &quot;Esteira do juridico&quot;,
+      &quot;status&quot;: &quot;completed&quot;,
+      &quot;url&quot;: &quot;https://github.com/gsPatrick/NayaraOne--API/actions/runs/43971129786&quot;
+    },
+    {
+      &quot;commit&quot;: &quot;447ed21d&quot;,
+      &quot;conclusion&quot;: &quot;success&quot;,
+      &quot;databaseId&quot;: 43971129823,
+      &quot;name&quot;: &quot;Contract tests&quot;,
+      &quot;status&quot;: &quot;completed&quot;,
+      &quot;url&quot;: &quot;https://github.com/gsPatrick/NayaraOne--API/actions/runs/43971129823&quot;
+    },
+    {
+      &quot;commit&quot;: &quot;447ed21d&quot;,
+      &quot;conclusion&quot;: &quot;success&quot;,
+      &quot;databaseId&quot;: 43971129761,
+      &quot;name&quot;: &quot;Esteira do Marketing&quot;,
+      &quot;status&quot;: &quot;completed&quot;,
+      &quot;url&quot;: &quot;https://github.com/gsPatrick/NayaraOne--API/actions/runs/43971129761&quot;
+    },
+    {
+      &quot;commit&quot;: &quot;447ed21d&quot;,
+      &quot;conclusion&quot;: &quot;success&quot;,
+      &quot;databaseId&quot;: 43971129945,
+      &quot;name&quot;: &quot;Esteira do Financeiro&quot;,
+      &quot;status&quot;: &quot;completed&quot;,
+      &quot;url&quot;: &quot;https://github.com/gsPatrick/NayaraOne--API/actions/runs/43971129945&quot;
+    },
+    {
+      &quot;commit&quot;: &quot;447ed21d&quot;,
+      &quot;conclusion&quot;: &quot;success&quot;,
+      &quot;databaseId&quot;: 43971129766,
+      &quot;name&quot;: &quot;Esteira do BI&quot;,
+      &quot;status&quot;: &quot;completed&quot;,
+      &quot;url&quot;: &quot;https://github.com/gsPatrick/NayaraOne--API/actions/runs/43971129766&quot;
+    },
+    {
+      &quot;commit&quot;: &quot;447ed21d&quot;,
+      &quot;conclusion&quot;: &quot;success&quot;,
+      &quot;databaseId&quot;: 43971129795,
+      &quot;name&quot;: &quot;Esteira da NAY&quot;,
+      &quot;status&quot;: &quot;completed&quot;,
+      &quot;url&quot;: &quot;https://github.com/gsPatrick/NayaraOne--API/actions/runs/43971129795&quot;
+    },
+    {
+      &quot;commit&quot;: &quot;447ed21d&quot;,
+      &quot;conclusion&quot;: &quot;success&quot;,
+      &quot;databaseId&quot;: 43971129993,
+      &quot;name&quot;: &quot;Esteira das integracoes&quot;,
+      &quot;status&quot;: &quot;completed&quot;,
+      &quot;url&quot;: &quot;https://github.com/gsPatrick/NayaraOne--API/actions/runs/43971129993&quot;
+    },
+    {
+      &quot;commit&quot;: &quot;5d83396&quot;,
+      &quot;conclusion&quot;: &quot;success&quot;,
+      &quot;databaseId&quot;: 43894069538,
+      &quot;name&quot;: &quot;CI Front&quot;,
+      &quot;status&quot;: &quot;completed&quot;,
+      &quot;url&quot;: &quot;https://github.com/gsPatrick/NayaraOne--FRONT/actions/runs/43894069538&quot;
+    },
+    {
+      &quot;commit&quot;: &quot;68d9a33&quot;,
+      &quot;conclusion&quot;: &quot;success&quot;,
+      &quot;databaseId&quot;: 43972907622,
+      &quot;name&quot;: &quot;CI Front&quot;,
+      &quot;status&quot;: &quot;completed&quot;,
+      &quot;url&quot;: &quot;https://github.com/gsPatrick/NayaraOne--FRONT/actions/runs/43972907622&quot;
+    }
+  ],
+  &quot;retestes&quot;: {
+    &quot;ponto5&quot;: {
+      &quot;ok&quot;: 78,
+      &quot;falharam&quot;: 0,
+      &quot;naoVerificadas&quot;: 0
+    },
+    &quot;m3&quot;: {
+      &quot;ok&quot;: 13,
+      &quot;falharam&quot;: 0
+    },
+    &quot;m5&quot;: {
+      &quot;ok&quot;: 10,
+      &quot;falharam&quot;: 0
+    },
+    &quot;m4&quot;: {
+      &quot;id&quot;: &quot;1ec84d67-dd14-46a6-a969-e715a6291f2a&quot;,
+      &quot;descricao&quot;: &quot;ACEITE-M4 recebível fictício de R$ 0,30 (2026-11-16): baixas de R$ 0,10 e R$ 0,20 pela Nayara, com o autenticador&quot;,
+      &quot;valor&quot;: &quot;0.30&quot;,
+      &quot;natureza&quot;: &quot;RECEIVABLE&quot;,
+      &quot;status&quot;: &quot;PENDING&quot;,
+      &quot;vencimento&quot;: &quot;2026-11-23T00:00:00.000Z&quot;,
+      &quot;centroDeResultado&quot;: &quot;Comissões de correspondente bancário&quot;
+    }
+  },
+  &quot;rodadas&quot;: [
+    {
+      &quot;achado&quot;: &quot;Migration de recriação das contas canceladas das medições de ensaio recusada no deploy (\&quot;must be owner\&quot;)&quot;,
+      &quot;causa&quot;: &quot;Rodada com o usuário de execução da API, que não é dono das tabelas&quot;,
+      &quot;correcao&quot;: &quot;Roteiro de deploy: migrations com o usuário dono (db42822d); aplicadas as 58 migrations da integração&quot;,
+      &quot;reconfirmacao&quot;: &quot;0 pendentes; regra \&quot;medição a pagar sempre tem conta\&quot; validada no banco&quot;
+    },
+    {
+      &quot;achado&quot;: &quot;Centro de Comando e semáforo em 504 (tempo esgotado)&quot;,
+      &quot;causa&quot;: &quot;A unidade de cada alerta lia a tabela de retratos inteira (2,5 GB) uma vez por alerta: com a regra de isolamento por empresa o banco não usava o índice&quot;,
+      &quot;correcao&quot;: &quot;Leitura pelo índice (7bcb70c2); teste de regressão que reprova a forma antiga&quot;,
+      &quot;reconfirmacao&quot;: &quot;Painéis voltaram a responder (200)&quot;
+    },
+    {
+      &quot;achado&quot;: &quot;Centro de Comando em 19 a 29 s e semáforo em 38 a 52 s&quot;,
+      &quot;causa&quot;: &quot;O estado de qualidade de cada indicador lia as 510 mil verificações da empresa (~1 s por indicador, dezenas por abertura)&quot;,
+      &quot;correcao&quot;: &quot;Índice da última execução de cada verificação e uma leitura por abertura (b32187c5, migration 20261116210000)&quot;,
+      &quot;reconfirmacao&quot;: &quot;0,5 a 1,7 s na homologação&quot;
+    },
+    {
+      &quot;achado&quot;: &quot;Esteira do BI reprovada no commit b32187c5 (consolidado do grupo)&quot;,
+      &quot;causa&quot;: &quot;A memória por requisição podia reaproveitar a leitura de uma empresa sob outra na consolidação&quot;,
+      &quot;correcao&quot;: &quot;Memória com a empresa da sessão na chave; definição de indicador por índice (65c9bd2d, migration 20261116220000)&quot;,
+      &quot;reconfirmacao&quot;: &quot;Bateria completa do BI: 1.627 testes aprovados&quot;
+    },
+    {
+      &quot;achado&quot;: &quot;Contas a pagar geradas pelo sistema sem vencimento (medição, recebimento de compra, garantia)&quot;,
+      &quot;causa&quot;: &quot;Os fluxos não informavam vencimento e os cadernos não definem o prazo&quot;,
+      &quot;correcao&quot;: &quot;Parâmetros do administrador, padrão 30 dias (API 666b9d61, tela 68d9a33)&quot;,
+      &quot;reconfirmacao&quot;: &quot;Testes dos três fluxos e da aba Financeiro aprovados&quot;
+    },
+    {
+      &quot;achado&quot;: &quot;No detalhamento de \&quot;Integrações com erro\&quot; o início da janela vinha vazio&quot;,
+      &quot;causa&quot;: &quot;O mascaramento de dados restritos do BI tratava data como objeto comum e a esvaziava; valia para toda coluna de data do detalhamento, da exportação e do briefing&quot;,
+      &quot;correcao&quot;: &quot;Data passa intacta pelo mascaramento (API 4c43f5c1)&quot;,
+      &quot;reconfirmacao&quot;: &quot;563 testes de detalhamento, exportação, briefing e IA aprovados; publicação no próximo deploy&quot;
+    },
+    {
+      &quot;achado&quot;: &quot;Esteira das integrações reprovada no b32187c5&quot;,
+      &quot;causa&quot;: &quot;Migration nova sem o nome completo no roteiro de deploy (verificação de governança)&quot;,
+      &quot;correcao&quot;: &quot;Roteiro de deploy atualizado (65c9bd2d)&quot;,
+      &quot;reconfirmacao&quot;: &quot;Verificação aprovada&quot;
+    }
+  ],
+  &quot;pendencias&quot;: [
+    {
+      &quot;item&quot;: &quot;Ensaios de restauração dos Marcos 4, 5 e 6 executados de novo na versão integrada&quot;,
+      &quot;responsavel&quot;: &quot;Patrick&quot;,
+      &quot;previsao&quot;: &quot;até 18/11/2026&quot;,
+      &quot;motivo&quot;: &quot;As provas atuais foram medidas em commits anteriores à integração. Rodam localmente, nunca na homologação.&quot;
+    },
+    {
+      &quot;item&quot;: &quot;Campos que travariam indicadores também em produção (risco do processo, causa da não conformidade, origem do lead e verificações que contam registros que o indicador não usa)&quot;,
+      &quot;responsavel&quot;: &quot;Patrick&quot;,
+      &quot;previsao&quot;: &quot;até 18/11/2026&quot;,
+      &quot;motivo&quot;: &quot;Conferência campo a campo do código em 16/11 (seção 1.4). O vencimento das contas geradas pelo sistema já foi corrigido hoje.&quot;
+    },
+    {
+      &quot;item&quot;: &quot;Reconstrução, na homologação, dos retratos que só atualizam por evento (custo das obras, medições, comissões, desperdício)&quot;,
+      &quot;responsavel&quot;: &quot;Patrick (console da API)&quot;,
+      &quot;previsao&quot;: &quot;junto com o próximo deploy&quot;,
+      &quot;motivo&quot;: &quot;Esses retratos nunca foram alimentados na empresa A; o comando oficial é scripts/analytics/rebuildReadModel.js, com permissão própria e parâmetro de habilitação.&quot;
+    },
+    {
+      &quot;item&quot;: &quot;Disponibilidade de DEV e LAB, promoção nesses ambientes e relatório de carga no LAB&quot;,
+      &quot;responsavel&quot;: &quot;Patrick&quot;,
+      &quot;previsao&quot;: &quot;data a confirmar pelo Patrick até 18/11/2026&quot;,
+      &quot;motivo&quot;: &quot;Depende de eu publicar os ambientes e os segredos do repositório; o mecanismo está entregue e testado.&quot;
+    },
+    {
+      &quot;item&quot;: &quot;Uniformizar os papéis de responsável no catálogo dos indicadores (com e sem acento, nomes diferentes para o mesmo papel)&quot;,
+      &quot;responsavel&quot;: &quot;Patrick&quot;,
+      &quot;previsao&quot;: &quot;antes do aceite do Marco 10&quot;,
+      &quot;motivo&quot;: &quot;Achado ao montar a lista de relatórios por responsável (seção 4).&quot;
+    }
+  ],
+  &quot;auxiliares&quot;: [
+    {
+      &quot;arquivo&quot;: &quot;resposta-nayara-16-11-dados/indicadores-ao-vivo.json&quot;,
+      &quot;descricao&quot;: &quot;Leitura de cada indicador sinalizado pela API (GET /analytics/metrics/:code)&quot;,
+      &quot;sha256&quot;: &quot;2cb30e3c17ef14923f47e74ee2f41351b0643dcf1aee0850ffb161bd9102d72e&quot;,
+      &quot;bytes&quot;: 41721
+    },
+    {
+      &quot;arquivo&quot;: &quot;resposta-nayara-16-11-dados/residuo-homologacao.json&quot;,
+      &quot;descricao&quot;: &quot;Registros de origem incompletos, verificação por verificação (somente leitura)&quot;,
+      &quot;sha256&quot;: &quot;72f40a454270d2716b2e25b00ba037532e28929be7ca8353b6018e7c52f593a0&quot;,
+      &quot;bytes&quot;: 1049722
+    },
+    {
+      &quot;arquivo&quot;: &quot;resposta-nayara-16-11-dados/residuo-homologacao.md&quot;,
+      &quot;descricao&quot;: &quot;Os mesmos registros em texto legível&quot;,
+      &quot;sha256&quot;: &quot;aea66d94fa7480ec161798c0f3048b20fe6315ee37f221e647f78673594ffc5f&quot;,
+      &quot;bytes&quot;: 296236
+    },
+    {
+      &quot;arquivo&quot;: &quot;resposta-nayara-16-11-dados/campos-obrigatorios-bi.md&quot;,
+      &quot;descricao&quot;: &quot;Conferência campo a campo: a API e a tela exigem o campo?&quot;,
+      &quot;sha256&quot;: &quot;fce75e0b66ecdda66752a456e694808a21e954cc2b3e8bf5c88a7adc1844031c&quot;,
+      &quot;bytes&quot;: 35591
+    },
+    {
+      &quot;arquivo&quot;: &quot;resposta-nayara-16-11-dados/indicadores-no-codigo.md&quot;,
+      &quot;descricao&quot;: &quot;Fonte, período e regra de cada indicador, com arquivo e linha&quot;,
+      &quot;sha256&quot;: &quot;d618af7dff1e235293ef5158bbe7d33973eaba3062805cb18eae3ea1b978af40&quot;,
+      &quot;bytes&quot;: 49701
+    },
+    {
+      &quot;arquivo&quot;: &quot;resposta-nayara-16-11-dados/reteste-ponto5.json&quot;,
+      &quot;descricao&quot;: &quot;Reteste do ponto 5 (opt-out, bloqueios, automações, isolamento, auditoria)&quot;,
+      &quot;sha256&quot;: &quot;46a15a0eca2b836a3195246ab11ab5ae7ce265c3613f8ccf48f7481c73defce6&quot;,
+      &quot;bytes&quot;: 33945
+    },
+    {
+      &quot;arquivo&quot;: &quot;resposta-nayara-16-11-dados/reteste-m3-troca-de-arquivo.json&quot;,
+      &quot;descricao&quot;: &quot;Marco 3: troca de arquivo de documento validado&quot;,
+      &quot;sha256&quot;: &quot;26c4850a28376ca2801903c9badb03d6c964a7e666ecb3eff31de533d7dee9ae&quot;,
+      &quot;bytes&quot;: 5227
+    },
+    {
+      &quot;arquivo&quot;: &quot;resposta-nayara-16-11-dados/reteste-m5-prazos.json&quot;,
+      &quot;descricao&quot;: &quot;Marco 5: criar, atribuir, remarcar e concluir prazo jurídico&quot;,
+      &quot;sha256&quot;: &quot;41a5f145126f0d0b79d59fc39b4ea8a3414cf90039e7f2291f2a611bb3986cb1&quot;,
+      &quot;bytes&quot;: 4870
+    },
+    {
+      &quot;arquivo&quot;: &quot;resposta-nayara-16-11-dados/recebivel-030.json&quot;,
+      &quot;descricao&quot;: &quot;Marco 4: recebível fictício de R$ 0,30&quot;,
+      &quot;sha256&quot;: &quot;d5ff33e5747f12a7fe256842eebb7256ac394f93255655164468c68a8fbd5e68&quot;,
+      &quot;bytes&quot;: 1126
+    },
+    {
+      &quot;arquivo&quot;: &quot;resposta-nayara-16-11-dados/janela-integracoes-antes.json&quot;,
+      &quot;descricao&quot;: &quot;Integrações com erro: janela vazia&quot;,
+      &quot;sha256&quot;: &quot;08bc4cac1cca22a1c80cbe02b534703b7135b444a5beff0794e8584f8caa94e0&quot;,
+      &quot;bytes&quot;: 754
+    },
+    {
+      &quot;arquivo&quot;: &quot;resposta-nayara-16-11-dados/janela-integracoes-envio.json&quot;,
+      &quot;descricao&quot;: &quot;Integrações com erro: envios de teste&quot;,
+      &quot;sha256&quot;: &quot;9ca86f9d5f6996d7bec8d2b0b31a908dd9a3fc1e9035edef721e83fe90230ef5&quot;,
+      &quot;bytes&quot;: 679
+    },
+    {
+      &quot;arquivo&quot;: &quot;resposta-nayara-16-11-dados/janela-integracoes-depois.json&quot;,
+      &quot;descricao&quot;: &quot;Integrações com erro: janela com chamadas&quot;,
+      &quot;sha256&quot;: &quot;aeeef02abcaf0b3ac94e2c7cc429d08d9d1fb9475a9230ce699413a1a515dc92&quot;,
+      &quot;bytes&quot;: 1034
+    }
+  ]
+}</pre></details>
+<h3>Arquivos de dados</h3><div class="tw"><table><thead><tr><th>Arquivo</th><th>Conteúdo</th><th>SHA-256</th><th>Tamanho</th></tr></thead><tbody><tr><td><a href="resposta-nayara-16-11-dados/indicadores-ao-vivo.json">indicadores-ao-vivo.json</a></td><td>Leitura de cada indicador sinalizado pela API (GET /analytics/metrics/:code)</td><td><code>2cb30e3c17ef14923f47e74ee2f41351b0643dcf1aee0850ffb161bd9102d72e</code></td><td>40.7 KB</td></tr><tr><td><a href="resposta-nayara-16-11-dados/residuo-homologacao.json">residuo-homologacao.json</a></td><td>Registros de origem incompletos, verificação por verificação (somente leitura)</td><td><code>72f40a454270d2716b2e25b00ba037532e28929be7ca8353b6018e7c52f593a0</code></td><td>1025.1 KB</td></tr><tr><td><a href="resposta-nayara-16-11-dados/residuo-homologacao.md">residuo-homologacao.md</a></td><td>Os mesmos registros em texto legível</td><td><code>aea66d94fa7480ec161798c0f3048b20fe6315ee37f221e647f78673594ffc5f</code></td><td>289.3 KB</td></tr><tr><td><a href="resposta-nayara-16-11-dados/campos-obrigatorios-bi.md">campos-obrigatorios-bi.md</a></td><td>Conferência campo a campo: a API e a tela exigem o campo?</td><td><code>fce75e0b66ecdda66752a456e694808a21e954cc2b3e8bf5c88a7adc1844031c</code></td><td>34.8 KB</td></tr><tr><td><a href="resposta-nayara-16-11-dados/indicadores-no-codigo.md">indicadores-no-codigo.md</a></td><td>Fonte, período e regra de cada indicador, com arquivo e linha</td><td><code>d618af7dff1e235293ef5158bbe7d33973eaba3062805cb18eae3ea1b978af40</code></td><td>48.5 KB</td></tr><tr><td><a href="resposta-nayara-16-11-dados/reteste-ponto5.json">reteste-ponto5.json</a></td><td>Reteste do ponto 5 (opt-out, bloqueios, automações, isolamento, auditoria)</td><td><code>46a15a0eca2b836a3195246ab11ab5ae7ce265c3613f8ccf48f7481c73defce6</code></td><td>33.1 KB</td></tr><tr><td><a href="resposta-nayara-16-11-dados/reteste-m3-troca-de-arquivo.json">reteste-m3-troca-de-arquivo.json</a></td><td>Marco 3: troca de arquivo de documento validado</td><td><code>26c4850a28376ca2801903c9badb03d6c964a7e666ecb3eff31de533d7dee9ae</code></td><td>5.1 KB</td></tr><tr><td><a href="resposta-nayara-16-11-dados/reteste-m5-prazos.json">reteste-m5-prazos.json</a></td><td>Marco 5: criar, atribuir, remarcar e concluir prazo jurídico</td><td><code>41a5f145126f0d0b79d59fc39b4ea8a3414cf90039e7f2291f2a611bb3986cb1</code></td><td>4.8 KB</td></tr><tr><td><a href="resposta-nayara-16-11-dados/recebivel-030.json">recebivel-030.json</a></td><td>Marco 4: recebível fictício de R$ 0,30</td><td><code>d5ff33e5747f12a7fe256842eebb7256ac394f93255655164468c68a8fbd5e68</code></td><td>1.1 KB</td></tr><tr><td><a href="resposta-nayara-16-11-dados/janela-integracoes-antes.json">janela-integracoes-antes.json</a></td><td>Integrações com erro: janela vazia</td><td><code>08bc4cac1cca22a1c80cbe02b534703b7135b444a5beff0794e8584f8caa94e0</code></td><td>0.7 KB</td></tr><tr><td><a href="resposta-nayara-16-11-dados/janela-integracoes-envio.json">janela-integracoes-envio.json</a></td><td>Integrações com erro: envios de teste</td><td><code>9ca86f9d5f6996d7bec8d2b0b31a908dd9a3fc1e9035edef721e83fe90230ef5</code></td><td>0.7 KB</td></tr><tr><td><a href="resposta-nayara-16-11-dados/janela-integracoes-depois.json">janela-integracoes-depois.json</a></td><td>Integrações com erro: janela com chamadas</td><td><code>aeeef02abcaf0b3ac94e2c7cc429d08d9d1fb9475a9230ce699413a1a515dc92</code></td><td>1.0 KB</td></tr></tbody></table></div>
+</section>
+<script type="application/json" id="evidencias-resposta-16-11">{
+  "meta": {
+    "titulo": "Resposta de 16/11/2026",
+    "geradoEm": "2026-11-16T23:18:08.967Z",
+    "autor": "Patrick Siqueira",
+    "node": "v24.18.0",
+    "publicado": {
+      "api": "447ed21dc54ada6f0730957ce75016cf48b58716",
+      "apiDeployedAt": "2026-11-16T22:34:53.755Z",
+      "front": "68d9a3397151a0e14cce960b94a59a0e508c0f2a",
+      "frontDeployedAt": "2026-11-16T23:18:04.400Z"
+    }
+  },
+  "desempenho": [
+    {
+      "painel": "Centro de Comando",
+      "antes": "504 (tempo esgotado) após mais de 40 s",
+      "intermediario": "19 a 29 s",
+      "depois": "0,5 a 1,3 s (0,95 s na versão 447ed21d)",
+      "meta": "2,5 s"
+    },
+    {
+      "painel": "Semáforo por área",
+      "antes": "504 (tempo esgotado) após mais de 45 s",
+      "intermediario": "38 a 52 s",
+      "depois": "0,5 a 1,7 s (1,66 s na versão 447ed21d)",
+      "meta": "2,5 s"
+    }
+  ],
+  "indicadores": [
+    {
+      "code": "legal.contracts_signed",
+      "nome": "Contratos assinados",
+      "bloco": "O que aconteceu",
+      "fonte": "Fatos do dia (contratos com assinatura registrada)",
+      "periodo": "Últimas 24 h até o recálculo (analytics.centro.janela_horas)",
+      "sair": "Nenhum contrato \"assinado\" sem data de assinatura e um evento de contrato recente",
+      "esperado": "Quantidade de contratos assinados na janela",
+      "registro": "Contrato levado até a assinatura manual com evidência (rota de assinaturas manuais)",
+      "checks": [
+        "command_events_occurred_at_completeness"
+      ],
+      "estado": "Sem registro do dia (404)",
+      "causa": "Verificação command_events_occurred_at_completeness reprovada: 79 de 185 registros de origem sem occurred_at (data do fato); a atualização fica bloqueada e o retrato para no último bom",
+      "prova": "residuo-homologacao.json"
+    },
+    {
+      "code": "crm.opportunities_won",
+      "nome": "Oportunidades ganhas",
+      "bloco": "O que aconteceu",
+      "fonte": "Fatos do dia (oportunidades em ganho)",
+      "periodo": "Últimas 24 h até o recálculo",
+      "sair": "Nenhuma oportunidade ganha sem data de fechamento e uma oportunidade ganha na janela",
+      "esperado": "Quantidade de oportunidades ganhas na janela",
+      "registro": "Oportunidade criada como ganha (a data de fechamento é gravada pelo sistema)",
+      "checks": [
+        "command_events_occurred_at_completeness",
+        "crm_outcome_closed_at_completeness"
+      ],
+      "estado": "Sem registro do dia (404)",
+      "causa": "Verificação command_events_occurred_at_completeness reprovada: 79 de 185 registros de origem sem occurred_at (data do fato); a atualização fica bloqueada e o retrato para no último bom. Verificação crm_outcome_closed_at_completeness reprovada: 2 de 19 registros de origem sem closed_at; a atualização fica bloqueada e o retrato para no último bom",
+      "prova": "residuo-homologacao.json"
+    },
+    {
+      "code": "fin.payments_settled_relevant",
+      "nome": "Pagamentos acima do valor relevante",
+      "bloco": "O que aconteceu",
+      "fonte": "Fatos do dia (contas a pagar liquidadas)",
+      "periodo": "Últimas 24 h até o recálculo; valor relevante padrão R$ 10.000,00",
+      "sair": "Nenhuma conta paga sem data de liquidação e uma liquidação de pelo menos R$ 10.000,00 na janela",
+      "esperado": "Quantidade de pagamentos relevantes na janela",
+      "registro": "Conta a pagar de R$ 10.000,00 aprovada por outra pessoa e liquidada com o código do autenticador",
+      "checks": [
+        "command_events_occurred_at_completeness"
+      ],
+      "estado": "Sem registro do dia (404)",
+      "causa": "Verificação command_events_occurred_at_completeness reprovada: 79 de 185 registros de origem sem occurred_at (data do fato); a atualização fica bloqueada e o retrato para no último bom",
+      "prova": "residuo-homologacao.json"
+    },
+    {
+      "code": "legal.cases_by_risk",
+      "nome": "Processos por risco",
+      "bloco": "Onde há risco",
+      "fonte": "Processos jurídicos ativos",
+      "periodo": "Posição atual, sem janela",
+      "sair": "Todo processo ativo com nível de risco",
+      "esperado": "Total de processos ativos e o item \"processos de risco alto ou crítico\"",
+      "registro": "Processo com nível de risco informado",
+      "checks": [
+        "legal_cases_risk_risk_level_completeness"
+      ],
+      "estado": "DEGRADED, frescor STALE",
+      "causa": "Verificação legal_cases_risk_risk_level_completeness reprovada: 24 de 24 registros de origem sem risk_level; a atualização fica bloqueada e o retrato para no último bom",
+      "prova": "residuo-homologacao.json"
+    },
+    {
+      "code": "obra.projected_margin",
+      "nome": "Margem projetada",
+      "bloco": "Onde há risco",
+      "fonte": "Custo das obras (orçamento base, custo pago, receita contratada, avanço das etapas)",
+      "periodo": "Posição de hoje",
+      "sair": "Retrato do custo das obras atualizado e todas as obras com orçamento base, etapa e contrato com valor",
+      "esperado": "Margem em reais e as obras abaixo da margem mínima",
+      "registro": "Obra com orçamento, etapa e contrato de obra assinado",
+      "semRetrato": "rm_project_cost",
+      "estado": "Sem registro do dia (404)",
+      "causa": "O retrato rm_project_cost só atualiza por evento e nunca foi alimentado na empresa A: sem retrato não há número",
+      "prova": "indicadores-ao-vivo.json"
+    },
+    {
+      "code": "tec.integration_errors",
+      "nome": "Integrações com erro",
+      "bloco": "Onde há risco",
+      "fonte": "Tentativas de envio das conexões ativas",
+      "periodo": "Última hora cheia fechada (analytics.tec.janela_minutos = 60)",
+      "sair": "Pelo menos uma chamada na última hora fechada",
+      "esperado": "Percentual de erro e quantos fornecedores acima do limite",
+      "registro": "Envio por uma conexão ativa (demonstração na seção 3)",
+      "janela": true,
+      "estado": "INCOMPLETE, frescor STALE",
+      "causa": "Nenhuma chamada na última hora fechada (seção 3)",
+      "prova": "indicadores-ao-vivo.json"
+    },
+    {
+      "code": "fin.overdue_receivables",
+      "nome": "Inadimplência (valor vencido)",
+      "bloco": "Dinheiro parado e perdido",
+      "fonte": "Contas a receber em aberto vencidas",
+      "periodo": "Tudo que venceu antes de hoje",
+      "sair": "Nenhuma conta a pagar/receber em aberto sem vencimento",
+      "esperado": "Valor vencido a receber",
+      "registro": "Conta a receber com vencimento passado",
+      "checks": [
+        "finance_health_due_date_completeness"
+      ],
+      "estado": "INCOMPLETE, frescor FRESH",
+      "causa": "Verificação finance_health_due_date_completeness reprovada: 335 de 506 registros de origem sem due_at (vencimento); a atualização fica bloqueada e o retrato para no último bom",
+      "prova": "residuo-homologacao.json"
+    },
+    {
+      "code": "obra.measurements",
+      "nome": "Medições",
+      "bloco": "Dinheiro parado e perdido",
+      "fonte": "Medições das etapas e as contas a pagar delas",
+      "periodo": "Posição de hoje",
+      "sair": "Retrato das medições atualizado e nenhuma medição aprovada sem conta a pagar",
+      "esperado": "Total medido e o pendente de aprovação",
+      "registro": "Medição enviada para aprovação",
+      "semRetrato": "rm_project_measurements",
+      "estado": "INCOMPLETE, frescor FRESH",
+      "causa": "O retrato rm_project_measurements só atualiza por evento e nunca foi alimentado na empresa A: sem retrato não há número",
+      "prova": "indicadores-ao-vivo.json"
+    },
+    {
+      "code": "cor.commission",
+      "nome": "Comissões",
+      "bloco": "Dinheiro parado e perdido",
+      "fonte": "Comissões do correspondente (esperada, confirmada, recebida)",
+      "periodo": "Empresa inteira, mês corrente",
+      "sair": "Retrato das comissões atualizado (evento de comissão)",
+      "esperado": "Comissão a receber",
+      "registro": "Caso de financiamento com comissão criada e confirmada",
+      "semRetrato": "rm_fin_commission",
+      "estado": "Sem registro do dia (404)",
+      "causa": "O retrato rm_fin_commission só atualiza por evento e nunca foi alimentado na empresa A: sem retrato não há número",
+      "prova": "indicadores-ao-vivo.json"
+    },
+    {
+      "code": "fin.owner_repasses_pending",
+      "nome": "Repasses ao proprietário",
+      "bloco": "Dinheiro parado e perdido",
+      "fonte": "Repasses pendentes e aprovados",
+      "periodo": "Posição atual, idade em dias úteis",
+      "sair": "Todo repasse com mês de referência",
+      "esperado": "Repasses vencidos (à parte do dinheiro parado)",
+      "registro": "Repasse criado a partir de recebível liquidado",
+      "checks": [
+        "rental_repasses_reference_month_completeness"
+      ],
+      "estado": "DEGRADED, frescor FRESH",
+      "causa": "Verificação rental_repasses_reference_month_completeness reprovada: 26 de 33 registros de origem sem reference_month; a atualização fica bloqueada e o retrato para no último bom",
+      "prova": "residuo-homologacao.json"
+    },
+    {
+      "code": "inv.losses",
+      "nome": "Perdas de estoque",
+      "bloco": "Dinheiro parado e perdido",
+      "fonte": "Perdas aprovadas e movimentos de estoque",
+      "periodo": "Últimos 30 dias (analytics.estoque.janela_perdas_dias)",
+      "sair": "Todo item ativo com custo médio",
+      "esperado": "Valor das perdas no período",
+      "registro": "Perda de item com custo, aprovada por outra pessoa",
+      "checks": [
+        "inventory_health_item_cost_completeness"
+      ],
+      "estado": "DEGRADED, frescor FRESH",
+      "causa": "Verificação inventory_health_item_cost_completeness reprovada: 16 de 44 registros de origem sem item_cost; a atualização fica bloqueada e o retrato para no último bom",
+      "prova": "residuo-homologacao.json"
+    },
+    {
+      "code": "obra.waste",
+      "nome": "Desperdício",
+      "bloco": "Dinheiro parado e perdido",
+      "fonte": "Saídas e perdas de estoque ligadas a obras",
+      "periodo": "Acumulado",
+      "sair": "Retrato atualizado e pelo menos uma saída de material com custo para uma obra",
+      "esperado": "Valor do desperdício",
+      "registro": "Recebimento com custo e saída de material para uma etapa da obra",
+      "semRetrato": "rm_project_waste",
+      "estado": "INCOMPLETE, frescor UNKNOWN",
+      "causa": "O retrato rm_project_waste só atualiza por evento e nunca foi alimentado na empresa A: sem retrato não há número",
+      "prova": "indicadores-ao-vivo.json"
+    },
+    {
+      "code": "obra.postwork_cost",
+      "nome": "Custo pós-obra",
+      "bloco": "Dinheiro parado e perdido",
+      "fonte": "Chamados de garantia e ações",
+      "periodo": "Posição atual",
+      "sair": "Chamados com causa raiz (a verificação conta também os abertos)",
+      "esperado": "Custo realizado de garantia",
+      "registro": "Chamado de garantia com obra e causa raiz",
+      "checks": [
+        "postwork_cost_root_cause_code_completeness"
+      ],
+      "estado": "DEGRADED, frescor FRESH",
+      "causa": "Verificação postwork_cost_root_cause_code_completeness reprovada: 121 de 124 registros de origem sem root_cause_code; a atualização fica bloqueada e o retrato para no último bom",
+      "prova": "residuo-homologacao.json"
+    },
+    {
+      "code": "fin.payables_7d",
+      "nome": "Contas a pagar em 7 dias",
+      "bloco": "Prazos",
+      "fonte": "Contas a pagar em aberto",
+      "periodo": "Hoje até hoje + 6 (00:00 de São Paulo)",
+      "sair": "Nenhuma conta a pagar/receber em aberto sem vencimento",
+      "esperado": "Valor a pagar nos próximos 7 dias",
+      "registro": "Conta a pagar com vencimento nos próximos 7 dias",
+      "checks": [
+        "finance_health_due_date_completeness"
+      ],
+      "estado": "INCOMPLETE, frescor FRESH",
+      "causa": "Verificação finance_health_due_date_completeness reprovada: 335 de 506 registros de origem sem due_at (vencimento); a atualização fica bloqueada e o retrato para no último bom",
+      "prova": "residuo-homologacao.json"
+    },
+    {
+      "code": "obra.delays",
+      "nome": "Atrasos",
+      "bloco": "Prazos",
+      "fonte": "Etapas das obras",
+      "periodo": "Data-base de hoje em São Paulo",
+      "sair": "Todas as etapas abertas com data prevista",
+      "esperado": "Etapas atrasadas por obra",
+      "registro": "Etapa com data prevista no passado",
+      "checks": [
+        "project_delays_ends_at_completeness"
+      ],
+      "estado": "INCOMPLETE, frescor FRESH",
+      "causa": "Verificação project_delays_ends_at_completeness reprovada: 354 de 358 registros de origem sem ends_at; a atualização fica bloqueada e o retrato para no último bom",
+      "prova": "residuo-homologacao.json"
+    },
+    {
+      "code": "rent.inspections_keys",
+      "nome": "Vistorias e chaves",
+      "bloco": "Prazos",
+      "fonte": "Vistorias, entregas de chave e contratos de locação",
+      "periodo": "Posição de hoje",
+      "sair": "Toda vistoria ligada a um contrato",
+      "esperado": "Vistorias e chaves atrasadas",
+      "registro": "Vistoria de entrada ligada a contrato de locação",
+      "checks": [
+        "rental_insp_keys_contract_id_completeness"
+      ],
+      "estado": "DEGRADED, frescor FRESH",
+      "causa": "Verificação rental_insp_keys_contract_id_completeness reprovada: 8 de 34 registros de origem sem contract_id; a atualização fica bloqueada e o retrato para no último bom",
+      "prova": "residuo-homologacao.json"
+    }
+  ],
+  "residuo": [
+    {
+      "verificacao": "command_events_occurred_at_completeness",
+      "readModel": "rm_command_events",
+      "campo": "occurred_at (data do fato)",
+      "contagem": {
+        "pct": 42.7,
+        "nulls": 79,
+        "total": 185
+      },
+      "listados": 79,
+      "bate": true,
+      "classes": {
+        "CRIADO_POR_USUARIO_DE_TESTE": 79
+      }
+    },
+    {
+      "verificacao": "crm_lead_daily_lead_source_completeness",
+      "readModel": "rm_crm_lead_daily",
+      "campo": "lead_source",
+      "contagem": {
+        "pct": 100,
+        "nulls": 119,
+        "total": 119
+      },
+      "listados": 119,
+      "bate": true,
+      "classes": {
+        "CRIADO_POR_USUARIO_DE_TESTE": 119
+      }
+    },
+    {
+      "verificacao": "crm_next_action_next_action_completeness",
+      "readModel": "rm_crm_next_action",
+      "campo": "next_action",
+      "contagem": {
+        "pct": 44,
+        "nulls": 44,
+        "total": 100
+      },
+      "listados": 44,
+      "bate": true,
+      "classes": {
+        "CRIADO_POR_USUARIO_DE_TESTE": 44
+      }
+    },
+    {
+      "verificacao": "crm_outcome_closed_at_completeness",
+      "readModel": "rm_crm_outcome",
+      "campo": "closed_at",
+      "contagem": {
+        "pct": 10.53,
+        "nulls": 2,
+        "total": 19
+      },
+      "listados": 2,
+      "bate": true,
+      "classes": {
+        "CRIADO_POR_USUARIO_DE_TESTE": 2
+      }
+    },
+    {
+      "verificacao": "finance_health_due_date_completeness",
+      "readModel": "rm_finance_health",
+      "campo": "due_at (vencimento)",
+      "contagem": {
+        "pct": 66.21,
+        "nulls": 335,
+        "total": 506
+      },
+      "listados": 335,
+      "bate": true,
+      "classes": {
+        "RESIDUO_DE_TESTE_PELO_NOME": 210,
+        "CRIADO_POR_USUARIO_DE_TESTE": 121,
+        "SEM_AUTOR_REGISTRADO": 4
+      }
+    },
+    {
+      "verificacao": "intercompany_due_date_completeness",
+      "readModel": "rm_finance_intercompany",
+      "campo": "due_at (vencimento da perna de saída)",
+      "contagem": {
+        "pct": 100,
+        "nulls": 1,
+        "total": 1
+      },
+      "listados": 1,
+      "bate": true,
+      "classes": {
+        "RESIDUO_DE_TESTE_PELO_NOME": 1
+      }
+    },
+    {
+      "verificacao": "sector_margin_center_completeness",
+      "readModel": "rm_finance_sector_margin",
+      "campo": "result_center_id (centro de resultado)",
+      "contagem": {
+        "pct": 58.36,
+        "nulls": 185,
+        "total": 317
+      },
+      "listados": 185,
+      "bate": true,
+      "classes": {
+        "RESIDUO_DE_TESTE_PELO_NOME": 169,
+        "CRIADO_POR_USUARIO_DE_TESTE": 16
+      }
+    },
+    {
+      "verificacao": "sector_margin_competence_completeness",
+      "readModel": "rm_finance_sector_margin",
+      "campo": "competence_month (mês de competência)",
+      "contagem": {
+        "pct": 7.26,
+        "nulls": 23,
+        "total": 317
+      },
+      "listados": 23,
+      "bate": true,
+      "classes": {
+        "RESIDUO_DE_TESTE_PELO_NOME": 23
+      }
+    },
+    {
+      "verificacao": "inventory_health_item_cost_completeness",
+      "readModel": "rm_inventory_health",
+      "campo": "item_cost",
+      "contagem": {
+        "pct": 36.36,
+        "nulls": 16,
+        "total": 44
+      },
+      "listados": 16,
+      "bate": true,
+      "classes": {
+        "RESIDUO_DE_TESTE_PELO_NOME": 16
+      }
+    },
+    {
+      "verificacao": "legal_cases_risk_risk_level_completeness",
+      "readModel": "rm_legal_cases_risk",
+      "campo": "risk_level",
+      "contagem": {
+        "pct": 100,
+        "nulls": 24,
+        "total": 24
+      },
+      "listados": 24,
+      "bate": true,
+      "classes": {
+        "RESIDUO_DE_TESTE_PELO_NOME": 21,
+        "CRIADO_POR_USUARIO_DE_TESTE": 3
+      }
+    },
+    {
+      "verificacao": "legal_values_estimated_amount_completeness",
+      "readModel": "rm_legal_values",
+      "campo": "estimated_amount",
+      "contagem": {
+        "pct": 100,
+        "nulls": 24,
+        "total": 24
+      },
+      "listados": 24,
+      "bate": true,
+      "classes": {
+        "RESIDUO_DE_TESTE_PELO_NOME": 21,
+        "CRIADO_POR_USUARIO_DE_TESTE": 3
+      }
+    },
+    {
+      "verificacao": "postwork_cost_root_cause_code_completeness",
+      "readModel": "rm_postwork_cost",
+      "campo": "root_cause_code",
+      "contagem": {
+        "pct": 97.58,
+        "nulls": 121,
+        "total": 124
+      },
+      "listados": 121,
+      "bate": true,
+      "classes": {
+        "RESIDUO_DE_TESTE_PELO_NOME": 121
+      }
+    },
+    {
+      "verificacao": "project_delays_ends_at_completeness",
+      "readModel": "rm_project_delays",
+      "campo": "ends_at",
+      "contagem": {
+        "pct": 98.88,
+        "nulls": 354,
+        "total": 358
+      },
+      "listados": 354,
+      "bate": true,
+      "classes": {
+        "CRIADO_POR_USUARIO_DE_TESTE": 82,
+        "RESIDUO_DE_TESTE_PELO_NOME": 272
+      }
+    },
+    {
+      "verificacao": "project_nonconf_cause_code_completeness",
+      "readModel": "rm_project_nonconformities",
+      "campo": "cause_code",
+      "contagem": {
+        "pct": 100,
+        "nulls": 15,
+        "total": 15
+      },
+      "listados": 15,
+      "bate": true,
+      "classes": {
+        "RESIDUO_DE_TESTE_PELO_NOME": 13,
+        "CRIADO_POR_USUARIO_DE_TESTE": 2
+      }
+    },
+    {
+      "verificacao": "project_occurrences_cause_code_completeness",
+      "readModel": "rm_project_occurrences",
+      "campo": "cause_code",
+      "contagem": {
+        "pct": 100,
+        "nulls": 15,
+        "total": 15
+      },
+      "listados": 15,
+      "bate": true,
+      "classes": {
+        "RESIDUO_DE_TESTE_PELO_NOME": 13,
+        "CRIADO_POR_USUARIO_DE_TESTE": 2
+      }
+    },
+    {
+      "verificacao": "project_progress_planned_end_date_completeness",
+      "readModel": "rm_project_progress",
+      "campo": "planned_end_date",
+      "contagem": {
+        "pct": 98.87,
+        "nulls": 436,
+        "total": 441
+      },
+      "listados": 436,
+      "bate": true,
+      "classes": {
+        "RESIDUO_DE_TESTE_PELO_NOME": 361,
+        "CRIADO_POR_USUARIO_DE_TESTE": 75
+      }
+    },
+    {
+      "verificacao": "price_changes_old_price_completeness",
+      "readModel": "rm_property_price_changes",
+      "campo": "old_price",
+      "contagem": {
+        "pct": 96.23,
+        "nulls": 51,
+        "total": 53
+      },
+      "listados": 51,
+      "bate": true,
+      "classes": {
+        "SEM_AUTOR_REGISTRADO": 51
+      }
+    },
+    {
+      "verificacao": "rental_arrears_due_at_completeness",
+      "readModel": "rm_rental_arrears",
+      "campo": "due_at",
+      "contagem": {
+        "pct": 50.68,
+        "nulls": 37,
+        "total": 73
+      },
+      "listados": 37,
+      "bate": true,
+      "classes": {
+        "RESIDUO_DE_TESTE_PELO_NOME": 33,
+        "SEM_AUTOR_REGISTRADO": 4
+      }
+    },
+    {
+      "verificacao": "rental_contracts_total_value_completeness",
+      "readModel": "rm_rental_contracts",
+      "campo": "total_value",
+      "contagem": {
+        "pct": 10.18,
+        "nulls": 23,
+        "total": 226
+      },
+      "listados": 23,
+      "bate": true,
+      "classes": {
+        "CRIADO_POR_USUARIO_DE_TESTE": 23
+      }
+    },
+    {
+      "verificacao": "rental_insp_keys_contract_id_completeness",
+      "readModel": "rm_rental_inspections_keys",
+      "campo": "contract_id",
+      "contagem": {
+        "pct": 23.53,
+        "nulls": 8,
+        "total": 34
+      },
+      "listados": 8,
+      "bate": true,
+      "classes": {
+        "CRIADO_POR_USUARIO_DE_TESTE": 8
+      }
+    },
+    {
+      "verificacao": "rental_repasses_reference_month_completeness",
+      "readModel": "rm_rental_repasses",
+      "campo": "reference_month",
+      "contagem": {
+        "pct": 78.79,
+        "nulls": 26,
+        "total": 33
+      },
+      "listados": 26,
+      "bate": true,
+      "classes": {
+        "RESIDUO_DE_TESTE_PELO_NOME": 26
+      }
+    }
+  ],
+  "integracoes": {
+    "antes": {
+      "fase": "ler",
+      "quando": "2026-11-16T22:19:52.004Z",
+      "ids": {},
+      "indicador": {
+        "http": 200,
+        "status": "INCOMPLETE",
+        "valor": null,
+        "frescor": "STALE",
+        "sourceSnapshotAt": "2026-11-16T02:56:53.787Z",
+        "refreshedAt": "2026-11-16T03:01:08.840Z",
+        "janela": {
+          "tecWindow": 60,
+          "tecClosedBy": "2026-11-16T02:56:53.787Z"
+        }
+      },
+      "series": {},
+      "origem": {
+        "http": 200,
+        "linhas": [
+          {
+            "janela": "-"
+          },
+          {
+            "janela": "-"
+          },
+          {
+            "janela": "-"
+          }
+        ],
+        "chamadas": 0,
+        "falhas": 0
+      },
+      "conciliacao": {
+        "chamadasNaOrigem": 0,
+        "falhasNaOrigem": 0,
+        "percentualCalculado": null,
+        "valorDoPainel": null,
+        "bate": true
+      }
+    },
+    "envio": {
+      "fase": "enviar",
+      "quando": "2026-11-16T22:20:58.053Z",
+      "ids": {
+        "pessoa": "a174fca2-3426-4be5-87fb-804ae9888c4a"
+      },
+      "envios": [
+        {
+          "i": 1,
+          "http": 202,
+          "erro": null,
+          "status": "QUEUED"
+        },
+        {
+          "i": 2,
+          "http": 202,
+          "erro": null,
+          "status": "QUEUED"
+        },
+        {
+          "i": 3,
+          "http": 202,
+          "erro": null,
+          "status": "QUEUED"
+        },
+        {
+          "i": 4,
+          "http": 202,
+          "erro": null,
+          "status": "QUEUED"
+        },
+        {
+          "i": 5,
+          "http": 202,
+          "erro": null,
+          "status": "QUEUED"
+        }
+      ],
+      "janelaEsperada": "19:00 até a hora seguinte (horário de Brasília)"
+    },
+    "depois": {
+      "fase": "ler",
+      "quando": "2026-11-16T23:10:57.840Z",
+      "ids": {},
+      "indicador": {
+        "http": 200,
+        "status": "OK",
+        "valor": "0.0000",
+        "frescor": "FRESH",
+        "sourceSnapshotAt": "2026-11-16T23:07:59.341Z",
+        "refreshedAt": "2026-11-16T23:07:59.621Z",
+        "janela": {
+          "tecWindow": 60,
+          "tecClosedBy": "2026-11-16T23:07:59.341Z"
+        }
+      },
+      "series": {},
+      "origem": {
+        "http": 200,
+        "linhas": [
+          {
+            "fornecedor": "email-sandbox",
+            "janela": "Invalid Date",
+            "chamadas": 0,
+            "falhas": 0
+          },
+          {
+            "fornecedor": "messaging-sandbox",
+            "janela": "Invalid Date",
+            "chamadas": 5,
+            "falhas": 0
+          },
+          {
+            "fornecedor": "financing-sandbox",
+            "janela": "Invalid Date",
+            "chamadas": 0,
+            "falhas": 0
+          }
+        ],
+        "chamadas": 5,
+        "falhas": 0
+      },
+      "conciliacao": {
+        "chamadasNaOrigem": 5,
+        "falhasNaOrigem": 0,
+        "percentualCalculado": 0,
+        "valorDoPainel": 0,
+        "bate": true
+      }
+    }
+  },
+  "responsaveisMarco10": [
+    {
+      "responsavel": "Almoxarifado (papel estoque-gestor)",
+      "indicadores": [
+        "inv.below_minimum",
+        "inv.losses",
+        "inv.stock_value",
+        "inv.tools_overdue"
+      ]
+    },
+    {
+      "responsavel": "Atendimento (papel atendimento-gestor)",
+      "indicadores": [
+        "sup.complaints_by_reason",
+        "sup.reviews",
+        "sup.satisfaction",
+        "sup.sla_resolution"
+      ]
+    },
+    {
+      "responsavel": "Correspondente Bancário (papel correspondente-gestor)",
+      "indicadores": [
+        "cor.analysis_time",
+        "cor.approval_rate_by_provider",
+        "cor.cases_by_stage",
+        "cor.commission"
+      ]
+    },
+    {
+      "responsavel": "Diretoria de Obras (papel obras-gestor)",
+      "indicadores": [
+        "obra.baseline_actual_forecast",
+        "obra.delays",
+        "obra.measurements",
+        "obra.nonconformities",
+        "obra.postwork_cost",
+        "obra.progress_vs_schedule",
+        "obra.projected_margin",
+        "obra.recurrence",
+        "obra.waste"
+      ]
+    },
+    {
+      "responsavel": "Diretoria Financeira (papel financeiro-gestor)",
+      "indicadores": [
+        "fin.anomalies_open",
+        "fin.approvals_pending",
+        "fin.breathing_need",
+        "fin.commissions_paid",
+        "fin.commissions_provisioned",
+        "fin.delinquency_rate",
+        "fin.free_cash",
+        "fin.overdue_payables",
+        "fin.overdue_receivables",
+        "fin.owner_repasses_pending",
+        "fin.payables_30d",
+        "fin.payables_60d",
+        "fin.payables_7d",
+        "fin.payments_settled_relevant",
+        "fin.receivables_30d",
+        "fin.receivables_60d",
+        "fin.receivables_7d",
+        "fin.reconciliations_pending",
+        "fin.sector_margin",
+        "fin.third_party_cash"
+      ]
+    },
+    {
+      "responsavel": "Gerência Comercial (papel comercial-gestor)",
+      "indicadores": [
+        "crm.broker_capture",
+        "crm.broker_conversion",
+        "crm.conversion_rate",
+        "crm.first_response_time",
+        "crm.leads_by_origin",
+        "crm.loss_reasons",
+        "crm.opportunities_by_stage",
+        "crm.opportunities_won",
+        "crm.portfolio_without_next_action",
+        "crm.proposals",
+        "crm.visits",
+        "prop.active_properties",
+        "prop.price_changes",
+        "prop.without_sale_by_period",
+        "radar.matches"
+      ]
+    },
+    {
+      "responsavel": "Gerência de Locação (papel locação-gestor)",
+      "indicadores": [
+        "rent.active_contracts",
+        "rent.delinquency",
+        "rent.guarantees_expiring",
+        "rent.inspections_keys",
+        "rent.obligations_pending",
+        "rent.repasses",
+        "rent.satisfaction",
+        "rent.tickets",
+        "rent.vacancy"
+      ]
+    },
+    {
+      "responsavel": "Gestor de Estoque (papel estoque-gestor)",
+      "indicadores": [
+        "inv.adjustments_pending"
+      ]
+    },
+    {
+      "responsavel": "Jurídico (papel juridico-gestor)",
+      "indicadores": [
+        "legal.contracts_signed"
+      ]
+    },
+    {
+      "responsavel": "Jurídico (papel jurídico-gestor)",
+      "indicadores": [
+        "legal.cases_by_risk",
+        "legal.deadlines",
+        "legal.missing_documents",
+        "legal.values"
+      ]
+    },
+    {
+      "responsavel": "Marketing (papel marketing-gestor)",
+      "indicadores": [
+        "mkt.attribution",
+        "mkt.automations_blocked_failed",
+        "mkt.campaigns",
+        "mkt.cost",
+        "mkt.deliverability",
+        "mkt.frequency",
+        "mkt.leads",
+        "mkt.opt_out"
+      ]
+    },
+    {
+      "responsavel": "Tecnologia (papel tecnologia-gestor)",
+      "indicadores": [
+        "tec.rule_approvals_pending"
+      ]
+    },
+    {
+      "responsavel": "Tecnologia (papel ti-gestor)",
+      "indicadores": [
+        "ai.budget",
+        "ai.cost_by_agent",
+        "ai.quality_scores",
+        "ai.tool_calls_blocked",
+        "tec.auth_failures",
+        "tec.availability",
+        "tec.blocked_events",
+        "tec.freshness",
+        "tec.integration_errors",
+        "tec.queues_dlq"
+      ]
+    },
+    {
+      "responsavel": "Tecnologia/IA (papel ia-gestor)",
+      "indicadores": [
+        "ai.proposals_pending"
+      ]
+    }
+  ],
+  "execucoesCi": [
+    {
+      "commit": "db42822d",
+      "conclusion": "success",
+      "databaseId": 43910979203,
+      "name": "Esteira do Marketing",
+      "status": "completed",
+      "url": "https://github.com/gsPatrick/NayaraOne--API/actions/runs/43910979203"
+    },
+    {
+      "commit": "db42822d",
+      "conclusion": "success",
+      "databaseId": 43910979007,
+      "name": "Governanca",
+      "status": "completed",
+      "url": "https://github.com/gsPatrick/NayaraOne--API/actions/runs/43910979007"
+    },
+    {
+      "commit": "db42822d",
+      "conclusion": "success",
+      "databaseId": 43910979173,
+      "name": "Esteira do Marco 3",
+      "status": "completed",
+      "url": "https://github.com/gsPatrick/NayaraOne--API/actions/runs/43910979173"
+    },
+    {
+      "commit": "db42822d",
+      "conclusion": "success",
+      "databaseId": 43910978831,
+      "name": "Esteira de Obras",
+      "status": "completed",
+      "url": "https://github.com/gsPatrick/NayaraOne--API/actions/runs/43910978831"
+    },
+    {
+      "commit": "db42822d",
+      "conclusion": "success",
+      "databaseId": 43910978860,
+      "name": "Esteira do juridico",
+      "status": "completed",
+      "url": "https://github.com/gsPatrick/NayaraOne--API/actions/runs/43910978860"
+    },
+    {
+      "commit": "db42822d",
+      "conclusion": "success",
+      "databaseId": 43910979110,
+      "name": "Esteira do Financeiro",
+      "status": "completed",
+      "url": "https://github.com/gsPatrick/NayaraOne--API/actions/runs/43910979110"
+    },
+    {
+      "commit": "db42822d",
+      "conclusion": "success",
+      "databaseId": 43910978663,
+      "name": "Esteira das integracoes",
+      "status": "completed",
+      "url": "https://github.com/gsPatrick/NayaraOne--API/actions/runs/43910978663"
+    },
+    {
+      "commit": "db42822d",
+      "conclusion": "success",
+      "databaseId": 43910978550,
+      "name": "Contract tests",
+      "status": "completed",
+      "url": "https://github.com/gsPatrick/NayaraOne--API/actions/runs/43910978550"
+    },
+    {
+      "commit": "db42822d",
+      "conclusion": "success",
+      "databaseId": 43910978483,
+      "name": "Esteira do BI",
+      "status": "completed",
+      "url": "https://github.com/gsPatrick/NayaraOne--API/actions/runs/43910978483"
+    },
+    {
+      "commit": "447ed21d",
+      "conclusion": "success",
+      "databaseId": 43971129793,
+      "name": "Esteira de Obras",
+      "status": "completed",
+      "url": "https://github.com/gsPatrick/NayaraOne--API/actions/runs/43971129793"
+    },
+    {
+      "commit": "447ed21d",
+      "conclusion": "success",
+      "databaseId": 43971129816,
+      "name": "Esteira do Marco 3",
+      "status": "completed",
+      "url": "https://github.com/gsPatrick/NayaraOne--API/actions/runs/43971129816"
+    },
+    {
+      "commit": "447ed21d",
+      "conclusion": "success",
+      "databaseId": 43971129954,
+      "name": "Governanca",
+      "status": "completed",
+      "url": "https://github.com/gsPatrick/NayaraOne--API/actions/runs/43971129954"
+    },
+    {
+      "commit": "447ed21d",
+      "conclusion": "success",
+      "databaseId": 43971129786,
+      "name": "Esteira do juridico",
+      "status": "completed",
+      "url": "https://github.com/gsPatrick/NayaraOne--API/actions/runs/43971129786"
+    },
+    {
+      "commit": "447ed21d",
+      "conclusion": "success",
+      "databaseId": 43971129823,
+      "name": "Contract tests",
+      "status": "completed",
+      "url": "https://github.com/gsPatrick/NayaraOne--API/actions/runs/43971129823"
+    },
+    {
+      "commit": "447ed21d",
+      "conclusion": "success",
+      "databaseId": 43971129761,
+      "name": "Esteira do Marketing",
+      "status": "completed",
+      "url": "https://github.com/gsPatrick/NayaraOne--API/actions/runs/43971129761"
+    },
+    {
+      "commit": "447ed21d",
+      "conclusion": "success",
+      "databaseId": 43971129945,
+      "name": "Esteira do Financeiro",
+      "status": "completed",
+      "url": "https://github.com/gsPatrick/NayaraOne--API/actions/runs/43971129945"
+    },
+    {
+      "commit": "447ed21d",
+      "conclusion": "success",
+      "databaseId": 43971129766,
+      "name": "Esteira do BI",
+      "status": "completed",
+      "url": "https://github.com/gsPatrick/NayaraOne--API/actions/runs/43971129766"
+    },
+    {
+      "commit": "447ed21d",
+      "conclusion": "success",
+      "databaseId": 43971129795,
+      "name": "Esteira da NAY",
+      "status": "completed",
+      "url": "https://github.com/gsPatrick/NayaraOne--API/actions/runs/43971129795"
+    },
+    {
+      "commit": "447ed21d",
+      "conclusion": "success",
+      "databaseId": 43971129993,
+      "name": "Esteira das integracoes",
+      "status": "completed",
+      "url": "https://github.com/gsPatrick/NayaraOne--API/actions/runs/43971129993"
+    },
+    {
+      "commit": "5d83396",
+      "conclusion": "success",
+      "databaseId": 43894069538,
+      "name": "CI Front",
+      "status": "completed",
+      "url": "https://github.com/gsPatrick/NayaraOne--FRONT/actions/runs/43894069538"
+    },
+    {
+      "commit": "68d9a33",
+      "conclusion": "success",
+      "databaseId": 43972907622,
+      "name": "CI Front",
+      "status": "completed",
+      "url": "https://github.com/gsPatrick/NayaraOne--FRONT/actions/runs/43972907622"
+    }
+  ],
+  "retestes": {
+    "ponto5": {
+      "ok": 78,
+      "falharam": 0,
+      "naoVerificadas": 0
+    },
+    "m3": {
+      "ok": 13,
+      "falharam": 0
+    },
+    "m5": {
+      "ok": 10,
+      "falharam": 0
+    },
+    "m4": {
+      "id": "1ec84d67-dd14-46a6-a969-e715a6291f2a",
+      "descricao": "ACEITE-M4 recebível fictício de R$ 0,30 (2026-11-16): baixas de R$ 0,10 e R$ 0,20 pela Nayara, com o autenticador",
+      "valor": "0.30",
+      "natureza": "RECEIVABLE",
+      "status": "PENDING",
+      "vencimento": "2026-11-23T00:00:00.000Z",
+      "centroDeResultado": "Comissões de correspondente bancário"
+    }
+  },
+  "rodadas": [
+    {
+      "achado": "Migration de recriação das contas canceladas das medições de ensaio recusada no deploy (\"must be owner\")",
+      "causa": "Rodada com o usuário de execução da API, que não é dono das tabelas",
+      "correcao": "Roteiro de deploy: migrations com o usuário dono (db42822d); aplicadas as 58 migrations da integração",
+      "reconfirmacao": "0 pendentes; regra \"medição a pagar sempre tem conta\" validada no banco"
+    },
+    {
+      "achado": "Centro de Comando e semáforo em 504 (tempo esgotado)",
+      "causa": "A unidade de cada alerta lia a tabela de retratos inteira (2,5 GB) uma vez por alerta: com a regra de isolamento por empresa o banco não usava o índice",
+      "correcao": "Leitura pelo índice (7bcb70c2); teste de regressão que reprova a forma antiga",
+      "reconfirmacao": "Painéis voltaram a responder (200)"
+    },
+    {
+      "achado": "Centro de Comando em 19 a 29 s e semáforo em 38 a 52 s",
+      "causa": "O estado de qualidade de cada indicador lia as 510 mil verificações da empresa (~1 s por indicador, dezenas por abertura)",
+      "correcao": "Índice da última execução de cada verificação e uma leitura por abertura (b32187c5, migration 20261116210000)",
+      "reconfirmacao": "0,5 a 1,7 s na homologação"
+    },
+    {
+      "achado": "Esteira do BI reprovada no commit b32187c5 (consolidado do grupo)",
+      "causa": "A memória por requisição podia reaproveitar a leitura de uma empresa sob outra na consolidação",
+      "correcao": "Memória com a empresa da sessão na chave; definição de indicador por índice (65c9bd2d, migration 20261116220000)",
+      "reconfirmacao": "Bateria completa do BI: 1.627 testes aprovados"
+    },
+    {
+      "achado": "Contas a pagar geradas pelo sistema sem vencimento (medição, recebimento de compra, garantia)",
+      "causa": "Os fluxos não informavam vencimento e os cadernos não definem o prazo",
+      "correcao": "Parâmetros do administrador, padrão 30 dias (API 666b9d61, tela 68d9a33)",
+      "reconfirmacao": "Testes dos três fluxos e da aba Financeiro aprovados"
+    },
+    {
+      "achado": "No detalhamento de \"Integrações com erro\" o início da janela vinha vazio",
+      "causa": "O mascaramento de dados restritos do BI tratava data como objeto comum e a esvaziava; valia para toda coluna de data do detalhamento, da exportação e do briefing",
+      "correcao": "Data passa intacta pelo mascaramento (API 4c43f5c1)",
+      "reconfirmacao": "563 testes de detalhamento, exportação, briefing e IA aprovados; publicação no próximo deploy"
+    },
+    {
+      "achado": "Esteira das integrações reprovada no b32187c5",
+      "causa": "Migration nova sem o nome completo no roteiro de deploy (verificação de governança)",
+      "correcao": "Roteiro de deploy atualizado (65c9bd2d)",
+      "reconfirmacao": "Verificação aprovada"
+    }
+  ],
+  "pendencias": [
+    {
+      "item": "Ensaios de restauração dos Marcos 4, 5 e 6 executados de novo na versão integrada",
+      "responsavel": "Patrick",
+      "previsao": "até 18/11/2026",
+      "motivo": "As provas atuais foram medidas em commits anteriores à integração. Rodam localmente, nunca na homologação."
+    },
+    {
+      "item": "Campos que travariam indicadores também em produção (risco do processo, causa da não conformidade, origem do lead e verificações que contam registros que o indicador não usa)",
+      "responsavel": "Patrick",
+      "previsao": "até 18/11/2026",
+      "motivo": "Conferência campo a campo do código em 16/11 (seção 1.4). O vencimento das contas geradas pelo sistema já foi corrigido hoje."
+    },
+    {
+      "item": "Reconstrução, na homologação, dos retratos que só atualizam por evento (custo das obras, medições, comissões, desperdício)",
+      "responsavel": "Patrick (console da API)",
+      "previsao": "junto com o próximo deploy",
+      "motivo": "Esses retratos nunca foram alimentados na empresa A; o comando oficial é scripts/analytics/rebuildReadModel.js, com permissão própria e parâmetro de habilitação."
+    },
+    {
+      "item": "Disponibilidade de DEV e LAB, promoção nesses ambientes e relatório de carga no LAB",
+      "responsavel": "Patrick",
+      "previsao": "data a confirmar pelo Patrick até 18/11/2026",
+      "motivo": "Depende de eu publicar os ambientes e os segredos do repositório; o mecanismo está entregue e testado."
+    },
+    {
+      "item": "Uniformizar os papéis de responsável no catálogo dos indicadores (com e sem acento, nomes diferentes para o mesmo papel)",
+      "responsavel": "Patrick",
+      "previsao": "antes do aceite do Marco 10",
+      "motivo": "Achado ao montar a lista de relatórios por responsável (seção 4)."
+    }
+  ],
+  "auxiliares": [
+    {
+      "arquivo": "resposta-nayara-16-11-dados/indicadores-ao-vivo.json",
+      "descricao": "Leitura de cada indicador sinalizado pela API (GET /analytics/metrics/:code)",
+      "sha256": "2cb30e3c17ef14923f47e74ee2f41351b0643dcf1aee0850ffb161bd9102d72e",
+      "bytes": 41721
+    },
+    {
+      "arquivo": "resposta-nayara-16-11-dados/residuo-homologacao.json",
+      "descricao": "Registros de origem incompletos, verificação por verificação (somente leitura)",
+      "sha256": "72f40a454270d2716b2e25b00ba037532e28929be7ca8353b6018e7c52f593a0",
+      "bytes": 1049722
+    },
+    {
+      "arquivo": "resposta-nayara-16-11-dados/residuo-homologacao.md",
+      "descricao": "Os mesmos registros em texto legível",
+      "sha256": "aea66d94fa7480ec161798c0f3048b20fe6315ee37f221e647f78673594ffc5f",
+      "bytes": 296236
+    },
+    {
+      "arquivo": "resposta-nayara-16-11-dados/campos-obrigatorios-bi.md",
+      "descricao": "Conferência campo a campo: a API e a tela exigem o campo?",
+      "sha256": "fce75e0b66ecdda66752a456e694808a21e954cc2b3e8bf5c88a7adc1844031c",
+      "bytes": 35591
+    },
+    {
+      "arquivo": "resposta-nayara-16-11-dados/indicadores-no-codigo.md",
+      "descricao": "Fonte, período e regra de cada indicador, com arquivo e linha",
+      "sha256": "d618af7dff1e235293ef5158bbe7d33973eaba3062805cb18eae3ea1b978af40",
+      "bytes": 49701
+    },
+    {
+      "arquivo": "resposta-nayara-16-11-dados/reteste-ponto5.json",
+      "descricao": "Reteste do ponto 5 (opt-out, bloqueios, automações, isolamento, auditoria)",
+      "sha256": "46a15a0eca2b836a3195246ab11ab5ae7ce265c3613f8ccf48f7481c73defce6",
+      "bytes": 33945
+    },
+    {
+      "arquivo": "resposta-nayara-16-11-dados/reteste-m3-troca-de-arquivo.json",
+      "descricao": "Marco 3: troca de arquivo de documento validado",
+      "sha256": "26c4850a28376ca2801903c9badb03d6c964a7e666ecb3eff31de533d7dee9ae",
+      "bytes": 5227
+    },
+    {
+      "arquivo": "resposta-nayara-16-11-dados/reteste-m5-prazos.json",
+      "descricao": "Marco 5: criar, atribuir, remarcar e concluir prazo jurídico",
+      "sha256": "41a5f145126f0d0b79d59fc39b4ea8a3414cf90039e7f2291f2a611bb3986cb1",
+      "bytes": 4870
+    },
+    {
+      "arquivo": "resposta-nayara-16-11-dados/recebivel-030.json",
+      "descricao": "Marco 4: recebível fictício de R$ 0,30",
+      "sha256": "d5ff33e5747f12a7fe256842eebb7256ac394f93255655164468c68a8fbd5e68",
+      "bytes": 1126
+    },
+    {
+      "arquivo": "resposta-nayara-16-11-dados/janela-integracoes-antes.json",
+      "descricao": "Integrações com erro: janela vazia",
+      "sha256": "08bc4cac1cca22a1c80cbe02b534703b7135b444a5beff0794e8584f8caa94e0",
+      "bytes": 754
+    },
+    {
+      "arquivo": "resposta-nayara-16-11-dados/janela-integracoes-envio.json",
+      "descricao": "Integrações com erro: envios de teste",
+      "sha256": "9ca86f9d5f6996d7bec8d2b0b31a908dd9a3fc1e9035edef721e83fe90230ef5",
+      "bytes": 679
+    },
+    {
+      "arquivo": "resposta-nayara-16-11-dados/janela-integracoes-depois.json",
+      "descricao": "Integrações com erro: janela com chamadas",
+      "sha256": "aeeef02abcaf0b3ac94e2c7cc429d08d9d1fb9475a9230ce699413a1a515dc92",
+      "bytes": 1034
+    }
+  ]
+}</script>
+</div></body></html>

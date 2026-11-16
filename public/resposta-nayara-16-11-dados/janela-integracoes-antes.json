@@ -1,0 +1,41 @@
+{
+  "fase": "ler",
+  "quando": "2026-11-16T22:19:52.004Z",
+  "ids": {},
+  "indicador": {
+    "http": 200,
+    "status": "INCOMPLETE",
+    "valor": null,
+    "frescor": "STALE",
+    "sourceSnapshotAt": "2026-11-16T02:56:53.787Z",
+    "refreshedAt": "2026-11-16T03:01:08.840Z",
+    "janela": {
+      "tecWindow": 60,
+      "tecClosedBy": "2026-11-16T02:56:53.787Z"
+    }
+  },
+  "series": {},
+  "origem": {
+    "http": 200,
+    "linhas": [
+      {
+        "janela": "-"
+      },
+      {
+        "janela": "-"
+      },
+      {
+        "janela": "-"
+      }
+    ],
+    "chamadas": 0,
+    "falhas": 0
+  },
+  "conciliacao": {
+    "chamadasNaOrigem": 0,
+    "falhasNaOrigem": 0,
+    "percentualCalculado": null,
+    "valorDoPainel": null,
+    "bate": true
+  }
+}

@@ -1,0 +1,1235 @@
+{
+  "quando": "2026-11-16T21:58:21.742Z",
+  "asOf": "2026-11-16",
+  "metricas": {
+    "legal.contracts_signed": {
+      "valor": {
+        "http": 404,
+        "erro": "ANALYTICS_SNAPSHOT_NOT_AVAILABLE",
+        "dados": {
+          "success": false,
+          "error": {
+            "code": "ANALYTICS_SNAPSHOT_NOT_AVAILABLE",
+            "message": "Não há registro desse indicador nessa data.",
+            "traceId": "aab4cd70-a0c9-4060-bbf4-c072822a248f"
+          }
+        }
+      },
+      "definicao": {
+        "http": 0,
+        "dados": null
+      }
+    },
+    "crm.opportunities_won": {
+      "valor": {
+        "http": 404,
+        "erro": "ANALYTICS_SNAPSHOT_NOT_AVAILABLE",
+        "dados": {
+          "success": false,
+          "error": {
+            "code": "ANALYTICS_SNAPSHOT_NOT_AVAILABLE",
+            "message": "Não há registro desse indicador nessa data.",
+            "traceId": "095ce322-7832-4a26-af9c-a5fd56797d93"
+          }
+        }
+      },
+      "definicao": {
+        "http": 0,
+        "dados": null
+      }
+    },
+    "fin.payments_settled_relevant": {
+      "valor": {
+        "http": 404,
+        "erro": "ANALYTICS_SNAPSHOT_NOT_AVAILABLE",
+        "dados": {
+          "success": false,
+          "error": {
+            "code": "ANALYTICS_SNAPSHOT_NOT_AVAILABLE",
+            "message": "Não há registro desse indicador nessa data.",
+            "traceId": "5d59d989-ca7c-4601-9261-1ef806dbc78e"
+          }
+        }
+      },
+      "definicao": {
+        "http": 0,
+        "dados": null
+      }
+    },
+    "legal.cases_by_risk": {
+      "valor": {
+        "http": 200,
+        "erro": null,
+        "dados": {
+          "metricCode": "legal.cases_by_risk",
+          "value": null,
+          "unit": "COUNT",
+          "status": "DEGRADED",
+          "valueReliable": false,
+          "quality": {
+            "degradedBy": [
+              {
+                "readModel": "rm_legal_cases_risk",
+                "checkCode": "legal_cases_risk_risk_level_completeness",
+                "checkType": "COMPLETENESS",
+                "status": "FAILED",
+                "severity": "CRITICAL"
+              }
+            ],
+            "inheritedFrom": [],
+            "checks": [
+              {
+                "checkCode": "legal_cases_risk_risk_level_completeness",
+                "checkType": "COMPLETENESS",
+                "severity": "CRITICAL",
+                "status": "FAILED",
+                "readModel": "rm_legal_cases_risk"
+              }
+            ],
+            "degradedReasons": [
+              "Verificação legal_cases_risk_risk_level_completeness reprovada."
+            ]
+          },
+          "version": 1,
+          "formulaId": "legal.cases_by_risk",
+          "valueNature": "ACTUAL",
+          "valueNatureLabel": "Realizado",
+          "asOfDate": "2026-11-16",
+          "revisionNo": 1,
+          "calcHash": "f3c3c2cdc8e2d6eb63c144d91ee04a4b86c6e8319b779a11ae169aa78a49b671",
+          "sourceSnapshotAt": "2026-11-16T20:57:34.630Z",
+          "refreshedAt": "2026-11-16T20:57:45.349Z",
+          "sourceRefs": [
+            {
+              "type": "LEGAL_CASES",
+              "count": 22,
+              "table": "legal.legal_cases",
+              "filter": {
+                "equals": {
+                  "deletedAt": null,
+                  "legalFinished": [
+                    "CLOSED",
+                    "ARCHIVED",
+                    "CANCELLED"
+                  ]
+                },
+                "companyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32"
+              },
+              "idsSample": [],
+              "filterHash": "4aa9c72e454cdef432cdd48cc110ae19530f6c6e3136302972c0d0f1ebb947f6",
+              "restricted": true,
+              "description": "Processos jurídicos ativos (fora os encerrados, arquivados, cancelados e excluídos)",
+              "reconcileMode": "COUNT",
+              "filterSignature": "8768dd118e654b1462936c541a856cca7e6dc2776390060b4993097f332b4bb1"
+            }
+          ],
+          "historical": false,
+          "freshness": {
+            "state": "STALE",
+            "ageMinutes": 60,
+            "asOfDate": "2026-11-16",
+            "sourceSnapshotAt": "2026-11-16T20:57:34.630Z",
+            "refreshedAt": "2026-11-16T20:57:45.349Z",
+            "maxStalenessMinutes": 15,
+            "expiredAboveMinutes": 60,
+            "historical": false,
+            "futureStamp": false,
+            "label": "Desatualizado há 1 h"
+          },
+          "name": "Processos por risco",
+          "formatted": null,
+          "period": {
+            "start": "2026-11-01",
+            "end": "2026-11-30",
+            "asOf": "2026-11-16",
+            "tz": "America/Sao_Paulo",
+            "label": "novembro de 2026",
+            "kind": "MONTH"
+          },
+          "components": [],
+          "variation": null,
+          "drilldown": {
+            "enabled": true,
+            "allowed": true
+          },
+          "owner": "Jurídico (papel jurídico-gestor)"
+        }
+      },
+      "definicao": {
+        "http": 0,
+        "dados": null
+      }
+    },
+    "obra.projected_margin": {
+      "valor": {
+        "http": 404,
+        "erro": "ANALYTICS_SNAPSHOT_NOT_AVAILABLE",
+        "dados": {
+          "success": false,
+          "error": {
+            "code": "ANALYTICS_SNAPSHOT_NOT_AVAILABLE",
+            "message": "Não há registro desse indicador nessa data.",
+            "traceId": "3c87ef6e-4c74-4871-8f1c-b3a07ea25dbd"
+          }
+        }
+      },
+      "definicao": {
+        "http": 0,
+        "dados": null
+      }
+    },
+    "tec.integration_errors": {
+      "valor": {
+        "http": 200,
+        "erro": null,
+        "dados": {
+          "metricCode": "tec.integration_errors",
+          "value": null,
+          "unit": "PERCENT",
+          "status": "INCOMPLETE",
+          "valueReliable": false,
+          "quality": {
+            "degradedBy": [],
+            "inheritedFrom": [],
+            "checks": [],
+            "degradedReasons": []
+          },
+          "version": 1,
+          "formulaId": "tec.integration_errors",
+          "valueNature": "ACTUAL",
+          "valueNatureLabel": "Realizado",
+          "asOfDate": "2026-11-16",
+          "revisionNo": 1,
+          "calcHash": "63251f67ce7eac0a66c063fbf177a1b400d482ddf9e7916e10f4ad2dcb5752f0",
+          "sourceSnapshotAt": "2026-11-16T02:56:53.787Z",
+          "refreshedAt": "2026-11-16T03:01:08.840Z",
+          "sourceRefs": [
+            {
+              "type": "PROVIDER_HEALTH",
+              "count": 3,
+              "table": "integration.provider_health",
+              "filter": {
+                "equals": {
+                  "tecWindow": 60,
+                  "tecClosedBy": "2026-11-16T02:56:53.787Z"
+                },
+                "companyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32"
+              },
+              "idsSample": [],
+              "filterHash": "4317560f442f7fccbbf028e178301e0337b77e07fa17d3fd289cbb8f9b1bc2ed",
+              "restricted": true,
+              "description": "Saúde das connections ativas na última janela fechada de 60 minutos (chamadas e erros por fornecedor)",
+              "reconcileMode": "RECOMPUTE",
+              "filterSignature": "adeedeab8501d473289a3ab278b71feb62bac07b6e546c965d56c78589adf4c5"
+            }
+          ],
+          "historical": false,
+          "freshness": {
+            "state": "STALE",
+            "ageMinutes": 6,
+            "asOfDate": "2026-11-16",
+            "sourceSnapshotAt": "2026-11-16T21:51:58.026Z",
+            "refreshedAt": "2026-11-16T21:52:10.341Z",
+            "maxStalenessMinutes": 5,
+            "expiredAboveMinutes": 20,
+            "historical": false,
+            "futureStamp": false,
+            "label": "Desatualizado há 6 min",
+            "recordedSourceAt": "2026-11-16T02:56:53.787Z"
+          },
+          "name": "Integrações com erro",
+          "formatted": null,
+          "period": {
+            "start": "2026-11-01",
+            "end": "2026-11-30",
+            "asOf": "2026-11-16",
+            "tz": "America/Sao_Paulo",
+            "label": "novembro de 2026",
+            "kind": "MONTH"
+          },
+          "components": [],
+          "variation": null,
+          "drilldown": {
+            "enabled": true,
+            "allowed": true
+          },
+          "owner": "Tecnologia (papel ti-gestor)"
+        }
+      },
+      "definicao": {
+        "http": 0,
+        "dados": null
+      }
+    },
+    "fin.overdue_receivables": {
+      "valor": {
+        "http": 200,
+        "erro": null,
+        "dados": {
+          "metricCode": "fin.overdue_receivables",
+          "value": null,
+          "unit": "BRL",
+          "status": "INCOMPLETE",
+          "valueReliable": false,
+          "quality": {
+            "degradedBy": [],
+            "inheritedFrom": [],
+            "checks": [],
+            "degradedReasons": []
+          },
+          "version": 1,
+          "formulaId": "fin.overdue_receivables",
+          "valueNature": "ACTUAL",
+          "valueNatureLabel": "Realizado",
+          "asOfDate": "2026-11-16",
+          "revisionNo": 1,
+          "calcHash": "33e6d7d1ff19c34d5c89090b8f794e4fad1f64569069c2b29844f8bc73918c9b",
+          "sourceSnapshotAt": "2026-11-16T03:05:35.081Z",
+          "refreshedAt": "2026-11-16T03:05:35.235Z",
+          "sourceRefs": [
+            {
+              "type": "LEDGER_ENTRIES",
+              "count": 35,
+              "table": "finance.financial_entries",
+              "filter": {
+                "equals": {
+                  "reversal": null,
+                  "thirdParty": false
+                },
+                "nature": [
+                  "RECEIVABLE"
+                ],
+                "period": {
+                  "to": "2026-11-16T03:00:00.000Z",
+                  "from": null
+                },
+                "status": [
+                  "PENDING"
+                ],
+                "companyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32"
+              },
+              "idsSample": [],
+              "filterHash": "43562e34c5586e9ceea3db42fdde8e9d54d56e21e9913c2b7d71c833b66d2fb4",
+              "restricted": true,
+              "description": "Contas a receber vencidas: próprios (PENDING, sem estornos) com vencimento antes de 2026-11-16",
+              "reconcileMode": "SUM",
+              "filterSignature": "d69de37d5d84ef336133023127c964b3b94905f67687391632a4b39df2c7b935"
+            }
+          ],
+          "historical": false,
+          "freshness": {
+            "state": "FRESH",
+            "ageMinutes": 5,
+            "asOfDate": "2026-11-16",
+            "sourceSnapshotAt": "2026-11-16T21:52:43.013Z",
+            "refreshedAt": "2026-11-16T21:52:47.939Z",
+            "maxStalenessMinutes": 15,
+            "expiredAboveMinutes": 60,
+            "historical": false,
+            "futureStamp": false,
+            "label": "Atualizado às 18:52",
+            "recordedSourceAt": "2026-11-16T03:05:35.081Z"
+          },
+          "name": "Valor inadimplente (a receber vencido)",
+          "formatted": null,
+          "period": {
+            "start": "2026-11-01",
+            "end": "2026-11-30",
+            "asOf": "2026-11-16",
+            "tz": "America/Sao_Paulo",
+            "label": "novembro de 2026",
+            "kind": "MONTH"
+          },
+          "components": [],
+          "variation": null,
+          "drilldown": {
+            "enabled": true,
+            "allowed": true
+          },
+          "owner": "Diretoria Financeira (papel financeiro-gestor)"
+        }
+      },
+      "definicao": {
+        "http": 0,
+        "dados": null
+      }
+    },
+    "obra.measurements": {
+      "valor": {
+        "http": 200,
+        "erro": null,
+        "dados": {
+          "metricCode": "obra.measurements",
+          "value": null,
+          "unit": "BRL",
+          "status": "INCOMPLETE",
+          "valueReliable": false,
+          "quality": {
+            "degradedBy": [],
+            "inheritedFrom": [],
+            "checks": [],
+            "degradedReasons": []
+          },
+          "version": 1,
+          "formulaId": "obra.measurements",
+          "valueNature": "ACTUAL",
+          "valueNatureLabel": "Realizado",
+          "asOfDate": "2026-11-16",
+          "revisionNo": 1,
+          "calcHash": "0959415c8eff951346958a8d49e30b37f1f319311df26cb7d16e361d0c8ff31f",
+          "sourceSnapshotAt": "2026-11-16T03:05:35.081Z",
+          "refreshedAt": "2026-11-16T03:05:35.235Z",
+          "sourceRefs": [
+            {
+              "type": "STAGE_MEASUREMENTS",
+              "count": 205,
+              "table": "construction.stage_measurements",
+              "filter": {
+                "status": [
+                  "APPROVED",
+                  "PAYABLE",
+                  "REVIEWED",
+                  "SUBMITTED"
+                ],
+                "companyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32"
+              },
+              "idsSample": [],
+              "filterHash": "162019793badd162917356881be5ef7da21149b0d3e740e7019e65aa2df6f0d8",
+              "restricted": true,
+              "description": "Medições enviadas em diante (SUBMITTED, REVIEWED, APPROVED, PAYABLE); rascunho, rejeitada e substituída não contam",
+              "reconcileMode": "SUM",
+              "filterSignature": "f83063f437aa4c4654c14207ba31381edc846915ea3928216c79f8702021e426"
+            }
+          ],
+          "historical": false,
+          "freshness": {
+            "state": "FRESH",
+            "ageMinutes": 5,
+            "asOfDate": "2026-11-16",
+            "sourceSnapshotAt": "2026-11-16T21:52:43.013Z",
+            "refreshedAt": "2026-11-16T21:52:57.435Z",
+            "maxStalenessMinutes": 15,
+            "expiredAboveMinutes": 60,
+            "historical": false,
+            "futureStamp": false,
+            "label": "Atualizado às 18:52",
+            "recordedSourceAt": "2026-11-16T03:05:35.081Z"
+          },
+          "name": "Medições",
+          "formatted": null,
+          "period": {
+            "start": "2026-11-01",
+            "end": "2026-11-30",
+            "asOf": "2026-11-16",
+            "tz": "America/Sao_Paulo",
+            "label": "novembro de 2026",
+            "kind": "MONTH"
+          },
+          "components": [],
+          "variation": null,
+          "drilldown": {
+            "enabled": true,
+            "allowed": true
+          },
+          "owner": "Diretoria de Obras (papel obras-gestor)"
+        }
+      },
+      "definicao": {
+        "http": 0,
+        "dados": null
+      }
+    },
+    "cor.commission": {
+      "valor": {
+        "http": 404,
+        "erro": "ANALYTICS_SNAPSHOT_NOT_AVAILABLE",
+        "dados": {
+          "success": false,
+          "error": {
+            "code": "ANALYTICS_SNAPSHOT_NOT_AVAILABLE",
+            "message": "Não há registro desse indicador nessa data.",
+            "traceId": "dbdec365-7489-4f07-8421-db1957be7341"
+          }
+        }
+      },
+      "definicao": {
+        "http": 0,
+        "dados": null
+      }
+    },
+    "fin.owner_repasses_pending": {
+      "valor": {
+        "http": 200,
+        "erro": null,
+        "dados": {
+          "metricCode": "fin.owner_repasses_pending",
+          "value": null,
+          "unit": "BRL",
+          "status": "DEGRADED",
+          "valueReliable": false,
+          "quality": {
+            "degradedBy": [
+              {
+                "readModel": "rm_rental_repasses",
+                "checkCode": "rental_repasses_reference_month_completeness",
+                "checkType": "COMPLETENESS",
+                "status": "FAILED",
+                "severity": "CRITICAL"
+              }
+            ],
+            "inheritedFrom": [],
+            "checks": [
+              {
+                "checkCode": "rental_repasses_reference_month_completeness",
+                "checkType": "COMPLETENESS",
+                "severity": "CRITICAL",
+                "status": "FAILED",
+                "readModel": "rm_rental_repasses"
+              }
+            ],
+            "degradedReasons": [
+              "Verificação rental_repasses_reference_month_completeness reprovada."
+            ]
+          },
+          "version": 1,
+          "formulaId": "fin.owner_repasses_pending",
+          "valueNature": "ACTUAL",
+          "valueNatureLabel": "Realizado",
+          "asOfDate": "2026-11-16",
+          "revisionNo": 1,
+          "calcHash": "527c1ff041ec61da10ad8f73234ee856dc5bc6658c77b5d10ecc0e82de75a709",
+          "sourceSnapshotAt": "2026-11-16T03:05:35.081Z",
+          "refreshedAt": "2026-11-16T03:05:35.235Z",
+          "sourceRefs": [
+            {
+              "type": "OWNER_REPASSES",
+              "count": 33,
+              "table": "finance.owner_repasses",
+              "filter": {
+                "status": [
+                  "APPROVED",
+                  "PENDING"
+                ],
+                "companyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32"
+              },
+              "idsSample": [],
+              "filterHash": "0c13d8f139ed041a233db9cdd72dacae00e369ec4e35884064d9baf1e5e2e5c9",
+              "restricted": true,
+              "description": "Repasses ao proprietário gerados e ainda não pagos (pendentes ou aprovados)",
+              "reconcileMode": "SUM",
+              "filterSignature": "4e73e67ebc0e233d35b9a01354c9e43d17da187e503ab8adf7b59b40e5e9323e"
+            }
+          ],
+          "historical": false,
+          "freshness": {
+            "state": "FRESH",
+            "ageMinutes": 5,
+            "asOfDate": "2026-11-16",
+            "sourceSnapshotAt": "2026-11-16T21:52:43.013Z",
+            "refreshedAt": "2026-11-16T21:52:47.850Z",
+            "maxStalenessMinutes": 15,
+            "expiredAboveMinutes": 60,
+            "historical": false,
+            "futureStamp": false,
+            "label": "Atualizado às 18:52",
+            "recordedSourceAt": "2026-11-16T03:05:35.081Z"
+          },
+          "name": "Repasses pendentes ao proprietário",
+          "formatted": null,
+          "period": {
+            "start": "2026-11-01",
+            "end": "2026-11-30",
+            "asOf": "2026-11-16",
+            "tz": "America/Sao_Paulo",
+            "label": "novembro de 2026",
+            "kind": "MONTH"
+          },
+          "components": [],
+          "variation": null,
+          "drilldown": {
+            "enabled": true,
+            "allowed": true
+          },
+          "owner": "Diretoria Financeira (papel financeiro-gestor)"
+        }
+      },
+      "definicao": {
+        "http": 0,
+        "dados": null
+      }
+    },
+    "inv.losses": {
+      "valor": {
+        "http": 200,
+        "erro": null,
+        "dados": {
+          "metricCode": "inv.losses",
+          "value": null,
+          "unit": "BRL",
+          "status": "DEGRADED",
+          "valueReliable": false,
+          "quality": {
+            "degradedBy": [
+              {
+                "readModel": "rm_inventory_health",
+                "checkCode": "inventory_health_item_cost_completeness",
+                "checkType": "COMPLETENESS",
+                "status": "FAILED",
+                "severity": "CRITICAL"
+              }
+            ],
+            "inheritedFrom": [],
+            "checks": [
+              {
+                "checkCode": "inventory_health_item_cost_completeness",
+                "checkType": "COMPLETENESS",
+                "severity": "CRITICAL",
+                "status": "FAILED",
+                "readModel": "rm_inventory_health"
+              }
+            ],
+            "degradedReasons": [
+              "Verificação inventory_health_item_cost_completeness reprovada."
+            ]
+          },
+          "version": 1,
+          "formulaId": "inv.losses",
+          "valueNature": "ACTUAL",
+          "valueNatureLabel": "Realizado",
+          "asOfDate": "2026-11-16",
+          "revisionNo": 1,
+          "calcHash": "8c28c1b9530a976425e32dfe140d1e87d1d37f918acf6cd42bcbf630d0beffb1",
+          "sourceSnapshotAt": "2026-11-16T03:05:35.081Z",
+          "refreshedAt": "2026-11-16T03:05:35.235Z",
+          "sourceRefs": [
+            {
+              "type": "LOSS_CASES",
+              "count": 2,
+              "table": "inventory.loss_cases",
+              "filter": {
+                "period": {
+                  "to": "2026-11-17T03:00:00.000Z",
+                  "from": "2026-10-18T03:00:00.000Z"
+                },
+                "status": [
+                  "APPROVED"
+                ],
+                "companyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32"
+              },
+              "idsSample": [],
+              "filterHash": "546dd9d1ab878849b5ceeb5c8e5ca24a864b9a9a5262b7324afc763068a2e375",
+              "restricted": true,
+              "description": "Casos de perda decididos como perda de 2026-10-18 até antes de 2026-11-17",
+              "reconcileMode": "SUM",
+              "filterSignature": "42214b63de29d92ad29974f963872cf78b091f512f74e8f904c90be1f04a4b4d"
+            }
+          ],
+          "historical": false,
+          "freshness": {
+            "state": "FRESH",
+            "ageMinutes": 5,
+            "asOfDate": "2026-11-16",
+            "sourceSnapshotAt": "2026-11-16T21:52:43.013Z",
+            "refreshedAt": "2026-11-16T21:53:00.781Z",
+            "maxStalenessMinutes": 15,
+            "expiredAboveMinutes": 60,
+            "historical": false,
+            "futureStamp": false,
+            "label": "Atualizado às 18:52",
+            "recordedSourceAt": "2026-11-16T03:05:35.081Z"
+          },
+          "name": "Perdas de estoque no período",
+          "formatted": null,
+          "period": {
+            "start": "2026-11-01",
+            "end": "2026-11-30",
+            "asOf": "2026-11-16",
+            "tz": "America/Sao_Paulo",
+            "label": "novembro de 2026",
+            "kind": "MONTH"
+          },
+          "components": [],
+          "variation": null,
+          "drilldown": {
+            "enabled": true,
+            "allowed": true
+          },
+          "owner": "Almoxarifado (papel estoque-gestor)"
+        }
+      },
+      "definicao": {
+        "http": 0,
+        "dados": null
+      }
+    },
+    "obra.waste": {
+      "valor": {
+        "http": 200,
+        "erro": null,
+        "dados": {
+          "metricCode": "obra.waste",
+          "value": null,
+          "unit": "BRL",
+          "status": "INCOMPLETE",
+          "valueReliable": false,
+          "quality": {
+            "degradedBy": [],
+            "inheritedFrom": [],
+            "checks": [],
+            "degradedReasons": []
+          },
+          "version": 1,
+          "formulaId": "obra.waste",
+          "valueNature": "ACTUAL",
+          "valueNatureLabel": "Realizado",
+          "asOfDate": "2026-11-16",
+          "revisionNo": 1,
+          "calcHash": "4e3b277b717c29b034c53e2b24e45f958ff11420367e3690057c7be4a726314a",
+          "sourceSnapshotAt": null,
+          "refreshedAt": "2026-11-16T03:05:35.235Z",
+          "sourceRefs": [
+            {
+              "type": "STOCK_MOVEMENTS",
+              "count": 0,
+              "table": "inventory.inventory_movements",
+              "filter": {
+                "equals": {
+                  "movementType": "LOSS"
+                },
+                "companyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32"
+              },
+              "idsSample": [],
+              "filterHash": "714b03a0475fc03976fa656226579cc51c90a3fb4dbda937f77a496d89d29865",
+              "restricted": true,
+              "description": "Baixas de estoque do tipo perda ligadas a obras, pelo custo médio do dia da baixa",
+              "reconcileMode": "SUM",
+              "filterSignature": "151f9f1c4dc796a2e9516de595211dbce0d03c93b25730153afc81c8b79d733c"
+            }
+          ],
+          "historical": false,
+          "freshness": {
+            "state": "UNKNOWN",
+            "ageMinutes": null,
+            "asOfDate": "2026-11-16",
+            "sourceSnapshotAt": null,
+            "refreshedAt": "2026-11-16T03:05:35.235Z",
+            "maxStalenessMinutes": 15,
+            "expiredAboveMinutes": 60,
+            "historical": false,
+            "futureStamp": false,
+            "label": "Ainda sem atualização"
+          },
+          "name": "Desperdício",
+          "formatted": null,
+          "period": {
+            "start": "2026-11-01",
+            "end": "2026-11-30",
+            "asOf": "2026-11-16",
+            "tz": "America/Sao_Paulo",
+            "label": "novembro de 2026",
+            "kind": "MONTH"
+          },
+          "components": [],
+          "variation": null,
+          "drilldown": {
+            "enabled": true,
+            "allowed": true
+          },
+          "owner": "Diretoria de Obras (papel obras-gestor)"
+        }
+      },
+      "definicao": {
+        "http": 0,
+        "dados": null
+      }
+    },
+    "obra.postwork_cost": {
+      "valor": {
+        "http": 200,
+        "erro": null,
+        "dados": {
+          "metricCode": "obra.postwork_cost",
+          "value": null,
+          "unit": "BRL",
+          "status": "DEGRADED",
+          "valueReliable": false,
+          "quality": {
+            "degradedBy": [
+              {
+                "readModel": "rm_postwork_cost",
+                "checkCode": "postwork_cost_root_cause_code_completeness",
+                "checkType": "COMPLETENESS",
+                "status": "FAILED",
+                "severity": "CRITICAL"
+              }
+            ],
+            "inheritedFrom": [],
+            "checks": [
+              {
+                "checkCode": "postwork_cost_root_cause_code_completeness",
+                "checkType": "COMPLETENESS",
+                "severity": "CRITICAL",
+                "status": "FAILED",
+                "readModel": "rm_postwork_cost"
+              }
+            ],
+            "degradedReasons": [
+              "Verificação postwork_cost_root_cause_code_completeness reprovada."
+            ]
+          },
+          "version": 1,
+          "formulaId": "obra.postwork_cost",
+          "valueNature": "ACTUAL",
+          "valueNatureLabel": "Realizado",
+          "asOfDate": "2026-11-16",
+          "revisionNo": 1,
+          "calcHash": "032d462edfed51699a8c62b9f31aae21bf377030fbfb854750e36e92571cee25",
+          "sourceSnapshotAt": "2026-11-16T03:05:35.081Z",
+          "refreshedAt": "2026-11-16T03:05:35.235Z",
+          "sourceRefs": [
+            {
+              "type": "WARRANTY_ACTIONS",
+              "count": 4,
+              "table": "construction.warranty_actions",
+              "filter": {
+                "equals": {
+                  "deletedAt": null
+                },
+                "companyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32"
+              },
+              "idsSample": [],
+              "filterHash": "5d0c7580cac43668f2c0690b4c58f5f9c5b46a650ebfa44ded273be67367ccdf",
+              "restricted": true,
+              "description": "Ações de garantia dos casos encerrados de obras (custo realizado do pós-obra)",
+              "reconcileMode": "SUM",
+              "filterSignature": "64c52b2a39c525cb15dd67cfc72db704d072455558d392cc3a3767662c12ed49"
+            }
+          ],
+          "historical": false,
+          "freshness": {
+            "state": "FRESH",
+            "ageMinutes": 5,
+            "asOfDate": "2026-11-16",
+            "sourceSnapshotAt": "2026-11-16T21:52:43.013Z",
+            "refreshedAt": "2026-11-16T21:53:00.023Z",
+            "maxStalenessMinutes": 15,
+            "expiredAboveMinutes": 60,
+            "historical": false,
+            "futureStamp": false,
+            "label": "Atualizado às 18:52",
+            "recordedSourceAt": "2026-11-16T03:05:35.081Z"
+          },
+          "name": "Custo pós-obra",
+          "formatted": null,
+          "period": {
+            "start": "2026-11-01",
+            "end": "2026-11-30",
+            "asOf": "2026-11-16",
+            "tz": "America/Sao_Paulo",
+            "label": "novembro de 2026",
+            "kind": "MONTH"
+          },
+          "components": [],
+          "variation": null,
+          "drilldown": {
+            "enabled": true,
+            "allowed": true
+          },
+          "owner": "Diretoria de Obras (papel obras-gestor)"
+        }
+      },
+      "definicao": {
+        "http": 0,
+        "dados": null
+      }
+    },
+    "fin.payables_7d": {
+      "valor": {
+        "http": 200,
+        "erro": null,
+        "dados": {
+          "metricCode": "fin.payables_7d",
+          "value": null,
+          "unit": "BRL",
+          "status": "INCOMPLETE",
+          "valueReliable": false,
+          "quality": {
+            "degradedBy": [],
+            "inheritedFrom": [],
+            "checks": [],
+            "degradedReasons": []
+          },
+          "version": 1,
+          "formulaId": "fin.payables_7d",
+          "valueNature": "PLANNED",
+          "valueNatureLabel": "Previsto",
+          "asOfDate": "2026-11-16",
+          "revisionNo": 2,
+          "calcHash": "3d0faf7e291845be0f456fe500a42d7acf785ffcd65f936cf1b58112243489cb",
+          "sourceSnapshotAt": "2026-11-16T17:02:44.463Z",
+          "refreshedAt": "2026-11-16T17:02:44.909Z",
+          "sourceRefs": [
+            {
+              "type": "LEDGER_ENTRIES",
+              "count": 7,
+              "table": "finance.financial_entries",
+              "filter": {
+                "equals": {
+                  "reversal": null,
+                  "thirdParty": false
+                },
+                "nature": [
+                  "PAYABLE"
+                ],
+                "period": {
+                  "to": "2026-11-23T03:00:00.000Z",
+                  "from": "2026-11-16T03:00:00.000Z"
+                },
+                "status": [
+                  "PENDING"
+                ],
+                "companyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32"
+              },
+              "idsSample": [],
+              "filterHash": "9ac4834e70bb2ba9ae9c31745bb87057038cfd78bbb830dfd73d3f674a40d0c3",
+              "restricted": true,
+              "description": "Contas a pagar em 7 dias: próprios (PENDING, sem estornos) com vencimento de 2026-11-16 antes de 2026-11-23",
+              "reconcileMode": "SUM",
+              "filterSignature": "b2f65f265d0c6ad15cd9d7945e058c3343e6dd0312c2ae7e0e684aa25336eb8e"
+            }
+          ],
+          "historical": false,
+          "freshness": {
+            "state": "FRESH",
+            "ageMinutes": 5,
+            "asOfDate": "2026-11-16",
+            "sourceSnapshotAt": "2026-11-16T21:52:43.013Z",
+            "refreshedAt": "2026-11-16T21:52:47.786Z",
+            "maxStalenessMinutes": 15,
+            "expiredAboveMinutes": 60,
+            "historical": false,
+            "futureStamp": false,
+            "label": "Atualizado às 18:52",
+            "recordedSourceAt": "2026-11-16T17:02:44.463Z"
+          },
+          "name": "Contas a pagar em 7 dias",
+          "formatted": null,
+          "period": {
+            "start": "2026-11-01",
+            "end": "2026-11-30",
+            "asOf": "2026-11-16",
+            "tz": "America/Sao_Paulo",
+            "label": "novembro de 2026",
+            "kind": "MONTH"
+          },
+          "components": [],
+          "variation": null,
+          "drilldown": {
+            "enabled": true,
+            "allowed": true
+          },
+          "owner": "Diretoria Financeira (papel financeiro-gestor)"
+        }
+      },
+      "definicao": {
+        "http": 0,
+        "dados": null
+      }
+    },
+    "obra.delays": {
+      "valor": {
+        "http": 200,
+        "erro": null,
+        "dados": {
+          "metricCode": "obra.delays",
+          "value": null,
+          "unit": "COUNT",
+          "status": "INCOMPLETE",
+          "valueReliable": false,
+          "quality": {
+            "degradedBy": [
+              {
+                "readModel": "rm_project_delays",
+                "checkCode": "project_delays_ends_at_completeness",
+                "checkType": "COMPLETENESS",
+                "status": "FAILED",
+                "severity": "CRITICAL"
+              }
+            ],
+            "inheritedFrom": [],
+            "checks": [
+              {
+                "checkCode": "project_delays_ends_at_completeness",
+                "checkType": "COMPLETENESS",
+                "severity": "CRITICAL",
+                "status": "FAILED",
+                "readModel": "rm_project_delays"
+              }
+            ],
+            "degradedReasons": [
+              "Verificação project_delays_ends_at_completeness reprovada."
+            ]
+          },
+          "version": 1,
+          "formulaId": "obra.delays",
+          "valueNature": "ACTUAL",
+          "valueNatureLabel": "Realizado",
+          "asOfDate": "2026-11-16",
+          "revisionNo": 2,
+          "calcHash": "e3dd090e811a8ecdad2f9f6dfad475e2eff1fd5013c5d3f6f5fc5198b903a0a9",
+          "sourceSnapshotAt": "2026-11-16T03:05:35.081Z",
+          "refreshedAt": "2026-11-16T03:20:35.158Z",
+          "sourceRefs": [
+            {
+              "type": "PROJECT_STAGES",
+              "count": 2,
+              "table": "construction.project_stages",
+              "filter": {
+                "equals": {
+                  "deletedAt": null
+                },
+                "period": {
+                  "to": "2026-11-16T03:00:00.000Z",
+                  "from": null
+                },
+                "companyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32"
+              },
+              "idsSample": [],
+              "filterHash": "4162fabe5609dc648190227c3b4ccc4eb236b79e35d43bd4dc979d2b53e2045e",
+              "restricted": true,
+              "description": "Etapas não concluídas, com progresso abaixo de 100% e fim previsto antes de 2026-11-16",
+              "reconcileMode": "COUNT",
+              "filterSignature": "1b31d319e1e4b98bdf9b9a3660588a79fcc1c8eeb4c3038b1f59ccdf68ac5732"
+            }
+          ],
+          "historical": false,
+          "freshness": {
+            "state": "FRESH",
+            "ageMinutes": 14,
+            "asOfDate": "2026-11-16",
+            "sourceSnapshotAt": "2026-11-16T21:43:30.750Z",
+            "refreshedAt": "2026-11-16T21:52:57.432Z",
+            "maxStalenessMinutes": 1440,
+            "expiredAboveMinutes": 5760,
+            "historical": false,
+            "futureStamp": false,
+            "label": "Atualizado às 18:43",
+            "recordedSourceAt": "2026-11-16T03:05:35.081Z"
+          },
+          "name": "Atrasos",
+          "formatted": null,
+          "period": {
+            "start": "2026-11-01",
+            "end": "2026-11-30",
+            "asOf": "2026-11-16",
+            "tz": "America/Sao_Paulo",
+            "label": "novembro de 2026",
+            "kind": "MONTH"
+          },
+          "components": [],
+          "variation": null,
+          "drilldown": {
+            "enabled": true,
+            "allowed": true
+          },
+          "owner": "Diretoria de Obras (papel obras-gestor)"
+        }
+      },
+      "definicao": {
+        "http": 0,
+        "dados": null
+      }
+    },
+    "rent.inspections_keys": {
+      "valor": {
+        "http": 200,
+        "erro": null,
+        "dados": {
+          "metricCode": "rent.inspections_keys",
+          "value": null,
+          "unit": "COUNT",
+          "status": "DEGRADED",
+          "valueReliable": false,
+          "quality": {
+            "degradedBy": [
+              {
+                "readModel": "rm_rental_inspections_keys",
+                "checkCode": "rental_insp_keys_contract_id_completeness",
+                "checkType": "COMPLETENESS",
+                "status": "FAILED",
+                "severity": "CRITICAL"
+              }
+            ],
+            "inheritedFrom": [],
+            "checks": [
+              {
+                "checkCode": "rental_insp_keys_contract_id_completeness",
+                "checkType": "COMPLETENESS",
+                "severity": "CRITICAL",
+                "status": "FAILED",
+                "readModel": "rm_rental_inspections_keys"
+              }
+            ],
+            "degradedReasons": [
+              "Verificação rental_insp_keys_contract_id_completeness reprovada."
+            ]
+          },
+          "version": 1,
+          "formulaId": "rent.inspections_keys",
+          "valueNature": "ACTUAL",
+          "valueNatureLabel": "Realizado",
+          "asOfDate": "2026-11-16",
+          "revisionNo": 2,
+          "calcHash": "a69ee3b156d1d403b9f7eb6f31d46486a70875f5e679edc77c14b30027fcfffc",
+          "sourceSnapshotAt": "2026-11-16T03:05:35.081Z",
+          "refreshedAt": "2026-11-16T03:05:35.235Z",
+          "sourceRefs": [
+            {
+              "type": "INSPECTIONS",
+              "count": 3,
+              "table": "legal.inspections",
+              "filter": {
+                "equals": {
+                  "deletedAt": null,
+                  "leaseTypes": [
+                    "LEASE",
+                    "LEASE_RESIDENTIAL",
+                    "LEASE_COMMERCIAL",
+                    "LEASE_SEASONAL",
+                    "PROPERTY_ADMIN"
+                  ]
+                },
+                "companyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32"
+              },
+              "idsSample": [],
+              "filterHash": "c6c5337d546f2cc1bfabe7fbf24db33fbba62b592275e6cc17327e677939ba9d",
+              "restricted": true,
+              "description": "Vistorias pendentes de contratos de locação (nem concluídas nem canceladas); as chaves entram nas dimensões pelo read model",
+              "reconcileMode": "COUNT",
+              "filterSignature": "9ef9a4544130138d75240915ca94fd7547ed8e0abe8aedfee9476613f36f63fa"
+            }
+          ],
+          "historical": false,
+          "freshness": {
+            "state": "FRESH",
+            "ageMinutes": 5,
+            "asOfDate": "2026-11-16",
+            "sourceSnapshotAt": "2026-11-16T21:52:43.013Z",
+            "refreshedAt": "2026-11-16T21:52:53.510Z",
+            "maxStalenessMinutes": 1440,
+            "expiredAboveMinutes": 5760,
+            "historical": false,
+            "futureStamp": false,
+            "label": "Atualizado às 18:52",
+            "recordedSourceAt": "2026-11-16T03:05:35.081Z"
+          },
+          "name": "Vistorias e chaves",
+          "formatted": null,
+          "period": {
+            "start": "2026-11-01",
+            "end": "2026-11-30",
+            "asOf": "2026-11-16",
+            "tz": "America/Sao_Paulo",
+            "label": "novembro de 2026",
+            "kind": "MONTH"
+          },
+          "components": [],
+          "variation": null,
+          "drilldown": {
+            "enabled": true,
+            "allowed": true
+          },
+          "owner": "Gerência de Locação (papel locação-gestor)"
+        }
+      },
+      "definicao": {
+        "http": 0,
+        "dados": null
+      }
+    },
+    "crm.opportunities_by_stage": {
+      "valor": {
+        "http": 200,
+        "erro": null,
+        "dados": {
+          "metricCode": "crm.opportunities_by_stage",
+          "value": "100.0000",
+          "unit": "COUNT",
+          "status": "OK",
+          "valueReliable": true,
+          "quality": {
+            "degradedBy": [],
+            "inheritedFrom": [],
+            "checks": [],
+            "degradedReasons": []
+          },
+          "version": 1,
+          "formulaId": "crm.opportunities_by_stage",
+          "valueNature": "ACTUAL",
+          "valueNatureLabel": "Realizado",
+          "asOfDate": "2026-11-16",
+          "revisionNo": 6,
+          "calcHash": "a5bbc978bfe012d27e67ea525876de282382f8c81f40023b12901aeeeac6872c",
+          "sourceSnapshotAt": "2026-11-16T17:02:44.463Z",
+          "refreshedAt": "2026-11-16T17:02:44.909Z",
+          "sourceRefs": [
+            {
+              "type": "OPPORTUNITIES",
+              "count": 100,
+              "table": "crm.opportunities",
+              "filter": {
+                "equals": {
+                  "deletedAt": null,
+                  "crmClosedTo": "2026-11-17T03:00:00.000Z",
+                  "crmClosedFrom": "2026-11-01T03:00:00.000Z"
+                },
+                "companyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32"
+              },
+              "idsSample": [],
+              "filterHash": "3b52325c3a8df8bb904a7cbe558c0c5ba7b360c1164f2f3384d04e39bc14ee30",
+              "restricted": true,
+              "description": "Oportunidades em aberto mais as fechadas (ganha, perdida ou desistência) de 2026-11-01 a 2026-11-17",
+              "reconcileMode": "COUNT",
+              "filterSignature": "00f27cef2a1bcc42cdc479d7a2f72938be530a6a70eab10f4d7f102a6f61c993"
+            }
+          ],
+          "historical": false,
+          "freshness": {
+            "state": "FRESH",
+            "ageMinutes": 5,
+            "asOfDate": "2026-11-16",
+            "sourceSnapshotAt": "2026-11-16T21:52:43.013Z",
+            "refreshedAt": "2026-11-16T21:52:50.289Z",
+            "maxStalenessMinutes": 1440,
+            "expiredAboveMinutes": 5760,
+            "historical": false,
+            "futureStamp": false,
+            "label": "Atualizado às 18:52",
+            "recordedSourceAt": "2026-11-16T17:02:44.463Z"
+          },
+          "name": "Oportunidades por estágio",
+          "formatted": "100",
+          "period": {
+            "start": "2026-11-01",
+            "end": "2026-11-30",
+            "asOf": "2026-11-16",
+            "tz": "America/Sao_Paulo",
+            "label": "novembro de 2026",
+            "kind": "MONTH"
+          },
+          "components": [],
+          "variation": null,
+          "drilldown": {
+            "enabled": true,
+            "allowed": true
+          },
+          "owner": "Gerência Comercial (papel comercial-gestor)"
+        }
+      },
+      "definicao": {
+        "http": 0,
+        "dados": null
+      }
+    }
+  }
+}
