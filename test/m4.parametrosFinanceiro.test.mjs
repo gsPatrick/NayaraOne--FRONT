@@ -52,6 +52,10 @@ const ESPERADO = {
   "finance.relatorio.peso_recebivel_parcial": { type: "decimal", defaultValue: 1, min: 0, max: 1 },
   "finance.relatorio.peso_recebivel_vencido": { type: "decimal", defaultValue: 0, min: 0, max: 1 },
   "finance.ledger.conta_bancaria_obrigatoria_na_baixa": { type: "boolean", defaultValue: false },
+  // Vencimento das contas a pagar geradas pelo sistema (decisão do Patrick, 16/11/2026; generated-entry-due-settings.js na API).
+  "financeiro.vencimento.medicao_aprovada_dias": { type: "integer", defaultValue: 30, min: 0, max: 365 },
+  "financeiro.vencimento.recebimento_compra_dias": { type: "integer", defaultValue: 30, min: 0, max: 365 },
+  "financeiro.vencimento.resolucao_garantia_dias": { type: "integer", defaultValue: 30, min: 0, max: 365 },
 };
 
 test("m4 §17.7 parâmetros: a aba Financeiro lista as chaves (as seis antigas, as dez da DEC-007 e as doze da autorização) com o padrão e a faixa da API", () => {
