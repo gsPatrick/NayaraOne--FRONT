@@ -1,6 +1,6 @@
 {
   "fase": "ler",
-  "quando": "2026-11-16T23:10:57.840Z",
+  "quando": "2026-11-16T23:52:39.289Z",
   "ids": {},
   "indicador": {
     "http": 200,
@@ -20,19 +20,19 @@
     "linhas": [
       {
         "fornecedor": "email-sandbox",
-        "janela": "Invalid Date",
+        "janela": "16/11/2026, 19:00:00",
         "chamadas": 0,
         "falhas": 0
       },
       {
         "fornecedor": "messaging-sandbox",
-        "janela": "Invalid Date",
+        "janela": "16/11/2026, 19:00:00",
         "chamadas": 5,
         "falhas": 0
       },
       {
         "fornecedor": "financing-sandbox",
-        "janela": "Invalid Date",
+        "janela": "16/11/2026, 19:00:00",
         "chamadas": 0,
         "falhas": 0
       }
