@@ -1,0 +1,46 @@
+TAP version 13
+# Subtest: m9d912 exclusão manual de registro em hold é recusada em todas as rotas de exclusão de pessoa e de imóvel; fora do hold segue normal
+ok 1 - m9d912 exclusão manual de registro em hold é recusada em todas as rotas de exclusão de pessoa e de imóvel; fora do hold segue normal
+  ---
+  duration_ms: 113.032833
+  type: 'test'
+  ...
+# Subtest: m9d912 garantia de contrato em hold não se apaga
+ok 2 - m9d912 garantia de contrato em hold não se apaga
+  ---
+  duration_ms: 21.768375
+  type: 'test'
+  ...
+# Subtest: m9d912 pedido de exclusão do titular sobre dado em hold é recusado (pessoa, contrato, processo ou arquivo dela) e o dado segue
+ok 3 - m9d912 pedido de exclusão do titular sobre dado em hold é recusado (pessoa, contrato, processo ou arquivo dela) e o dado segue
+  ---
+  duration_ms: 27.205
+  type: 'test'
+  ...
+# Subtest: m9d912 hold da pessoa cobre contrato criado após o hold
+ok 4 - m9d912 hold da pessoa cobre contrato criado após o hold
+  ---
+  duration_ms: 11.39975
+  type: 'test'
+  ...
+# Subtest: m9d912 merge destrutivo recusado em hold (pessoa e imóvel) e o cadastro livre segue podendo ser unido
+ok 5 - m9d912 merge destrutivo recusado em hold (pessoa e imóvel) e o cadastro livre segue podendo ser unido
+  ---
+  duration_ms: 60.467125
+  type: 'test'
+  ...
+# Subtest: m9d912 decisão MERGED de M9-D805 sobre registro em hold devolve 409 e a fila não muda; DISMISSED continua possível
+ok 6 - m9d912 decisão MERGED de M9-D805 sobre registro em hold devolve 409 e a fila não muda; DISMISSED continua possível
+  ---
+  duration_ms: 52.116875
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 815.70025

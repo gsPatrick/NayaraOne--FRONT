@@ -1,0 +1,70 @@
+TAP version 13
+# Subtest: Criacao com responsavel grava o responsavel
+ok 1 - Criacao com responsavel grava o responsavel
+  ---
+  duration_ms: 109.8685
+  type: 'test'
+  ...
+# Subtest: PATCH troca o responsavel, persiste e grava auditoria antes/depois
+ok 2 - PATCH troca o responsavel, persiste e grava auditoria antes/depois
+  ---
+  duration_ms: 64.710625
+  type: 'test'
+  ...
+# Subtest: PATCH atribui responsavel a prazo que nasceu sem e permite remover (prazo nao critico, nao vencido)
+ok 3 - PATCH atribui responsavel a prazo que nasceu sem e permite remover (prazo nao critico, nao vencido)
+  ---
+  duration_ms: 55.933708
+  type: 'test'
+  ...
+# Subtest: Usuario sem vinculo na empresa (outro tenant/inexistente) e recusado na criacao e no PATCH, sem alterar nada
+ok 4 - Usuario sem vinculo na empresa (outro tenant/inexistente) e recusado na criacao e no PATCH, sem alterar nada
+  ---
+  duration_ms: 59.846333
+  type: 'test'
+  ...
+# Subtest: Vinculo inativo nao serve como responsavel
+ok 5 - Vinculo inativo nao serve como responsavel
+  ---
+  duration_ms: 42.187833
+  type: 'test'
+  ...
+# Subtest: Remover responsavel de prazo pendente ja vencido e recusado
+ok 6 - Remover responsavel de prazo pendente ja vencido e recusado
+  ---
+  duration_ms: 35.770208
+  type: 'test'
+  ...
+# Subtest: Remarcar (dueAt) continua exigindo motivo e preserva o responsavel
+ok 7 - Remarcar (dueAt) continua exigindo motivo e preserva o responsavel
+  ---
+  duration_ms: 64.43025
+  type: 'test'
+  ...
+# Subtest: Remover responsavel de prazo CRITICAL sem responsavel efetivo (processo sem responsavel) e recusado (422)
+ok 8 - Remover responsavel de prazo CRITICAL sem responsavel efetivo (processo sem responsavel) e recusado (422)
+  ---
+  duration_ms: 47.052042
+  type: 'test'
+  ...
+# Subtest: Trocar o responsavel zera lastAlertedSeverity; a troca sem changeReason continua valendo
+ok 9 - Trocar o responsavel zera lastAlertedSeverity; a troca sem changeReason continua valendo
+  ---
+  duration_ms: 59.171667
+  type: 'test'
+  ...
+# Subtest: Mesmo UUID em maiusculas nao e mudanca: nao zera lastAlertedSeverity nem regrava o responsavel
+ok 10 - Mesmo UUID em maiusculas nao e mudanca: nao zera lastAlertedSeverity nem regrava o responsavel
+  ---
+  duration_ms: 63.395
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1513.174209

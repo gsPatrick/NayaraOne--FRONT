@@ -1,0 +1,54 @@
+TAP version 13
+# Subtest: fechamento M5 JUR-TS-015/Guia §19: encerrar a caução no jurídico não mexe no Financeiro — saldo e trilha preservados e o gate continua vendo o saldo
+ok 1 - fechamento M5 JUR-TS-015/Guia §19: encerrar a caução no jurídico não mexe no Financeiro — saldo e trilha preservados e o gate continua vendo o saldo
+  ---
+  duration_ms: 122.902833
+  type: 'test'
+  ...
+# Subtest: fechamento M5 §9: os cinco códigos do livro; DEPOSIT e CAPITALIZATION_TITLE entram como apelido e saem com o código do livro
+ok 2 - fechamento M5 §9: os cinco códigos do livro; DEPOSIT e CAPITALIZATION_TITLE entram como apelido e saem com o código do livro
+  ---
+  duration_ms: 18.804334
+  type: 'test'
+  ...
+# (node:64503) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+# (Use `node --trace-deprecation ...` to show where the warning was created)
+# Subtest: fechamento M5 §9 GUARANTOR: pessoas, documentos, vigência e aceite; fiador não pode ser parte; incompleto fica PENDING
+ok 3 - fechamento M5 §9 GUARANTOR: pessoas, documentos, vigência e aceite; fiador não pode ser parte; incompleto fica PENDING
+  ---
+  duration_ms: 92.794958
+  type: 'test'
+  ...
+# Subtest: fechamento M5 §9 INSURANCE: seguradora, apólice, vigência, parcelas e renovação gravados; parcelas conferidas com o prêmio
+ok 4 - fechamento M5 §9 INSURANCE: seguradora, apólice, vigência, parcelas e renovação gravados; parcelas conferidas com o prêmio
+  ---
+  duration_ms: 57.601209
+  type: 'test'
+  ...
+# Subtest: fechamento M5 §9 SECURITY_DEPOSIT e CAPITALIZATION: vínculo financeiro conferido; título com documento, provider e vigência
+ok 5 - fechamento M5 §9 SECURITY_DEPOSIT e CAPITALIZATION: vínculo financeiro conferido; título com documento, provider e vigência
+  ---
+  duration_ms: 66.774
+  type: 'test'
+  ...
+# Subtest: fechamento M5 §9 OTHER: só com fluxo homologado configurado pela empresa, com os campos que o fluxo exige
+ok 6 - fechamento M5 §9 OTHER: só com fluxo homologado configurado pela empresa, com os campos que o fluxo exige
+  ---
+  duration_ms: 40.480375
+  type: 'test'
+  ...
+# Subtest: fechamento M5 §9/JUR-006: cada garantia tem vigência e status próprios; fiador, seguro e título exigem fim de vigência
+ok 7 - fechamento M5 §9/JUR-006: cada garantia tem vigência e status próprios; fiador, seguro e título exigem fim de vigência
+  ---
+  duration_ms: 78.006875
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1653.285791

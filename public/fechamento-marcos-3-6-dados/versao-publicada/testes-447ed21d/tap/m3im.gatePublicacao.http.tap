@@ -1,0 +1,58 @@
+TAP version 13
+# Subtest: POST /properties com PUBLISHED passa pelo gate: sem oferta, vídeo, fotos e documentos não cria nada e não emite property.published
+ok 1 - POST /properties com PUBLISHED passa pelo gate: sem oferta, vídeo, fotos e documentos não cria nada e não emite property.published
+  ---
+  duration_ms: 449.794375
+  type: 'test'
+  ...
+# Subtest: vídeo REJEITADO ou PENDENTE não conta; com o vídeo aprovado publica pelo POST /offers/:id/publish e audita os fatos
+ok 2 - vídeo REJEITADO ou PENDENTE não conta; com o vídeo aprovado publica pelo POST /offers/:id/publish e audita os fatos
+  ---
+  duration_ms: 558.31125
+  type: 'test'
+  ...
+# Subtest: mídia sem arquivo não conta para o gate (registro antigo só com storage_key)
+ok 3 - mídia sem arquivo não conta para o gate (registro antigo só com storage_key)
+  ---
+  duration_ms: 140.516458
+  type: 'test'
+  ...
+# Subtest: documentos exigidos vêm do parâmetro da empresa (padrão REGISTRY e IPTU) e só contam com arquivo
+ok 4 - documentos exigidos vêm do parâmetro da empresa (padrão REGISTRY e IPTU) e só contam com arquivo
+  ---
+  duration_ms: 636.5585
+  type: 'test'
+  ...
+# Subtest: §7 campos obrigatórios: padrão exige endereço e proprietário; o parâmetro acrescenta campos e o Motor de Regras decide (REG-IMO-FIELDS-001)
+ok 5 - §7 campos obrigatórios: padrão exige endereço e proprietário; o parâmetro acrescenta campos e o Motor de Regras decide (REG-IMO-FIELDS-001)
+  ---
+  duration_ms: 526.766375
+  type: 'test'
+  ...
+# Subtest: PATCH PUBLISHED cai no mesmo gate e não grava nada quando bloqueia
+ok 6 - PATCH PUBLISHED cai no mesmo gate e não grava nada quando bloqueia
+  ---
+  duration_ms: 123.383958
+  type: 'test'
+  ...
+# Subtest: imóvel publicado que perde o vídeo (apagado) ou tem o vídeo recusado sai do ar, auditado
+ok 7 - imóvel publicado que perde o vídeo (apagado) ou tem o vídeo recusado sai do ar, auditado
+  ---
+  duration_ms: 361.146667
+  type: 'test'
+  ...
+# Subtest: nenhuma outra rota grava publicação: importação e alteração em massa não têm o campo; só o gate grava PUBLISHED no código
+ok 8 - nenhuma outra rota grava publicação: importação e alteração em massa não têm o campo; só o gate grava PUBLISHED no código
+  ---
+  duration_ms: 323.947167
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 5593.213333

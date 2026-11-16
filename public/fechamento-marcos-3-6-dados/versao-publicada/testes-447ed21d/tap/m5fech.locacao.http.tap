@@ -1,0 +1,54 @@
+TAP version 13
+# Subtest: fechamento M5 cobrança/HTTP: encerramento recusado (409 CLOSEOUT_BLOCKED) grava closeout.blocked e a auditoria mesmo com a transação da requisição desfeita
+ok 1 - fechamento M5 cobrança/HTTP: encerramento recusado (409 CLOSEOUT_BLOCKED) grava closeout.blocked e a auditoria mesmo com a transação da requisição desfeita
+  ---
+  duration_ms: 579.460417
+  type: 'test'
+  ...
+# Subtest: fechamento M5 Guia §14/HTTP: POST /legal/contracts/:id/key-delivery recusa contrato não assinado sem deixar entrega gravada
+ok 2 - fechamento M5 Guia §14/HTTP: POST /legal/contracts/:id/key-delivery recusa contrato não assinado sem deixar entrega gravada
+  ---
+  duration_ms: 95.187416
+  type: 'test'
+  ...
+# (node:63806) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+# (Use `node --trace-deprecation ...` to show where the warning was created)
+# Subtest: fechamento M5 DoD idempotência/HTTP: pagamento de utilidade repetido com a mesma Idempotency-Key devolve a resposta original e não cria segundo reembolso
+ok 3 - fechamento M5 DoD idempotência/HTTP: pagamento de utilidade repetido com a mesma Idempotency-Key devolve a resposta original e não cria segundo reembolso
+  ---
+  duration_ms: 216.924625
+  type: 'test'
+  ...
+# Subtest: fechamento M5 Guia §14/HTTP: rotas literais POST /contracts/:id/guarantees, POST /inspections e POST /inspections/:id/sign usam o mesmo serviço, permissão e MFA
+ok 4 - fechamento M5 Guia §14/HTTP: rotas literais POST /contracts/:id/guarantees, POST /inspections e POST /inspections/:id/sign usam o mesmo serviço, permissão e MFA
+  ---
+  duration_ms: 67.243792
+  type: 'test'
+  ...
+# Subtest: fechamento M5 Guia §11/HTTP: entregar chaves exige a permissão do livro lease.keys.deliver (o nome antigo sozinho não basta)
+ok 5 - fechamento M5 Guia §11/HTTP: entregar chaves exige a permissão do livro lease.keys.deliver (o nome antigo sozinho não basta)
+  ---
+  duration_ms: 20.569375
+  type: 'test'
+  ...
+# Subtest: fechamento M5 §9/HTTP: POST /legal/guarantees/:id/replace substitui a garantia sem perder o histórico
+ok 6 - fechamento M5 §9/HTTP: POST /legal/guarantees/:id/replace substitui a garantia sem perder o histórico
+  ---
+  duration_ms: 639.490583
+  type: 'test'
+  ...
+# Subtest: fechamento M5 3ª rodada/HTTP: GET /legal/guarantee-flows mostra a quem cadastra garantia (legal:create) os fluxos homologados de OTHER, sem settings:read
+ok 7 - fechamento M5 3ª rodada/HTTP: GET /legal/guarantee-flows mostra a quem cadastra garantia (legal:create) os fluxos homologados de OTHER, sem settings:read
+  ---
+  duration_ms: 25.523208
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 5262.024041

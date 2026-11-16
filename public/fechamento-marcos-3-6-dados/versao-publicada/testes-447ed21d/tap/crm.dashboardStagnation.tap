@@ -1,0 +1,28 @@
+TAP version 13
+# Subtest: Painel CRM: oportunidade aberta com nextAction VENCIDO aparece em staleOpportunities
+ok 1 - Painel CRM: oportunidade aberta com nextAction VENCIDO aparece em staleOpportunities
+  ---
+  duration_ms: 100.649125
+  type: 'test'
+  ...
+# Subtest: Painel CRM: oportunidade com nextAction no futuro NÃO aparece em staleOpportunities
+ok 2 - Painel CRM: oportunidade com nextAction no futuro NÃO aparece em staleOpportunities
+  ---
+  duration_ms: 31.181209
+  type: 'test'
+  ...
+# Subtest: Painel CRM: oportunidade FECHADA (WON/LOST) nunca entra em staleOpportunities mesmo com tarefa vencida
+ok 3 - Painel CRM: oportunidade FECHADA (WON/LOST) nunca entra em staleOpportunities mesmo com tarefa vencida
+  ---
+  duration_ms: 48.432125
+  type: 'test'
+  ...
+1..3
+# tests 3
+# suites 0
+# pass 3
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1048.819583

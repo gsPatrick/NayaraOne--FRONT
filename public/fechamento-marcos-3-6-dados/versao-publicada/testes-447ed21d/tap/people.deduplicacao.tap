@@ -1,0 +1,52 @@
+TAP version 13
+# Subtest: chave do contato: o cálculo em SQL é o mesmo do JS (e-mail, telefone com e sem DDI, WhatsApp)
+ok 1 - chave do contato: o cálculo em SQL é o mesmo do JS (e-mail, telefone com e sem DDI, WhatsApp)
+  ---
+  duration_ms: 28.692042
+  type: 'test'
+  ...
+# Subtest: M3-03 médio: e-mail com caixa/espaço diferente, telefone com máscara x DDI e WhatsApp x telefone, em contato NÃO principal, são a mesma pessoa
+ok 2 - M3-03 médio: e-mail com caixa/espaço diferente, telefone com máscara x DDI e WhatsApp x telefone, em contato NÃO principal, são a mesma pessoa
+  ---
+  duration_ms: 43.296166
+  type: 'test'
+  ...
+# Subtest: M3-03 médio: criar mesmo assim exige motivo e a permissão; sem permissão é 403 e a recusa vai para a auditoria pós-rollback
+ok 3 - M3-03 médio: criar mesmo assim exige motivo e a permissão; sem permissão é 403 e a recusa vai para a auditoria pós-rollback
+  ---
+  duration_ms: 37.481791
+  type: 'test'
+  ...
+# Subtest: CRMX-010 fraco: pela tela, nome semelhante + mesma data de nascimento é recusado ANTES de criar; com a revisão confirmada cria, audita e põe na fila
+ok 4 - CRMX-010 fraco: pela tela, nome semelhante + mesma data de nascimento é recusado ANTES de criar; com a revisão confirmada cria, audita e põe na fila
+  ---
+  duration_ms: 51.10725
+  type: 'test'
+  ...
+# Subtest: M3-03 grupo: CPF ou e-mail de pessoa de OUTRA empresa do grupo recusa antes de gravar, sem id nem nome, e aponta o vínculo
+ok 5 - M3-03 grupo: CPF ou e-mail de pessoa de OUTRA empresa do grupo recusa antes de gravar, sem id nem nome, e aponta o vínculo
+  ---
+  duration_ms: 38.729208
+  type: 'test'
+  ...
+# Subtest: M3-03 forte nesta empresa: bloqueia sempre (allowDuplicate não contorna) e oferece o cadastro existente
+ok 6 - M3-03 forte nesta empresa: bloqueia sempre (allowDuplicate não contorna) e oferece o cadastro existente
+  ---
+  duration_ms: 14.866
+  type: 'test'
+  ...
+# Subtest: M3-03 forte: CPF de um cadastro EXCLUÍDO desta empresa continua ocupado (nada some) e a recusa diz isso, sem cair na mensagem do grupo
+ok 7 - M3-03 forte: CPF de um cadastro EXCLUÍDO desta empresa continua ocupado (nada some) e a recusa diz isso, sem cair na mensagem do grupo
+  ---
+  duration_ms: 21.294416
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 760.339833

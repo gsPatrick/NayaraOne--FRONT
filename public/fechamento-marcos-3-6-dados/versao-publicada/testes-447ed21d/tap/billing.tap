@@ -1,0 +1,120 @@
+TAP version 13
+# Subtest: billing: gerar cobrança duas vezes para a mesma competência é bloqueado com erro claro
+ok 1 - billing: gerar cobrança duas vezes para a mesma competência é bloqueado com erro claro
+  ---
+  duration_ms: 116.969417
+  type: 'test'
+  ...
+# Subtest: billing: pagamento parcial recompõe saldo e só fecha quando quitado totalmente
+ok 2 - billing: pagamento parcial recompõe saldo e só fecha quando quitado totalmente
+  ---
+  duration_ms: 61.869167
+  type: 'test'
+  ...
+# Subtest: billing: reajuste sem fonte de índice disponível vira PENDING_SOURCE sem inventar percentual
+ok 3 - billing: reajuste sem fonte de índice disponível vira PENDING_SOURCE sem inventar percentual
+  ---
+  duration_ms: 35.759292
+  type: 'test'
+  ...
+# Subtest: billing: reajuste com fonte de índice disponível aplica o percentual (raw pode divergir de applied)
+ok 4 - billing: reajuste com fonte de índice disponível aplica o percentual (raw pode divergir de applied)
+  ---
+  duration_ms: 30.731417
+  type: 'test'
+  ...
+# Subtest: billing: aluguel garantido e antecipação são produtos/tabelas separados
+ok 5 - billing: aluguel garantido e antecipação são produtos/tabelas separados
+  ---
+  duration_ms: 286.432084
+  type: 'test'
+  ...
+# (node:63835) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+# (Use `node --trace-deprecation ...` to show where the warning was created)
+# Subtest: billing: reembolso é criado quando a imobiliária paga utilidade da responsabilidade da outra parte
+ok 6 - billing: reembolso é criado quando a imobiliária paga utilidade da responsabilidade da outra parte
+  ---
+  duration_ms: 178.661834
+  type: 'test'
+  ...
+# Subtest: billing: closeout bloqueia com cobrança em aberto e libera quando quitada
+ok 7 - billing: closeout bloqueia com cobrança em aberto e libera quando quitada
+  ---
+  duration_ms: 55.645833
+  type: 'test'
+  ...
+# Subtest: billing: completeOwnershipTransfer exige comprovante (evidenceFileId) e destinatário (A05)
+ok 8 - billing: completeOwnershipTransfer exige comprovante (evidenceFileId) e destinatário (A05)
+  ---
+  duration_ms: 36.500625
+  type: 'test'
+  ...
+# Subtest: billing: requestOwnershipTransfer abre tarefa numa obrigação existente, recusa duplicada e a conclusão grava o comprovante na obrigação
+ok 9 - billing: requestOwnershipTransfer abre tarefa numa obrigação existente, recusa duplicada e a conclusão grava o comprovante na obrigação
+  ---
+  duration_ms: 32.955791
+  type: 'test'
+  ...
+# Subtest: billing: closeout bloqueia com transferência de utilidade pendente
+ok 10 - billing: closeout bloqueia com transferência de utilidade pendente
+  ---
+  duration_ms: 20.40375
+  type: 'test'
+  ...
+# Subtest: billing: closeout sem pendências avança o contrato ACTIVE até CLOSED
+ok 11 - billing: closeout sem pendências avança o contrato ACTIVE até CLOSED
+  ---
+  duration_ms: 38.053417
+  type: 'test'
+  ...
+# Subtest: billing: closeout bloqueado por garantia ACTIVE pendente (gate único de encerramento)
+ok 12 - billing: closeout bloqueado por garantia ACTIVE pendente (gate único de encerramento)
+  ---
+  duration_ms: 32.499833
+  type: 'test'
+  ...
+# Subtest: billing: caso de cobrança dentro da carência (REG-LOC-002) é bloqueado
+ok 13 - billing: caso de cobrança dentro da carência (REG-LOC-002) é bloqueado
+  ---
+  duration_ms: 27.988375
+  type: 'test'
+  ...
+# Subtest: billing: duas aberturas CONCORRENTES de caso de cobrança para a mesma competência não duplicam
+ok 14 - billing: duas aberturas CONCORRENTES de caso de cobrança para a mesma competência não duplicam
+  ---
+  duration_ms: 46.537209
+  type: 'test'
+  ...
+# Subtest: billing: duas recuperações CONCORRENTES da mesma antecipação de aluguel não perdem incremento (lost update)
+ok 15 - billing: duas recuperações CONCORRENTES da mesma antecipação de aluguel não perdem incremento (lost update)
+  ---
+  duration_ms: 106.113042
+  type: 'test'
+  ...
+# Subtest: billing: dois pagamentos CONCORRENTES de aluguel garantido para a mesma competência não duplicam
+ok 16 - billing: dois pagamentos CONCORRENTES de aluguel garantido para a mesma competência não duplicam
+  ---
+  duration_ms: 99.376
+  type: 'test'
+  ...
+# Subtest: billing: duas conclusões CONCORRENTES da última tarefa de transferência não travam a obrigação em TRANSFER_PENDING
+ok 17 - billing: duas conclusões CONCORRENTES da última tarefa de transferência não travam a obrigação em TRANSFER_PENDING
+  ---
+  duration_ms: 90.028333
+  type: 'test'
+  ...
+# Subtest: billing: RLS está corretamente configurada (ENABLE+FORCE+policy tenant_isolation) em todas as tabelas novas
+ok 18 - billing: RLS está corretamente configurada (ENABLE+FORCE+policy tenant_isolation) em todas as tabelas novas
+  ---
+  duration_ms: 12.285125
+  type: 'test'
+  ...
+1..18
+# tests 18
+# suites 0
+# pass 18
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2378.733416

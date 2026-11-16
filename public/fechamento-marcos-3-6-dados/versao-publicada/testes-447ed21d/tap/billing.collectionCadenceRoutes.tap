@@ -1,0 +1,52 @@
+TAP version 13
+# Subtest: CAD-HTTP-01: sem billing:read → 403 na régua e nas etapas
+ok 1 - CAD-HTTP-01: sem billing:read → 403 na régua e nas etapas
+  ---
+  duration_ms: 439.541875
+  type: 'test'
+  ...
+# Subtest: CAD-HTTP-02: só billing:read não publica (403, service não chamado)
+ok 2 - CAD-HTTP-02: só billing:read não publica (403, service não chamado)
+  ---
+  duration_ms: 21.973292
+  type: 'test'
+  ...
+# Subtest: CAD-HTTP-03: payload inválido → 400 COLLECTION_CADENCE_INVALID
+ok 3 - CAD-HTTP-03: payload inválido → 400 COLLECTION_CADENCE_INVALID
+  ---
+  duration_ms: 99.439
+  type: 'test'
+  ...
+# Subtest: CAD-HTTP-04: publicar com billing:cadence:manage → 201 com etapas normalizadas (ordenadas)
+ok 4 - CAD-HTTP-04: publicar com billing:cadence:manage → 201 com etapas normalizadas (ordenadas)
+  ---
+  duration_ms: 9.573542
+  type: 'test'
+  ...
+# Subtest: CAD-HTTP-05: GET régua vigente + histórico
+ok 5 - CAD-HTTP-05: GET régua vigente + histórico
+  ---
+  duration_ms: 17.987125
+  type: 'test'
+  ...
+# Subtest: CAD-HTTP-06: etapas executadas com paginação e filtros
+ok 6 - CAD-HTTP-06: etapas executadas com paginação e filtros
+  ---
+  duration_ms: 30.879333
+  type: 'test'
+  ...
+# Subtest: CAD-HTTP-07: filtros inválidos → 400 (não 500)
+ok 7 - CAD-HTTP-07: filtros inválidos → 400 (não 500)
+  ---
+  duration_ms: 49.188583
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4029.278917

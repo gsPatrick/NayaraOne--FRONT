@@ -1,0 +1,16 @@
+TAP version 13
+# Subtest: DI-M3-FUNIL-1: etapas antigas viram a etapa do livro, terminal ganha data de fechamento e cada conversão fica no audit_log
+ok 1 - DI-M3-FUNIL-1: etapas antigas viram a etapa do livro, terminal ganha data de fechamento e cada conversão fica no audit_log
+  ---
+  duration_ms: 233.198167
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1167.89125

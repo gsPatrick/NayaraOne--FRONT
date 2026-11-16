@@ -1,0 +1,48 @@
+TAP version 13
+# Subtest: LIVRO §13: POST /crm/opportunities cria com próxima ação e recusa sem ela
+ok 1 - LIVRO §13: POST /crm/opportunities cria com próxima ação e recusa sem ela
+  ---
+  duration_ms: 917.157875
+  type: 'test'
+  ...
+# (node:64086) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+# (Use `node --trace-deprecation ...` to show where the warning was created)
+# Subtest: LIVRO §10/§12: POST /crm/opportunities/:id/interactions grava canal SITE com occurredAt e não duplica pelo externalMessageId
+ok 2 - LIVRO §10/§12: POST /crm/opportunities/:id/interactions grava canal SITE com occurredAt e não duplica pelo externalMessageId
+  ---
+  duration_ms: 425.195667
+  type: 'test'
+  ...
+# Subtest: LIVRO §13: visita, perda com motivo e radar pelos caminhos do livro
+ok 3 - LIVRO §13: visita, perda com motivo e radar pelos caminhos do livro
+  ---
+  duration_ms: 479.872208
+  type: 'test'
+  ...
+# Subtest: LIVRO §15/§17: a interação abre a ocorrência (atendimento inadequado e retorno pendente) e publica crm.occurrence.opened
+ok 4 - LIVRO §15/§17: a interação abre a ocorrência (atendimento inadequado e retorno pendente) e publica crm.occurrence.opened
+  ---
+  duration_ms: 661.789208
+  type: 'test'
+  ...
+# Subtest: LIVRO §15: reclamação grave nasce escalonada e avisa a gerência (quem vê o painel do CRM)
+ok 5 - LIVRO §15: reclamação grave nasce escalonada e avisa a gerência (quem vê o painel do CRM)
+  ---
+  duration_ms: 342.610459
+  type: 'test'
+  ...
+# Subtest: CRM-TS-015: apagar ocorrência é recusado pela rota (auditado) e pelo banco (delete e soft delete)
+ok 6 - CRM-TS-015: apagar ocorrência é recusado pela rota (auditado) e pelo banco (delete e soft delete)
+  ---
+  duration_ms: 235.586625
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 6074.449167

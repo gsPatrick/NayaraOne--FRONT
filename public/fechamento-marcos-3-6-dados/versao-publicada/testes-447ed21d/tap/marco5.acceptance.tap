@@ -1,0 +1,36 @@
+TAP version 13
+# Subtest: M5-04 startsAt/endsAt são persistidas na criação e corrigíveis via correctContractData com auditoria
+ok 1 - M5-04 startsAt/endsAt são persistidas na criação e corrigíveis via correctContractData com auditoria
+  ---
+  duration_ms: 75.470125
+  type: 'test'
+  ...
+# (node:64407) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+# (Use `node --trace-deprecation ...` to show where the warning was created)
+# Subtest: M5-17/M5-18 createGuarantee exige guarantorPersonId para GUARANTOR, persiste valor/vigência
+ok 2 - M5-17/M5-18 createGuarantee exige guarantorPersonId para GUARANTOR, persiste valor/vigência
+  ---
+  duration_ms: 143.868166
+  type: 'test'
+  ...
+# Subtest: M5-22/M5-23 releaseKeyDelivery bloqueia sem vistoria de entrada, libera e registra quem/quando após concluída
+ok 3 - M5-22/M5-23 releaseKeyDelivery bloqueia sem vistoria de entrada, libera e registra quem/quando após concluída
+  ---
+  duration_ms: 664.2555
+  type: 'test'
+  ...
+# Subtest: REGRESSÃO LOC-2026-0002: releaseKeyDelivery usa a vistoria vinculada à entrega (não qualquer CHECK_IN concluído do contrato)
+ok 4 - REGRESSÃO LOC-2026-0002: releaseKeyDelivery usa a vistoria vinculada à entrega (não qualquer CHECK_IN concluído do contrato)
+  ---
+  duration_ms: 338.730667
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2422.762917

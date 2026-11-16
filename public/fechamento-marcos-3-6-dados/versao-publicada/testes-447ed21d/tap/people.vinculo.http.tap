@@ -1,0 +1,36 @@
+TAP version 13
+# (node:64798) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+# (Use `node --trace-deprecation ...` to show where the warning was created)
+# Subtest: HTTP vínculo: CPF do grupo em B vira convite ao vínculo (409 sem id nem nome); sem people:link, 403; nome errado e CPF inexistente dão a mesma 422
+ok 1 - HTTP vínculo: CPF do grupo em B vira convite ao vínculo (409 sem id nem nome); sem people:link, 403; nome errado e CPF inexistente dão a mesma 422
+  ---
+  duration_ms: 2558.373542
+  type: 'test'
+  ...
+# Subtest: HTTP vínculo: B vincula e vê só a base; filhos de A (contato, endereço, documento, papel, consentimento, arquivo) continuam invisíveis; A vê tudo o que é dela
+ok 2 - HTTP vínculo: B vincula e vê só a base; filhos de A (contato, endereço, documento, papel, consentimento, arquivo) continuam invisíveis; A vê tudo o que é dela
+  ---
+  duration_ms: 709.087083
+  type: 'test'
+  ...
+# Subtest: HTTP vínculo: desfazer exige motivo e people:link, tira a visão de B e é auditado; vincular de novo reativa com os dados de B
+ok 3 - HTTP vínculo: desfazer exige motivo e people:link, tira a visão de B e é auditado; vincular de novo reativa com os dados de B
+  ---
+  duration_ms: 314.826584
+  type: 'test'
+  ...
+# Subtest: HTTP vínculo: as recusas ficam na auditoria mesmo com o rollback e, no limite do parâmetro, a próxima tentativa recebe 429
+ok 4 - HTTP vínculo: as recusas ficam na auditoria mesmo com o rollback e, no limite do parâmetro, a próxima tentativa recebe 429
+  ---
+  duration_ms: 16.530708
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4238.017584

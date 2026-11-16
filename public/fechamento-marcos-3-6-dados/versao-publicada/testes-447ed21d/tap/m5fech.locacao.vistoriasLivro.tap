@@ -1,0 +1,42 @@
+TAP version 13
+# Subtest: fechamento M5 §11: tipos ENTRY/EXIT/INTERMEDIATE/FINAL gravados e devolvidos com o código do livro; códigos antigos entram como apelido e o banco traduz gravador legado
+ok 1 - fechamento M5 §11: tipos ENTRY/EXIT/INTERMEDIATE/FINAL gravados e devolvidos com o código do livro; códigos antigos entram como apelido e o banco traduz gravador legado
+  ---
+  duration_ms: 144.208667
+  type: 'test'
+  ...
+# Subtest: fechamento M5 §11/Guia §9: item tem ambiente (roomCode), código (itemCode), estado NEW|GOOD|REGULAR|DAMAGED, descrição, observação e responsabilidade
+ok 2 - fechamento M5 §11/Guia §9: item tem ambiente (roomCode), código (itemCode), estado NEW|GOOD|REGULAR|DAMAGED, descrição, observação e responsabilidade
+  ---
+  duration_ms: 62.900209
+  type: 'test'
+  ...
+# (node:63989) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+# (Use `node --trace-deprecation ...` to show where the warning was created)
+# Subtest: fechamento M5 §4/§11: mídia vai para legal.inspection_media com o SHA-256 do arquivo, data/hora e vínculo ao item; a revisão leva as mesmas mídias
+ok 3 - fechamento M5 §4/§11: mídia vai para legal.inspection_media com o SHA-256 do arquivo, data/hora e vínculo ao item; a revisão leva as mesmas mídias
+  ---
+  duration_ms: 287.792417
+  type: 'test'
+  ...
+# Subtest: fechamento M5 Guia §9: a assinatura guarda o hash do JSON canônico do conteúdo (snapshot) e todas as partes assinam o mesmo conteúdo
+ok 4 - fechamento M5 Guia §9: a assinatura guarda o hash do JSON canônico do conteúdo (snapshot) e todas as partes assinam o mesmo conteúdo
+  ---
+  duration_ms: 149.549959
+  type: 'test'
+  ...
+# Subtest: fechamento M5 Guia §10: comparação entrada x saída pareia por ambiente + código do item e devolve roomCode/itemCode
+ok 5 - fechamento M5 Guia §10: comparação entrada x saída pareia por ambiente + código do item e devolve roomCode/itemCode
+  ---
+  duration_ms: 41.656791
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1793.407041

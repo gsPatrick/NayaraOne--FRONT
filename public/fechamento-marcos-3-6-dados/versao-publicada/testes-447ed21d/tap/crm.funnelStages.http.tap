@@ -1,0 +1,18 @@
+TAP version 13
+# (node:63944) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+# (Use `node --trace-deprecation ...` to show where the warning was created)
+# Subtest: ROTA funil do livro: estágio do livro aceito, WON normalizado com motivo, estágio fora do livro recusado com OPPORTUNITY_STAGE_INVALID
+ok 1 - ROTA funil do livro: estágio do livro aceito, WON normalizado com motivo, estágio fora do livro recusado com OPPORTUNITY_STAGE_INVALID
+  ---
+  duration_ms: 1391.831084
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4207.634583

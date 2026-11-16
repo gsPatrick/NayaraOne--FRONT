@@ -1,0 +1,30 @@
+TAP version 13
+# (node:64269) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+# (Use `node --trace-deprecation ...` to show where the warning was created)
+# Subtest: Guia §14: POST /contracts e POST /contracts/:id/versions criam contrato e versão pelo mesmo serviço (permissão e hash do servidor)
+ok 1 - Guia §14: POST /contracts e POST /contracts/:id/versions criam contrato e versão pelo mesmo serviço (permissão e hash do servidor)
+  ---
+  duration_ms: 4360.271458
+  type: 'test'
+  ...
+# Subtest: Guia §14: POST /contract-versions/:id/approve aprova só a versão vigente, com legal:approve, auditoria e contract.version.approved
+ok 2 - Guia §14: POST /contract-versions/:id/approve aprova só a versão vigente, com legal:approve, auditoria e contract.version.approved
+  ---
+  duration_ms: 1105.674791
+  type: 'test'
+  ...
+# Subtest: Guia §14: POST /contract-versions/:id/send-signature exige versão vigente de contrato APPROVED e cria as assinaturas presas à versão e ao hash
+ok 3 - Guia §14: POST /contract-versions/:id/send-signature exige versão vigente de contrato APPROVED e cria as assinaturas presas à versão e ao hash
+  ---
+  duration_ms: 885.4585
+  type: 'test'
+  ...
+1..3
+# tests 3
+# suites 0
+# pass 3
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 7047.453

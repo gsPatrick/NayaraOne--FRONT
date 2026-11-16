@@ -1,0 +1,48 @@
+TAP version 13
+# (node:64417) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+# (Use `node --trace-deprecation ...` to show where the warning was created)
+# Subtest: JR rotas: partes, documentos e linha do tempo do processo pela API; sem legal:create 403; processo inexistente/de outra empresa 404 (§14)
+ok 1 - JR rotas: partes, documentos e linha do tempo do processo pela API; sem legal:create 403; processo inexistente/de outra empresa 404 (§14)
+  ---
+  duration_ms: 736.847292
+  type: 'test'
+  ...
+# Subtest: JR rotas: POST /legal/cases/:id/evidence-package (grafia do Guia §14) gera o dossiê com manifesto e hash, igual à rota no plural
+ok 2 - JR rotas: POST /legal/cases/:id/evidence-package (grafia do Guia §14) gera o dossiê com manifesto e hash, igual à rota no plural
+  ---
+  duration_ms: 90.306458
+  type: 'test'
+  ...
+# Subtest: JR rotas: concluir prazo — sem legal:update 403; com legal:update sem ser responsável nem ter legal:approve 403 LEGAL_DEADLINE_NOT_RESPONSIBLE; sem prova 422; o responsável conclui (§19)
+ok 3 - JR rotas: concluir prazo — sem legal:update 403; com legal:update sem ser responsável nem ter legal:approve 403 LEGAL_DEADLINE_NOT_RESPONSIBLE; sem prova 422; o responsável conclui (§19)
+  ---
+  duration_ms: 154.338834
+  type: 'test'
+  ...
+# Subtest: JUR-TS-011: exportar dossiê sem a permissão específica legal:evidence:export é negado (403 PERMISSION_DENIED, inclusive só com legal:read) sem registro EXPORTED; outra empresa/inexistente 404; com a permissão a DLP ainda exige finalidade e MFA (classe HIGH)
+ok 4 - JUR-TS-011: exportar dossiê sem a permissão específica legal:evidence:export é negado (403 PERMISSION_DENIED, inclusive só com legal:read) sem registro EXPORTED; outra empresa/inexistente 404; com a permissão a DLP ainda exige finalidade e MFA (classe HIGH)
+  ---
+  duration_ms: 143.607458
+  type: 'test'
+  ...
+# Subtest: JR rotas: recebível do processo exige legal:approve E finance:create e só sai com valor confirmado; versões da notificação pela API
+ok 5 - JR rotas: recebível do processo exige legal:approve E finance:create e só sai com valor confirmado; versões da notificação pela API
+  ---
+  duration_ms: 123.622666
+  type: 'test'
+  ...
+# Subtest: Pentest JR (HTTP): objeto no lugar de texto/uuid no dossiê ({"$gt":""}) é 400 com o código do Jurídico, nunca 500
+ok 6 - Pentest JR (HTTP): objeto no lugar de texto/uuid no dossiê ({"$gt":""}) é 400 com o código do Jurídico, nunca 500
+  ---
+  duration_ms: 26.656792
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3941.177208

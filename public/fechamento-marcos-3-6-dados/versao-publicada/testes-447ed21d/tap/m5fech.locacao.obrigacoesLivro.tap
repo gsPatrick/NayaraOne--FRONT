@@ -1,0 +1,24 @@
+TAP version 13
+# Subtest: fechamento M5 §4/§12: obrigação em legal.lease_obligations com responsável, periodicidade, comprovante e status; padrão de periodicidade por tipo configurável
+ok 1 - fechamento M5 §4/§12: obrigação em legal.lease_obligations com responsável, periodicidade, comprovante e status; padrão de periodicidade por tipo configurável
+  ---
+  duration_ms: 88.438334
+  type: 'test'
+  ...
+# (node:63893) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+# (Use `node --trace-deprecation ...` to show where the warning was created)
+# Subtest: fechamento M5 §9: garantia vencendo gera TAREFA (uma por garantia enquanto aberta) além do evento lease.guarantee.expiring
+ok 2 - fechamento M5 §9: garantia vencendo gera TAREFA (uma por garantia enquanto aberta) além do evento lease.guarantee.expiring
+  ---
+  duration_ms: 80.409084
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1121.603875

@@ -1,0 +1,54 @@
+TAP version 13
+# Subtest: M4-G§9 padrões da regra AUTO_STRONG: forte 0,90 e janela de 3 dias (DEC-006), sugestão 0,45 e folga 0,05 (DI-M4CC-3), forte não confirma sozinha
+ok 1 - M4-G§9 padrões da regra AUTO_STRONG: forte 0,90 e janela de 3 dias (DEC-006), sugestão 0,45 e folga 0,05 (DI-M4CC-3), forte não confirma sozinha
+  ---
+  duration_ms: 372.319459
+  type: 'test'
+  ...
+# (node:64335) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+# (Use `node --trace-deprecation ...` to show where the warning was created)
+# Subtest: M4-§11.1/FIN-009 EXATO de linha digitada à mão NÃO concilia sozinho (fonte não confiável); o mesmo EXATO de arquivo de quem concilia, sim
+ok 2 - M4-§11.1/FIN-009 EXATO de linha digitada à mão NÃO concilia sozinho (fonte não confiável); o mesmo EXATO de arquivo de quem concilia, sim
+  ---
+  duration_ms: 217.49625
+  type: 'test'
+  ...
+# Subtest: M4-G§9 FORTE só confirma sozinho com a política ligada, de fonte confiável e score >= score_auto_minimo; subir o mínimo faz a mesma linha virar PROVÁVEL
+ok 3 - M4-G§9 FORTE só confirma sozinho com a política ligada, de fonte confiável e score >= score_auto_minimo; subir o mínimo faz a mesma linha virar PROVÁVEL
+  ---
+  duration_ms: 4216.3935
+  type: 'test'
+  ...
+# Subtest: M4-G§9 janela de data e mínimo de sugestão são parâmetros: mudam a pontuação e a classe
+ok 4 - M4-G§9 janela de data e mínimo de sugestão são parâmetros: mudam a pontuação e a classe
+  ---
+  duration_ms: 54.523084
+  type: 'test'
+  ...
+# Subtest: M4-G§9 folga de empate é parâmetro; dois candidatos fortes são AMBÍGUO qualquer que seja a folga, nunca auto
+ok 5 - M4-G§9 folga de empate é parâmetro; dois candidatos fortes são AMBÍGUO qualquer que seja a folga, nunca auto
+  ---
+  duration_ms: 1570.170917
+  type: 'test'
+  ...
+# Subtest: M4-G§9 travas dos parâmetros: faixa do catálogo e mínimo automático acima do mínimo de sugestão
+ok 6 - M4-G§9 travas dos parâmetros: faixa do catálogo e mínimo automático acima do mínimo de sugestão
+  ---
+  duration_ms: 2718.017292
+  type: 'test'
+  ...
+# Subtest: M4-§11.1 via HTTP: linha criada por POST /finance/bank-transactions é MANUAL mesmo com origem forjada no corpo e não concilia sozinha; GET /finance/reconciliation/policy mostra a regra
+ok 7 - M4-§11.1 via HTTP: linha criada por POST /finance/bank-transactions é MANUAL mesmo com origem forjada no corpo e não concilia sozinha; GET /finance/reconciliation/policy mostra a regra
+  ---
+  duration_ms: 768.620292
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 12482.010458

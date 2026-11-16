@@ -1,0 +1,58 @@
+TAP version 13
+# Subtest: CRITICAL futuro sem responsavel no prazo nem no processo: recusado (422) e nada gravado
+ok 1 - CRITICAL futuro sem responsavel no prazo nem no processo: recusado (422) e nada gravado
+  ---
+  duration_ms: 93.671708
+  type: 'test'
+  ...
+# Subtest: CRITICAL sem destino de escalonamento no processo: recusado (422)
+ok 2 - CRITICAL sem destino de escalonamento no processo: recusado (422)
+  ---
+  duration_ms: 15.630208
+  type: 'test'
+  ...
+# Subtest: CRITICAL com responsavel do processo + escalonamento, ou responsavel do prazo + escalonamento: aceito; MEDIUM segue sem exigencia
+ok 3 - CRITICAL com responsavel do processo + escalonamento, ou responsavel do prazo + escalonamento: aceito; MEDIUM segue sem exigencia
+  ---
+  duration_ms: 81.968042
+  type: 'test'
+  ...
+# Subtest: Processo com prazo CRITICAL pendente nao pode perder responsavel nem escalonamento (caminho vizinho)
+ok 4 - Processo com prazo CRITICAL pendente nao pode perder responsavel nem escalonamento (caminho vizinho)
+  ---
+  duration_ms: 37.81325
+  type: 'test'
+  ...
+# Subtest: Concluir com nota so de espacos (ou quebras de linha/tabs): recusado (422), prazo continua PENDING
+ok 5 - Concluir com nota so de espacos (ou quebras de linha/tabs): recusado (422), prazo continua PENDING
+  ---
+  duration_ms: 42.307916
+  type: 'test'
+  ...
+# Subtest: Nota normalizada (trim) ao concluir; nota valida continua aceita
+ok 6 - Nota normalizada (trim) ao concluir; nota valida continua aceita
+  ---
+  duration_ms: 43.783208
+  type: 'test'
+  ...
+# Subtest: Nota so de espacos gravada antes (PENDING) nao serve de prova ao concluir; prazo ja concluido nao e afetado
+ok 7 - Nota so de espacos gravada antes (PENDING) nao serve de prova ao concluir; prazo ja concluido nao e afetado
+  ---
+  duration_ms: 69.925834
+  type: 'test'
+  ...
+# Subtest: Nao e possivel esvaziar a nota de um prazo ja concluido que nao tem evidencia de arquivo (caminho vizinho)
+ok 8 - Nao e possivel esvaziar a nota de um prazo ja concluido que nao tem evidencia de arquivo (caminho vizinho)
+  ---
+  duration_ms: 41.936916
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1474.9105

@@ -1,0 +1,54 @@
+TAP version 13
+# Subtest: R3-1: prazo OVERDUE com responsável próprio, processo SEM responsável — job cria Notification pro responsável do PRAZO
+ok 1 - R3-1: prazo OVERDUE com responsável próprio, processo SEM responsável — job cria Notification pro responsável do PRAZO
+  ---
+  duration_ms: 106.633333
+  type: 'test'
+  ...
+# Subtest: R3-1 (controle): prazo sem responsável próprio continua notificando o responsável do PROCESSO
+ok 2 - R3-1 (controle): prazo sem responsável próprio continua notificando o responsável do PROCESSO
+  ---
+  duration_ms: 27.5715
+  type: 'test'
+  ...
+# (node:64671) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+# (Use `node --trace-deprecation ...` to show where the warning was created)
+# Subtest: R3-2: lançamento editado DEPOIS da aprovação invalida a aprovação — baixa integral e parcial recusadas
+ok 3 - R3-2: lançamento editado DEPOIS da aprovação invalida a aprovação — baixa integral e parcial recusadas
+  ---
+  duration_ms: 73.321042
+  type: 'test'
+  ...
+# Subtest: R3-2 (controle): aprovação sem edição posterior continua liberando a baixa normalmente
+ok 4 - R3-2 (controle): aprovação sem edição posterior continua liberando a baixa normalmente
+  ---
+  duration_ms: 450.7055
+  type: 'test'
+  ...
+# Subtest: R3-2 (reaprovação): depois de editar, uma NOVA aprovação sobre a versão atual volta a liberar a baixa
+ok 5 - R3-2 (reaprovação): depois de editar, uma NOVA aprovação sobre a versão atual volta a liberar a baixa
+  ---
+  duration_ms: 133.9895
+  type: 'test'
+  ...
+# Subtest: R3-3: garantia ACTIVE com startsAt no FUTURO bloqueia a entrega de chaves
+ok 6 - R3-3: garantia ACTIVE com startsAt no FUTURO bloqueia a entrega de chaves
+  ---
+  duration_ms: 199.222125
+  type: 'test'
+  ...
+# Subtest: R3-3 (controle): garantia ACTIVE com vigência corrente (startsAt ontem, endsAt futuro) libera normalmente
+ok 7 - R3-3 (controle): garantia ACTIVE com vigência corrente (startsAt ontem, endsAt futuro) libera normalmente
+  ---
+  duration_ms: 220.502333
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1948.1095
